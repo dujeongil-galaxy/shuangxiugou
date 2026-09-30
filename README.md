@@ -16,11 +16,9 @@
 4. 应用名称和包名自定义即可
 5. 生成 APK 安装即可
 
-## 相关项目
+## 更多项目
 
-- [双休购使用指南](https://github.com/dujeongil-galaxy/shuangxiugou-guide)
-- [莆田系医院查询](https://github.com/dujeongil-galaxy/putian-hospital-list)
-- [更多项目](https://github.com/dujeongil-galaxy)
+[请关注我的其他开源项目](https://github.com/dujeongil-galaxy)
 
 ## License
 
