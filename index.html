@@ -20,5 +20,19 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // 把"提交爆料"按钮直接改成a链接
+      setTimeout(() => {
+        const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('提交爆料'));
+        if (btn) {
+          const a = document.createElement('a');
+          a.href = 'https://github.com/dujeongil-galaxy/shuangxiugou/issues/new?title=工时爆料&body=请填写：品牌名、工时情况、佐证材料';
+          a.target = '_blank';
+          a.className = btn.className;
+          a.textContent = btn.textContent;
+          btn.replaceWith(a);
+        }
+      }, 1000);
+    </script>
   </body>
 </html>
