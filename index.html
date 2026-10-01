@@ -28,5 +28,5 @@ setTimeout(function(){
   });
 },1500);
 </script>
-</body>
+<script>setTimeout(function(){var ts=["提交爆料","我来提供这家","提交审核","提供数据"];document.querySelectorAll("button").forEach(function(b){if(b.tagName==="A")return;for(var i=0;i<ts.length;i++){if(b.textContent.indexOf(ts[i])>=0){var a=document.createElement("a");a.href="https://github.com/dujeongil-galaxy/shuangxiugou/issues/new";a.target="_blank";a.className=b.className;a.textContent=b.textContent;b.replaceWith(a);break;}}})},1500);</script></body>
 </html>
