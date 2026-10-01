@@ -1,50 +1,32 @@
-// 动态注入鸣鸣很忙集团品牌卡片
-      function injectMingmingBrand() {
-        const old = document.querySelector('[data-brand="mingminghenmang"]');
-        if (old) old.remove();
-        // 找蜂花卡片，它在品牌网格里
-        const fenghua = [...document.querySelectorAll('.bg-white.rounded-2xl')].find(c => c.textContent.includes('蜂花'));
-        if (!fenghua) return;
-        const grid = fenghua.parentElement;
-        const card = document.createElement('div');
-        card.setAttribute('data-brand', 'mingminghenmang');
-        card.className = 'bg-white rounded-2xl border transition-all duration-200 hover:-translate-y-1 hover:shadow-lg flex flex-col justify-between overflow-hidden relative group border-slate-200';
-        card.innerHTML = '<div class="p-5 space-y-3.5"><div class="flex items-start justify-between gap-3"><div class="flex items-center gap-2.5"><div class="w-10 h-10 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center font-bold text-amber-700 text-sm">MM</div><div><h3 class="font-bold text-slate-900 text-base leading-snug">鸣鸣很忙集团</h3><p class="text-xs text-slate-400 truncate max-w-[180px]">湖南鸣鸣很忙商业连锁（赵一鸣/零食很忙）</p></div></div><span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black tracking-wide bg-amber-50 text-amber-900 border-2 border-amber-500 shadow-xs uppercase">B级 · 存疑</span></div><div class="bg-slate-50 rounded-xl p-2.5 border border-slate-100 text-xs space-y-1.5"><div class="flex items-center justify-between text-slate-700"><span class="text-slate-400">工时政策：</span><span class="font-semibold">大小周 / 月休2-4天（待验证）</span></div><div class="flex items-center justify-between text-slate-700"><span class="text-slate-400">加班对待：</span><span class="font-semibold">两班倒 / 晚班至23点</span></div></div><div class="bg-slate-900 text-slate-100 rounded-xl p-3 text-xs space-y-2 border border-slate-800 shadow-inner"><div class="flex items-center justify-between text-[11px] pb-1 border-b border-slate-700/50"><span class="text-slate-400">员工投票</span><span class="text-slate-300">待验证</span></div><div class="flex items-center justify-between gap-2"><button class="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition">👍 0</button><button class="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition">👎 0</button><button class="flex items-center gap-1 px-2 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white transition font-medium">查看详情证据</button></div></div></div>';
-        // 插到蜂花后面
-        grid.insertBefore(card, fenghua.nextSibling);
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>双休购</title>
+<script type="module" src="index-YthXZ9eP.js"></script>
+<link rel="stylesheet" href="index-BgVofs0W.css">
+</head>
+<body>
+<div id="root"></div>
+<script>
+setTimeout(function(){
+  var ts=["提交爆料","我来提供这家","提交审核","提供数据"];
+  document.querySelectorAll("button").forEach(function(b){
+    if(b.tagName==="A")return;
+    for(var i=0;i<ts.length;i++){
+      if(b.textContent.indexOf(ts[i])>=0){
+        var a=document.createElement("a");
+        a.href="https://github.com/dujeongil-galaxy/shuangxiugou/issues/new";
+        a.target="_blank";
+        a.className=b.className;
+        a.textContent=b.textContent;
+        b.replaceWith(a);
+        break;
       }
-      setTimeout(injectMingmingBrand, 1500);
-      setTimeout(injectMingmingBrand, 2500);head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>双休购 · ShuangxiuGo | 用订单反向考核企业良心</title>
-    <meta
-      name="description"
-      content="双休购是开源的劳工友好品牌索引与网购透镜：汇聚公开司法裁判、劳动监察通报与众包证据，买东西前查一眼，支持真正双休的良心企业，避开单休血汗工厂。"
-    />
-    <meta property="og:title" content="双休购 · 用每一次下单，支持真正双休的良心企业" />
-    <meta
-      property="og:description"
-      content="把老板考核你的 KPI，变成打工人考核老板的货币选票。开源劳工友好品牌索引与浏览器网购透镜。"
-    />
-    <meta property="og:type" content="website" />
-    <script type="module" crossorigin src="index-YthXZ9eP.js"></script>
-    <link rel="stylesheet" crossorigin href="index-BgVofs0W.css">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script>
-      // 所有提交相关的按钮都替换成Issues跳转链接
-      function replaceAllSubmitButtons() {
-        const targetTexts = ['提交爆料', '我来提供这家企业信息', '提交审核'];
-        const btns = [...document.querySelectorAll('button')].filter(b => 
-          targetTexts.some(t => b.textContent.includes(t))
-        );
-        btns.forEach(btn => {
-          if (btn.tagName === 'A') return;
-          const a = document.createElement('a');
-          a.href = 'https://github.com/dujeongil-galaxy/shuangxiugou/issues/new?title=推荐双休品牌/提交工时爆料&body=数据全部依托 GitHub 开源仓库进行公证治理。你可以通过下表单提交线索，或直接前往 GitHub 发起 Pull Request。%0A%0A【品牌名称 / 常见商品】%0A（例如：某个洗发水品牌、键盘品牌）%0A%0A【所属母公司主体（选填）】%0A（例如：企查查/天眼查可搜到的企业全称）%0A%0A【工时与休假实情】%0A- 严格双休 / 极少加班 (值得推荐)%0A- 大小周 / 有偿加班%0A- 单休 / 严重超时加班 (提醒避害)%0A%0A⚠️ 请严格按照格式提交，佐证材料需提供公开可查的官方来源（Boss直聘招工信息不算有效证据）。';
-          a.target = '_blank';
-          a.className = btn.className;
-          a.textContent = btn.textContent;
+    }
+  });
+},1500);
+</script>
+</body>
+</html>
