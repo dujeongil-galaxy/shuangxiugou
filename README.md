@@ -2,11 +2,34 @@
 
 把老板考核你的 KPI，变成打工人考核老板的货币选票。
 
+> 基于 [ZhiqingHeyi/shuangxiugou](https://github.com/ZhiqingHeyi/shuangxiugou) 修改，MIT License
+
 ## 在线使用
 
 打开 **https://dujeongil-galaxy.github.io/shuangxiugou/**
 
-## 做成手机 APP（网页套壳）
+---
+
+"用消费者的订单投票，反向考核企业良心；把老板考核你的 KPI，变成打工人考核老板的货币选票。"
+
+受常州星宇股份违法解除数百名应届毕业生及劳动法合规议题启发，本项目旨在打破企业工时黑盒，通过开源众包与真实司法/监管记录，让消费者能一眼识别哪些品牌真正践行周末双休、尊重员工劳动权益。
+
+## 🌟 核心功能
+
+**双休品牌白名单与避雷库：**
+- 涵盖数码外设、户外服饰、个人护理、运动器材、零食饮料、汽车生活等常见消费品类。
+- 提供 S级（模范标杆）、A级（合规双休 965）、B级（大小周/存疑）、C级（严重超时/通报违约）清晰评级。
+
+**良心平替自动推荐：**
+- 当查询到避雷单休企业时，自动推荐同品类、价格亲民且严格落实双休的国货/外企替代品。
+
+**"用脚投票"消费打卡与小票生成：**
+- 生成打工人专属复古热敏打印小票凭证，方便在小红书、朋友圈分享态度。
+
+**双休透镜 Chrome/Edge 浏览器扩展：**
+- 在逛京东、淘宝、拼多多时，自动识别商品所属企业工时状况，弹出悬浮避雷与平替提示。
+
+## 📱 做成手机 APP（网页套壳）
 
 本项目是纯静态网页，可用「一个木函」APP 一键套成 APK：
 
@@ -16,13 +39,52 @@
 4. 应用名称和包名自定义即可
 5. 生成 APK 安装即可
 
+## 🚀 本地开发与启动
+
+```bash
+# 1. 克隆项目并安装依赖
+npm install
+
+# 2. 启动本地开发服务（固定端口 http://127.0.0.1:4780）
+npm run dev
+
+# 3. 构建生产包（产物在 dist/，可直接部署到 GitHub Pages / Vercel）
+npm run build
+```
+
+开发端口固定在 4780（见 vite.config.ts），以便与浏览器插件内的官网链接保持一致。
+
+## 🧩 浏览器插件安装说明 (/extension)
+
+1. 打开 Chrome 或 Edge 浏览器，访问 `chrome://extensions/`。
+2. 右上角开启 "开发者模式" (Developer mode)。
+3. 点击 "加载已解压的扩展程序" (Load unpacked)。
+4. 选择本项目根目录下的 `extension` 文件夹即可启用。
+
+## 🌐 在线访问与 Vercel 一键部署
+
+本项目支持一键部署到 Vercel：
+
+1. 登录 Vercel，选择 Add New... → Project。
+2. 导入 GitHub 仓库。
+3. Framework Preset 选择 Vite，根目录保持默认，点击 Deploy 即可上线。
+
+项目自带 `vercel.json` 自动处理单页应用路由重写与安全头。
+
+---
+
 ## 推荐
 
-VPN机场推荐：
-https://74.82.196.10:8000/register?aff=v17mHNYv
+VPN机场推荐：https://74.82.196.10:8000/register?aff=v17mHNYv
 
-点击[这里](https://github.com/dujeongil-galaxy)关注我的其他项目
+[点击这里关注我的其他项目](https://github.com/dujeongil-galaxy)
+
+## ⚖️ 免责声明
+
+本项目所有数据均来源于公开司法裁判文书、各地劳动监察部门行政处罚公开信息、上市公司公开 ESG 报告及社区打工人多方交叉验证。数据仅供个人择业与日常消费偏好参考，不构成商业排他或绝对背书。
 
 ## License
+
+MIT License © 2026 ZhiqingHeyi / dujeongil-galaxy
 
 仅供参考，不构成投资建议。
