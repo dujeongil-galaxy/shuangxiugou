@@ -61,6 +61,61 @@
           }
         });
       }, 0);
+
+      // 自动监听页面渲染，一旦 IKEA 卡片出现立刻复制它的框架，改文字后插入
+      function insertSnackCard() {
+        if (document.querySelector('#snack-card')) return;
+        
+        var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
+        var ikeaCard = null;
+        cards.forEach(function(card) {
+          if (card.textContent.includes('IKEA') || card.textContent.includes('宜家')) {
+            ikeaCard = card;
+          }
+        });
+        
+        if (ikeaCard) {
+          // 直接复制宜家的整个DOM框架
+          var snackCard = ikeaCard.cloneNode(true);
+          snackCard.id = 'snack-card';
+          
+          // 只改文字内容，框架完全保留
+          // 改品牌名
+          snackCard.querySelector('h3').textContent = '赵一鸣/零食很忙';
+          // 改公司名
+          snackCard.querySelectorAll('p')[0].textContent = '湖南鸣鸣很忙商业连锁有限公司';
+          // 改logo文字
+          snackCard.querySelector('.w-10').textContent = '很忙';
+          // 改评级徽章
+          var badge = snackCard.querySelector('span.inline-flex');
+          badge.className = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black tracking-wide bg-amber-50 text-amber-900 border-2 border-amber-500 shadow-xs uppercase';
+          badge.querySelectorAll('svg')[0].className = 'lucide lucide-triangle-alert w-3.5 h-3.5 text-amber-600';
+          badge.lastChild.textContent = ' B级 · 存疑/大小周';
+          // 改工时政策
+          var infoRows = snackCard.querySelectorAll('.bg-slate-50 > div');
+          infoRows[0].querySelectorAll('span')[1].textContent = '月休3-4天 / 门店两班倒';
+          infoRows[1].querySelectorAll('span')[1].textContent = '节假日加班常见 / 连续站立8-10小时';
+          // 改员工指数部分
+          var stats = snackCard.querySelectorAll('.bg-slate-900 .grid div div');
+          stats[1].textContent = '未知';
+          stats[3].textContent = '19:30';
+          // 改描述
+          snackCard.querySelector('.bg-slate-900 .italic').textContent = '"门店实行早晚班轮换，日均工作8-10小时，月休3-4天，节假日加班常见，一线员工需连续站立作业"';
+          // 改标签
+          var tags = snackCard.querySelectorAll('.flex-wrap span');
+          tags[0].textContent = '零食量贩';
+          tags[1].textContent = '赵一鸣零食';
+          tags[2].textContent = '连锁门店';
+          
+          // 把新卡片插到 IKEA 后面
+          ikeaCard.parentNode.insertBefore(snackCard, ikeaCard.nextSibling);
+        }
+      }
+      
+      // 立刻试一次，不行就监听页面变化
+      insertSnackCard();
+      const observer = new MutationObserver(insertSnackCard);
+      observer.observe(document.getElementById('root'), { childList: true, subtree: true });
     </script>
   </body>
 </html>
