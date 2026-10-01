@@ -62,6 +62,66 @@
         });
       }, 0);
 
+      // 品牌logo映射表
+      var brandLogos = {
+        'IKEA': './assets/ikea.png',
+        '蜂花': './assets/fenghua.png',
+        '迪卡侬': './assets/decathlon.png',
+        '飞利浦': './assets/philips.png',
+        '百事': './assets/pepsi.png',
+        'vivo': './assets/vivo.png',
+        '海尔': './assets/haier.png',
+        '农夫': './assets/nongfu.png',
+        '立白': './assets/liby.png',
+        '顺丰': './assets/sf.png',
+        'PDD': './assets/pdd.png',
+        '康师傅': './assets/kangshifu.png',
+        'BYD': './assets/byd.png',
+        'VOLVO': './assets/volvo.png',
+        'HUAWEI': './assets/huawei.png',
+        'APPLE': './assets/apple.png',
+        'SONY': './assets/sony.png',
+        '瑞幸': './assets/luckin.png',
+        '星巴克': './assets/starbucks.png',
+        '腾讯': './assets/tencent.png',
+        '美团': './assets/meituan.png',
+        'UNIQLO': './assets/uniqlo.png',
+        'TNF': './assets/tnf.png',
+        'MSFT': './assets/microsoft.png',
+        'SAP': './assets/sap.png',
+        '有道': './assets/youdao.png',
+        'OSRAM': './assets/osram.png',
+        'LOGI': './assets/logi.png',
+        '赵一鸣/零食很忙': './assets/snack-logo.png'
+      };
+
+      // 替换所有卡片的logo
+      function replaceAllLogos() {
+        var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
+        cards.forEach(function(card) {
+          // 找到品牌名
+          var h3 = card.querySelector('h3');
+          if (!h3) return;
+          var brandName = h3.textContent.trim();
+          // 找到logo div
+          var logoDiv = card.querySelector('.w-10.h-10.rounded-xl.bg-slate-100');
+          if (!logoDiv) return;
+          // 如果这个品牌有对应的logo
+          if (brandLogos[brandName]) {
+            // 如果已经替换过了就跳过
+            if (logoDiv.querySelector('img')) return;
+            // 清空原来的文字
+            logoDiv.textContent = '';
+            // 创建img标签
+            var logoImg = document.createElement('img');
+            logoImg.src = brandLogos[brandName];
+            logoImg.alt = brandName;
+            logoImg.className = 'w-full h-full object-cover rounded-lg';
+            logoDiv.appendChild(logoImg);
+          }
+        });
+      }
+
       // 自动监听页面渲染，一旦 IKEA 卡片出现立刻复制它的框架，改文字后插入
       function insertSnackCard() {
         if (document.querySelector('#snack-card')) return;
@@ -126,8 +186,12 @@
       }
       
       // 立刻试一次，不行就监听页面变化
-      insertSnackCard();
-      const observer = new MutationObserver(insertSnackCard);
+      function init() {
+        insertSnackCard();
+        replaceAllLogos();
+      }
+      init();
+      const observer = new MutationObserver(init);
       observer.observe(document.getElementById('root'), { childList: true, subtree: true });
     </script>
   </body>
