@@ -20,31 +20,5 @@
   </head>
   <body>
     <div id="root"></div>
-    <script>
-      function replaceBtn() {
-        const btn = Array.from(document.querySelectorAll('button')).find(b => 
-          b.textContent.includes('提交爆料') || b.textContent.includes('提交推荐')
-        );
-        if (btn) {
-          const a = document.createElement('a');
-          a.href = 'https://github.com/dujeongil-galaxy/shuangxiugou/issues/new?title=工时爆料：[品牌名称]&body=请填写：%0A1. 品牌/企业名称：%0A2. 工时情况（双休/大小周/单休）：%0A3. 佐证材料（官方通报/裁判文书/多人交叉验证）：%0A%0A注意：Boss直聘招工信息等不算有效证据，请提供公开可查的官方来源。';
-          a.target = '_blank';
-          a.rel = 'noreferrer';
-          a.className = btn.className;
-          a.style.cssText = btn.style.cssText + ';display:inline-flex;align-items:center;text-decoration:none;';
-          a.textContent = btn.textContent;
-          btn.parentNode.replaceChild(a, btn);
-          return true;
-        }
-        return false;
-      }
-      
-      if (!replaceBtn()) {
-        const observer = new MutationObserver(function() {
-          if (replaceBtn()) observer.disconnect();
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
-      }
-    </script>
   </body>
 </html>
