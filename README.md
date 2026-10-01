@@ -90,4 +90,4 @@ https://github.com/dujeongil-galaxy/shuangxiugou/issues
 
 MIT License © 2026 ZhiqingHeyi / dujeongil-galaxy
 
-仅供参考，不构成投资建议。
+仅供消费与择业参考，数据为社区众包汇总，请理性看待。
