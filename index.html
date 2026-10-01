@@ -84,11 +84,14 @@
           snackCard.querySelector('h3').textContent = '赵一鸣/零食很忙';
           // 改公司名
           snackCard.querySelectorAll('p')[0].textContent = '湖南鸣鸣很忙商业连锁有限公司';
-          // 改logo为真实图片，用更精确的选择器
-          var logoDiv = snackCard.querySelector('.w-10.h-10.rounded-xl.bg-slate-100');
-          if (logoDiv) {
-            logoDiv.innerHTML = '<img src="./assets/snack-logo.png" alt="赵一鸣零食" class="w-full h-full object-cover rounded-lg">';
-          }
+          // 改logo为图片
+          var logoDiv = snackCard.querySelector('.w-10');
+          logoDiv.textContent = '';
+          var logoImg = document.createElement('img');
+          logoImg.src = './assets/snack-logo.png';
+          logoImg.alt = '零食很忙';
+          logoImg.className = 'w-full h-full object-cover rounded-lg';
+          logoDiv.appendChild(logoImg);
           // 改评级徽章
           var badge = snackCard.querySelector('span.inline-flex');
           badge.className = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black tracking-wide bg-amber-50 text-amber-900 border-2 border-amber-500 shadow-xs uppercase';
