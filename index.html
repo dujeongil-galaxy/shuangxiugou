@@ -1,37 +1,50 @@
 <!doctype html>
 <html lang="zh-CN">
-    <head>
-          <meta charset="UTF-8" />
-          <link rel="icon" type="image/svg+xml" href="" />
-          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <title>双休购 · ShuangxiuGo | 用订单反向考核企业良心</title>
-        <meta name="description" content="双休购是开源的劳工友好品牌索引与网购透镜：汇聚公开司法裁判、劳动监察通报与众包证据，买东西前查一眼，支持真正双休的良心企业，避开单休血汗工厂。" />
-        <meta property="og:title" content="双休购 · 用每一次下单，支持真正双休的良心企业" />
-        <meta property="og:description" content="把老板考核你的 KPI，变成打工人考核老板的货币选票。开源劳工友好品牌索引与浏览器网购透镜。" />
-        <meta property="og:type" content="website" />
-        <script type="module" crossorigin src="index-YthXZ9eP.js"></script>
-        <link rel="stylesheet" crossorigin href="index-BgVofs0W.css">
-    </head>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>双休购 · ShuangxiuGo | 用订单反向考核企业良心</title>
+    <meta
+      name="description"
+      content="双休购是开源的劳工友好品牌索引与网购透镜：汇聚公开司法裁判、劳动监察通报与众包证据，买东西前查一眼，支持真正双休的良心企业，避开单休血汗工厂。"
+    />
+    <meta property="og:title" content="双休购 · 用每一次下单，支持真正双休的良心企业" />
+    <meta
+      property="og:description"
+      content="把老板考核你的 KPI，变成打工人考核老板的货币选票。开源劳工友好品牌索引与浏览器网购透镜。"
+    />
+    <meta property="og:type" content="website" />
+    <script type="module" crossorigin src="index-YthXZ9eP.js"></script>
+    <link rel="stylesheet" crossorigin href="index-BgVofs0W.css">
+  </head>
   <body>
-        <div id="root"></div>div>
-        <script>
-                setTimeout(function() {
-                          const observer = new MutationObserver(function() {
-                                      const btn = Array.from(document.querySelectorAll('button')).find(b => 
-                                                    b.textContent.includes('提交爆料') || b.textContent.includes('提交推荐')
-                                                                                                                 );
-                                      if (btn) {
-                                                    btn.addEventListener('click', function() {
-                                                                    window.open('https://github.com/dujeongil-galaxy/shuangxiugou/issues/new?title=工时爆料：[品牌名称]&body=请填写：%0A1. 品牌/企业名称：%0A2. 工时情况（双休/大小周/单休）：%0A3. 佐证材料（官方通报/裁判文书/多人交叉验证）：%0A%0A注意：Boss直聘招工信息等不算有效证据，请提供公开可查的官方来源。', '_blank');
-                                                    });
-                                                    observer.disconnect();
-                                      }
-                          });
-                          observer.observe(document.body, { childList: true, subtree: true });
-                }, 1000);
-        </script>
+    <div id="root"></div>
+    <script>
+      function replaceBtn() {
+        const btn = Array.from(document.querySelectorAll('button')).find(b => 
+          b.textContent.includes('提交爆料') || b.textContent.includes('提交推荐')
+        );
+        if (btn) {
+          const a = document.createElement('a');
+          a.href = 'https://github.com/dujeongil-galaxy/shuangxiugou/issues/new?title=工时爆料：[品牌名称]&body=请填写：%0A1. 品牌/企业名称：%0A2. 工时情况（双休/大小周/单休）：%0A3. 佐证材料（官方通报/裁判文书/多人交叉验证）：%0A%0A注意：Boss直聘招工信息等不算有效证据，请提供公开可查的官方来源。';
+          a.target = '_blank';
+          a.rel = 'noreferrer';
+          a.className = btn.className;
+          a.style.cssText = btn.style.cssText + ';display:inline-flex;align-items:center;text-decoration:none;';
+          a.textContent = btn.textContent;
+          btn.parentNode.replaceChild(a, btn);
+          return true;
+        }
+        return false;
+      }
+      
+      if (!replaceBtn()) {
+        const observer = new MutationObserver(function() {
+          if (replaceBtn()) observer.disconnect();
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+      }
+    </script>
   </body>
-</html>html>
-        </script>
-  </body></title>
-    </head>
+</html>
