@@ -21,18 +21,27 @@
   <body>
     <div id="root"></div>
     <script>
-      // 把"提交爆料"按钮直接改成a链接
-      setTimeout(() => {
-        const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('提交爆料'));
-        if (btn) {
+      // 所有提交相关的按钮都替换成Issues跳转链接
+      function replaceAllSubmitButtons() {
+        const targetTexts = ['提交爆料', '我来提供这家企业信息', '提交审核'];
+        const btns = [...document.querySelectorAll('button')].filter(b => 
+          targetTexts.some(t => b.textContent.includes(t))
+        );
+        btns.forEach(btn => {
+          // 已经是a标签就跳过
+          if (btn.tagName === 'A') return;
           const a = document.createElement('a');
           a.href = 'https://github.com/dujeongil-galaxy/shuangxiugou/issues/new?title=推荐双休品牌/提交工时爆料&body=数据全部依托 GitHub 开源仓库进行公证治理。你可以通过下表单提交线索，或直接前往 GitHub 发起 Pull Request。%0A%0A【品牌名称 / 常见商品】%0A（例如：某个洗发水品牌、键盘品牌）%0A%0A【所属母公司主体（选填）】%0A（例如：企查查/天眼查可搜到的企业全称）%0A%0A【工时与休假实情】%0A- 严格双休 / 极少加班 (值得推荐)%0A- 大小周 / 有偿加班%0A- 单休 / 严重超时加班 (提醒避害)%0A%0A⚠️ 请严格按照格式提交，佐证材料需提供公开可查的官方来源（Boss直聘招工信息不算有效证据）。';
           a.target = '_blank';
           a.className = btn.className;
           a.textContent = btn.textContent;
           btn.replaceWith(a);
-        }
-      }, 1000);
+        });
+      }
+      // 延迟执行，等页面渲染完
+      setTimeout(replaceAllSubmitButtons, 1000);
+      setTimeout(replaceAllSubmitButtons, 2000);
+      setTimeout(replaceAllSubmitButtons, 3000);
     </script>
   </body>
 </html>
