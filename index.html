@@ -60,6 +60,32 @@
             }
           }
         });
+
+        // 替换虚拟烘焙食品卡片为零食很忙
+        document.querySelectorAll('div').forEach(function(el) {
+          if (el.textContent.includes('某代工烘焙食品') && el.querySelector('h3, h2, [class*="text-xl"], [class*="text-lg"]')) {
+            var card = el;
+            // 找最近的卡片容器
+            while (card.parentElement && !card.className.includes('rounded-2xl')) {
+              card = card.parentElement;
+            }
+
+            // 替换品牌名
+            card.innerHTML = card.innerHTML.replace(/某代工烘焙食品[^<]*/g, '零食很忙');
+            // 替换公司名
+            card.innerHTML = card.innerHTML.replace(/某代工食品有限公司/g, '湖南鸣鸣很忙商业连锁有限公司（旗下赵一鸣零食）');
+            // 替换评级标签
+            card.innerHTML = card.innerHTML.replace(/[A-C]级[·\s][^<]*/g, 'C级·避雷预警');
+            // 替换工时政策
+            card.innerHTML = card.innerHTML.replace(/工时政策：[\s\S]*?加班对待：/g, '工时政策：月休2天 / 连锁门店两班倒<br>加班对待：');
+            // 替换真实双休率
+            card.innerHTML = card.innerHTML.replace(/真实双休率：[\s\S]*?\d+%/g, '真实双休率：0%');
+            // 替换平均下班时间
+            card.innerHTML = card.innerHTML.replace(/平均离岗\/下班：[\s\S]*?\d+:\d+/g, '平均离岗/下班：门店轮班制');
+            // 替换底部描述
+            card.innerHTML = card.innerHTML.replace(/"[^"]*代工[^"]*"/g, '"走访同城2家门店，均为月休2天，员工未透露更多细节"');
+          }
+        });
       }, 1500);
     </script>
   </body>
