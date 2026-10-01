@@ -106,6 +106,13 @@
           tags[0].textContent = '零食量贩';
           tags[1].textContent = '赵一鸣零食';
           tags[2].textContent = '连锁门店';
+          // 改点赞点踩数
+          var voteBtns = snackCard.querySelectorAll('.flex.items-center.gap-2 button span');
+          if (voteBtns[0]) voteBtns[0].textContent = '0';
+          if (voteBtns[1]) voteBtns[1].textContent = '0';
+          // 改员工投票数
+          var voteCount = snackCard.querySelector('.bg-slate-900 .font-mono');
+          if (voteCount) voteCount.textContent = '0 人已投票';
           
           // 把新卡片插到 IKEA 后面
           ikeaCard.parentNode.insertBefore(snackCard, ikeaCard.nextSibling);
