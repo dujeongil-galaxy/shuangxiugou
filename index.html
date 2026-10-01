@@ -22,10 +22,10 @@
     <div id="root"></div>
     <script>
       setTimeout(function() {
-        // 修改 Star on GitHub 链接
+        // 所有指向原仓库的链接都改成自己的仓库
         document.querySelectorAll('a').forEach(function(a) {
-          if (a.textContent.includes('Star on GitHub')) {
-            a.href = 'https://github.com/dujeongil-galaxy/shuangxiugou';
+          if (a.href.includes('github.com/ZhiqingHeyi/shuangxiugou')) {
+            a.href = a.href.replace('github.com/ZhiqingHeyi/shuangxiugou', 'github.com/dujeongil-galaxy/shuangxiugou');
           }
         });
 
