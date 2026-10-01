@@ -28,9 +28,31 @@
           targetTexts.some(t => b.textContent.includes(t))
         );
         btns.forEach(btn => {
-          // 已经是a标签就跳过
           if (btn.tagName === 'A') return;
           const a = document.createElement('a');
           a.href = 'https://github.com/dujeongil-galaxy/shuangxiugou/issues/new?title=推荐双休品牌/提交工时爆料&body=数据全部依托 GitHub 开源仓库进行公证治理。你可以通过下表单提交线索，或直接前往 GitHub 发起 Pull Request。%0A%0A【品牌名称 / 常见商品】%0A（例如：某个洗发水品牌、键盘品牌）%0A%0A【所属母公司主体（选填）】%0A（例如：企查查/天眼查可搜到的企业全称）%0A%0A【工时与休假实情】%0A- 严格双休 / 极少加班 (值得推荐)%0A- 大小周 / 有偿加班%0A- 单休 / 严重超时加班 (提醒避害)%0A%0A⚠️ 请严格按照格式提交，佐证材料需提供公开可查的官方来源（Boss直聘招工信息不算有效证据）。';
           a.target = '_blank';
           a.className = btn.className;
+          a.textContent = btn.textContent;
+          btn.replaceWith(a);
+        });
+      }
+      setTimeout(replaceAllSubmitButtons, 1000);
+      setTimeout(replaceAllSubmitButtons, 2000);
+
+      // 动态注入鸣鸣很忙集团品牌卡片
+      function injectMingmingBrand() {
+        const container = document.querySelector('[class*="grid"], [class*="space-y"]');
+        if (!container) return;
+        if (container.querySelector('[data-brand="mingminghenmang"]')) return;
+        const card = document.createElement('div');
+        card.setAttribute('data-brand', 'mingminghenmang');
+        card.className = 'bg-white rounded-2xl border transition-all duration-200 hover:-translate-y-1 hover:shadow-lg flex flex-col justify-between overflow-hidden relative group border-amber-300 bg-gradient-to-b from-amber-50/30 to-white shadow-amber-500/5';
+        card.innerHTML = '<div class="p-5 space-y-3.5"><div class="flex items-start justify-between gap-3"><div class="flex items-center gap-2.5"><div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center font-bold text-amber-700">MM</div><div><div class="font-semibold text-slate-800">鸣鸣很忙集团</div><div class="text-xs text-slate-500">湖南鸣鸣很忙商业连锁（赵一鸣/零食很忙）</div></div></div><span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">B级 · 存疑</span></div><div class="text-sm text-slate-600 space-y-1"><div>工时政策：大小周 / 月休2-4天（待验证）</div><div class="text-xs text-slate-500">两班倒，晚班至23点；加盟门店作息不统一</div></div></div>';
+        container.appendChild(card);
+      }
+      setTimeout(injectMingmingBrand, 1500);
+      setTimeout(injectMingmingBrand, 2500);
+    </script>
+  </body>
+</html>
