@@ -1,6 +1,20 @@
-<!doctype html>
-<html lang="zh-CN">
-  <head>
+// 动态注入鸣鸣很忙集团品牌卡片
+      function injectMingmingBrand() {
+        const old = document.querySelector('[data-brand="mingminghenmang"]');
+        if (old) old.remove();
+        // 找蜂花卡片，它在品牌网格里
+        const fenghua = [...document.querySelectorAll('.bg-white.rounded-2xl')].find(c => c.textContent.includes('蜂花'));
+        if (!fenghua) return;
+        const grid = fenghua.parentElement;
+        const card = document.createElement('div');
+        card.setAttribute('data-brand', 'mingminghenmang');
+        card.className = 'bg-white rounded-2xl border transition-all duration-200 hover:-translate-y-1 hover:shadow-lg flex flex-col justify-between overflow-hidden relative group border-slate-200';
+        card.innerHTML = '<div class="p-5 space-y-3.5"><div class="flex items-start justify-between gap-3"><div class="flex items-center gap-2.5"><div class="w-10 h-10 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center font-bold text-amber-700 text-sm">MM</div><div><h3 class="font-bold text-slate-900 text-base leading-snug">鸣鸣很忙集团</h3><p class="text-xs text-slate-400 truncate max-w-[180px]">湖南鸣鸣很忙商业连锁（赵一鸣/零食很忙）</p></div></div><span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black tracking-wide bg-amber-50 text-amber-900 border-2 border-amber-500 shadow-xs uppercase">B级 · 存疑</span></div><div class="bg-slate-50 rounded-xl p-2.5 border border-slate-100 text-xs space-y-1.5"><div class="flex items-center justify-between text-slate-700"><span class="text-slate-400">工时政策：</span><span class="font-semibold">大小周 / 月休2-4天（待验证）</span></div><div class="flex items-center justify-between text-slate-700"><span class="text-slate-400">加班对待：</span><span class="font-semibold">两班倒 / 晚班至23点</span></div></div><div class="bg-slate-900 text-slate-100 rounded-xl p-3 text-xs space-y-2 border border-slate-800 shadow-inner"><div class="flex items-center justify-between text-[11px] pb-1 border-b border-slate-700/50"><span class="text-slate-400">员工投票</span><span class="text-slate-300">待验证</span></div><div class="flex items-center justify-between gap-2"><button class="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition">👍 0</button><button class="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition">👎 0</button><button class="flex items-center gap-1 px-2 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white transition font-medium">查看详情证据</button></div></div></div>';
+        // 插到蜂花后面
+        grid.insertBefore(card, fenghua.nextSibling);
+      }
+      setTimeout(injectMingmingBrand, 1500);
+      setTimeout(injectMingmingBrand, 2500);head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -34,25 +48,3 @@
           a.target = '_blank';
           a.className = btn.className;
           a.textContent = btn.textContent;
-          btn.replaceWith(a);
-        });
-      }
-      setTimeout(replaceAllSubmitButtons, 1000);
-      setTimeout(replaceAllSubmitButtons, 2000);
-
-      // 动态注入鸣鸣很忙集团品牌卡片
-      function injectMingmingBrand() {
-        const container = document.querySelector('[class*="grid"], [class*="space-y"]');
-        if (!container) return;
-        if (container.querySelector('[data-brand="mingminghenmang"]')) return;
-        const card = document.createElement('div');
-        card.setAttribute('data-brand', 'mingminghenmang');
-        card.className = 'bg-white rounded-2xl border transition-all duration-200 hover:-translate-y-1 hover:shadow-lg flex flex-col justify-between overflow-hidden relative group border-amber-300 bg-gradient-to-b from-amber-50/30 to-white shadow-amber-500/5';
-        card.innerHTML = '<div class="p-5 space-y-3.5"><div class="flex items-start justify-between gap-3"><div class="flex items-center gap-2.5"><div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center font-bold text-amber-700">MM</div><div><div class="font-semibold text-slate-800">鸣鸣很忙集团</div><div class="text-xs text-slate-500">湖南鸣鸣很忙商业连锁（赵一鸣/零食很忙）</div></div></div><span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">B级 · 存疑</span></div><div class="text-sm text-slate-600 space-y-1"><div>工时政策：大小周 / 月休2-4天（待验证）</div><div class="text-xs text-slate-500">两班倒，晚班至23点；加盟门店作息不统一</div></div></div>';
-        container.appendChild(card);
-      }
-      setTimeout(injectMingmingBrand, 1500);
-      setTimeout(injectMingmingBrand, 2500);
-    </script>
-  </body>
-</html>
