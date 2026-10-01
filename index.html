@@ -60,33 +60,74 @@
             }
           }
         });
+      }, 1500);
 
-        // 替换虚拟烘焙食品卡片为零食很忙
-        document.querySelectorAll('div').forEach(function(el) {
-          if (el.textContent.includes('某代工烘焙食品') && el.querySelector('h3, h2, [class*="text-xl"], [class*="text-lg"]')) {
-            var card = el;
-            // 找最近的卡片容器
-            while (card.parentElement && !card.className.includes('rounded-2xl')) {
-              card = card.parentElement;
-            }
-
-            // 替换品牌名
-            card.innerHTML = card.innerHTML.replace(/某代工烘焙食品[^<]*/g, '零食很忙');
-            // 替换公司名
-            card.innerHTML = card.innerHTML.replace(/某代工食品有限公司/g, '湖南鸣鸣很忙商业连锁有限公司（旗下赵一鸣零食）');
-            // 替换评级标签
-            card.innerHTML = card.innerHTML.replace(/[A-C]级[·\s][^<]*/g, 'C级·避雷预警');
-            // 替换工时政策
-            card.innerHTML = card.innerHTML.replace(/工时政策：[\s\S]*?加班对待：/g, '工时政策：月休2天 / 连锁门店两班倒<br>加班对待：');
-            // 替换真实双休率
-            card.innerHTML = card.innerHTML.replace(/真实双休率：[\s\S]*?\d+%/g, '真实双休率：0%');
-            // 替换平均下班时间
-            card.innerHTML = card.innerHTML.replace(/平均离岗\/下班：[\s\S]*?\d+:\d+/g, '平均离岗/下班：门店轮班制');
-            // 替换底部描述
-            card.innerHTML = card.innerHTML.replace(/"[^"]*代工[^"]*"/g, '"连锁门店多为两班倒，日均工作8-10小时，月休2-4天，员工普遍反映加班无补偿、一人多岗"');
+      // 替换零食很忙卡片，用正确的结构
+      setTimeout(function() {
+        var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
+        cards.forEach(function(card) {
+          if (card.textContent.includes('某烘焙') || (card.textContent.includes('零食很忙') && card.textContent.includes('某代工'))) {
+            card.innerHTML = `
+              <div class="p-5 space-y-3.5">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-sm">很忙</div>
+                    <div>
+                      <h3 class="font-bold text-slate-900 text-base leading-snug">零食很忙</h3>
+                      <p class="text-xs text-slate-400 truncate max-w-[180px]">湖南鸣鸣很忙商业连锁有限公司</p>
+                    </div>
+                  </div>
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black tracking-wide bg-rose-50 text-rose-900 border-2 border-rose-500 shadow-xs uppercase">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-triangle-alert w-3.5 h-3.5 text-rose-600" aria-hidden="true">
+                      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path>
+                      <path d="M12 9v4"></path>
+                      <path d="M12 17h.01"></path>
+                    </svg>
+                    C级·避雷预警
+                  </span>
+                </div>
+                <div class="bg-slate-50 rounded-xl p-2.5 border border-slate-100 text-xs space-y-1.5">
+                  <div class="flex items-center justify-between text-slate-700">
+                    <span class="text-slate-400">工时政策：月休2天 / 连锁门店两班倒<br>加班对待：</span>
+                    <span class="font-semibold">加班无补偿 / 一人多岗</span>
+                  </div>
+                </div>
+                <div class="bg-slate-900 text-slate-100 rounded-xl p-3 text-xs space-y-2 border border-slate-800 shadow-inner">
+                  <div class="flex items-center justify-between text-[11px] pb-1 border-b border-slate-800">
+                    <span class="font-bold flex items-center gap-1 text-rose-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-check w-3.5 h-3.5" aria-hidden="true">
+                        <path d="m16 11 2 2 4-4"></path>
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                      </svg>
+                      内部员工实测指数
+                    </span>
+                    <span class="text-slate-400">0 人已投票</span>
+                  </div>
+                  <div class="flex items-center justify-between pt-1">
+                    <div>
+                      <div class="text-[10px] text-slate-400 mb-0.5">真实双休率：</div>
+                      <div class="font-mono font-bold text-sm text-rose-400">0%</div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-[10px] text-slate-400 mb-0.5">平均离岗/下班：</div>
+                      <div class="font-mono font-bold text-sm text-slate-200">21:30</div>
+                    </div>
+                  </div>
+                  <p class="pt-1 text-[11px] text-slate-400 italic line-clamp-1 border-t border-slate-800">
+                    "连锁门店多为两班倒，日均工作8-10小时，月休2-4天，员工普遍反映加班无补偿、一人多岗"
+                  </p>
+                </div>
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                  <span class="text-xs px-2 py-0.5 bg-slate-100 rounded text-slate-600">零食量贩</span>
+                  <span class="text-xs px-2 py-0.5 bg-slate-100 rounded text-slate-600">赵一鸣零食</span>
+                  <span class="text-xs px-2 py-0.5 bg-slate-100 rounded text-slate-600">连锁门店</span>
+                </div>
+              </div>
+            `;
           }
         });
-      }, 1500);
+      }, 2000);
     </script>
   </body>
 </html>
