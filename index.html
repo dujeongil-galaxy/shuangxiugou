@@ -180,9 +180,9 @@
           var voteCount = snackCard.querySelector('.bg-slate-900 .font-mono');
           if (voteCount) voteCount.textContent = '0 人已投票';
           
-          // 改整个卡片边框为C级红色，和其他C级卡片一致
-          snackCard.className = snackCard.className.replace(/border-emerald-200/g, 'border-red-200');
-          snackCard.className = snackCard.className.replace(/border-emerald-300/g, 'border-red-300');
+          // 强制改整个卡片边框为C级红色，覆盖所有绿色边框类
+          snackCard.classList.remove('border-emerald-200', 'border-emerald-300', 'border-green-200', 'border-green-300');
+          snackCard.classList.add('border-red-200', 'border-red-300');
           // 改底部推荐双体块的边框和背景为红色
           var recommendBox = snackCard.querySelector('div[class*="border-emerald-200"]');
           if (recommendBox) {
