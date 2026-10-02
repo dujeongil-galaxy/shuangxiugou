@@ -75,7 +75,8 @@ npm run build
 
 ## 推荐
 
-VPN机场推荐：https://74.82.196.10:8000/register?aff=v17mHNYv
+VPN机场推荐：
+https://74.82.196.10:8000/register?aff=v17mHNYv
 
 点击[这里](https://github.com/dujeongil-galaxy)关注我的其他项目
 
