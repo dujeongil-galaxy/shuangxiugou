@@ -21,8 +21,8 @@
   <body>
     <div id="root"></div>
     <script>
-      // 所有指向原仓库的链接都改成自己的仓库
-      setTimeout(function() {
+      // 替换所有指向原仓库的链接和按钮
+      function replaceLinksAndButtons() {
         document.querySelectorAll('a').forEach(function(a) {
           if (a.href.includes('github.com/ZhiqingHeyi/shuangxiugou')) {
             a.href = a.href.replace('github.com/ZhiqingHeyi/shuangxiugou', 'github.com/dujeongil-galaxy/shuangxiugou');
@@ -48,6 +48,8 @@
 
         var keywords = ['提交爆料', '我来提供这家', '提交审核', '提供数据'];
         document.querySelectorAll('button').forEach(function(b) {
+          // 已经是a标签就跳过
+          if (b.tagName === 'A') return;
           for (var i = 0; i < keywords.length; i++) {
             if (b.textContent.indexOf(keywords[i]) >= 0) {
               var a = document.createElement('a');
@@ -60,7 +62,7 @@
             }
           }
         });
-      }, 0);
+      }
 
       // 品牌logo映射表
       var brandLogos = {
@@ -185,6 +187,7 @@
       
       // 立刻试一次，不行就监听页面变化
       function init() {
+        replaceLinksAndButtons();
         insertSnackCard();
         replaceAllLogos();
       }
