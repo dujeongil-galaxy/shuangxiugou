@@ -122,24 +122,28 @@
         });
       }
 
-      // 自动监听页面渲染，一旦 IKEA 卡片出现立刻复制它的框架，改文字后插入
+      // 自动监听页面渲染，一旦找到C级红色卡片直接复制它的框架，改文字后插入
       function insertSnackCard() {
         if (document.querySelector('#snack-card')) return;
         
         var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
+        var cCard = null;
         var ikeaCard = null;
         cards.forEach(function(card) {
+          if (card.textContent.includes('C级') && card.textContent.includes('避雷预警')) {
+            cCard = card;
+          }
           if (card.textContent.includes('IKEA') || card.textContent.includes('宜家')) {
             ikeaCard = card;
           }
         });
         
-        if (ikeaCard) {
-          // 直接复制宜家的整个DOM框架
-          var snackCard = ikeaCard.cloneNode(true);
+        if (cCard && ikeaCard) {
+          // 直接复制现成C级红色卡片的整个DOM框架，所有样式全对
+          var snackCard = cCard.cloneNode(true);
           snackCard.id = 'snack-card';
           
-          // 只改文字内容，框架完全保留
+          // 只改文字内容，框架完全保留，不用自己调样式
           // 改品牌名
           snackCard.querySelector('h3').textContent = '赵一鸣/零食很忙';
           // 改公司名
@@ -152,11 +156,6 @@
           logoImg.alt = '零食很忙';
           logoImg.className = 'w-full h-full object-cover rounded-lg';
           logoDiv.appendChild(logoImg);
-          // 改评级徽章为C级避雷预警
-          var badge = snackCard.querySelector('span.inline-flex');
-          badge.className = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black tracking-wide bg-red-50 text-red-900 border-2 border-red-500 shadow-xs uppercase';
-          badge.querySelectorAll('svg')[0].className = 'lucide lucide-shield-x w-3.5 h-3.5 text-red-600';
-          badge.lastChild.textContent = ' C级 · 避雷预警';
           // 改工时政策
           var infoRows = snackCard.querySelectorAll('.bg-slate-50 > div');
           infoRows[0].querySelectorAll('span')[1].textContent = '月休3-4天 / 门店两班倒';
@@ -165,6 +164,8 @@
           var stats = snackCard.querySelectorAll('.bg-slate-900 .grid div div');
           stats[1].textContent = '未知';
           stats[3].textContent = '19:30';
+          // 改投票数
+          stats[0].textContent = '0';
           // 改描述
           snackCard.querySelector('.bg-slate-900 .italic').textContent = '"门店实行早晚班轮换，日均工作8-10小时，月休3-4天，节假日加班常见，一线员工需连续站立作业"';
           // 改标签
@@ -179,17 +180,10 @@
           // 改员工投票数
           var voteCount = snackCard.querySelector('.bg-slate-900 .font-mono');
           if (voteCount) voteCount.textContent = '0 人已投票';
+          // 删掉C级卡片自带的推荐双体块（赵一鸣不需要推荐其他品牌）
+          var recommendBox = snackCard.querySelector('.rounded-xl.border-2');
+          if (recommendBox) recommendBox.remove();
           
-          // 强制改整个卡片边框为C级红色，覆盖所有绿色边框类
-          snackCard.classList.remove('border-emerald-200', 'border-emerald-300', 'border-green-200', 'border-green-300');
-          snackCard.classList.add('border-red-200', 'border-red-300');
-          // 改底部推荐双体块的边框和背景为红色
-          var recommendBox = snackCard.querySelector('div[class*="border-emerald-200"]');
-          if (recommendBox) {
-            recommendBox.className = recommendBox.className.replace(/border-emerald-200/g, 'border-red-200');
-            recommendBox.className = recommendBox.className.replace(/bg-emerald-50/g, 'bg-red-50');
-            recommendBox.className = recommendBox.className.replace(/text-emerald-700/g, 'text-red-700');
-          }
           // 把新卡片插到 IKEA 后面
           ikeaCard.parentNode.insertBefore(snackCard, ikeaCard.nextSibling);
         }
