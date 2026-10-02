@@ -99,23 +99,21 @@
       function replaceAllLogos() {
         var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
         cards.forEach(function(card) {
-          // 找到品牌名
-          var h3 = card.querySelector('h3');
-          if (!h3) return;
-          var brandName = h3.textContent.trim();
           // 找到logo div
           var logoDiv = card.querySelector('.w-10.h-10.rounded-xl.bg-slate-100');
           if (!logoDiv) return;
+          // 如果已经替换过了就跳过
+          if (logoDiv.querySelector('img')) return;
+          // 用logo里的短文字作为key匹配
+          var brandShortName = logoDiv.textContent.trim();
           // 如果这个品牌有对应的logo
-          if (brandLogos[brandName]) {
-            // 如果已经替换过了就跳过
-            if (logoDiv.querySelector('img')) return;
+          if (brandLogos[brandShortName]) {
             // 清空原来的文字
             logoDiv.textContent = '';
             // 创建img标签
             var logoImg = document.createElement('img');
-            logoImg.src = brandLogos[brandName];
-            logoImg.alt = brandName;
+            logoImg.src = brandLogos[brandShortName];
+            logoImg.alt = brandShortName;
             logoImg.className = 'w-full h-full object-cover rounded-lg';
             logoDiv.appendChild(logoImg);
           }
