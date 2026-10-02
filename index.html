@@ -180,6 +180,16 @@
           var voteCount = snackCard.querySelector('.bg-slate-900 .font-mono');
           if (voteCount) voteCount.textContent = '0 人已投票';
           
+          // 改整个卡片边框为C级红色，和其他C级卡片一致
+          snackCard.className = snackCard.className.replace(/border-emerald-200/g, 'border-red-200');
+          snackCard.className = snackCard.className.replace(/border-emerald-300/g, 'border-red-300');
+          // 改底部推荐双体块的边框和背景为红色
+          var recommendBox = snackCard.querySelector('div[class*="border-emerald-200"]');
+          if (recommendBox) {
+            recommendBox.className = recommendBox.className.replace(/border-emerald-200/g, 'border-red-200');
+            recommendBox.className = recommendBox.className.replace(/bg-emerald-50/g, 'bg-red-50');
+            recommendBox.className = recommendBox.className.replace(/text-emerald-700/g, 'text-red-700');
+          }
           // 把新卡片插到 IKEA 后面
           ikeaCard.parentNode.insertBefore(snackCard, ikeaCard.nextSibling);
         }
