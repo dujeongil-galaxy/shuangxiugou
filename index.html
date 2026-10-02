@@ -152,11 +152,11 @@
           logoImg.alt = '零食很忙';
           logoImg.className = 'w-full h-full object-cover rounded-lg';
           logoDiv.appendChild(logoImg);
-          // 改评级徽章
+          // 改评级徽章为C级避雷预警
           var badge = snackCard.querySelector('span.inline-flex');
-          badge.className = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black tracking-wide bg-amber-50 text-amber-900 border-2 border-amber-500 shadow-xs uppercase';
-          badge.querySelectorAll('svg')[0].className = 'lucide lucide-triangle-alert w-3.5 h-3.5 text-amber-600';
-          badge.lastChild.textContent = ' B级 · 存疑/大小周';
+          badge.className = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black tracking-wide bg-red-50 text-red-900 border-2 border-red-500 shadow-xs uppercase';
+          badge.querySelectorAll('svg')[0].className = 'lucide lucide-shield-x w-3.5 h-3.5 text-red-600';
+          badge.lastChild.textContent = ' C级 · 避雷预警';
           // 改工时政策
           var infoRows = snackCard.querySelectorAll('.bg-slate-50 > div');
           infoRows[0].querySelectorAll('span')[1].textContent = '月休3-4天 / 门店两班倒';
