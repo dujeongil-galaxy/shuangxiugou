@@ -180,9 +180,19 @@
           // 改员工投票数
           var voteCount = snackCard.querySelector('.bg-slate-900 .font-mono');
           if (voteCount) voteCount.textContent = '0 人已投票';
-          // 删掉C级卡片自带的推荐双体块（赵一鸣不需要推荐其他品牌）
-          var recommendBox = snackCard.querySelector('.rounded-xl.border-2');
-          if (recommendBox) recommendBox.remove();
+          // 整个推荐块改成红色警示文字
+          var recommendBlock = null;
+          var allDivs = snackCard.querySelectorAll('div');
+          allDivs.forEach(function(div) {
+            if (div.textContent.includes('打工人推荐双休平替')) {
+              recommendBlock = div;
+            }
+          });
+          if (recommendBlock) {
+            recommendBlock.innerHTML = '<div style="color:#dc2626;font-weight:900;font-size:14px;">⚠️ 部分门店月休仅2天</div>';
+            recommendBlock.className = recommendBlock.className.replace(/border-emerald-200/g, 'border-red-200');
+            recommendBlock.className = recommendBlock.className.replace(/bg-emerald-50/g, 'bg-red-50');
+          }
           
           // 把新卡片插到 IKEA 后面
           ikeaCard.parentNode.insertBefore(snackCard, ikeaCard.nextSibling);
