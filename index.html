@@ -187,14 +187,19 @@
       // 通用：根据评级找模板卡片（S/A/B/C级）
       function getGradeTemplateCard(grade) {
         var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
+        var fallback = null;
+        // 兼容 "C级" 和 "C" 两种写法
+        var g = String(grade).replace('级', '').trim();
         for (var card of cards) {
           var h3 = card.querySelector('h3');
           if (!h3) continue; // 必须是公司卡片
-          if (card.textContent.includes(grade + '级') || card.textContent.includes(grade + ' 级')) {
+          if (!fallback) fallback = card;
+          if (card.textContent.includes(g + '级') || card.textContent.includes(g + ' 级')) {
             return card;
           }
         }
-        return null;
+        // 找不到对应评级时，退回第一张公司卡片当模板
+        return fallback;
       }
       
       // 通用：根据h3关键词找目标卡片
@@ -226,6 +231,12 @@
           // 克隆模板
           var newCard = templateCard.cloneNode(true);
           newCard.id = config.id;
+          
+          // 校正评级徽章（兼容徽章里的 "X级 · 描述" 结构）
+          var badgeSpan = newCard.querySelector('span.inline-flex');
+          if (badgeSpan && /[SABC]\s*级/.test(badgeSpan.textContent)) {
+            badgeSpan.textContent = badgeSpan.textContent.replace(/[SABC]\s*级/, config.grade);
+          }
           
           // 改品牌名
           newCard.querySelector('h3').textContent = config.name;
