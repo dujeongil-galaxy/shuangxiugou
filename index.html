@@ -447,6 +447,21 @@
       
       const observer = new MutationObserver(init);
       observer.observe(document.getElementById('root'), { childList: true, subtree: true });
+
+      // 只隐藏某代工烘焙食品卡片的logo，其他卡片不动
+      setInterval(function() {
+        var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
+        for (var card of cards) {
+          var h3 = card.querySelector('h3');
+          if (h3 && h3.textContent.includes('某代工烘焙食品')) {
+            var logoDiv = card.querySelector('.w-10.h-10.rounded-xl');
+            if (logoDiv && logoDiv.style.display !== 'none') {
+              logoDiv.style.display = 'none';
+            }
+            break;
+          }
+        }
+      }, 500);
     </script>
   </body>
 </html>
