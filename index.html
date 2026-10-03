@@ -124,88 +124,137 @@
         });
       }
 
-      // 自动监听页面渲染，一旦找到C级红色卡片直接复制它的框架，改文字后插入
-      function insertSnackCard() {
-        // 先删掉旧的，每次重新插，保证位置永远正确
-        var oldCard = document.querySelector('#snack-card');
-        if (oldCard) oldCard.remove();
-        
+      // ========== 自定义卡片配置区 ==========
+      // 以后加新卡片，只要在下面这个数组里加一条配置就行，其他全部自动处理
+      var customCardsConfig = [
+        {
+          id: 'snack-card',
+          name: '赵一鸣/零食很忙',
+          company: '湖南鸣鸣很忙商业连锁有限公司',
+          logo: './assets/snack-logo.png',
+          logoAlt: '零食很忙',
+          workPolicy: '月休3-4天 / 门店两班倒',
+          overtime: '节假日加班常见 / 连续站立8-10小时',
+          doubleRestRate: '未知',
+          offWorkTime: '19:30',
+          voteCount: '0',
+          desc: '"门店实行早晚班轮换，日均工作8-10小时，月休3-4天，节假日加班常见，一线员工需连续站立作业"',
+          tags: ['零食量贩', '赵一鸣零食', '连锁门店'],
+          likeCount: '0',
+          dislikeCount: '0',
+          recommendText: '⚠️ 部分门店月休仅2天',
+          recommendColor: 'red', // red=红色警示, green=绿色推荐
+          insertAfter: 'IKEA', // 插到哪个卡片后面（h3里的关键词）
+          keywords: ['赵一鸣', '零食很忙', '零食量贩', '赵一鸣零食', '连锁门店', '湖南鸣鸣很忙', '零食'],
+          category: '零食饮料',
+          grade: 'C级'
+        }
+        // 以后在这里加新卡片配置就行，格式和上面一样
+      ];
+      // ====================================
+      
+      // 通用：根据评级找模板卡片（S/A/B/C级）
+      function getGradeTemplateCard(grade) {
         var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
-        var cCard = null;
-        var ikeaCard = null;
-        cards.forEach(function(card) {
-          if (card.textContent.includes('C级') && card.textContent.includes('避雷预警')) {
-            // 必须是有h3标题的公司卡片，不能是顶部的推荐框
-            if (card.querySelector('h3')) {
-              cCard = card;
-            }
-          }
-          // 必须是有h3标题的公司卡片，h3里写的是IKEA，避免匹配到顶部推荐框
+        for (var card of cards) {
           var h3 = card.querySelector('h3');
-          if (h3 && (h3.textContent.includes('IKEA') || h3.textContent.includes('宜家'))) {
-            ikeaCard = card;
+          if (!h3) continue; // 必须是公司卡片
+          if (card.textContent.includes(grade + '级') || card.textContent.includes(grade + ' 级')) {
+            return card;
           }
+        }
+        return null;
+      }
+      
+      // 通用：根据h3关键词找目标卡片
+      function findCardByH3(keyword) {
+        var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
+        for (var card of cards) {
+          var h3 = card.querySelector('h3');
+          if (h3 && h3.textContent.includes(keyword)) {
+            return card;
+          }
+        }
+        return null;
+      }
+      
+      // 通用：插入所有自定义卡片
+      function insertAllCustomCards() {
+        // 先删掉所有旧的自定义卡片
+        customCardsConfig.forEach(function(config) {
+          var old = document.getElementById(config.id);
+          if (old) old.remove();
         });
         
-        if (cCard && ikeaCard) {
-          // 直接复制现成C级红色卡片的整个DOM框架，所有样式全对
-          var snackCard = cCard.cloneNode(true);
-          snackCard.id = 'snack-card';
+        // 遍历配置，逐个生成并插入
+        customCardsConfig.forEach(function(config) {
+          // 找对应评级的模板卡片
+          var templateCard = getGradeTemplateCard(config.grade);
+          if (!templateCard) return;
           
-          // 只改文字内容，框架完全保留，不用自己调样式
+          // 找插入位置的参考卡片
+          var refCard = findCardByH3(config.insertAfter);
+          if (!refCard) return;
+          
+          // 克隆模板
+          var newCard = templateCard.cloneNode(true);
+          newCard.id = config.id;
+          
           // 改品牌名
-          snackCard.querySelector('h3').textContent = '赵一鸣/零食很忙';
+          newCard.querySelector('h3').textContent = config.name;
           // 改公司名
-          snackCard.querySelectorAll('p')[0].textContent = '湖南鸣鸣很忙商业连锁有限公司';
-          // 改logo为图片
-          var logoDiv = snackCard.querySelector('.w-10');
+          newCard.querySelectorAll('p')[0].textContent = config.company;
+          // 改logo
+          var logoDiv = newCard.querySelector('.w-10');
           logoDiv.textContent = '';
           var logoImg = document.createElement('img');
-          logoImg.src = './assets/snack-logo.png';
-          logoImg.alt = '零食很忙';
+          logoImg.src = config.logo;
+          logoImg.alt = config.logoAlt;
           logoImg.className = 'w-full h-full object-cover rounded-lg';
           logoDiv.appendChild(logoImg);
           // 改工时政策
-          var infoRows = snackCard.querySelectorAll('.bg-slate-50 > div');
-          infoRows[0].querySelectorAll('span')[1].textContent = '月休3-4天 / 门店两班倒';
-          infoRows[1].querySelectorAll('span')[1].textContent = '节假日加班常见 / 连续站立8-10小时';
-          // 改员工指数部分
-          var stats = snackCard.querySelectorAll('.bg-slate-900 .grid div div');
-          stats[1].textContent = '未知';
-          stats[3].textContent = '19:30';
-          // 改投票数
-          stats[0].textContent = '0';
+          var infoRows = newCard.querySelectorAll('.bg-slate-50 > div');
+          infoRows[0].querySelectorAll('span')[1].textContent = config.workPolicy;
+          infoRows[1].querySelectorAll('span')[1].textContent = config.overtime;
+          // 改员工指数
+          var stats = newCard.querySelectorAll('.bg-slate-900 .grid div div');
+          stats[0].textContent = config.voteCount;
+          stats[1].textContent = config.doubleRestRate;
+          stats[3].textContent = config.offWorkTime;
           // 改描述
-          snackCard.querySelector('.bg-slate-900 .italic').textContent = '"门店实行早晚班轮换，日均工作8-10小时，月休3-4天，节假日加班常见，一线员工需连续站立作业"';
+          newCard.querySelector('.bg-slate-900 .italic').textContent = config.desc;
           // 改标签
-          var tags = snackCard.querySelectorAll('.flex-wrap span');
-          tags[0].textContent = '零食量贩';
-          tags[1].textContent = '赵一鸣零食';
-          tags[2].textContent = '连锁门店';
+          var tags = newCard.querySelectorAll('.flex-wrap span');
+          for (var i = 0; i < config.tags.length; i++) {
+            if (tags[i]) tags[i].textContent = config.tags[i];
+          }
           // 改点赞点踩数
-          var voteBtns = snackCard.querySelectorAll('.flex.items-center.gap-2 button span');
-          if (voteBtns[0]) voteBtns[0].textContent = '0';
-          if (voteBtns[1]) voteBtns[1].textContent = '0';
-          // 改员工投票数
-          var voteCount = snackCard.querySelector('.bg-slate-900 .font-mono');
-          if (voteCount) voteCount.textContent = '0 人已投票';
-          // 整个推荐块改成红色警示文字
+          var voteBtns = newCard.querySelectorAll('.flex.items-center.gap-2 button span');
+          if (voteBtns[0]) voteBtns[0].textContent = config.likeCount;
+          if (voteBtns[1]) voteBtns[1].textContent = config.dislikeCount;
+          // 改投票数
+          var voteCount = newCard.querySelector('.bg-slate-900 .font-mono');
+          if (voteCount) voteCount.textContent = config.voteCount + ' 人已投票';
+          // 改推荐块
           var recommendBlock = null;
-          var allDivs = snackCard.querySelectorAll('div');
+          var allDivs = newCard.querySelectorAll('div');
           allDivs.forEach(function(div) {
             if (div.textContent.includes('打工人推荐双休平替')) {
               recommendBlock = div;
             }
           });
           if (recommendBlock) {
-            recommendBlock.innerHTML = '<div style="color:#dc2626;font-weight:900;font-size:14px;">⚠️ 部分门店月休仅2天</div>';
-            recommendBlock.className = recommendBlock.className.replace(/border-emerald-200/g, 'border-red-200');
-            recommendBlock.className = recommendBlock.className.replace(/bg-emerald-50/g, 'bg-red-50');
+            recommendBlock.innerHTML = '<div style="font-weight:900;font-size:14px;">' + config.recommendText + '</div>';
+            if (config.recommendColor === 'red') {
+              recommendBlock.className = recommendBlock.className.replace(/border-emerald-200/g, 'border-red-200');
+              recommendBlock.className = recommendBlock.className.replace(/bg-emerald-50/g, 'bg-red-50');
+              recommendBlock.style.color = '#dc2626';
+            }
           }
           
-          // 把新卡片插到 IKEA 后面
-          ikeaCard.parentNode.insertBefore(snackCard, ikeaCard.nextSibling);
-        }
+          // 插到参考卡片后面
+          refCard.parentNode.insertBefore(newCard, refCard.nextSibling);
+        });
       }
       
       // 在Apple卡片下面插入富士康双休提示框
@@ -236,12 +285,15 @@
         }
       }
       
-      // 自定义卡片的元数据（方便搜索和筛选）
-      var customCardsMeta = {
-        'snack-card': {
-          keywords: ['赵一鸣', '零食很忙', '零食量贩', '赵一鸣零食', '连锁门店', '湖南鸣鸣很忙', '零食'],
-          category: '零食饮料',
-          grade: 'C级'
+      // 自定义卡片的元数据（从配置自动生成，不用手动维护）
+      var customCardsMeta = {};
+      customCardsConfig.forEach(function(config) {
+        customCardsMeta[config.id] = {
+          keywords: config.keywords,
+          category: config.category,
+          grade: config.grade
+        };
+      });
         }
       };
       
@@ -310,7 +362,7 @@
       // 立刻试一次，不行就监听页面变化
       function init() {
         replaceLinksAndButtons();
-        insertSnackCard();
+        insertAllCustomCards();
         replaceAllLogos();
         insertAppleNote();
         filterCustomCards();
