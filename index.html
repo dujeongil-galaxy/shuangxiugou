@@ -133,9 +133,14 @@
         var ikeaCard = null;
         cards.forEach(function(card) {
           if (card.textContent.includes('C级') && card.textContent.includes('避雷预警')) {
-            cCard = card;
+            // 必须是有h3标题的公司卡片，不能是顶部的推荐框
+            if (card.querySelector('h3')) {
+              cCard = card;
+            }
           }
-          if (card.textContent.includes('IKEA') || card.textContent.includes('宜家')) {
+          // 必须是有h3标题的公司卡片，h3里写的是IKEA，避免匹配到顶部推荐框
+          var h3 = card.querySelector('h3');
+          if (h3 && (h3.textContent.includes('IKEA') || h3.textContent.includes('宜家'))) {
             ikeaCard = card;
           }
         });
