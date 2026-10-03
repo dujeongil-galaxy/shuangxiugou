@@ -229,14 +229,101 @@
         }
       }
       
+      // 自定义卡片的元数据（方便搜索和筛选）
+      var customCardsMeta = {
+        'snack-card': {
+          keywords: ['赵一鸣', '零食很忙', '零食量贩', '赵一鸣零食', '连锁门店', '湖南鸣鸣很忙', '零食'],
+          category: '零食饮料',
+          grade: 'C级'
+        }
+      };
+      
+      // 过滤自定义卡片，跟网站的搜索和筛选保持同步
+      function filterCustomCards() {
+        // 获取当前搜索关键词
+        var searchInput = document.querySelector('input[placeholder*="搜索"]');
+        var keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
+        
+        // 获取当前选中的品类按钮（高亮的那个）
+        var activeCategory = '全部';
+        var categoryBtns = document.querySelectorAll('button');
+        categoryBtns.forEach(function(btn) {
+          var text = btn.textContent.trim();
+          if (['全部', '数码外设', '数码3C', '户外服饰', '个人护理', '运动器材', '零食饮料', '汽车用品', '互联网软件', '家电数码', '物流服务', '汽车生活', '食品饮品', '互联网服务', '服装饰品'].includes(text)) {
+            // 判断是不是选中状态（通常是背景色变深）
+            if (btn.className.includes('bg-emerald') || btn.className.includes('bg-black') || btn.className.includes('bg-gray-900')) {
+              activeCategory = text;
+            }
+          }
+        });
+        
+        // 获取当前选中的评级
+        var activeGrade = '全部评级';
+        categoryBtns.forEach(function(btn) {
+          var text = btn.textContent.trim();
+          if (['全部评级', 'S 级', 'A 级', 'B 级', 'C 级'].includes(text)) {
+            if (btn.className.includes('bg-black') || btn.className.includes('bg-gray-900')) {
+              activeGrade = text;
+            }
+          }
+        });
+        
+        // 遍历所有自定义卡片，判断显示还是隐藏
+        Object.keys(customCardsMeta).forEach(function(cardId) {
+          var card = document.getElementById(cardId);
+          if (!card) return;
+          
+          var meta = customCardsMeta[cardId];
+          var shouldShow = true;
+          
+          // 1. 检查搜索关键词
+          if (keyword) {
+            var matchKeyword = meta.keywords.some(function(k) {
+              return k.toLowerCase().includes(keyword);
+            });
+            if (!matchKeyword) shouldShow = false;
+          }
+          
+          // 2. 检查品类筛选
+          if (activeCategory !== '全部') {
+            if (meta.category !== activeCategory) shouldShow = false;
+          }
+          
+          // 3. 检查评级筛选
+          if (activeGrade !== '全部评级') {
+            var gradeShort = activeGrade.replace(' ', ''); // "S 级" -> "S级"
+            if (meta.grade !== gradeShort) shouldShow = false;
+          }
+          
+          // 显示或隐藏
+          card.style.display = shouldShow ? '' : 'none';
+        });
+      }
+      
       // 立刻试一次，不行就监听页面变化
       function init() {
         replaceLinksAndButtons();
         insertSnackCard();
         replaceAllLogos();
         insertAppleNote();
+        filterCustomCards();
       }
       init();
+      
+      // 监听搜索框输入
+      document.addEventListener('input', function(e) {
+        if (e.target && e.target.placeholder && e.target.placeholder.includes('搜索')) {
+          filterCustomCards();
+        }
+      });
+      
+      // 监听所有按钮点击（品类、评级按钮）
+      document.addEventListener('click', function(e) {
+        if (e.target && e.target.tagName === 'BUTTON') {
+          setTimeout(filterCustomCards, 100);
+        }
+      });
+      
       const observer = new MutationObserver(init);
       observer.observe(document.getElementById('root'), { childList: true, subtree: true });
     </script>
