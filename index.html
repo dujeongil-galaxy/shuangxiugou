@@ -129,6 +129,8 @@
           // 找到logo div
           var logoDiv = card.querySelector('.w-10.h-10.rounded-xl.bg-slate-100');
           if (!logoDiv) return;
+          // 图片缺失已降级为文字，跳过
+          if (logoDiv.getAttribute('data-logo-fallback')) return;
           // 如果已经替换过了就跳过
           if (logoDiv.querySelector('img')) return;
           // 用logo里的短文字作为key匹配
@@ -142,6 +144,12 @@
             logoImg.src = brandLogos[brandShortName];
             logoImg.alt = brandShortName;
             logoImg.className = 'w-full h-full object-cover rounded-lg';
+            // 图片不存在时自动恢复显示品牌文字，避免出现破图
+            logoImg.onerror = function() {
+              if (logoDiv.getAttribute('data-logo-fallback')) return;
+              logoDiv.setAttribute('data-logo-fallback', '1');
+              logoDiv.textContent = brandShortName;
+            };
             logoDiv.appendChild(logoImg);
           }
         });
@@ -203,14 +211,10 @@
       
       // 通用：插入所有自定义卡片
       function insertAllCustomCards() {
-        // 先删掉所有旧的自定义卡片
+        // 遍历配置，逐个生成并插入（已存在的卡片直接跳过，避免重复重建）
         customCardsConfig.forEach(function(config) {
-          var old = document.getElementById(config.id);
-          if (old) old.remove();
-        });
-        
-        // 遍历配置，逐个生成并插入
-        customCardsConfig.forEach(function(config) {
+          // 已存在则跳过
+          if (document.getElementById(config.id)) return;
           // 找对应评级的模板卡片
           var templateCard = getGradeTemplateCard(config.grade);
           if (!templateCard) return;
@@ -234,6 +238,12 @@
           logoImg.src = config.logo;
           logoImg.alt = config.logoAlt;
           logoImg.className = 'w-full h-full object-cover rounded-lg';
+          // 图片不存在时恢复显示品牌简称文字，避免出现破图
+          logoImg.onerror = function() {
+            if (logoDiv.getAttribute('data-logo-fallback')) return;
+            logoDiv.setAttribute('data-logo-fallback', '1');
+            logoDiv.textContent = config.logoAlt;
+          };
           logoDiv.appendChild(logoImg);
           // 改工时政策
           var infoRows = newCard.querySelectorAll('.bg-slate-50 > div');
@@ -317,8 +327,6 @@
           grade: config.grade
         };
       });
-        }
-      };
       
       // 过滤自定义卡片，跟网站的搜索和筛选保持同步
       function filterCustomCards() {
