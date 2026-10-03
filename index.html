@@ -201,11 +201,40 @@
         }
       }
       
+      // 在Apple卡片下面插入富士康双休提示框
+      function insertAppleNote() {
+        // 已经插过就跳过
+        if (document.querySelector('#apple-note')) return;
+        
+        var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
+        var appleCard = null;
+        cards.forEach(function(card) {
+          if (card.textContent.includes('Apple (苹果中国)')) {
+            appleCard = card;
+          }
+        });
+        
+        if (appleCard) {
+          // 创建黄色提示框
+          var note = document.createElement('div');
+          note.id = 'apple-note';
+          note.style.cssText = 'margin-top:12px;padding:10px 14px;background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;color:#92400e;font-size:13px;';
+          note.innerHTML = '💡 <strong>补充说明：</strong>富士康产线已于2023年实现全面双休';
+          
+          // 插到产品标签行下面
+          var tagsRow = appleCard.querySelector('.flex-wrap');
+          if (tagsRow) {
+            tagsRow.parentNode.insertBefore(note, tagsRow.nextSibling);
+          }
+        }
+      }
+      
       // 立刻试一次，不行就监听页面变化
       function init() {
         replaceLinksAndButtons();
         insertSnackCard();
         replaceAllLogos();
+        insertAppleNote();
       }
       init();
       const observer = new MutationObserver(init);
