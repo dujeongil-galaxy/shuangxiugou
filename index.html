@@ -293,11 +293,25 @@
             }
           });
           if (recommendBlock) {
-            recommendBlock.innerHTML = '<div style="font-weight:900;font-size:14px;">' + config.recommendText + '</div>';
-            if (config.recommendColor === 'red') {
-              recommendBlock.className = recommendBlock.className.replace(/border-emerald-200/g, 'border-red-200');
-              recommendBlock.className = recommendBlock.className.replace(/bg-emerald-50/g, 'bg-red-50');
-              recommendBlock.style.color = '#dc2626';
+            // 找到整块推荐容器（模板里的绿色/红色提示块），整体替换，清掉模板残留的"平替品牌"按钮（如 Philips Automotive 等）
+            var container = recommendBlock;
+            while (container && container !== newCard && container.className.indexOf('bg-emerald-50') < 0) {
+              container = container.parentElement;
+            }
+            if (container && container !== newCard) {
+              container.innerHTML = '<div style="font-weight:900;font-size:14px;">' + config.recommendText + '</div>';
+              if (config.recommendColor === 'red') {
+                container.className = container.className.replace(/border-emerald-200/g, 'border-red-200');
+                container.className = container.className.replace(/bg-emerald-50/g, 'bg-red-50');
+                container.style.color = '#dc2626';
+              }
+            } else {
+              recommendBlock.innerHTML = '<div style="font-weight:900;font-size:14px;">' + config.recommendText + '</div>';
+              if (config.recommendColor === 'red') {
+                recommendBlock.className = recommendBlock.className.replace(/border-emerald-200/g, 'border-red-200');
+                recommendBlock.className = recommendBlock.className.replace(/bg-emerald-50/g, 'bg-red-50');
+                recommendBlock.style.color = '#dc2626';
+              }
             }
           }
           
