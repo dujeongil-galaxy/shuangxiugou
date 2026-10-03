@@ -218,15 +218,20 @@
       function insertAllCustomCards() {
         // 遍历配置，逐个生成并插入（已存在的卡片直接跳过，避免重复重建）
         customCardsConfig.forEach(function(config) {
-          // 已存在则跳过
-          if (document.getElementById(config.id)) return;
-          // 找对应评级的模板卡片
-          var templateCard = getGradeTemplateCard(config.grade);
-          if (!templateCard) return;
-          
           // 找插入位置的参考卡片
           var refCard = findCardByH3(config.insertAfter);
           if (!refCard) return;
+          var existing = document.getElementById(config.id);
+          if (existing) {
+            // 卡片已存在：若位置漂移（React 重渲染可能导致），纠正到参考卡片后面
+            if (existing.previousElementSibling !== refCard) {
+              refCard.parentNode.insertBefore(existing, refCard.nextSibling);
+            }
+            return;
+          }
+          // 找对应评级的模板卡片
+          var templateCard = getGradeTemplateCard(config.grade);
+          if (!templateCard) return;
           
           // 克隆模板
           var newCard = templateCard.cloneNode(true);
