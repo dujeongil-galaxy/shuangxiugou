@@ -126,7 +126,9 @@
 
       // 自动监听页面渲染，一旦找到C级红色卡片直接复制它的框架，改文字后插入
       function insertSnackCard() {
-        if (document.querySelector('#snack-card')) return;
+        // 先删掉旧的，每次重新插，保证位置永远正确
+        var oldCard = document.querySelector('#snack-card');
+        if (oldCard) oldCard.remove();
         
         var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
         var cCard = null;
