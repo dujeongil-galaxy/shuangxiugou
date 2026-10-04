@@ -169,8 +169,8 @@
           logoAlt: '零食很忙',
           workPolicy: '月休2-4天 / 门店两班倒',
           overtime: '节假日加班常见 / 连续站立8-10小时',
-          doubleRestRate: '未知',
-          offWorkTime: '未知',
+          doubleRestRate: '0',
+          offWorkTime: '23:00',
           voteCount: '0',
           desc: '"门店实行早晚班轮换，日均工作8-10小时，月休2-4天（多数门店仅2天），晚班普遍23点后下班，节假日加班常见，一线员工需连续站立作业（多店招聘信息+员工爆料）"',
           tags: ['零食量贩', '赵一鸣零食', '连锁门店'],
@@ -191,7 +191,7 @@
           logoAlt: '茶百道',
           workPolicy: '月休不足4天',
           overtime: '旺季高峰需连轴顶班',
-          doubleRestRate: '未知',
+          doubleRestRate: '0',
           offWorkTime: '未知',
           voteCount: '0',
           desc: '"门店店员匿名反馈：月休不足4天（单休都算不上），旺季用工紧张需连轴顶班（线下一手·匿名）"',
@@ -213,7 +213,7 @@
           logoAlt: '兵立王',
           workPolicy: '月休不足4天',
           overtime: '节假日加班常见',
-          doubleRestRate: '未知',
+          doubleRestRate: '0',
           offWorkTime: '未知',
           voteCount: '0',
           desc: '"门店员工匿名反馈：月休不足4天（线下一手·匿名）"',
@@ -314,7 +314,8 @@
           infoRows[1].querySelectorAll('span')[1].textContent = config.overtime;
           // 改员工指数
           var stats = newCard.querySelectorAll('.bg-slate-900 .grid div div');
-          stats[0].textContent = config.voteCount;
+          // 注意: stats[0]=真实双休率标签, stats[1]=真实双休率值, stats[2]=平均离岗标签, stats[3]=平均离岗值
+          // 只改值不改标签, 避免把"真实双休率:"标签覆盖掉
           stats[1].textContent = config.doubleRestRate;
           stats[3].textContent = config.offWorkTime;
           // 改描述
