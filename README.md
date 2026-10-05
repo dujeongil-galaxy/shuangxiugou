@@ -2,6 +2,11 @@
 
 把老板考核你的 KPI，变成打工人考核老板的货币选票。
 
+> **项目定位：本仓库是「双休购」主站**（线上应用，GitHub Pages 部署）。请与账号下另外两个双休购相关仓库区分：
+>
+> - **shuangxiugou-guide**（[仓库](https://github.com/dujeongil-galaxy/shuangxiugou-guide)）→ 独立的「双休购 2.0」公开资料与消费决策工具站（246 条企业/品牌记录 + 证据护照评分），与本主站是不同形态的产品；
+> - **shuangxiu-go-archive**（[仓库](https://github.com/dujeongil-galaxy/shuangxiu-go-archive)）→ 第三方网站「双休GO」(shuangxiu-go.cn) 的全量静态存档备份，与本主站数据无关联。
+
 > 基于 [ZhiqingHeyi/shuangxiugou](https://github.com/ZhiqingHeyi/shuangxiugou) 修改，MIT License
 
 ## 在线使用
