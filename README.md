@@ -56,31 +56,42 @@
 # 1. 克隆项目并安装依赖
 npm install
 
-# 2. 启动本地开发服务（固定端口 http://127.0.0.1:4780）
+# 2. 启动本地开发服务
 npm run dev
 
-# 3. 构建生产包（产物在 dist/，可直接部署到 GitHub Pages / Vercel）
+# 3. 构建生产包（Next.js standalone 输出）
 npm run build
 ```
 
-开发端口固定在 4780（见 vite.config.ts），以便与浏览器插件内的官网链接保持一致。
+> ⚠️ **架构说明（2026-10 修正）**：本仓库存在两套产物，请勿混淆——
+>
+> - **线上实际部署**的是仓库根目录的**静态产物**：`index.html` + `assets/index-YthXZ9eP.js` + `assets/index-BgVofs0W.css` + `assets/*.logo`。GitHub Pages 直接发布仓库根目录，**不经过构建步骤**，推送即生效（约 60 秒）。
+> - `app/` 下的 Next.js 源码（`app/page.tsx` 等）**并未构建成线上页面**。`npm run build` 的产物也没有部署到 GitHub Pages。
+>
+> **改数据前必看**：公司卡片数据分散在两处，改错位置不生效——
+>
+> | 卡片类型 | 数据位置 |
+> |---|---|
+> | 26 张内置品牌卡（迪卡侬、瑞幸、星巴克、优衣库等） | `assets/index-YthXZ9eP.js` |
+> | 自定义卡片（`customCardsConfig` 数组：肯德基、小米、兵立王、茶百道、赵一鸣等） |根目录 `index.html` |
+>
+> 仓库根目录另有一份同名 `index-YthXZ9eP.js` 副本属**非部署文件**，改它不生效。
+>
+> 修改 `assets/` 下的 bundle 后，还需把 `index.html` 中的 `?v=N` 版本号加1 防浏览器缓存。
 
-## 🧩 浏览器插件安装说明 (/extension)
+## 🧩 浏览器插件说明
 
-1. 打开 Chrome 或 Edge 浏览器，访问 `chrome://extensions/`。
-2. 右上角开启 "开发者模式" (Developer mode)。
-3. 点击 "加载已解压的扩展程序" (Load unpacked)。
-4. 选择本项目根目录下的 `extension` 文件夹即可启用。
+> ⚠️ 插件功能（`extension/` 目录）**当前不在本仓库中**，README 历史版本中的安装说明已移除。
 
-## 🌐 在线访问与 Vercel 一键部署
+## 🌐 在线访问与部署
 
-本项目支持一键部署到 Vercel：
+本项目主站通过 **GitHub Pages** 部署：
 
-1. 登录 Vercel，选择 Add New... → Project。
-2. 导入 GitHub 仓库。
-3. Framework Preset 选择 Vite，根目录保持默认，点击 Deploy 即可上线。
+- 在线地址：https://dujeongil-galaxy.github.io/shuangxiugou/
+- 部署方式：仓库根目录静态产物直发，无需构建
+- 更新方式：修改静态产物后推送 `main` 分支，约 60 秒生效
 
-项目自带 `vercel.json` 自动处理单页应用路由重写与安全头。
+>历史版本的「Vercel 一键部署 + vercel.json」说明已移除：仓库中**不存在** `vercel.json`，且项目实际框架为 Next.js 而非 Vite。
 
 ---
 
