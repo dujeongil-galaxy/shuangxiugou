@@ -494,7 +494,28 @@
               }
             }
           }
-          
+          // 兜底：模板卡里没有"打工人推荐双休平替"绿框时（如小米克隆自B级模板），
+          // recommendBlock 为 null，上面的改造逻辑整段不执行，红框就不会出现。
+          // 此时主动创建一个与肯德基等卡片样式一致的警示框，插在标签行之后。
+          if (!recommendBlock && config.recommendText) {
+            var isRed = config.recommendColor === 'red';
+            var box = document.createElement('div');
+            box.className = 'mt-3 rounded-xl border px-3 py-2 text-xs leading-relaxed ' +
+              (isRed ? 'border-red-200 bg-red-50' : 'border-emerald-200 bg-emerald-50');
+            box.style.color = isRed ? '#dc2626' : '#047857';
+            box.style.fontWeight = '700';
+            box.style.fontSize = '14px';
+            box.innerHTML = '<div style="font-weight:900;font-size:14px;">' + config.recommendText + '</div>';
+            box.setAttribute('data-recommend-box', '1');
+            // 插到标签行（tags）后面；找不到就插到卡片末尾
+            var tagRow = newCard.querySelector('.flex.flex-wrap');
+            if (tagRow && tagRow.parentElement) {
+              tagRow.parentElement.insertBefore(box, tagRow.nextSibling);
+            } else {
+              newCard.appendChild(box);
+            }
+          }
+
           // 插到参考卡片后面
           refCard.parentNode.insertBefore(newCard, refCard.nextSibling);
         });
