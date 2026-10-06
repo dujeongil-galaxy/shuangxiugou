@@ -628,8 +628,46 @@
         replaceAllLogos();
         insertAppleNote();
         filterCustomCards();
+        scheduleHeadingFix();
       }
       init();
+
+      // SEO：补齐缺失的 H2 层级（页面只有 1 个 H1 + 36 个 H3，中间无 H2）
+      // 品牌名卡片是 H1 下的同级并列内容，语义上应为 H2。
+      //
+      // 安全要点（曾在此处翻车过，务必保留）：
+      // 1. 用 requestAnimationFrame 脱离 MutationObserver 回调栈，
+      //    否则在 observer 触发的同步执行中替换节点会与之互相干扰。
+      // 2. 每个卡片用 data 属性做幂等标记，重复触发不会重复插入。
+      // 3. 只在 h3 的直接父节点上做替换，不移动/重排任何其他节点。
+      // 4. 保留原 className，外观零变化（卡片 h3 的 class 全是 Tailwind 工具类）。
+      var headingFixScheduled = false;
+      function scheduleHeadingFix() {
+        if (headingFixScheduled) return;
+        headingFixScheduled = true;
+        requestAnimationFrame(function() {
+          headingFixScheduled = false;
+          try { fixHeadingHierarchy(); } catch (e) { /* 失败不影响页面 */ }
+        });
+      }
+
+      function fixHeadingHierarchy() {
+        var root = document.getElementById('root');
+        if (!root) return;
+        var cards = root.querySelectorAll('div.bg-white.rounded-2xl.border');
+        for (var i = 0; i < cards.length; i++) {
+          var card = cards[i];
+          if (card.getAttribute('data-h2-checked') === '1') continue;
+          var h3 = card.querySelector('h3');
+          if (!h3 || !h3.parentNode) { card.setAttribute('data-h2-checked', '1'); continue; }
+          var h2 = document.createElement('h2');
+          h2.innerHTML = h3.innerHTML;
+          h2.className = h3.className;      // 样式完全沿用
+          h2.setAttribute('data-h2-fixed', '1');
+          h3.parentNode.replaceChild(h2, h3);
+          card.setAttribute('data-h2-checked', '1');
+        }
+      }
       
       // 监听搜索框输入
       document.addEventListener('input', function(e) {

@@ -1,10 +1,14 @@
 {
-  "name": "dx-sxgo",
-  "description": "双休购，一个支持守规矩企业的精选推荐站点。",
+  "name": "shuangxiugou",
+  "description": "双休购 ·劳工友好品牌索引：查公司双休评级，避雷单休大小周996。",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/daxian-w/dx-sxgo"
+    "url": "https://github.com/dujeongil-galaxy/shuangxiugou.git"
+  },
+  "homepage": "https://dujeongil-galaxy.github.io/shuangxiugou/",
+  "bugs": {
+    "url": "https://github.com/dujeongil-galaxy/shuangxiugou/issues"
   },
   "scripts": {
     "dev": "next dev",
