@@ -142,6 +142,29 @@
           }
         });
 
+        // 在「Star on GitHub」按钮左侧插入「赞助本项目」入口，跳站内 sponsor.html
+        // 样式沿用 Star 按钮（bg-slate-900 → hover:bg-slate-800），视觉统一。
+        // 用 data 标记做幂等，避免 MutationObserver 反复触发时重复插入。
+        var starBtn = null;
+        document.querySelectorAll('a').forEach(function (a) {
+          if (a.textContent.indexOf('Star on GitHub') >= 0) starBtn = a;
+        });
+        if (starBtn && !document.getElementById('sponsor-entry-btn')) {
+          var s = document.createElement('a');
+          s.id = 'sponsor-entry-btn';
+          s.href = './sponsor.html';
+          s.className = starBtn.className;
+          s.setAttribute('aria-label', '赞助本项目');
+          s.textContent = '☕ 赞助本项目';
+          // 换掉 Star 按钮的深色底，改用站点主色，与「提交爆料」区隔开。
+          // ⚠️ 只能替换成本项目 CSS 里实际生成过的类名——assets 的 Tailwind 是
+          // 按站点用到的样式裁剪过的，bg-emerald-700 等未使用的类并不存在，
+          // 写了不生效，样式会退回 Star 按钮原本的黑色。
+          s.className = s.className.replace(/bg-slate-9\d{2}/g, 'bg-emerald-600')
+                                    .replace(/hover:bg-slate-8\d{2}/g, 'hover:bg-emerald-500');
+          starBtn.parentNode.insertBefore(s, starBtn);
+        }
+
         // 提交爆料/提供数据 按钮跳转到 issues 新建页面，预填表单
         var issueTitle = encodeURIComponent('推荐双休品牌 / 提交工时爆料');
         var issueBody = encodeURIComponent(
