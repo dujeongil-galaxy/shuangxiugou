@@ -29,7 +29,8 @@
 如果你认可这个项目，欢迎支持它继续维护：**[`sponsor.html`](https://dujeongil-galaxy.github.io/shuangxiugou/sponsor.html)**
 
 > 更推荐的做法是**提交你所在企业的真实双休数据**——这个项目的可持续性不靠赞助，靠更多人把数据补进来：
->[提交 Issues](https://github.com/dujeongil-galaxy/shuangxiugou/issues/new)
+>
+> [提交 Issues](https://github.com/dujeongil-galaxy/shuangxiugou/issues/new)
 
 ---
 
