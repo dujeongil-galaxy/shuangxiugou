@@ -358,9 +358,14 @@
         });
       }
 
-      // 当前交易所下可选的币种（ex 为空表示通用）
+      // 当前交易所下可选的币种。
+      // 含 ex 的币种只在该交易所下出现；不含 ex 的是通用币种，
+      // 但在「专属币种型交易所」（如 WEMIX PLAY）下不显示——
+      // 该所只收自己的币，不提供通用链的收款。
       function availableCoins() {
-        return COINS.filter(function (c) { return !c.ex || c.ex === selEx; });
+        var exclusive = COINS.filter(function (c) { return c.ex === selEx; });
+        if (exclusive.length) return exclusive;               // 专属模式：只显示本所币种
+        return COINS.filter(function (c) { return !c.ex; });  // 通用模式
       }
 
       function renderCoin() {
