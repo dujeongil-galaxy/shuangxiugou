@@ -278,8 +278,17 @@
           addr: '0xAFA6c5C86CcE6e404236a53724cacd9d839DC90c',
           qr: './crypto-qr/eth-erc20.png',
           min: '0.000006 ETH',
-          fee: '约 $5-20，是三条链里最贵的',
+          fee: '约 $5-20，是四条链里最贵的',
           note: '请选择 <b>ERC20 (Ethereum)</b> 网络。其他网络（BSC / Polygon 等）的 ETH 无法到账。'
+        },
+        {
+          id: 'usdc-polygon',
+          name: 'USDC (Polygon)',
+          addr: '0xAFA6c5C86CcE6e404236a53724cacd9d839DC90c',
+          qr: './crypto-qr/usdc-polygon.png',
+          min: '0.01 USDC',
+          fee: '约 $0.01，几乎可忽略',
+          note: '请选择 <b>Polygon (PoS)</b> 网络发送 USDC。地址与上方 Ethereum 相同（同为 EVM 链地址格式），但<b>币种不同</b>——发ETH 不会到账 USDC，反之亦然。'
         }
       ];
 
