@@ -120,6 +120,7 @@ https://74.82.196.10:8000/register?aff=v17mHNYv
 本项目所有数据均来源于公开司法裁判文书、各地劳动监察部门行政处罚公开信息、上市公司公开 ESG 报告及社区打工人多方交叉验证。数据仅供个人择业与日常消费偏好参考，不构成商业排他或绝对背书。
 
 如发现信息有误或需要更正，欢迎通过 GitHub Issues 提交反馈：
+
 https://github.com/dujeongil-galaxy/shuangxiugou/issues
 
 ## License
