@@ -18,7 +18,7 @@
 
 # ===== 文本文件：统一用 LF =====
 *.html text eol=lf
-*.mdtext eol=lf
+*.md   text eol=lf
 *.txt  text eol=lf
 *.json text eol=lf
 *.xml  text eol=lf
