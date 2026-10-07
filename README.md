@@ -22,11 +22,11 @@
 
 ---
 
-## ☕ 支持原作者
+## ☕ 赞助本项目
 
-本站基于 [ZhiqingHeyi/shuangxiugou](https://github.com/ZhiqingHeyi/shuangxiugou) 开源修改（MIT）搭建，**原作者的赞助收款码本站原样保留、未做任何改动**。
+本站基于 [ZhiqingHeyi/shuangxiugou](https://github.com/ZhiqingHeyi/shuangxiugou) 开源修改（MIT）搭建。
 
-认可这个项目，欢迎支持原作者继续维护：**[`sponsor.html`](https://dujeongil-galaxy.github.io/shuangxiugou/sponsor.html)**
+如果你认可这个项目，欢迎支持它继续维护：**[`sponsor.html`](https://dujeongil-galaxy.github.io/shuangxiugou/sponsor.html)**
 
 > 更推荐的做法是**提交你所在企业的真实双休数据**——这个项目的可持续性不靠赞助，靠更多人把数据补进来：[提交 Issues](https://github.com/dujeongil-galaxy/shuangxiugou/issues/new)
 
