@@ -242,12 +242,13 @@
     </p>
 
     <script>
-      // 交易所：Gate 已配置 UID；其余待补充，未配置时置灰不可选
+      // 交易所：Gate / WEMIX PLAY 已配置 UID；其余待补充，未配置时置灰不可选
       var EXCHANGES = [
         { id: 'binance', name: '币安', uid: '' },
         { id: 'huobi',   name: '火必', uid: '' },
         { id: 'okx',     name: '欧易', uid: '' },
-        { id: 'gate',    name: 'Gate', uid: '34868411' }
+        { id: 'gate',    name: 'Gate', uid: '34868411' },
+        { id: 'wemix',   name: 'WEMIX PLAY', uid: '' }
       ];
 
       // 币种：四条链各自的收款地址、最低额度与网络手续费说明
@@ -290,6 +291,16 @@
           min: '0.01 USDT',
           fee: '约 $0.01，几乎可忽略',
           note: '请务必选择 <b>Tron (TRC20)</b> 网络发送。其他网络（ERC20 / BEP20 等）的 USDT 无法到账。'
+        },
+        {
+          id: 'sol',
+          name: 'Solana (SOL)',
+          addr: 'H78WkKDWb7jtyZkHihQi1iAZmBCPJgdNjy2UckEYimXE',
+          qr: './crypto-qr/sol.png',
+          min: '0.00008567 SOL',
+          minNote: '建议四舍五入为 <b>0.000086 SOL</b>',
+          fee: '约 $0.001，几乎可忽略',
+          note: '请选择 <b>Solana</b> 网络发送。地址为 base58 格式（不是 0x 开头）。'
         }
       ];
 
@@ -353,6 +364,7 @@
         var ex = findEx(selEx);
         if (!c) return;
         var html = '最低充值额 <b>' + c.min + '</b>';
+        if (c.minNote) html += ' · ' + c.minNote;
         if (ex && ex.uid) html += ' · ' + ex.name + ' UID <b>' + ex.uid + '</b>';
         if (c.fee) html += '<br />网络手续费 <b>' + c.fee + '</b>（由转账方承担，不从到账金额中扣除，但需确保转账金额高于手续费，否则到账为零）';
         document.getElementById('meta').innerHTML = html;
