@@ -1,0 +1,25 @@
+# ===== 二进制文件：禁止任何换行符转换 =====
+# 这些是构建产物/图片，必须按原样部署。
+# 历史上因缺少本文件，Git 的 autocrlf 把 bundle 里的 \n 转成 \r\n，
+# 导致线上文件与仓库内容不一致（曾出现 343991 vs 344001 字节）。
+*.js   -text
+*.css  -text
+*.svg  -text
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.eot  binary
+
+# ===== 文本文件：统一用 LF =====
+*.html text eol=lf
+*.mdtext eol=lf
+*.txt  text eol=lf
+*.json text eol=lf
+*.xml  text eol=lf
+*.mjs  text eol=lf
