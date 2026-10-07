@@ -18,6 +18,17 @@
 ## 📋 数据核实文档
 
 - [员工实测数据核实修改清单（2026年10月）](docs-2026年10月-员工实测数据核实修改清单.md)：31 张品牌卡「真实双休率 / 平均下班」逐卡证据核实记录，含旧值→新值、证据来源与置信度标注
+- [仓库维护说明（MAINTAINING.md）](MAINTAINING.md)：本仓库 fork 后的改动记录、部署架构要点与已知遗留问题
+
+---
+
+## ☕ 支持原作者
+
+本站基于 [ZhiqingHeyi/shuangxiugou](https://github.com/ZhiqingHeyi/shuangxiugou) 开源修改（MIT）搭建，**原作者的赞助收款码本站原样保留、未做任何改动**。
+
+认可这个项目，欢迎支持原作者继续维护：**[`sponsor.html`](https://dujeongil-galaxy.github.io/shuangxiugou/sponsor.html)**
+
+> 更推荐的做法是**提交你所在企业的真实双休数据**——这个项目的可持续性不靠赞助，靠更多人把数据补进来：[提交 Issues](https://github.com/dujeongil-galaxy/shuangxiugou/issues/new)
 
 ---
 
@@ -108,10 +119,6 @@ npm run build
 ---
 
 ## 推荐
-
-VPN机场推荐：
-
-https://74.82.196.10:8000/register?aff=v17mHNYv
 
 点击[这里](https://github.com/dujeongil-galaxy)关注我的其他项目
 

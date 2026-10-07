@@ -194,7 +194,26 @@ if (recommendBlock) { /* 替换成 recommendText */ }
 
 ---
 
-## 七、开发环境
+## 七、⛔ 不要删除原作者的赞助入口
+
+以下文件属于**原作者 ZhiqingHeyi 本人**，是其在 MIT 开源项目中的正当权益，**Fork 方无权删除**：
+
+| 文件 | 用途 | 创建者 |
+|---|---|---|
+| `sponsor-support.jpg` | 原作者赞助收款码 | `xc1128` @ `14bb29f` |
+| `contact-developer-qr.jpg` | 联系开发者二维码 | `xc1128` @ `14bb29f` |
+| `company-qrs/qianren.png` | 名单中「仟人」企业二维码 | `xc1128` @ `14bb29f` |
+| `sponsor.html` | 静态赞助页（因 `app/` 未构建而手写） | 本仓库维护者 |
+
+**这段历史的教训**：本仓库曾把这批文件当作「商业化功能」整体删除（提交 `dbbbe4b`/`e3c9209`/`0b66013`/`d66253c`/`2c9b77a`），属于误伤，已恢复。
+
+判断标准：**原作者本人的收款码与联系方式 ≠ 需要清理的商业化推广**。前者是权益，后者才是可以移除的内容。README 里的第三方推广链接（如 VPN 机场推荐）已移除，那是另一回事。
+
+**注意**：`sponsor.html` 是手写静态页，与 `app/sponsor/page.tsx` 并存。线上部署的是前者，改动请改 `sponsor.html`。
+
+---
+
+## 八、开发环境
 
 ```bash
 npm install
@@ -209,29 +228,33 @@ npm run lint    # 等同 tsc --noEmit
 
 ---
 
-## 八、已知遗留问题
+## 九、已知遗留问题
 
 | 问题 | 现状 | 影响 |
 |---|---|---|
 | 纯客户端渲染 | 已有 noscript 兜底 | 收录速度仍慢，H1/H2/正文对爬虫依赖 JS |
 | `app/` 源码与线上产物脱节 | 未同步 | 源码重建会覆盖线上数据，改动须走静态产物 |
-| `/contact-developer`、`/sponsor` 页面 | 源码存在但未构建，线上 404 | 首页无入口链接，用户访问不到 |
+| `app/contact-developer`、`app/sponsor` | 源码存在但未构建，线上走 `sponsor.html` 静态页 | 二者并存，改动勿改错位置 |
 | 静态产物手工程度高 | 无 CI | 每次改数据需手工提交 + 递增 `?v=N` |
+| 运行时补丁无自动校验 | 未解决 | 静默失效无法自动发现（详见 `MAINTAINING.md` 第五节） |
 
 ---
 
-## 九、一页速查
+## 十、一页速查
 
 - [ ] 读完本文的**数据合规**部分
 - [ ] 保留 `LICENSE.md` 中原作者版权声明
 - [ ] 保留站内免责声明
+- [ ] **不要删除原作者的赞助入口**（见第七节）
 - [ ] 改数据前先读核实清单文档，确认口径定义
 - [ ] 改内置卡 → `assets/index-YthXZ9eP.js` + 递增 `index.html` 的 `?v=N`
 - [ ] 改自定义卡 → 根目录 `index.html` 的 `customCardsConfig`
+- [ ] 定位卡片元素 → `querySelector('h2') || querySelector('h3')`，只查 h3 会静默失效
 - [ ] 不要动根目录那份同名 js 副本
 - [ ] 不要 `npm run build` 后部署（会覆盖线上数据）
 - [ ] 改运行时 DOM 逻辑后，用无头浏览器 dump DOM 验证渲染结果
 - [ ] 要恢复「发布交流」功能 → 删掉 `index.html` 里的 `discussion-to-404.js` script 行
+- [ ] 接手前先看 [`MAINTAINING.md`](MAINTAINING.md)，了解历史改动与遗留问题
 
 ---
 
