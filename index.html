@@ -370,8 +370,9 @@
         // 兼容 "C级" 和 "C" 两种写法
         var g = String(grade).replace('级', '').trim();
         for (var card of cards) {
-          var h3 = card.querySelector('h3');
-          if (!h3) continue; // 必须是公司卡片
+          // h2/h3 都要查：SEO 修复会把 h3 换成 h2
+          var title = card.querySelector('h2') || card.querySelector('h3');
+          if (!title) continue; // 必须是公司卡片
           if (!fallback) fallback = card;
           if (card.textContent.includes(g + '级') || card.textContent.includes(g + ' 级')) {
             return card;
@@ -382,11 +383,13 @@
       }
       
       // 通用：根据h3关键词找目标卡片
+      // 注意：SEO 的 fixHeadingHierarchy() 会把 h3 换成 h2，
+      // 所以这里必须 h2/h3 都查，否则 H2 修复上线后定位全部失配。
       function findCardByH3(keyword) {
         var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
         for (var card of cards) {
-          var h3 = card.querySelector('h3');
-          if (h3 && h3.textContent.includes(keyword)) {
+          var title = card.querySelector('h2') || card.querySelector('h3');
+          if (title && title.textContent.includes(keyword)) {
             return card;
           }
         }
@@ -422,8 +425,9 @@
             badgeSpan.textContent = badgeSpan.textContent.replace(/[SABC]\s*级/, config.grade);
           }
           
-          // 改品牌名
-          newCard.querySelector('h3').textContent = config.name;
+          // 改品牌名（h2/h3 都要查：SEO 修复会把 h3 换成 h2）
+          var nameEl = newCard.querySelector('h2') || newCard.querySelector('h3');
+          if (nameEl) nameEl.textContent = config.name;
           // 改公司名
           newCard.querySelectorAll('p')[0].textContent = config.company;
           // 改logo
@@ -686,18 +690,27 @@
       const observer = new MutationObserver(init);
       observer.observe(document.getElementById('root'), { childList: true, subtree: true });
 
-      // 只隐藏某代工烘焙食品卡片的logo，其他卡片不动
+      // 「某代工烘焙食品」没有公开 logo：把占位块改成纯白，在白色卡片上等于隐形，
+      // 同时保留 40px 占位，让标题与相邻卡片的左对齐位置保持一致。
+      //
+      //⚠️ 匹配标题时必须同时查 h2 和 h3：
+      //    fixHeadingHierarchy() 会把卡片里的 h3 全部替换成 h2（补SEO 层级），
+      //    早期这段只查 h3，结果 H2 修复上线后这里就静默失效了，
+      //    灰色占位块一直露在外面。改这段前先确认标题标签实际是哪个。
       setInterval(function() {
         var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
         for (var card of cards) {
-          var h3 = card.querySelector('h3');
-          if (h3 && h3.textContent.includes('某代工烘焙食品')) {
-            var logoDiv = card.querySelector('.w-10.h-10.rounded-xl');
-            if (logoDiv && logoDiv.style.display !== 'none') {
-              logoDiv.style.display = 'none';
-            }
-            break;
-          }
+          var title = card.querySelector('h2') || card.querySelector('h3');
+          if (!title || !title.textContent.includes('某代工烘焙食品')) continue;
+
+          var logoDiv = card.querySelector('.w-10.h-10.rounded-xl');
+          if (!logoDiv || logoDiv.getAttribute('data-blank-logo') === '1') break;
+
+          logoDiv.setAttribute('data-blank-logo', '1');
+          logoDiv.textContent = '';                // 清掉占位字母
+          logoDiv.style.background = 'transparent'; // 盖掉 bg-slate-100
+          logoDiv.style.borderColor = 'transparent';// 盖掉 border-slate-200
+          break;
         }
       }, 500);
     </script>
