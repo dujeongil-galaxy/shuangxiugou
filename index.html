@@ -142,7 +142,7 @@
           }
         });
 
-        // 在「Star on GitHub」按钮左侧插入「赞助本项目」入口，跳站内 sponsor.html
+        // 在「Star on GitHub」按钮右侧插入「赞助本项目」入口，跳站内 sponsor.html
         // 样式沿用 Star 按钮（bg-slate-900 → hover:bg-slate-800），视觉统一。
         // 用 data 标记做幂等，避免 MutationObserver 反复触发时重复插入。
         var starBtn = null;
@@ -162,7 +162,8 @@
           // 写了不生效，样式会退回 Star 按钮原本的黑色。
           s.className = s.className.replace(/bg-slate-9\d{2}/g, 'bg-emerald-600')
                                     .replace(/hover:bg-slate-8\d{2}/g, 'hover:bg-emerald-500');
-          starBtn.parentNode.insertBefore(s, starBtn);
+          // 插到 Star 按钮之后（右侧），与「Star | 赞助」的阅读顺序一致
+          starBtn.parentNode.insertBefore(s, starBtn.nextSibling);
         }
 
         // 提交爆料/提供数据 按钮跳转到 issues 新建页面，预填表单
