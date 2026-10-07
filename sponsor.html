@@ -20,8 +20,8 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 22px;
-        padding: 48px 20px;
+        gap: 20px;
+        padding: 44px 20px;
         background: #f8fafc;
         color: #1f2937;
         font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
@@ -48,30 +48,114 @@
       }
       .origin {
         margin: 0;
-        max-width: 620px;
+        max-width: 640px;
         font-size: 15px;
         color: #4b5563;
       }
       .origin a { color: #0f766e; }
-      .card {
-        padding: 18px;
+
+      /* ===== 收款面板 ===== */
+      .panel {
+        width: 100%;
+        max-width: 452px;
+        padding: 20px;
         border: 1px solid #e5e7eb;
         border-radius: 16px;
         background: #fff;
         box-shadow: 0 8px 28px rgba(15, 118, 110, .08);
+        text-align: left;
       }
-      .card img {
+      .field + .field { margin-top: 18px; }
+      .label {
         display: block;
-        width: min(320px, 72vw);
-        height: auto;
-        border-radius: 10px;
+        margin-bottom: 9px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #374151;
       }
-      .caption {
-        margin: 0;
-        max-width: 560px;
-        font-size: 14px;
+      .opts { display: flex; flex-wrap: wrap; gap: 8px; }
+      .opt {
+        padding: 8px 15px;
+        border: 1px solid #e5e7eb;
+        border-radius: 9px;
+        background: #f9fafb;
         color: #4b5563;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all .15s ease;
+        font-family: inherit;
       }
+      .opt:hover:enabled { border-color: #5eead4; background: #f0fdfa; }
+      .opt[aria-pressed="true"] {
+        border-color: #0f766e;
+        background: #0f766e;
+        color: #fff;
+        font-weight: 600;
+      }
+      .opt:disabled { opacity: .38; cursor: not-allowed; }
+
+      .qr {
+        display: block;
+        width: 100%;
+        max-width: 262px;
+        height: auto;
+        margin: 18px auto 0;
+        padding: 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #fff;
+      }
+      .addr {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 14px 0 0;
+        padding: 11px 13px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        background: #f9fafb;
+      }
+      .addr code {
+        flex: 1;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #1f2937;
+        word-break: break-all;
+        text-align: left;
+      }
+      .copy {
+        flex-shrink: 0;
+        padding: 5px 11px;
+        border: 1px solid #0f766e;
+        border-radius: 7px;
+        background: #fff;
+        color: #0f766e;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all .15s ease;
+      }
+      .copy:hover { background: #0f766e; color: #fff; }
+      .meta {
+        margin: 12px 0 0;
+        font-size: 13px;
+        color: #6b7280;
+      }
+      .meta b { color: #374151; }
+      .chain-note {
+        margin: 12px 0 0;
+        padding: 10px 12px;
+        border-radius: 9px;
+        background: #fef3c7;
+        color: #92400e;
+        font-size: 12.5px;
+        line-height: 1.65;
+        text-align: left;
+      }
+
       .actions {
         display: flex;
         flex-wrap: wrap;
@@ -102,7 +186,7 @@
       .note {
         margin: 0;
         max-width: 640px;
-        padding-top: 20px;
+        padding-top: 18px;
         border-top: 1px solid #e5e7eb;
         font-size: 13px;
         color: #6b7280;
@@ -121,13 +205,27 @@
       负责。
     </p>
 
-    <div class="card">
-      <img src="./sponsor-support.jpg" alt="本项目维护者收款码" />
+    <div class="panel">
+      <div class="field">
+        <span class="label">选择交易所</span>
+        <div class="opts" id="exOpts" role="group" aria-label="交易所"></div>
+      </div>
+
+      <div class="field">
+        <span class="label">选择币种 / 链</span>
+        <div class="opts" id="coinOpts" role="group" aria-label="币种"></div>
+      </div>
+
+      <img class="qr" id="qr" alt="收款码" />
+
+      <div class="addr">
+        <code id="addr"></code>
+        <button class="copy" id="copy" type="button">复制</button>
+      </div>
+
+      <p class="meta" id="meta"></p>
+      <p class="chain-note" id="note"></p>
     </div>
-    <p class="caption">
-      扫码支持本站的持续维护与数据核实<br />
-      <span style="color:#9ca3af;font-size:13px;">该收款码归维护者 dujeongil-galaxy 所有，与上游原作者无资金关系</span>
-    </p>
 
     <div class="actions">
       <a class="btn btn-primary" href="./">返回首页查双休</a>
@@ -142,5 +240,136 @@
       <br />
       这些数据全部由维护者逐条核实公开来源后录入，<strong>维护者的核实工作离不开这些支持</strong>。
     </p>
+
+    <script>
+      // 交易所：Gate 已配置 UID；其余待补充，未配置时置灰不可选
+      var EXCHANGES = [
+        { id: 'binance', name: '币安', uid: '' },
+        { id: 'huobi',   name: '火必', uid: '' },
+        { id: 'okx',     name: '欧易', uid: '' },
+        { id: 'gate',    name: 'Gate', uid: '34868411' }
+      ];
+
+      // 币种：三条链各自的收款地址与最低额度
+      var COINS = [
+        {
+          id: 'usdt-trc20',
+          name: 'USDT (Tron-TRC20)',
+          addr: 'TRyy3C668REPBGo2dDU1yiREdCyegFqjRN',
+          qr: './crypto-qr/usdt-trc20.png',
+          min: '0.01 USDT',
+          note: '请务必选择 <b>Tron (TRC20)</b> 网络发送。其他网络（ERC20 / BEP20 等）的 USDT 无法到账。'
+        },
+        {
+          id: 'btc-brc20',
+          name: 'Bitcoin (BRC20)',
+          addr: '1Kzj4hEpcroaHfCyfKy8iNsRHVHopjrmQy',
+          qr: './crypto-qr/btc-brc20.png',
+          min: '0.000006 BTC',
+          note: '地址以 <b>1</b> 开头，为原生 SegWit 地址。若你持有的是 BRC20 代币，请确认钱包支持该网络。'
+        },
+        {
+          id: 'eth-erc20',
+          name: 'Ethereum (ERC20)',
+          addr: '0xAFA6c5C86CcE6e404236a53724cacd9d839DC90c',
+          qr: './crypto-qr/eth-erc20.png',
+          min: '0.000006 ETH',
+          note: '请选择 <b>ERC20 (Ethereum)</b> 网络。其他网络（BSC / Polygon 等）的 ETH 无法到账。'
+        }
+      ];
+
+      var selEx = 'gate';
+      var selCoin = 'usdt-trc20';
+
+      function findEx(id) {
+        for (var i = 0; i < EXCHANGES.length; i++) if (EXCHANGES[i].id === id) return EXCHANGES[i];
+        return null;
+      }
+      function findCoin(id) {
+        for (var i = 0; i < COINS.length; i++) if (COINS[i].id === id) return COINS[i];
+        return null;
+      }
+
+      function renderEx() {
+        var box = document.getElementById('exOpts');
+        box.innerHTML = '';
+        EXCHANGES.forEach(function (ex) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'opt';
+          b.textContent = ex.name;
+          if (!ex.uid) {
+            b.disabled = true;          // 未填 UID 的交易所暂不可选
+            b.title = '待配置';
+          } else {
+            b.setAttribute('aria-pressed', selEx === ex.id ? 'true' : 'false');
+            b.onclick = function () { selEx = ex.id; renderEx(); renderMeta(); };
+          }
+          box.appendChild(b);
+        });
+      }
+
+      function renderCoin() {
+        var box = document.getElementById('coinOpts');
+        box.innerHTML = '';
+        COINS.forEach(function (c) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'opt';
+          b.textContent = c.name;
+          b.setAttribute('aria-pressed', selCoin === c.id ? 'true' : 'false');
+          b.onclick = function () { selCoin = c.id; renderCoin(); renderCoinInfo(); };
+          box.appendChild(b);
+        });
+      }
+
+      function renderCoinInfo() {
+        var c = findCoin(selCoin);
+        if (!c) return;
+        document.getElementById('qr').src = c.qr;
+        document.getElementById('qr').alt = c.name + ' 收款码';
+        document.getElementById('addr').textContent = c.addr;
+        document.getElementById('note').innerHTML = c.note;
+        renderMeta();
+      }
+
+      function renderMeta() {
+        var c = findCoin(selCoin);
+        var ex = findEx(selEx);
+        if (!c) return;
+        var html = '最低充值额 <b>' + c.min + '</b>';
+        if (ex && ex.uid) html += ' · ' + ex.name + ' UID <b>' + ex.uid + '</b>';
+        document.getElementById('meta').innerHTML = html;
+      }
+
+      document.getElementById('copy').onclick = function () {
+        var c = findCoin(selCoin);
+        var btn = this;
+        function done() {
+          btn.textContent = '已复制';
+          setTimeout(function () { btn.textContent = '复制'; }, 1600);
+        }
+        function fallback() {
+          var ta = document.createElement('textarea');
+          ta.value = c.addr;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); done(); }
+          catch (e) { btn.textContent = '请手动复制'; }
+          document.body.removeChild(ta);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(c.addr).then(done, fallback);
+        } else {
+          fallback();
+        }
+      };
+
+      renderEx();
+      renderCoin();
+      renderCoinInfo();
+    </script>
   </body>
 </html>
