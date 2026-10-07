@@ -24,11 +24,11 @@
 
 ## ☕ 赞助本项目
 
-本站基于 [ZhiqingHeyi/shuangxiugou](https://github.com/ZhiqingHeyi/shuangxiugou) 开源修改（MIT）搭建。
+本站基于 [ZhiqingHeyi/shuangxiugou](https://github.com/ZhiqingHeyi/shuangxiugou) 开源项目（MIT License）**二次开发**搭建，原作者的版权声明与署名完整保留。
 
-如果你认可这个项目，欢迎支持它继续维护：**[`sponsor.html`](https://dujeongil-galaxy.github.io/shuangxiugou/sponsor.html)**
+目前的二次开发、数据核实与日常维护由 **[dujeongil-galaxy](https://github.com/dujeongil-galaxy)** 负责。如果你认可这个项目，欢迎赞助支持：**[`sponsor.html`](https://dujeongil-galaxy.github.io/shuangxiugou/sponsor.html)**
 
-> 更推荐的做法是**提交你所在企业的真实双休数据**——这个项目的可持续性不靠赞助，靠更多人把数据补进来：
+> 同样欢迎**提交你所在企业的真实双休数据**——数据核实是这个项目最核心的工作：
 >
 > [提交 Issues](https://github.com/dujeongil-galaxy/shuangxiugou/issues/new)
 

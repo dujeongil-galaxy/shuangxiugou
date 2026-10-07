@@ -3,6 +3,9 @@ MIT License
 Copyright (c) 2026 ZhiqingHeyi
 Copyright (c) 2026 dujeongil-galaxy (修改版)
 
+本仓库为 ZhiqingHeyi/shuangxiugou 的二次开发版本，原作者版权声明完整保留。
+自2026-10 起由 dujeongil-galaxy 负责二次开发与日常维护。
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
