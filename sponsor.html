@@ -250,19 +250,11 @@
         { id: 'gate',    name: 'Gate', uid: '34868411' }
       ];
 
-      // 币种：三条链各自的收款地址、最低额度与网络手续费说明
+      // 币种：四条链各自的收款地址、最低额度与网络手续费说明
       // fee 为该链的典型手续费区间，用于提醒用户「到账金额需自行覆盖网络手续费」。
       // ⚠️ 手续费会随拥堵波动，这里是量级参考值，实际以转账时链上显示为准。
+      // 排列顺序即页面上的按钮顺序：BTC / ETH / POLY / TRC
       var COINS = [
-        {
-          id: 'usdt-trc20',
-          name: 'USDT (Tron-TRC20)',
-          addr: 'TRyy3C668REPBGo2dDU1yiREdCyegFqjRN',
-          qr: './crypto-qr/usdt-trc20.png',
-          min: '0.01 USDT',
-          fee: '约 $0.01，几乎可忽略',
-          note: '请务必选择 <b>Tron (TRC20)</b> 网络发送。其他网络（ERC20 / BEP20 等）的 USDT 无法到账。'
-        },
         {
           id: 'btc-brc20',
           name: 'Bitcoin (BRC20)',
@@ -288,12 +280,21 @@
           qr: './crypto-qr/usdc-polygon.png',
           min: '0.01 USDC',
           fee: '约 $0.01，几乎可忽略',
-          note: '请选择 <b>Polygon (PoS)</b> 网络发送 USDC。地址与上方 Ethereum 相同（同为 EVM 链地址格式），但<b>币种不同</b>——发ETH 不会到账 USDC，反之亦然。'
+          note: '请选择 <b>Polygon (PoS)</b> 网络发送 USDC。'
+        },
+        {
+          id: 'usdt-trc20',
+          name: 'USDT (Tron-TRC20)',
+          addr: 'TRyy3C668REPBGo2dDU1yiREdCyegFqjRN',
+          qr: './crypto-qr/usdt-trc20.png',
+          min: '0.01 USDT',
+          fee: '约 $0.01，几乎可忽略',
+          note: '请务必选择 <b>Tron (TRC20)</b> 网络发送。其他网络（ERC20 / BEP20 等）的 USDT 无法到账。'
         }
       ];
 
       var selEx = 'gate';
-      var selCoin = 'usdt-trc20';
+      var selCoin = 'btc-brc20';
 
       function findEx(id) {
         for (var i = 0; i < EXCHANGES.length; i++) if (EXCHANGES[i].id === id) return EXCHANGES[i];
