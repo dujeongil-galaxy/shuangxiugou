@@ -183,7 +183,18 @@ if (recommendBlock) { /* 替换成 recommendText */ }
 
 ---
 
-## 六、开发环境
+## 六、讨论广场「发布交流」：功能暂未开放
+
+`discussion-to-404.js` 在运行时把弹窗里的「发布交流」按钮替换成指向 `404.html` 的 `<a>`。
+
+- **为什么用MutationObserver**：弹窗是点击「匿名发帖交流」后才渲染的，初始 DOM 里没有该按钮。
+- **为什么改href 而不是加事件监听**：href 是浏览器原生行为，不依赖 React 19 的事件代理落点，最可靠。
+- **它替代的是什么**：原表单只把内容写进 React 本地 state（刷新即丢），站点无后端，收不到任何提交。曾改跳 GitHub Issues 预填表单，现决定暂缓——宁可关掉，也不做收不到数据的假功能。
+- **恢复该功能时**：删掉 `index.html` 里`./discussion-to-404.js?v=1` 这行 script 即可，原始表单仍在 bundle 里。
+
+---
+
+## 七、开发环境
 
 ```bash
 npm install
@@ -198,7 +209,7 @@ npm run lint    # 等同 tsc --noEmit
 
 ---
 
-## 七、已知遗留问题
+## 八、已知遗留问题
 
 | 问题 | 现状 | 影响 |
 |---|---|---|
@@ -209,7 +220,7 @@ npm run lint    # 等同 tsc --noEmit
 
 ---
 
-## 八、一页速查
+## 九、一页速查
 
 - [ ] 读完本文的**数据合规**部分
 - [ ] 保留 `LICENSE.md` 中原作者版权声明
@@ -220,6 +231,7 @@ npm run lint    # 等同 tsc --noEmit
 - [ ] 不要动根目录那份同名 js 副本
 - [ ] 不要 `npm run build` 后部署（会覆盖线上数据）
 - [ ] 改运行时 DOM 逻辑后，用无头浏览器 dump DOM 验证渲染结果
+- [ ] 要恢复「发布交流」功能 → 删掉 `index.html` 里的 `discussion-to-404.js` script 行
 
 ---
 
