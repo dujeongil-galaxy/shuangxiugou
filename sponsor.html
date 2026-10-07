@@ -248,13 +248,14 @@
         { id: 'huobi',   name: '火必', uid: '' },
         { id: 'okx',     name: '欧易', uid: '' },
         { id: 'gate',    name: 'Gate', uid: '34868411' },
-        { id: 'wemix',   name: 'WEMIX PLAY', uid: '' }
+        // 个人钱包收款，无需交易所 UID
+        { id: 'wemix',   name: 'WEMIX PLAY', uid: null, noUid: true }
       ];
 
-      // 币种：四条链各自的收款地址、最低额度与网络手续费说明
+      // 币种：各链的收款地址、最低额度与网络手续费说明
       // fee 为该链的典型手续费区间，用于提醒用户「到账金额需自行覆盖网络手续费」。
       // ⚠️ 手续费会随拥堵波动，这里是量级参考值，实际以转账时链上显示为准。
-      // 排列顺序即页面上的按钮顺序：BTC / ETH / POLY / TRC
+      // ex: 仅该交易所有效的币种；未标注则所有交易所均显示
       var COINS = [
         {
           id: 'btc-brc20',
@@ -311,6 +312,16 @@
           minNote: '建议四舍五入为 <b>0.000,922 GT</b>',
           fee: '约 $0.001，几乎可忽略',
           note: '<b>请勿向此地址充值非 GT 链的 GT，否则资产将不可找回。</b>请选择 <b>GT</b> 网络发送（注意不是 0x 开头的地址）。'
+        },
+        {
+          id: 'wemix',
+          ex: 'wemix',
+          name: 'WEMIX',
+          addr: '0xAFA6c5C86CcE6e404236a53724cacd9d839DC90c',
+          qr: './crypto-qr/wemix.png',
+          min: null,
+          fee: '以 WEMIX PLAY 实际显示为准',
+          note: '只能接收 <b>WEMIX PLAY 支持的代币</b>。接收其他网络的代币可能会导致<b>资产丢失</b>（暂不支持 MetaMask 跨链转账）。'
         }
       ];
 
@@ -334,21 +345,33 @@
           b.type = 'button';
           b.className = 'opt';
           b.textContent = ex.name;
-          if (!ex.uid) {
-            b.disabled = true;          // 未填 UID 的交易所暂不可选
+          // uid 为空且未标 noUid = 待配置（置灰）；标了 noUid = 个人钱包（可选）
+          var pending = !ex.uid && !ex.noUid;
+          if (pending) {
+            b.disabled = true;
             b.title = '待配置';
           } else {
             b.setAttribute('aria-pressed', selEx === ex.id ? 'true' : 'false');
-            b.onclick = function () { selEx = ex.id; renderEx(); renderMeta(); };
+            b.onclick = function () { selEx = ex.id; renderEx(); renderCoin(); renderCoinInfo(); };
           }
           box.appendChild(b);
         });
       }
 
+      // 当前交易所下可选的币种（ex 为空表示通用）
+      function availableCoins() {
+        return COINS.filter(function (c) { return !c.ex || c.ex === selEx; });
+      }
+
       function renderCoin() {
+        var list = availableCoins();
+        // 当前选中的币种在切换交易所后可能不可用（如 WEMIX 仅 WEMIX PLAY 可用）
+        if (!list.some(function (c) { return c.id === selCoin; })) {
+          selCoin = list.length ? list[0].id : null;
+        }
         var box = document.getElementById('coinOpts');
         box.innerHTML = '';
-        COINS.forEach(function (c) {
+        list.forEach(function (c) {
           var b = document.createElement('button');
           b.type = 'button';
           b.className = 'opt';
@@ -373,10 +396,16 @@
         var c = findCoin(selCoin);
         var ex = findEx(selEx);
         if (!c) return;
-        var html = '最低充值额 <b>' + c.min + '</b>';
-        if (c.minNote) html += ' · ' + c.minNote;
-        if (ex && ex.uid) html += ' · ' + ex.name + ' UID <b>' + ex.uid + '</b>';
-        if (c.fee) html += '<br />网络手续费 <b>' + c.fee + '</b>（由转账方承担，不从到账金额中扣除，但需确保转账金额高于手续费，否则到账为零）';
+        // min / minNote / fee 均为可选：未配置 min 时不显示「最低充值额」这一项
+        var parts = [];
+        if (c.min) {
+          parts.push('最低充值额 <b>' + c.min + '</b>');
+          if (c.minNote) parts.push(c.minNote);
+        }
+        // 只有交易所账号才显示 UID；个人钱包收款（noUid）不显示
+        if (ex && ex.uid) parts.push(ex.name + ' UID <b>' + ex.uid + '</b>');
+        var html = parts.join(' · ');
+        if (c.fee) html += (html ? '<br />' : '') + '网络手续费 <b>' + c.fee + '</b>（由转账方承担，不从到账金额中扣除，但需确保转账金额高于手续费，否则到账为零）';
         document.getElementById('meta').innerHTML = html;
       }
 
