@@ -156,15 +156,39 @@
         text-align: center;
       }
       .invite-box.show { display: block; }
-      .invite-link {
-        display: inline-block;
+      .invite-lead {
+        margin: 0;
         color: #0f766e;
         font-size: 14px;
         font-weight: 600;
-        text-decoration: none;
-        border-bottom: 1px solid #5eead4;
+        line-height: 1.6;
       }
-      .invite-link:hover { color: #115e59; border-bottom-color: #115e59; }
+      /* 返利明细：纯文本一行，不做成卡片 */
+      .invite-rebate {
+        margin: 8px 0 0;
+        font-size: 12.5px;
+        color: #6b7280;
+        line-height: 1.7;
+      }
+      .invite-rebate b { color: #0f766e; }
+
+      /* 独立的行动按钮 */
+      .invite-btn {
+        display: block;
+        margin: 11px 0 0;
+        padding: 11px 18px;
+        border-radius: 9px;
+        background: #0f766e;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(15, 118, 110, .22);
+        transition: background .15s ease;
+      }
+      .invite-btn:hover { background: #115e59; }
+
       .invite-note {
         margin: 7px 0 0;
         font-size: 12.5px;
@@ -210,46 +234,6 @@
         border: 1px solid #99f6e4;
       }
       .btn-ghost:hover { background: #f0fdfa; transform: translateY(-1px); }
-      /* 返佣明细：仅选中 Gate 时显示 */
-      .rebate-box {
-        display: none;                /* 默认隐藏，由 JS 控制 */
-        width: 100%;
-        max-width: 452px;
-        padding: 14px 18px;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        background: #fff;
-        text-align: left;
-      }
-      .rebate-box.show { display: block; }
-      .rebate-title {
-        margin: 0 0 10px;
-        font-size: 13px;
-        font-weight: 700;
-        color: #374151;
-      }
-      .rebate-list {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
-        margin: 0 0 10px;
-        padding: 0;
-        list-style: none;
-      }
-      .rebate-list li {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 2px;
-        padding: 8px 4px;
-        border: 1px solid #e5e7eb;
-        border-radius: 9px;
-        background: #f9fafb;
-      }
-      .rebate-list span { font-size: 12px; color: #6b7280; }
-      .rebate-list b { font-size: 16px; color: #0f766e; }
-      .rebate-note { margin: 0; font-size: 12px; color: #9ca3af; }
-
       .note {
         margin: 0;
         max-width: 640px;
@@ -295,8 +279,10 @@
 
         <!-- Gate 专属：通过 Gate UID 转账 0 手续费 -->
         <div class="invite-box" id="inviteBox">
-          <a class="invite-link" id="inviteLink" href="#" target="_blank" rel="noopener noreferrer nofollow">使用专属链接注册 Gate，立享手续费返现，每一笔交易都在省钱。</a>
+          <p class="invite-lead">使用专属链接注册 Gate，立享手续费返现，每一笔交易都在省钱。</p>
+          <p class="invite-rebate" id="inviteRebate"></p>
           <p class="invite-note">用下方 UID <b>34868411</b> 转账，<b>0 手续费</b></p>
+          <a class="invite-btn" id="inviteBtn" href="#" target="_blank" rel="noopener noreferrer nofollow">立即注册</a>
         </div>
     </div>
 
@@ -314,12 +300,7 @@
       这些数据全部由维护者逐条核实公开来源后录入，<strong>维护者的核实工作离不开这些支持</strong>。
     </p>
 
-    <!-- 返佣明细：仅 Gate 配置了 rebates 时显示 -->
-    <div class="rebate-box" id="rebateBox">
-      <p class="rebate-title">各项返利</p>
-      <ul class="rebate-list" id="rebateList"></ul>
-      <p class="rebate-note" id="rebateNote"></p>
-    </div>
+
 
     <script>
       // 交易所：Gate / WEMIX PLAY 已配置 UID；其余待补充，未配置时置灰不可选
@@ -328,7 +309,7 @@
         { id: 'huobi',   name: '火必', uid: '' },
         { id: 'okx',     name: '欧易', uid: '' },
         { id: 'gate',    name: 'Gate', uid: '34868411',
-          invite: 'https://www.gatesee.com/zh/referral/registry?ref=VVBAVQONUG&ref_type=103&page=superRebate',
+          invite: 'https://www.gate.com/zh/referral/registry?ref=VVBAVQONUG',
           // 各项返佣比例，仅通过该链接新注册的用户享受
           rebates: [
             { label: 'Alpha',rate: '20%' },
@@ -530,25 +511,21 @@
       // Gate 邀请区块：仅选中该交易所且配置了 invite 时显示
       function renderInvite() {
         var box = document.getElementById('inviteBox');
-        var rbox = document.getElementById('rebateBox');
-        var rlist = document.getElementById('rebateList');
-        var rnote = document.getElementById('rebateNote');
         var ex = findEx(selEx);
         if (ex && ex.invite) {
-          document.getElementById('inviteLink').href = ex.invite;
+          document.getElementById('inviteBtn').href = ex.invite;
           box.classList.add('show');
         } else {
           box.classList.remove('show');
         }
-        // 返佣明细：只有配置了 rebates 的交易所才显示
+        // 返利明细：纯文本一行，接在邀请链接下方
+        var rline = document.getElementById('inviteRebate');
         if (ex && ex.rebates) {
-          rlist.innerHTML = ex.rebates.map(function (r) {
-            return '<li><span>' + r.label + '</span><b>' + r.rate + '</b></li>';
-          }).join('');
-          rnote.textContent = '仅通过此链接新注册用户享受此佣金政策';
-          rbox.classList.add('show');
+          rline.innerHTML = ex.rebates.map(function (r) {
+            return r.label + ' <b>' + r.rate + '</b>';
+          }).join(' · ') + '（仅通过此链接新注册用户享受此佣金政策）';
         } else {
-          rbox.classList.remove('show');
+          rline.textContent = '';
         }
       }
 
