@@ -148,11 +148,16 @@
         // 在「Star on GitHub」按钮右侧插入「赞助本项目」入口，跳站内 sponsor.html
         // 样式沿用 Star 按钮（bg-slate-900 → hover:bg-slate-800），视觉统一。
         // 用 data 标记做幂等，避免 MutationObserver 反复触发时重复插入。
+        //
+        // ⚠️ 顶部「赞助本项目」入口暂时关闭（2026-10-08）：页面尚未优化完成。
+        //    改回 true 即恢复，插入逻辑以下都保留着没删。
+        //    sponsor.html 本身仍可直接访问，只是不再从首页顶部引流。
+        var SPONSOR_ENTRY_ENABLED = false;
         var starBtn = null;
         document.querySelectorAll('a').forEach(function (a) {
           if (a.textContent.indexOf('Star on GitHub') >= 0) starBtn = a;
         });
-        if (starBtn && !document.getElementById('sponsor-entry-btn')) {
+        if (SPONSOR_ENTRY_ENABLED && starBtn && !document.getElementById('sponsor-entry-btn')) {
           var s = document.createElement('a');
           s.id = 'sponsor-entry-btn';
           s.href = './sponsor.html';
