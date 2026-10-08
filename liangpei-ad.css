@@ -207,8 +207,10 @@
 }
 
 .lp-ad__title b {
-  color: var(--lp-primary-dark);
-  font-weight: 800;
+  /* 主文案统一用正文色，不再单独给「喜茶 20 元」上色：
+     同一句话里换色会让人误以为这几字是按钮或另一种行动号召 */
+  color: inherit;
+  font-weight: inherit;
 }
 
 .lp-ad__count {
@@ -306,6 +308,19 @@
 .lp-ad-toast.is-show {
   opacity: 1;
   transform: translate(-50%, 0);
+}
+
+/* 提示里的操作步骤：与首行「已复制」拉开层次，次要字号 */
+.lp-ad-toast__steps {
+  display: inline-block;
+  margin-top: 3px;
+  font-size: 12px;
+  opacity: 0.82;
+}
+
+.lp-ad-toast code {
+  font-size: 12px;
+  word-break: break-all;
 }
 
 @media (min-width: 1440px) {
