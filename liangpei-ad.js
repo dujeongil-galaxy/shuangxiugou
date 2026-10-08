@@ -54,35 +54,61 @@
     return /MicroMessenger/i.test(navigator.userAgent);
   }
 
+  /* 把文本写入剪贴板。
+     ⚠️ 这里有两个实测踩到的坑，顺序不能改：
+
+     1) document.execCommand('copy') 的返回值不可信。选区为空、元素不可聚焦
+        时它照样返回 true，但剪贴板里什么都没有。结果就是 UI 提示「已复制」，
+        用户粘贴出来是空的。
+
+     2) 用户手势只在「点击事件的同步执行栈」内有效。一旦写成
+        promise.then(...) 或 setTimeout，浏览器就认为手势已结束，
+        真正的复制会被静默拒绝。所以 execCommand 必须同步调用，
+        不能放进 Promise 链里。
+
+     因此这里的顺序是：同步 execCommand 打头（趁手势还在），
+     异步 clipboard API 兜底（现代浏览器里最稳），最后手动复制提示。 */
   function copyText(text) {
-    if (navigator.clipboard && window.isSecureContext) {
-      return navigator.clipboard.writeText(text);
+    // 第 1 级：同步执行，必须留在点击回调的同步栈里
+    var syncOk = copySync(text);
+
+    // 第 2 级：clipboard API。已在异步阶段，只能作为补充。
+    return tryClipboardApi(text)
+      .then(function () { return true; })
+      .catch(function () { return syncOk; });
+  }
+
+  /* 同步复制：接管 copy 事件用 setData 显式写入。
+     这是本次实测中最可靠的一条——不依赖选区状态，
+     clipboardData 在事件内可完整回读验证内容。 */
+  function copySync(text) {
+    try {
+      var onCopy = function (e) {
+        if (!e.clipboardData) return;
+        e.clipboardData.setData('text/plain', text);
+        e.preventDefault();
+      };
+      document.addEventListener('copy', onCopy);
+      var ok = document.execCommand('copy');
+      document.removeEventListener('copy', onCopy);
+      return !!ok;
+    } catch (err) {
+      return false;
     }
-    // 回退方案：非安全上下文（HTTPS 之外的 http）没有 clipboard API
-    return new Promise(function (resolve, reject) {
-      var ta = document.createElement('textarea');
-      ta.value = text;
-      ta.setAttribute('readonly', '');
-      ta.style.position = 'fixed';
-      ta.style.top = '-9999px';
-      document.body.appendChild(ta);
-      ta.select();
-      ta.setSelectionRange(0, ta.value.length);
-      var ok = false;
-      try {
-        ok = document.execCommand('copy');
-      } catch (e) {
-        ok = false;
-      }
-      document.body.removeChild(ta);
-      ok ? resolve() : reject(new Error('copy failed'));
-    });
+  }
+
+  // clipboard API 兜底（iOS Safari / 移动端 WebView 下 execCommand 常被禁）
+  function tryClipboardApi(text) {
+    if (!navigator.clipboard || !navigator.clipboard.writeText) {
+      return Promise.reject(new Error('clipboard api unavailable'));
+    }
+    return navigator.clipboard.writeText(text);
   }
 
   var toastEl = null;
   var toastTimer = null;
 
-  function showToast(html) {
+  function showToast(html, keepOpen) {
     if (!toastEl) {
       toastEl = document.createElement('div');
       toastEl.className = 'lp-ad-toast';
@@ -95,9 +121,38 @@
     void toastEl.offsetWidth;
     toastEl.classList.add('is-show');
     clearTimeout(toastTimer);
+    // 展示口令的提示不自动消失：用户可能需要时间切到微信
     toastTimer = setTimeout(function () {
       toastEl.classList.remove('is-show');
-    }, 4200);
+    }, keepOpen ? 15000 : 4200);
+
+    // 口令支持点击再复制一次：自动复制万一没生效，用户点一下能立刻补上
+    var code = toastEl.querySelector('code');
+    if (code) {
+      code.addEventListener('click', function () {
+        copyText(CONFIG.scheme);
+        code.textContent = CONFIG.scheme + ' ✓';
+        setTimeout(function () {
+          if (code.isConnected) code.textContent = CONFIG.scheme;
+        }, 1400);
+      });
+    }
+  }
+
+  /* 把 toast 里的口令选中。
+     user-select:all 已让用户点击时全选，这里再主动选中一次：
+     部分移动端浏览器不会因为点击而弹出复制气泡，需要先有真实选区。 */
+  function selectManualText() {
+    if (!toastEl) return;
+    var code = toastEl.querySelector('code');
+    if (!code) return;
+    try {
+      var range = document.createRange();
+      range.selectNodeContents(code);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } catch (e) {}
   }
 
   function pad(n) {
@@ -156,20 +211,20 @@
       if (isWeChat()) return; // 微信内放行默认行为，唤起小程序
 
       e.preventDefault();
-      copyText(CONFIG.scheme).then(
-        function () {
-          showToast(
-            '已复制，去微信里粘贴发送<br>' +
-              '<span class="lp-ad-toast__steps">发给任意聊天窗口 → 点自己刚发的那条链接</span>'
-          );
-        },
-        function () {
-          showToast(
-            '复制失败，请手动复制并在微信里发送：<br>' +
-              '<code>' + CONFIG.scheme + '</code>'
-          );
-        }
-      );
+      // copyText 统一 resolve 成布尔值：同步 execCommand 或 clipboard API 任一成功即为 true
+      copyText(CONFIG.scheme).then(function (ok) {
+        // 无论自动复制成功与否，都把口令本身显示出来。
+        // 自动复制在各家浏览器的可用性差异很大（iOS WebView、部分国产浏览器、
+        // 非安全上下文都可能静默失败），只提示「已复制」而把口令藏起来，
+        // 一旦实际没复制成功，用户就彻底没有出路了。
+        showToast(
+          (ok ? '已复制，去微信里粘贴发送' : '请复制下方口令') +
+            '<br><code>' + CONFIG.scheme + '</code>' +
+            '<span class="lp-ad-toast__steps">在微信里发给任意聊天窗口 → 点自己刚发的那条链接</span>',
+          true
+        );
+        selectManualText();
+      });
     });
 
     aside.querySelector('.lp-ad__close').addEventListener('click', function () {

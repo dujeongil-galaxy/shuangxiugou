@@ -312,15 +312,32 @@
 
 /* 提示里的操作步骤：与首行「已复制」拉开层次，次要字号 */
 .lp-ad-toast__steps {
-  display: inline-block;
-  margin-top: 3px;
+  display: block;
+  margin-top: 5px;
   font-size: 12px;
+  line-height: 1.6;
   opacity: 0.82;
 }
 
+/* 口令本体：常驻可见并支持点击复制。
+   自动复制在浏览器里不可靠，这是用户永远的最后一条路。 */
 .lp-ad-toast code {
-  font-size: 12px;
+  display: inline-block;
+  margin: 6px 0 2px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.16);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.4;
   word-break: break-all;
+  cursor: pointer;
+  -webkit-user-select: all;
+  user-select: all;
+}
+
+.lp-ad-toast code:active {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 @media (min-width: 1440px) {
