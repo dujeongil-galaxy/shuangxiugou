@@ -412,8 +412,11 @@
               note: '请选择 <b>BEP20 (BSC)</b> 网络发送 BTC，其他网络的 BTC 无法到账。'
             },
             {
+              // BRC20 只在币安下作为独立选项；Gate 侧由上面的 BTC 项覆盖
+              // （同一地址既收 BTC 也收 BRC20，没必要再单列一个 BRC20）
               id: 'brc20',
               name: 'BRC20',
+              ex: 'binance',
               addr: '1Kzj4hEpcroaHfCyfKy8iNsRHVHopjrmQy',
               qr: './crypto-qr/btc-brc20.png',
               min: '0.000,006 BTC',
