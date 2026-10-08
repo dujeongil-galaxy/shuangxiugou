@@ -402,66 +402,62 @@
               note: '该地址只支持 <b>BTC</b> 和 <b>BRC20 协议资产</b>充值。充值 <b>RUNES 协议</b> 和 <b>ARC20 协议</b> 等资产会导致资产丢失。请不要充值其他资产。'
             },
             {
-              // ↓↓ 币安侧 Bitcoin 网络：地址待补，先占位（addr 为空时不展示收款信息）
-              // TODO: 补齐 5 条网络地址后，把 pending 改成 false 或直接填 addr
+              // 币安 BEP20：与下方 ERC20 共用同一 EVM 地址
               id: 'bn-bep20',
               name: 'BEP20',
               ex: 'binance',
-              pending: true,
-              addr: '',
+              addr: '0xdabb6d3dc4c6a7d0bc38201ae68fa78bb7f4c0f3',
               hlSpec: [6, 6],
               qr: './crypto-qr/btc-bep20.png',
               min: '0.000,006 BTC',
               fee: '约 $0.01，几乎可忽略',
-              note: '请选择 <b>BEP20 (BSC)</b> 网络发送 BTC，其他网络的 BTC 无法到账。'
+              note: '请确保您通过 <b>BSC</b> 网络充值的 BTC 代币，其合约地址以 <b class="hl">ead9c</b> 结尾。'
             },
             {
               id: 'bn-segwit',
               name: 'SegWit',
               ex: 'binance',
-              pending: true,
-              addr: '',
+              addr: 'bc1qf3cmwvc7082x87hyurppagc6l468g9u2l7qzf2',
               hlSpec: [6, 6],
               qr: './crypto-qr/btc-brc20.png',
               min: '0.000,006 BTC',
               fee: '约 $1-5，受拥堵影响波动大',
-              note: '请选择 <b>SegWit (bc1 开头地址)</b> 网络发送 BTC。'
+              note: '币安支持从所有 BTC 地址（以 <b class="hl">1</b>、<b class="hl">3</b>、<b class="hl">bc1p</b> 和 <b class="hl">bc1q</b> 开头）充值。'
             },
             {
               id: 'bn-btc',
               name: 'BTC',
               ex: 'binance',
-              pending: true,
-              addr: '',
+              addr: '11iYhZs9g5haMG1RdsufVi594gsnzw2Q5',
               hlSpec: [6, 6],
               qr: './crypto-qr/btc-brc20.png',
               min: '0.000,006 BTC',
               fee: '约 $1-5，受拥堵影响波动大',
-              note: '请选择 <b>BTC</b> 网络发送。'
+              note: '币安支持从所有 BTC 地址（以 <b class="hl">1</b>、<b class="hl">3</b>、<b class="hl">bc1p</b> 和 <b class="hl">bc1q</b> 开头）充值。'
             },
             {
+              // 闪电网络地址不固定（每张发票一个地址），故不提供收款地址，按钮置灰
               id: 'bn-lightning',
               name: 'LIGHTNING',
               ex: 'binance',
-              pending: true,
+              disabled: true,
               addr: '',
               hlSpec: [6, 6],
               qr: './crypto-qr/btc-brc20.png',
               min: '0.000,006 BTC',
               fee: '约 $0.01，几乎可忽略',
-              note: '请选择 <b>LIGHTNING</b> 网络发送。'
+              note: '闪电充值将通过票据快速充值到您账户。推荐充值数量在 <b>0.00002 - 0.01 BTC</b> 之间。'
             },
             {
               id: 'bn-erc20',
               name: 'ERC20',
               ex: 'binance',
-              pending: true,
-              addr: '',
+              addr: '0xdabb6d3dc4c6a7d0bc38201ae68fa78bb7f4c0f3',
               hlSpec: [6, 6],
               qr: './crypto-qr/btc-bep20.png',
               min: '0.000,006 BTC',
               fee: '约 $5-20',
-              note: '请选择 <b>ERC20</b> 网络发送。'
+              note: '您正在充值 <b>Binance Wrapped BTC（BBTC）</b>。请确保代币合约地址以 <b class="hl">22541</b> 结尾。'
             }
           ]
         },
@@ -792,8 +788,15 @@ var selEx = 'gate';
           b.type = 'button';
           b.className = 'opt';
           b.textContent = ch.name;
-          b.setAttribute('aria-pressed', selChain === ch.id ? 'true' : 'false');
-          b.onclick = function () { selChain = ch.id; renderChain(); renderCoinInfo(); };
+          // disabled 的网络（如闪电网络：地址不固定）置灰不可选，但仍要显示出来
+          if (ch.disabled) {
+            b.disabled = true;
+            b.title = '暂不可用';
+            b.setAttribute('aria-pressed', 'false');
+          } else {
+            b.setAttribute('aria-pressed', selChain === ch.id ? 'true' : 'false');
+            b.onclick = function () { selChain = ch.id; renderChain(); renderCoinInfo(); };
+          }
           box.appendChild(b);
         });
       }
