@@ -725,11 +725,17 @@ var selEx = 'gate';
       // 专属币种型交易所（exCoin = selEx）只显示自己的币；
       // 其余显示含至少一条可用链的通用币种。
       function availableCoins() {
+        var ex = findEx(selEx);
+        // 个人钱包收款（noUid，如 WEMIX PLAY / Marblex / Conx / MIXIN）只认自己的
+        // 专属币种。交易所通用币种（ETH/USDT/USDC/SOL 等）与它们无关，
+        // 混进来会让用户以为这些钱包能收那些币。
+        var walletOnly = !!(ex && ex.noUid);
         var list = [];
         for (var i = 0; i < COINS.length; i++) {
           var c = COINS[i];
           if (c.exCoin === selEx) { list.push(c); continue; }   // 本所专属
           if (c.exCoin) continue;                               // 别的所专属，不显示
+          if (walletOnly) continue;                             // 个人钱包不显示通用币种
           // 通用币种：该所有链都不可用于当前交易所时不显示
           var ok = !c.chains || c.chains.some(function (ch) { return !ch.ex || ch.ex === selEx; });
           if (ok) list.push(c);
