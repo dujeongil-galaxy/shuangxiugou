@@ -282,8 +282,14 @@
       </div>
 
       <div class="field">
-        <span class="label">选择币种 / 链</span>
+        <span class="label">选择币种</span>
         <div class="opts" id="coinOpts" role="group" aria-label="币种"></div>
+      </div>
+
+      <!-- 链选择：仅当该币种在当前交易所下有 ≥2 条可用链时才显示 -->
+      <div class="field" id="chainField" style="display:none">
+        <span class="label">选择链</span>
+        <div class="opts" id="chainOpts" role="group" aria-label="链"></div>
       </div>
 
       <img class="qr" id="qr" alt="收款码" />
@@ -327,7 +333,7 @@
     <script>
       // 交易所：Gate / WEMIX PLAY 已配置 UID；其余待补充，未配置时置灰不可选
       var EXCHANGES = [
-        { id: 'binance', name: 'Binance（币安）', uid: '' },
+        { id: 'binance', name: 'Binance（币安）', uid: '1079340403' },
         { id: 'huobi',   name: 'HTX（火必）', uid: '' },
         { id: 'okx',     name: 'OKX（欧易）', uid: '' },
         { id: 'gate',    name: 'Gate（大门）', uid: '34868411',
@@ -347,80 +353,134 @@
         { id: 'mixin',   name: 'MIXIN（Private Crypto Wallet）', uid: null, noUid: true }
       ];
 
-      // 币种：各链的收款地址、最低额度与网络手续费说明
-      // fee 为该链的典型手续费区间，用于提醒用户「到账金额需自行覆盖网络手续费」。
-      // ⚠️ 手续费会随拥堵波动，这里是量级参考值，实际以转账时链上显示为准。
-      // ex: 仅该交易所有效的币种；未标注则所有交易所均显示
+// 币种 → 链，两级结构
+      // COINS[].chains[] 才是真正的收款配置（地址 / 二维码 / 最低额 / 手续费 / 提示）
+      // chains[].ex 指定该链归属的交易所；未标注则所有已开通的交易所均显示
+      //   · Gate 未配置 uid，暂置灰，故通用链当前在页面上无可用交易所
+      //   · BEP20 的 BTC 地址仅币安使用（地址与 Gate 的 BRC20 不同）
+      // exCoin 表示该币种只属于某个交易所（如 MBX / XIN / XPLA / WEMIX）
+      // notice 表示公告型币种：不提供收款地址，只显示说明
+      // addrs 表示多地址：一个币种下多条收款记录，各带网络名与二维码
       var COINS = [
         {
-          id: 'btc-brc20',
-          name: 'Bitcoin (BRC20)',
-          addr: '1Kzj4hEpcroaHfCyfKy8iNsRHVHopjrmQy',
-          qr: './crypto-qr/btc-brc20.png',
-          min: '0.000,006 BTC',
-          fee: '约 $1-5，受拥堵影响波动大',
-          note: '本地址同时支持<b>BTC</b> 与 <b>BRC20 协议代币</b>（同在比特币链，只是记账方式不同）。地址以 <b>1</b> 开头，为 <b>P2PKH</b> 传统地址（非 bc1 开头的 SegWit）。'
+          id: 'btc',
+          name: 'Bitcoin',
+          chains: [
+            {
+              id: 'bep20',
+              name: 'BEP20',
+              ex: 'binance',
+              addr: '0xdabb6d3dc4c6a7d0bc38201ae68fa78bb7f4c0f3',
+              qr: './crypto-qr/btc-bep20.png',
+              min: '0.000,006 BTC',
+              fee: '约 $0.01，几乎可忽略',
+              note: '请选择 <b>BEP20 (BSC)</b> 网络发送 BTC，其他网络的 BTC 无法到账。'
+            },
+            {
+              id: 'brc20',
+              name: 'BRC20',
+              addr: '1Kzj4hEpcroaHfCyfKy8iNsRHVHopjrmQy',
+              qr: './crypto-qr/btc-brc20.png',
+              min: '0.000,006 BTC',
+              fee: '约 $1-5，受拥堵影响波动大',
+              note: '本地址同时支持<b>BTC</b> 与 <b>BRC20 协议代币</b>（同在比特币链，只是记账方式不同）。地址以 <b>1</b> 开头，为 <b>P2PKH</b> 传统地址（非 bc1 开头的 SegWit）。'
+            }
+          ]
         },
         {
-          id: 'eth-erc20',
-          name: 'Ethereum (ERC20)',
-          addr: '0xAFA6c5C86CcE6e404236a53724cacd9d839DC90c',
-          qr: './crypto-qr/eth-erc20.png',
-          min: '0.000,006 ETH',
-          fee: '约 $5-20，是四条链里最贵的',
-          note: '请选择 <b>ERC20 (Ethereum)</b> 网络。其他网络（BSC / Polygon 等）的 ETH 无法到账。'
+          id: 'eth',
+          name: 'Ethereum',
+          chains: [
+            {
+              id: 'erc20',
+              name: 'ERC20',
+              addr: '0xAFA6c5C86CcE6e404236a53724cacd9d839DC90c',
+              qr: './crypto-qr/eth-erc20.png',
+              min: '0.000,006 ETH',
+              fee: '约 $5-20，是各链里最贵的',
+              note: '请选择 <b>ERC20 (Ethereum)</b> 网络。其他网络（BSC / Polygon 等）的 ETH 无法到账。'
+            }
+          ]
         },
         {
-          id: 'usdc-polygon',
-          name: 'USDC (Polygon)',
-          addr: '0xAFA6c5C86CcE6e404236a53724cacd9d839DC90c',
-          qr: './crypto-qr/usdc-polygon.png',
-          min: '0.01 USDC',
-          fee: '约 $0.01，几乎可忽略',
-          note: '请选择 <b>Polygon</b> 网络发送 USDC。'
+          id: 'usdc',
+          name: 'USDC',
+          chains: [
+            {
+              id: 'polygon',
+              name: 'Polygon',
+              addr: '0xAFA6c5C86CcE6e404236a53724cacd9d839DC90c',
+              qr: './crypto-qr/usdc-polygon.png',
+              min: '0.01 USDC',
+              fee: '约 $0.01，几乎可忽略',
+              note: '请选择 <b>Polygon</b> 网络发送 USDC。'
+            }
+          ]
         },
         {
-          id: 'usdt-trc20',
-          name: 'USDT (Tron-TRC20)',
-          addr: 'TRyy3C668REPBGo2dDU1yiREdCyegFqjRN',
-          qr: './crypto-qr/usdt-trc20.png',
-          min: '0.01 USDT',
-          fee: '约 $0.01，几乎可忽略',
-          note: '请务必选择 <b>Tron (TRC20)</b> 网络发送。其他网络（ERC20 / BEP20 等）的 USDT 无法到账。'
+          id: 'usdt',
+          name: 'USDT',
+          chains: [
+            {
+              id: 'trc20',
+              name: 'Tron-TRC20',
+              addr: 'TRyy3C668REPBGo2dDU1yiREdCyegFqjRN',
+              qr: './crypto-qr/usdt-trc20.png',
+              min: '0.01 USDT',
+              fee: '约 $0.01，几乎可忽略',
+              note: '请务必选择 <b>Tron (TRC20)</b> 网络发送。其他网络（ERC20 / BEP20 等）的 USDT 无法到账。'
+            }
+          ]
         },
         {
           id: 'sol',
-          name: 'Solana (SOL)',
-          addr: 'H78WkKDWb7jtyZkHihQi1iAZmBCPJgdNjy2UckEYimXE',
-          qr: './crypto-qr/sol.png',
-          min: '0.00,008,567 SOL',
-          minNote: '建议四舍五入为 <b>0,000,086 SOL</b>',
-          fee: '约 $0.001，几乎可忽略',
-          note: '请选择 <b>Solana</b> 网络发送，否则无法到账。'
+          name: 'Solana',
+          chains: [
+            {
+              id: 'solana',
+              name: 'Solana',
+              addr: 'H78WkKDWb7jtyZkHihQi1iAZmBCPJgdNjy2UckEYimXE',
+              qr: './crypto-qr/sol.png',
+              min: '0.00,008,567 SOL',
+              minNote: '建议四舍五入为 <b>0.00,008,600 SOL</b>',
+              fee: '约 $0.01，几乎可忽略',
+              note: '请选择 <b>Solana</b> 网络发送，否则无法到账。'
+            }
+          ]
         },
         {
           id: 'gt',
-          name: 'Gate Token (GT)',
-          addr: 'gt115caqysnxa4pwgsgtrf8hmaraklx9v04t5m9v4y3xt6u97dnphv36taultm5ssn2km99xnp',
-          qr: './crypto-qr/gt.png',
-          min: '0.000,921,660 GT',
-          minNote: '建议四舍五入为 <b>0.000,922 GT</b>',
-          fee: '约 $0.001，几乎可忽略',
-          note: '<b>请勿向此地址充值非 GT 链的 GT，否则资产将不可找回。</b>请选择 <b>GT</b> 网络发送（注意不是 0x 开头的地址）。'
+          name: 'Gate Token',
+          chains: [
+            {
+              id: 'gt-native',
+              name: 'GT 原生',
+              addr: 'gt115caqysnxa4pwgsgtrf8hmaraklx9v04t5m9v4y3xt6u97dnphv36taultm5ssn2km99xnp',
+              qr: './crypto-qr/gt.png',
+              min: '0.000,921,660 GT',
+              minNote: '建议四舍五入为 <b>0.000,922 GT</b>',
+              note: '<b>请勿向此地址充值非 GT 链的 GT，否则资产将不可找回。</b>请选择 <b>GT</b> 网络发送（注意不是 0x 开头的地址）。'
+            }
+          ]
         },
         {
           id: 'wemix',
-          ex: 'wemix',
           name: 'WEMIX',
-          addr: '0xAFA6c5C86CcE6e404236a53724cacd9d839DC90c',
-          qr: './crypto-qr/wemix.png',
-          note: '只能接收 <b>WEMIX PLAY 支持的代币</b>。接收其他网络的代币可能会导致<b>资产丢失</b>。'
+          exCoin: 'wemix',
+          chains: [
+            {
+              id: 'wemix-native',
+              name: 'WEMIX',
+              addr: '0xAFA6c5C86CcE6e404236a53724cacd9d839DC90c',
+              qr: './crypto-qr/wemix.png',
+              note: '只能接收 <b>WEMIX PLAY 支持的代币</b>。接收其他网络的代币可能会导致<b>资产丢失</b>。'
+            }
+          ]
         },
         {
           id: 'mbx',
-          ex: 'marblex',
           name: 'MBX',
-          // 两个收款地址：前者支持 BNB / Immutable zkEVM / Kaia，后者仅 Aptos
+          exCoin: 'marblex',
           addrs: [
             {
               nets: 'BNB · Immutable zkEVM · Kaia',
@@ -437,26 +497,32 @@
         },
         {
           id: 'xpla',
-          ex: 'conx',
           name: 'XPLA',
-          addr: 'xpla19jqg85mpzahxf4zwenumq3esmcwsltkduqch0r',
-          qr: './crypto-qr/xpla.png',
-          note: '请选择 <b>XPLA</b> 网络发送，否则无法到账。'
+          exCoin: 'conx',
+          chains: [
+            {
+              id: 'xpla-native',
+              name: 'XPLA',
+              addr: 'xpla19jqg85mpzahxf4zwenumq3esmcwsltkduqch0r',
+              qr: './crypto-qr/xpla.png',
+              note: '请选择 <b>XPLA</b> 网络发送，否则无法到账。'
+            }
+          ]
         },
         {
-          id: 'mixin',
-          ex: 'mixin',
+          id: 'xin',
           name: 'XIN',
+          exCoin: 'mixin',
           notice: true,
           note: '<b>本平台不提供收款地址，请勿在此捐赠。</b>' +
             '<br /><br />' +
             '<b>争议一：自称「完全去中心化，没有中心化控制方」，实际处处依赖中心节点。</b><br />' +
             '· 登录与身份绑定走短信验证码。故意断网后，已登录状态下 PIN 仍无法完成验证<br />' +
-            '· 官方 FAQ 专门回答「会不会受SIM 卡转移攻击」，答「不会，转账需要 PIN 而不是短信」——' +
+            '· 官方 FAQ 专门回答「会不会受 SIM 卡转移攻击」，答「不会，转账需要 PIN 而不是短信」——' +
             '既然 PIN 纯本地验证，就无需强调「不用短信」；这说明短信确实是登录/身份环节的一环<br />' +
             '· 同页并列两句话：「完全去中心化，没有中心化控制方」与「所有资金转移都需要您的 PIN 码」——' +
             'PIN 验证必然存在验证方，这与「没有中心方」直接冲突<br />' +
-            '· 官方称可随时导出助记词与私钥。既然如此，导出后不装Mixin、在任意第三方钱包能否使用？' +
+            '· 官方称可随时导出助记词与私钥。既然如此，导出后不装 Mixin、在任意第三方钱包能否使用？' +
             '若不能，则「自托管」只是说法；能，则更应说明为何断网即不可用<br />' +
             '<br />' +
             '<b>争议二：托管钱包，却以「去中心化」作宣传。</b><br />' +
@@ -476,8 +542,9 @@
         }
       ];
 
-      var selEx = 'gate';
-      var selCoin = 'btc-brc20';
+var selEx = 'gate';
+      var selCoin = 'btc';
+      var selChain = null;
 
       function findEx(id) {
         for (var i = 0; i < EXCHANGES.length; i++) if (EXCHANGES[i].id === id) return EXCHANGES[i];
@@ -485,6 +552,13 @@
       }
       function findCoin(id) {
         for (var i = 0; i < COINS.length; i++) if (COINS[i].id === id) return COINS[i];
+        return null;
+      }
+      // 当前选中的链配置：公告型与多地址型币种没有单一链
+      function currentChain() {
+        var c = findCoin(selCoin);
+        if (!c || !c.chains) return null;
+        for (var i = 0; i < c.chains.length; i++) if (c.chains[i].id === selChain) return c.chains[i];
         return null;
       }
 
@@ -503,25 +577,33 @@
             b.title = '待配置';
           } else {
             b.setAttribute('aria-pressed', selEx === ex.id ? 'true' : 'false');
-            b.onclick = function () { selEx = ex.id; renderEx(); renderCoin(); renderCoinInfo(); renderInvite(); };
+            b.onclick = function () {
+              selEx = ex.id;
+              renderEx(); renderCoin(); renderChain(); renderCoinInfo(); renderInvite();
+            };
           }
           box.appendChild(b);
         });
       }
 
       // 当前交易所下可选的币种。
-      // 含 ex 的币种只在该交易所下出现；不含 ex 的是通用币种，
-      // 但在「专属币种型交易所」（如 WEMIX PLAY）下不显示——
-      // 该所只收自己的币，不提供通用链的收款。
+      // 专属币种型交易所（exCoin = selEx）只显示自己的币；
+      // 其余显示含至少一条可用链的通用币种。
       function availableCoins() {
-        var exclusive = COINS.filter(function (c) { return c.ex === selEx; });
-        if (exclusive.length) return exclusive;               // 专属模式：只显示本所币种
-        return COINS.filter(function (c) { return !c.ex; });  // 通用模式
+        var list = [];
+        for (var i = 0; i < COINS.length; i++) {
+          var c = COINS[i];
+          if (c.exCoin === selEx) { list.push(c); continue; }   // 本所专属
+          if (c.exCoin) continue;                               // 别的所专属，不显示
+          // 通用币种：该所有链都不可用于当前交易所时不显示
+          var ok = !c.chains || c.chains.some(function (ch) { return !ch.ex || ch.ex === selEx; });
+          if (ok) list.push(c);
+        }
+        return list;
       }
 
       function renderCoin() {
         var list = availableCoins();
-        // 当前选中的币种在切换交易所后可能不可用（如 WEMIX 仅 WEMIX PLAY 可用）
         if (!list.some(function (c) { return c.id === selCoin; })) {
           selCoin = list.length ? list[0].id : null;
         }
@@ -533,33 +615,43 @@
           b.className = 'opt';
           b.textContent = c.name;
           b.setAttribute('aria-pressed', selCoin === c.id ? 'true' : 'false');
-          b.onclick = function () { selCoin = c.id; renderCoin(); renderCoinInfo(); };
+          b.onclick = function () { selCoin = c.id; renderCoin(); renderChain(); renderCoinInfo(); };
           box.appendChild(b);
         });
       }
 
-      // 统一的复制逻辑，供单地址与多地址区块共用
-      function copyText(text, btn) {
-        function done() {
-          btn.textContent = '已复制';
-          setTimeout(function () { btn.textContent = '复制'; }, 1600);
+      // 链选择：仅当该币种在当前交易所下有 ≥2 条可用链时才显示
+      function availableChains() {
+        var c = findCoin(selCoin);
+        if (!c || !c.chains) return [];
+        return c.chains.filter(function (ch) { return !ch.ex || ch.ex === selEx; });
+      }
+
+      function renderChain() {
+        var field = document.getElementById('chainField');
+        var box = document.getElementById('chainOpts');
+        var list = availableChains();
+        if (list.length < 2) {
+          // 只有一条链（或无链）：无需用户选择，隐藏整个区块
+          selChain = list.length === 1 ? list[0].id : null;
+          field.style.display = 'none';
+          box.innerHTML = '';
+          return;
         }
-        function fallback() {
-          var ta = document.createElement('textarea');
-          ta.value = text;
-          ta.style.position = 'fixed';
-          ta.style.opacity = '0';
-          document.body.appendChild(ta);
-          ta.select();
-          try { document.execCommand('copy'); done(); }
-          catch (e) { btn.textContent = '请手动复制'; }
-          document.body.removeChild(ta);
+        if (!list.some(function (ch) { return ch.id === selChain; })) {
+          selChain = list[0].id;
         }
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(done, fallback);
-        } else {
-          fallback();
-        }
+        field.style.display = '';
+        box.innerHTML = '';
+        list.forEach(function (ch) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'opt';
+          b.textContent = ch.name;
+          b.setAttribute('aria-pressed', selChain === ch.id ? 'true' : 'false');
+          b.onclick = function () { selChain = ch.id; renderChain(); renderCoinInfo(); };
+          box.appendChild(b);
+        });
       }
 
       function renderCoinInfo() {
@@ -600,13 +692,17 @@
           singleAddr.style.display = '';
           multi.classList.remove('show');
           multi.innerHTML = '';
-          singleQr.src = c.qr;
-          singleQr.alt = c.name + ' 收款码';
-          document.getElementById('addr').textContent = c.addr;
+          var ch = currentChain();
+          if (!ch) return;
+          singleQr.src = ch.qr;
+          singleQr.alt = c.name + '(' + ch.name + ') 收款码';
+          document.getElementById('addr').textContent = ch.addr;
         }
+        var ch = currentChain();
         var noteEl = document.getElementById('note');
+        var noteText = (ch && ch.note) || c.note || '';
         noteEl.className = c.notice ? 'chain-note long' : 'chain-note';
-        noteEl.innerHTML = c.note || '';
+        noteEl.innerHTML = noteText;
         renderMeta();
       }
 
@@ -614,22 +710,23 @@
         var c = findCoin(selCoin);
         var ex = findEx(selEx);
         if (!c) return;
+        var ch = currentChain();          // min / minNote / fee 均挂在链上
         // min / minNote / fee 均为可选：未配置 min 时不显示「最低充值额」这一项
         var parts = [];
-        if (c.min) {
-          parts.push('最低充值额 <b>' + c.min + '</b>');
-          if (c.minNote) parts.push(c.minNote);
+        if (ch && ch.min) {
+          parts.push('最低充值额 <b>' + ch.min + '</b>');
+          if (ch.minNote) parts.push(ch.minNote);
         }
         // 只有交易所账号才显示 UID；个人钱包收款（noUid）不显示
         if (ex && ex.uid) parts.push(ex.name + ' UID <b>' + ex.uid + '</b>');
         var html = parts.join(' · ');
-        if (c.fee) html += (html ? '<br />' : '') + '网络手续费 <b>' + c.fee + '</b>（由转账方承担，不从到账金额中扣除，但需确保转账金额高于手续费，否则到账为零）';
+        if (ch && ch.fee) html += (html ? '<br />' : '') + '网络手续费 <b>' + ch.fee + '</b>（由转账方承担，不从到账金额中扣除，但需确保转账金额高于手续费，否则到账为零）';
         document.getElementById('meta').innerHTML = html;
       }
 
       document.getElementById('copy').onclick = function () {
-        var c = findCoin(selCoin);
-        if (c) copyText(c.addr, this);
+        var ch = currentChain();
+        if (ch) copyText(ch.addr, this);
       };
 
       // Gate 邀请区块：仅选中该交易所且配置了 invite 时显示
@@ -655,6 +752,7 @@
 
       renderEx();
       renderCoin();
+      renderChain();
       renderCoinInfo();
       renderInvite();
     </script>
