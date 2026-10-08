@@ -106,6 +106,18 @@
         border-radius: 12px;
         background: #fff;
       }
+      /* 多地址区块：每个网络一个收款块 */
+      .multi { display: none; }
+      .multi.show { display: block; margin-top: 18px; }
+      .multi-item + .multi-item { margin-top: 18px; }
+      .multi-nets {
+        margin: 0 0 7px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #0f766e;
+      }
+      .multi .qr { margin-top: 0; }
+
       .addr {
         display: flex;
         align-items: center;
@@ -269,6 +281,9 @@
 
       <img class="qr" id="qr" alt="收款码" />
 
+      <!-- 多网络收款：一个币种对应多个地址时显示，单地址时隐藏 -->
+      <div class="multi" id="multi"></div>
+
       <div class="addr">
         <code id="addr"></code>
         <button class="copy" id="copy" type="button">复制</button>
@@ -318,7 +333,9 @@
             { label: '股票',  rate: '20%' }
           ] },
         // 个人钱包收款，无需交易所 UID
-        { id: 'wemix',   name: 'WEMIX PLAY', uid: null, noUid: true }
+        { id: 'wemix',   name: 'WEMIX PLAY（娱美德）', uid: null, noUid: true },
+        // 个人钱包收款，无需交易所 UID
+        { id: 'marblex', name: 'Marblex Wallet（网石）', uid: null, noUid: true }
       ];
 
       // 币种：各链的收款地址、最低额度与网络手续费说明
@@ -391,6 +408,28 @@
           min: null,
           fee: '以 WEMIX PLAY 实际显示为准',
           note: '只能接收 <b>WEMIX PLAY 支持的代币</b>。接收其他网络的代币可能会导致<b>资产丢失</b>（暂不支持 MetaMask 跨链转账）。'
+        },
+        {
+          id: 'mbx',
+          ex: 'marblex',
+          name: 'MBX',
+          // 两个收款地址：前者支持 BNB / Immutable zkEVM / Kaia，后者仅 Aptos
+          addrs: [
+            {
+              nets: 'BNB · Immutable zkEVM · Kaia',
+              addr: '0x0c5f64e750b80542bac8d0ceb7f2325a1880b4f8',
+              qr: './crypto-qr/mbx-multi.png'
+            },
+            {
+              nets: 'Aptos（仅此网络）',
+              addr: '0xa57671019fbdda6087a69c4d1607a369d5dbd318a4cc3623f0f6dbcec097c72a',
+              qr: './crypto-qr/mbx-aptos.png'
+            }
+          ],
+          note: '<b>请注意！</b>向我的钱包地址传送 Marblex Wallet <b>不支持的网络</b>代币时，无法在 MBX Wallet 内确认。' +
+            '如果传送其他网络的代币，可通过 MetaMask 这样的外部钱包确认。' +
+            '请查看「通过确认个人私钥使用外部钱包」的方法。<br />' +
+            '请<b>不要</b>向我的地址传送除 <b>MBX、MBXL</b> 之外的其他代币。'
         }
       ];
 
@@ -456,12 +495,66 @@
         });
       }
 
+      // 统一的复制逻辑，供单地址与多地址区块共用
+      function copyText(text, btn) {
+        function done() {
+          btn.textContent = '已复制';
+          setTimeout(function () { btn.textContent = '复制'; }, 1600);
+        }
+        function fallback() {
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); done(); }
+          catch (e) { btn.textContent = '请手动复制'; }
+          document.body.removeChild(ta);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done, fallback);
+        } else {
+          fallback();
+        }
+      }
+
       function renderCoinInfo() {
         var c = findCoin(selCoin);
         if (!c) return;
-        document.getElementById('qr').src = c.qr;
-        document.getElementById('qr').alt = c.name + ' 收款码';
-        document.getElementById('addr').textContent = c.addr;
+        var multi = document.getElementById('multi');
+        var singleQr = document.getElementById('qr');
+        var singleAddr = document.getElementById('addr').parentNode;
+
+        if (c.addrs && c.addrs.length) {
+          // 多地址模式：每个网络一个收款块，各自带二维码、地址与复制按钮
+          singleQr.style.display = 'none';
+          singleAddr.style.display = 'none';
+          multi.classList.add('show');
+          multi.innerHTML = c.addrs.map(function (a) {
+            return '<div class="multi-item">' +
+              '<p class="multi-nets">' + a.nets + '</p>' +
+              '<img class="qr" src="' + a.qr + '" alt="' + c.name + ' 收款码(' + a.nets + ')" />' +
+              '<div class="addr"><code>' + a.addr + '</code>' +
+              '<button class="copy" type="button">复制</button></div>' +
+              '</div>';
+          }).join('');
+          // 绑定各块的复制按钮
+          Array.prototype.forEach.call(multi.querySelectorAll('.multi-item'), function (item, i) {
+            item.querySelector('.copy').onclick = function () {
+              copyText(c.addrs[i].addr, this);
+            };
+          });
+        } else {
+          // 单地址模式：沿用原有的单个二维码 + 地址
+          singleQr.style.display = '';
+          singleAddr.style.display = '';
+          multi.classList.remove('show');
+          multi.innerHTML = '';
+          singleQr.src = c.qr;
+          singleQr.alt = c.name + ' 收款码';
+          document.getElementById('addr').textContent = c.addr;
+        }
         document.getElementById('note').innerHTML = c.note;
         renderMeta();
       }
@@ -485,27 +578,7 @@
 
       document.getElementById('copy').onclick = function () {
         var c = findCoin(selCoin);
-        var btn = this;
-        function done() {
-          btn.textContent = '已复制';
-          setTimeout(function () { btn.textContent = '复制'; }, 1600);
-        }
-        function fallback() {
-          var ta = document.createElement('textarea');
-          ta.value = c.addr;
-          ta.style.position = 'fixed';
-          ta.style.opacity = '0';
-          document.body.appendChild(ta);
-          ta.select();
-          try { document.execCommand('copy'); done(); }
-          catch (e) { btn.textContent = '请手动复制'; }
-          document.body.removeChild(ta);
-        }
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(c.addr).then(done, fallback);
-        } else {
-          fallback();
-        }
+        if (c) copyText(c.addr, this);
       };
 
       // Gate 邀请区块：仅选中该交易所且配置了 invite 时显示
