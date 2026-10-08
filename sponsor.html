@@ -402,26 +402,66 @@
               note: '该地址只支持 <b>BTC</b> 和 <b>BRC20 协议资产</b>充值。充值 <b>RUNES 协议</b> 和 <b>ARC20 协议</b> 等资产会导致资产丢失。请不要充值其他资产。'
             },
             {
-              id: 'bep20',
+              // ↓↓ 币安侧 Bitcoin 网络：地址待补，先占位（addr 为空时不展示收款信息）
+              // TODO: 补齐 5 条网络地址后，把 pending 改成 false 或直接填 addr
+              id: 'bn-bep20',
               name: 'BEP20',
               ex: 'binance',
-              addr: '0xdabb6d3dc4c6a7d0bc38201ae68fa78bb7f4c0f3',
+              pending: true,
+              addr: '',
+              hlSpec: [6, 6],
               qr: './crypto-qr/btc-bep20.png',
               min: '0.000,006 BTC',
               fee: '约 $0.01，几乎可忽略',
               note: '请选择 <b>BEP20 (BSC)</b> 网络发送 BTC，其他网络的 BTC 无法到账。'
             },
             {
-              // BRC20 只在币安下作为独立选项；Gate 侧由上面的 BTC 项覆盖
-              // （同一地址既收 BTC 也收 BRC20，没必要再单列一个 BRC20）
-              id: 'brc20',
-              name: 'BRC20',
+              id: 'bn-segwit',
+              name: 'SegWit',
               ex: 'binance',
-              addr: '1Kzj4hEpcroaHfCyfKy8iNsRHVHopjrmQy',
+              pending: true,
+              addr: '',
+              hlSpec: [6, 6],
               qr: './crypto-qr/btc-brc20.png',
               min: '0.000,006 BTC',
               fee: '约 $1-5，受拥堵影响波动大',
-              note: '本地址同时支持<b>BTC</b> 与 <b>BRC20 协议代币</b>（同在比特币链，只是记账方式不同）。地址以 <b>1</b> 开头，为 <b>P2PKH</b> 传统地址（非 bc1 开头的 SegWit）。'
+              note: '请选择 <b>SegWit (bc1 开头地址)</b> 网络发送 BTC。'
+            },
+            {
+              id: 'bn-btc',
+              name: 'BTC',
+              ex: 'binance',
+              pending: true,
+              addr: '',
+              hlSpec: [6, 6],
+              qr: './crypto-qr/btc-brc20.png',
+              min: '0.000,006 BTC',
+              fee: '约 $1-5，受拥堵影响波动大',
+              note: '请选择 <b>BTC</b> 网络发送。'
+            },
+            {
+              id: 'bn-lightning',
+              name: 'LIGHTNING',
+              ex: 'binance',
+              pending: true,
+              addr: '',
+              hlSpec: [6, 6],
+              qr: './crypto-qr/btc-brc20.png',
+              min: '0.000,006 BTC',
+              fee: '约 $0.01，几乎可忽略',
+              note: '请选择 <b>LIGHTNING</b> 网络发送。'
+            },
+            {
+              id: 'bn-erc20',
+              name: 'ERC20',
+              ex: 'binance',
+              pending: true,
+              addr: '',
+              hlSpec: [6, 6],
+              qr: './crypto-qr/btc-bep20.png',
+              min: '0.000,006 BTC',
+              fee: '约 $5-20',
+              note: '请选择 <b>ERC20</b> 网络发送。'
             }
           ]
         },
@@ -505,6 +545,8 @@
         {
           id: 'gt',
           name: 'Gate Token',
+          // GT 是 Gate 平台币，只在 Gate 下出现，币安等其他交易所不显示
+          exCoin: 'gate',
           chains: [
             {
               id: 'gt-native',
@@ -738,7 +780,10 @@ var selEx = 'gate';
         }
         // 链名已下沉到本菜单，故即使只有一条链也要显示（让用户明确看到走哪个网络）
         if (!list.some(function (ch) { return ch.id === selChain; })) {
-          selChain = list[0].id;
+          // 默认选第一条「地址已配置」的链；
+          // 全都还没配地址时（pending 占位）才退而选第一条
+          var ready = list.filter(function (ch) { return ch.addr; });
+          selChain = (ready[0] || list[0]).id;
         }
         field.style.display = '';
         box.innerHTML = '';
@@ -814,17 +859,25 @@ var selEx = 'gate';
           });
         } else {
           // 单地址模式：沿用原有的单个二维码 + 地址
-          singleQr.style.display = '';
-          singleAddr.style.display = '';
-          multi.classList.remove('show');
-          multi.innerHTML = '';
-          var ch = currentChain();
-          if (!ch) return;
-          singleQr.src = ch.qr;
-          singleQr.alt = c.name + '(' + ch.name + ') 收款码';
-          // 带 hlSpec 的链把首尾各若干字符包进 <span class="hl"> 标蓝；
-          // 复制走copyText读 textContent，<span> 不影响取到的纯文本地址。
-          renderAddr(document.getElementById('addr'), ch);
+          var ch0 = currentChain();
+          // 地址未配置的占位网络（pending）：隐藏二维码与地址，避免展示空白块
+          if (ch0 && !ch0.addr) {
+            singleQr.style.display = 'none';
+            singleAddr.style.display = 'none';
+            multi.classList.remove('show');
+            multi.innerHTML = '';
+          } else {
+            singleQr.style.display = '';
+            singleAddr.style.display = '';
+            multi.classList.remove('show');
+            multi.innerHTML = '';
+            if (!ch0) return;
+            singleQr.src = ch0.qr;
+            singleQr.alt = c.name + '(' + ch0.name + ') 收款码';
+            // 带 hlSpec 的链把首尾各若干字符包进 <span class="hl"> 标蓝；
+            // 复制走copyText读 textContent，<span> 不影响取到的纯文本地址。
+            renderAddr(document.getElementById('addr'), ch0);
+          }
         }
         var ch = currentChain();
         var noteEl = document.getElementById('note');
@@ -841,14 +894,16 @@ var selEx = 'gate';
         var ch = currentChain();          // min / minNote / fee 均挂在链上
         // min / minNote / fee 均为可选：未配置 min 时不显示「最低充值额」这一项
         var parts = [];
-        if (ch && ch.min) {
+        // 地址尚未配置的占位网络：不展示最低额与手续费，
+        // 只保留交易所 UID（那是交易所层面的信息，与地址无关）
+        if (ch && ch.addr && ch.min) {
           parts.push('最低充值额 <b>' + ch.min + '</b>');
           if (ch.minNote) parts.push(ch.minNote);
         }
         // 只有交易所账号才显示 UID；个人钱包收款（noUid）不显示
         if (ex && ex.uid) parts.push(ex.name + ' UID <b>' + ex.uid + '</b>');
         var html = parts.join(' · ');
-        if (ch && ch.fee) html += (html ? '<br />' : '') + '网络手续费 <b>' + ch.fee + '</b>（由转账方承担，不从到账金额中扣除，但需确保转账金额高于手续费，否则到账为零）';
+        if (ch && ch.addr && ch.fee) html += (html ? '<br />' : '') + '网络手续费 <b>' + ch.fee + '</b>（由转账方承担，不从到账金额中扣除，但需确保转账金额高于手续费，否则到账为零）';
         document.getElementById('meta').innerHTML = html;
       }
 
