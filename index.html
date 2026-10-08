@@ -151,10 +151,6 @@
         // 样式沿用 Star 按钮（bg-slate-900 → hover:bg-slate-800），视觉统一。
         // 用 data 标记做幂等，避免 MutationObserver 反复触发时重复插入。
         //
-        //顶部「赞助本项目」入口：按钮保留可见，但点击不跳转。
-        // 页面正在优化，点了只弹提示，不放行到 sponsor.html。
-        // 待优化完成后把 SPONSOR_ENTRY_ENABLED 改回 true 即可恢复跳转。
-        var SPONSOR_ENTRY_ENABLED = false;
         var starBtn = null;
         document.querySelectorAll('a').forEach(function (a) {
           if (a.textContent.indexOf('Star on GitHub') >= 0) starBtn = a;
@@ -176,67 +172,7 @@
                                     .replace(/hover:bg-slate-8\d{2}/g, 'hover:bg-emerald-500');
           // 插到 Star 按钮之后（右侧），与「Star | 赞助」的阅读顺序一致
           starBtn.parentNode.insertBefore(s, starBtn.nextSibling);
-
-          // 页面优化中：拦截跳转，改为弹窗提示。
-          // 用 capture 阶段监听 + preventDefault 拦下所有跳转路径
-          // （点击、Ctrl/中键、新标签页打开等都会触发），
-          // 避免只拦住普通左键点击、用户仍能从其他方式打开。
-          if (!SPONSOR_ENTRY_ENABLED) {
-            // 用 href="javascript:void(0)" 从根上废掉跳转：
-            // 左键、中键、Ctrl+点击、右键「在新标签页打开」全部失效，
-            // 比只监听 click 事件可靠（click 拦不住中键与浏览器菜单项）。
-            // javascript: 伪协议不发起网络请求，也不影响 SEO。
-            s.setAttribute('href', 'javascript:void(0)');
-            s.removeAttribute('target');
-            s.setAttribute('aria-disabled', 'true');
-            s.style.cursor = 'pointer';
-            s.addEventListener('click', function (e) {
-              e.preventDefault();
-              showSponsorNotice();
-            });
-          }
         }
-
-        /* 「正在优化」提示弹窗 */
-        var sponsorNoticeEl = null;
-        function showSponsorNotice() {
-          if (!sponsorNoticeEl) {
-            sponsorNoticeEl = document.createElement('div');
-            sponsorNoticeEl.id = 'sponsor-notice';
-            sponsorNoticeEl.setAttribute('role', 'alertdialog');
-            sponsorNoticeEl.setAttribute('aria-live', 'assertive');
-            sponsorNoticeEl.style.cssText =
-              'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);' +
-              'z-index:99999;display:none;width:min(88vw,360px);padding:26px 24px 20px;' +
-              'border-radius:16px;background:#fff;box-shadow:0 20px 60px rgba(0,0,0,.22);' +
-              'text-align:center;font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;';
-            sponsorNoticeEl.innerHTML =
-              '<div style="font-size:34px;line-height:1;margin-bottom:12px">🚧</div>' +
-              '<div style="font-size:17px;font-weight:700;color:#111827;margin-bottom:8px">正在优化中</div>' +
-              '<div style="font-size:14px;color:#6b7280;line-height:1.7;margin-bottom:20px">' +
-              '赞助页面正在优化，<br>请稍后访问。</div>' +
-              '<button type="button" id="sponsor-notice-ok" ' +
-              'style="width:100%;padding:11px 16px;border:0;border-radius:10px;' +
-              'background:#0f766e;color:#fff;font-size:15px;font-weight:600;cursor:pointer;' +
-              'font-family:inherit">知道了</button>';
-            document.body.appendChild(sponsorNoticeEl);
-            sponsorNoticeEl.querySelector('#sponsor-notice-ok').onclick = closeSponsorNotice;
-            // 点遮罩空白处也能关闭
-            sponsorNoticeEl.onclick = function (e) {
-              if (e.target === sponsorNoticeEl) closeSponsorNotice();
-            };
-          }
-          sponsorNoticeEl.style.display = 'block';
-        }
-
-        function closeSponsorNotice() {
-          if (sponsorNoticeEl) sponsorNoticeEl.style.display = 'none';
-        }
-
-        // Esc 关闭
-        document.addEventListener('keydown', function (e) {
-          if (e.key === 'Escape') closeSponsorNotice();
-        });
 
         // 提交爆料/提供数据 按钮跳转到 issues 新建页面，预填表单
         var issueTitle = encodeURIComponent('推荐双休品牌 / 提交工时爆料');
