@@ -157,33 +157,29 @@
     white-space: nowrap;
   }
 
-  /* 吸底条里口号改走正常文档流：绝对定位会挡住 CTA，
-     且8 字口号在条内单行更醒目 */
+  /* 吸底条空间有限，徽标浮在左上角，不占正文横向空间 */
   .lp-ad__badge {
-    position: static;
-    transform: none;
+    position: absolute;
+    top: -1px;
+    left: 10px;
+    transform: translateY(-50%);
     flex: 0 0 auto;
-    align-self: center;
-    padding: 3px 10px;
-    font-size: 11px;
-    white-space: nowrap;
+    padding: 2px 8px;
+    font-size: 10px;
   }
 }
 
 /* ---------- 通用零件 ---------- */
-/* 徽标承载品牌口号「认真的人，终得良配」（8 字），
-   竖排卡片只有 152px 宽，nowrap 会撑破卡片，故允许换行 */
 .lp-ad__badge {
-  display: block;
-  padding: 3px 8px;
-  border-radius: 8px;
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
   background: linear-gradient(135deg, var(--lp-secondary), #e0a820);
   color: #4a3600;
   font-size: 11px;
   font-weight: 700;
-  line-height: 1.5;
   letter-spacing: 0.02em;
-  text-align: center;
+  white-space: nowrap;
 }
 
 .lp-ad__logo {

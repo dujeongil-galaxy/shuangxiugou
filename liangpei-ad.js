@@ -15,7 +15,7 @@
   var CONFIG = {
     brand: '良配',
     // 官方未公布活动结束时间，故不设倒计时
-    slogan: '认真的人，终得良配',
+    badge: '限时推广',
     title: '注册即送<br>喜茶 20 元<br>无门槛消费红包',
     cta: '立即注册',
     note: '微信小程序 · 推广合作',
@@ -157,7 +157,7 @@
     // 无障碍：整块可读屏朗读，关闭按钮单独可聚焦
     aside.innerHTML =
       '<button class="lp-ad__close" type="button" aria-label="关闭广告">&times;</button>' +
-      '<span class="lp-ad__badge">' + CONFIG.slogan + '</span>' +
+      '<span class="lp-ad__badge">' + CONFIG.badge + '</span>' +
       '<div class="lp-ad__body">' +
         '<div class="lp-ad__logo" aria-hidden="true">' + LOGO_TEXT + '</div>' +
         '<div class="lp-ad__text">' +
