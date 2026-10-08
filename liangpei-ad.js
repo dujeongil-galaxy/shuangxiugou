@@ -14,24 +14,18 @@
 
   var CONFIG = {
     brand: '良配',
-    badge: '限时推广',
+    // 官方未公布活动结束时间，故不设倒计时
+    slogan: '认真的人，终得良配',
     title: '注册即送<br>喜茶 20 元<br>无门槛消费红包',
     cta: '立即注册',
     note: '微信小程序 · 推广合作',
     scheme: '#小程序://良配/B1ZcfI0N4ii3skj',
-    // 活动截止时间（本地时间）。过期后自动隐藏广告位。
-    expireAt: '2026-12-31T23:59:59+08:00',
     storageKey: 'lp_ad_dismissed_at',
     // 关闭后多久再展示（毫秒），7 天
     reappearAfter: 7 * 24 * 60 * 60 * 1000
   };
 
-  var LOGO_TEXT = '良';
-
-  function isExpired() {
-    var end = new Date(CONFIG.expireAt).getTime();
-    return isNaN(end) ? false : Date.now() > end;
-  }
+  var LOGO_TEXT = '良配';
 
   function isDismissedRecently() {
     try {
@@ -155,43 +149,15 @@
     } catch (e) {}
   }
 
-  function pad(n) {
-    return n < 10 ? '0' + n : String(n);
-  }
-
-  function renderCountdown(box, endAt) {
-    function tick() {
-      var diff = endAt - Date.now();
-      if (diff <= 0) {
-        box.textContent = '活动已结束';
-        box.classList.add('is-over');
-        clearInterval(timer);
-        return;
-      }
-      var d = Math.floor(diff / 86400000);
-      var h = Math.floor((diff % 86400000) / 3600000);
-      var m = Math.floor((diff % 3600000) / 60000);
-      var s = Math.floor((diff % 60000) / 1000);
-      box.textContent =
-        d > 0 ? '剩 ' + d + ' 天 ' + pad(h) + ':' + pad(m) + ':' + pad(s)
-              : '剩 ' + pad(h) + ':' + pad(m) + ':' + pad(s);
-    }
-    tick();
-    var timer = setInterval(tick, 1000);
-    return timer;
-  }
-
   function build() {
-    var endAt = new Date(CONFIG.expireAt).getTime();
-
     var aside = document.createElement('aside');
     aside.className = 'lp-ad is-hidden';
-    aside.setAttribute('aria-label', '限时推广：' + CONFIG.brand);
+    aside.setAttribute('aria-label', '推广：' + CONFIG.brand);
 
     // 无障碍：整块可读屏朗读，关闭按钮单独可聚焦
     aside.innerHTML =
       '<button class="lp-ad__close" type="button" aria-label="关闭广告">&times;</button>' +
-      '<span class="lp-ad__badge">' + CONFIG.badge + '</span>' +
+      '<span class="lp-ad__badge">' + CONFIG.slogan + '</span>' +
       '<div class="lp-ad__body">' +
         '<div class="lp-ad__logo" aria-hidden="true">' + LOGO_TEXT + '</div>' +
         '<div class="lp-ad__text">' +
@@ -199,7 +165,6 @@
           '<div class="lp-ad__title">' + CONFIG.title + '</div>' +
         '</div>' +
       '</div>' +
-      '<div class="lp-ad__count" aria-live="off"></div>' +
       '<a class="lp-ad__cta" role="button"></a>' +
       '<div class="lp-ad__note">' + CONFIG.note + '</div>';
 
@@ -230,7 +195,6 @@
     aside.querySelector('.lp-ad__close').addEventListener('click', function () {
       markDismissed();
       aside.classList.add('is-hidden');
-      clearInterval(timer);
     });
 
     document.body.appendChild(aside);
@@ -265,21 +229,11 @@
     requestAnimationFrame(function () {
       aside.classList.remove('is-hidden');
     });
-
-    var timer = renderCountdown(aside.querySelector('.lp-ad__count'), endAt);
   }
 
   function init() {
-    if (isExpired()) return;      // 活动已结束：不展示，也不占位
+    // 官方未公布活动结束时间，不做倒计时与过期隐藏
     if (isDismissedRecently()) return; // 用户刚关闭过：7 天内不再打扰
-
-    var endAt = new Date(CONFIG.expireAt).getTime();
-    // 倒计时归零后收掉广告位
-    setTimeout(function () {
-      var box = document.querySelector('.lp-ad .lp-ad__count');
-      if (box) box.textContent = '活动已结束';
-    }, Math.max(0, endAt - Date.now()));
-
     build();
   }
 

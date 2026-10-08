@@ -433,10 +433,39 @@
               id: 'erc20',
               name: 'ERC20',
               addr: '0xAFA6c5C86CcE6e404236a53724cacd9d839DC90c',
+              hlSpec: [6, 6],
               qr: './crypto-qr/eth-erc20.png',
               min: '0.000,006 ETH',
               fee: '约 $5-20，是各链里最贵的',
               note: '请选择 <b>ERC20 (Ethereum)</b> 网络。其他网络（BSC / Polygon 等）的 ETH 无法到账。'
+            },
+            {
+              // 与 ERC20 同一个 EVM 地址，只是网络不同
+              id: 'bep20',
+              name: 'BEP20',
+              addr: '0xAFA6c5C86CcE6e404236a53724cacd9d839DC90c',
+              hlSpec: [6, 6],
+              // 二维码内容即地址，与 ERC20 同址，复用同一份
+              qr: './crypto-qr/eth-erc20.png',
+              min: '0.000,006 ETH',
+              fee: '约 $0.01，几乎可忽略',
+              note: '请选择 <b>BEP20 (BSC)</b> 网络发送 ETH，其他网络的 ETH 无法到账。'
+            }
+          ]
+        },
+        {
+          id: 'usdt',
+          name: 'USDT',
+          chains: [
+            {
+              id: 'trc20',
+              name: 'TRC20',
+              addr: 'TRyy3C668REPBGo2dDU1yiREdCyegFqjRN',
+              hlSpec: [6, 6],
+              qr: './crypto-qr/usdt-trc20.png',
+              min: '0.01 USDT',
+              fee: '约 $0.01，几乎可忽略',
+              note: '请务必选择 <b>TRC20</b> 网络发送。其他网络（ERC20 / BEP20 等）的 USDT 无法到账。'
             }
           ]
         },
@@ -448,25 +477,11 @@
               id: 'polygon',
               name: 'Polygon',
               addr: '0xAFA6c5C86CcE6e404236a53724cacd9d839DC90c',
+              hlSpec: [6, 6],
               qr: './crypto-qr/usdc-polygon.png',
               min: '0.01 USDC',
               fee: '约 $0.01，几乎可忽略',
               note: '请选择 <b>Polygon</b> 网络发送 USDC。'
-            }
-          ]
-        },
-        {
-          id: 'usdt',
-          name: 'USDT',
-          chains: [
-            {
-              id: 'trc20',
-              name: 'Tron-TRC20',
-              addr: 'TRyy3C668REPBGo2dDU1yiREdCyegFqjRN',
-              qr: './crypto-qr/usdt-trc20.png',
-              min: '0.01 USDT',
-              fee: '约 $0.01，几乎可忽略',
-              note: '请务必选择 <b>Tron (TRC20)</b> 网络发送。其他网络（ERC20 / BEP20 等）的 USDT 无法到账。'
             }
           ]
         },
@@ -478,6 +493,7 @@
               id: 'solana',
               name: 'Solana',
               addr: 'H78WkKDWb7jtyZkHihQi1iAZmBCPJgdNjy2UckEYimXE',
+              hlSpec: [6, 6],
               qr: './crypto-qr/sol.png',
               min: '0.00,008,567 SOL',
               minNote: '建议四舍五入为 <b>0.00,008,600 SOL</b>',
