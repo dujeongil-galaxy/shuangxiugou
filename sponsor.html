@@ -406,8 +406,7 @@
           addr: '0xAFA6c5C86CcE6e404236a53724cacd9d839DC90c',
           qr: './crypto-qr/wemix.png',
           min: null,
-          fee: '以 WEMIX PLAY 实际显示为准',
-          note: '只能接收 <b>WEMIX PLAY 支持的代币</b>。接收其他网络的代币可能会导致<b>资产丢失</b>（暂不支持 MetaMask 跨链转账）。'
+          fee: '以 WEMIX PLAY 实际显示为准'
         },
         {
           id: 'mbx',
@@ -552,7 +551,7 @@
           singleQr.alt = c.name + ' 收款码';
           document.getElementById('addr').textContent = c.addr;
         }
-        document.getElementById('note').innerHTML = c.note;
+        document.getElementById('note').innerHTML = c.note || '';
         renderMeta();
       }
 
