@@ -262,6 +262,13 @@
         color: #6b7280;
       }
       .note strong { color: #374151; }
+
+      /* 地址首尾各6 字符标蓝：转账前后肉眼核对，防止地址被篡改/抄错。
+         .hl 由 JS 按 chain.hlSpec 切分生成，这里只定颜色。 */
+      #addr .hl, .multi-item code .hl {
+        color: #2563eb;
+        font-weight: 700;
+      }
     </style>
   </head>
   <body>
@@ -286,10 +293,10 @@
         <div class="opts" id="coinOpts" role="group" aria-label="币种"></div>
       </div>
 
-      <!-- 链选择：仅当该币种在当前交易所下有 ≥2 条可用链时才显示 -->
+      <!-- 网络选择（三级菜单）：仅当该币种在当前交易所下有 ≥2 条可用网络时才显示 -->
       <div class="field" id="chainField" style="display:none">
-        <span class="label">选择链</span>
-        <div class="opts" id="chainOpts" role="group" aria-label="链"></div>
+        <span class="label">选择网络</span>
+        <div class="opts" id="chainOpts" role="group" aria-label="网络"></div>
       </div>
 
       <img class="qr" id="qr" alt="收款码" />
@@ -366,6 +373,34 @@
           id: 'btc',
           name: 'Bitcoin',
           chains: [
+            {
+              // Gate 专属：BTC 原生网络。地址与下方 BRC20 相同（同一地址既收 BTC 也收 BRC20）
+              id: 'btc-native',
+              name: 'BTC',
+              ex: 'gate',
+              addr: '1Kzj4hEpcroaHfCyfKy8iNsRHVHopjrmQy',
+              // 首尾各 6 字符标蓝，供肉眼核对
+              hlSpec: [6, 6],
+              qr: './crypto-qr/btc-brc20.png',
+              min: '0.000,006 BTC',
+              fee: '约 $1-5，受拥堵影响波动大',
+              // 只支持 BTC 与 BRC20 协议资产，误充其他协议资产（如 RUNES / ARC20）会丢失
+              note: '该地址只支持 <b>BTC</b> 和 <b>BRC20 协议资产</b>充值。充值 <b>RUNES 协议</b> 和 <b>ARC20 协议</b> 等资产会导致资产丢失。请不要充值其他资产。'
+            },
+            {
+              // Gate 专属：BSC(BEP20) 网络。与 ETH/USDC 共用同一 EVM 地址
+              id: 'bsc',
+              name: 'BSC',
+              ex: 'gate',
+              addr: '0xAFA6c5C86CcE6e404236a53724cacd9d839DC90c',
+              // 首尾各 6 字符标蓝，供肉眼核对
+              hlSpec: [6, 6],
+              // 与 ETH/USDC 是同一个 EVM 地址，二维码内容即地址，故复用同一份
+              qr: './crypto-qr/usdc-polygon.png',
+              min: '0.000,006 BTC',
+              fee: '约 $0.01，几乎可忽略',
+              note: '该地址只支持 <b>BTC</b> 和 <b>BRC20 协议资产</b>充值。充值 <b>RUNES 协议</b> 和 <b>ARC20 协议</b> 等资产会导致资产丢失。请不要充值其他资产。'
+            },
             {
               id: 'bep20',
               name: 'BEP20',
@@ -555,6 +590,48 @@ var selEx = 'gate';
         return null;
       }
       // 当前选中的链配置：公告型与多地址型币种没有单一链
+      /* 复制文本到剪贴板。
+         ⚠️ 两个实测踩过的坑，顺序不能改：
+         1) execCommand('copy') 的返回值不可信——选区为空时它照样返回 true，
+            但剪贴板里什么都没有。不能拿返回值当成功判据。
+         2) 用户手势只在点击事件的同步执行栈内有效，一旦放进 promise.then()
+            浏览器就认为手势结束，真正的复制会被静默拒绝。所以同步那步
+            必须留在回调的同步栈里，不能被 Promise 链推迟。 */
+      function copyText(text, btn) {
+        var syncOk = copySync(text);
+
+        var done = function (ok) {
+          if (!btn) return;
+          var old = btn.textContent;
+          btn.textContent = ok ? '已复制' : '复制失败';
+          setTimeout(function () { btn.textContent = old; }, 1400);
+        };
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () { done(true); },
+                                               function () { done(syncOk); });
+        } else {
+          done(syncOk);
+        }
+      }
+
+      // 同步复制：接管 copy 事件用 setData 显式写入，不依赖选区状态
+      function copySync(text) {
+        try {
+          var onCopy = function (e) {
+            if (!e.clipboardData) return;
+            e.clipboardData.setData('text/plain', text);
+            e.preventDefault();
+          };
+          document.addEventListener('copy', onCopy);
+          var ok = document.execCommand('copy');
+          document.removeEventListener('copy', onCopy);
+          return !!ok;
+        } catch (err) {
+          return false;
+        }
+      }
+
       function currentChain() {
         var c = findCoin(selCoin);
         if (!c || !c.chains) return null;
@@ -658,6 +735,32 @@ var selEx = 'gate';
         });
       }
 
+      /* 渲染收款地址：按 chain.hlSpec 把首尾若干字符标蓝，方便肉眼核对。
+         没有 hlSpec 时就是纯文本。
+         注意：代码节点的 textContent 仍是完整地址，复制功能不受影响。 */
+      function renderAddr(el, ch) {
+        if (!ch) return;
+        var spec = ch.hlSpec;
+        if (!spec || !ch.addr || ch.addr.length <= spec[0] + spec[1]) {
+          el.textContent = ch.addr || '';
+          return;
+        }
+        var head = ch.addr.slice(0, spec[0]);
+        var mid = ch.addr.slice(spec[0], ch.addr.length - spec[1]);
+        var tail = ch.addr.slice(ch.addr.length - spec[1]);
+        el.textContent = '';
+        var s1 = document.createElement('span');
+        s1.className = 'hl';
+        s1.textContent = head;
+        var s2 = document.createElement('span');
+        s2.className = 'hl';
+        s2.textContent = tail;
+        // 用 appendChild 逐段拼，避免 innerHTML 引入注入风险
+        el.appendChild(s1);
+        el.appendChild(document.createTextNode(mid));
+        el.appendChild(s2);
+      }
+
       function renderCoinInfo() {
         var c = findCoin(selCoin);
         if (!c) return;
@@ -680,15 +783,16 @@ var selEx = 'gate';
             return '<div class="multi-item">' +
               '<p class="multi-nets">' + a.nets + '</p>' +
               '<img class="qr" src="' + a.qr + '" alt="' + c.name + ' 收款码(' + a.nets + ')" />' +
-              '<div class="addr"><code>' + a.addr + '</code>' +
+              '<div class="addr"><code data-addr="' + a.addr + '"></code>' +
               '<button class="copy" type="button">复制</button></div>' +
               '</div>';
           }).join('');
-          // 绑定各块的复制按钮
+          // 绑定各块的复制按钮，并按 hlSpec 渲染首尾标蓝
           Array.prototype.forEach.call(multi.querySelectorAll('.multi-item'), function (item, i) {
             item.querySelector('.copy').onclick = function () {
               copyText(c.addrs[i].addr, this);
             };
+            renderAddr(item.querySelector('code'), c.addrs[i]);
           });
         } else {
           // 单地址模式：沿用原有的单个二维码 + 地址
@@ -700,7 +804,9 @@ var selEx = 'gate';
           if (!ch) return;
           singleQr.src = ch.qr;
           singleQr.alt = c.name + '(' + ch.name + ') 收款码';
-          document.getElementById('addr').textContent = ch.addr;
+          // 带 hlSpec 的链把首尾各若干字符包进 <span class="hl"> 标蓝；
+          // 复制走copyText读 textContent，<span> 不影响取到的纯文本地址。
+          renderAddr(document.getElementById('addr'), ch);
         }
         var ch = currentChain();
         var noteEl = document.getElementById('note');
