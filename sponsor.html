@@ -145,6 +145,33 @@
         color: #6b7280;
       }
       .meta b { color: #374151; }
+      /* Gate 邀请区块：仅选中 Gate 时显示 */
+      .invite-box {
+        display: none;                /* 默认隐藏，由 JS 控制 */
+        margin: 14px 0 0;
+        padding: 12px 14px;
+        border: 1px dashed #5eead4;
+        border-radius: 10px;
+        background: #f0fdfa;
+        text-align: center;
+      }
+      .invite-box.show { display: block; }
+      .invite-link {
+        display: inline-block;
+        color: #0f766e;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        border-bottom: 1px solid #5eead4;
+      }
+      .invite-link:hover { color: #115e59; border-bottom-color: #115e59; }
+      .invite-note {
+        margin: 7px 0 0;
+        font-size: 12.5px;
+        color: #4b5563;
+      }
+      .invite-note b { color: #0f766e; }
+
       .chain-note {
         margin: 12px 0 0;
         padding: 10px 12px;
@@ -225,6 +252,12 @@
 
       <p class="meta" id="meta"></p>
       <p class="chain-note" id="note"></p>
+
+        <!-- Gate 专属：通过 Gate UID 转账 0 手续费 -->
+        <div class="invite-box" id="inviteBox">
+          <a class="invite-link" id="inviteLink" href="#" target="_blank" rel="noopener noreferrer nofollow">通过 Gate 邀请链接注册</a>
+          <p class="invite-note">用下方 UID <b>34868411</b> 转账，<b>0 手续费</b></p>
+        </div>
     </div>
 
     <div class="actions">
@@ -247,7 +280,8 @@
         { id: 'binance', name: '币安', uid: '' },
         { id: 'huobi',   name: '火必', uid: '' },
         { id: 'okx',     name: '欧易', uid: '' },
-        { id: 'gate',    name: 'Gate', uid: '34868411' },
+        { id: 'gate',    name: 'Gate', uid: '34868411',
+          invite: 'https://www.gate.com/zh/referral/earn-together/invite/VVBAVQONUG?ref=VVBAVQONUG&ref_type=103&utm_cmp=rXJBDjtJ&activity_id=1790170412453' },
         // 个人钱包收款，无需交易所 UID
         { id: 'wemix',   name: 'WEMIX PLAY', uid: null, noUid: true }
       ];
@@ -352,7 +386,7 @@
             b.title = '待配置';
           } else {
             b.setAttribute('aria-pressed', selEx === ex.id ? 'true' : 'false');
-            b.onclick = function () { selEx = ex.id; renderEx(); renderCoin(); renderCoinInfo(); };
+            b.onclick = function () { selEx = ex.id; renderEx(); renderCoin(); renderCoinInfo(); renderInvite(); };
           }
           box.appendChild(b);
         });
@@ -439,9 +473,22 @@
         }
       };
 
+      // Gate 邀请区块：仅选中该交易所且配置了 invite 时显示
+      function renderInvite() {
+        var box = document.getElementById('inviteBox');
+        var ex = findEx(selEx);
+        if (ex && ex.invite) {
+          document.getElementById('inviteLink').href = ex.invite;
+          box.classList.add('show');
+        } else {
+          box.classList.remove('show');
+        }
+      }
+
       renderEx();
       renderCoin();
       renderCoinInfo();
+      renderInvite();
     </script>
   </body>
 </html>
