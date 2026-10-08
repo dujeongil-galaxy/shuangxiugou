@@ -610,10 +610,14 @@ var selEx = 'gate';
         var box = document.getElementById('coinOpts');
         box.innerHTML = '';
         list.forEach(function (c) {
+          // 按钮文案：单链币种带链名括号（如 Bitcoin (BRC20)），与改动前一致；
+          // 多链币种只显示币种名，链由下方「选择链」决定
+          var label = c.name;
+          if (c.chains && c.chains.length === 1) label += ' (' + c.chains[0].name + ')';
           var b = document.createElement('button');
           b.type = 'button';
           b.className = 'opt';
-          b.textContent = c.name;
+          b.textContent = label;
           b.setAttribute('aria-pressed', selCoin === c.id ? 'true' : 'false');
           b.onclick = function () { selCoin = c.id; renderCoin(); renderChain(); renderCoinInfo(); };
           box.appendChild(b);
