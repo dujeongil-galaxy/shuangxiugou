@@ -690,14 +690,11 @@ var selEx = 'gate';
         var box = document.getElementById('coinOpts');
         box.innerHTML = '';
         list.forEach(function (c) {
-          // 按钮文案：单链币种带链名括号（如 Bitcoin (BRC20)），与改动前一致；
-          // 多链币种只显示币种名，链由下方「选择链」决定
-          var label = c.name;
-          if (c.chains && c.chains.length === 1) label += ' (' + c.chains[0].name + ')';
+          // 按钮只显示币种名；链名统一下沉到三级菜单「选择网络」
           var b = document.createElement('button');
           b.type = 'button';
           b.className = 'opt';
-          b.textContent = label;
+          b.textContent = c.name;
           b.setAttribute('aria-pressed', selCoin === c.id ? 'true' : 'false');
           b.onclick = function () { selCoin = c.id; renderCoin(); renderChain(); renderCoinInfo(); };
           box.appendChild(b);
@@ -715,13 +712,14 @@ var selEx = 'gate';
         var field = document.getElementById('chainField');
         var box = document.getElementById('chainOpts');
         var list = availableChains();
-        if (list.length < 2) {
-          // 只有一条链（或无链）：无需用户选择，隐藏整个区块
-          selChain = list.length === 1 ? list[0].id : null;
+        if (list.length < 1) {
+          // 无可用链：隐藏整个区块
+          selChain = null;
           field.style.display = 'none';
           box.innerHTML = '';
           return;
         }
+        // 链名已下沉到本菜单，故即使只有一条链也要显示（让用户明确看到走哪个网络）
         if (!list.some(function (ch) { return ch.id === selChain; })) {
           selChain = list[0].id;
         }
