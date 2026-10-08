@@ -65,6 +65,12 @@
         box-shadow: 0 8px 28px rgba(15, 118, 110, .08);
         text-align: left;
       }
+      /* 公告型币种（MIXIN）：内容较长，放大字号并加高行距 */
+      .chain-note.long {
+        padding: 14px 16px;
+        font-size: 13.5px;
+        line-height: 1.85;
+      }
       .field + .field { margin-top: 18px; }
       .label {
         display: block;
@@ -335,7 +341,8 @@
         // 个人钱包收款，无需交易所 UID
         { id: 'wemix',   name: 'WEMIX PLAY（娱美德）', uid: null, noUid: true },
         // 个人钱包收款，无需交易所 UID
-        { id: 'marblex', name: 'Marblex Wallet（网石）', uid: null, noUid: true }
+        { id: 'marblex', name: 'Marblex Wallet（网石）', uid: null, noUid: true },
+        { id: 'mixin',   name: 'MIXIN（Private Crypto Wallet）', uid: null, noUid: true }
       ];
 
       // 币种：各链的收款地址、最低额度与网络手续费说明
@@ -427,6 +434,23 @@
             }
           ],
           note: '请<b>不要</b>向我的地址传送除 <b>MBX、MBXL</b> 之外的其他代币。'
+        },
+        {
+          id: 'mixin',
+          ex: 'mixin',
+          name: 'MIXIN',
+          notice: true,
+          note: '<b>本平台不提供收款地址，请勿在此捐赠。</b>' +
+            '<br /><br />' +
+            '<b>为什么不用它收款——2023 年 9 月 23 日的事：</b><br />' +
+            '· 云服务商数据库被拖走，损失约 2 亿美元（官方估算 1.4 亿）<br />' +
+            '· 官方承诺全额赔付的仅 MDTu 约 2300 万，且期限为 2026-09-23（已过，未见兑付公告）<br />' +
+            '· 占比最大的 MDTb、MDTe「暂无明确时间表」——约 88% 的债务没有兑付期限<br />' +
+            '· 赔付形式是发 MDT 债务代币，不是原资产，能否换回现金取决于平台后续是否还有钱<br />' +
+            '· 黑客悬赏 2000 万美元求归还未果，其钱包至今仍持有约 1.7 亿美元未动用<br />' +
+            '<br />' +
+            'Mixin 是托管钱包，私钥在平台手里，出事后能暂停提现本身就说明资产完全由其控制，' +
+            '并非「去中心化钱包」。若确需使用，建议只放小额并及时提走。'
         }
       ];
 
@@ -523,7 +547,13 @@
         var singleQr = document.getElementById('qr');
         var singleAddr = document.getElementById('addr').parentNode;
 
-        if (c.addrs && c.addrs.length) {
+        if (c.notice) {
+          // 公告型币种：不提供收款地址，只显示下方说明文字
+          singleQr.style.display = 'none';
+          singleAddr.style.display = 'none';
+          multi.classList.remove('show');
+          multi.innerHTML = '';
+        } else if (c.addrs && c.addrs.length) {
           // 多地址模式：每个网络一个收款块，各自带二维码、地址与复制按钮
           singleQr.style.display = 'none';
           singleAddr.style.display = 'none';
@@ -552,7 +582,9 @@
           singleQr.alt = c.name + ' 收款码';
           document.getElementById('addr').textContent = c.addr;
         }
-        document.getElementById('note').innerHTML = c.note || '';
+        var noteEl = document.getElementById('note');
+        noteEl.className = c.notice ? 'chain-note long' : 'chain-note';
+        noteEl.innerHTML = c.note || '';
         renderMeta();
       }
 
