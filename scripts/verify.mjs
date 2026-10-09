@@ -648,6 +648,50 @@ if (exists(wfDir)) {
   }
 }
 
+// ---------- 13c. 编码完整性 ----------
+section('13c. 编码完整性');
+
+/**
+ * 检测乱码字符（U+FFFD REPLACEMENT CHARACTER）。
+ *
+ * 背景：FORK_GUIDE.md 曾有一个标题里，「原始逻辑」的「始」字
+ * 被截断成了两个U+FFFD（替换字符），显示为「原??逻辑」。
+ * 注意：本注释刻意不复制那个坏字符，否则本脚本自己就成了乱码源头。
+ * 上下文完全能推断原意，但**如果不主动扫，永远不会有人发现**：
+ * GitHub 正常渲染、搜索功能正常、语法正确、校验脚本全绿。
+ *
+ * 危害：文档标题对读者不可读，且搜索引擎抓到的标题变成乱码，
+ *直接损害收录质量——而这类问题恰好是所有其他检查都抓不到的。
+ */
+const ENCODING_SENSITIVE = [
+  'README.md', 'FORK_GUIDE.md', 'MAINTAINING.md', 'DESIGN.md', 'LICENSE.md',
+  '员工实测数据核实修改清单.md',
+  'index.html', 'sponsor.html', 'projects.html', '404.html',
+  'scripts/verify.mjs', 'submit-indexnow.mjs',
+];
+
+let mojibakeFound = 0;
+ENCODING_SENSITIVE.filter(exists).forEach((f) => {
+  const t = read(f);
+  const idxs = [...t.matchAll(/\uFFFD/g)].map((m) => m.index);
+  if (idxs.length === 0) { ok(`${f} 无乱码字符`); return; }
+  mojibakeFound += idxs.length;
+  const details = idxs.slice(0, 5).map((i) => {
+    const line = t.slice(0, i).split('\n').length;
+    const ctx = t.slice(Math.max(0, i - 20), i + 20).replace(/\n/g, ' ');
+    return `第 ${line} 行: ...${ctx}...`;
+  });
+  err(`${f} 含 ${idxs.length} 个乱码字符（U+FFFD）`,
+    details.join('\n      ') + (idxs.length > 5 ? `\n      …… 另有 ${idxs.length - 5} 处` : '') +
+    '\n      U+FFFD 通常是字节被截断造成的（编码不匹配或写入中断）。');
+});
+
+// 标题里出现替换字符尤其严重：搜索引擎会直接抓到乱码标题
+const mdTitles = [...read('FORK_GUIDE.md').matchAll(/^#{1,3}\s+(.+)$/gm)]
+  .map((m) => m[1])
+  .filter((t) => /\uFFFD/.test(t));
+if (mdTitles.length === 0) ok('FORK_GUIDE.md 的所有标题无乱码');
+
 // ---------- 14. 非部署副本 ----------
 section('14. 非部署副本提示');
 if (exists(NON_DEPLOY_COPY)) {
