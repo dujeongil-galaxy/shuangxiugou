@@ -238,6 +238,20 @@ var title = card.querySelector('h3');
 
 因为整套机制是**事后打补丁**而非源头控制——所有补丁都在猜测 React 渲染出的 DOM 结构。这个架构下，**失败模式默认就是静默的**。
 
+### 5.5 已采取的对策（2026-10-09）
+
+| 手段 | 位置 | 作用 |
+|---|---|---|
+| 静态校验脚本 62 项 | `scripts/verify.mjs` | 提交前把大部分静默故障变成 `exit 1` |
+| CI 自动运行 | `.github/workflows/verify.yml` | push / PR 时自动跑，失败标红 |
+| 运行时诊断日志 | `index.html` 的 `diagWarn` / `diagError` | 页面上看不出来的问题在 F12 控制台留痕（`[双休购]` 前缀），计数见 `__shuangxiugouDiag` |
+| 逐节点判空 | `index.html` 的自定义卡插入逻辑 | 模板结构变化时不抛异常中断整批插入，改为告警并继续 |
+| 基线 tag | `baseline-2026-10-09` | 出问题时可回滚对比 |
+
+**注意：这些只是「让失败可见」，没有改变架构本身。** 5.2 提到的
+「依赖 Tailwind class 名定位」这一根本脆弱性依然存在 —— React 升级或改样式仍会让选择器失效。
+彻底解决需要重构为 SSG/SSR（第十节第 5 项）。
+
 这是本仓库最需要改善的一点，见第九节建议 1。
 
 ---
@@ -277,9 +291,9 @@ var title = card.querySelector('h3');
 |---|---|---|
 | 纯客户端渲染 | 已有 noscript 兜底 | 收录速度慢，正文对爬虫依赖 JS |
 | `app/` 源码与线上产物脱节 | 未同步 | 源码重建会覆盖线上数据 |
-| 运行时补丁无 CI 校验 | **2026-10-09 部分解决** | 已有 `scripts/verify.mjs`（62 项静态检查，`npm run verify`），但**尚未接入 GitHub Actions**，仍需手动或靠 pre-commit |
+| 运行时补丁无 CI 校验 | **2026-10-09 已解决** | `scripts/verify.mjs`（62 项静态检查，`npm run verify`）+ `.github/workflows/verify.yml` 在 push/PR 时自动运行，失败标红 |
 | 静态产物手工程度高 | 无构建 | 每次改数据需手工提交 + 递增 `?v=N` |
-| 无基线 tag | **未解决** | 仓库至今没有任何 tag，静默失效时无回滚点 |
+| 无基线 tag | **2026-10-09 已解决** | 已建 `baseline-2026-10-09`（数字口径统一 + null 规则 + 校验脚本落地后的快照） |
 | 文档数字口径不统一 | **2026-10-09 已统一** | 此前 README 26 张 / 核实清单 31 张 / 页面 36 家，三处互相矛盾。已统一为 32 内置 + 5 自定义 = 37 张。**新增或删除卡片时必须同步更新 README、FORK_GUIDE、MAINTAINING、核实清单、`index.html` 的 noscript 清单五处** |
 | `sponsor.html` 未进 sitemap | **2026-10-09 已解决** | 已补入 `sitemap.xml`（现含 3 条：首页 / projects.html / sponsor.html） |
 | `sponsor.html` 为手动维护 | 无模板 | 与 `app/sponsor/page.tsx` 并存，注意勿改错位置 |
@@ -313,7 +327,11 @@ npm run verify:quiet    # 只输出问题（适合 pre-commit / CI）
 | 11 | bundle `?v=N` 版本号一致性 | 改了 bundle 忘了递增，吃旧缓存 |
 | 12 | 非部署副本差异提示 | 误改根目录副本 |
 
-有任何一项失败即 `exit 1`，可直接接入 CI 或 pre-commit。
+有问题即 `exit 1`，可直接接入 CI 或 pre-commit。
+
+**已接入 GitHub Actions**：`.github/workflows/verify.yml` 在每次 push / PR 到 `main`
+时自动运行 `node scripts/verify.mjs`（Node 20，零依赖，不需 `npm install`）。
+失败会把这次 push 标红。也可在 Actions 页面手动触发（`workflow_dispatch`）。
 
 ### 脚本自身踩过的坑（维护时注意）
 
@@ -342,8 +360,8 @@ npm run verify:quiet    # 只输出问题（适合 pre-commit / CI）
 
 1. ~~**最高**：建校验脚本~~ —— **2026-10-09 已完成**（`scripts/verify.mjs`，零依赖，62 项检查）
 2. ~~**较高**：统一文档卡片数量口径~~ —— **2026-10-09 已完成**（32 + 5 = 37，五处同步）
-3. **中等**：把校验脚本接入 GitHub Actions，实现 push 后自动跑（`npm run verify:quiet`）
-4. **中等**：补建基线 tag（当前仓库无 tag，静默失效时无回滚点）
+3. ~~**中等**：校验脚本接入 CI~~ —— **2026-10-09 已完成**（`.github/workflows/verify.yml`，push/PR 自动运行）
+4. ~~**中等**：补建基线 tag~~ —— **2026-10-09 已完成**（`baseline-2026-10-09`）
 5. **较低**：视需求决定是否重构为 SSG/SSR（框架级改动，工作量大，可一次性根除第五节全部风险）
 6. **较低**：`sponsor.html` 若长期保留，考虑是否改为从 `app/sponsor/page.tsx` 构建产出，避免两处维护
 
