@@ -20,7 +20,13 @@ jobs:
     name: verify.mjs 静态校验
     runs-on: ubuntu-latest
     steps:
+      # fetch-depth: 0 = 完整历史。
+      # 校验脚本会用 `git cat-file -e` 核验文档里引用的提交号是否真实存在，
+      # 默认的浅克隆（fetch-depth: 1）只有最新 1 个提交的对象，
+      # 会把所有历史提交误判成「编造的哈希」。
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:

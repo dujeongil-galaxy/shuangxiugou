@@ -265,24 +265,52 @@ for (const d of docs) {
 
 // ---------- 9. 提交号真实性 ----------
 section('9. 文档中的提交号真实性');
-let hashTotal = 0;
-let hashBad = 0;
-for (const d of docs) {
-  const t = read(d);
-  // 提取反引号包裹的 7 位十六进制，且排除已在「不可核验」说明语境里的
-  const hashes = [...new Set([...t.matchAll(/`([0-9a-f]{7})`/g)].map((x) => x[1]))];
-  for (const h of hashes) {
-    // 跳过被文档明确标注为「不存在 / 不可核验 / 反例」的
-    const idx = t.indexOf('`' + h + '`');
-    const ctx = t.slice(Math.max(0, idx - 120), idx + 120);
-    if (/不存在|不可核验|编造|反例|无此提交/.test(ctx)) continue;
-    hashTotal++;
-    let valid = false;
-    try { execSync(`git cat-file -e ${h}`, { cwd: ROOT, stdio: 'ignore' }); valid = true; } catch { valid = false; }
-    if (!valid) { hashBad++; err(`${d} 引用了不存在的提交 ${h}`, '未落仓库的改动请写「无对应提交」，不要编造哈希'); }
+
+/**
+ * ⚠️ 浅克隆陷阱（CI 上真实踩过）：
+ * GitHub Actions 的 actions/checkout 默认 `fetch-depth: 1`，仓库里只有
+ * **最新 1 个提交**的对象。此时 `git cat-file -e <历史哈希>` 对所有历史提交
+ * 都会失败，本项检查会把全部真实提交号误判成「编造的哈希」，
+ * 在 CI 上凭空报出十几条错误。
+ *
+ * 判据：`git rev-list --count HEAD` 若小于文档里出现的最大哈希数，
+ * 说明历史不完整，本项自动跳过并说明原因，不误报。
+ */
+function shallowCloneLimit() {
+  try {
+    return parseInt(execSync('git rev-list --count HEAD', { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(), 10);
+  } catch {
+    return Infinity; // 不是 git 仓库或命令失败 → 不设限
   }
 }
-if (hashBad === 0) ok(`核验了 ${hashTotal} 个提交号，全部真实存在`);
+
+const commitCount = shallowCloneLimit();
+let hashTotal = 0;
+let hashBad = 0;
+
+if (!Number.isFinite(commitCount) || commitCount < 30) {
+  // 历史不完整（浅克隆），跳过本项而非误报
+  note(`检出历史仅 ${commitCount} 个提交（浅克隆），跳过「提交号真实性」检查以免误报`);
+  note('完整校验需仓库含全部历史：git clone --depth=full，或在 CI 中设 fetch-depth: 0');
+} else {
+  for (const d of docs) {
+    const t = read(d);
+    // 提取反引号包裹的 7 位十六进制
+    const hashes = [...new Set([...t.matchAll(/`([0-9a-f]{7})`/g)].map((x) => x[1]))];
+    for (const h of hashes) {
+      // 跳过被文档明确标注为「不存在 / 不可核验 / 编造 / 反例」的——
+      // 这些是反例引用，不是真实引用。
+      const idx = t.indexOf('`' + h + '`');
+      const ctx = t.slice(Math.max(0, idx - 120), idx + 120);
+      if (/不存在|不可核验|编造|反例|无此提交/.test(ctx)) continue;
+      hashTotal++;
+      let valid = false;
+      try { execSync(`git cat-file -e ${h}`, { cwd: ROOT, stdio: 'ignore' }); valid = true; } catch { valid = false; }
+      if (!valid) { hashBad++; err(`${d} 引用了不存在的提交 ${h}`, '未落仓库的改动请写「无对应提交」，不要编造哈希'); }
+    }
+  }
+  if (hashBad === 0) ok(`核验了 ${hashTotal} 个提交号，全部真实存在（仓库共 ${commitCount} 个提交）`);
+}
 
 // ---------- 10. 运行时补丁健壮性 ----------
 section('10. 运行时补丁健壮性（静默失效防护）');
@@ -400,6 +428,23 @@ if (exists(NON_DEPLOY_COPY)) {
   const absent = [...realIds].filter((i) => !copyIds.has(i));
   note(`根目录 ${NON_DEPLOY_COPY} 是非部署副本，与 assets 版不一致（仅副本有：${only.join(', ') || '无'}；副本缺：${absent.join(', ') || '无'}）。改数据请只改 assets/ 那份。`);
   ok('非部署副本的存在已被识别并提示');
+}
+
+// ---------- 14. 运行环境自检 ----------
+section('15. 运行环境自检');
+
+// 本项目真实踩过：CI 上因浅克隆全线误报，而本地全过。
+// 这里把环境差异显式打印出来，让人一眼看出「当前跑在什么环境」，
+// 避免再次把「本地过」当成「CI 也会过」。
+const inCI = !!process.env.CI;
+note(inCI
+  ? `运行环境：CI（CI=${process.env.CI}, GITHUB_ACTIONS=${process.env.GITHUB_ACTIONS || '未设置'}）`
+  : '运行环境：本地');
+note(`检出提交数：${Number.isFinite(commitCount) ? commitCount : '未知（非 git 仓库或命令失败）'}，平台：${process.platform}`);
+if (inCI && Number.isFinite(commitCount) && commitCount < 30) {
+  warn('CI 中的 git 历史不完整（浅克隆）',
+    '提交号真实性检查已被跳过。若要让它在 CI 中真正生效，' +
+    '请给 actions/checkout 设 fetch-depth: 0');
 }
 
 // ---------- 汇总 ----------
