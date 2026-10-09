@@ -13,6 +13,28 @@
 
 打开 **https://dujeongil-galaxy.github.io/shuangxiugou/**
 
+> **不需要安装、不需要配置、不需要懂代码。** 用浏览器（包括手机浏览器）直接打开上面的网址就能查。
+> 如果页面打不开，可以试试[this 一页收录了 GitHub 上所有「双休购」相关项目](https://dujeongil-galaxy.github.io/shuangxiugou/projects.html)，
+> 里面逐个标注了哪些仓库有可直接打开的在线站点、哪些只有代码，避免你点进搜索结果才发现用不了。
+
+---
+
+## 🧭 同类项目导航
+
+**[打开同类项目导航页 →](https://dujeongil-galaxy.github.io/shuangxiugou/projects.html)**
+
+GitHub 上搜「双休购」会出来十几个仓库，但其中**只有一半真的能打开网站**。
+导航页把「双休购 / shuangxiugou / two-day-weekend」相关的开源项目整理在一起，
+按在线站点可用性分成三组：
+
+- **可直接在线访问**（5 个）—— 打开即用，无需本地部署
+- **仓库标了地址但实测打不开**（2 个）—— 标了 homepage 但连接超时，省得再试
+- **仅代码仓库无站点**（5 个）—— 需自行 fork 后按 README 部署
+
+站点可用性为逐个实测结果（最后核对 2026-10-09），非照抄仓库填写的地址。
+收录不代表本站对这些项目的推荐或背书，发现失效欢迎
+[开 Issue 纠正](https://github.com/dujeongil-galaxy/shuangxiugou/issues/new)。
+
 ---
 
 ## 📋 数据核实文档
