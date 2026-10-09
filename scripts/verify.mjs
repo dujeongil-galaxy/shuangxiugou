@@ -354,8 +354,45 @@ if (exists(gaPath)) {
   err('.gitattributes 不存在', '缺它会导致 autocrlf 把 bundle 的 \\n 转成 \\r\\n，线上文件与仓库不一致');
 }
 
-// ---------- 13. 非部署副本 ----------
-section('13. 非部署副本提示');
+// ---------- 13. 面向 fork 者的文档完整性 ----------
+section('13. 面向 fork 者的文档完整性');
+
+// 这些是给二次 fork 的开发者看的入口，内容失效会直接误导人
+const FORK_DOCS = ['FORK_GUIDE.md', 'README.md', 'MAINTAINING.md'];
+FORK_DOCS.filter(exists).forEach((d) => {
+  const t = read(d);
+  check(/npm run verify/.test(t),
+    `${d} 提到了校验命令 npm run verify`,
+    `${d} 未提及校验脚本，fork 者会不知道改完该怎么验证`);
+});
+
+// FORK_GUIDE 的「一页速查」是 fork 者的行动清单，必须包含这几条关键约束。
+// ⚠️ 只扫速查章节本身：其他章节（如数据合规、第十三节）也提到过这些约束，
+//扫全文会出现假阴性——删掉速查行照样能匹配到别处。
+if (exists('FORK_GUIDE.md')) {
+  const fg = read('FORK_GUIDE.md');
+  // 标题实际是「## 十二、一页速查」，序号在中间，
+  // 所以不能写 /^##\s*一页速查/ （匹配不到）。
+  const qIdx = fg.search(/^##\s*[^\n]*一页速查/m);
+  check(qIdx >= 0, 'FORK_GUIDE 有「一页速查」章节');
+  const quick = qIdx >= 0 ? fg.slice(qIdx) : '';
+  const mustMention = [
+    ['null 而非 0', /`null`[^\n]*不要填\s*`?0`?/],
+    ['noscript 清单同步', /noscript/i],
+    ['四处文档同步', /(README[\s\S]{0,60}FORK_GUIDE|四处)/],
+    ['h2/h3 双查', /querySelector\('h2'\)\s*\|\|\s*querySelector\('h3'\)/],
+    ['不要 npm run build 部署', /npm run build/],
+    ['改完跑校验', /npm run verify/],
+    ['不要动根目录同名副本', /根目录/],
+    ['递增 ?v=N', /\?v=N/],
+  ];
+  mustMention.forEach(([label, re]) => {
+    check(re.test(quick), `一页速查含关键约束：${label}`);
+  });
+}
+
+// ---------- 14. 非部署副本 ----------
+section('14. 非部署副本提示');
 if (exists(NON_DEPLOY_COPY)) {
   const copyIds = new Set([...read(NON_DEPLOY_COPY).matchAll(/\{id:`([a-z0-9-]+)`,name:/g)].map((x) => x[1]));
   const realIds = new Set(brandCards.map((c) => c.id));

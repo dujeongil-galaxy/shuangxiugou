@@ -326,7 +326,8 @@ npm run verify:quiet    # 只输出问题（适合 pre-commit / CI）
 | 10 | 运行时补丁健壮性（h2/h3 双查、诊断日志、空 catch、判空） | 见第五节全部风险 |
 | 11 | bundle `?v=N` 版本号一致性 | 改了 bundle 忘了递增，吃旧缓存 |
 | 12 | `.gitattributes` 换行符锁定 | `*.mdtext` 笔误类问题重演，Actions YAML 变 CRLF 会解析失败 |
-| 13 | 非部署副本差异提示 | 误改根目录副本 |
+| 13 | **面向 fork 者的文档完整性** | FORK_GUIDE 速查表失效，后来 fork 的开发者照着做会踩坑 |
+| 14 | 非部署副本差异提示 | 误改根目录副本 |
 
 有问题即 `exit 1`，可直接接入 CI 或 pre-commit。
 
