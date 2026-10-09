@@ -15,7 +15,7 @@
     <meta name="format-detection" content="telephone=no" />
     <meta name="msvalidate.01" content="1CA900F523A02F4764BEA0EA3134789B" />
     <link rel="canonical" href="https://dujeongil-galaxy.github.io/shuangxiugou/" />
-    <link rel="preload" as="script" href="./assets/index-YthXZ9eP.js?v=12" />
+    <link rel="preload" as="script" href="./assets/index-YthXZ9eP.js?v=13" />
     <link rel="preload" as="style" href="./assets/index-BgVofs0W.css" />
     <link rel="dns-prefetch" href="https://dujeongil-galaxy.github.io" />
     <meta property="og:title" content="双休购｜查公司双休评级，避雷单休大小周 996 血汗工厂" />
@@ -57,7 +57,7 @@
       }
     }
     </script>
-    <script type="module" crossorigin src="./assets/index-YthXZ9eP.js?v=12"></script>
+    <script type="module" crossorigin src="./assets/index-YthXZ9eP.js?v=13"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-BgVofs0W.css">
     <!-- 良配 · 限时推广广告位（独立文件，改文案/样式不必动主页面；改完请把 ?v=N 的 N +1 防缓存） -->
     <link rel="stylesheet" href="./liangpei-ad.css?v=1">
@@ -297,7 +297,7 @@
           logoAlt: '零食很忙',
           workPolicy: '月休2-4天 / 门店两班倒',
           overtime: '节假日加班常见 / 连续站立8-10小时',
-          doubleRestRate: '0',
+          doubleRestRate: null,
           offWorkTime: '22:30',
           voteCount: '0',
           desc: '"门店实行早晚班轮换，日均工作8-10小时，月休2-4天（多数门店仅2天），晚班普遍22点半后下班，节假日加班常见，一线员工需连续站立作业（多店招聘信息+员工爆料）"',
@@ -319,8 +319,8 @@
           logoAlt: '茶百道',
           workPolicy: '月休不足4天',
           overtime: '旺季高峰需连轴顶班',
-          doubleRestRate: '0',
-          offWorkTime: '未知',
+          doubleRestRate: null,
+          offWorkTime: null,
           voteCount: '0',
           desc: '"门店店员匿名反馈：月休不足4天（单休都算不上），旺季用工紧张需连轴顶班（线下一手·匿名）"',
           tags: ['新茶饮', '奶茶连锁', '加盟门店'],
@@ -341,8 +341,8 @@
           logoAlt: '兵立王',
           workPolicy: '月休不足4天',
           overtime: '节假日加班常见',
-          doubleRestRate: '0',
-          offWorkTime: '未知',
+          doubleRestRate: null,
+          offWorkTime: null,
           voteCount: '0',
           desc: '"门店员工匿名反馈：月休不足4天（线下一手·匿名）"',
           tags: ['新茶饮', '奶茶连锁', '军旅茶饮'],
@@ -492,8 +492,12 @@
           var stats = newCard.querySelectorAll('.bg-slate-900 .grid div div');
           // 注意: stats[0]=真实双休率标签, stats[1]=真实双休率值, stats[2]=平均离岗标签, stats[3]=平均离岗值
           // 只改值不改标签, 避免把"真实双休率:"标签覆盖掉
-          stats[1].textContent = config.doubleRestRate;
-          stats[3].textContent = config.offWorkTime;
+          // null = 该字段尚未核实, 显示「—」; null ≠ 0, 不代表实测为 0
+          function statText(v) {
+            return (v === null || v === undefined || v === '') ? '—' : v;
+          }
+          stats[1].textContent = statText(config.doubleRestRate);
+          stats[3].textContent = statText(config.offWorkTime);
           // 改描述
           newCard.querySelector('.bg-slate-900 .italic').textContent = config.desc;
           // 改标签
