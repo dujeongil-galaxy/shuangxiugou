@@ -242,7 +242,7 @@ var title = card.querySelector('h3');
 
 | 手段 | 位置 | 作用 |
 |---|---|---|
-| 静态校验脚本 62 项 | `scripts/verify.mjs` | 提交前把大部分静默故障变成 `exit 1` |
+| 静态校验脚本 | `scripts/verify.mjs` | 提交前把大部分静默故障变成 `exit 1` |
 | CI 自动运行 | `.github/workflows/verify.yml` | push / PR 时自动跑，失败标红 |
 | 运行时诊断日志 | `index.html` 的 `diagWarn` / `diagError` | 页面上看不出来的问题在 F12 控制台留痕（`[双休购]` 前缀），计数见 `__shuangxiugouDiag` |
 | 逐节点判空 | `index.html` 的自定义卡插入逻辑 | 模板结构变化时不抛异常中断整批插入，改为告警并继续 |
@@ -291,7 +291,7 @@ var title = card.querySelector('h3');
 |---|---|---|
 | 纯客户端渲染 | 已有 noscript 兜底 | 收录速度慢，正文对爬虫依赖 JS |
 | `app/` 源码与线上产物脱节 | 未同步 | 源码重建会覆盖线上数据 |
-| 运行时补丁无 CI 校验 | **2026-10-09 已解决** | `scripts/verify.mjs`（62 项静态检查，`npm run verify`）+ `.github/workflows/verify.yml` 在 push/PR 时自动运行，失败标红 |
+| 运行时补丁无 CI 校验 | **2026-10-09 已解决** | `scripts/verify.mjs`（静态检查，`npm run verify`）+ `.github/workflows/verify.yml` 在 push/PR 时自动运行，失败标红 |
 | 静态产物手工程度高 | 无构建 | 每次改数据需手工提交 + 递增 `?v=N` |
 | 无基线 tag | **2026-10-09 已解决** | 已建 `baseline-2026-10-09`（数字口径统一 + null 规则 + 校验脚本落地后的快照） |
 | 文档数字口径不统一 | **2026-10-09 已统一** | 此前 README 26 张 / 核实清单 31 张 / 页面 36 家，三处互相矛盾。已统一为 32 内置 + 5 自定义 = 37 张。**新增或删除卡片时必须同步更新 README、FORK_GUIDE、MAINTAINING、核实清单、`index.html` 的 noscript 清单五处** |
@@ -310,7 +310,7 @@ npm run verify:quiet    # 只输出问题（适合 pre-commit / CI）
 ```
 
 **零依赖，纯 Node.js**（≥18），不需要 `npm install`，不需要 puppeteer/playwright，
-任何环境都能跑。当前覆盖 **12 类共 62 项**检查：
+任何环境都能跑。当前覆盖以下类目（以脚本实际输出为准）：
 
 | # | 检查内容 | 拦住过的真实问题 |
 |---|---|---|
@@ -318,14 +318,15 @@ npm run verify:quiet    # 只输出问题（适合 pre-commit / CI）
 | 2 | 内置卡数值字段无占位 0 | 把「未核实」写成「实测为 0」 |
 | 3 | 自定义卡逐项校验：数量、占位 0、「未知」字符串、logo、insertAfter | 赵一鸣/茶百道/兵立王的 `0` 占位 |
 | 4 | 四个 HTML 的全部本地引用 | 404 |
-| 5 | 32 条 logo 映射路径 | logo 失效 |
+| 5 | 全部 logo 映射路径（brandLogos + 自定义卡） | logo 失效 |
 | 6 | **noscript 清单与实际卡片一致** | 喜茶加卡时漏更新，爬虫看到旧列表 |
 | 7 | 四个文档的卡片数字口径 | README 26 / 清单 31 / 页面 36 家三方矛盾 |
 | 8 | 文档内部链接有效性 | 文件改名后链接失效 |
 | 9 | **文档中提交号的真实性**（`git cat-file -e`） | 34 个凭空编造的哈希 |
 | 10 | 运行时补丁健壮性（h2/h3 双查、诊断日志、空 catch、判空） | 见第五节全部风险 |
 | 11 | bundle `?v=N` 版本号一致性 | 改了 bundle 忘了递增，吃旧缓存 |
-| 12 | 非部署副本差异提示 | 误改根目录副本 |
+| 12 | `.gitattributes` 换行符锁定 | `*.mdtext` 笔误类问题重演，Actions YAML 变 CRLF 会解析失败 |
+| 13 | 非部署副本差异提示 | 误改根目录副本 |
 
 有问题即 `exit 1`，可直接接入 CI 或 pre-commit。
 
@@ -358,7 +359,7 @@ npm run verify:quiet    # 只输出问题（适合 pre-commit / CI）
 
 ## 十、后续建议（按优先级）
 
-1. ~~**最高**：建校验脚本~~ —— **2026-10-09 已完成**（`scripts/verify.mjs`，零依赖，62 项检查）
+1. ~~**最高**：建校验脚本~~ —— **2026-10-09 已完成**（`scripts/verify.mjs`，零依赖）
 2. ~~**较高**：统一文档卡片数量口径~~ —— **2026-10-09 已完成**（32 + 5 = 37，五处同步）
 3. ~~**中等**：校验脚本接入 CI~~ —— **2026-10-09 已完成**（`.github/workflows/verify.yml`，push/PR 自动运行）
 4. ~~**中等**：补建基线 tag~~ —— **2026-10-09 已完成**（`baseline-2026-10-09`）

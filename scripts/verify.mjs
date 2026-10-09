@@ -334,8 +334,28 @@ check(vMatch.length > 0, `index.html 声明了 bundle 版本 ${vMatch[0]}`);
 const allSame = vMatch.every((v) => v === vMatch[0]);
 check(allSame, '所有 script/link 引用版本号一致', allSame ? '' : `出现多个版本：${[...new Set(vMatch)].join(', ')}`);
 
-// ---------- 12. 非部署副本 ----------
-section('12. 非部署副本提示');
+// ---------- 12. 换行符锁定 ----------
+section('12. 换行符锁定（.gitattributes）');
+const gaPath = '.gitattributes';
+if (exists(gaPath)) {
+  const ga = read(gaPath);
+  // 本项目踩过的坑：*.mdtext 少打一个空格，整类文件没被锁定 LF；
+  // GitHub Actions 的 YAML 若被转成 CRLF 会直接解析失败。
+  ['*.html', '*.md', '*.json', '*.xml', '*.mjs', '*.yml', '*.yaml'].forEach((pat) => {
+    const re = new RegExp(pat.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s+text\\s+eol=lf');
+    check(re.test(ga), `.gitattributes 锁定了 ${pat} 为 LF`);
+  });
+  // bundle 与图片必须禁止换行转换
+  ['*.js', '*.css'].forEach((pat) => {
+    const re = new RegExp(pat.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s+-text');
+    check(re.test(ga), `.gitattributes 对 ${pat} 禁止换行符转换`);
+  });
+} else {
+  err('.gitattributes 不存在', '缺它会导致 autocrlf 把 bundle 的 \\n 转成 \\r\\n，线上文件与仓库不一致');
+}
+
+// ---------- 13. 非部署副本 ----------
+section('13. 非部署副本提示');
 if (exists(NON_DEPLOY_COPY)) {
   const copyIds = new Set([...read(NON_DEPLOY_COPY).matchAll(/\{id:`([a-z0-9-]+)`,name:/g)].map((x) => x[1]));
   const realIds = new Set(brandCards.map((c) => c.id));
