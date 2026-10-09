@@ -28,9 +28,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Node 24：GitHub 已弃用 Node 20 runner（actions/checkout@v4、
+      # actions/setup-node@v4 仍 target Node 20，会被强制跑在 Node 24 上）。
+      # 直接用 Node 24，消除告警。
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       # 脚本零依赖，不需要 npm install，直接跑。
       # 有任何一项检查失败即 exit 1，GitHub 会把这次 push 标红。
