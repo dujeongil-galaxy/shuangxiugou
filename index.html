@@ -404,6 +404,28 @@
       ];
       // ====================================
       
+      // ====================================
+      // 统一诊断日志：把「静默失效」变成「明确可见」
+      //
+      // 为什么需要：这套补丁是「React 渲染后抓 DOM 再改写」的事后打补丁机制，
+      // 所有失败都是静默的——页面上看不出任何异常，只是某个卡片少了一部分内容。
+      // 排查时先看 F12 控制台有没有 [双休购] 开头的告警。
+      //
+      // ⚠️ 本块必须定义在所有调用点之前（不要依赖函数/变量提升）。
+      // ====================================
+      var LOG_PREFIX = '[双休购]';
+      var diagStats = { warn: 0, err: 0 };
+      function diagWarn(msg, detail) {
+        diagStats.warn++;
+        console.warn(LOG_PREFIX + '警告：' + msg, detail === undefined ? '' : detail);
+      }
+      function diagError(msg, detail) {
+        diagStats.err++;
+        console.error(LOG_PREFIX + '错误：' + msg, detail === undefined ? '' : detail);
+      }
+      // 暴露到window，方便在控制台一行查看本次加载的告警/错误总数
+      window.__shuangxiugouDiag = diagStats;
+
       // 通用：根据评级找模板卡片（S/A/B/C级）
       function getGradeTemplateCard(grade) {
         var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
@@ -420,6 +442,7 @@
           }
         }
         // 找不到对应评级时，退回第一张公司卡片当模板
+        if (fallback) diagWarn('getGradeTemplateCard 找不到评级「' + grade + '」的模板卡，已退回第一张公司卡片');
         return fallback;
       }
       
@@ -443,7 +466,13 @@
         customCardsConfig.forEach(function(config) {
           // 找插入位置的参考卡片
           var refCard = findCardByH3(config.insertAfter);
-          if (!refCard) return;
+          // 找不到参考卡片时静默 return 会导致这张自定义卡整个不出现，且无任何报错。
+          // 这类失败必须显式告警——insertAfter 的关键词要与实际卡片标题保持一致。
+          if (!refCard) {
+            diagError('自定义卡「' + config.name + '」找不到插入位置参照卡片：insertAfter="' + config.insertAfter + '"',
+                      '该卡不会出现在页面上。请核对 index.html 里 customCardsConfig 的 insertAfter 字段与实际卡片标题是否一致。');
+            return;
+          }
           var existing = document.getElementById(config.id);
           if (existing) {
             // 卡片已存在：若位置漂移（React 重渲染可能导致），纠正到参考卡片后面
@@ -454,25 +483,35 @@
           }
           // 找对应评级的模板卡片
           var templateCard = getGradeTemplateCard(config.grade);
-          if (!templateCard) return;
-          
+          if (!templateCard) {
+            diagError('自定义卡「' + config.name + '」找不到模板卡片（grade=' + config.grade + '）');
+            return;
+          }
+
           // 克隆模板
           var newCard = templateCard.cloneNode(true);
           newCard.id = config.id;
-          
+
           // 校正评级徽章（兼容徽章里的 "X级 · 描述" 结构）
           var badgeSpan = newCard.querySelector('span.inline-flex');
           if (badgeSpan && /[SABC]\s*级/.test(badgeSpan.textContent)) {
             badgeSpan.textContent = badgeSpan.textContent.replace(/[SABC]\s*级/, config.grade);
           }
-          
+
           // 改品牌名（h2/h3 都要查：SEO 修复会把 h3 换成 h2）
           var nameEl = newCard.querySelector('h2') || newCard.querySelector('h3');
           if (nameEl) nameEl.textContent = config.name;
+          else diagWarn('自定义卡「' + config.name + '」克隆后找不到标题元素（h2/h3）');
           // 改公司名
-          newCard.querySelectorAll('p')[0].textContent = config.company;
+          var compEl = newCard.querySelectorAll('p')[0];
+          if (compEl) compEl.textContent = config.company;
+          else diagWarn('自定义卡「' + config.name + '」找不到公司名 <p> 元素');
           // 改logo
           var logoDiv = newCard.querySelector('.w-10');
+          if (!logoDiv) {
+            diagError('自定义卡「' + config.name + '」找不到 logo 容器（.w-10），中止该卡插入');
+            return;
+          }
           logoDiv.textContent = '';
           var logoImg = document.createElement('img');
           logoImg.src = config.logo;
@@ -486,9 +525,15 @@
           };
           logoDiv.appendChild(logoImg);
           // 改工时政策
+          // 这几处是按下标直接取元素，模板结构一变就抛 TypeError 并中断整批插入，
+          // 所以逐个判空+ 告警，而不是让异常冒泡。
           var infoRows = newCard.querySelectorAll('.bg-slate-50 > div');
-          infoRows[0].querySelectorAll('span')[1].textContent = config.workPolicy;
-          infoRows[1].querySelectorAll('span')[1].textContent = config.overtime;
+          var workEl = infoRows[0] && infoRows[0].querySelectorAll('span')[1];
+          var overEl = infoRows[1] && infoRows[1].querySelectorAll('span')[1];
+          if (workEl) workEl.textContent = config.workPolicy;
+          else diagWarn('自定义卡「' + config.name + '」找不到工时政策字段');
+          if (overEl) overEl.textContent = config.overtime;
+          else diagWarn('自定义卡「' + config.name + '」找不到加班字段');
           // 改员工指数
           var stats = newCard.querySelectorAll('.bg-slate-900 .grid div div');
           // 注意: stats[0]=真实双休率标签, stats[1]=真实双休率值, stats[2]=平均离岗标签, stats[3]=平均离岗值
@@ -497,10 +542,14 @@
           function statText(v) {
             return (v === null || v === undefined || v === '') ? '—' : v;
           }
-          stats[1].textContent = statText(config.doubleRestRate);
-          stats[3].textContent = statText(config.offWorkTime);
+          if (stats[1]) stats[1].textContent = statText(config.doubleRestRate);
+          else diagWarn('自定义卡「' + config.name + '」找不到「真实双休率」值元素');
+          if (stats[3]) stats[3].textContent = statText(config.offWorkTime);
+          else diagWarn('自定义卡「' + config.name + '」找不到「平均离岗」值元素');
           // 改描述
-          newCard.querySelector('.bg-slate-900 .italic').textContent = config.desc;
+          var descEl = newCard.querySelector('.bg-slate-900 .italic');
+          if (descEl) descEl.textContent = config.desc;
+          else diagWarn('自定义卡「' + config.name + '」找不到描述元素');
           // 改标签
           var tags = newCard.querySelectorAll('.flex-wrap span');
           for (var i = 0; i < config.tags.length; i++) {
@@ -696,19 +745,35 @@
         headingFixScheduled = true;
         requestAnimationFrame(function() {
           headingFixScheduled = false;
-          try { fixHeadingHierarchy(); } catch (e) { /* 失败不影响页面 */ }
+          // 不要静默吞掉异常：记录到控制台，页面本身仍不受影响
+          try { fixHeadingHierarchy(); } catch (e) { diagError('fixHeadingHierarchy 抛异常', e); }
         });
       }
 
       function fixHeadingHierarchy() {
         var root = document.getElementById('root');
-        if (!root) return;
+        if (!root) { diagError('fixHeadingHierarchy 找不到 #root'); return; }
         var cards = root.querySelectorAll('div.bg-white.rounded-2xl.border');
         for (var i = 0; i < cards.length; i++) {
           var card = cards[i];
           if (card.getAttribute('data-h2-checked') === '1') continue;
+          // 已存在被我们改过的 h2，说明处理过了，别重复
+          if (card.querySelector('h2[data-h2-fixed]')) {
+            card.setAttribute('data-h2-checked', '1');
+            continue;
+          }
           var h3 = card.querySelector('h3');
-          if (!h3 || !h3.parentNode) { card.setAttribute('data-h2-checked', '1'); continue; }
+          if (!h3) {
+            // 找不到 h3 时不能直接标记「已检查」——若这张卡的标题已被别的逻辑
+            // 改成 h2 但没打 data-h2-fixed 标记，标记后就再也不会重试了，
+            // 属于不可恢复的静默失效。这里只告警，不标记。
+            diagWarn('卡片既无 h3 也无已标记的 h2，跳过（不标记 data-h2-checked）');
+            continue;
+          }
+          if (!h3.parentNode) {
+            diagWarn('h3 脱离文档（parentNode 为空），跳过且不标记');
+            continue;
+          }
           var h2 = document.createElement('h2');
           h2.innerHTML = h3.innerHTML;
           h2.className = h3.className;      // 样式完全沿用
