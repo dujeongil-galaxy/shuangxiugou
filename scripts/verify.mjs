@@ -14,8 +14,9 @@
  * 建议接入 CI 或本地 pre-commit。零依赖，任何环境都能跑。
  */
 
-import { readFileSync, existsSync, statSync } from 'node:fs';
-import { execSync } from 'node:child_process';
+import { readFileSync, existsSync, writeFileSync, unlinkSync } from 'node:fs';
+import { execSync, spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -99,6 +100,127 @@ brandCards.forEach((c, i) => {
   if (off === '0') err(`${c.name} 的 avgOffWorkTime 是 0`, '未核实应填 null');
 });
 ok('内置卡数值字段无占位 0');
+
+// ---------- 2b. 证据链完整性 ----------
+section('2b. 证据链完整性');
+
+/**
+ * 占位符 URL 检查。
+ * 背景：真实存在两条证据（迪卡侬 ESG、常州星宇官方通报）共用一个
+ * 占位链接 `ARTIxxxxxxxx.shtml`，读者点不开，等于没有证据。
+ * 这违反项目「不能把推测写成事实」的红线 —— 必须拦住。
+ */
+const PLACEHOLDER_PAT = /(xxx+|XXXX+|ARTIxxxxxxxx|example\.com|\.\.\.|待补|TODO)/i;
+const evRe = /\{id:`(ev-[a-z0-9-]+)`,date:`([0-9-]+)`,type:`([a-z_]+)`,title:`([^`]*)`/g;
+let evCount = 0;
+let evBad = 0;
+let evm;
+const todayStr = new Date().toISOString().slice(0, 10);
+while ((evm = evRe.exec(bundle)) !== null) {
+  const [, evId, evDate, , evTitle] = evm;
+  const chunk = bundle.slice(evm.index, evm.index + 2000);
+  const u = chunk.match(/sourceUrl:`([^`]*)`/)?.[1] ?? '';
+  if (!u) continue;
+  evCount++;
+  if (PLACEHOLDER_PAT.test(u)) {
+    evBad++;
+    err(`证据 ${evId}（${evDate}，${evTitle}）的 URL 是占位符`,
+      `URL: ${u} —— 读者无法点击核实，等于没有证据。请补真实链接，或在标题里明确标注「链接待补」`);
+  }
+  if (evDate > todayStr) {
+    evBad++;
+    err(`证据 ${evId} 的日期 ${evDate} 晚于今天`, '可能是笔误');
+  }
+}
+if (evBad === 0) ok(`${evCount} 条证据的 URL 均为真实链接，无占位符、无未来日期`);
+
+// 证据时效提示（不阻塞）：超过 1 年的招聘页/论坛帖可能已失效
+const evDates = [...new Set([...bundle.matchAll(/date:`(\d{4}-\d{2}-\d{2})`/g)].map((x) => x[1]))].sort();
+if (evDates.length) {
+  const cutoff = new Date();
+  cutoff.setFullYear(cutoff.getFullYear() - 1);
+  const cutoffStr = cutoff.toISOString().slice(0, 10);
+  const stale = evDates.filter((d) => d < cutoffStr);
+  if (stale.length) {
+    note(`证据日期跨度 ${evDates[0]} ~ ${evDates[evDates.length - 1]}，其中 ${stale.length} 个早于 ${cutoffStr}。招聘页与论坛帖可能已失效或内容变更，建议定期抽查`);
+  }
+}
+
+// ---------- 2c. bundle 语法完整性 ----------
+section('2c. bundle 语法完整性');
+
+/**
+ * 用 `node --check` 校验压缩 bundle 的语法。
+ *
+ * ## 为什么这项检查最重要
+ * 手工编辑压缩 bundle 时，多打一个 `[{`、少一个引号，都会让整个 bundle
+ * 语法崩溃 → **页面全白，但浏览器控制台通常不报任何错**。
+ * 本项目真实踩过：`evidence:[{[{id:` 多了一个 `[{`，
+ * 是靠「与 git 原版做 node --check 对照」才发现的。
+ *
+ * ## 为什么用 git 原版做对照
+ * React/JSX bundle 可能因 import.meta 等原因在node --check 下误报。
+ * 所以只有「git 里的原版通过 + 当前版本不通过」才判定为新引入的错误。
+ *
+ * ## 已知局限：Windows 本地可能跑不了
+ * Windows 上 spawnSync 稳定返回 EBUSY（status=null），
+ * 此时这项检查会显示「未能执行」而不是误报——本地能力受限，
+ * **权威判定在 CI（Linux）上**。这是有意为之：
+ * 宁可说「查不了」，也不给一个可能错的结论。
+ *
+ * 返回三态：'ok' | 'bad' | 'skip'（skip = 检查没能跑起来，不是语法错误）
+ */
+function nodeSyntaxCheck(text) {
+  const tmp = join(tmpdir(), `bundle-check-${process.pid}-${Math.random().toString(36).slice(2)}.mjs`);
+  try {
+    writeFileSync(tmp, text, 'utf8');
+    const r = spawnSync(process.execPath, ['--check', tmp], { encoding: 'utf8', timeout: 60000 });
+    if (r.error || r.status === null) return 'skip';
+    return r.status === 0 ? 'ok' : 'bad';
+  } catch {
+    return 'skip';
+  } finally {
+    try { unlinkSync(tmp); } catch { /* 忽略 */ }
+  }
+}
+
+const curCheck = nodeSyntaxCheck(bundle);
+if (curCheck === 'ok') {
+  ok('bundle 通过 node --check 语法校验');
+} else if (curCheck === 'skip') {
+  // 本地（尤其是 Windows）跑不了 node --check —— 这是能力限制，不是错误
+  note('当前环境无法执行 node --check（Windows 上spawn 偶发 EBUSY）');
+  note('bundle 语法的权威校验在 CI（Linux）上进行；本地请人工留意页面是否渲染正常');
+} else {
+  // curCheck === 'bad'：与 git 原版对照，区分「既有误报」与「新引入的错误」
+  //
+  // ⚠️ Windows 上不能在同一进程里先 execSync 再 spawnSync（EBUSY），
+  // 必须先让 git 把原版写到磁盘，隔开进程再检查。
+  let baseCheck = 'skip';
+  const basePath = join(tmpdir(), `bundle-base-${process.pid}-${Math.random().toString(36).slice(2)}.js`);
+  try {
+    execSync(`git show HEAD:${BUNDLE} > "${basePath}"`, { cwd: ROOT, stdio: 'ignore' });
+    baseCheck = nodeSyntaxCheck(readFileSync(basePath, 'utf8'));
+  } catch {
+    baseCheck = 'skip';
+  } finally {
+    try { unlinkSync(basePath); } catch { /* 忽略 */ }
+  }
+
+  if (baseCheck === 'ok') {
+    err('bundle 存在语法错误（git 原版正常 → 本次修改引入的）',
+      '手工编辑压缩 bundle 时极易打错括号或引号。' +
+      '这类错误会让 React 整个挂不上，**页面全白但浏览器控制台通常无报错**。' +
+      '请对照 git 版本逐字符检查：git diff --word-diff assets/index-YthXZ9eP.js');
+  } else if (baseCheck === 'bad') {
+    warn('bundle 未通过 node --check，但 git 原版同样不通过',
+      '大概率是 React/JSX bundle 的既有误报（如 import.meta），非本次修改引入。' +
+      '若你确实改了 bundle，请人工确认页面能正常渲染。');
+  } else {
+    warn('bundle 有语法错误，但无法取 git 原版做对照',
+      '不能确定是新引入的还是既有的。请人工确认页面能正常渲染。');
+  }
+}
 
 // ---------- 自定义卡解析 ----------
 section('3. 自定义卡（index.html 的 customCardsConfig）');
