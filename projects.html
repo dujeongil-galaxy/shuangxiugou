@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>同类项目导航｜双休购 ShuangxiuGo</title>
+    <meta
+      name="description"
+      content="GitHub 上「双休购 / shuangxiugou / two-day-weekend」相关开源项目汇总，按『有在线站点』与『仅代码仓库』标注，方便快速找到能直接打开的项目。"
+    />
+    <meta
+      name="keywords"
+      content="双休购,shuangxiugou,双休,双休企业名录,996,大小周,血汗工厂,开源项目导航,双休查询"
+    />
+    <meta name="theme-color" content="#0F766E" />
+    <link rel="canonical" href="https://dujeongil-galaxy.github.io/shuangxiugou/projects.html" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:site_name" content="双休购 · ShuangxiuGo" />
+    <meta property="og:url" content="https://github.com/dujeongil-galaxy/shuangxiugou" />
+    <meta property="og:title" content="同类项目导航｜双休购 ShuangxiuGo" />
+    <meta
+      property="og:description"
+      content="GitHub 上双休购相关开源项目汇总，标注哪些能直接在线访问，哪些只有代码仓库。"
+    />
+    <meta property="og:image" content="https://dujeongil-galaxy.github.io/shuangxiugou/assets/og-cover.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        background: #f8fafc;
+        color: #1f2937;
+        font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        line-height: 1.75;
+        -webkit-font-smoothing: antialiased;
+      }
+      a { color: #0f766e; }
+
+      .wrap {
+        max-width: 940px;
+        margin: 0 auto;
+        padding: 40px 20px 72px;
+      }
+
+      /* ---------- 页头 ---------- */
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 14px;
+        border: 1px solid #99f6e4;
+        border-radius: 999px;
+        background: #f0fdfa;
+        color: #0f766e;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      h1 {
+        margin: 18px 0 0;
+        font-size: clamp(24px, 5.5vw, 34px);
+        font-weight: 800;
+        line-height: 1.3;
+        letter-spacing: -0.5px;
+        color: #111827;
+      }
+      .lead {
+        margin: 12px 0 0;
+        max-width: 700px;
+        font-size: 15.5px;
+        color: #4b5563;
+      }
+      .lead a { font-weight: 600; }
+
+      /* ---------- 图例 ---------- */
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 22px 0 0;
+      }
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 13px;
+        border: 1px solid #e5e7eb;
+        border-radius: 9px;
+        background: #fff;
+        font-size: 13px;
+        color: #374151;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex: 0 0 auto;
+      }
+      .dot-live { background: #10b981; }
+      .dot-dead { background: #f59e0b; }
+      .dot-code { background: #94a3b8; }
+
+      /* ---------- 分组 ---------- */
+      .section { margin-top: 40px; }
+      .section-head {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 0 0 6px;
+      }
+      .section-head h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+      }
+      .section-head .count {
+        font-size: 13px;
+        color: #6b7280;
+      }
+      .section-desc {
+        margin: 0 0 16px;
+        font-size: 13.5px;
+        color: #6b7280;
+      }
+
+      /* ---------- 卡片 ---------- */
+      .list {
+        display: grid;
+        gap: 12px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .card {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 14px 18px;
+        align-items: start;
+        padding: 16px 18px;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+        transition: border-color .15s ease, box-shadow .15s ease;
+      }
+      .card:hover {
+        border-color: #5eead4;
+        box-shadow: 0 4px 14px rgba(15, 118, 110, .08);
+      }
+      .card.is-self {
+        border-color: #5eead4;
+        background: #f0fdfa;
+      }
+
+      .name {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.4;
+      }
+      .name a {
+        color: #111827;
+        text-decoration: none;
+      }
+      .name a:hover { color: #0f766e; text-decoration: underline; }
+      .name .self-tag {
+        display: inline-block;
+        margin-left: 8px;
+        padding: 1px 8px;
+        border-radius: 999px;
+        background: #0f766e;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 600;
+        vertical-align: 2px;
+      }
+      .desc {
+        margin: 6px 0 0;
+        font-size: 14px;
+        color: #4b5563;
+      }
+      .meta {
+        margin: 8px 0 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+        font-size: 12.5px;
+        color: #6b7280;
+      }
+      .meta code {
+        padding: 1px 6px;
+        border-radius: 5px;
+        background: #f1f5f9;
+        font-size: 12px;
+        color: #475569;
+      }
+
+      /* 右侧操作区 */
+      .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        align-items: stretch;
+        min-width: 108px;
+      }
+      .btn {
+        display: inline-block;
+        padding: 7px 14px;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: background .15s ease, border-color .15s ease, transform .12s ease;
+      }
+      .btn:hover { transform: translateY(-1px); }
+      .btn-live {
+        background: #0f766e;
+        color: #fff;
+      }
+      .btn-live:hover { background: #115e59; }
+      .btn-code {
+        background: #fff;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+      }
+      .btn-code:hover { background: #f8fafc; border-color: #94a3b8; }
+      .btn-dead {
+        background: #fffbeb;
+        color: #92400e;
+        border: 1px solid #fde68a;
+        cursor: not-allowed;
+      }
+      .status {
+        display: block;
+        margin-top: 4px;
+        font-size: 11.5px;
+        line-height: 1.5;
+        text-align: center;
+      }
+      .status-live { color: #059669; }
+      .status-dead { color: #b45309; }
+      .status-code { color: #94a3b8; }
+
+      /* ---------- 备注 ---------- */
+      .note {
+        margin-top: 44px;
+        padding: 18px 20px;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        background: #fff;
+        font-size: 13.5px;
+        color: #4b5563;
+      }
+      .note h3 {
+        margin: 0 0 8px;
+        font-size: 15px;
+        font-weight: 700;
+        color: #111827;
+      }
+      .note ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+      .note li { margin: 4px 0; }
+
+      .footer {
+        margin-top: 32px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 20px;
+        align-items: center;
+        font-size: 13px;
+        color: #6b7280;
+      }
+      .footer a { color: #0f766e; text-decoration: none; }
+      .footer a:hover { text-decoration: underline; }
+
+      @media (max-width: 620px) {
+        .wrap { padding: 28px 16px 56px; }
+        .card {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+        .actions {
+          flex-direction: row;
+          flex-wrap: wrap;
+          min-width: 0;
+        }
+        .btn { flex: 1 1 auto; }
+        .status { width: 100%; margin-top: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <span class="badge">● 双休购 · ShuangxiuGo</span>
+      <h1>同类项目导航</h1>
+      <p class="lead">
+        GitHub 上搜「双休购」会出来十几个仓库，但其中<b>只有一半真的能打开网站</b>。
+        这个页面把GitHub 上「双休购 / shuangxiugou / two-day-weekend」相关的开源项目
+        整理在一起，并逐个标注<b>在线站点是否可用</b>，帮你省掉一次次「点进去发现只有代码」的往返。
+      </p>
+
+      <div class="legend">
+        <span class="legend-item"><span class="dot dot-live"></span>在线站点实测可访问</span>
+        <span class="legend-item"><span class="dot dot-dead"></span>仓库标了地址但实测打不开</span>
+        <span class="legend-item"><span class="dot dot-code"></span>仅代码仓库，无在线站点</span>
+      </div>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>可直接在线访问</h2>
+          <span class="count">5 个</span>
+        </div>
+        <p class="section-desc">打开即用，无需本地部署。其中带「本站」标记的是我们自己的项目。</p>
+        <ul class="list">
+          <li class="card is-self">
+            <div>
+              <p class="name">
+                <a href="https://github.com/dujeongil-galaxy/shuangxiugou" target="_blank" rel="noopener noreferrer">dujeongil-galaxy/shuangxiugou</a>
+                <span class="self-tag">本站</span>
+              </p>
+              <p class="desc">查公司双休评级 · 避雷单休大小周 996 血汗工厂。每条品牌数据附公开证据链。</p>
+              <p class="meta">
+                <span><code>4</code> stars</span>
+                <span>最后提交 2026-10-09</span>
+              </p>
+            </div>
+            <div class="actions">
+              <a class="btn btn-live" href="https://dujeongil-galaxy.github.io/shuangxiugou/" target="_blank" rel="noopener noreferrer">打开网站</a>
+              <span class="status status-live">实测可访问</span>
+            </div>
+          </li>
+
+          <li class="card">
+            <div>
+              <p class="name">
+                <a href="https://github.com/zhangchunsheng/two-day-weekend-companies" target="_blank" rel="noopener noreferrer">zhangchunsheng/two-day-weekend-companies</a>
+              </p>
+              <p class="desc">双休企业名录。数据由社区通过 Markdown 共同维护，支持按省市、行业查询。</p>
+              <p class="meta">
+                <span><code>10</code> stars</span>
+                <span>自定义域名 tdwc.luomor.com</span>
+              </p>
+            </div>
+            <div class="actions">
+              <a class="btn btn-live" href="https://tdwc.luomor.com/" target="_blank" rel="noopener noreferrer">打开网站</a>
+              <span class="status status-live">实测可访问</span>
+            </div>
+          </li>
+
+          <li class="card">
+            <div>
+              <p class="name">
+                <a href="https://github.com/FuzzyLogic112/shuangxiugou-guide" target="_blank" rel="noopener noreferrer">FuzzyLogic112/shuangxiugou-guide</a>
+              </p>
+              <p class="desc">公开资料导航：按行业、证据层级查找企业、品牌与产品。</p>
+              <p class="meta">
+                <span><code>11</code> stars</span>
+                <span>GitHub Pages</span>
+              </p>
+            </div>
+            <div class="actions">
+              <a class="btn btn-live" href="https://fuzzylogic112.github.io/shuangxiugou-guide/" target="_blank" rel="noopener noreferrer">打开网站</a>
+              <span class="status status-live">实测可访问</span>
+            </div>
+          </li>
+
+          <li class="card">
+            <div>
+              <p class="name">
+                <a href="https://github.com/dujeongil-galaxy/shuangxiugou-guide" target="_blank" rel="noopener noreferrer">dujeongil-galaxy/shuangxiugou-guide</a>
+              </p>
+              <p class="desc">独立公开资料与消费决策工具站，246 条企业记录，带证据护照评分。</p>
+              <p class="meta">
+                <span><code>0</code> stars</span>
+                <span>本站同作者的姊妹站</span>
+              </p>
+            </div>
+            <div class="actions">
+              <a class="btn btn-live" href="https://dujeongil-galaxy.github.io/shuangxiugou-guide/" target="_blank" rel="noopener noreferrer">打开网站</a>
+              <span class="status status-live">实测可访问</span>
+            </div>
+          </li>
+
+          <li class="card">
+            <div>
+              <p class="name">
+                <a href="https://github.com/ENDcodeworld/shuangxiugou" target="_blank" rel="noopener noreferrer">ENDcodeworld/shuangxiugou</a>
+              </p>
+              <p class="desc">PWA 应用，仓库描述为收录 109 家企业 + 31 条黑名单 + 323 条记录。</p>
+              <p class="meta">
+                <span><code>0</code> stars</span>
+                <span>GitHub Pages</span>
+              </p>
+            </div>
+            <div class="actions">
+              <a class="btn btn-live" href="https://endcodeworld.github.io/shuangxiugou/" target="_blank" rel="noopener noreferrer">打开网站</a>
+              <span class="status status-live">实测可访问</span>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>仓库标了地址，但实测打不开</h2>
+          <span class="count">2 个</span>
+        </div>
+        <p class="section-desc">
+          这些仓库在 GitHub 侧栏填了 homepage（搜索结果里会显示地球图标），
+          但我们实测无法连接。如果你也在搜索结果里看到它们，不必再点进去试。
+        </p>
+        <ul class="list">
+          <li class="card">
+            <div>
+              <p class="name">
+                <a href="https://github.com/ZhiqingHeyi/shuangxiugou" target="_blank" rel="noopener noreferrer">ZhiqingHeyi/shuangxiugou</a>
+              </p>
+              <p class="desc">开源劳工友好品牌索引与网购透镜，用订单反向考核企业良心。本项目最早的上游。</p>
+              <p class="meta">
+                <span><code>73</code> stars（本次检索中最多）</span>
+                <span>标称 shuangxiugou.vercel.app</span>
+              </p>
+            </div>
+            <div class="actions">
+              <span class="btn btn-dead">站点无法访问</span>
+              <span class="status status-dead">连接超时 · 2026-10-09 实测</span>
+            </div>
+          </li>
+
+          <li class="card">
+            <div>
+              <p class="name">
+                <a href="https://github.com/knight-de-ficus/shuangxiugouEx" target="_blank" rel="noopener noreferrer">knight-de-ficus/shuangxiugouEx</a>
+              </p>
+              <p class="desc">Cloudflare Workers 全栈模板（React + Vite + Hono + D1 + R2）。</p>
+              <p class="meta">
+                <span><code>0</code> stars</span>
+                <span>标称 index.shuangxiugou.workers.dev</span>
+              </p>
+            </div>
+            <div class="actions">
+              <span class="btn btn-dead">站点无法访问</span>
+              <span class="status status-dead">连接超时 · 2026-10-09 实测</span>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>仅代码仓库，无在线站点</h2>
+          <span class="count">5 个</span>
+        </div>
+        <p class="section-desc">没有可访问的网站。想用的话需要自己 fork 后按README 部署。</p>
+        <ul class="list">
+          <li class="card">
+            <div>
+              <p class="name">
+                <a href="https://github.com/daxian-w/dx-sxgo" target="_blank" rel="noopener noreferrer">daxian-w/dx-sxgo</a>
+              </p>
+              <p class="desc">支持守规矩企业的精选推荐站点。</p>
+              <p class="meta">
+                <span><code>47</code> stars</span>
+                <span>未启用 Pages</span>
+                <span>最后提交 2026-07-01</span>
+              </p>
+            </div>
+            <div class="actions">
+              <a class="btn btn-code" href="https://github.com/daxian-w/dx-sxgo" target="_blank" rel="noopener noreferrer">看源码</a>
+              <span class="status status-code">需自行部署</span>
+            </div>
+          </li>
+
+          <li class="card">
+            <div>
+              <p class="name">
+                <a href="https://github.com/littlewindy123/jev-weekend-shopping-chrome" target="_blank" rel="noopener noreferrer">littlewindy123/jev-weekend-shopping-chrome</a>
+              </p>
+              <p class="desc">
+                浏览器扩展。逛淘宝、京东时实时猜测商品背后的工作制，疑似非双休直接盖上 PASS。
+              </p>
+              <p class="meta">
+                <span><code>8</code> stars</span>
+                <span>Chrome 扩展，非网站</span>
+              </p>
+            </div>
+            <div class="actions">
+              <a class="btn btn-code" href="https://github.com/littlewindy123/jev-weekend-shopping-chrome" target="_blank" rel="noopener noreferrer">看源码</a>
+              <span class="status status-code">需自行安装</span>
+            </div>
+          </li>
+
+          <li class="card">
+            <div>
+              <p class="name">
+                <a href="https://github.com/MoFengr/shuangxiugou" target="_blank" rel="noopener noreferrer">MoFengr/shuangxiugou</a>
+              </p>
+              <p class="desc">仓库无描述。GitHub Pages 处于开启状态但访问返回 404。</p>
+              <p class="meta">
+                <span><code>3</code> stars</span>
+                <span>Pages 已开启但 404</span>
+              </p>
+            </div>
+            <div class="actions">
+              <a class="btn btn-code" href="https://github.com/MoFengr/shuangxiugou" target="_blank" rel="noopener noreferrer">看源码</a>
+              <span class="status status-code">无可用站点</span>
+            </div>
+          </li>
+
+          <li class="card">
+            <div>
+              <p class="name">
+                <a href="https://github.com/liwei333/shuangxiugo" target="_blank" rel="noopener noreferrer">liwei333/shuangxiugo</a>
+              </p>
+              <p class="desc">WP-01 PoC 工程骨架。</p>
+              <p class="meta">
+                <span><code>0</code> stars</span>
+                <span>最后提交 2026-09-11</span>
+              </p>
+            </div>
+            <div class="actions">
+              <a class="btn btn-code" href="https://github.com/liwei333/shuangxiugo" target="_blank" rel="noopener noreferrer">看源码</a>
+              <span class="status status-code">需自行部署</span>
+            </div>
+          </li>
+
+          <li class="card">
+            <div>
+              <p class="name">
+                <a href="https://github.com/OldFriendWenjianjian/Two-DayWeekendMarketplace" target="_blank" rel="noopener noreferrer">OldFriendWenjianjian/Two-DayWeekendMarketplace</a>
+              </p>
+              <p class="desc">An App which only sell Two-DayWeekend-product（仅售双休商品的 App）。</p>
+              <p class="meta">
+                <span><code>0</code> stars</span>
+                <span>最后提交 2026-06-10</span>
+              </p>
+            </div>
+            <div class="actions">
+              <a class="btn btn-code" href="https://github.com/OldFriendWenjianjian/Two-DayWeekendMarketplace" target="_blank" rel="noopener noreferrer">看源码</a>
+              <span class="status status-code">需自行部署</span>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <section class="note">
+        <h3>关于这个页面</h3>
+        <ul>
+          <li>
+            收录范围：GitHub 搜索「双休购 / shuangxiugou / two-day-weekend」的公开仓库，
+            最后核对时间 <b>2026-10-09</b>。
+          </li>
+          <li>
+            「实测可访问」指我们从中国大陆网络环境实际发起请求并拿到正常响应，
+            不是照抄仓库里填的地址。你的网络环境可能不同，结果或有差异。
+          </li>
+          <li>
+            项目会变动——有的仓库可能已经停止维护，有的站点可能今天能开、明天就关了。
+            如果你发现某条已经失效，欢迎
+            <a href="https://github.com/dujeongil-galaxy/shuangxiugou/issues/new" target="_blank" rel="noopener noreferrer">开 Issue 告诉我们</a>，会及时更正。
+          </li>
+          <li>
+            收录不代表本站对该项目的推荐或背书，各项目的真实性、准确性请自行核实。
+          </li>
+        </ul>
+      </section>
+
+      <nav class="footer">
+        <a href="./">← 返回双休购首页</a>
+        <a href="https://github.com/dujeongil-galaxy/shuangxiugou" target="_blank" rel="noopener noreferrer">本站源码</a>
+        <a href="https://github.com/dujeongil-galaxy/shuangxiugou/issues/new" target="_blank" rel="noopener noreferrer">纠错 / 补充</a>
+      </nav>
+    </div>
+  </body>
+</html>
