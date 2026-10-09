@@ -27,11 +27,16 @@ const KEY = process.env.INDEXNOW_KEY || '';// 从环境变量读，或直接在�
 const HOST = 'https://dujeongil-galaxy.github.io';
 const ENDPOINT = 'https://api.indexnow.org/indexnow';
 
-// 待提交的 URL（建议只提交有实际内容变更的页面，不要全量刷）
-const URLS = [
-  `${SITE}/`,
-  `${SITE}/index.html`,
-];
+// 待提交的 URL。
+// 只提交 sitemap 里的公开页面，不要提交 noindex 页（如 sponsor.html / 404.html）——
+// 推给搜索引擎一个声明了 noindex 的 URL 是自相矛盾的。
+// 建议：改动内容后手动传参指定受影响页面，避免全量刷。
+const URLS = process.env.INDEXNOW_URLS
+  ? process.env.INDEXNOW_URLS.split(',').map((u) => u.trim()).filter(Boolean)
+  : [
+      `${SITE}/`,
+      `${SITE}/projects.html`,
+    ];
 
 // =================
 

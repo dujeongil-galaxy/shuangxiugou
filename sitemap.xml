@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  只收录「希望被搜索引擎索引」的页面。
+
+  注意：sponsor.html 与 404.html 都声明了 <meta name="robots" content="noindex, follow">，
+  因此**不能**出现在本sitemap 里 —— 声明 noindex 却提交给搜索引擎是自相矛盾，
+  会让 SEO 工具给出相互冲突的信号。
+
+  想让赞助页被收录的话，去掉那行 noindex，再把 URL 加回这里。
+-->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://dujeongil-galaxy.github.io/shuangxiugou/</loc>
-    <lastmod>2026-10-09</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://dujeongil-galaxy.github.io/shuangxiugou/projects.html</loc>
-    <lastmod>2026-10-09</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://dujeongil-galaxy.github.io/shuangxiugou/sponsor.html</loc>
-    <lastmod>2026-10-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
   </url>
 </urlset>

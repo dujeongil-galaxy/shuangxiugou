@@ -35,7 +35,16 @@ function warn(msg, detail) { warns.push({ msg, detail }); console.log(`  \x1b[33
 function note(msg) { notes.push(msg); console.log(`  \x1b[90m·\x1b[0m ${msg}`); }
 function section(title) { if (!QUIET) console.log(`\n\x1b[1m${title}\x1b[0m`); }
 
-const read = (p) => readFileSync(join(ROOT, p), 'utf8');
+/**
+ * 读文件并统一换行符为 LF。
+ *
+ * 为什么必须这么做：本机 git 的 autocrlf 会把检出的文本文件转成 CRLF，
+ * 而后续所有正则都按 LF 写死。CRLF 下这些正则会**静默匹配失败**
+ * —— 本次就因此得出「自定义卡 0 张」的错误结论，排查了很久。
+ *
+ * 只换行符，不改内容语义；对本来就是 LF 的文件是廉价操作。
+ */
+const read = (p) => readFileSync(join(ROOT, p), 'utf8').replace(/\r\n/g, '\n');
 const exists = (p) => existsSync(join(ROOT, p));
 
 /** 判断一个站内相对路径是否存在（自动剥离 query/hash，并尝试 assets/ 前缀） */
@@ -237,7 +246,7 @@ check(!!cfgBlock, '能解析 customCardsConfig 数组');
 const customCards = [];
 if (cfgBlock) {
   const body = cfgBlock[1];
-  const itemRe = /\{\s*id:\s*'([^']+)',([\s\S]*?)\n\s*\},?\n/g;
+  const itemRe = /\{\s*id:\s*'([^']+)',([\s\S]*?)\n\s*\},?\n/g;  // read() 已归一化为 LF
   let m2;
   while ((m2 = itemRe.exec(body)) !== null) {
     const [, id, chunk] = m2;
@@ -539,6 +548,104 @@ if (exists('FORK_GUIDE.md')) {
   mustMention.forEach(([label, re]) => {
     check(re.test(quick), `一页速查含关键约束：${label}`);
   });
+}
+
+// ---------- 13b. SEO 基础配置 ----------
+section('13b. SEO 基础配置');
+
+/**
+ * 这些是收录的最低门槛。缺任何一项都会静默掉收录，所以纳入自动检查。
+ * 背景：曾拿到一份通用 SEO 诊断报告，逐项核实后发现本站已配置齐全，
+ * 但这些项确实容易在后续改动中被误删 —— 所以要有脚本盯着。
+ */
+
+const SEO_PAGES = ['index.html', 'sponsor.html', 'projects.html', '404.html'];
+
+// 1. 每页必须有 title 与 description
+SEO_PAGES.forEach((pg) => {
+  if (!exists(pg)) { err(`${pg} 不存在`); return; }
+  const h = read(pg);
+  const title = h.match(/<title>([^<]+)<\/title>/)?.[1]?.trim();
+  const desc = h.match(/name="description"\s+content="([^"]+)"/)?.[1]
+    || h.match(/content="([^"]+)"\s+name="description"/)?.[1];
+  check(!!title && title.length >= 6, `${pg} 有有效的 <title>（${title?.length ?? 0} 字符）`);
+  check(!!desc && desc.length >= 30, `${pg} 有足够长的 description（${desc?.length ?? 0} 字符，建议 ≥ 30）`);
+});
+
+// 2. title 必须唯一（重复 title 会让搜索引擎困惑）
+const titles = SEO_PAGES.filter(exists).map((pg) => read(pg).match(/<title>([^<]+)<\/title>/)?.[1]?.trim()).filter(Boolean);
+check(new Set(titles).size === titles.length, `${titles.length} 个页面的 title 互不相同`,
+  new Set(titles).size === titles.length ? '' : `重复：${titles.filter((t, i) => titles.indexOf(t) !== i).join(', ')}`);
+
+// 3. index.html 必须有 canonical，且与站点地址一致
+const idx = read('index.html');
+const canon = idx.match(/rel="canonical"\s+href="([^"]+)"/)?.[1];
+check(!!canon, 'index.html 有 canonical');
+if (canon) {
+  check(canon.startsWith('https://dujeongil-galaxy.github.io/shuangxiugou'),
+    'canonical 指向正式站点地址', `当前：${canon}`);
+}
+
+// 4. sitemap 与 robots.txt
+if (exists('sitemap.xml')) {
+  const locs = [...read('sitemap.xml').matchAll(/<loc>([^<]+)<\/loc>/g)].map((x) => x[1]);
+  check(locs.length > 0, `sitemap.xml 含 ${locs.length} 条 URL`);
+  const noindexPages = SEO_PAGES.filter((pg) => {
+    if (!exists(pg)) return false;
+    return /name="robots"\s+content="[^"]*noindex/.test(read(pg));
+  });
+  const inSitemap = noindexPages.filter((pg) => locs.some((l) => l.endsWith('/' + pg)));
+  check(inSitemap.length === 0,
+    'sitemap 未包含 noindex 页面',
+    inSitemap.length ? `这些页声明了 noindex 却出现在 sitemap：${inSitemap.join(', ')}` : '');
+} else {
+  err('sitemap.xml 不存在', '搜索引擎需要它来发现页面');
+}
+
+if (exists('robots.txt')) {
+  const rb = read('robots.txt');
+  check(/Sitemap:/i.test(rb), 'robots.txt 声明了 Sitemap 路径');
+  check(!/Disallow:\s*\/$/m.test(rb), 'robots.txt 未屏蔽整个站点根目录');
+} else {
+  err('robots.txt 不存在');
+}
+
+// 5. 结构化数据必须是合法 JSON（写成非法 JSON 比不写还糟）
+const ldBlocks = [...idx.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((x) => x[1]);
+check(ldBlocks.length > 0, `index.html 含 ${ldBlocks.length} 块结构化数据`);
+ldBlocks.forEach((b, i) => {
+  try {
+    const obj = JSON.parse(b);
+    check(!!obj['@type'], `结构化数据块 ${i} 合法且有 @type（${obj['@type']}）`);
+  } catch (e) {
+    err(`结构化数据块 ${i} 是非法 JSON`, `${e.message} —— 搜索引擎会静默忽略非法块`);
+  }
+});
+// FAQPage 与 noscript 里的 FAQ 标题应保持一致
+const hasFaqSchema = ldBlocks.some((b) => { try { return JSON.parse(b)['@type'] === 'FAQPage'; } catch { return false; } });
+const noscriptFaq = /常见问题/.test(idx.match(/<noscript>([\s\S]*?)<\/noscript>/)?.[1] ?? '');
+check(!(hasFaqSchema && !noscriptFaq) , 'FAQPage 结构化数据与页面可见内容一致',
+  '声明了 FAQPage 但页面正文没有对应 FAQ，属于结构化数据滥用');
+
+// 6. noscript 必须有实质正文（纯客户端渲染下这是爬虫唯一能读到的内容）
+const nsHtml = idx.match(/<noscript>([\s\S]*?)<\/noscript>/)?.[1] ?? '';
+const nsText = nsHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+check(nsText.length >= 600, `noscript 正文 ${nsText.length} 字符（≥600，爬虫唯一可读内容）`,
+  nsText.length < 600 ? '内容过少，纯客户端渲染下会影响收录' : '');
+check(/常见问题/.test(nsText), 'noscript 含常见问题区（覆盖长尾搜索词）');
+
+// 7. IndexNow 推送脚本
+check(exists('submit-indexnow.mjs'), 'IndexNow 推送脚本存在');
+const wfDir = '.github/workflows';
+if (exists(wfDir)) {
+  const wf = join(wfDir, 'indexnow.yml');
+  if (exists(wf)) {
+    const y = read(wf);
+    check(/INDEXNOW_KEY/.test(y), 'IndexNow workflow 使用密钥变量而非硬编码');
+    check(!/[0-9a-f]{16,}/i.test(y), 'IndexNow workflow 未硬编码密钥');
+  } else {
+    note('未配置 IndexNow 的 GitHub Actions（可选，需要先在 Bing 后台申请密钥）');
+  }
 }
 
 // ---------- 14. 非部署副本 ----------
