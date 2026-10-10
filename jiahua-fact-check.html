@@ -221,13 +221,85 @@
     tr:last-child td { border-bottom: none; }
     .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-    /* 来源列表 */
-    .src {
-      font-size: 13.5px;
-      line-height: 1.7;
+    /* 来源列表：可点击卡片 */
+    .src { list-style: none; padding: 0; margin: 18px 0 8px; }
+    .src li {
+      margin-bottom: 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      transition: border-color .15s, box-shadow .15s, transform .15s;
     }
-    .src li { margin-bottom: 10px; }
-    .src .pub { color: var(--ink-3); }
+    .src li:hover {
+      border-color: var(--green);
+      box-shadow: 0 2px 10px rgba(5, 150, 105, .10);
+      transform: translateY(-1px);
+    }
+    .src a {
+      display: block;
+      padding: 13px 16px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .src a:hover .src-title { text-decoration: underline; }
+    .src-head {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .src-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .src-badge {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--gray-bg);
+      color: var(--ink-3);
+      white-space: nowrap;
+    }
+    .src-badge.official { background: #d1fae5; color: #065f46; }
+    .src-badge.data   { background: #dbeafe; color: #1e40af; }
+    .src-date {
+      font-size: 12.5px;
+      color: var(--ink-3);
+      font-variant-numeric: tabular-nums;
+      margin-left: auto;
+    }
+    .src .pub { font-size: 13.5px; line-height: 1.65; color: var(--ink-3); }
+    .src-domain {
+      font-size: 12px;
+      color: var(--green);
+      word-break: break-all;
+    }
+    .src-more {
+      display: block;
+      padding: 9px 16px;
+      font-size: 12.5px;
+      color: var(--green);
+      border-top: 1px dashed var(--line);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .src-more:hover { background: var(--bg); }
+
+    /* 正文内联来源角标 */
+    .cite {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+      text-decoration: none;
+      white-space: nowrap;
+      vertical-align: super;
+      line-height: 0;
+    }
+    .cite:hover { text-decoration: underline; }
+    .cite-note { font-size: 13px; }
 
     .note {
       font-size: 13.5px;
@@ -305,13 +377,21 @@
       <div class="tl-what">人社局、市场监管局均表示<strong>仍在进一步核实中，尚未有结果</strong>。</div>
     </li>
   </ul>
+  <p style="font-size:13px;color:var(--ink-3)">
+    时间线各条的出处：
+    <a class="cite" href="https://www.xdkb.net/p1/js/jaa1d/573170.html" target="_blank" rel="noopener noreferrer">[1]</a>
+    <a class="cite" href="https://www.nfnews.com/content/732Gez8n6W.html" target="_blank" rel="noopener noreferrer">[2]</a>
+    <a class="cite" href="https://www.toutiao.com/article/7683915372059230758" target="_blank" rel="noopener noreferrer">[3]</a>
+    <a class="cite" href="https://m.sohu.com/a/1074205362_100260304" target="_blank" rel="noopener noreferrer">[4]</a>
+    （编号对应页尾「信息来源」各条）
+  </p>
 
   <h2>三类信息，请分开看</h2>
 
   <div class="card fact">
     <span class="card-tag">已核实·官方定性</span>
     <h3>「往鲜花饼里吐痰」是谣言</h3>
-    <p>昆明市公安局阳宗海风景名胜区分局警情通报原文：</p>
+    <p>昆明市公安局阳宗海风景名胜区分局警情通报原文<span class="cite-note">（<a class="cite" href="https://www.toutiao.com/article/7683915372059230758" target="_blank" rel="noopener noreferrer">中国城市报转载全文[3]</a>）</span>：</p>
     <blockquote style="margin:0 0 14px;padding:12px 16px;background:#fff;border-left:3px solid var(--green);border-radius:0 8px 8px 0;font-size:14.5px;color:var(--ink-2)">
       经查，杜某（男，30 岁）曾于 2014 年在某职业高级中学就读期间，由学校安排到该企业实习 26 天。近日，其为博取关注、吸引流量，在网络编造虚假信息，造成不良影响，<strong>其行为已构成散布谣言扰乱公共秩序</strong>。公安机关已依据《中华人民共和国治安管理处罚法》相关规定，<strong>对其处以行政拘留</strong>。
     </blockquote>
@@ -328,7 +408,10 @@
     <p>网传截图中除「吐痰」外，还提到<strong>「被学校派去做鲜花饼，一天 12 个小时，50 块钱」</strong>。</p>
     <p>关于这部分，三家媒体引述的官方回应均为：</p>
     <ul class="plain">
-      <li>人社局：<strong>嘉华的用工情况仍在进一步核实中，目前尚未有结果。</strong></li>
+      <li>人社局：<strong>嘉华的用工情况仍在进一步核实中，目前尚未有结果。</strong>
+        <a class="cite" href="https://www.nfnews.com/content/732Gez8n6W.html" target="_blank" rel="noopener noreferrer">[2]</a>
+        <a class="cite" href="https://www.xdkb.net/p1/js/jaa1d/573170.html" target="_blank" rel="noopener noreferrer">[1]</a>
+      </li>
       <li>市场监管局：针对生产中的食品安全问题，同样<strong>仍在核实中</strong>。</li>
       <li>嘉华方面称：<strong>并未与任何学校建立学生实习合作</strong>，也没有学校统一派遣学生进厂顶岗实习。学生来源、务工性质、组织方式仍在核实。</li>
     </ul>
@@ -347,7 +430,7 @@
         <tr>
           <td>时薪</td>
           <td class="num">约 4.2 元/小时<br><span style="font-size:12.5px;color:var(--ink-3)">（50 元 ÷ 12 小时）</span></td>
-          <td class="num"><strong>12–15 元/小时</strong></td>
+          <td class="num"><strong>12–15 元/小时</strong><br><span style="font-size:12.5px;color:var(--ink-3)">门店临时工 13–15 元</span></td>
         </tr>
         <tr>
           <td>每日工时</td>
@@ -362,7 +445,7 @@
         <tr>
           <td>人数</td>
           <td>不详</td>
-          <td class="num">300 名</td>
+          <td class="num">300 名<span style="font-size:12.5px;color:var(--ink-3)"> /另有劳务外包 500 人</span></td>
         </tr>
         <tr>
           <td>时间</td>
@@ -381,6 +464,15 @@
         </tr>
       </tbody>
     </table>
+    <p style="font-size:13px;color:var(--ink-3)">
+      表格数据出处：南都·湾财社<a class="cite" href="https://www.nfnews.com/content/732Gez8n6W.html" target="_blank" rel="noopener noreferrer">[2]</a>；
+      「13–15 元」与「劳务外包 500 人」出自红星新闻（并经嘉华人力资源部门证实为授权发布）<a class="cite" href="https://cbgc.scol.com.cn/news/7938475" target="_blank" rel="noopener noreferrer">[5]</a>。
+    </p>
+    <p><strong>一个可供对照的法定基准：</strong>云南省自 2026 年 9 月 1 日起调整最低工资标准，
+      <strong>昆明一类地区小时最低工资已提高至 22 元</strong>
+      <a class="cite" href="https://cbgc.scol.com.cn/news/7938475" target="_blank" rel="noopener noreferrer">[5]</a>。
+      也就是说，网传「50 元 ÷ 12 小时 ≈ 4.2 元/小时」这个数字，
+      <strong>低于昆明当地法定小时最低工资标准的一半</strong>——若属实，它同时触及《劳动法》与《劳动保障监察条例》两条线。</p>
     <p><strong>判断这类信息时要留意三点：</strong></p>
     <ul class="plain" style="margin-bottom:0">
       <li><strong>用工形式不同。</strong>学校组织的实习、劳务派遣、临时用工，三者的报酬规则和监管要求都不一样，不能直接比价。</li>
@@ -408,23 +500,110 @@
   </div>
 
   <h2>信息来源</h2>
-  <ul class="plain src">
+  <p class="lead" style="font-size:14px;margin-bottom:4px">
+    以下每一条都可以点开查看原文。本页所有事实与数据均出自这些报道，未做推测。
+  </p>
+  <ul class="src">
+
     <li>
-      <strong>昆明市公安局阳宗海风景名胜区分局警情通报</strong>（2026-09-10）<br>
-      <span class="pub">经南都湾财社、云南日报等媒体转载引述，认定网传「吐痰」为虚假信息，杜某被行政拘留。</span>
+      <a href="https://www.toutiao.com/article/7683915372059230758" target="_blank" rel="noopener noreferrer">
+        <div class="src-head">
+          <span class="src-title">昆明警方通报「往鲜花饼里吐痰」系谣言</span>
+          <span class="src-badge official">官方通报</span>
+          <span class="src-date">2026-09-10</span>
+        </div>
+        <div class="pub">
+          中国城市报转载昆明市公安局阳宗海风景名胜区分局警情通报全文：杜某曾于 2014 年
+          在某职高就读期间由学校安排到该企业实习 26 天，近日为博取关注、吸引流量在网络编造虚假信息，
+          其行为已构成散布谣言扰乱公共秩序，公安机关已依《治安管理处罚法》对其处以行政拘留。
+        </div>
+        <span class="src-domain">toutiao.com/article/7683915372059230758</span>
+      </a>
     </li>
+
     <li>
-      <strong>南都·湾财社</strong>《兼职学生往嘉华鲜花饼吐痰？昆明警方通报：男子编造虚假信息》（2026-09-10）<br>
-      <span class="pub">nfnews.com — 报道了警方通报、人社局与市场监管局「仍在核实」的回应，以及临时工招聘信息（300 名、时薪 12–15 元、8/24–9/25）。</span>
+      <a href="https://www.nfnews.com/content/732Gez8n6W.html" target="_blank" rel="noopener noreferrer">
+        <div class="src-head">
+          <span class="src-title">南都·湾财社《兼职学生往嘉华鲜花饼吐痰？昆明警方通报：男子编造虚假信息》</span>
+          <span class="src-badge">媒体报道</span>
+          <span class="src-date">2026-09-10</span>
+        </div>
+        <div class="pub">
+          报道警方通报，以及人社局、市场监管局「仍在核实、尚未有结果」的回应；
+          并列出嘉华同期公开招聘的临时工信息（300 名、时薪 12–15 元、日薪 120–180 元、8/24–9/25）。
+          <strong>本页对比表的数据即出自此篇。</strong>
+        </div>
+        <span class="src-domain">nfnews.com/content/732Gez8n6W.html</span>
+      </a>
     </li>
+
     <li>
-      <strong>现代快报</strong>《云南嘉华被指「实习生因工资低往鲜花饼里吐痰」》（2026-09-09）<br>
-      <span class="pub">报道人社局劳动保障监察大队连夜介入、下发核查要求（监控视频 / 招聘记录 / 薪资台账），及律师对两条法律线的分析。</span>
+      <a href="https://www.xdkb.net/p1/js/jaa1d/573170.html" target="_blank" rel="noopener noreferrer">
+        <div class="src-head">
+          <span class="src-title">现代快报《云南嘉华被曝实习生往鲜花饼里吐痰，当地多部门展开调查》</span>
+          <span class="src-badge">媒体首发</span>
+          <span class="src-date">2026-09-09</span>
+        </div>
+        <div class="pub">
+          记者王瑞报道人社局劳动保障监察大队 8 日夜间连夜介入、市监部门当日下午赴厂区实地核查，
+          并披露下发的核查要求（近半个月车间监控视频 / 临时工及假期工招聘记录 / 全部薪资发放台账）。
+          <strong>本页时间线中「连夜启动核查」一条出自此篇。</strong>
+        </div>
+        <span class="src-domain">xdkb.net/p1/js/jaa1d/573170.html</span>
+      </a>
+      <a class="src-more" href="https://dy.163.com/article/L6DCN4S3053469KC.html" target="_blank" rel="noopener noreferrer">
+        延伸阅读：同篇报道的律师解读版 ——
+        北京市高朋（南京）律师事务所陈凯律师：若爆料属实，事件分为用工争议与食品安全风险两条独立法律线 →
+      </a>
     </li>
+
     <li>
-      <strong>开屏新闻</strong>《网传实习生嫌报酬低「往鲜花饼里吐痰」，云南嘉华否认与此有关》（2026-09-10）<br>
-      <span class="pub">报道企业否认、门店走访、以及消费者与市民的反应。</span>
+      <a href="https://m.sohu.com/a/1074205362_100260304" target="_blank" rel="noopener noreferrer">
+        <div class="src-head">
+          <span class="src-title">开屏新闻《「往鲜花饼里吐痰」网帖是谣言！昆明警方通报：造谣者被行拘》</span>
+          <span class="src-badge">媒体独家</span>
+          <span class="src-date">2026-09-10</span>
+        </div>
+        <div class="pub">
+          该篇独家核实了企业否认、门店走访（光华街嘉华饼屋、南亚风情第壹城门店），
+          以及消费者与市民的现场反应。文中确认原帖截图<strong>只标注「嘉×」，并未写明企业全称</strong>。
+        </div>
+        <span class="src-domain">m.sohu.com/a/1074205362_100260304</span>
+      </a>
     </li>
+
+    <li>
+      <a href="https://cbgc.scol.com.cn/news/7938475" target="_blank" rel="noopener noreferrer">
+        <div class="src-head">
+          <span class="src-title">红星新闻《云南嘉华食品：「实习生因工资低往鲜花饼里吐痰」不实，多部门正调查》</span>
+          <span class="src-badge data">含官方基准数据</span>
+          <span class="src-date">2026-09-09</span>
+        </div>
+        <div class="pub">
+          该篇提供了一个本页其他报道都未给出的<strong>法定基准</strong>：云南省自 9 月 1 日起调整最低工资标准，
+          一类地区（昆明主城区）小时最低工资提高至 <strong>22 元</strong>。
+          可与网传「50 元 ÷ 12 小时 ≈ 4.2 元/小时」直接对照。
+          另载嘉华招聘：门店临时工时薪 13–15 元、生产线工人月薪 3500–4500 元（月休 3–4 天、每天 10–11 小时）。
+        </div>
+        <span class="src-domain">cbgc.scol.com.cn/news/7938475</span>
+      </a>
+    </li>
+
+    <li>
+      <a href="https://news.cyol.com/gb/xiaofei/articles/2026-09/09/content_pQvWRzhgb8.html" target="_blank" rel="noopener noreferrer">
+        <div class="src-head">
+          <span class="src-title">澎湃新闻 / 中国青年报转载《实习生不满工资往鲜花饼吐痰？多方回应》</span>
+          <span class="src-badge">媒体汇总</span>
+          <span class="src-date">2026-09-09</span>
+        </div>
+        <div class="pub">
+          汇总澎湃新闻致电企业的回应与现代快报的核查进展，并引述新民晚报评论：
+          「12 个小时和那口痰，都查一下吧。前者关乎尊严，后者关乎安全。」
+        </div>
+        <span class="src-domain">news.cyol.com/gb/xiaofei/articles/2026-09/09/</span>
+      </a>
+    </li>
+
   </ul>
 
   <footer>

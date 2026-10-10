@@ -757,6 +757,72 @@ if (exists(wfDir)) {
   }
 }
 
+// ---------- 13b-2. 事实核查页的来源必须可点击 ----------
+//
+// 背景：这个页面的价值全在「可溯源」。来源写成纯文字时，
+// 读者无法自己核对，站方就成了唯一信源 —— 这与本站
+// 「证据链」的核心原则相悖。
+//
+// 检查三件事：①每条来源都有 http(s) 链接 ②有 target/rel
+// ③正文里有指向来源的引用角标（说明结论与出处是绑定的）
+section('13b-2. 事实核查页来源可溯源');
+if (exists('jiahua-fact-check.html')) {
+  const jh = read('jiahua-fact-check.html');
+
+  const srcBlock = (jh.match(/<ul class="src">([\s\S]*?)<\/ul>/) || [, ''])[1];
+  const srcItems = srcBlock.split(/<li>/).filter((x) => x.trim() && !x.trim().startsWith('</li'));
+  const srcLinks = [...srcBlock.matchAll(/href="(https?:\/\/[^"]+)"/g)].map((x) => x[1]);
+
+  check(srcLinks.length >= 4, `来源列表含 ${srcLinks.length} 条可点击链接`,
+    '事实核查页的来源若为纯文字，读者无法自行核对');
+
+  // 每条来源都必须有真实外链（不能只有标题）
+  const itemsWithLink = srcItems.filter((x) => /href="https?:\/\//.test(x));
+  check(itemsWithLink.length === srcItems.length,
+    `${srcItems.length} 条来源全部带超链接`,
+    `以下来源没有链接：${srcItems
+      .map((x) => ((x.match(/src-title">([^<]+)/) || [, '?'])[1]))
+      .filter((_, i) => !/href="https?:\/\//.test(srcItems[i]))
+      .join(' / ')}`);
+
+  // 新窗口打开必须带 noopener，防 tabnabbing
+  const tgtAll = [...jh.matchAll(/<a\b[^>]*href="https?:\/\/[^"]+"[^>]*>/g)]
+    .map((x) => x[0])
+    .filter((a) => /target="_blank"/.test(a));
+  check(
+    tgtAll.length > 0 && tgtAll.every((a) => /rel="[^"]*noopener/.test(a)),
+    `${tgtAll.length} 个外链均带 rel="noopener"`,
+    tgtAll.filter((a) => !/rel="[^"]*noopener/.test(a))[0] || ''
+  );
+
+  // 正文角标：结论处必须能一键跳到出处
+  const cites = (jh.match(/class="cite"/g) || []).length;
+  check(cites >= 3, `正文含 ${cites} 处引用角标`, '结论与出处未绑定，读者需自己找对应关系');
+
+  // 域名白名单：防止手滑贴进无关域名
+  //
+  // ⚠️ 必须扫**全页**外链，只扫来源区块会漏：
+  //   别人（或我）在正文里贴一个陌生域名，一样会把读者引到不可信来源。
+  //   本站自身域名（canonical / og:url / 站内导航）不算外链，先排除。
+  const SITE_HOST = 'dujeongil-galaxy.github.io';
+  const allExternal = [...jh.matchAll(/href="(https?:\/\/[^"]+)"/g)]
+    .map((x) => x[1])
+    .filter((u) => !u.includes(SITE_HOST));
+  const allowed = [
+    // 已核实的内容来源
+    'xdkb.net', 'nfnews.com', 'toutiao.com', 'sohu.com',
+    'scol.com.cn', 'cyol.com', '163.com', 'thepaper.cn', 'jiemian.com',
+    // 本站自身的反馈入口（非内容来源，但同样是可信目标）
+    'github.com',
+  ];
+  const badDomains = [...new Set(allExternal
+    .map((u) => (u.match(/^https?:\/\/([^/]+)/) || [, ''])[1])
+    .filter((d) => d && !allowed.some((a) => d.endsWith(a))))];
+  check(badDomains.length === 0,
+    `全页 ${allExternal.length} 个外链的域名均在已知媒体白名单内`,
+    badDomains.length ? `出现未预期域名：${badDomains.join(', ')}` : '');
+}
+
 // ---------- 13c. 编码完整性 ----------
 section('13c. 编码完整性');
 
