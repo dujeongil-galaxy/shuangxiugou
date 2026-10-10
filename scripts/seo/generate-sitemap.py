@@ -33,6 +33,14 @@ parts.append(
     f'    <priority>1.0</priority>\n  </url>'
 )
 
+# 事实核查页（云南嘉华事件）—— 搜相关词的用户可能直接落地到这里
+parts.append(
+    f'  <url>\n    <loc>{BASE}/jiahua-fact-check.html</loc>\n'
+    f'    <lastmod>{LASTMOD}</lastmod>\n'
+    f'    <changefreq>weekly</changefreq>\n'
+    f'    <priority>0.7</priority>\n  </url>'
+)
+
 # 导航页
 parts.append(
     f'  <url>\n    <loc>{BASE}/projects.html</loc>\n'
