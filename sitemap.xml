@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  收录策略：
-  - 首页 / projects.html：主要收录页
-  - brand/*.html：每个品牌一个独立页，覆盖「XX公司 双休率」这类长尾搜索词
-  - sponsor.html 与 404.html 声明了 noindex，故不列入
--->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://dujeongil-galaxy.github.io/shuangxiugou/</loc>

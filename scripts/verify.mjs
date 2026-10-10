@@ -655,8 +655,50 @@ if (canon) {
 
 // 4. sitemap 与 robots.txt
 if (exists('sitemap.xml')) {
-  const locs = [...read('sitemap.xml').matchAll(/<loc>([^<]+)<\/loc>/g)].map((x) => x[1]);
+  const smRaw = readFileSync(join(ROOT, 'sitemap.xml'));
+  const smText = smRaw.toString('utf8');
+  const locs = [...smText.matchAll(/<loc>([^<]+)<\/loc>/g)].map((x) => x[1]);
   check(locs.length > 0, `sitemap.xml 含 ${locs.length} 条 URL`);
+
+  // ---- sitemap 格式严格校验 ----
+  //
+  // 为什么只数 <loc> 不够：2026-10-10 Google 后台报「无法抓取」，
+  // 而本地数出来 38 条完全正常。这类问题必须靠格式检查才能提前发现。
+  //
+  // 下面 5 项对应「提交前就能发现的失败模式」，比等 Google 报错快得多。
+
+  // 1) 命名空间 —— Google 要求 sitemaps.org 命名空间，缺了直接判无效
+  check(/<urlset[^>]+xmlns\s*=\s*["']http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9["']/.test(smText),
+    'sitemap.xml 声明了 sitemaps.org 0.9 命名空间',
+    'Google 要求此命名空间，缺失会导致「无法抓取」');
+
+  // 2) 第一行必须是 XML 声明
+  check(smRaw.subarray(0, 5).toString() === '<?xml',
+    'sitemap.xml 第一行是 XML 声明',
+    `实际开头：${JSON.stringify(smRaw.subarray(0, 30).toString())}`);
+
+  // 3) 无 BOM —— BOM 会让严格解析器判定为非法
+  check(!(smRaw[0] === 0xef && smRaw[1] === 0xbb && smRaw[2] === 0xbf),
+    'sitemap.xml 无 BOM');
+
+  // 4) LF 换行 —— CRLF 在部分解析器下会出问题，且与项目 LF 约定一致
+  check(!smRaw.includes(0x0d),
+    'sitemap.xml 使用 LF 换行（无 CR）',
+    '检测到 CR 字节，可能是 CRLF');
+
+  // 5) 无注释 —— sitemap 是机器读文件，注释是多余内容。
+  //    收录策略这类人看的说明应写进 docs，而不是塞进 sitemap。
+  check(!smText.includes('<!--'),
+    'sitemap.xml 不含注释',
+    '注释会让部分严格解析器判定无效；说明请写到 docs 或 generate-sitemap.py 顶部');
+
+  // 6) 标签配平 —— 抓「少写一个 </url>」这类手误
+  const openUrl = (smText.match(/<url>/g) || []).length;
+  const closeUrl = (smText.match(/<\/url>/g) || []).length;
+  check(openUrl === closeUrl && openUrl === locs.length,
+    `sitemap.xml 标签配平（<url> ${openUrl} 个 / <loc> ${locs.length} 条）`,
+    `标签数与 URL 数不一致，可能是编辑时漏写闭合标签`);
+
   const noindexPages = SEO_PAGES.filter((pg) => {
     if (!exists(pg)) return false;
     return /name="robots"\s+content="[^"]*noindex/.test(read(pg));
