@@ -23,12 +23,30 @@ import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+// 脚本在仓库根目录，所以 ROOT 就是脚本所在目录本身。
+// 早先写成 '..' 会指到仓库的上一级，导致 sitemap.xml 找不到、
+// URL 列表为空（提交会被 Bing 接受但没有任何 URL）。
+const ROOT = dirname(fileURLToPath(import.meta.url));
 
 // ===== 配置区=====
 const SITE = 'https://dujeongil-galaxy.github.io/shuangxiugou';
 const KEY = process.env.INDEXNOW_KEY || '';// 从环境变量读，或直接在此填入
+
+// IndexNow 的 host 必须是 URL 所属的**域名**（不含路径）。
+//本站所有页面都在 dujeongil-galaxy.github.io 这个 host 下，
+// 其中一部分带 /shuangxiugou/ 前缀，host 字段不能带路径。
 const HOST = 'https://dujeongil-galaxy.github.io';
+
+// 密钥文件位置。
+//
+// IndexNow 官方文档说「放在站点根目录」，但那是针对自定义域名的说法。
+// 本站用 GitHub Pages 默认域名，仓库只能部署到 /shuangxiugou/ 前缀下，
+// 无法往 dujeongil-galaxy.github.io 域名根写文件（那是 GitHub 用户主页）。
+//
+// 协议本身支持用 keyLocation 参数指定任意 URL ——— Bing 会 GET 该地址
+// 并比对内容，只要返回的文本等于 key 即可，不要求路径固定。
+// 所以这里指向上下文里真实可访问的那个地址。
+const KEY_FILE = `${SITE}/${KEY}.txt`;
 const ENDPOINT = 'https://api.indexnow.org/indexnow';
 
 // 待提交的 URL。
@@ -65,18 +83,31 @@ async function main() {
     process.exit(1);
   }
 
-  // 校验 key 文件是否已放在站点根目录（协议要求）
-  const keyFile = `${HOST}/${KEY}.txt`;
-  if (!existsSync(new URL(keyFile))) {
-    console.warn(`⚠️  提醒：协议要求在 ${keyFile} 存在密钥文件（内容就是 key 本身）。`);
-    console.warn('   否则搜索引擎可能拒绝该提交请求。');
-    console.log('');
+  // 校验 key 文件是否已放在 host 根目录（协议要求）。
+  // 早先写成 existsSync(new URL(keyFile)) —— existsSync 只接受路径字符串，
+  // 传 URL 对象会静默返回 false，等于这个检查从来没生效过。
+  // 这里改成实际发起 HTTP 请求，因为真正要确认的是「线上能否访问」。
+  try {
+    const probe = await fetch(KEY_FILE);
+    const text = (await probe.text()).trim();
+    if (!probe.ok) {
+      console.warn(`⚠️ 密钥文件返回 ${probe.status}：${KEY_FILE}`);
+      console.warn('   Bing 会拒绝密钥校验失败的提交请求，请确认该文件已部署。');
+    } else if (text !== KEY) {
+      console.warn(`⚠️ 密钥文件内容与 API Key 不一致：${KEY_FILE}`);
+      console.warn(`   文件里是「${text.slice(0, 12)}…」，应为「${KEY.slice(0, 12)}…」`);
+    } else {
+      console.log(`✓ 密钥文件校验通过：${KEY_FILE}`);
+    }
+  } catch (e) {
+    console.warn(`⚠️ 无法访问密钥文件：${KEY_FILE}（${e.message}）`);
   }
+  console.log('');
 
   const body = {
     host: HOST,
     key: KEY,
-    keyLocation: `${HOST}/${KEY}.txt`,
+    keyLocation: KEY_FILE,
     urlList: URLS,
   };
 
