@@ -36,19 +36,30 @@
     var root = document.getElementById('root') || document.body;
     if (!root) return;
 
-    // 页面底部容器：优先找最外层容器，找不到就用 body
-    var host = root.querySelector('div.mx-auto') || root;
-    if (!host) return;
+    // 等React 渲染出内容再插。
+    // 原因：#root 为空时插进去，页脚会孤零零挂在空白页上，
+    // 而且之后 React 渲染会把前面的内容全替换掉，页脚也可能被覆盖。
+    if (!root.firstElementChild) return; // React 还没渲染完，等 MutationObserver 再触发
+
+    // 挂载位置：#root 自身的末尾。
+    //
+    // ⚠️ 早先写成 root.querySelector('div.mx-auto')—— 那个容器是
+    // 导航栏/首屏，不是页面底部，append 进去后「相关站点」跑到了顶部。
+    // 页脚必须挂在 #root 的**最后一个子节点之后**，
+    // 这样无论 React 内部结构怎么变，都永远在页面末尾。
+    var host = root;
 
     var footer = document.createElement('div');
     footer.id = FOOTER_ID;
-    // 样式沿用站内现有的灰底白字风格，class 只用 CSS 里已生成过的
+    footer.setAttribute('role', 'contentinfo');
+    // 灰底白字，明确区别于导航栏的绿底白字
     footer.setAttribute('style',
-      'max-width:1100px;margin:32px auto 0;padding:20px 22px;' +
-      'border-top:1px solid #e2e8f0;font-size:13px;line-height:1.7;color:#64748b');
+      'max-width:1100px;margin:40px auto 0;padding:24px 22px 32px;' +
+      'border-top:1px solid #e2e8f0;background:#f8fafc;' +
+      'font-size:13px;line-height:1.8;color:#64748b;border-radius:0 0 12px 12px');
 
     var heading = document.createElement('div');
-    heading.setAttribute('style', 'font-weight:600;color:#475569;margin-bottom:8px');
+    heading.setAttribute('style', 'font-weight:600;color:#475569;margin-bottom:10px;font-size:14px');
     heading.textContent = '相关站点';
     footer.appendChild(heading);
 
@@ -92,12 +103,33 @@
     });
   }
 
+  // 自愈：React 重渲染时会整体替换 #root 的子节点，
+  // 我们插入的页脚会被一起清掉。
+  // 所以监听 #root 的 childList —— 一旦页脚消失（getElementById 找不到）
+  // 就重新插入。这也顺带覆盖了「插错位置后需要挪回来」的情况。
+  function watchRoot() {
+    var root = document.getElementById('root');
+    if (!root) {
+      setTimeout(watchRoot, 300);
+      return;
+    }
+    try {
+      new MutationObserver(function () {
+        if (!document.getElementById(FOOTER_ID)) schedule();
+      }).observe(root, { childList: true });
+    } catch (e) {
+      console.error('[双休购] 页脚友链自愈监听失败：', e);
+    }
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', schedule);
   } else {
     schedule();
   }
+  watchRoot();
 
+  // 全局兜底：React 重渲染、路由变化等
   var obs = new MutationObserver(schedule);
   try {
     obs.observe(document.body, { childList: true, subtree: true });
