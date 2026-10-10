@@ -561,6 +561,31 @@ section('13b. SEO 基础配置');
 
 const SEO_PAGES = ['index.html', 'sponsor.html', 'projects.html', '404.html'];
 
+// 0. 站长平台验证文件：存在还不够，内容必须合法
+//
+//踩过的坑：仓库里的 BingSiteAuth.xml 一直能访问（HTTP 200），
+// 但内容是上游时期遗留的旧密钥，Bing 验证直接报「身份验证密钥不正确」。
+// 「文件存在」和「内容正确」是两件事 —— 只测前者会漏掉这类失效。
+//
+// 注意：这里只能校验结构合法性（32 位十六进制、XML 结构）。
+// 密钥与哪个站点绑定由 Bing 决定，脚本无从判断，只能靠后台报错发现。
+if (exists('BingSiteAuth.xml')) {
+  const bingXml = read('BingSiteAuth.xml');
+  const keyMatch = bingXml.match(/<user>\s*([0-9A-Fa-f]+)\s*<\/user>/);
+  check(!!keyMatch, 'BingSiteAuth.xml 含<user> 节点', `实际内容：${bingXml.slice(0, 120)}`);
+  if (keyMatch) {
+    // 不能写死长度：Bing 下发的密钥实测有 31 位也有 32 位
+    // （上游遗留那份是 32 位，本次下发的是 31 位），
+    // 写死任何长度都会把合法密钥判成错误 —— 这是本检查第一版的bug。
+    check(/^[0-9A-Fa-f]{16,64}$/.test(keyMatch[1]),
+      'BingSiteAuth.xml 的密钥是合法十六进制字符串',
+      `实际 ${keyMatch[1].length} 位：${keyMatch[1]}`);
+  }
+} else {
+  warn('BingSiteAuth.xml 不存在',
+    '若要接入 Bing Webmaster Tools 的 XML 文件验证方式，需把 Bing 提供的文件放到仓库根目录。');
+}
+
 // 1. 每页必须有 title 与 description
 SEO_PAGES.forEach((pg) => {
   if (!exists(pg)) { err(`${pg} 不存在`); return; }
