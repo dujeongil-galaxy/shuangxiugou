@@ -20,7 +20,9 @@
     "lint": "npm run check-types",
     "check-types": "tsc --noEmit",
     "format:write": "prettier --write \"**/*.{ts,tsx,mdx}\" --cache",
-    "format:check": "prettier --check \"**/*.{ts,tsx,mdx}\" --cache"
+    "format:check": "prettier --check \"**/*.{ts,tsx,mdx}\" --cache",
+    "seo:brands": "python scripts/seo/extract-brands.py && python scripts/seo/generate-brand-pages.py && python scripts/seo/link-brand-pages.py && python scripts/seo/generate-sitemap.py",
+    "seo:sitemap": "python scripts/seo/generate-sitemap.py"
   },
   "dependencies": {
     "framer-motion": "^11.2.4",

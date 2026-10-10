@@ -14,7 +14,7 @@
  * 建议接入 CI 或本地 pre-commit。零依赖，任何环境都能跑。
  */
 
-import { readFileSync, existsSync, writeFileSync, unlinkSync } from 'node:fs';
+import { readFileSync, existsSync, writeFileSync, unlinkSync, readdirSync } from 'node:fs';
 import { execSync, spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -665,7 +665,7 @@ section('13c. 编码完整性');
  */
 const ENCODING_SENSITIVE = [
   'README.md', 'FORK_GUIDE.md', 'MAINTAINING.md', 'DESIGN.md', 'LICENSE.md',
-  '员工实测数据核实修改清单.md',
+  '员工实测数据核实修改清单.md', 'docs-SEO外链与收录操作清单.md',
   'index.html', 'sponsor.html', 'projects.html', '404.html',
   'scripts/verify.mjs', 'submit-indexnow.mjs',
 ];
@@ -691,6 +691,84 @@ const mdTitles = [...read('FORK_GUIDE.md').matchAll(/^#{1,3}\s+(.+)$/gm)]
   .map((m) => m[1])
   .filter((t) => /\uFFFD/.test(t));
 if (mdTitles.length === 0) ok('FORK_GUIDE.md 的所有标题无乱码');
+
+// ---------- 13d. 品牌详情页 ----------
+section('13d. 品牌详情页');
+
+/**
+ * 详情页是拿长尾搜索流量的核心手段（每个页面对应一个「XX公司 双休率」类查询），
+ * 由 scripts 外的生成脚本从 bundle 提取数据后批量产出。
+ *
+ * 这些检查防止两类事故：
+ *  1. 页面存在但 SEO 头缺失（title/description/canonical）→ 无法被索引
+ *  2. 页面之间没有互链 → 爬虫无法遍历到，成为孤儿页
+ */
+const BRAND_DIR = 'brand';
+if (exists(BRAND_DIR)) {
+  const files = readdirSync(join(ROOT, BRAND_DIR)).filter((f) => f.endsWith('.html'));
+  check(files.length > 0, `详情页目录存在，共 ${files.length} 个页面`);
+
+  const problems = { noTitle: [], noDesc: [], noCanon: [], shortBody: [], noLink: [] };
+  const slugs = new Set(files.map((f) => f.replace(/\.html$/, '')));
+
+  files.forEach((f) => {
+    const t = read(join(BRAND_DIR, f));
+    const titleM = t.match(/<title>([^<]+)<\/title>/)?.[1] ?? '';
+    const descM = t.match(/name="description"\s+content="([^"]+)"/)?.[1] ?? '';
+    const canon = t.match(/rel="canonical"\s+href="([^"]+)"/)?.[1] ?? '';
+
+    if (titleM.length < 8) problems.noTitle.push(f);
+    if (descM.length < 30) problems.noDesc.push(f);
+    // canonical 必须指向自己的正式地址
+    if (!canon || !canon.includes(`/brand/${f}`)) problems.noCanon.push(f);
+
+    // 正文体量：太短的页面没有索引价值
+    const body = t.replace(/<script[\s\S]*?<\/script>/g, ' ')
+      .replace(/<style[\s\S]*?<\/style>/g, ' ')
+      .replace(/<[^>]+>/g, ' ');
+    if (body.replace(/\s+/g, ' ').trim().length < 400) problems.shortBody.push(f);
+
+    // 必须有回到首页的链接，否则无法被遍历
+    if (!/href="\.\.\//.test(t)) problems.noLink.push(f);
+  });
+
+  const show = (arr) => (arr.length ? arr.slice(0, 3).join(', ') + (arr.length > 3 ? ` 等 ${arr.length} 个` : '') : '');
+  check(problems.noTitle.length === 0, `${files.length} 个详情页都有有效title`, show(problems.noTitle));
+  check(problems.noDesc.length === 0, `${files.length} 个详情页都有 description`, show(problems.noDesc));
+  check(problems.noCanon.length === 0, `${files.length} 个详情页 canonical 均指向自身正式地址`, show(problems.noCanon));
+  check(problems.shortBody.length === 0, `${files.length} 个详情页正文均超过 400 字符`, show(problems.shortBody));
+  check(problems.noLink.length === 0, `${files.length} 个详情页都有返回首页的链接`, show(problems.noLink));
+
+  // 虚构对比黑榜卡不应有对外可索引的页面
+  check(!slugs.has('mouhongbei') && !files.some((f) => /烘焙|mouhongbei/i.test(f)),
+    '虚构对比黑榜卡未生成详情页（虚构品牌不该对外发布）');
+
+  // 每个详情页至少链向 1 个其他详情页（形成可爬的网）
+  const orphan = files.filter((f) => {
+    const t = read(join(BRAND_DIR, f));
+    const links = [...t.matchAll(/href="\.\/([a-z0-9-]+)\.html"/g)].map((m) => m[1]);
+    return links.filter((l) => l !== f.replace(/\.html$/, '')).length === 0;
+  });
+  check(orphan.length === 0, `${files.length} 个详情页均链向其他详情页（非孤儿页）`, show(orphan));
+
+  // 首页与 projects 页都应链向详情页 —— 否则爬虫进不去
+  [['index.html', '首页'], ['projects.html', '同类项目导航页']].forEach(([f, label]) => {
+    if (!exists(f)) return;
+    const t = read(f);
+    const n = (t.match(/href="\.\/brand\/[a-z0-9-]+\.html"/g) || []).length;
+    check(n >= files.length, `${label} 链向全部 ${files.length} 个详情页（实际 ${n}）`,
+      `内链不足，爬虫可能无法遍历到部分详情页`);
+  });
+
+  // sitemap 应覆盖全部详情页
+  if (exists('sitemap.xml')) {
+    const sm = read('sitemap.xml');
+    const missing = files.filter((f) => !sm.includes(`/brand/${f}`));
+    check(missing.length === 0, `sitemap.xml 含全部 ${files.length} 个详情页`, show(missing));
+  }
+} else {
+  warn('brand/ 目录不存在', '没有详情页就拿不到「XX公司 双休率」这类长尾流量');
+}
 
 // ---------- 14. 非部署副本 ----------
 section('14. 非部署副本提示');

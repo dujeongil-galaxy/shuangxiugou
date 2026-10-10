@@ -20,6 +20,10 @@
  */
 
 import { readFileSync, existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 // ===== 配置区=====
 const SITE = 'https://dujeongil-galaxy.github.io/shuangxiugou';
@@ -30,13 +34,20 @@ const ENDPOINT = 'https://api.indexnow.org/indexnow';
 // 待提交的 URL。
 // 只提交 sitemap 里的公开页面，不要提交 noindex 页（如 sponsor.html / 404.html）——
 // 推给搜索引擎一个声明了 noindex 的 URL 是自相矛盾的。
-// 建议：改动内容后手动传参指定受影响页面，避免全量刷。
+//
+// 默认从 sitemap.xml 读取全部 URL，保证 sitemap 改了这里自动跟着变，
+// 不会出现「sitemap 里有的页面没推给搜索引擎」的遗漏。
+// 改动内容后可用环境变量只推指定的页面：INDEXNOW_URLS=/,/projects.html
+function urlsFromSitemap() {
+  const f = join(ROOT, 'sitemap.xml');
+  if (!existsSync(f)) return [];
+  const xml = readFileSync(f, 'utf8');
+  return [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].trim());
+}
+
 const URLS = process.env.INDEXNOW_URLS
   ? process.env.INDEXNOW_URLS.split(',').map((u) => u.trim()).filter(Boolean)
-  : [
-      `${SITE}/`,
-      `${SITE}/projects.html`,
-    ];
+  : urlsFromSitemap();
 
 // =================
 

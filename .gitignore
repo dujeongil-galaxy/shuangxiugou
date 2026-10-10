@@ -40,3 +40,7 @@ next-env.d.ts
 
 __data__
 **/stage-1-crawl/storage
+
+# SEO 生成脚本的中间产物（由 extract-brands.py 产出，generate-brand-pages.py 消费）
+_brandindex.json
+_brands.json
