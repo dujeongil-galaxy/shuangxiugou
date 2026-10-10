@@ -135,18 +135,54 @@
 
 .dyp__acts {
   display: flex;
-  gap: 10px;
+  gap: 8px;
+}
+
+/* 三个按钮共用一条尺寸规则。
+   ------------------------------------------------------------------
+   踩过的坑：原先每个按钮各写一套 padding / font-size，
+   注入第三个按钮时又照抄了一份，于是三个按钮三种高度。
+   而flex 均分宽度后，「在抖音中观看」六字放不下会折行，
+   折行的那一个就比旁边两个明显高一截—— 截图里就是这个现象。
+
+   做法：尺寸（内边距 / 字号 / 行高 / 圆角 / 触摸高度 / 不折行）
+   全部收敛到这一条，各按钮只保留自己的配色差异。
+   新增按钮时只要给 .dyp__acts 下的子元素加这段选择器即可，
+   不需要再单独写尺寸。
+   ------------------------------------------------------------------ */
+.dyp__acts > * {
+  flex: 1 1 0;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0 8px;
+  /* 44px 是移动端最小舒适触摸高度 */
+  min-height: 44px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 主按钮文案更长（「在抖音中观看」6 字 vs 其余 4 字），等分宽度时
+   窄屏下只富余 5px，极易折行。给它 2 倍 grow 权重：
+   ① 任何断点都有 30%+ 余量，不会再折行；
+   ② 主按钮本来就是这排按钮里的视觉重心，宽度更大符合语义。
+   高度仍由上面的 min-height 统一，不受宽度分配影响。 */
+.dyp__go {
+  flex: 2 1 0;
 }
 
 .dyp__go {
-  flex: 1 1 auto;
-  padding: 12px 18px;
-  border-radius: 10px;
   background: linear-gradient(135deg, #3dad8a, #2e8b6f);
   color: #fff;
-  font-size: 15px;
   font-weight: 700;
-  text-align: center;
   text-decoration: none;
   box-shadow: 0 6px 18px rgba(61, 173, 138, 0.3);
   transition: filter 0.15s ease, transform 0.15s ease;
@@ -156,14 +192,9 @@
 .dyp__go:active { transform: scale(0.98); }
 
 .dyp__later {
-  flex: 0 0 auto;
-  padding: 12px 16px;
   border: 1px solid #e8dfd3;
-  border-radius: 10px;
   background: #fff;
   color: #7d7367;
-  font-size: 14px;
-  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
@@ -171,6 +202,22 @@
 
 .dyp__later:hover {
   background: #f5f0e8;
+  color: #2a2620;
+}
+
+/* 注入的第三个按钮（事实核查）—— 尺寸由上面那条统一给，
+   这里只写配色，避免再出现「三个按钮三套规格」。 */
+.dyp__factcheck {
+  border: 1px solid #e8dfd3;
+  background: #fff;
+  color: #7d7367;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.dyp__factcheck:hover {
+  background: #f5f0e8;
+  border-color: #d8ccb8;
   color: #2a2620;
 }
 
@@ -208,9 +255,18 @@
     flex-direction: column;
   }
 
-  .dyp__later {
-    order: 2;
+  /* 纵向排列时 flex 作用于高度，basis:0 会让高度先归零、
+     全靠 min-height 兜底 —— min-height 一旦被误删按钮就塌成 0 高。
+     这里改回 basis:auto，让内容自己撑开，更不依赖单条声明。 */
+  .dyp__acts > * {
+    flex: 0 0 auto;
+    min-height: 44px;
   }
+
+  /* 纵向排列时的顺序：主行动 → 核查 → 关闭。
+     在 CSS 里给而非 JS 判断：窗口尺寸变化（旋转、缩放）时能跟着更新。 */
+  .dyp__factcheck { order: 1; }
+  .dyp__later { order: 2; }
 }
 
 @media (prefers-reduced-motion: reduce) {

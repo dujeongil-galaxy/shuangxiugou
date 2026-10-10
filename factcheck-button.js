@@ -46,38 +46,16 @@
     // 插到两个按钮中间
     acts.insertBefore(a, later);
 
-    // 样式：与次要按钮一致但更低调，不抢主按钮的视觉重心
-    a.style.cssText = [
-      'flex:1 1 0',
-      'min-width:0',
-      'padding:10px 12px',
-      'border:1px solid #cbd5e1',
-      'border-radius:8px',
-      'background:#fff',
-      'color:#475569',
-      'font-size:13.5px',
-      'font-weight:600',
-      'text-decoration:none',
-      'text-align:center',
-      'cursor:pointer',
-      'transition:background .15s,border-color .15s',
-      'white-space:nowrap',
-    ].join(';');
-
-    a.addEventListener('mouseenter', function () {
-      a.style.background = '#f8fafc';
-      a.style.borderColor = '#94a3b8';
-    });
-    a.addEventListener('mouseleave', function () {
-      a.style.background = '#fff';
-      a.style.borderColor = '#cbd5e1';
-    });
-
-    // 主按钮的 flex 值会随按钮数量变化，重新分配让三按钮均分
-    [go, later].forEach(function (el) {
-      el.style.flex = '1 1 0';
-      el.style.minWidth = '0';
-    });
+    // 尺寸（内边距 / 字号 / 行高 / 圆角 / 触摸高度）由 CSS 统一给：
+    //   .dyp__acts > * 一条规则覆盖全部按钮。
+    //
+    // ⚠️ 这里曾内联写过一整套 padding/font-size/border-radius，
+    //   结果三个按钮三套规格，截图中主按钮折行后比旁边两个明显高一截。
+    //   **新增按钮不要在这里写尺寸**，只写配色（或干脆全部交给 CSS）。
+    //   加按钮只需：给 .dyp__acts 下的子元素命名 + 在 CSS 里配颜色。
+    //
+    // 窄屏纵向排列时的顺序也在 CSS 里给（见 @media (max-width: 520px)），
+    // 不在 JS 里判断 —— 那样窗口尺寸变化时不会跟着更新。
   }
 
   var scheduled = false;

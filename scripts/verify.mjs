@@ -823,6 +823,70 @@ if (exists('jiahua-fact-check.html')) {
     badDomains.length ? `出现未预期域名：${badDomains.join(', ')}` : '');
 }
 
+// ---------- 13b-3. 弹窗按钮的尺寸规格必须统一 ----------
+//
+// 背景（用户截图发现）：弹窗三个按钮高度参差。
+// 根因是每个按钮各写一套 padding / font-size，注入第三个时又照抄一份，
+// 而 flex 均分宽度后「在抖音中观看」六字放不下会折行 ——
+// 折行的那个就比旁边两个高一截。
+//
+// 这类 bug 静态检查抓不到「视觉不齐」，但能抓住根因：
+// 只要发现某个按钮又自己声明了尺寸，就报错。
+section('13b-3. 弹窗按钮尺寸统一');
+if (exists('douyin-prompt.css')) {
+  const dyp = read('douyin-prompt.css');
+
+  // 统一规则必须存在，且给出决定高度的关键属性
+  const unified = (dyp.match(/\.dyp__acts > \* \{([^}]*)\}/) || [, ''])[1];
+  check(unified.length > 0, '.dyp__acts > * 存在统一尺寸规则');
+  for (const k of ['min-height', 'font-size', 'line-height', 'padding', 'border-radius', 'white-space']) {
+    check(new RegExp(`${k}\\s*:`).test(unified), `统一规则含 ${k}（决定高度的属性）`);
+  }
+
+  // 三个按钮各自的规则里不得再出现尺寸属性（只允许配色/边框/交互）
+  //
+  // flex 的例外：`.dyp__go { flex: 2 1 0 }` 是**宽度分配权重**，
+  // 不是尺寸 —— 主按钮文案更长（6 字 vs 4 字），等分时窄屏会折行。
+  // 它的 flex-basis 仍是 0（与统一规则一致），只改grow 比例，
+  // 不影响高度。高度只由 .dyp__acts > * 的 min-height 决定。
+  const SIZE_KEYS = /^\s*(padding|font-size|line-height|min-height|min-width|border-radius)\s*:/;
+  const FLEX_ALLOWED = /^\s*flex\s*:\s*[\d.]+\s+1\s+0\s*$/; // 只改 grow，basis 仍为 0
+  const offenders = [];
+  for (const cls of ['dyp__go', 'dyp__later', 'dyp__factcheck']) {
+    const rules = [...dyp.matchAll(new RegExp(`\\.${cls}\\s*\\{([^}]*)\\}`, 'g'))];
+    for (const r of rules) {
+      const decls = r[1]
+        .split(';')
+        .map((x) => x.trim())
+        .filter((x) => x && SIZE_KEYS.test(x) && !FLEX_ALLOWED.test(x));
+      if (decls.length) offenders.push(`${cls}: ${decls.join(' / ')}`);
+    }
+  }
+  check(offenders.length === 0, '各按钮未自行声明尺寸（尺寸统一由 .dyp__acts > * 给）',
+    offenders.length ? `尺寸又分散到各按钮了：\n      ${offenders.join('\n      ')}` : '');
+
+  // 注入脚本不得内联写样式 —— 那是「三套规格」的源头
+  if (exists('factcheck-button.js')) {
+    const fcb = read('factcheck-button.js');
+    check(!/\.style\.cssText/.test(fcb), '注入脚本未内联 cssText');
+    check(!/window\.matchMedia/.test(fcb),
+      '注入脚本未用 JS 判断断点（窄屏顺序交给 CSS 的 @media）');
+  }
+
+  // 按钮文案不能太长导致折行（14px 字号下，桌面最窄 420px 面板里
+  // 主按钮拿 2/4 宽度 ≈ 178px，中文 14px/字 → 最多 12 字）
+  if (exists('douyin-prompt.js')) {
+    const dp = read('douyin-prompt.js');
+    const lt = (dp.match(/linkText:\s*'([^']+)'/) || [, ''])[1];
+    if (lt) {
+      const MAX = 10;
+      const ok = lt.length <= MAX;
+      check(ok, `主按钮文案「${lt}」共 ${lt.length} 字（上限 ${MAX}）`,
+        ok ? '' : `超出会折行或被省略号截断 —— 需缩短文案，或调大 .dyp__go 的 flex-grow 权重`);
+    }
+  }
+}
+
 // ---------- 13c. 编码完整性 ----------
 section('13c. 编码完整性');
 
