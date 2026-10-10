@@ -561,13 +561,55 @@ section('13b. SEO 基础配置');
 
 const SEO_PAGES = ['index.html', 'sponsor.html', 'projects.html', '404.html'];
 
-// 0. 站长平台验证文件：存在还不够，内容必须合法
+// 0b. Google Search Console 验证文件
 //
-//踩过的坑：仓库里的 BingSiteAuth.xml 一直能访问（HTTP 200），
+// 为什么必须检查：这是个纯文本文件，正常人看不出它被删了或内容坏了。
+// 一旦被 git clean 掉或误改，Google 后台的验证会静默失效，
+// 而且**不会主动通知你** —— 只有等发现收录断了才知道。
+//
+// Google 下发的文件格式为：
+//   googlea540a6c2cd5f0e6c.html
+//   内容：google-site-verification: googlea540a6c2cd5f0e6c.html
+// 注意内容里的文件名与真实文件名一致 —— 这是校验的关键点：
+// 若改过名或改过内容而另一方没跟着改，验证会失效。
+// ⚠️ 不要写成 exists(ROOT) —— exists() 内部会再拼一次 ROOT，
+// 结果是 join(ROOT, ROOT)，指向一个不存在的路径，恒返回 false。
+// 目录判断直接用 readdirSync(ROOT)。
+let googleFiles = [];
+try {
+  googleFiles = readdirSync(ROOT).filter((f) => /^google[0-9a-f]+\.html$/.test(f));
+} catch {
+  googleFiles = [];
+}
+
+if (googleFiles.length === 0) {
+  warn('Google Search Console 验证文件缺失',
+    '资源已验证通过，但仓库里找不到 google*.html。' +
+    '若被误删，Google 后台的验证会静默失效且不通知 —— 需要重新验证并补回该文件。');
+} else {
+  googleFiles.forEach((f) => {
+    const c = read(f);
+    check(c.includes('google-site-verification'),
+      `${f} 含 google-site-verification 标识`, `实际内容：${c.slice(0, 100)}`);
+
+    // 文件内容里声明的文件名必须与真实文件名一致
+    const declared = c.match(/google-site-verification:\s*(\S+)/)?.[1];
+    check(!!declared && declared === f,
+      `${f} 内容声明的文件名与实际文件名一致`,
+      declared ? `内容声明「${declared}」，实际文件「${f}」—— 不一致会导致验证失败` : '内容里没解析出文件名');
+
+    // 是个 HTML 文件，正文至少有内容（防止被清空）
+    check(c.trim().length > 0, `${f} 内容非空`);
+  });
+}
+
+// 0a. 站长平台验证文件（Bing）：存在还不够，内容必须合法
+//
+// 踩过的坑：仓库里的 BingSiteAuth.xml 一直能访问（HTTP 200），
 // 但内容是上游时期遗留的旧密钥，Bing 验证直接报「身份验证密钥不正确」。
 // 「文件存在」和「内容正确」是两件事 —— 只测前者会漏掉这类失效。
 //
-// 注意：这里只能校验结构合法性（32 位十六进制、XML 结构）。
+// 注意：这里只能校验结构合法性（十六进制、XML 结构）。
 // 密钥与哪个站点绑定由 Bing 决定，脚本无从判断，只能靠后台报错发现。
 if (exists('BingSiteAuth.xml')) {
   const bingXml = read('BingSiteAuth.xml');
