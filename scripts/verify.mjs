@@ -885,6 +885,64 @@ if (exists('douyin-prompt.css')) {
         ok ? '' : `超出会折行或被省略号截断 —— 需缩短文案，或调大 .dyp__go 的 flex-grow 权重`);
     }
   }
+
+  /* ------------------------------------------------------------------
+     配色可辨识性（用户反馈：「两个按钮不应该设置同颜色，不利于一眼识别」）
+
+     原来「事实核查」与「以后再说」都是白底+ 淡米色边框 + 灰字，
+     完全同色，扫一眼分不出 —— 而两者性质恰恰不同（内容入口 vs 关闭）。
+
+     规则：任意两个按钮，**背景 / 文字 / 边框三个维度里至少要差两项**。
+     只差一项（比如仅边框深浅）在实际尺寸下几乎看不出。
+
+     ⚠️ 实现要点：同一 class 可能有**多条规则**（如 .dyp__go 既有 flex 权重
+     又有配色）。必须合并全部规则再取属性 —— 只取第一条会漏掉配色，
+     导致「看起来没差异」而实际是解析 bug。
+     ------------------------------------------------------------------ */
+  const parseAll = (cssText, cls) => {
+    const out = {};
+    const re2 = new RegExp(`\\.${cls}\\s*\\{([^}]*)\\}`, 'g');
+    let m;
+    while ((m = re2.exec(cssText))) {
+      for (const decl of m[1].split(';')) {
+        const i = decl.indexOf(':');
+        if (i < 0) continue;
+        out[decl.slice(0, i).trim()] = decl.slice(i + 1).trim();
+      }
+    }
+    return out;
+  };
+
+  const palette = {
+    '在抖音中观看': parseAll(dyp, 'dyp__go'),
+    '事实核查': parseAll(dyp, 'dyp__factcheck'),
+    '以后再说': parseAll(dyp, 'dyp__later'),
+  };
+
+  const nameList = Object.keys(palette);
+  const ambiguous = [];
+  for (let i = 0; i < nameList.length; i++) {
+    for (let j = i + 1; j < nameList.length; j++) {
+      const A = palette[nameList[i]];
+      const B = palette[nameList[j]];
+      const diffs = [];
+      if ((A.background || 'inherit') !== (B.background || 'inherit')) diffs.push('背景');
+      if ((A.color || 'inherit') !== (B.color || 'inherit')) diffs.push('文字');
+      if ((A.border || 'none') !== (B.border || 'none')) diffs.push('边框');
+      if (diffs.length < 2) {
+        ambiguous.push(`${nameList[i]} ↔ ${nameList[j]} 仅差 ${diffs.length} 个维度${diffs.length ? '（' + diffs.join('、') + '）' : ''}`);
+      }
+    }
+  }
+  check(ambiguous.length === 0, '三个按钮两两之间至少差两个视觉维度（背景/文字/边框）',
+    ambiguous.length ? `配色过于接近，实际分辨不出：\n      ${ambiguous.join('\n      ')}` : '');
+
+  // 三级权重递进：主按钮必须有底色（实心/渐变），关闭按钮不应有底色
+  const goBg = palette['在抖音中观看'].background || '';
+  check(goBg.length > 0 && goBg !== 'transparent',
+    `主按钮为实心/渐变底（视觉最重）：${goBg.slice(0, 42)}`);
+  check((palette['以后再说'].background || '').match(/transparent|none|inherit/) !== null,
+    '关闭按钮为透明底（视觉最轻）');
 }
 
 // ---------- 13c. 编码完整性 ----------

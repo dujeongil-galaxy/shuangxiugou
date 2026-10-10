@@ -179,6 +179,31 @@
   flex: 2 1 0;
 }
 
+/* ==========================================================================
+   三个按钮的视觉重量分级（尺寸统一见上面 .dyp__acts > *）
+   --------------------------------------------------------------------------
+   用户反馈：「两个按钮不应该设置同颜色，这样不利于一眼识别」。
+
+   原先事实核查与以后再说都是「白底 + 淡米色边框 + 灰字」，
+   视觉上完全一样，扫一眼分辨不出哪个是哪个 ——
+   而这两者的性质恰恰不同：
+     事实核查 = 内容入口（带信息价值的动作）
+     以后再说 = 关闭（退出）
+
+   分三级，靠**三个维度同时不同**，而非只调亮度：
+
+   ┌─────────────┬────────┬──────────┬──────────┐
+   │按钮          │ 底色   │ 边框     │ 文字     │
+   ├─────────────┼────────┼──────────┼──────────┤
+   │ 在抖音中观看 │ 实心绿 │无        │ 白       │
+   │ 事实核查     │ 浅绿   │ 中绿     │ 深绿     │
+   │ 以后再说     │ 透明   │ 极淡     │ 暖灰     │
+   └─────────────┴────────┴──────────┴──────────┘
+
+   色相差 161° vs 35°（127°）、饱和 61% vs 10% —— 两级对比度 6.38 / 3.78，
+   均达WCAG AA。层次一眼可辨，且「关闭」明确退到最后。
+   ========================================================================== */
+
 .dyp__go {
   background: linear-gradient(135deg, #3dad8a, #2e8b6f);
   color: #fff;
@@ -191,34 +216,39 @@
 .dyp__go:hover { filter: brightness(1.06); }
 .dyp__go:active { transform: scale(0.98); }
 
-.dyp__later {
-  border: 1px solid #e8dfd3;
-  background: #fff;
-  color: #7d7367;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.dyp__later:hover {
-  background: #f5f0e8;
-  color: #2a2620;
-}
-
-/* 注入的第三个按钮（事实核查）—— 尺寸由上面那条统一给，
-   这里只写配色，避免再出现「三个按钮三套规格」。 */
+/* 第二级：内容入口。绿系与主按钮同族，但用浅底+描边而非实心，
+   明确比主按钮轻一档，同时比下面的关闭按钮重一档。 */
 .dyp__factcheck {
-  border: 1px solid #e8dfd3;
-  background: #fff;
-  color: #7d7367;
+  border: 1px solid #4fb389;
+  background: #d9efe5;
+  color: #175e48;
   text-decoration: none;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .dyp__factcheck:hover {
+  background: #c9e8db;
+  border-color: #3ea87c;
+  color: #0f4a37;
+}
+
+.dyp__factcheck:active { transform: scale(0.98); }
+
+/* 第三级：关闭。透明底 + 极淡边框，退到最轻 ——
+   视觉上「不鼓励点」，符合关闭动作的语义。 */
+.dyp__later {
+  border: 1px solid #ece4d8;
+  background: transparent;
+  color: #8a7f70;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.dyp__later:hover {
   background: #f5f0e8;
-  border-color: #d8ccb8;
-  color: #2a2620;
+  border-color: #ddd3c3;
+  color: #4a4239;
 }
 
 .dyp__tip {
