@@ -44,3 +44,6 @@ __data__
 # SEO 生成脚本的中间产物（由 extract-brands.py 产出，generate-brand-pages.py 消费）
 _brandindex.json
 _brands.json
+
+# 站长后台操作清单：属个人凭证流程，不随仓库公开（副本在仓库外 ../docs-SEO私用/）
+docs-SEO外链与收录操作清单.md

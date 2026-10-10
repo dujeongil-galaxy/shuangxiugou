@@ -665,7 +665,7 @@ section('13c. 编码完整性');
  */
 const ENCODING_SENSITIVE = [
   'README.md', 'FORK_GUIDE.md', 'MAINTAINING.md', 'DESIGN.md', 'LICENSE.md',
-  '员工实测数据核实修改清单.md', 'docs-SEO外链与收录操作清单.md',
+  '员工实测数据核实修改清单.md',
   'index.html', 'sponsor.html', 'projects.html', '404.html',
   'scripts/verify.mjs', 'submit-indexnow.mjs',
 ];
