@@ -15,6 +15,8 @@
  * 幂等：用 data 标记避免 MutationObserver 反复触发时重复插入。
  */
 (function () {
+  var REPO = 'https://github.com/dujeongil-galaxy/shuangxiugou';
+
   var LINKS = [
     {
       href: 'https://shuangxiugou.top/',
@@ -52,6 +54,55 @@
       'max-width:1100px;margin:40px auto 0;padding:24px 22px 32px;' +
       'border-top:1px solid #e2e8f0;background:#f8fafc;' +
       'font-size:13px;line-height:1.8;color:#64748b;border-radius:0 0 12px 12px');
+
+    /* ----------------------------------------------------------------
+       第一块：源代码
+       ----------------------------------------------------------------
+       为什么单独一块、不放在「友情链接」里：
+       友情链接是**别人的**站点，本仓库是**本站自己的**代码。
+       混在一起会让人以为这是互惠链接，也容易被访客当成广告。
+
+       为什么必须有：
+       搜「双休购 GitHub」时，Google 排在前面的
+       ZhiqingHeyi/shuangxiugou、MoFeng/shuangxiugou 都是 GitHub 仓库页，
+       而本站此前**正文里没有任何一处指向自己的仓库**——
+       想找源码的人翻到最底部也找不到，只能去猜。
+       （实测确认：index.html 里 github.com 链接只有
+         「提交更正用的 Issues」和「别人的仓库」，没有自己的）
+
+       放最底部是刻意的：它对只想查数据的访客是干扰，
+       但翻到底部的人正是要源码的那批人 —— 与 favicon 之外的
+       「同类项目把仓库放页脚」做法一致。
+       ---------------------------------------------------------------- */
+    var srcBlock = document.createElement('div');
+    srcBlock.setAttribute('style',
+      'padding-bottom:16px;margin-bottom:14px;border-bottom:1px solid #e2e8f0');
+
+    var srcHead = document.createElement('div');
+    srcHead.setAttribute('style',
+      'font-weight:600;color:#475569;margin-bottom:8px;font-size:14px');
+    srcHead.textContent = '源代码与数据勘误';
+    srcBlock.appendChild(srcHead);
+
+    var srcRow = document.createElement('div');
+    srcRow.setAttribute('style', 'margin:0 0 6px');
+
+    var repoA = document.createElement('a');
+    repoA.href = REPO;
+    repoA.textContent = 'dujeongil-galaxy/shuangxiugou';
+    repoA.setAttribute('style',
+      'color:#059669;text-decoration:none;font-weight:500;font-family:ui-monospace,SFMono-Regular,Menlo,monospace');
+    repoA.setAttribute('target', '_blank');
+    repoA.setAttribute('rel', 'noopener noreferrer');
+    srcRow.appendChild(repoA);
+
+    var srcDesc = document.createElement('span');
+    srcDesc.textContent =
+      '—— 本站全部代码与数据公开，数据有误可直接在该仓库提交 issue 修正';
+    srcRow.appendChild(srcDesc);
+    srcBlock.appendChild(srcRow);
+
+    footer.appendChild(srcBlock);
 
     var heading = document.createElement('div');
     heading.setAttribute('style', 'font-weight:600;color:#475569;margin-bottom:10px;font-size:14px');

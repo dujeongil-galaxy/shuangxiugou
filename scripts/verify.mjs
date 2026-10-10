@@ -945,6 +945,52 @@ if (exists('douyin-prompt.css')) {
     '关闭按钮为透明底（视觉最轻）');
 }
 
+/* ------------------------------------------------------------------
+   本站在正文中必须露出自己的 GitHub 仓库
+   ------------------------------------------------------------------
+   背景（用户截图）：搜「双休购 GitHub」，Google 排在前面的
+   ZhiqingHeyi/shuangxiugou、MoFengr/shuangxiugou 都是 GitHub 仓库页，
+   而本站 index.html 正文里**没有任何一处指向自己的仓库**——
+   只有「提交更正用的 Issues」链接和「别人的仓库」。
+   想找源码的人翻到最底部也找不到。
+
+   这类缺失静默发生：链接删了、校验也全绿（因为没有任何检查覆盖它），
+   只有用户在搜索结果页才发现。
+
+   检查两处（缺一不可）：
+     ① 可视页脚（friend-links-footer.js）—— 真人能看到
+     ② noscript 正文（index.html）—— 纯客户端渲染下爬虫唯一能读到的正文
+   ------------------------------------------------------------------ */
+section('13b-4. 本站仓库入口');
+const OWN_REPO = 'github.com/dujeongil-galaxy/shuangxiugou';
+{
+  const fcb = exists('friend-links-footer.js') ? read('friend-links-footer.js') : '';
+  // 只认仓库首页，排除 issues/new 这类子路径（子路径不算「入口」）
+  const fcbHasRepo = new RegExp(OWN_REPO.replace(/\//g, '\\/') + '[\'"]').test(fcb);
+  check(fcbHasRepo, '可视页脚含指向本站仓库的链接');
+
+  const idx = exists('index.html') ? read('index.html') : '';
+  const nsBlock = (idx.match(/<noscript>([\s\S]*?)<\/noscript>/) || [, ''])[1];
+
+  // 取出 noscript 里所有指向本站仓库的链接，筛出「仓库首页」
+  //（排除 /issues/... 这类子路径 —— 有Issues 链接不等于暴露了仓库地址）
+  const escOwn = OWN_REPO.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const nsRepoLinks = (nsBlock.match(
+    new RegExp(`https?://${escOwn}(?:/[^\\s"'>]*)?`, 'g')
+  ) || []).map((u) => u.replace(/[),.;]*$/, ''));
+  const nsRepoHome = nsRepoLinks.filter((u) => !/\/issues(\/|$|\?)/.test(u));
+
+  check(nsRepoHome.length > 0,
+    `noscript 含仓库首页链接（${nsRepoHome.length} 处，爬虫唯一能读到的位置）`,
+    nsRepoLinks.length > 0
+      ? `只有 issues 子路径：${nsRepoLinks.join(', ')} —— 搜索引擎看不到仓库地址`
+      : 'noscript 里没有任何指向本站仓库的链接');
+
+  // 仓库链接必须指向正确的用户名/仓库名，避免改错一个字符就失效
+  check(OWN_REPO === 'github.com/dujeongil-galaxy/shuangxiugou',
+    '仓库地址与实际仓库一致', `期望 github.com/dujeongil-galaxy/shuangxiugou，实际检查 ${OWN_REPO}`);
+}
+
 // ---------- 13c. 编码完整性 ----------
 section('13c. 编码完整性');
 
