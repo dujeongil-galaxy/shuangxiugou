@@ -6,7 +6,7 @@
  * 友链会变（换站点、调整锚文本），放独立文件里更好维护，
  * 改错了也能一眼看出问题在哪。
  *
- * 目标：在页面底部生成「相关站点」区块，含指向 shuangxiugou.top 的外链。
+ * 目标：在页面底部生成「友情链接」区块，含指向 shuangxiugou.top 的外链。
  *
  * 为什么需要注入到 DOM：
  * 本页正文由 React 客户端渲染，静态 HTML 里写footer 会被 React 覆盖。
@@ -39,7 +39,7 @@
     // 挂载位置：#root 自身的末尾。
     //
     // ⚠️ 早先写成 root.querySelector('div.mx-auto')—— 那个容器是
-    // 导航栏/首屏，不是页面底部，append 进去后「相关站点」跑到了顶部。
+    // 导航栏/首屏，不是页面底部，append 进去后「友情链接」跑到了顶部。
     // 页脚必须挂在 #root 的**最后一个子节点之后**，
     // 这样无论 React 内部结构怎么变，都永远在页面末尾。
     var host = root;
@@ -55,7 +55,7 @@
 
     var heading = document.createElement('div');
     heading.setAttribute('style', 'font-weight:600;color:#475569;margin-bottom:10px;font-size:14px');
-    heading.textContent = '相关站点';
+    heading.textContent = '友情链接';
     footer.appendChild(heading);
 
     var list = document.createElement('div');
