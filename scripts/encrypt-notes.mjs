@@ -263,6 +263,15 @@ function buildHtml(payload) {
     font-size: 0.9375rem;
   }
   .panel__list .sub .mark { min-width: 2.8rem; font-size: 0.75rem; }
+  /* 小节父标题：只作分组，不带已写/待写标记 */
+  .panel__list .grp {
+    margin: 0.2rem 0 0.9rem;
+    color: var(--ink);
+    font-weight: 700;
+    border-top: 1px solid var(--line);
+    padding-top: 0.9rem;
+  }
+  .panel__list .grp:first-child { border-top: 0; padding-top: 0; }
   .panel__nextlabel {
     display: block;
     font-size: 0.8125rem;
@@ -415,12 +424,20 @@ function buildHtml(payload) {
         }
         // 往回数到该小节的第一个 <p>：有内容算已写，只有标题算待写
         var hasBody = false;
-        for (var n = h.nextElementSibling; n && n.tagName !== 'H2' && n.tagName !== 'H3'; n = n.nextElementSibling) {
+        // 紧跟h3 的 h2 本身没有正文（如第四章、第五章），它是小节的父标题，
+        // 不该被标成「待写」，单独作为分组标题处理
+        var hasSubs = false;
+        for (var n = h.nextElementSibling; n && n.tagName !== 'H2'; n = n.nextElementSibling) {
+          if (n.tagName === 'H3') {
+            if (!hasBody) { hasSubs = true; break; }
+            continue;
+          }
           if (n.tagName === 'P' && n.textContent.trim().length > 0) { hasBody = true; break; }
         }
         out.push({
           title: h.textContent.trim(),
           hasBody: hasBody,
+          hasSubs: hasSubs,
           level: isSub ? 2 : 1,
           // h2 的序号已写进明文标题，目录不重复加；h3 需要补 4.1 / 4.2
           num: isSub ? (h2i + '.' + h3i) : ''
@@ -433,7 +450,16 @@ function buildHtml(payload) {
       var secs = buildOutline(html);
       outline.innerHTML = '';
       var done = 0;
+      var total = 0;
       secs.forEach(function (s) {
+        // 小节父标题（第四章、第五章）只作分组标题，不打「已写/待写」标记，也不计入统计
+        if (s.hasSubs) {
+          var gh = document.createElement('li');
+          gh.className = 'grp';
+          gh.appendChild(document.createTextNode(s.title));
+          outline.appendChild(gh);
+          return;
+        }
         var li = document.createElement('li');
         li.className = (s.hasBody ? 'done' : 'todo') + (s.level === 2 ? ' sub' : '');
         var mark = document.createElement('span');
@@ -442,9 +468,10 @@ function buildHtml(payload) {
         li.appendChild(mark);
         li.appendChild(document.createTextNode(s.title));
         outline.appendChild(li);
+        total += 1;
         if (s.hasBody) done++;
       });
-      statDone.textContent = '共 ' + secs.length + ' 项 · 已写 ' + done + ' 项 · 待写 ' + (secs.length - done) + ' 项';
+      statDone.textContent = '共 ' + total + ' 项 · 已写 ' + done + ' 项 · 待写 ' + (total - done) + ' 项';
 
       // 恢复上次的手写备注
       try {
