@@ -47,3 +47,7 @@ _brands.json
 
 # 站长后台操作清单：属个人凭证流程，不随仓库公开（副本在仓库外 ../docs-SEO私用/）
 docs-SEO外链与收录操作清单.md
+
+# ===== 加密正文：明文只留本地，绝不入库 =====
+notes-plaintext.md
+notes-plaintext*.html

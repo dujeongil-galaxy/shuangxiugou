@@ -19,9 +19,49 @@ import { execSync, execFileSync, spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import crypto from 'node:crypto';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const QUIET = process.argv.includes('--quiet');
+
+/* ---------- notes.html [中文内容已移除] ----------
+ *
+ * notes.html 正文是 AES-256-GCM [中文内容已移除]
+ * [中文内容已移除]
+ * 才能验证。
+ *
+ * 密码从环境变量 NOTES_KEY 读取 —— [中文内容已移除] CI 配置。
+ * [中文内容已移除]CI 上没有密码是
+ * [中文内容已移除]
+ *
+ *   NOTES_KEY=你的密码 node scripts/verify.mjs     # 解锁全量校验
+ */
+function decryptNotes(html) {
+  const key = process.env.NOTES_KEY;
+  if (!key) return null;
+  const pm = html.indexOf('var PAYLOAD = ');
+  if (pm < 0) return null;
+  const po = html.indexOf('{', pm);
+  let depth = 0, pc = -1;
+  for (let i = po; i < html.length; i++) {
+    if (html[i] === '{') depth++;
+    else if (html[i] === '}') { depth--; if (depth === 0) { pc = i; break; } }
+  }
+  if (pc < 0) return null;
+  let P;
+  try { P = JSON.parse(html.slice(po, pc + 1)); } catch { return null; }
+  try {
+    const k = crypto.pbkdf2Sync(
+      key, Buffer.from(P.salt, 'base64'), P.iter, 32, 'sha256'
+    );
+    const tag = Buffer.from(P.tag, 'base64');
+    const d = crypto.createDecipheriv('aes-256-gcm', k, Buffer.from(P.iv, 'base64'));
+    d.setAuthTag(tag);
+    return Buffer.concat([d.update(Buffer.from(P.data, 'base64')), d.final()]).toString('utf8');
+  } catch {
+    return null; // 密码不对
+  }
+}
 
 // ---------- 基础设施 ----------
 let passCount = 0;
@@ -594,6 +634,18 @@ if (exists('README.md')) {
 // [中文内容已移除]
 if (exists('notes.html')) {
   const nt = read('notes.html');
+  // [中文内容已移除] NOTES_KEY 时为 null[中文内容已移除]
+  const plain = decryptNotes(nt);
+  const contentCheck = (ok, label, why) => {
+    if (plain === null) {
+      notes.push(`跳过「${label}」（未提供 NOTES_KEY，密文未解密）`);
+      return;
+    }
+    check(ok, label, why);
+  };
+  if (process.env.NOTES_KEY && plain === null) {
+    errors.push('NOTES_KEY [中文内容已移除] —— [中文内容已移除]');
+  }
 
   // ① robots.txt屏蔽
   const rb = exists('robots.txt') ? read('robots.txt') : '';
@@ -613,52 +665,54 @@ if (exists('notes.html')) {
     '页面自身没有 noindex → robots.txt [中文内容已移除]');
 
   // ④ [中文内容已移除]
-  const declIdx = nt.search(/不代表本站立场|不构成对任何|[中文内容已移除]/);
-  const firstPara = nt.search(/<h1|<p>/);
-  check(declIdx >= 0,
+  //
+  // ⚠️ notes.html 的正文从第 13 轮起改为 AES-256-GCM 密文。
+  //    [中文内容已移除]
+  //    **密文结构**和**解锁路径**[中文内容已移除]
+  const isEncrypted = /var PAYLOAD\s*=/.test(nt) && /AES-GCM/.test(nt);
+  check(isEncrypted,
     'notes.html [中文内容已移除]',
-    '没有声明 → [中文内容已移除]');
-  check(declIdx >= 0 && firstPara >= 0 && declIdx < firstPara,
-    'notes.html [中文内容已移除]',
-    '[中文内容已移除] → [中文内容已移除]');
+    '正文以明文提交 → raw.githubusercontent.com [中文内容已移除]');
+  if (isEncrypted) {
+    const pm = nt.indexOf('var PAYLOAD = ');
+    const po = nt.indexOf('{', pm);
+    let depth = 0, pc = -1;
+    for (let i = po; i < nt.length; i++) {
+      if (nt[i] === '{') depth++;
+      else if (nt[i] === '}') { depth--; if (depth === 0) { pc = i; break; } }
+    }
+    let P = null;
+    try { P = JSON.parse(nt.slice(po, pc + 1)); } catch (e) { /* [中文内容已移除] */ }
+    check(!!P && ['salt', 'iv', 'tag', 'data', 'iter'].every((k) => P && P[k]),
+      'notes.html 密文结构完整',
+      '密文缺字段 → [中文内容已移除]');
+    check(!!P && P.iter >= 100000,
+      'notes.html 的 PBKDF2 迭代次数 >= 100000',
+      '迭代过低 → [中文内容已移除]');
+    check(!!P && Buffer.from(P.tag || '', 'base64').length === 16,
+      'notes.html 的 GCM 认证标签为 16 字节',
+      'tag 长度不对 → AES-GCM 解密必然失败');
+  }
 
-  // ⑤[中文内容已移除]
-  //⚠️ [中文内容已移除] CSS/JS/[中文内容已移除]
+  // ⑤ [中文内容已移除]
+  //
+  // [中文内容已移除]
+  // [中文内容已移除]
   const bodyText = nt
     .replace(/<style[\s\S]*?<\/style>/g, '')
     .replace(/<script[\s\S]*?<\/script>/g, '')
     .replace(/<!--[\s\S]*?-->/g, '');
-  const leaks = [
-    [/19[89]\d\s*年\s*\d{1,2}\s*月/, '写了出生年月'],
-    [/\b(19[89]\d|20[012]\d)\s*年\s*出生/, '写了出生年'],
-    [/成都|重庆|绵阳|德阳|宜宾|泸州/, '写了具体城市'],
-    [/\d{6,}/, '出现了疑似 QQ 号 / 手机号 / 群号'],
-  ];
-  for (const [re, why] of leaks) {
-    check(!re.test(bodyText),
-      `notes.html [中文内容已移除]${why}）`,
-      `${why} —— [中文内容已移除]`);
+  for (const must of [
+    '2025 川西自驾游',
+    '不代表本站立场',
+    '伸出左手',
+    '十几二十码',
+    '双实线',
+  ]) {
+    check(!nt.includes(must),
+      `notes.html 未泄露明文「${must}」`,
+      '[中文内容已移除]');
   }
-
-  // ⚠️ [中文内容已移除]
-  //
-  // [中文内容已移除]
-  // [中文内容已移除] [中文内容已移除] / 群号 / 照片」
-  // [中文内容已移除]
-  // [中文内容已移除]**「我不放 X」等于告诉别人 X 可以定位。**
-  const locatorWords = [
-    [/名字.*群号.*照片/, '列出了「名字/群号/照片」定位清单'],
-    [/网名/, '出现了「网名」'],
-    [/群号/, '出现了「群号」'],
-    [/截图里?的?照片/, '[中文内容已移除]'],
-  ];
-  for (const [re, why] of locatorWords) {
-    check(!re.test(bodyText),
-      `notes.html [中文内容已移除]${why}）`,
-      `${why} —— [中文内容已移除]`
-      + '[中文内容已移除]');
-  }
-
   // ⑥ [中文内容已移除]
   //
   // ⚠️ [中文内容已移除] —— [中文内容已移除]
@@ -728,7 +782,8 @@ if (exists('notes.html')) {
   // ⚠️ 必须只扫**可见正文**。
   //    扫全文会命中 <style> 里的 `font-family: "Microsoft YaHei"` —— [中文内容已移除]
   //    [中文内容已移除]
-  const ntVisible = nt
+  //    [中文内容已移除] style/script/head [中文内容已移除]
+  const plainVisible = plain === null ? '' : plain
     .replace(/<style[\s\S]*?<\/style>/g, '')
     .replace(/<script[\s\S]*?<\/script>/g, '')
     .replace(/<head[\s\S]*?<\/head>/g, '')
@@ -742,14 +797,14 @@ if (exists('notes.html')) {
     // [中文内容已移除]**ASCII 字母或数字**[中文内容已移除] BYDX），跳过；
     // [中文内容已移除]`BYD很有性价比` 里的 BYD 就是点名）。
     const isAscii = (s) => /^[\x20-\x7e]+$/.test(s);
-    const hit = suspects.filter((n) => {
+    const hit = plain === null ? [] : suspects.filter((n) => {
       const s = n.trim();
       if (isAscii(s)) {
-        return new RegExp(`${s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z0-9])`).test(ntVisible);
+        return new RegExp(`${s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z0-9])`).test(plainVisible);
       }
-      return ntVisible.includes(s);
+      return plainVisible.includes(s);
     });
-    check(hit.length === 0,
+    contentCheck(hit.length === 0,
       'notes.html 未点名收录企业',
       hit.length
         ? `出现品牌名：${hit.slice(0, 5).join('、')} —— [中文内容已移除]` +
@@ -762,11 +817,11 @@ if (exists('notes.html')) {
   // [中文内容已移除]
   // [中文内容已移除]
   // **[中文内容已移除]**
-  check(/[中文内容已移除]/.test(nt),
+  contentCheck(plain !== null && /[中文内容已移除]/.test(plain),
     'notes.html [中文内容已移除]',
-    '这一节不见了 → [中文内容已移除]' +
-    '[中文内容已移除]');
-  check(/[中文内容已移除]/.test(nt),
+    '这一节不见了 → [中文内容已移除]'
+    + '[中文内容已移除]');
+  contentCheck(plain !== null && /[中文内容已移除]/.test(plain),
     'notes.html [中文内容已移除]',
     '[中文内容已移除]');
 
@@ -775,66 +830,58 @@ if (exists('notes.html')) {
   // 事实：让路的是**非机动车**[中文内容已移除]
   // [中文内容已移除]
   // [中文内容已移除]
-  const jamStart = nt.indexOf('2025 川西自驾游');
-  check(jamStart > 0, 'notes.html 有「2025 [中文内容已移除]');
+  const jamStart = plain === null ? -1 : plain.indexOf('2025 川西自驾游');
+  contentCheck(jamStart > 0, 'notes.html 有「2025 [中文内容已移除]', '[中文内容已移除]');
   if (jamStart > 0) {
-    const jamEnd = nt.indexOf('<h2>', jamStart + 10);
-    const jam = nt.slice(jamStart, jamEnd > jamStart ? jamEnd : jamStart + 3000);
+    const jamEnd = plain.indexOf('<h2>', jamStart + 10);
+    const jam = plain.slice(jamStart, jamEnd > jamStart ? jamEnd : jamStart + 3000);
     // ⚠️ 摇窗竖大拇指的**对象与手**[中文内容已移除]
     //
     // [中文内容已移除]**左边 A 车道的车**看 ——
     // [中文内容已移除] C [中文内容已移除]
-    //
-    // [中文内容已移除]
-    //   · 写成右手 → [中文内容已移除]
-    //   · [中文内容已移除]→ [中文内容已移除]
-    check(/伸出左手/.test(jam),
+    contentCheck(/伸出左手/.test(jam),
       '「2025 [中文内容已移除]',
       '[中文内容已移除]');
-    check(/左边那些车|左边.*车看/.test(jam),
+    contentCheck(/左边那些车|左边.*车看/.test(jam),
       '「2025 [中文内容已移除]',
-      '手势是做给左边 A [中文内容已移除]' +
-      '不是给右边 C [中文内容已移除]');
-    check(/伸个大拇指|伸出大拇指|竖了个大拇指|竖起大拇指/.test(jam),
+      '手势是做给左边 A [中文内容已移除]'
+      + '不是给右边 C [中文内容已移除]');
+    contentCheck(/伸个大拇指|伸出大拇指|竖了个大拇指|竖起大拇指/.test(jam),
       '「2025 [中文内容已移除]',
       '[中文内容已移除]');
 
     // ⚠️ [中文内容已移除]
-    //    [中文内容已移除]
-    check(!/骑在/.test(nt),
+    contentCheck(!/骑在/.test(plain),
       'notes.html [中文内容已移除]',
-      '[中文内容已移除]/[中文内容已移除]' +
-      '[中文内容已移除]');
+      '[中文内容已移除]/[中文内容已移除]'
+      + '[中文内容已移除]');
   }
 
   // ⑪ 尾注必须存在。
   //
   // [中文内容已移除]AI [中文内容已移除]**[中文内容已移除]** ——
-  // [中文内容已移除] AI [中文内容已移除]
   // [中文内容已移除]
-  check(/class="colophon"/.test(nt),
+  contentCheck(plain !== null && /class="colophon"/.test(plain),
     'notes.html 有尾注（colophon）',
-    '尾注不见了 → [中文内容已移除]' +
-    '而AI [中文内容已移除]');
-  check(/AI\s*帮着排的版|AI/.test(nt),
+    '尾注不见了 → [中文内容已移除]'
+    + '而AI [中文内容已移除]');
+  contentCheck(plain !== null && /AI/.test(plain),
     'notes.html 尾注声明了 AI 参与',
     '尾注里必须写明 AI 参与过排版');
 
-  // ⑪ notes.html 的返回顶部按钮
-  //
-  // [中文内容已移除] bundle[中文内容已移除] <script> 里。
-  // [中文内容已移除]
-  // HTML 还在、CSS 还在，但没有 JS 就没有 data-show 的切换。
-  const nHtml = exists('notes.html') ? read('notes.html') : '';
-  check(/id="to-top"/.test(nHtml), 'notes.html [中文内容已移除]');
-  check(/class="to-top"/.test(nHtml), 'notes.html 返回顶部按钮带 .to-top 样式类');
+  // ⑫ notes.html [中文内容已移除]
+  const nHtml = plain === null ? '' : plain;
+  contentCheck(/id="to-top"/.test(nHtml),
+    'notes.html [中文内容已移除]',
+    '[中文内容已移除]');
+  contentCheck(/class="to-top"/.test(nHtml), 'notes.html 返回顶部按钮带 .to-top 样式类');
 
   const nScripts = [...nHtml.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
   const nJs = nScripts.join('\n');
-  check(/getElementById\(['"]to-top['"]\)/.test(nJs),
+  contentCheck(/getElementById\(['"]to-top['"]\)/.test(nJs),
     'notes.html [中文内容已移除] to-top',
     '按钮元素存在但 JS 没绑它 → 点了没反应');
-  check(/scrollTo\(\s*\{\s*top:\s*0/.test(nJs),
+  contentCheck(/scrollTo\(\s*\{\s*top:\s*0/.test(nJs),
     'notes.html [中文内容已移除]',
     '按钮点击无行为 → 是个死按钮');
 
@@ -845,7 +892,7 @@ if (exists('notes.html')) {
   // 若残留 data-show 或默认 opacity:0[中文内容已移除] —— 而 HTML 和 JS 都在，
   // [中文内容已移除]
   const toTopCss = (nHtml.match(/\.to-top\s*\{([\s\S]*?)\}/) || ['', ''])[1];
-  check(!/opacity:\s*0/.test(toTopCss) && !/visibility:\s*hidden/.test(toTopCss),
+  contentCheck(!/opacity:\s*0/.test(toTopCss) && !/visibility:\s*hidden/.test(toTopCss),
     'notes.html [中文内容已移除]CSS 无隐藏声明）',
     'CSS 里还有 opacity:0 / visibility:hidden → 按钮永久隐形，' +
     '但 HTML 和 JS [中文内容已移除]');
@@ -855,11 +902,11 @@ if (exists('notes.html')) {
     .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/^\s*\/\/.*$/gm, '');
-  check(!/data-show/.test(nHtmlNoComment),
+  contentCheck(!/data-show/.test(nHtmlNoComment),
     'notes.html 不再有 data-show 切换机制',
     '[中文内容已移除]data-show 与 scroll [中文内容已移除]' +
     '残留会导致 HTML 属性与 CSS [中文内容已移除]');
-  check(!/addEventListener\(\s*['"]scroll['"]/.test(nJs),
+  contentCheck(!/addEventListener\(\s*['"]scroll['"]/.test(nJs),
     'notes.html 不再监听 scroll',
     '[中文内容已移除] scroll [中文内容已移除]');
 }
@@ -2557,7 +2604,10 @@ if (QUIET === false) {
 }
 if (warns.length) console.log(`\x1b[33m警告 ${warns.length} 项\x1b[0m[中文内容已移除]`);
 if (errors.length) {
+  // ⚠️ [中文内容已移除]
+  //    [中文内容已移除]
   console.log(`\x1b[31m错误 ${errors.length} 项\x1b[0m —— [中文内容已移除]`);
+  for (const msg of errors) console.log(`  \x1b[31m·\x1b[0m ${msg}`);
   process.exit(1);
 }
 console.log('\x1b[32m全部检查通过\x1b[0m');
