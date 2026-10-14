@@ -184,22 +184,19 @@ function buildHtml(payload) {
     -webkit-font-smoothing: antialiased;
   }
   .box { max-width: 42rem; margin: 0 auto; }
-  .locked__tag {
-    display: inline-block;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: var(--accent);
-    margin: 0 0 0.9rem;
+  /*锁屏只剩密码框，垂直居中才不会显得像页面崩了 */
+  .lock {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
-  h1 {
+  .lock__title {
     font-size: 1.5rem;
     font-weight: 700;
     letter-spacing: -0.01em;
     margin: 0 0 1.6rem;
   }
-  .desc { color: var(--ink-2); margin: 0 0 1.6rem; }
-  .tip { font-size: 0.8125rem; color: var(--ink-3); margin: 2rem 0 0; }
   .err { color: #b91c1c; min-height: 1.4em; margin: 0.8rem 0 0; font-size: 0.875rem; }
   /* ⚠️ 必须加 !important。
      下面 form { display: flex } 和 input 的样式都是类选择器，
@@ -324,14 +321,17 @@ function buildHtml(payload) {
 <body>
 <div class="box">
 
-  <!-- 锁屏只保留密码框本身。「正在写 / 站长随笔还在写 / 半成品 / 暂不提供预览」
+  <!-- 锁屏只保留标题和密码框。「正在写 / 站长随笔还在写 / 半成品 / 暂不提供预览」
        这些提示已按站长要求全部删除，不再出现。 -->
 
-  <form id="f" autocomplete="off">
-    <input id="pw" type="password" placeholder="输入访问密码" aria-label="访问密码" />
-    <button type="submit">打开</button>
-  </form>
-  <p class="err" id="err" role="alert"></p>
+  <div class="lock" id="lock">
+    <h1 class="lock__title">站长随笔</h1>
+    <form id="f" autocomplete="off">
+      <input id="pw" type="password" placeholder="请输入访问密码" aria-label="访问密码" />
+      <button type="submit">打开</button>
+    </form>
+    <p class="err" id="err" role="alert"></p>
+  </div>
 
   <!-- ============ 写作进度面板（密码正确后显示） ============
        站长自己用：一眼看清写到哪了、下一节写什么。
@@ -482,8 +482,8 @@ function buildHtml(payload) {
         if (saved) nextNote.value = saved;
       } catch (e) {}
 
-      // 密码框收起来，避免和面板并存显得杂乱
-      form.hidden = true;
+      // 锁屏整块收起来，避免和面板并存显得杂乱
+      document.getElementById('lock').hidden = true;
       panel.hidden = false;
       panel.scrollIntoView({ block: 'start' });
     }
