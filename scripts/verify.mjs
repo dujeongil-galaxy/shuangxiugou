@@ -333,7 +333,7 @@ customCards.forEach((c) => {
 section('4. 资源引用（404 前置检查）');
 
 // 4.1 四个 HTML 页面的 src / href / url()
-for (const page of ['index.html', 'sponsor.html', 'projects.html', '404.html']) {
+for (const page of ['index.html', 'sponsor.html', 'projects.html', '404.html', 'discussion-closed.html']) {
   if (!exists(page)) { err(`${page} 不存在`); continue; }
   const h = read(page);
   const refs = new Set();
@@ -1039,7 +1039,38 @@ section('13b. SEO 基础配置');
  * 但这些项确实容易在后续改动中被误删 —— 所以要有脚本盯着。
  */
 
-const SEO_PAGES = ['index.html', 'sponsor.html', 'projects.html', '404.html'];
+const SEO_PAGES = ['index.html', 'sponsor.html', 'projects.html', '404.html', 'discussion-closed.html'];
+
+// 0a. 两份 404 页面的职责不能搞混
+//
+// 背景：曾把「你点的『发布交流』暂未开放」写在 404.html 里，
+// 但那是 GitHub Pages 的**全站兜底** —— 任何人输错网址都会看到，
+// 于是对方只是少打了个字母，却被告知他点了某个按钮。
+//
+// 现在分成两份：
+//   404.html             全站兜底，不得假设访问来源
+//   discussion-closed.html  「发布交流」按钮专属，按钮指向它
+if (exists('404.html') && exists('discussion-closed.html')) {
+  const generic = read('404.html');
+  const closed = read('discussion-closed.html');
+  const dpRaw = exists('discussion-to-404.js') ? read('discussion-to-404.js') : '';
+  const dpCode = dpRaw
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '');
+
+  check(!/你点的「发布交流」/.test(generic),
+    '全站兜底 404.html 不含按钮专属文案',
+    '这页给所有输错网址的人看，不能假设他们点了某个按钮');
+  check(/你点的「发布交流」/.test(closed),
+    'discussion-closed.html 保留「发布交流」专属说明',
+    '按钮点了要有对应的解释页，否则用户不知道是功能没做还是自己点错了');
+  check(/discussion-closed\.html/.test(dpCode),
+    '「发布交流」按钮指向 discussion-closed.html',
+    '若还指向 404.html，用户输错网址时就会看到「你点了发布交流」这种错话');
+  check(!/TARGET\s*=\s*['"]404\.html['"]/.test(dpCode),
+    '按钮不再指向全站兜底 404.html',
+    '404.html 是兜底页，按钮应指向自己的专属说明页');
+}
 
 // 0b. Google Search Console 验证文件
 //
@@ -1961,7 +1992,7 @@ section('13c. 编码完整性');
 const ENCODING_SENSITIVE = [
   'README.md', 'FORK_GUIDE.md', 'MAINTAINING.md', 'DESIGN.md', 'LICENSE.md',
   '员工实测数据核实修改清单.md',
-  'index.html', 'sponsor.html', 'projects.html', '404.html',
+  'index.html', 'sponsor.html', 'projects.html', '404.html', 'discussion-closed.html',
   'scripts/verify.mjs', 'submit-indexnow.mjs',
 ];
 
