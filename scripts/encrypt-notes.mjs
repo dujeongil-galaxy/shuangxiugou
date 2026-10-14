@@ -1,14 +1,14 @@
 /* ==========================================================================
    notes.html 加密脚本
    --------------------------------------------------------------------------
-   用途：把 notes.html [中文内容已移除] notes.html[中文内容已移除]
-   [中文内容已移除]
+   用途：把 notes.html 的正文加密后写回 notes.html。仓库里只留密文，
+   访客在页面上输密码才能解开。密码不写进任何文件，也不进仓库。
 
    用法：
      node scripts/encrypt-notes.mjs            # 交互输入密码
-     node scripts/encrypt-notes.mjs --key=xxx  # [中文内容已移除]
+     node scripts/encrypt-notes.mjs --key=xxx  # 直接给密码（仅本机调试用）
 
-   ⚠️ [中文内容已移除]
+   ⚠️ 明文原文请自行留存在本地，不要提交。仓库里只应该有密文。
    ========================================================================== */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -22,9 +22,9 @@ const TARGET = path.join(ROOT, 'notes.html');
 const SOURCE = path.join(ROOT, 'notes-plaintext.md');
 
 /* ---- 加密参数 ----
-   PBKDF2 [中文内容已移除]
-   [中文内容已移除] salt / iv —— [中文内容已移除]
-   [中文内容已移除] */
+   PBKDF2 迭代次数取得较高，是为了让暴力破解变慢。
+   每次加密都重新随机生成 salt / iv —— 相同密码两次加密结果不同，
+   这样密文本身不泄露「两次内容是否相同」。 */
 const ITERATIONS = 210_000;
 const KEYLEN = 32;
 const SALT_BYTES = 16;
@@ -37,13 +37,13 @@ function askPassword() {
     terminal: true,
   });
   return new Promise((resolve) => {
-    process.stdout.write('[中文内容已移除] 12 [中文内容已移除]');
+    process.stdout.write('请输入密码（至少 12 位，输入不回显）：');
     rl.question('', (pw) => {
       process.stdout.write('\n再输一次确认：');
       rl.question('', (pw2) => {
         rl.close();
         if (pw !== pw2) {
-          console.error('\n[中文内容已移除]');
+          console.error('\n两次输入不一致，已中止。');
           process.exit(1);
         }
         if (pw.length < 12) {
@@ -67,8 +67,8 @@ let pwEcho = '';
 
 async function main() {
   if (!fs.existsSync(SOURCE)) {
-    console.error(`[中文内容已移除]${SOURCE}`);
-    console.error('[中文内容已移除] notes-plaintext.md[中文内容已移除]');
+    console.error(`找不到明文源文件：${SOURCE}`);
+    console.error('请把正文原样存成 notes-plaintext.md（不要提交它）。');
     process.exit(1);
   }
 
@@ -104,34 +104,34 @@ async function main() {
 
   const html = buildHtml(payload);
 
-  // 门禁自查：payload 若含 </script>[中文内容已移除]
+  // 门禁自查：payload 若含 </script>，页面会提前闭合导致泄露
   if (/<\/script/i.test(payload)) {
-    console.error('[中文内容已移除] </script 序列，已中止。');
+    console.error('自查失败：密文中含 </script 序列，已中止。');
     process.exit(1);
   }
 
-  // [中文内容已移除]
-  // head/style 里的 noindex、font-family [中文内容已移除]
-  // [中文内容已移除] —— [中文内容已移除]
+  // 门禁自查：只查「正文可见文字」。
+  // head/style 里的 noindex、font-family 这类样板在密文页模板中也会出现，
+  // 拿它们做判据会永远误报 —— 真正要保证的是读者看不到的那部分内容。
   const bodyText = plaintext
     .slice(plaintext.indexOf('<body>'))
-    .replace(/<script[\s\S]*?<\/script>/g, '')  // [中文内容已移除]
+    .replace(/<script[\s\S]*?<\/script>/g, '')  // 脚本样板不算正文
     .replace(/<[^>]+>/g, '\n');
   const sentences = bodyText
     .split('\n')
     .map((s) => s.trim())
-    // 只查中文句子：JS [中文内容已移除]
+    // 只查中文句子：JS 片段、短标签在密文页里也会出现，会误报
     .filter((s) => s.length >= 12 && /[一-龥]/.test(s));
   for (const s of sentences) {
     if (html.includes(s)) {
-      console.error(`[中文内容已移除] →「${s.slice(0, 40)}…」`);
+      console.error(`自查失败：明文句子出现在产物中 →「${s.slice(0, 40)}…」`);
       process.exit(1);
     }
   }
-  // [中文内容已移除]
+  // 关键内容必须查不到
   for (const must of ['2025 川西自驾游', '不代表本站立场', '伸出左手']) {
     if (html.includes(must)) {
-      console.error(`[中文内容已移除]${must}」，已中止。`);
+      console.error(`自查失败：产物中仍含「${must}」，已中止。`);
       process.exit(1);
     }
   }
@@ -142,9 +142,9 @@ async function main() {
 }
 
 function buildHtml(payload) {
-  // ⚠️ [中文内容已移除] JS [中文内容已移除] JSON.stringify 再塞进引号 ——
-  //    [中文内容已移除] JSON[中文内容已移除]
-  //    payload [中文内容已移除] base64/数字，不含 </script> 等危险序列。
+  // ⚠️ 这里必须原样嵌入 JS 对象字面量，不能 JSON.stringify 再塞进引号 ——
+  //    那样会变成「字符串里的 JSON」，浏览器端拿到的会是带转义符的文本。
+  //    payload 全部字段都是我们自己生成的 base64/数字，不含 </script> 等危险序列。
   const P = payload;
   return `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -235,8 +235,8 @@ function buildHtml(payload) {
 
   <div class="locked__tag">正在写</div>
   <h1>站长随笔还在写</h1>
-  <div class="desc">[中文内容已移除]
-  [中文内容已移除]</div>
+  <div class="desc">这一页还没写完，我不想拿半成品糊弄你。写好了会自己上线，
+  到时候你再来看。</div>
 
   <form id="f" autocomplete="off">
     <input id="pw" type="password" placeholder="输入访问密码" aria-label="访问密码" />
@@ -248,8 +248,8 @@ function buildHtml(payload) {
 </div>
 
 <script>
-  // [中文内容已移除] URL、不进 localStorage[中文内容已移除]
-  // [中文内容已移除] —— 从地址栏和 DOM [中文内容已移除]
+  // 正文是密文，密码不进 URL、不进 localStorage，仅在内存里解开一次。
+  // 解开后直接替换整页 —— 从地址栏和 DOM 里都看不到密码。
   (function () {
     var PAYLOAD = ${P};
     var KDF_ITER = PAYLOAD.iter;
@@ -266,7 +266,7 @@ function buildHtml(payload) {
     }
 
     async function derive(password, salt) {
-      // WebCrypto 的 PBKDF2 [中文内容已移除] SHA-256
+      // WebCrypto 的 PBKDF2 有迭代次数上限，用它推导 SHA-256
       var base = await crypto.subtle.importKey(
         'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']
       );
@@ -287,7 +287,7 @@ function buildHtml(payload) {
         var key = await derive(password, b64ToBytes(PAYLOAD.salt));
         // ⚠️ data 和 tag 必须**分别解码再拼接**。
         //    直接对 base64 字符串做 data + tag 再解码会因为
-        //    两段各自的 '=' [中文内容已移除]GCM 认证必然失败。
+        //    两段各自的 '=' 填充导致字节错位，GCM 认证必然失败。
         var body = b64ToBytes(PAYLOAD.data);
         var tag = b64ToBytes(PAYLOAD.tag);
         var buf = new Uint8Array(body.length + tag.length);
@@ -299,7 +299,7 @@ function buildHtml(payload) {
           key,
           buf
         );
-        // [中文内容已移除] catch
+        // 认证通过才替换页面；失败会抛错，走下面的 catch
         document.open();
         document.write(new TextDecoder().decode(plain));
         document.close();

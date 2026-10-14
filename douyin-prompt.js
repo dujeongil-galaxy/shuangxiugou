@@ -75,7 +75,7 @@
           '<a class="dyp__go" target="_blank" rel="noopener noreferrer"></a>' +
           '<button class="dyp__later" type="button">站长随笔</button>' +
         '</div>' +
-        '<p class="dyp__tip">[历史正文已移除]</p>' +
+        '<p class="dyp__tip">在抖音 App 或网页端观看更佳</p>' +
       '</div>';
 
     box.querySelector('.dyp__title').textContent = CONFIG.title;
