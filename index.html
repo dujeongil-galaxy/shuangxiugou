@@ -122,6 +122,55 @@
     </div>
     <div id="root"></div>
 
+    <!-- 数据来源分级说明：站内统一口径（静态原生块，非 JS 渲染） -->
+    <section id="source-grading" style="max-width:960px;margin:32px auto;padding:0 16px;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;color:#1f2937">
+      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:18px 20px">
+        <h2 style="font-size:17px;font-weight:700;margin:0 0 12px">数据来源分级说明</h2>
+        <ul style="margin:0;padding-left:20px;font-size:14px;line-height:1.9;color:#374151">
+          <li><strong>公开司法 / 行政记录</strong>：裁判文书、仲裁裁决、官方公示，作为评级主干。</li>
+          <li><strong>匿名员工线索</strong>：用于补充一线感受，<strong>不单独定级</strong>。</li>
+          <li><strong>线下一手调查</strong>：反映现场访谈情况，但样本有限，可能存在受访者偏颇。</li>
+          <li><strong>媒体报道</strong>：用于交叉验证，<strong>不直接作为唯一依据</strong>。</li>
+        </ul>
+        <p style="font-size:13px;color:#6b7280;margin:12px 0 0">这样读者会明白：不是所有信息都同等可信，网站也没有把「店员随口说的」和「法院认定的」放在同一层级。</p>
+      </div>
+    </section>
+
+    <!-- 微博投票：你愿意为双休企业的产品多花钱吗（静态原生卡片，非 JS 渲染） -->
+    <section id="weibo-poll" style="max-width:960px;margin:32px auto;padding:0 16px;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;color:#1f2937">
+      <h2 style="font-size:20px;font-weight:700;margin:0 0 4px">你愿意为双休企业的产品多花钱吗</h2>
+      <p style="font-size:13px;color:#6b7280;margin:0 0 16px">微博投票 · 305 人参与 · 投票已结束</p>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px">
+            <span>愿意，贵一点也要支持双休</span><span style="color:#0F766E;font-weight:700">212（69.5%）</span>
+          </div>
+          <div style="height:14px;background:#e5e7eb;border-radius:7px;overflow:hidden"><div style="width:69.5%;height:100%;background:#0F766E"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px">
+            <span>看情况，贵太多就不考虑</span><span style="color:#0F766E;font-weight:700">56（18.4%）</span>
+          </div>
+          <div style="height:14px;background:#e5e7eb;border-radius:7px;overflow:hidden"><div style="width:18.4%;height:100%;background:#5eead4"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px">
+            <span>不愿意，买东西更关注价格</span><span style="color:#6b7280;font-weight:700">32（10.5%）</span>
+          </div>
+          <div style="height:14px;background:#e5e7eb;border-radius:7px;overflow:hidden"><div style="width:10.5%;height:100%;background:#d1d5db"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px">
+            <span>其他，评论区聊聊～</span><span style="color:#6b7280;font-weight:700">5（1.6%）</span>
+          </div>
+          <div style="height:14px;background:#e5e7eb;border-radius:7px;overflow:hidden"><div style="width:1.6%;height:100%;background:#fca5a5"></div></div>
+        </div>
+      </div>
+
+      <p style="font-size:12px;color:#9ca3af;margin:14px 0 0">数据来源：微博投票 @Vista看天下创建</p>
+    </section>
+
     <!-- SEO 兜底正文：给不执行 JavaScript 的搜索引擎爬虫提供可索引的静态内容。
          浏览器渲染时 noscript 标签默认不显示，因此对正常用户零影响。
          品牌清单与下方 JS 渲染出的实际卡片保持一致。 -->
