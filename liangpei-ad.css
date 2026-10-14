@@ -1,0 +1,365 @@
+/* ==========================================================================
+   良配 · 限时推广广告位
+   --------------------------------------------------------------------------
+   部署说明：本文件被根目录 index.html 直接引用（GitHub Pages 直发根目录，
+   不经构建）。改完文案/样式后请把 index.html 里的 ?v=N 版本号 +1 防缓存。
+
+   响应式策略：
+     ≥1440px  → 右侧竖排悬浮卡片（贴近容器右侧留白，不遮挡正文）
+     <1440px  → 底部横向吸底条（含手机，避免遮挡内容）
+   ========================================================================== */
+
+.lp-ad {
+  /* 只在本组件内定义变量，不污染全局 */
+  --lp-primary: #3dad8a;
+  --lp-primary-dark: #2e8b6f;
+  --lp-secondary: #f5c234;
+  --lp-accent: #99d93f;
+  --lp-bg: #fffaf5;
+  --lp-surface: #ffffff;
+  --lp-border: #e8dfd3;
+  --lp-text: #2a2620;
+  --lp-text-2: #7d7367;
+  --lp-text-3: #9b8f80;
+
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  color: var(--lp-text);
+  line-height: 1.5;
+}
+
+.lp-ad *,
+.lp-ad *::before,
+.lp-ad *::after {
+  box-sizing: border-box;
+}
+
+/* 初始隐藏，JS 挂载完成后移除 is-hidden，避免样式表加载前闪现 */
+.lp-ad.is-hidden {
+  display: none !important;
+}
+
+/* ---------- 右侧竖排卡片（≥1440px） ---------- */
+@media (min-width: 1440px) {
+  .lp-ad {
+    position: fixed;
+    top: 88px;
+    right: 16px;
+    z-index: 9990;
+    width: 152px;
+    padding: 14px 12px 12px;
+    border: 1px solid var(--lp-border);
+    border-radius: 16px;
+    background: var(--lp-surface);
+    box-shadow: 0 10px 30px rgba(61, 173, 138, 0.14);
+    text-align: center;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .lp-ad:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 36px rgba(61, 173, 138, 0.22);
+  }
+
+  .lp-ad__body {
+    display: block;
+  }
+
+  .lp-ad__logo {
+    width: 44px;
+    height: 44px;
+    margin: 8px auto 8px;
+    font-size: 22px;
+  }
+
+  /* 竖排卡片宽度有限，主文案按语义手动断行，
+     避免浏览器在「无门槛红 / 包」这类词中间折断 */
+  .lp-ad__title {
+    font-size: 12.5px;
+    line-height: 1.7;
+  }
+
+  .lp-ad__note {
+    display: block;
+    margin-top: 9px;
+    font-size: 10px;
+    line-height: 1.6;
+    color: var(--lp-text-3);
+    /* 两行都放得下，不折行 */
+    white-space: nowrap;
+  }
+}
+
+/* ---------- 底部吸底条（<1440px，含手机） ---------- */
+@media (max-width: 1439px) {
+  .lp-ad {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9990;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    /* 顶部留出徽标的高度。
+       ⚠️ 早先徽标是 position:absolute + translateY(-50%)浮在左上角，
+       结果**直接压住了 title 第一行**（用户截图：「注册即送 喜茶 20 元
+       无门槛」被盖住一半）。改为参与文档流放在最上方后不再重叠，
+       这里必须同步留出 padding，否则徽标会挤出容器。 */
+    padding: 10px 40px 10px 12px;
+    padding-top: 26px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--lp-border);
+    background: var(--lp-surface);
+    box-shadow: 0 -6px 22px rgba(42, 38, 32, 0.1);
+  }
+
+  /* 徽标放在最上方，左对齐，不占横向空间也不压任何内容。
+     与 body 是兄弟节点，body 的 flex:1 依然成立。 */
+  .lp-ad__badge {
+    position: absolute;
+    top: 5px;
+    left: 12px;
+    right: auto;
+    margin-right: 0;
+    padding: 1px 7px;
+    border-radius: 6px;
+    font-size: 10px;
+    line-height: 1.5;
+    text-align: left;
+    white-space: nowrap;
+    /* 徽标自身不参与flex 布局会脱离，改为 absolute 后需让 body 下移。
+       这里用 padding-top 已解决纵向空间，横向不需要额外处理。 */
+  }
+
+  .lp-ad__body {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .lp-ad__logo {
+    width: 38px;
+    height: 38px;
+    margin: 0;
+    flex: 0 0 auto;
+    font-size: 19px;
+  }
+
+  .lp-ad__text {
+    min-width: 0;
+  }
+
+  .lp-ad__brand {
+    font-size: 13px;
+    margin-bottom: 1px;
+  }
+
+  .lp-ad__title {
+    font-size: 12px;
+    line-height: 1.45;
+    /* 标题已完整显示在徽标下方，不再需要限制行数 ——
+       早先 line-clamp:2 是为了给浮在上面的徽标让位，
+       徽标改为不遮挡后，两行 clamp 会截断「消费红包」这类词，
+       反而让文案读不全（用户截图中「消费红包」被挤到第二行且很挤）。 */
+    display: block;
+    overflow: visible;
+  }
+
+  /* 吸底条空间有限，隐藏说明与底部注释，只保留主文案 + CTA */
+  .lp-ad__note {
+    display: none;
+  }
+
+  .lp-ad__cta {
+    flex: 0 0 auto;
+    padding: 9px 16px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+}
+
+/* ---------- 通用零件 ---------- */
+/* 徽标为 7 字「推广期限时活动」，竖排卡片仅 152px 宽，nowrap 会撑破卡片，
+   故允许折行；右上角留出 22px 给关闭按钮，避免文字被 ✕ 压住 */
+.lp-ad__badge {
+  display: block;
+  margin-right: 22px;
+  padding: 3px 6px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--lp-secondary), #e0a820);
+  color: #4a3600;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+.lp-ad__logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--lp-primary), var(--lp-primary-dark));
+  color: #fff;
+  /* LOGO 为「良配」两字，字号较单字时调小 */
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 12px rgba(61, 173, 138, 0.32);
+}
+
+.lp-ad__brand {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--lp-text);
+}
+
+.lp-ad__title {
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--lp-text-2);
+}
+
+.lp-ad__title b {
+  /* 主文案统一用正文色，不再单独给「喜茶 20 元」上色：
+     同一句话里换色会让人误以为这几字是按钮或另一种行动号召 */
+  color: inherit;
+  font-weight: inherit;
+}
+
+.lp-ad__cta {
+  display: block;
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--lp-primary), var(--lp-primary-dark));
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(61, 173, 138, 0.3);
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.lp-ad__cta:hover {
+  filter: brightness(1.06);
+}
+
+.lp-ad__cta:active {
+  transform: scale(0.97);
+}
+
+.lp-ad__cta::after {
+  content: ' ›';
+  font-weight: 700;
+}
+
+.lp-ad__note {
+  color: var(--lp-text-3);
+}
+
+.lp-ad__close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--lp-text-3);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.lp-ad__close:hover {
+  background: rgba(42, 38, 32, 0.06);
+  color: var(--lp-text);
+}
+
+/* ---------- 复制口令后的提示 toast ---------- */
+.lp-ad-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 96px;
+  z-index: 10001;
+  max-width: min(88vw, 340px);
+  padding: 11px 16px;
+  border-radius: 12px;
+  background: rgba(42, 38, 32, 0.93);
+  color: #fff;
+  font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+  transform: translate(-50%, 8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.lp-ad-toast.is-show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* 提示里的操作步骤：与首行「已复制」拉开层次，次要字号 */
+.lp-ad-toast__steps {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.6;
+  opacity: 0.82;
+}
+
+/* 口令本体：常驻可见并支持点击复制。
+   自动复制在浏览器里不可靠，这是用户永远的最后一条路。 */
+.lp-ad-toast code {
+  display: inline-block;
+  margin: 6px 0 2px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.16);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.4;
+  word-break: break-all;
+  cursor: pointer;
+  -webkit-user-select: all;
+  user-select: all;
+}
+
+.lp-ad-toast code:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+@media (min-width: 1440px) {
+  .lp-ad-toast {
+    bottom: auto;
+    top: 50%;
+    transform: translate(-50%, calc(-50% + 8px));
+  }
+
+  .lp-ad-toast.is-show {
+    transform: translate(-50%, -50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-ad,
+  .lp-ad__cta,
+  .lp-ad-toast {
+    transition: none;
+  }
+}

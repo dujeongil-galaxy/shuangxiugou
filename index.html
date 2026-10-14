@@ -1,0 +1,1035 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>[历史正文已移除]</title>
+    <meta
+      name="description"
+      content="双休购（ShuangxiuGo）是开源的劳工友好品牌索引与网购透镜：查公司双休制度、企业工时评级、员工实测数据，汇聚公开司法裁判、劳动监察通报与众包证据，买东西前查一眼，支持真正双休的良心企业，避雷单休、大小周、996 血汗工厂，双休求职择业先查评级。本站为二次开发版本，由 dujeongil-galaxy 维护。"
+    />
+    <meta name="keywords" content="双休,双休企业,公司双休评级,查公司双休,双休公司,单休,大小周,996,血汗工厂,避雷,企业评级,工时政策,员工实测,双休求职,双休查询,企业双休,sxg,shuangxiugo,shuangxiugou,双休购,真假双休,双休真假,血汗工厂" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="theme-color" content="#0F766E" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msvalidate.01" content="1CA900F523A02F4764BEA0EA3134789B" />
+    <link rel="canonical" href="https://dujeongil-galaxy.github.io/shuangxiugou/" />
+    <link rel="preload" as="script" href="./assets/index-YthXZ9eP.js?v=22" />
+    <link rel="preload" as="style" href="./assets/index-BgVofs0W.css" />
+    <link rel="dns-prefetch" href="https://dujeongil-galaxy.github.io" />
+    <meta property="og:title" content="双休购｜查公司双休评级，避雷单休大小周 996 血汗工厂" />
+    <meta
+      property="og:description"
+      content="双休购：把老板考核你的 KPI，变成打工人考核老板的货币选票。查公司双休、企业工时评级、避雷单休大小周血汗工厂，开源劳工友好品牌索引与浏览器网购透镜。"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://github.com/dujeongil-galaxy/shuangxiugou" />
+    <meta property="og:site_name" content="双休购 · ShuangxiuGo" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:image" content="https://dujeongil-galaxy.github.io/shuangxiugou/assets/og-cover.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="双休购｜查公司双休评级，避雷单休大小周 996 血汗工厂" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@dujeongil_galaxy" />
+    <meta name="twitter:image" content="https://dujeongil-galaxy.github.io/shuangxiugou/assets/og-cover.png" />
+    <meta name="twitter:title" content="双休购｜查公司双休评级，避雷单休大小周 996" />
+    <meta name="twitter:description" content="查公司双休制度、企业工时评级，避雷单休、大小周、996 血汗工厂。数据附公开证据链。" />
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "双休购 · ShuangxiuGo",
+      "alternateName": "双休购, SXG, shuangxiugo, shuangxiugou, 企业双休查询",
+      "url": "https://dujeongil-galaxy.github.io/shuangxiugou/",
+      "description": "开源的劳工友好品牌索引与网购透镜：查公司双休制度、企业工时评级、员工实测数据，支持真正双休的良心企业，避开单休、大小周、996 血汗工厂。",
+      "inLanguage": "zh-CN",
+      "keywords": "双休,双休企业,双休公司,单休,大小周,996,避雷,避雷单休,企业评级,查公司,查公司双休,劳动法合规,员工实测,良心企业,双休求职,双休查询,企业双休,sxg,shuangxiugo,shuangxiugou,双休购,真假双休,双休真假,血汗工厂",
+      "publisher": {
+        "@type": "Organization",
+        "name": "双休购dujeongil-galaxy",
+        "url": "https://github.com/dujeongil-galaxy/shuangxiugou",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://dujeongil-galaxy.github.io/shuangxiugou/favicon.svg"
+        }
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "怎么查一家公司是不是双休？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "在本站搜索框输入公司名或品牌名即可查到该企业的「真实双休率」与「平均下班时间」。每条数据都附带证据来源与置信度标注——招聘平台自述属「招聘方口径」，劳动监察通报、裁判文书、上市公司 ESG 报告属高置信证据。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "双休率和「大小周」有什么区别？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "「双休」指每周能完整休满两天且不强制周末加班；「大小周」指单双周休、单数周休一天，一个月只多休 2 天。本站把大小周归为 B 级，单休归为 C 级，判定口径是「每周能完整休满 2 天的员工占比」。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "平均下班时间是怎么统计的？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "取员工实际离岗点的众数，不是公司规定的下班时间。连锁门店取晚班打烊／交班点，不用门店营业时间冒充。标为「—」的表示该字段尚未核实，本站不填估算值。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "数据准不准？发现错了怎么办？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "本站数据均附公开证据链，来源可查可溯，但企业用工情况会随时间变化，且部分数据来自员工爆料等非官方渠道，不构成对任何企业的法律定性。如对该页数据有异议，欢迎通过 GitHub Issues 提交，附上来源即可。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "本站和 GitHub 上的「双休购」项目是什么关系？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "本站基于开源项目 ZhiqingHeyi/shuangxiugou（MIT 协议）二次开发，数据核实与日常维护由 dujeongil-galaxy 负责。GitHub 上还有几个同名相关仓库，同类项目导航页做了区分说明，避免混淆。"
+      }
+    }
+  ]
+}
+    </script>
+    <script type="module" crossorigin src="./assets/index-YthXZ9eP.js?v=22"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BgVofs0W.css">
+    <!-- 良配 · 限时推广广告位（独立文件，改文案/样式不必动主页面；改完请把 ?v=N 的 N +1 防缓存） -->
+    <link rel="stylesheet" href="./liangpei-ad.css?v=2">
+    <!-- 首页视频推荐弹窗（改完请把 ?v=N 的 N +1 防缓存） -->
+    <link rel="stylesheet" href="./douyin-prompt.css?v=5">
+    <!-- 移动端排版修复（须在主 CSS 之后：靠覆盖生效；改完请把 ?v=N 的 N +1） -->
+    <link rel="stylesheet" href="./mobile-fixes.css?v=6">
+  </head>
+  <body>
+    <!-- 顶部公告栏：本站数据证据链说明（白底红字，可随页面滚动） -->
+    <div id="site-notice" style="background:#ffffff;color:#dc2626;text-align:center;font-size:12px;line-height:1.5;padding:6px 12px;border-bottom:1px solid #fee2e2;font-weight:600;position:relative;z-index:999;">
+      本站全部数据均附公开证据链：招聘口径、员工反馈与官方通报分项标注，来源可查可溯，欢迎核实纠错
+      ｜<a href="./projects.html" style="color:#0f766e;text-decoration:underline">同类项目导航</a>
+    </div>
+    <div id="root"></div>
+
+    <!-- SEO 兜底正文：给不执行 JavaScript 的搜索引擎爬虫提供可索引的静态内容。
+         浏览器渲染时 noscript 标签默认不显示，因此对正常用户零影响。
+         品牌清单与下方 JS 渲染出的实际卡片保持一致。 -->
+    <noscript>      <div style="max-width:960px;margin:0 auto;padding:24px 16px;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.8;color:#1f2937">
+        <h1 style="font-size:24px;font-weight:700;margin:0 0 12px">[历史正文已移除]</h1>
+        <p style="margin:0 0 16px">
+          双休购（ShuangxiuGo）是一个开源的劳工友好品牌索引与网购透镜，收录品牌企业的<strong>真实双休率</strong>与<strong>平均下班时间</strong>，
+          帮助求职者识别单休、大小周、996 血汗工厂，也让消费者在购物前了解品牌背后的用工制度。
+          站内每条数据都标注公开证据链（司法裁判文书、劳动监察通报、上市公司 ESG 报告、招聘平台自述、员工爆料），来源可查可溯。
+        </p>
+
+        <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">评级口径</h2>
+        <ul style="margin:0 0 16px;padding-left:22px">
+          <li><strong>S 级</strong>：模范标杆，严格双休</li>
+          <li><strong>A 级</strong>：合规双休，接近 965（工作日 9 点上班、下午 6 点下班）</li>
+          <li><strong>B 级</strong>：大小周或数据存疑</li>
+          <li><strong>C 级</strong>：严重超时、存在通报违约记录</li>
+        </ul>
+
+        <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">[历史正文已移除]</h2>
+        <p style="margin:0 0 8px">
+          下表按评级与真实双休率列出。判定口径是「每周能完整休满两天的员工占比」；
+          平均下班时间取员工实际离岗点的众数，连锁门店取晚班打烊／交班点，不以门店营业时间代替。
+          标为「未核实」的字段表示尚未找到可靠公开证据，本站不以估算值填充。
+        </p>
+        <ul style="margin:0 0 16px;padding-left:22px">
+          <li><strong><a href="./brand/patagonia.html">Patagonia (巴塔哥尼亚)</a></strong>：S 级 · 真实双休率 98% · 平均下班 17:45</li> <a href="./brand/patagonia.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/logitech.html">Logitech (罗技)</a></strong>：A 级 · 真实双休率 92% · 平均下班 18:00</li> <a href="./brand/logitech.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/bee-flower.html">[历史正文已移除]</a></strong>：A 级 · 真实双休率 92% · 平均下班 18:20</li> <a href="./brand/bee-flower.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/decathlon.html">Decathlon (迪卡侬)</a></strong>：A 级 · 真实双休率 85% · 平均下班 20:30</li> <a href="./brand/decathlon.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/xingyu.html">[历史正文已移除]</a></strong>：C 级 · 真实双休率 12% · 平均下班 20:00</li> <a href="./brand/xingyu.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/philips-automotive.html">Philips Automotive (飞利浦汽车生活)</a></strong>：A 级 · 真实双休率 90% · 平均下班 18:20</li> <a href="./brand/philips-automotive.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/pepsi.html">[历史正文已移除]</a></strong>：A 级 · 真实双休率 88% · 平均下班 18:00</li> <a href="./brand/pepsi.html" style="color:#0F766E">详细→</a>
+          <li><strong>[历史正文已移除]</strong>：C 级 · 真实双休率 null% · 平均下班 null</li>
+          <li><strong><a href="./brand/ikea.html">IKEA (宜家)</a></strong>：S 级 · 真实双休率 98% · 平均下班 17:45</li> <a href="./brand/ikea.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/the-north-face.html">The North Face (北面)</a></strong>：A 级 · 真实双休率 88% · 平均下班 21:00</li> <a href="./brand/the-north-face.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/microsoft.html">Microsoft (微软中国)</a></strong>：S 级 · 真实双休率 98% · 平均下班 17:45</li> <a href="./brand/microsoft.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/sap.html">SAP (思爱普中国)</a></strong>：S 级 · 真实双休率 95% · 平均下班 18:00</li> <a href="./brand/sap.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/vivo.html">vivo (维沃移动)</a></strong>：B 级 · 真实双休率 60% · 平均下班 19:30</li> <a href="./brand/vivo.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/haier.html">海尔 (Haier)</a></strong>：B 级 · 真实双休率 50% · 平均下班 19:40</li> <a href="./brand/haier.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/heytea.html">喜茶 (HEYTEA)</a></strong>：C 级 · 真实双休率 null% · 平均下班 null</li> <a href="./brand/heytea.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/netease-youdao.html">网易有道 (Youdao)</a></strong>：B 级 · 真实双休率 70% · 平均下班 19:30</li> <a href="./brand/netease-youdao.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/nongfu.html">农夫山泉</a></strong>：B 级 · 真实双休率 35% · 平均下班 17:45</li> <a href="./brand/nongfu.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/osram.html">OSRAM (欧司朗)</a></strong>：A 级 · 真实双休率 88% · 平均下班 18:20</li> <a href="./brand/osram.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/liby.html">立白 (Liby)</a></strong>：B 级 · 真实双休率 45% · 平均下班 19:40</li> <a href="./brand/liby.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/sf-express.html">[历史正文已移除]</a></strong>：C 级 · 真实双休率 15% · 平均下班 19:30</li> <a href="./brand/sf-express.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/pinduoduo.html">拼多多 (PDD)</a></strong>：C 级 · 真实双休率 12% · 平均下班 22:00</li> <a href="./brand/pinduoduo.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/master-kong.html">[历史正文已移除]</a></strong>：B 级 · 真实双休率 30% · 平均下班 19:40</li> <a href="./brand/master-kong.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/byd.html">BYD (比亚迪)</a></strong>：C 级 · 真实双休率 15% · 平均下班 20:00</li> <a href="./brand/byd.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/volvo.html">Volvo (沃尔沃汽车)</a></strong>：S 级 · 真实双休率 92% · 平均下班 18:05</li> <a href="./brand/volvo.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/huawei.html">华为终端 (Huawei)</a></strong>：C 级 · 真实双休率 35% · 平均下班 20:30</li> <a href="./brand/huawei.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/apple.html">Apple (苹果中国)</a></strong>：S 级 · 真实双休率 92% · 平均下班 18:00</li> <a href="./brand/apple.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/sony.html">Sony (索尼中国)</a></strong>：A 级 · 真实双休率 90% · 平均下班 18:00</li> <a href="./brand/sony.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/luckin.html">[历史正文已移除]</a></strong>：C 级 · 真实双休率 40% · 平均下班 21:30</li> <a href="./brand/luckin.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/starbucks.html">Starbucks (星巴克中国)</a></strong>：A 级 · 真实双休率 85% · 平均下班 22:30</li> <a href="./brand/starbucks.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/tencent.html">Tencent (腾讯)</a></strong>：B 级 · 真实双休率 82% · 平均下班 20:30</li> <a href="./brand/tencent.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/meituan.html">Meituan (美团)</a></strong>：C 级 · 真实双休率 25% · 平均下班 21:00</li> <a href="./brand/meituan.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/uniqlo.html">Uniqlo (优衣库)</a></strong>：A 级 · 真实双休率 82% · 平均下班 23:00</li> <a href="./brand/uniqlo.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/zhaoyiming.html">赵一鸣 / 零食很忙</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 22:30</li> <a href="./brand/zhaoyiming.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/chabaidao.html">茶百道</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 未核实</li> <a href="./brand/chabaidao.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/bingliw.html">兵立王</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 未核实</li> <a href="./brand/bingliw.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/xiaomi.html">小米</a></strong>：B 级 · 真实双休率 53% · 平均下班 20:30</li> <a href="./brand/xiaomi.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/kfc.html">肯德基</a></strong>：C 级 · 真实双休率 10% · 平均下班 23:00</li> <a href="./brand/kfc.html" style="color:#0F766E">详细→</a>
+        </ul>
+
+        <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">常见问题</h2>
+        <h3 style="font-size:15px;font-weight:600;margin:16px 0 4px">怎么查一家公司是不是双休？</h3>
+        <p style="margin:0 0 12px">
+          用浏览器打开本站并搜索公司名或品牌名即可查到该企业的「真实双休率」与「平均下班时间」。
+          每条数据都附带证据来源与置信度标注——招聘平台自述属「招聘方口径」，
+          劳动监察通报、裁判文书、上市公司 ESG 报告属高置信证据。
+        </p>
+
+        <h3 style="font-size:15px;font-weight:600;margin:16px 0 4px">双休率和「大小周」有什么区别？</h3>
+        <p style="margin:0 0 12px">
+          「双休」指每周能完整休满两天且不强制周末加班；「大小周」指单双周休、单数周休一天，
+          一个月只多休 2 天。本站把大小周归为 B 级，单休归为 C 级。
+          同一个品牌往往总部双休而门店或产线排班，判断时须注意适用范围。
+        </p>
+
+        <h3 style="font-size:15px;font-weight:600;margin:16px 0 4px">哪些公司是真正双休的？</h3>
+        <p style="margin:0 0 12px">
+          本站评级为 S 级与 A 级的企业属于制度层面落实周末双休、加班较少的类型，
+          包括 Patagonia、IKEA、Microsoft、SAP、Apple、Sony、Volvo、Decathlon、迪卡侬、飞利浦、星巴克等。
+          评级为 C 级的企业则存在严重超时或通报违约记录，购物与求职时建议避雷。
+        </p>
+
+        <h3 style="font-size:15px;font-weight:600;margin:16px 0 4px">平均下班时间是怎么统计的？</h3>
+        <p style="margin:0 0 12px">
+          取员工实际离岗点的众数，不是公司规定的下班时间。
+          连锁门店取晚班打烊／交班点，不用门店营业时间冒充。
+          标为「未核实」的表示该字段尚未核实，本站不填估算值。
+        </p>
+
+        <h3 style="font-size:15px;font-weight:600;margin:16px 0 4px">数据准不准？发现错了怎么办？</h3>
+        <p style="margin:0 0 12px">
+          本站数据均附公开证据链，来源可查可溯，但企业用工情况会随时间变化，
+          且部分数据来自员工爆料等非官方渠道，不构成对任何企业的法律定性。
+          如对该页数据有异议，欢迎通过
+          <a href="https://github.com/dujeongil-galaxy/shuangxiugou/issues">GitHub Issues</a>
+          提交，附上来源即可。
+        </p>
+
+        <h3 style="font-size:15px;font-weight:600;margin:16px 0 4px">[历史正文已移除]</h3>
+        <p style="margin:0 0 16px">
+          本站基于开源项目
+          <a href="https://github.com/ZhiqingHeyi/shuangxiugou">ZhiqingHeyi/shuangxiugou</a>
+          （MIT 协议）二次开发，数据核实与日常维护由 dujeongil-galaxy 负责。
+          GitHub 上还有几个同名相关仓库，
+          <a href="./projects.html">同类项目导航页</a>
+          做了区分说明，避免混淆。
+        </p>
+
+        <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">数据来源与免责</h2>
+        <p style="margin:0 0 16px">
+          数据来源于公开司法裁判文书、劳动监察通报、上市公司 ESG 报告、招聘平台自述与社区员工反馈，
+          按证据强度分项标注。本站数据仅供个人择业与消费偏好参考，不构成商业背书或法律定性。
+        </p>
+
+                <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">全部品牌详细页（36 个）</h2>
+        <p style="margin:0 0 8px">[历史正文已移除]</p>
+        <ul style="margin:0 0 16px;padding-left:22px">
+          <li><a href="./brand/patagonia.html">Patagonia (巴塔哥尼亚)</a> —— S 级 · 双休率 98% · 平均下班 17:45</li>
+          <li><a href="./brand/logitech.html">Logitech (罗技)</a> —— A 级 · 双休率 92% · 平均下班 18:00</li>
+          <li><a href="./brand/bee-flower.html">[历史正文已移除]</a> —— A 级 · 双休率 92% · 平均下班 18:20</li>
+          <li><a href="./brand/decathlon.html">Decathlon (迪卡侬)</a> —— A 级 · 双休率 85% · 平均下班 20:30</li>
+          <li><a href="./brand/xingyu.html">[历史正文已移除]</a> —— C 级 · 双休率 12% · 平均下班 20:00</li>
+          <li><a href="./brand/philips-automotive.html">Philips Automotive (飞利浦汽车生活)</a> —— A 级 · 双休率 90% · 平均下班 18:20</li>
+          <li><a href="./brand/pepsi.html">[历史正文已移除]</a> —— A 级 · 双休率 88% · 平均下班 18:00</li>
+          <li><a href="./brand/ikea.html">IKEA (宜家)</a> —— S 级 · 双休率 98% · 平均下班 17:45</li>
+          <li><a href="./brand/the-north-face.html">The North Face (北面)</a> —— A 级 · 双休率 88% · 平均下班 21:00</li>
+          <li><a href="./brand/microsoft.html">Microsoft (微软中国)</a> —— S 级 · 双休率 98% · 平均下班 17:45</li>
+          <li><a href="./brand/sap.html">SAP (思爱普中国)</a> —— S 级 · 双休率 95% · 平均下班 18:00</li>
+          <li><a href="./brand/vivo.html">vivo (维沃移动)</a> —— B 级 · 双休率 60% · 平均下班 19:30</li>
+          <li><a href="./brand/haier.html">海尔 (Haier)</a> —— B 级 · 双休率 50% · 平均下班 19:40</li>
+          <li><a href="./brand/heytea.html">喜茶 (HEYTEA)</a> —— C 级 · 双休率 null% · 平均下班 null</li>
+          <li><a href="./brand/netease-youdao.html">网易有道 (Youdao)</a> —— B 级 · 双休率 70% · 平均下班 19:30</li>
+          <li><a href="./brand/nongfu.html">农夫山泉</a> —— B 级 · 双休率 35% · 平均下班 17:45</li>
+          <li><a href="./brand/osram.html">OSRAM (欧司朗)</a> —— A 级 · 双休率 88% · 平均下班 18:20</li>
+          <li><a href="./brand/liby.html">立白 (Liby)</a> —— B 级 · 双休率 45% · 平均下班 19:40</li>
+          <li><a href="./brand/sf-express.html">[历史正文已移除]</a> —— C 级 · 双休率 15% · 平均下班 19:30</li>
+          <li><a href="./brand/pinduoduo.html">拼多多 (PDD)</a> —— C 级 · 双休率 12% · 平均下班 22:00</li>
+          <li><a href="./brand/master-kong.html">[历史正文已移除]</a> —— B 级 · 双休率 30% · 平均下班 19:40</li>
+          <li><a href="./brand/byd.html">BYD (比亚迪)</a> —— C 级 · 双休率 15% · 平均下班 20:00</li>
+          <li><a href="./brand/volvo.html">Volvo (沃尔沃汽车)</a> —— S 级 · 双休率 92% · 平均下班 18:05</li>
+          <li><a href="./brand/huawei.html">华为终端 (Huawei)</a> —— C 级 · 双休率 35% · 平均下班 20:30</li>
+          <li><a href="./brand/apple.html">Apple (苹果中国)</a> —— S 级 · 双休率 92% · 平均下班 18:00</li>
+          <li><a href="./brand/sony.html">Sony (索尼中国)</a> —— A 级 · 双休率 90% · 平均下班 18:00</li>
+          <li><a href="./brand/luckin.html">[历史正文已移除]</a> —— C 级 · 双休率 40% · 平均下班 21:30</li>
+          <li><a href="./brand/starbucks.html">Starbucks (星巴克中国)</a> —— A 级 · 双休率 85% · 平均下班 22:30</li>
+          <li><a href="./brand/tencent.html">Tencent (腾讯)</a> —— B 级 · 双休率 82% · 平均下班 20:30</li>
+          <li><a href="./brand/meituan.html">Meituan (美团)</a> —— C 级 · 双休率 25% · 平均下班 21:00</li>
+          <li><a href="./brand/uniqlo.html">Uniqlo (优衣库)</a> —— A 级 · 双休率 82% · 平均下班 23:00</li>
+          <li><a href="./brand/zhaoyiming.html">赵一鸣 / 零食很忙</a> —— C 级 · 双休率 未核实 · 平均下班 22:30</li>
+          <li><a href="./brand/chabaidao.html">茶百道</a> —— C 级 · 双休率 未核实 · 平均下班 未核实</li>
+          <li><a href="./brand/bingliw.html">兵立王</a> —— C 级 · 双休率 未核实 · 平均下班 未核实</li>
+          <li><a href="./brand/xiaomi.html">小米</a> —— B 级 · 双休率 53% · 平均下班 20:30</li>
+          <li><a href="./brand/kfc.html">肯德基</a> —— C 级 · 双休率 10% · 平均下班 23:00</li>
+        </ul>
+
+<h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">同类项目导航</h2>
+        <p style="margin:0">
+          GitHub 上搜「双休购」会出来十几个仓库，但其中只有一半真的能打开网站。
+          <a href="./projects.html">同类项目导航页</a>
+          把相关仓库整理在一起，并逐个标注在线站点是否实测可用，省掉一次次「点进去发现只有代码」的往返。
+        </p>
+      </div>
+      </noscript>
+    <script>
+      // 替换所有指向原仓库的链接和按钮
+      function replaceLinksAndButtons() {
+        document.querySelectorAll('a').forEach(function(a) {
+          if (a.href.includes('github.com/ZhiqingHeyi')) {
+            a.href = a.href.replace('github.com/ZhiqingHeyi', 'github.com/dujeongil-galaxy');
+          }
+        });
+
+        // 在「Star on GitHub」按钮右侧插入「赞助本项目」入口，跳站内 sponsor.html
+        // 样式沿用 Star 按钮（bg-slate-900 → hover:bg-slate-800），视觉统一。
+        // 用 data 标记做幂等，避免 MutationObserver 反复触发时重复插入。
+        //
+        var starBtn = null;
+        document.querySelectorAll('a').forEach(function (a) {
+          if (a.textContent.indexOf('Star on GitHub') >= 0) starBtn = a;
+        });
+        if (starBtn && !document.getElementById('sponsor-entry-btn')) {
+          var s = document.createElement('a');
+          s.id = 'sponsor-entry-btn';
+          s.href = './sponsor.html';
+          s.target = '_blank';
+          s.rel = 'noopener noreferrer';
+          s.className = starBtn.className;
+          s.setAttribute('aria-label', '赞助本项目');
+          s.textContent = '☕ 赞助本项目';
+          // 换掉 Star 按钮的深色底，改用站点主色，与「提交爆料」区隔开。
+          // ⚠️ 只能替换成本项目 CSS 里实际生成过的类名——assets 的 Tailwind 是
+          // 按站点用到的样式裁剪过的，bg-emerald-700 等未使用的类并不存在，
+          // 写了不生效，样式会退回 Star 按钮原本的黑色。
+          s.className = s.className.replace(/bg-slate-9\d{2}/g, 'bg-emerald-600')
+                                    .replace(/hover:bg-slate-8\d{2}/g, 'hover:bg-emerald-500');
+          // 插到 Star 按钮之后（右侧），与「Star | 赞助」的阅读顺序一致
+          starBtn.parentNode.insertBefore(s, starBtn.nextSibling);
+        }
+
+
+        // 拦截 bundle 里的原生按钮并改写为链接。
+        //
+        // 顶栏与页脚共用同一个链接：都指向 ticket.yml 工单表单（类型下拉 + 描述）。
+        //
+        // ⚠️ 不能删掉关键词，否则按钮仍是原生 button，点击无反应
+        //   （bundle 里没有 href，是 index.html 的脚本在接管跳转）。
+        var issueUrl = 'https://github.com/dujeongil-galaxy/shuangxiugou/issues';
+
+        // 「提供数据」保留在数组里：bundle 是压缩产物，若将来回滚到旧版本，
+        // 旧文案仍能被拦截（不匹配就只是按钮没反应，不会出错）。
+        var keywords = ['提交爆料', '我来提供这家', '提交审核', '提供数据', '联系我们'];
+        document.querySelectorAll('button').forEach(function(b) {
+          // 已经是a标签就跳过
+          if (b.tagName === 'A') return;
+          for (var i = 0; i < keywords.length; i++) {
+            if (b.textContent.indexOf(keywords[i]) >= 0) {
+              var a = document.createElement('a');
+              a.href = issueUrl;
+              a.target = '_blank';
+              a.rel = 'noopener noreferrer';
+              a.className = b.className;
+              // 顶栏按钮改名；页脚「联系我们」已是目标文案，不受影响
+              a.textContent = b.textContent.replace('提交爆料 / 推荐', '提交数据 / 申诉');
+              b.replaceWith(a);
+              break;
+            }
+          }
+        });
+      }
+
+      // 品牌logo映射表
+      var brandLogos = {
+        'IKEA': './assets/ikea.png',
+        '蜂花': './assets/fenghua.png',
+        '迪卡侬': './assets/decathlon.png',
+        '飞利浦': './assets/philips.png',
+        '百事': './assets/pepsi.png',
+        'vivo': './assets/vivo.png',
+        '海尔': './assets/haier.png',
+        '农夫': './assets/nongfu.png',
+        '立白': './assets/liby.png',
+        '顺丰': './assets/sf.png',
+        'PDD': './assets/pdd.png?v=2',
+        '康师傅': './assets/kangshifu.svg?v=2',
+        'BYD': './assets/byd.png?v=2',
+        'VOLVO': './assets/volvo.png?v=2',
+        'HUAWEI': './assets/huawei.png',
+        'APPLE': './assets/apple.png',
+        'SONY': './assets/sony.png',
+        '瑞幸': './assets/luckin.png',
+        '星巴克': './assets/starbucks.svg',
+        '腾讯': './assets/tencent.png?v=3',
+        '美团': './assets/meituan.png?v=2',
+        'UNIQLO': './assets/uniqlo.png?v=2',
+        'TNF': './assets/tnf.png',
+        'MSFT': './assets/microsoft.png',
+        'SAP': './assets/sap.png',
+        '有道': './assets/youdao.png',
+        'OSRAM': './assets/osram.svg?v=1',
+        'LOGI': './assets/logi.png',
+        '赵一鸣/零食很忙': './assets/snack-logo.png',
+        '某烘焙': './assets/mouhongbei.png?v=2',
+        'PTG': './assets/patagonia.png',
+        '星宇': './assets/xingyu.png'
+      };
+
+      // 替换所有卡片的logo
+      function replaceAllLogos() {
+        var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
+        cards.forEach(function(card) {
+          // 找到logo div
+          var logoDiv = card.querySelector('.w-10.h-10.rounded-xl.bg-slate-100');
+          if (!logoDiv) return;
+          // 图片缺失已降级为文字，跳过
+          if (logoDiv.getAttribute('data-logo-fallback')) return;
+          // 如果已经替换过了就跳过
+          if (logoDiv.querySelector('img')) return;
+          // 用logo里的短文字作为key匹配
+          var brandShortName = logoDiv.textContent.trim();
+          // 如果这个品牌有对应的logo
+          if (brandLogos[brandShortName]) {
+            // 清空原来的文字
+            logoDiv.textContent = '';
+            // 创建img标签
+            var logoImg = document.createElement('img');
+            logoImg.src = brandLogos[brandShortName];
+            logoImg.alt = brandShortName;
+            logoImg.className = 'w-full h-full object-cover rounded-lg';
+            // 图片不存在时自动恢复显示品牌文字，避免出现破图
+            logoImg.onerror = function() {
+              if (logoDiv.getAttribute('data-logo-fallback')) return;
+              logoDiv.setAttribute('data-logo-fallback', '1');
+              logoDiv.textContent = brandShortName;
+            };
+            logoDiv.appendChild(logoImg);
+          }
+        });
+      }
+
+      // ========== 自定义卡片配置区 ==========
+      // 以后加新卡片，只要在下面这个数组里加一条配置就行，其他全部自动处理
+      var customCardsConfig = [
+        {
+          id: 'snack-card',
+          name: '赵一鸣/零食很忙',
+          company: '湖南鸣鸣很忙商业连锁有限公司',
+          logo: './assets/snack-logo.png',
+          logoAlt: '零食很忙',
+          workPolicy: '月休2-4天 / 门店两班倒',
+          overtime: '节假日加班常见 / 连续站立8-10小时',
+          doubleRestRate: null,
+          offWorkTime: '22:30',
+          voteCount: '0',
+          desc: '"门店实行早晚班轮换，日均工作8-10小时，月休2-4天（多数门店仅2天），晚班普遍22点半后下班，节假日加班常见，一线员工需连续站立作业（多店招聘信息+员工爆料）"',
+          tags: ['零食量贩', '赵一鸣零食', '连锁门店'],
+          likeCount: '0',
+          dislikeCount: '0',
+          recommendText: '⚠️ 多数门店月休仅2天',
+          recommendColor: 'red', // red=红色警示, green=绿色推荐
+          insertAfter: 'IKEA', // 插到哪个卡片后面（h3里的关键词）
+          keywords: ['赵一鸣', '零食很忙', '零食量贩', '赵一鸣零食', '连锁门店', '湖南鸣鸣很忙', '零食'],
+          category: '零食饮料',
+          grade: 'C级'
+        },
+        {
+          id: 'chabaidao-card',
+          name: '茶百道',
+          company: '四川百茶百道实业股份有限公司',
+          logo: './assets/chabaidao.png',
+          logoAlt: '茶百道',
+          workPolicy: '月休不足4天',
+          overtime: '旺季高峰需连轴顶班',
+          doubleRestRate: null,
+          offWorkTime: null,
+          voteCount: '0',
+          desc: '"门店店员匿名反馈：月休不足4天（单休都算不上），旺季用工紧张需连轴顶班（线下一手·匿名）"',
+          tags: ['新茶饮', '奶茶连锁', '加盟门店'],
+          likeCount: '0',
+          dislikeCount: '0',
+          recommendText: '⚠️ 月休不足4天（线下一手调查）',
+          recommendColor: 'red', // red=红色警示, green=绿色推荐
+          insertAfter: '农夫山泉', // 插到哪个卡片后面（h3里的关键词）
+          keywords: ['茶百道', '奶茶', '新茶饮', '加盟', '月休', '门店排班', 'Chabaidao'],
+          category: '食品饮品',
+          grade: 'C级'
+        },
+        {
+          id: 'bingliw-card',
+          name: '兵立王',
+          company: '四川兵立王品牌管理有限责任公司',
+          logo: './assets/bingliw.png',
+          logoAlt: '兵立王',
+          workPolicy: '月休不足4天',
+          overtime: '节假日加班常见',
+          doubleRestRate: null,
+          offWorkTime: null,
+          voteCount: '0',
+          desc: '"门店员工匿名反馈：月休不足4天（线下一手·匿名）"',
+          tags: ['新茶饮', '奶茶连锁', '军旅茶饮'],
+          likeCount: '0',
+          dislikeCount: '0',
+          recommendText: '⚠️ 月休不足4天（线下一手调查）',
+          recommendColor: 'red', // red=红色警示, green=绿色推荐
+          insertAfter: 'SAP', // 插到哪个卡片后面（h3里的关键词）
+          keywords: ['兵立王', '奶茶', '新茶饮', '军旅', '加盟', '月休', 'Bingliwang'],
+          category: '食品饮品',
+          grade: 'C级'
+        },
+        {
+          id: 'xiaomi-card',
+          name: '小米',
+          company: '小米科技有限责任公司',
+          logo: './assets/xiaomi.svg',
+          logoAlt: '小米',
+          workPolicy: '名义双休 / 门店单休 / 客服轮班',
+          overtime: '总部日均11.5h隐性要求 / 门店节假日无休',
+          doubleRestRate: '53',
+          offWorkTime: '20:30',
+          voteCount: '0',
+          desc: '"总部办公室名义双休，但存在日均11.5小时隐性工时要求，普遍20:30后下班；线下小米之家员工反馈一周休一天，周末节假日不休；在线客服为轮班制（多源交叉验证）"',
+          tags: ['科技数码', '手机', '智能硬件', '小米之家'],
+          likeCount: '0',
+          dislikeCount: '0',
+          recommendText: '⚠️ 线下小米之家单休，周末法定节假日不休息',
+          recommendColor: 'red',
+          insertAfter: '腾讯',
+          keywords: ['小米', 'Xiaomi', '手机', '智能硬件', '米家', '小米之家'],
+          category: '数码3C',
+          grade: 'B级'
+        },
+        {
+          id: 'kfc-card',
+          name: '肯德基',
+          company: '百胜中国控股有限公司',
+          logo: './assets/kfc.svg',
+          logoAlt: '肯德基',
+          workPolicy: '综合工时制 / 早中晚三班倒',
+          overtime: '周末节假日必上班 / 晚班到23点',
+          doubleRestRate: '10',
+          offWorkTime: '23:00',
+          voteCount: '0',
+          desc: '"门店实行综合计算工时制，早中晚三班轮班，月休5-6天，周末及法定节假日正常上班（三薪），晚班普遍到23点（招聘信息+员工爆料交叉验证，2026-10核实：百胜中国官方直聘多店晚班15:00-23:00，爱企查工时库晚班15:00-23:00/16:00-24:00，23:00为众数）"',
+          tags: ['快餐连锁', '餐饮', '百胜', 'KFC'],
+          likeCount: '0',
+          dislikeCount: '0',
+          recommendText: '⚠️ 轮休制 / 周末节假日必上班',
+          recommendColor: 'red',
+          insertAfter: '瑞幸',
+          keywords: ['肯德基', 'KFC', '快餐', '炸鸡', '百胜', '餐饮连锁'],
+          category: '食品饮品',
+          grade: 'C级'
+        }
+        // 以后在这里加新卡片配置就行，格式和上面一样
+      ];
+      // ====================================
+      
+      // ====================================
+      // 统一诊断日志：把「静默失效」变成「明确可见」
+      //
+      // 为什么需要：这套补丁是「React 渲染后抓 DOM 再改写」的事后打补丁机制，
+      // 所有失败都是静默的——页面上看不出任何异常，只是某个卡片少了一部分内容。
+      // 排查时先看 F12 控制台有没有 [双休购] 开头的告警。
+      //
+      // ⚠️ 本块必须定义在所有调用点之前（不要依赖函数/变量提升）。
+      // ====================================
+      var LOG_PREFIX = '[双休购]';
+      var diagStats = { warn: 0, err: 0 };
+      function diagWarn(msg, detail) {
+        diagStats.warn++;
+        console.warn(LOG_PREFIX + '警告：' + msg, detail === undefined ? '' : detail);
+      }
+      function diagError(msg, detail) {
+        diagStats.err++;
+        console.error(LOG_PREFIX + '错误：' + msg, detail === undefined ? '' : detail);
+      }
+      // 暴露到window，方便在控制台一行查看本次加载的告警/错误总数
+      window.__shuangxiugouDiag = diagStats;
+
+      // 通用：根据评级找模板卡片（S/A/B/C级）
+      function getGradeTemplateCard(grade) {
+        var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
+        var fallback = null;
+        // 兼容 "C级" 和 "C" 两种写法
+        var g = String(grade).replace('级', '').trim();
+        for (var card of cards) {
+          // h2/h3 都要查：SEO 修复会把 h3 换成 h2
+          var title = card.querySelector('h2') || card.querySelector('h3');
+          if (!title) continue; // 必须是公司卡片
+          if (!fallback) fallback = card;
+          if (card.textContent.includes(g + '级') || card.textContent.includes(g + ' 级')) {
+            return card;
+          }
+        }
+        // 找不到对应评级时，退回第一张公司卡片当模板
+        if (fallback) diagWarn('getGradeTemplateCard 找不到评级「' + grade + '」的模板卡，已退回第一张公司卡片');
+        return fallback;
+      }
+      
+      // 通用：根据h3关键词找目标卡片
+      // 注意：SEO 的 fixHeadingHierarchy() 会把 h3 换成 h2，
+      // 所以这里必须 h2/h3 都查，否则 H2 修复上线后定位全部失配。
+      function findCardByH3(keyword) {
+        var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
+        for (var card of cards) {
+          var title = card.querySelector('h2') || card.querySelector('h3');
+          if (title && title.textContent.includes(keyword)) {
+            return card;
+          }
+        }
+        return null;
+      }
+      
+      // 通用：插入所有自定义卡片
+      function insertAllCustomCards() {
+        // 遍历配置，逐个生成并插入（已存在的卡片直接跳过，避免重复重建）
+        customCardsConfig.forEach(function(config) {
+          // 找插入位置的参考卡片
+          var refCard = findCardByH3(config.insertAfter);
+          // 找不到参考卡片时静默 return 会导致这张自定义卡整个不出现，且无任何报错。
+          // 这类失败必须显式告警——insertAfter 的关键词要与实际卡片标题保持一致。
+          if (!refCard) {
+            diagError('自定义卡「' + config.name + '」找不到插入位置参照卡片：insertAfter="' + config.insertAfter + '"',
+                      '该卡不会出现在页面上。请核对 index.html 里 customCardsConfig 的 insertAfter 字段与实际卡片标题是否一致。');
+            return;
+          }
+          var existing = document.getElementById(config.id);
+          if (existing) {
+            // 卡片已存在：若位置漂移（React 重渲染可能导致），纠正到参考卡片后面
+            if (existing.previousElementSibling !== refCard) {
+              refCard.parentNode.insertBefore(existing, refCard.nextSibling);
+            }
+            return;
+          }
+          // 找对应评级的模板卡片
+          var templateCard = getGradeTemplateCard(config.grade);
+          if (!templateCard) {
+            diagError('自定义卡「' + config.name + '」找不到模板卡片（grade=' + config.grade + '）');
+            return;
+          }
+
+          // 克隆模板
+          var newCard = templateCard.cloneNode(true);
+          newCard.id = config.id;
+
+          // 校正评级徽章（兼容徽章里的 "X级 · 描述" 结构）
+          var badgeSpan = newCard.querySelector('span.inline-flex');
+          if (badgeSpan && /[SABC]\s*级/.test(badgeSpan.textContent)) {
+            badgeSpan.textContent = badgeSpan.textContent.replace(/[SABC]\s*级/, config.grade);
+          }
+
+          // 改品牌名（h2/h3 都要查：SEO 修复会把 h3 换成 h2）
+          var nameEl = newCard.querySelector('h2') || newCard.querySelector('h3');
+          if (nameEl) nameEl.textContent = config.name;
+          else diagWarn('自定义卡「' + config.name + '」克隆后找不到标题元素（h2/h3）');
+          // 改公司名
+          var compEl = newCard.querySelectorAll('p')[0];
+          if (compEl) compEl.textContent = config.company;
+          else diagWarn('自定义卡「' + config.name + '」找不到公司名 <p> 元素');
+          // 改logo
+          var logoDiv = newCard.querySelector('.w-10');
+          if (!logoDiv) {
+            diagError('自定义卡「' + config.name + '」找不到 logo 容器（.w-10），中止该卡插入');
+            return;
+          }
+          logoDiv.textContent = '';
+          var logoImg = document.createElement('img');
+          logoImg.src = config.logo;
+          logoImg.alt = config.logoAlt;
+          logoImg.className = 'w-full h-full object-cover rounded-lg';
+          // 图片不存在时恢复显示品牌简称文字，避免出现破图
+          logoImg.onerror = function() {
+            if (logoDiv.getAttribute('data-logo-fallback')) return;
+            logoDiv.setAttribute('data-logo-fallback', '1');
+            logoDiv.textContent = config.logoAlt;
+          };
+          logoDiv.appendChild(logoImg);
+          // 改工时政策
+          // 这几处是按下标直接取元素，模板结构一变就抛 TypeError 并中断整批插入，
+          // 所以逐个判空+ 告警，而不是让异常冒泡。
+          var infoRows = newCard.querySelectorAll('.bg-slate-50 > div');
+          var workEl = infoRows[0] && infoRows[0].querySelectorAll('span')[1];
+          var overEl = infoRows[1] && infoRows[1].querySelectorAll('span')[1];
+          if (workEl) workEl.textContent = config.workPolicy;
+          else diagWarn('自定义卡「' + config.name + '」找不到工时政策字段');
+          if (overEl) overEl.textContent = config.overtime;
+          else diagWarn('自定义卡「' + config.name + '」找不到加班字段');
+          // 改员工指数
+          var stats = newCard.querySelectorAll('.bg-slate-900 .grid div div');
+          // 注意: stats[0]=真实双休率标签, stats[1]=真实双休率值, stats[2]=平均离岗标签, stats[3]=平均离岗值
+          // 只改值不改标签, 避免把"真实双休率:"标签覆盖掉
+          // null = 该字段尚未核实, 显示「—」; null ≠ 0, 不代表实测为 0
+          function statText(v) {
+            return (v === null || v === undefined || v === '') ? '—' : v;
+          }
+          if (stats[1]) stats[1].textContent = statText(config.doubleRestRate);
+          else diagWarn('自定义卡「' + config.name + '」找不到「真实双休率」值元素');
+          if (stats[3]) stats[3].textContent = statText(config.offWorkTime);
+          else diagWarn('自定义卡「' + config.name + '」找不到「平均离岗」值元素');
+          // 改描述
+          var descEl = newCard.querySelector('.bg-slate-900 .italic');
+          if (descEl) descEl.textContent = config.desc;
+          else diagWarn('自定义卡「' + config.name + '」找不到描述元素');
+          // 改标签
+          var tags = newCard.querySelectorAll('.flex-wrap span');
+          for (var i = 0; i < config.tags.length; i++) {
+            if (tags[i]) tags[i].textContent = config.tags[i];
+          }
+          // 改点赞点踩数
+          var voteBtns = newCard.querySelectorAll('.flex.items-center.gap-2 button span');
+          if (voteBtns[0]) voteBtns[0].textContent = config.likeCount;
+          if (voteBtns[1]) voteBtns[1].textContent = config.dislikeCount;
+          // 改投票数
+          var voteCount = newCard.querySelector('.bg-slate-900 .font-mono');
+          if (voteCount) voteCount.textContent = config.voteCount + ' 人已投票';
+          // 改推荐块
+          var recommendBlock = null;
+          var allDivs = newCard.querySelectorAll('div');
+          allDivs.forEach(function(div) {
+            if (div.textContent.includes('打工人推荐双休平替')) {
+              recommendBlock = div;
+            }
+          });
+          if (recommendBlock) {
+            // 找到整块推荐容器（模板里的绿色/红色提示块），整体替换，清掉模板残留的"平替品牌"按钮（如 Philips Automotive 等）
+            var container = recommendBlock;
+            while (container && container !== newCard && container.className.indexOf('bg-emerald-50') < 0) {
+              container = container.parentElement;
+            }
+            if (container && container !== newCard) {
+              container.innerHTML = '<div style="font-weight:900;font-size:14px;">' + config.recommendText + '</div>';
+              if (config.recommendColor === 'red') {
+                container.className = container.className.replace(/border-emerald-200/g, 'border-red-200');
+                container.className = container.className.replace(/bg-emerald-50/g, 'bg-red-50');
+                container.style.color = '#dc2626';
+              }
+            } else {
+              recommendBlock.innerHTML = '<div style="font-weight:900;font-size:14px;">' + config.recommendText + '</div>';
+              if (config.recommendColor === 'red') {
+                recommendBlock.className = recommendBlock.className.replace(/border-emerald-200/g, 'border-red-200');
+                recommendBlock.className = recommendBlock.className.replace(/bg-emerald-50/g, 'bg-red-50');
+                recommendBlock.style.color = '#dc2626';
+              }
+            }
+          }
+          // 兜底：模板卡里没有"打工人推荐双休平替"绿框时（如小米克隆自B级模板），
+          // recommendBlock 为 null，上面的改造逻辑整段不执行，红框就不会出现。
+          // 此时主动创建一个与肯德基等卡片样式一致的警示框，插在标签行之后。
+          if (!recommendBlock && config.recommendText) {
+            var isRed = config.recommendColor === 'red';
+            var box = document.createElement('div');
+            box.className = 'mt-3 rounded-xl border px-3 py-2 text-xs leading-relaxed ' +
+              (isRed ? 'border-red-200 bg-red-50' : 'border-emerald-200 bg-emerald-50');
+            box.style.color = isRed ? '#dc2626' : '#047857';
+            box.style.fontWeight = '700';
+            box.style.fontSize = '14px';
+            box.innerHTML = '<div style="font-weight:900;font-size:14px;">' + config.recommendText + '</div>';
+            box.setAttribute('data-recommend-box', '1');
+            // 插到标签行（tags）后面；找不到就插到卡片末尾
+            var tagRow = newCard.querySelector('.flex.flex-wrap');
+            if (tagRow && tagRow.parentElement) {
+              tagRow.parentElement.insertBefore(box, tagRow.nextSibling);
+            } else {
+              newCard.appendChild(box);
+            }
+          }
+
+          // 插到参考卡片后面
+          refCard.parentNode.insertBefore(newCard, refCard.nextSibling);
+        });
+      }
+      
+      // 在Apple卡片下面插入富士康双休提示框
+      //
+      // ⚠️⚠️ 必须保持幂等，否则整页卡死。
+      //
+      // 本文件末尾有 `new MutationObserver(init)`：init() 里的任何 DOM 改动
+      // 都会再次触发 observer → 又调 init() → 又改 DOM → **无限循环**，
+      // 浏览器直接弹「页面没有响应」。
+      //
+      // 所以：**位置已经对时什么都不做**，只有漂移了才纠正。
+      //
+      // 两个真实踩过的坑：
+      // 1. 每次都 removeChild 再重新 insertBefore —— 看似能纠正错位，
+      //    实际每轮 init 都产生 DOM 变动 → MutationObserver 自激 → 页面卡死。
+      // 2. 「已存在就跳过」+ React 重渲染按位置复用 DOM 节点 →
+      //    苹果卡消失后同一节点被原地改写成华为卡，而 #apple-note 是 React
+      //    不认识的额外子节点，文本更新不会清掉它 → 富士康说明留在华为卡里。
+      //
+      // 正确做法：只在「note 不在苹果卡的标签行后面」时才动它。
+      function insertAppleNote() {
+        var note = document.getElementById('apple-note');
+
+        var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
+        var appleCard = null;
+        for (var i = 0; i < cards.length; i++) {
+          if (cards[i].textContent.includes('Apple (苹果中国)')) {
+            appleCard = cards[i];
+          }
+        }
+
+        // 当前列表没有苹果卡（例如搜索过滤掉了）→ 说明框不该存在
+        if (!appleCard) {
+          if (note && note.parentNode) note.parentNode.removeChild(note);
+          return;
+        }
+
+        var tagsRow = appleCard.querySelector('.flex-wrap');
+        if (!tagsRow) {
+          diagWarn('insertAppleNote 找不到苹果卡的产品标签行（.flex-wrap），未插入说明框');
+          return;
+        }
+
+        // 已经挂在正确的苹果卡里 → 什么都不做（保持幂等，避免自激循环）
+        if (note && note.parentNode === tagsRow.parentNode
+                   && note.previousSibling === tagsRow) {
+          return;
+        }
+
+        // 位置不对才纠正：先摘掉可能挂在别的卡上的旧节点
+        if (note && note.parentNode) note.parentNode.removeChild(note);
+        if (!note) {
+          note = document.createElement('div');
+          note.id = 'apple-note';
+          note.style.cssText = 'margin-top:12px;padding:10px 14px;background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;color:#92400e;font-size:13px;';
+          note.innerHTML = '💡 <strong>补充说明：</strong>富士康产线网传2023年起全面双休（部分地区存疑）；2019年成都园区核实为单休、两班倒';
+        }
+        tagsRow.parentNode.insertBefore(note, tagsRow.nextSibling);
+      }
+
+      // 自定义卡片的元数据（从配置自动生成，不用手动维护）
+      var customCardsMeta = {};
+      customCardsConfig.forEach(function(config) {
+        customCardsMeta[config.id] = {
+          keywords: config.keywords,
+          category: config.category,
+          grade: config.grade
+        };
+      });
+      
+      // 过滤自定义卡片，跟网站的搜索和筛选保持同步
+      function filterCustomCards() {
+        // 获取当前搜索关键词
+        var searchInput = document.getElementById('site-search-input');
+        var keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
+        
+        // 获取当前选中的品类按钮（高亮的那个）
+        var activeCategory = '全部';
+        var categoryBtns = document.querySelectorAll('button');
+        categoryBtns.forEach(function(btn) {
+          var text = btn.textContent.trim();
+          if (['全部', '数码外设', '数码3C', '户外服饰', '个人护理', '运动器材', '零食饮料', '汽车用品', '互联网软件', '家电数码', '物流服务', '汽车生活', '食品饮品', '互联网服务', '服装饰品'].includes(text)) {
+            // 判断是不是选中状态（通常是背景色变深）
+            if (btn.className.includes('bg-emerald') || btn.className.includes('bg-black') || btn.className.includes('bg-gray-900')) {
+              activeCategory = text;
+            }
+          }
+        });
+        
+        // 获取当前选中的评级
+        var activeGrade = '全部评级';
+        categoryBtns.forEach(function(btn) {
+          var text = btn.textContent.trim();
+          if (['全部评级', 'S 级', 'A 级', 'B 级', 'C 级'].includes(text)) {
+            if (btn.className.includes('bg-black') || btn.className.includes('bg-gray-900')) {
+              activeGrade = text;
+            }
+          }
+        });
+        
+        // 遍历所有自定义卡片，判断显示还是隐藏
+        Object.keys(customCardsMeta).forEach(function(cardId) {
+          var card = document.getElementById(cardId);
+          if (!card) return;
+          
+          var meta = customCardsMeta[cardId];
+          var shouldShow = true;
+          
+          // 1. 检查搜索关键词
+          if (keyword) {
+            var matchKeyword = meta.keywords.some(function(k) {
+              return k.toLowerCase().includes(keyword);
+            });
+            if (!matchKeyword) shouldShow = false;
+          }
+          
+          // 2. 检查品类筛选
+          if (activeCategory !== '全部') {
+            if (meta.category !== activeCategory) shouldShow = false;
+          }
+          
+          // 3. 检查评级筛选
+          if (activeGrade !== '全部评级') {
+            var gradeShort = activeGrade.replace(' ', ''); // "S 级" -> "S级"
+            if (meta.grade !== gradeShort) shouldShow = false;
+          }
+          
+          // 显示或隐藏
+          card.style.display = shouldShow ? '' : 'none';
+        });
+      }
+      
+      // 立刻试一次，不行就监听页面变化
+      // 给主搜索框打稳定 id。
+      //
+      // ⚠️ 为什么不用 placeholder 定位：早先filterCustomCards() 用
+      //  找输入框，但后来把 placeholder 改成了
+      // 「消费前，先了解这个品牌是否双休……」——里面没有「搜索」二字，
+      // 选择器直接返回 null，keyword 恒为空，过滤静默失效（用户实测搜任何词都出全部）。
+      // placeholder 是**文案**，会被人改；id 才是**契约**。
+      function tagSearchInput() {
+        var el = document.querySelector('main input[type="text"]')
+               || document.getElementById('site-search-input');
+        if (el && !el.id) el.id = 'site-search-input';
+      }
+
+      function init() {
+        tagSearchInput();
+        replaceLinksAndButtons();
+        insertAllCustomCards();
+        replaceAllLogos();
+        insertAppleNote();
+        filterCustomCards();
+        scheduleHeadingFix();
+      }
+      init();
+
+      // SEO：补齐缺失的 H2 层级（页面只有 1 个 H1 + 36 个 H3，中间无 H2）
+      // 品牌名卡片是 H1 下的同级并列内容，语义上应为 H2。
+      //
+      // 安全要点（曾在此处翻车过，务必保留）：
+      // 1. 用 requestAnimationFrame 脱离 MutationObserver 回调栈，
+      //    否则在 observer 触发的同步执行中替换节点会与之互相干扰。
+      // 2. 每个卡片用 data 属性做幂等标记，重复触发不会重复插入。
+      // 3. 只在 h3 的直接父节点上做替换，不移动/重排任何其他节点。
+      // 4. 保留原 className，外观零变化（卡片 h3 的 class 全是 Tailwind 工具类）。
+      var headingFixScheduled = false;
+      function scheduleHeadingFix() {
+        if (headingFixScheduled) return;
+        headingFixScheduled = true;
+        requestAnimationFrame(function() {
+          headingFixScheduled = false;
+          // 不要静默吞掉异常：记录到控制台，页面本身仍不受影响
+          try { fixHeadingHierarchy(); } catch (e) { diagError('fixHeadingHierarchy 抛异常', e); }
+        });
+      }
+
+      function fixHeadingHierarchy() {
+        var root = document.getElementById('root');
+        if (!root) { diagError('fixHeadingHierarchy 找不到 #root'); return; }
+        var cards = root.querySelectorAll('div.bg-white.rounded-2xl.border');
+        for (var i = 0; i < cards.length; i++) {
+          var card = cards[i];
+          if (card.getAttribute('data-h2-checked') === '1') continue;
+          // 已存在被我们改过的 h2，说明处理过了，别重复
+          if (card.querySelector('h2[data-h2-fixed]')) {
+            card.setAttribute('data-h2-checked', '1');
+            continue;
+          }
+          var h3 = card.querySelector('h3');
+          if (!h3) {
+            // 找不到 h3 时不能直接标记「已检查」——若这张卡的标题已被别的逻辑
+            // 改成 h2 但没打 data-h2-fixed 标记，标记后就再也不会重试了，
+            // 属于不可恢复的静默失效。这里只告警，不标记。
+            diagWarn('卡片既无 h3 也无已标记的 h2，跳过（不标记 data-h2-checked）');
+            continue;
+          }
+          if (!h3.parentNode) {
+            diagWarn('h3 脱离文档（parentNode 为空），跳过且不标记');
+            continue;
+          }
+          var h2 = document.createElement('h2');
+          h2.innerHTML = h3.innerHTML;
+          h2.className = h3.className;      // 样式完全沿用
+          h2.setAttribute('data-h2-fixed', '1');
+          h3.parentNode.replaceChild(h2, h3);
+          card.setAttribute('data-h2-checked', '1');
+        }
+      }
+      
+      // 监听搜索框输入
+      document.addEventListener('input', function(e) {
+        if (e.target && e.target.id === 'site-search-input') {
+          filterCustomCards();
+          // 搜索会改变卡片列表，注入的节点必须跟着重新定位
+          // （否则苹果卡被过滤掉后，富士康说明会留在原地那张卡上）
+          requestAnimationFrame(function() {
+            try { insertAppleNote(); } catch (err) { diagError('insertAppleNote 抛异常', err); }
+          });
+        }
+      });
+
+      // 监听所有按钮点击（品类、评级按钮）
+      document.addEventListener('click', function(e) {
+        if (e.target && e.target.tagName === 'BUTTON') {
+          setTimeout(function() {
+            filterCustomCards();
+            try { insertAppleNote(); } catch (err) { diagError('insertAppleNote 抛异常', err); }
+          }, 100);
+        }
+      });
+      
+      const observer = new MutationObserver(init);
+      observer.observe(document.getElementById('root'), { childList: true, subtree: true });
+
+      // 「某代工烘焙食品」没有公开 logo：把占位块改成纯白，在白色卡片上等于隐形，
+      // 同时保留 40px 占位，让标题与相邻卡片的左对齐位置保持一致。
+      //
+      //⚠️ 匹配标题时必须同时查 h2 和 h3：
+      //    fixHeadingHierarchy() 会把卡片里的 h3 全部替换成 h2（补SEO 层级），
+      //    早期这段只查 h3，结果 H2 修复上线后这里就静默失效了，
+      //    灰色占位块一直露在外面。改这段前先确认标题标签实际是哪个。
+      setInterval(function() {
+        var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
+        for (var card of cards) {
+          var title = card.querySelector('h2') || card.querySelector('h3');
+          if (!title || !title.textContent.includes('某代工烘焙食品')) continue;
+
+          var logoDiv = card.querySelector('.w-10.h-10.rounded-xl');
+          if (!logoDiv || logoDiv.getAttribute('data-blank-logo') === '1') break;
+
+          logoDiv.setAttribute('data-blank-logo', '1');
+          logoDiv.textContent = '';                // 清掉占位字母
+          logoDiv.style.background = 'transparent'; // 盖掉 bg-slate-100
+          logoDiv.style.borderColor = 'transparent';// 盖掉 border-slate-200
+          break;
+        }
+      }, 500);
+    </script>
+  <!-- 页脚友情链接（互链接到shuangxiugou.top 等同类项目） -->
+  <script src="./friend-links-footer.js?v=7"></script>
+  <!-- 顶栏按钮容器标记：给三按钮所在容器打 data-hdr-acts，
+       供mobile-fixes.css 定位（真机实测 :has() 未生效，需属性选择器兜底） -->
+  <script src="./header-fix.js?v=1"></script>
+  <!-- 讨论广场「发布交流」改为跳转到站内 404 页（该表单原为写入本地 state，刷新即丢；功能暂未开放） -->
+  <script src="./discussion-to-404.js?v=1"></script>
+  <!-- 良配 · 限时推广广告位：注入 DOM + 倒计时 + 微信小程序 scheme 分环境处理 -->
+  <script src="./liangpei-ad.js?v=1"></script>
+  <!-- 首页视频推荐弹窗：延迟自动弹出，冷却期内不重复弹（localStorage） -->
+  <script src="./douyin-prompt.js?v=3"></script>
+  <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
+  <script src="./factcheck-button.js?v=1"></script>
+  </body>
+</html>
+
+
+

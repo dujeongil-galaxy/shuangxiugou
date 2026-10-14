@@ -1,0 +1,223 @@
+# 双休购 · ShuangxiuGo
+
+把老板考核你的 KPI，变成打工人考核老板的货币选票。
+
+> **项目定位：本仓库是「双休购」主站**（线上应用，GitHub Pages 部署）。请与账号下另外两个双休购相关仓库区分：
+>
+> - **shuangxiugou-guide**（[仓库](https://github.com/dujeongil-galaxy/shuangxiugou-guide)）→ 独立的「双休购 2.0」公开资料与消费决策工具站（246 条企业/品牌记录 + 证据护照评分），与本主站是不同形态的产品；
+> - **shuangxiu-go-archive**（[仓库](https://github.com/dujeongil-galaxy/shuangxiu-go-archive)）→ 第三方网站「双休GO」(shuangxiu-go.cn) 的全量静态存档备份，与本主站数据无关联。
+
+> 基于 [ZhiqingHeyi/shuangxiugou](https://github.com/ZhiqingHeyi/shuangxiugou) 修改，MIT License
+
+## 在线使用
+
+打开 **https://dujeongil-galaxy.github.io/shuangxiugou/**
+
+> **不需要安装、不需要配置、不需要懂代码。** 用浏览器（包括手机浏览器）直接打开上面的网址就能查。
+> 如果页面打不开，可以试试[this 一页收录了 GitHub 上所有「双休购」相关项目](https://dujeongil-galaxy.github.io/shuangxiugou/projects.html)，
+> 里面逐个标注了哪些仓库有可直接打开的在线站点、哪些只有代码，避免你点进搜索结果才发现用不了。
+
+---
+
+## 🧭 同类项目导航
+
+**[打开同类项目导航页 →](https://dujeongil-galaxy.github.io/shuangxiugou/projects.html)**
+
+GitHub 上搜「双休购」会出来十几个仓库，但其中**只有一半真的能打开网站**。
+导航页把「双休购 / shuangxiugou / two-day-weekend」相关的开源项目整理在一起，
+按在线站点可用性分成三组：
+
+- **可直接在线访问**（5 个）—— 打开即用，无需本地部署
+- **仓库标了地址但实测打不开**（2 个）—— 标了 homepage 但连接超时，省得再试
+- **仅代码仓库无站点**（5 个）—— 需自行 fork 后按 README 部署
+
+站点可用性为逐个实测结果（最后核对 2026-10-09），非照抄仓库填写的地址。
+收录不代表本站对这些项目的推荐或背书，发现失效欢迎
+[开 Issue 纠正](https://github.com/dujeongil-galaxy/shuangxiugou/issues/new)。
+
+---
+
+## 📋 数据核实文档
+
+- [员工实测数据核实修改清单](员工实测数据核实修改清单.md)：32 张内置品牌卡 + 5 张自定义卡（共 37 张）的「真实双休率 / 平均下班」逐卡证据核实记录，含旧值→新值、证据来源与置信度标注
+- [仓库维护说明（MAINTAINING.md）](MAINTAINING.md)：本仓库 fork 后的改动记录、部署架构要点与已知遗留问题
+
+---
+
+## ☕ 赞助本项目
+
+本站基于 [ZhiqingHeyi/shuangxiugou](https://github.com/ZhiqingHeyi/shuangxiugou) 开源项目（MIT License）**二次开发**搭建，原作者的版权声明与署名完整保留。
+
+目前的二次开发、数据核实与日常维护由 **[dujeongil-galaxy](https://github.com/dujeongil-galaxy)** 负责。如果你认可这个项目，欢迎赞助支持：**[`sponsor.html`](https://dujeongil-galaxy.github.io/shuangxiugou/sponsor.html)**
+
+> 同样欢迎**提交你所在企业的真实双休数据**——数据核实是这个项目最核心的工作：
+>
+> [提交 Issues](https://github.com/dujeongil-galaxy/shuangxiugou/issues/new)
+
+---
+
+## 🍴 Fork 与二次开发
+
+**准备 Fork 或基于本项目改数据？请先读 [`FORK_GUIDE.md`](FORK_GUIDE.md)。**
+
+### ⚠️ 动手前必读：[`PITFALLS.md`](PITFALLS.md)（踩坑与失效模式报告）
+
+那份文档记录本项目**真实发生过**的故障 —— 每一条都对应一次返工，
+其中多条是「**改完校验全绿、页面上完全没变化**」的静默失效。
+
+**本文档最大的价值：让你别重走一遍已经踩过的坑。**
+
+五类最容易中招的地方：
+
+| 类别 | 一句话概括 |
+|---|---|
+| **静默失效** | 语法对、校验绿、功能不工作。用文案当选择器、CSS 重复选择器、`:has()` 真机不生效、`existsSync(URL)` 静默返回 false、`202 Accepted` 但提交了 0 条、React 复用 DOM 节点导致注入内容跑到别的卡上 |
+| **改了不生效** | 数据分散在两处、根目录有非部署副本、忘了递增 `?v=N`、CSS 引用顺序颠倒、GitHub issue 模板格式选错 |
+| **校验脚本自身的坑** | 正则命中注释造成误报、检查范围窄于风险面、用位置判断找错基准点、报错信息说反了 |
+| **布局计算** | 算宽度只算了单项没算总量、`flex` 三值语义、容器固定高是隐藏坑、响应式要按区间验 |
+| **数据核实** | 「439 家企业」实际 92 条（占位符）、8 个「同类项目」其实是同一上游克隆、对方回「Done」但没真的挂 |
+
+**如果你只读一节，读「一、静默失效」和文末的「七、改动前检查清单」。**
+
+---
+
+### 六件最容易踩坑的事
+
+1. **数据合规优先**：本项目内容是对具名企业的劳动评价，MIT协议只管代码不管内容合法性。改数据必须同步更新证据说明，**不要删除站内免责声明**。
+2. **改错位置不生效**：32 张内置卡数据在 `assets/index-YthXZ9eP.js`，5 张自定义卡在 `index.html`；根目录另有一份同名 js 是**非部署副本**，改它无效；改 bundle 后须递增 `?v=N` 防缓存。
+3. **不要 `npm run build` 后部署**：`app/` 源码与线上产物是两套数据，重建会覆盖现有站点。
+4. **改完跑一次校验**：`npm run verify`（零依赖，不需要 `npm install`）。它会检查卡片数量、logo 与资源路径、noscript 是否同步、文档数字口径、提交号真实性、h2/h3 双查、换行符锁定等，有问题直接 `exit 1`。**这是唯一能发现「静默失效」的手段** —— 本站的补丁脚本失败时页面上看不出任何异常。
+5. **加检查之后必须注入故障验证**：`verify.mjs` 里的检查自己踩过很多坑（见 `PITFALLS.md` 第三节）。**没经过「故意注入故障、确认能抓到」的检查，不算加了检查** —— 它可能范围太窄、可能恒真、可能只是摆设。
+6. **往 React 渲染的 DOM 里手动插节点，必须假设它会被移位**：
+
+   本站是「React 渲染后用 `index.html` 里的脚本抓 DOM 再改写」的事后打补丁架构。
+   **React 重渲染时按位置复用 DOM 节点** —— 卡片被搜索过滤掉后，React 会把那个节点
+   原地改写成另一张卡（只更新文本，不重建节点）。而你手动插入的额外子节点
+   **React 不认识，文本更新不会清掉它**。
+
+   真实故障：搜索框输入 `HU`，苹果卡消失，但苹果专属的「富士康补充说明」
+   留在了华为卡里（`PITFALLS.md` 1.10）。
+
+   写这类补丁必须遵守两条：
+
+   ```js
+   // ① 先清后插，不能「已存在就跳过」——那样错位后永远无法纠正
+   var existing = document.getElementById('my-note');
+   if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+
+   // ② 目标卡片不在当前列表时，直接不插入
+   var target = /* 在当前可见卡片里找 */;
+   if (!target) return;
+   ```
+
+   并且**搜索输入 / 品类评级切换后都要重新调用** —— 这两个操作都会改变卡片列表。
+
+   现有的 `insertAppleNote()` 和 `insertAllCustomCards()` 都是这个模式，改动时留意。
+
+
+---
+
+"用消费者的订单投票，反向考核企业良心；把老板考核你的 KPI，变成打工人考核老板的货币选票。"
+
+受常州星宇股份违法解除数百名应届毕业生及劳动法合规议题启发，本项目旨在打破企业工时黑盒，通过开源众包与真实司法/监管记录，让消费者能一眼识别哪些品牌真正践行周末双休、尊重员工劳动权益。
+
+## 🌟 核心功能
+
+**双休品牌白名单与避雷库：**
+- 涵盖数码外设、户外服饰、个人护理、运动器材、零食饮料、汽车生活等常见消费品类。
+- 提供 S级（模范标杆）、A级（合规双休 965）、B级（大小周/存疑）、C级（严重超时/通报违约）清晰评级。
+
+**良心平替自动推荐：**
+- 当查询到避雷单休企业时，自动推荐同品类、价格亲民且严格落实双休的国货/外企替代品。
+
+**"用脚投票"消费打卡与小票生成：**
+- 生成打工人专属复古热敏打印小票凭证，方便在小红书、朋友圈分享态度。
+
+**双休透镜 Chrome/Edge 浏览器扩展：**
+- 在逛京东、淘宝、拼多多时，自动识别商品所属企业工时状况，弹出悬浮避雷与平替提示。
+
+## 📱 做成手机 APP（网页套壳）
+
+本项目是纯静态网页，可用「一个木函」APP 一键套成 APK：
+
+1. 下载安装「一个木函」（Android）
+2. 打开 → 工具箱 → 网页转应用
+3. 填入网址：`https://dujeongil-galaxy.github.io/shuangxiugou/`
+4. 应用名称和包名自定义即可
+5. 生成 APK 安装即可
+
+## 🚀 本地开发与启动
+
+```bash
+# 1. 克隆项目并安装依赖
+npm install
+
+# 2. 启动本地开发服务
+npm run dev
+
+# 3. 构建生产包（Next.js standalone 输出）
+npm run build
+```
+
+> ⚠️ **架构说明（2026-10 修正）**：本仓库存在两套产物，请勿混淆——
+>
+> - **线上实际部署**的是仓库根目录的**静态产物**：`index.html` + `assets/index-YthXZ9eP.js` + `assets/index-BgVofs0W.css` + `assets/*.logo`。GitHub Pages 直接发布仓库根目录，**不经过构建步骤**，推送即生效（约 60 秒）。
+> - `app/` 下的 Next.js 源码（`app/page.tsx` 等）**并未构建成线上页面**。`npm run build` 的产物也没有部署到 GitHub Pages。
+>
+> **改数据前必看**：公司卡片数据分散在两处，改错位置不生效——
+>
+> | 卡片类型 | 数据位置 |
+> |---|---|
+> | 32 张内置品牌卡（迪卡侬、瑞幸、星巴克、优衣库、喜茶等） | `assets/index-YthXZ9eP.js` |
+> | 5 张自定义卡片（`customCardsConfig` 数组：肯德基、小米、兵立王、茶百道、赵一鸣等） |根目录 `index.html` |
+>
+> 合计 37 张（32 + 5）。另有1 张「某代工烘焙食品」为**虚构对比黑榜卡**，不对外展示，故不计入。
+>
+> 仓库根目录另有一份同名 `index-YthXZ9eP.js` 副本属**非部署文件**，改它不生效。
+>
+> 修改 `assets/` 下的 bundle 后，还需把 `index.html` 中的 `?v=N` 版本号加1 防浏览器缓存。
+> **仅改自定义卡（`index.html` 的 `customCardsConfig`）时 bundle 未变，不需要动 `?v`。**
+
+## 🧩 浏览器插件说明
+
+> ⚠️ 插件功能（`extension/` 目录）**当前不在本仓库中**，README 历史版本中的安装说明已移除。
+
+## 🌐 在线访问与部署
+
+本项目主站通过 **GitHub Pages** 部署：
+
+- 在线地址：https://dujeongil-galaxy.github.io/shuangxiugou/
+- 部署方式：仓库根目录静态产物直发，无需构建
+- 更新方式：修改静态产物后推送 `main` 分支，约 60 秒生效
+
+>历史版本的「Vercel 一键部署 + vercel.json」说明已移除：仓库中**不存在** `vercel.json`，且项目实际框架为 Next.js 而非 Vite。
+
+---
+
+## 推荐
+
+VPN机场推荐：
+
+https://47.112.97.173:8000/register?aff=v17mHNYv
+
+备用线路：
+
+https://43.129.78.33:8000/register?aff=v17mHNYv
+
+https://74.82.196.10:8000/register?aff=v17mHNYv
+
+点击[这里](https://github.com/dujeongil-galaxy)关注我的其他项目
+
+## ⚖️ 免责声明
+
+本项目所有数据均来源于公开司法裁判文书、各地劳动监察部门行政处罚公开信息、上市公司公开 ESG 报告及社区打工人多方交叉验证。数据仅供个人择业与日常消费偏好参考，不构成商业排他或绝对背书。
+
+如发现信息有误或需要更正，欢迎通过 GitHub Issues 提交反馈：
+
+https://github.com/dujeongil-galaxy/shuangxiugou/issues/new
+
+## License
+
+MIT License © 2026 ZhiqingHeyi / dujeongil-galaxy
+
+仅供消费与择业参考，数据为社区众包汇总，请理性看待。

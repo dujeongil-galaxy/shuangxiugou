@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /notes.html
+
+Sitemap: https://dujeongil-galaxy.github.io/shuangxiugou/sitemap.xml

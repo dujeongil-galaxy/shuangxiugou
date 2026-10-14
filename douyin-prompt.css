@@ -1,0 +1,307 @@
+/* ==========================================================================
+   首页视频推荐弹窗样式
+   ========================================================================== */
+
+.dyp {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: none;
+  font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+.dyp.is-open {
+  display: block;
+}
+
+.dyp *,
+.dyp *::before,
+.dyp *::after {
+  box-sizing: border-box;
+}
+
+/* 遮罩：只遮背景，不锁滚动——用户可能想继续浏览页面 */
+.dyp__mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(24, 20, 16, 0.55);
+  backdrop-filter: blur(2px);
+  animation: dyp-fade 0.22s ease;
+}
+
+@keyframes dyp-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.dyp__panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(92vw, 420px);
+  max-height: 86vh;
+  overflow-y: auto;
+  padding: 26px 24px 20px;
+  border-radius: 16px;
+  background: #fffaf5;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+  animation: dyp-pop 0.26s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+
+@keyframes dyp-pop {
+  from { opacity: 0; transform: translate(-50%, -46%) scale(0.96); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* 关闭按钮：避开面板右上角，44px 触摸目标 */
+.dyp__x {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(42, 38, 32, 0.06);
+  color: #7d7367;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.dyp__x:hover {
+  background: rgba(42, 38, 32, 0.12);
+  color: #2a2620;
+}
+
+.dyp__tag {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #d9eee5;
+  color: #2e8b6f;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dyp__title {
+  margin: 0 34px 10px 0;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.45;
+  color: #2a2620;
+}
+
+.dyp__summary {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #7d7367;
+}
+
+.dyp__points {
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+
+.dyp__points li {
+  position: relative;
+  padding: 7px 0 7px 22px;
+  border-bottom: 1px dashed #e8dfd3;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: #4a443c;
+}
+
+.dyp__points li:last-child {
+  border-bottom: 0;
+}
+
+.dyp__points li::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 15px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #3dad8a;
+}
+
+.dyp__acts {
+  display: flex;
+  gap: 8px;
+}
+
+/* 三个按钮共用一条尺寸规则。
+   ------------------------------------------------------------------
+   踩过的坑：原先每个按钮各写一套 padding / font-size，
+   注入第三个按钮时又照抄了一份，于是三个按钮三种高度。
+   而flex 均分宽度后，「在抖音中观看」六字放不下会折行，
+   折行的那一个就比旁边两个明显高一截—— 截图里就是这个现象。
+
+   做法：尺寸（内边距 / 字号 / 行高 / 圆角 / 触摸高度 / 不折行）
+   全部收敛到这一条，各按钮只保留自己的配色差异。
+   新增按钮时只要给 .dyp__acts 下的子元素加这段选择器即可，
+   不需要再单独写尺寸。
+   ------------------------------------------------------------------ */
+.dyp__acts > * {
+  flex: 1 1 0;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0 8px;
+  /* 44px 是移动端最小舒适触摸高度 */
+  min-height: 44px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 主按钮文案更长（「在抖音中观看」6 字 vs 其余 4 字），等分宽度时
+   窄屏下只富余 5px，极易折行。给它 2 倍 grow 权重：
+   ① 任何断点都有 30%+ 余量，不会再折行；
+   ② 主按钮本来就是这排按钮里的视觉重心，宽度更大符合语义。
+   高度仍由上面的 min-height 统一，不受宽度分配影响。 */
+.dyp__go {
+  flex: 2 1 0;
+}
+
+/* ==========================================================================
+   三个按钮的视觉重量分级（尺寸统一见上面 .dyp__acts > *）
+   --------------------------------------------------------------------------
+   用户反馈：「两个按钮不应该设置同颜色，这样不利于一眼识别」。
+
+   原先事实核查与以后再说都是「白底 + 淡米色边框 + 灰字」，
+   视觉上完全一样，扫一眼分辨不出哪个是哪个 ——
+   而这两者的性质恰恰不同：
+     事实核查 = 内容入口（带信息价值的动作）
+     以后再说 = 关闭（退出）
+
+   分三级，靠**三个维度同时不同**，而非只调亮度：
+
+   ┌─────────────┬────────┬──────────┬──────────┐
+   │按钮          │ 底色   │ 边框     │ 文字     │
+   ├─────────────┼────────┼──────────┼──────────┤
+   │ 在抖音中观看 │ 实心绿 │无        │ 白       │
+   │ 事实核查     │ 浅绿   │ 中绿     │ 深绿     │
+   │ 以后再说     │ 透明   │ 极淡     │ 暖灰     │
+   └─────────────┴────────┴──────────┴──────────┘
+
+   色相差 161° vs 35°（127°）、饱和 61% vs 10% —— 两级对比度 6.38 / 3.78，
+   均达WCAG AA。层次一眼可辨，且「关闭」明确退到最后。
+   ========================================================================== */
+
+.dyp__go {
+  background: linear-gradient(135deg, #3dad8a, #2e8b6f);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(61, 173, 138, 0.3);
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.dyp__go:hover { filter: brightness(1.06); }
+.dyp__go:active { transform: scale(0.98); }
+
+/* 第二级：内容入口。绿系与主按钮同族，但用浅底+描边而非实心，
+   明确比主按钮轻一档，同时比下面的关闭按钮重一档。 */
+.dyp__factcheck {
+  border: 1px solid #4fb389;
+  background: #d9efe5;
+  color: #175e48;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.dyp__factcheck:hover {
+  background: #c9e8db;
+  border-color: #3ea87c;
+  color: #0f4a37;
+}
+
+.dyp__factcheck:active { transform: scale(0.98); }
+
+/* 第三级：关闭。透明底 + 极淡边框，退到最轻 ——
+   视觉上「不鼓励点」，符合关闭动作的语义。 */
+.dyp__later {
+  border: 1px solid #ece4d8;
+  background: transparent;
+  color: #8a7f70;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.dyp__later:hover {
+  background: #f5f0e8;
+  border-color: #ddd3c3;
+  color: #4a4239;
+}
+
+.dyp__tip {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: #9b8f80;
+  text-align: center;
+}
+
+/* 窄屏：面板贴底，拇指更容易够到按钮 */
+@media (max-width: 520px) {
+  .dyp__panel {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    transform: none;
+    width: 100%;
+    max-height: 82vh;
+    padding: 22px 18px calc(16px + env(safe-area-inset-bottom, 0px));
+    border-radius: 18px 18px 0 0;
+    animation: dyp-slide 0.26s cubic-bezier(0.2, 0.9, 0.3, 1);
+  }
+
+  @keyframes dyp-slide {
+    from { transform: translateY(16px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+
+  .dyp__title {
+    font-size: 17.5px;
+  }
+
+  .dyp__acts {
+    flex-direction: column;
+  }
+
+  /* 纵向排列时 flex 作用于高度，basis:0 会让高度先归零、
+     全靠 min-height 兜底 —— min-height 一旦被误删按钮就塌成 0 高。
+     这里改回 basis:auto，让内容自己撑开，更不依赖单条声明。 */
+  .dyp__acts > * {
+    flex: 0 0 auto;
+    min-height: 44px;
+  }
+
+  /* 纵向排列时的顺序：主行动 → 核查 → 关闭。
+     在 CSS 里给而非 JS 判断：窗口尺寸变化（旋转、缩放）时能跟着更新。 */
+  .dyp__factcheck { order: 1; }
+  .dyp__later { order: 2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dyp__mask,
+  .dyp__panel {
+    animation: none;
+  }
+}

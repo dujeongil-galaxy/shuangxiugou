@@ -1,0 +1,39 @@
+name: IndexNow 提交
+
+# 站点：https://dujeongil-galaxy.github.io/shuangxiugou
+#
+# IndexNow 是 Bing/Yandex 等支持的官方协议：内容更新后主动推送 URL，
+# 比等爬虫自然回访快很多。本项目是纯静态站、每次改动都是真改内容，
+# 很适合在 push 后自动推一次。
+#
+# 密钥通过 secret 提供（INDEXNOW_KEY），不写在仓库里。
+# 未配置密钥时本工作流会跳过，不阻塞主分支。
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      urls:
+        description: '要提交的 URL（逗号分隔，留空则提交默认列表）'
+        required: false
+
+jobs:
+  indexnow:
+    name: 推送 URL 给 Bing
+    runs-on: ubuntu-latest
+    # 不阻塞主分支：IndexNow 失败不影响站点本身
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: 提交 IndexNow
+        env:
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+          # 只推 sitemap 里的公开页；noindex 页不要推
+          INDEXNOW_URLS: ${{ github.event.inputs.urls }}
+        run: node submit-indexnow.mjs

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="双休购 ShuangxiuGo 查公司双休评级">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#F7FAEC"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#C7D94A"/>
+      <stop offset="1" stop-color="#91AF42"/>
+    </linearGradient>
+    <linearGradient id="yellow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFE17A"/>
+      <stop offset="1" stop-color="#F5B32B"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- 购物袋图标（沿用品牌 logo 造型，放大置于左上） -->
+  <g transform="translate(96, 96) scale(2.4)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 24 71 L 24 36 Q 24 28 32 28 L 92 28 Q 100 28 101 36 L 106 63" stroke="url(#green)" stroke-width="12"/>
+    <path d="M 93 28 Q 102 28 104 37 L 107 63" stroke="url(#yellow)" stroke-width="12"/>
+    <path d="M 49 28 V 21 Q 49 8 64 8 Q 79 8 79 21 V 28" stroke="url(#green)" stroke-width="12"/>
+    <path d="M 43 58 Q 59 78 76 58" stroke="url(#green)" stroke-width="12"/>
+  </g>
+  <circle cx="283" cy="214" r="19" fill="url(#yellow)"/>
+
+  <!-- 主标题 -->
+  <text x="96" y="392" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, sans-serif"
+        font-size="82" font-weight="700" fill="#1F2937" letter-spacing="1">
+    双休购 ShuangxiuGo
+  </text>
+
+  <!-- 副标题 -->
+  <text x="96" y="466" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, sans-serif"
+        font-size="40" font-weight="500" fill="#4B5563">
+    查公司双休评级 · 避雷单休大小周 996
+  </text>
+
+  <!-- 底部说明 -->
+  <text x="96" y="546" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, sans-serif"
+        font-size="27" font-weight="400" fill="#6B7280">
+    开源劳工友好品牌索引 · 数据附公开证据链，来源可查可溯
+  </text>
+
+  <!-- 右下角绿色装饰条 -->
+  <rect x="1044" y="558" width="60" height="14" rx="7" fill="url(#green)"/>
+</svg>

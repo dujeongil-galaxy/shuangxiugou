@@ -1,0 +1,41 @@
+name: 站点一致性校验
+
+# 这个项目是「React 渲染后抓 DOM 再改写」的事后打补丁架构，
+# 数据又分散在压缩 bundle 和 index.html 两处，
+# 出错的默认表现是「页面看着正常，但某张卡片少了内容」——即静默失效。
+#
+# 本工作流在每次 push 后运行 scripts/verify.mjs，把这类静默故障变成红灯。
+# 脚本零依赖（纯 Node.js ≥18），不需要 npm install。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # 允许手动触发
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: verify.mjs 静态校验
+    runs-on: ubuntu-latest
+    steps:
+      # fetch-depth: 0 = 完整历史。
+      # 校验脚本会用 `git cat-file -e` 核验文档里引用的提交号是否真实存在，
+      # 默认的浅克隆（fetch-depth: 1）只有最新 1 个提交的对象，
+      # 会把所有历史提交误判成「编造的哈希」。
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Node 24：GitHub 已弃用 Node 20 runner（actions/checkout@v4、
+      # actions/setup-node@v4 仍 target Node 20，会被强制跑在 Node 24 上）。
+      # 直接用 Node 24，消除告警。
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      # 脚本零依赖，不需要 npm install，直接跑。
+      # 有任何一项检查失败即 exit 1，GitHub 会把这次 push 标红。
+      - name: 运行校验
+        run: node scripts/verify.mjs
