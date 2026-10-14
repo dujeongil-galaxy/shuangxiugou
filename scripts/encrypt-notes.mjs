@@ -201,6 +201,12 @@ function buildHtml(payload) {
   .desc { color: var(--ink-2); margin: 0 0 1.6rem; }
   .tip { font-size: 0.8125rem; color: var(--ink-3); margin: 2rem 0 0; }
   .err { color: #b91c1c; min-height: 1.4em; margin: 0.8rem 0 0; font-size: 0.875rem; }
+  /* ⚠️ 必须加 !important。
+     下面 form { display: flex } 和 input 的样式都是类选择器，
+     优先级高于浏览器默认的 [hidden] { display: none }，
+     导致 JS 里 el.hidden = true 完全失效 —— 密码已输入、面板已显示，
+     密码框却还杵在页面上。这里统一兜住。 */
+  [hidden] { display: none !important; }
   @media (prefers-color-scheme: dark) {
     .err { color: #fca5a5; }
   }
@@ -318,17 +324,14 @@ function buildHtml(payload) {
 <body>
 <div class="box">
 
-  <div class="locked__tag">正在写</div>
-  <h1>站长随笔还在写</h1>
-  <div class="desc">这一页还没写完，我不想拿半成品糊弄你。写好了会自己上线，
-  到时候你再来看。</div>
+  <!-- 锁屏只保留密码框本身。「正在写 / 站长随笔还在写 / 半成品 / 暂不提供预览」
+       这些提示已按站长要求全部删除，不再出现。 -->
 
   <form id="f" autocomplete="off">
     <input id="pw" type="password" placeholder="输入访问密码" aria-label="访问密码" />
     <button type="submit">打开</button>
   </form>
   <p class="err" id="err" role="alert"></p>
-  <p class="tip">暂不提供预览</p>
 
   <!-- ============ 写作进度面板（密码正确后显示） ============
        站长自己用：一眼看清写到哪了、下一节写什么。
@@ -479,12 +482,8 @@ function buildHtml(payload) {
         if (saved) nextNote.value = saved;
       } catch (e) {}
 
-      // 密码框和原来的提示收起来，避免和面板并存显得杂乱
+      // 密码框收起来，避免和面板并存显得杂乱
       form.hidden = true;
-      document.querySelector('.locked__tag').hidden = true;
-      document.querySelector('h1').hidden = true;
-      document.querySelector('.desc').hidden = true;
-      document.querySelector('.tip').hidden = true;
       panel.hidden = false;
       panel.scrollIntoView({ block: 'start' });
     }
