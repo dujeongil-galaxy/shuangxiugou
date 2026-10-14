@@ -667,9 +667,17 @@ if (exists('notes.html')) {
   const dp = dpRaw
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/^\s*\/\/.*$/gm, '');
-  check(/站长随笔/.test(dp) && /notes\.html/.test(dp),
+  check(/站长随笔/.test(dp),
     '[中文内容已移除]',
     '入口缺失 → [中文内容已移除]');
+  // ⚠️ notes.html [中文内容已移除]
+  //    [中文内容已移除]
+  check(!/href\s*=\s*["']\.\/notes\.html/.test(dp),
+    '[中文内容已移除] notes.html',
+    'notes.html [中文内容已移除]');
+  check(/dyp--notice/.test(dp) && /还在写|正在写/.test(dp),
+    '[中文内容已移除]',
+    '[中文内容已移除]');
   check(!/以后再说/.test(dp),
     '[中文内容已移除]',
     '[中文内容已移除]');
