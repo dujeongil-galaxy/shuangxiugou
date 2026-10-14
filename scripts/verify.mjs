@@ -736,6 +736,29 @@ if (exists('notes.html')) {
     '弹窗已移除「以后再说」按钮',
     '该位置已改为「站长随笔」，两个文案不应并存（注释中提及旧文案不算）');
 
+  // 写作进度面板的小节提取必须限定在 .wrap 内。
+  //
+  // 背景：明文里锁定提示的标题「站长随笔还在写」也是 <h2>，
+  // 但它不在正文容器里。早先版本用 querySelectorAll('h2') 全量取，
+  // 进度面板里就多出一个不存在的「待写」章节（截图实证）。
+  //
+  // ⚠️ 这段逻辑在 notes.html 里（由 encrypt-notes.mjs 的模板生成），
+  //    不在 douyin-prompt.js —— 后者是首页弹窗，与进度面板无关。
+  const encRaw = exists('notes.html') ? read('notes.html') : '';
+  // ⚠️ 剥掉注释再匹配 —— 说明文字里提到旧写法是正常的，
+  //    全文匹配会把注释当成「旧机制还在」。
+  const encCode = encRaw
+    .replace(/<style[\s\S]*?<\/style>/g, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '');
+  check(/\.wrap h2/.test(encCode),
+    '进度面板只扫 .wrap 内的小节',
+    '锁定提示的标题也是 h2，不限定范围会多出一个假的「待写」章节');
+  check(!/querySelectorAll\(['"]h2['"]\)/.test(encCode),
+    '进度面板不再全量扫 h2',
+    '全量扫会把锁定提示的标题当成章节列出');
+
   // ⑧ notes.html 不得点名收录企业。
   //
   // 背景：随笔里若出现「某车企少了一颗螺丝」这类表述，一旦被截出来传，

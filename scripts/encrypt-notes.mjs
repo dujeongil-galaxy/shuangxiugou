@@ -392,7 +392,11 @@ function buildHtml(payload) {
     function buildOutline(html) {
       var box = document.createElement('div');
       box.innerHTML = html;
-      var secs = Array.prototype.slice.call(box.querySelectorAll('h2'));
+      // ⚠️ 必须限定 .wrap —— 明文里锁定提示的标题
+      //    「站长随笔还在写」也是 <h2>，但它不在正文容器内。
+      //    早先版本用 querySelectorAll('h2') 全量取，
+      //    结果进度面板里多出一个不存在的「待写章节」。
+      var secs = Array.prototype.slice.call(box.querySelectorAll('.wrap h2'));
       return secs.map(function (h) {
         var node = h;
         // 往回数到该小节的第一个 <p>：有内容算已写，只有标题算待写
