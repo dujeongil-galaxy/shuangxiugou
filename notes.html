@@ -142,9 +142,46 @@
   @media (prefers-reduced-motion: reduce) {
     .to-top { transition: none; }
   }
+
+  /* ---- key 门禁 ----
+     未带 ?key= [中文内容已移除] locked 提示。
+     [中文内容已移除]SHA-256 [中文内容已移除] */
+  body[data-locked="1"] .wrap,
+  body[data-locked="1"] .to-top { display: none; }
+
+  .locked {
+    max-width: 42rem;
+    margin: 0 auto;
+    padding: 3rem 1.25rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHe", sans-serif;
+    color: var(--ink-2);
+    line-height: 1.9;
+  }
+  body:not([data-locked="1"]) .locked { display: none; }
+  .locked h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 1rem;
+  }
+  .locked div { margin: 0 0 1rem; }
+  .locked code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: color-mix(in srgb, var(--ink) 8%, transparent);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
 </style>
 </head>
-<body>
+<body data-locked="1">
+<div class="locked">
+  <h2>[历史正文已移除]</h2>
+  <div>[中文内容已移除]</div>
+  <div><code>?key=访问密钥</code></div>
+  <div>[中文内容已移除]</div>
+</div>
 <div class="wrap">
 
   <a class="back" href="./index.html">&larr; 返回双休购</a>
@@ -266,6 +303,48 @@
   <span class="to-top__arrow" aria-hidden="true">&#9650;</span>TOP
   <span class="sr-only">返回页面顶部</span>
 </button>
+
+<script>
+  // ---- key 门禁 ----
+  //
+  // 页面默认 data-locked="1"[中文内容已移除] ?key= 的 SHA-256
+  // 与 KEY_SHA [中文内容已移除]
+  //
+  // [中文内容已移除]
+  // ⚠️ [中文内容已移除] [中文内容已移除]
+  //    [中文内容已移除]
+  (function () {
+    var KEY_SHA = '2de0b2313716b48187bcbf5f448e23f6fa9b2d89cb857a4f9dce52d0182bcfd1';
+
+    var key = new URLSearchParams(location.search).get('key');
+    if (!key) return; // [中文内容已移除]
+
+    function unlock() {
+      document.body.removeAttribute('data-locked');
+      // [中文内容已移除]
+      if (history.replaceState) {
+        history.replaceState(null, '', location.pathname);
+      }
+    }
+
+    // file:// 协议下 crypto.subtle [中文内容已移除]
+    if (!window.crypto || !crypto.subtle) {
+      if (key === KEY_SHA) unlock();
+      return;
+    }
+
+    crypto.subtle.digest('SHA-256', new TextEncoder().encode(key))
+      .then(function (buf) {
+        var hex = Array.prototype.map
+          .call(new Uint8Array(buf), function (b) {
+            return b.toString(16).padStart(2, '0');
+          })
+          .join('');
+        if (hex === KEY_SHA) unlock();
+      })
+      .catch(function () { /* [中文内容已移除] */ });
+  })();
+</script>
 
 <script>
   // [中文内容已移除]
