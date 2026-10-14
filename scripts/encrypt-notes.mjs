@@ -184,18 +184,31 @@ function buildHtml(payload) {
     -webkit-font-smoothing: antialiased;
   }
   .box { max-width: 42rem; margin: 0 auto; }
-  /*锁屏只剩密码框，垂直居中才不会显得像页面崩了 */
+  /*锁屏：内容少，必须真正居中（水平 + 垂直），
+     否则输入框会被 42rem 的容器拉到左边，页面看着是歪的。 */
   .lock {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    align-items: center;
     justify-content: center;
+    text-align: center;
   }
   .lock__title {
     font-size: 1.5rem;
     font-weight: 700;
     letter-spacing: -0.01em;
-    margin: 0 0 1.6rem;
+    margin: 0 0 1.4rem;
+  }
+  /* 密码框不占满 42rem，否则按钮会被推到很远的右边 */
+  .lock form { max-width: 26rem; width: 100%; }
+  .lock__desc {
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+    max-width: 26rem;
+    /* .err 有 min-height 预留了 1.4em（密码错时才显示文字），
+       所以这里间距压小，否则提示句会离密码框太远。 */
+    margin: 0.4rem 0 0;
   }
   .err { color: #b91c1c; min-height: 1.4em; margin: 0.8rem 0 0; font-size: 0.875rem; }
   /* ⚠️ 必须加 !important。
@@ -321,8 +334,8 @@ function buildHtml(payload) {
 <body>
 <div class="box">
 
-  <!-- 锁屏只保留标题和密码框。「正在写 / 站长随笔还在写 / 半成品 / 暂不提供预览」
-       这些提示已按站长要求全部删除，不再出现。 -->
+  <!-- 锁屏：标题 + 密码框 + 一句提示，整块水平垂直居中。
+       「正在写」标签和「暂不提供预览」已按站长要求删除，不再出现。 -->
 
   <div class="lock" id="lock">
     <h1 class="lock__title">站长随笔</h1>
@@ -331,6 +344,8 @@ function buildHtml(payload) {
       <button type="submit">打开</button>
     </form>
     <p class="err" id="err" role="alert"></p>
+    <p class="lock__desc">这一页还没写完，我不想拿半成品糊弄你。写好了会自己上线，
+    到时候你再来看。</p>
   </div>
 
   <!-- ============ 写作进度面板（密码正确后显示） ============
