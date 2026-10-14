@@ -26,7 +26,7 @@
   }
   * { box-sizing: border-box; }
   html {
-    /* [中文内容已移除] */
+    /* 锚点跳转与返回顶部都要平滑滚动，但尊重「减少动态效果」的系统设置 */
     scroll-behavior: smooth;
   }
   @media (prefers-reduced-motion: reduce) {
@@ -86,14 +86,14 @@
   }
   em { color: var(--ink-2); }
 
-  /* [中文内容已移除] */
+  /* 尾注：小字浅色，压低存在感 */
   .colophon {
     font-size: 0.8125rem;
     line-height: 1.9;
     color: var(--ink-3);
   }
 
-  /* [中文内容已移除] */
+  /* 视觉隐藏但保留给屏幕阅读器 */
   .sr-only {
     position: absolute;
     width: 1px;
@@ -106,7 +106,7 @@
     border: 0;
   }
 
-  /* [中文内容已移除] */
+  /* 返回顶部：固定在右下角，常驻显示 */
   .to-top {
     position: fixed;
     right: 1.25rem;
@@ -150,8 +150,8 @@
   <a class="back" href="./index.html">&larr; 返回双休购</a>
 
   <div class="notice">
-    <strong>[中文内容已移除]</strong><br />
-    [中文内容已移除]
+    <strong>[历史正文已移除]</strong><br />
+    这是站长作为一个人、作为普通人的个人情绪记录，不代表本站立场，
     [历史正文已移除]
   </div>
 
@@ -253,9 +253,9 @@
 
   <hr />
 
-  <p class="colophon">这一页是 AI [中文内容已移除]
-  AI [中文内容已移除]
-  [中文内容已移除]<br />
+  <p class="colophon">这一页是 AI 帮着排的版。内容是我自己说的，情绪也是我自己的——
+  AI 太过于一本正经。所以最后这几段像是被格式化过的日记，
+  像不像随笔我说不上来。<br />
   反正就这样吧。</p>
 
 </div>
@@ -266,14 +266,14 @@
 </button>
 
 <script>
-  // [中文内容已移除]
+  // 返回顶部按钮：常驻显示，不需要监听滚动。
   //
-  // [中文内容已移除] scroll + rAF 节流切换 data-show。
-  // [中文内容已移除] —— 而 scroll [中文内容已移除]
-  // [中文内容已移除]
+  // 早先版本是「滚过一屏才出现」，靠 scroll + rAF 节流切换 data-show。
+  // 改成常显后那套机制就全是多余的 —— 而 scroll 监听是这条页面上
+  // 唯一的持续性开销（快速滚动时每秒能触发上百次），删掉更干净。
   document.getElementById('to-top').addEventListener('click', function () {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    // [中文内容已移除]
+    // 焦点还给文档开头，否则键盘用户点完按钮焦点仍留在页尾
     document.documentElement.focus();
   });
 </script>
