@@ -258,6 +258,11 @@ function buildHtml(payload) {
   }
   .panel__list .done .mark { color: var(--accent); }
   .panel__list .todo .mark { color: var(--ink-3); }
+  .panel__list .sub {
+    margin: -0.25rem 0 0.7rem 1.1rem;
+    font-size: 0.9375rem;
+  }
+  .panel__list .sub .mark { min-width: 2.8rem; font-size: 0.75rem; }
   .panel__nextlabel {
     display: block;
     font-size: 0.8125rem;
@@ -396,16 +401,32 @@ function buildHtml(payload) {
       //    「站长随笔还在写」也是 <h2>，但它不在正文容器内。
       //    早先版本用 querySelectorAll('h2') 全量取，
       //    结果进度面板里多出一个不存在的「待写章节」。
-      var secs = Array.prototype.slice.call(box.querySelectorAll('.wrap h2'));
-      return secs.map(function (h) {
-        var node = h;
+      var nodes = Array.prototype.slice.call(box.querySelectorAll('.wrap h2, .wrap h3'));
+      var out = [];
+      var h2i = 0;
+      var h3i = 0;
+      nodes.forEach(function (h) {
+        var isSub = h.tagName === 'H3';
+        if (isSub) {
+          h3i += 1;
+        } else {
+          h2i += 1;
+          h3i = 0;
+        }
         // 往回数到该小节的第一个 <p>：有内容算已写，只有标题算待写
         var hasBody = false;
-        for (var n = node.nextElementSibling; n && n.tagName !== 'H2'; n = n.nextElementSibling) {
+        for (var n = h.nextElementSibling; n && n.tagName !== 'H2' && n.tagName !== 'H3'; n = n.nextElementSibling) {
           if (n.tagName === 'P' && n.textContent.trim().length > 0) { hasBody = true; break; }
         }
-        return { title: h.textContent.trim(), hasBody: hasBody };
+        out.push({
+          title: h.textContent.trim(),
+          hasBody: hasBody,
+          level: isSub ? 2 : 1,
+          // h2 的序号已写进明文标题，目录不重复加；h3 需要补 4.1 / 4.2
+          num: isSub ? (h2i + '.' + h3i) : ''
+        });
       });
+      return out;
     }
 
     function renderPanel(html) {
@@ -414,7 +435,7 @@ function buildHtml(payload) {
       var done = 0;
       secs.forEach(function (s) {
         var li = document.createElement('li');
-        li.className = s.hasBody ? 'done' : 'todo';
+        li.className = (s.hasBody ? 'done' : 'todo') + (s.level === 2 ? ' sub' : '');
         var mark = document.createElement('span');
         mark.className = 'mark';
         mark.textContent = s.hasBody ? '已写' : '待写';
@@ -423,7 +444,7 @@ function buildHtml(payload) {
         outline.appendChild(li);
         if (s.hasBody) done++;
       });
-      statDone.textContent = '共 ' + secs.length + ' 节 · 已写 ' + done + ' 节 · 待写 ' + (secs.length - done) + ' 节';
+      statDone.textContent = '共 ' + secs.length + ' 项 · 已写 ' + done + ' 项 · 待写 ' + (secs.length - done) + ' 项';
 
       // 恢复上次的手写备注
       try {
