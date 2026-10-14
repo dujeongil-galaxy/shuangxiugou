@@ -246,7 +246,7 @@ function buildHtml(payload) {
     margin: 0 0 1rem;
   }
   .panel__stat { margin: 0 0 1.5rem; color: var(--ink-2); }
-  .panel__list { margin: 0 0 2rem; padding-left: 1.4rem; }
+  .panel__list { margin: 0 0 2rem; padding-left: 0; list-style: none; }
   .panel__list li { margin: 0 0 0.7rem; }
   .panel__list .done { color: var(--ink); }
   .panel__list .todo { color: var(--ink-3); }
@@ -343,7 +343,7 @@ function buildHtml(payload) {
       <span id="statDone"></span>
     </div>
 
-    <ol class="panel__list" id="outline"></ol>
+    <ul class="panel__list" id="outline"></ul>
 
     <label class="panel__nextlabel" for="nextNote">下一步写什么（手写，随手记）</label>
     <textarea id="nextNote" class="panel__next" rows="4"
