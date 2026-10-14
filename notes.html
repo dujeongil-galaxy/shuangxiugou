@@ -159,28 +159,42 @@
     line-height: 1.9;
   }
   body:not([data-locked="1"]) .locked { display: none; }
-  .locked h2 {
-    font-size: 1.25rem;
+  /* [中文内容已移除] tag [中文内容已移除] */
+  .locked__tag {
+    display: inline-block;
+    font-size: 0.75rem;
     font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin: 0 0 0.9rem;
+  }
+  .locked h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
     color: var(--ink);
-    margin: 0 0 1rem;
+    margin: 0 0 1.6rem;
   }
   .locked div { margin: 0 0 1rem; }
-  .locked code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    background: color-mix(in srgb, var(--ink) 8%, transparent);
-    padding: 0.15em 0.4em;
-    border-radius: 4px;
-    font-size: 0.9em;
+  /* [中文内容已移除] tip 一个权重 */
+  .locked .locked__tip {
+    margin: 2rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+  }
+  /* [中文内容已移除] */
+  @media (max-width: 520px) {
+    .locked { padding: 2rem 1.25rem 3rem; }
   }
 </style>
 </head>
 <body data-locked="1">
 <div class="locked">
+  <div class="locked__tag">正在写</div>
   <h2>[历史正文已移除]</h2>
-  <div>[中文内容已移除]</div>
-  <div><code>?key=访问密钥</code></div>
-  <div>[中文内容已移除]</div>
+  <div>[中文内容已移除]
+  [中文内容已移除]</div>
+  <div class="locked__tip">暂不提供预览</div>
 </div>
 <div class="wrap">
 
