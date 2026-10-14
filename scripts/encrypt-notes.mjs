@@ -228,6 +228,77 @@ function buildHtml(payload) {
   }
   button:hover { opacity: 0.9; }
   button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---- 写作进度面板 ---- */
+  #panel { margin-top: 2.5rem; }
+  #panel[hidden] { display: none; }
+  .panel__tag {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin: 0 0 0.9rem;
+  }
+  .panel__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 1rem;
+  }
+  .panel__stat { margin: 0 0 1.5rem; color: var(--ink-2); }
+  .panel__list { margin: 0 0 2rem; padding-left: 1.4rem; }
+  .panel__list li { margin: 0 0 0.7rem; }
+  .panel__list .done { color: var(--ink); }
+  .panel__list .todo { color: var(--ink-3); }
+  .panel__list .mark {
+    display: inline-block;
+    min-width: 3.2rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+  }
+  .panel__list .done .mark { color: var(--accent); }
+  .panel__list .todo .mark { color: var(--ink-3); }
+  .panel__nextlabel {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--ink-2);
+    margin: 0 0 0.5rem;
+  }
+  .panel__next {
+    display: block;
+    width: 100%;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    resize: vertical;
+  }
+  .panel__next:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .panel__row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.75rem 0 0;
+  }
+  .panel__save {
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    font-size: 0.875rem;
+  }
+  .panel__saved { font-size: 0.8125rem; color: var(--ink-3); }
+  .panel__hr {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin: 2.5rem 0 1.5rem;
+  }
+  .panel__go { width: 100%; }
 </style>
 </head>
 <body>
@@ -245,18 +316,58 @@ function buildHtml(payload) {
   <p class="err" id="err" role="alert"></p>
   <p class="tip">暂不提供预览</p>
 
+  <!-- ============ 写作进度面板（密码正确后显示） ============
+       站长自己用：一眼看清写到哪了、下一节写什么。
+       跟读者的「全文」分开，避免把工作界面混进正文。 -->
+  <section id="panel" hidden>
+    <div class="panel__head">
+      <div class="panel__tag">写作进度</div>
+      <h2 class="panel__title">站长随笔 · 进度</h2>
+    </div>
+
+    <div class="panel__stat">
+      <span id="statDone"></span>
+    </div>
+
+    <ol class="panel__list" id="outline"></ol>
+
+    <label class="panel__nextlabel" for="nextNote">下一步写什么（手写，随手记）</label>
+    <textarea id="nextNote" class="panel__next" rows="4"
+      placeholder="写到这里卡住了 / 下一节打算写…"></textarea>
+    <div class="panel__row">
+      <button type="button" class="panel__save" id="saveNote">保存备注</button>
+      <span class="panel__saved" id="savedHint"></span>
+    </div>
+
+    <hr class="panel__hr" />
+
+    <button type="button" class="panel__go" id="goRead">读全文</button>
+  </section>
+
 </div>
 
 <script>
   // 正文是密文，密码不进 URL、不进 localStorage，仅在内存里解开一次。
-  // 解开后直接替换整页 —— 从地址栏和 DOM 里都看不到密码。
+  //
+  // 解开后**不直接跳全文**，而是先停在「写作进度」面板上 ——
+  // 站长要一眼看清写到哪、下一节写什么，再决定要不要读全文。
+  // 点「读全文」才 document.write 换页。
   (function () {
     var PAYLOAD = ${P};
     var KDF_ITER = PAYLOAD.iter;
+    var NOTE_KEY = 'notes_progress_note';   // 只存「下一步写什么」，不存正文
 
     var form = document.getElementById('f');
     var pw = document.getElementById('pw');
     var err = document.getElementById('err');
+    var panel = document.getElementById('panel');
+    var outline = document.getElementById('outline');
+    var statDone = document.getElementById('statDone');
+    var nextNote = document.getElementById('nextNote');
+    var saveNote = document.getElementById('saveNote');
+    var savedHint = document.getElementById('savedHint');
+    var goRead = document.getElementById('goRead');
+    var decrypted = null;   // 解开的正文，先存内存，等用户点「读全文」再用
 
     function b64ToBytes(b64) {
       var bin = atob(b64);
@@ -276,6 +387,72 @@ function buildHtml(payload) {
       );
       return crypto.subtle.importKey('raw', bits, 'AES-GCM', false, ['decrypt']);
     }
+
+    // 从解密后的正文里抽出所有 h2 小节，作为写作大纲
+    function buildOutline(html) {
+      var box = document.createElement('div');
+      box.innerHTML = html;
+      var secs = Array.prototype.slice.call(box.querySelectorAll('h2'));
+      return secs.map(function (h) {
+        var node = h;
+        // 往回数到该小节的第一个 <p>：有内容算已写，只有标题算待写
+        var hasBody = false;
+        for (var n = node.nextElementSibling; n && n.tagName !== 'H2'; n = n.nextElementSibling) {
+          if (n.tagName === 'P' && n.textContent.trim().length > 0) { hasBody = true; break; }
+        }
+        return { title: h.textContent.trim(), hasBody: hasBody };
+      });
+    }
+
+    function renderPanel(html) {
+      var secs = buildOutline(html);
+      outline.innerHTML = '';
+      var done = 0;
+      secs.forEach(function (s) {
+        var li = document.createElement('li');
+        li.className = s.hasBody ? 'done' : 'todo';
+        var mark = document.createElement('span');
+        mark.className = 'mark';
+        mark.textContent = s.hasBody ? '已写' : '待写';
+        li.appendChild(mark);
+        li.appendChild(document.createTextNode(s.title));
+        outline.appendChild(li);
+        if (s.hasBody) done++;
+      });
+      statDone.textContent = '共 ' + secs.length + ' 节 · 已写 ' + done + ' 节 · 待写 ' + (secs.length - done) + ' 节';
+
+      // 恢复上次的手写备注
+      try {
+        var saved = localStorage.getItem(NOTE_KEY);
+        if (saved) nextNote.value = saved;
+      } catch (e) {}
+
+      // 密码框和原来的提示收起来，避免和面板并存显得杂乱
+      form.hidden = true;
+      document.querySelector('.locked__tag').hidden = true;
+      document.querySelector('h1').hidden = true;
+      document.querySelector('.desc').hidden = true;
+      document.querySelector('.tip').hidden = true;
+      panel.hidden = false;
+      panel.scrollIntoView({ block: 'start' });
+    }
+
+    saveNote.addEventListener('click', function () {
+      try {
+        localStorage.setItem(NOTE_KEY, nextNote.value);
+        savedHint.textContent = '已保存';
+        setTimeout(function () { savedHint.textContent = ''; }, 2000);
+      } catch (e) {
+        savedHint.textContent = '保存失败';
+      }
+    });
+
+    goRead.addEventListener('click', function () {
+      if (!decrypted) return;
+      document.open();
+      document.write(decrypted);
+      document.close();
+    });
 
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
@@ -299,10 +476,9 @@ function buildHtml(payload) {
           key,
           buf
         );
-        // 认证通过才替换页面；失败会抛错，走下面的 catch
-        document.open();
-        document.write(new TextDecoder().decode(plain));
-        document.close();
+        // 认证通过（GCM 自带完整性校验，密码错会抛错）
+        decrypted = new TextDecoder().decode(plain);
+        renderPanel(decrypted);
       } catch (err2) {
         err.textContent = '密码不对。';
         pw.select();

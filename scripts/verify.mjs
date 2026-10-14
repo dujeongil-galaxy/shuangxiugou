@@ -2607,7 +2607,7 @@ if (errors.length) {
   // ⚠️ 必须逐条打印：只给总数的话，密码解不开这类问题看不出是哪一条，
   //    排查时只能反过来翻脚本。
   console.log(`\x1b[31m错误 ${errors.length} 项\x1b[0m —— 存在静默失效风险，请修复后再提交`);
-  for (const msg of errors) console.log(`  \x1b[31m·\x1b[0m ${msg}`);
+  for (const e of errors) console.log(`  \x1b[31m·\x1b[0m ${e.msg}`);
   process.exit(1);
 }
 console.log('\x1b[32m全部检查通过\x1b[0m');
