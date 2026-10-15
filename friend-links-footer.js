@@ -178,7 +178,7 @@
 
     var seoMeta = document.createElement('div');
     seoMeta.setAttribute('style', 'margin:0 0 12px;color:#94a3b8');
-    seoMeta.textContent = '2026年 10 月 16 日实测 · 无痕窗口';
+    seoMeta.textContent = '2026-10-16 实测 · 无痕窗口';
     footer.appendChild(seoMeta);
 
     var SEO_ROWS = [
@@ -187,7 +187,6 @@
       ['双休购数据', '2', 'Bing'],
       ['双休购官网', '5', 'Bing'],
       ['双休购', '7', 'Bing'],
-      ['双休企业', '首页内', 'Bing'],
     ];
     SEO_ROWS.forEach(function (row) {
       var line = document.createElement('div');
@@ -209,7 +208,7 @@
     var seoNote = document.createElement('div');
     seoNote.setAttribute('style', 'margin-top:8px;color:#94a3b8');
     seoNote.textContent =
-      '词形要连写，加空格就搜不到；Google 对本站更严格，目前只有「双休购github」能进第一页。名次会随时间浮动，这里放的是某一天的实测结果。';
+      '词形要连写，加空格就搜不到；Google 对本站更严格，目前只有「双休购github」能进第一页。以上为 2026-10-16 当天的实测结果，名次会随时间浮动。';
     footer.appendChild(seoNote);
 
     // 追加到页面最底部
