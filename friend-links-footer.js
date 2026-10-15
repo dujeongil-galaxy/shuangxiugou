@@ -187,6 +187,7 @@
       ['双休购数据', '2', 'Bing'],
       ['双休购官网', '5', 'Bing'],
       ['双休购', '7', 'Bing'],
+      ['双休企业', '第一页末位', 'Bing'],
     ];
     SEO_ROWS.forEach(function (row) {
       var line = document.createElement('div');
@@ -197,7 +198,7 @@
       kw.setAttribute('style', 'color:#334155;font-weight:600');
 
       var val = document.createElement('span');
-      val.textContent = '第 ' + row[1] + ' 位 · ' + row[2];
+      val.textContent = row[1] + ' · ' + row[2];
       val.setAttribute('style', 'color:#0F766E;font-weight:700;white-space:nowrap');
 
       line.appendChild(kw);
