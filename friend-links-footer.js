@@ -188,6 +188,8 @@
       ['双休购官网', '5', 'Bing'],
       ['双休购', '7', 'Bing'],
       ['双休企业', '第一页末位', 'Bing'],
+      ['shuangxiugou', '第 4 位', 'Bing'],
+      ['shuangxiugo', '第 5 位', 'Bing'],
     ];
     SEO_ROWS.forEach(function (row) {
       var line = document.createElement('div');
