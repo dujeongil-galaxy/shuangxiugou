@@ -163,6 +163,55 @@
     pollSource.textContent = '数据来源：微博投票 @Vista看天下创建';
     footer.appendChild(pollSource);
 
+    /* ----------------------------------------------------------------
+       第四块：搜索排名公示
+       ----------------------------------------------------------------
+       把本站实测过的搜索词与名次直接挂在页脚，不藏起来。
+       两点说明写在下面：
+       一、名次随时间浮动，只代表某一天的实测快照；
+       二、词形必须连写（「双休购github」），加空格会搜不到。
+       ---------------------------------------------------------------- */
+    var seoHeading = document.createElement('div');
+    seoHeading.setAttribute('style', 'font-weight:600;color:#475569;margin:26px 0 4px;font-size:14px');
+    seoHeading.textContent = '搜索排名公示';
+    footer.appendChild(seoHeading);
+
+    var seoMeta = document.createElement('div');
+    seoMeta.setAttribute('style', 'margin:0 0 12px;color:#94a3b8');
+    seoMeta.textContent = '2026年 10 月 16 日实测 · 无痕窗口';
+    footer.appendChild(seoMeta);
+
+    var SEO_ROWS = [
+      ['双休购github', '1', 'Google · Bing'],
+      ['双休购996', '2', 'Bing'],
+      ['双休购数据', '2', 'Bing'],
+      ['双休购官网', '5', 'Bing'],
+      ['双休购', '7', 'Bing'],
+      ['双休企业', '首页内', 'Bing'],
+    ];
+    SEO_ROWS.forEach(function (row) {
+      var line = document.createElement('div');
+      line.setAttribute('style', 'display:flex;justify-content:space-between;margin:0 0 6px;gap:12px');
+
+      var kw = document.createElement('span');
+      kw.textContent = row[0];
+      kw.setAttribute('style', 'color:#334155;font-weight:600');
+
+      var val = document.createElement('span');
+      val.textContent = '第 ' + row[1] + ' 位 · ' + row[2];
+      val.setAttribute('style', 'color:#0F766E;font-weight:700;white-space:nowrap');
+
+      line.appendChild(kw);
+      line.appendChild(val);
+      footer.appendChild(line);
+    });
+
+    var seoNote = document.createElement('div');
+    seoNote.setAttribute('style', 'margin-top:8px;color:#94a3b8');
+    seoNote.textContent =
+      '词形要连写，加空格就搜不到；Google 对本站更严格，目前只有「双休购github」能进第一页。名次会随时间浮动，这里放的是某一天的实测结果。';
+    footer.appendChild(seoNote);
+
     // 追加到页面最底部
     host.appendChild(footer);
   }
