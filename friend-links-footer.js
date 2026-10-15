@@ -103,46 +103,13 @@
     footer.appendChild(list);
 
     /* ----------------------------------------------------------------
-       第二块：数据来源分级说明
+       「数据来源分级说明」已移到 projects.html 底部
        ----------------------------------------------------------------
-       为什么放在页脚而不是首屏：
-       这四档是给「想核实数据的人」看的，属于底部信息，
-       跟「友情链接」同层—— 都是可查但不主打的东西。
-       也因此不再单独写一个静态块挂在 #root 外面：
-       那样会排在 React 全部内容之后、脱离页脚样式，
-       强刷时还会先闪一下再被推下去（见 index.html 历史提交）。
+       这四档说明是给「想核实数据的人」看的，属于导航页的补充材料，
+       放首页页脚会挤在友情链接和投票中间，抢首页的注意力。
+       现在整段迁到 projects.html（同类项目导航页）末尾，
+       读者查证数据时去那里找，首屏和页脚都清爽了。
        ---------------------------------------------------------------- */
-    var gradeHeading = document.createElement('div');
-    gradeHeading.setAttribute('style', 'font-weight:600;color:#475569;margin:26px 0 10px;font-size:14px');
-    gradeHeading.textContent = '数据来源分级说明';
-    footer.appendChild(gradeHeading);
-
-    var GRADES = [
-      ['公开司法 / 行政记录', '裁判文书、仲裁裁决、官方公示，作为评级主干。'],
-      ['匿名员工线索', '用于补充一线感受，不单独定级。'],
-      ['线下一手调查', '反映现场访谈情况，但样本有限，可能存在受访者偏颇。'],
-      ['媒体报道', '用于交叉验证，不直接作为唯一依据。'],
-    ];
-    var gradeList = document.createElement('div');
-    GRADES.forEach(function (row) {
-      var line = document.createElement('div');
-      line.setAttribute('style', 'margin:0 0 6px');
-      var name = document.createElement('span');
-      name.textContent = '· ' + row[0] + '：';
-      name.setAttribute('style', 'color:#475569;font-weight:600');
-      var desc = document.createElement('span');
-      desc.textContent = row[1];
-      line.appendChild(name);
-      line.appendChild(desc);
-      gradeList.appendChild(line);
-    });
-    footer.appendChild(gradeList);
-
-    var gradeNote = document.createElement('div');
-    gradeNote.setAttribute('style', 'margin-top:8px;color:#94a3b8');
-    gradeNote.textContent =
-      '这样读者会明白：不是所有信息都同等可信，网站也没有把「店员随口说的」和「法院认定的」放在同一层级。';
-    footer.appendChild(gradeNote);
 
     /* ----------------------------------------------------------------
        第三块：微博投票

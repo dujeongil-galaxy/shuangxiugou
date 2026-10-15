@@ -285,6 +285,35 @@
       .footer a { color: #0f766e; text-decoration: none; }
       .footer a:hover { text-decoration: underline; }
 
+      /* 数据来源分级说明：页脚导航之后的收尾区块 */
+      .grade-note {
+        margin-top: 32px;
+        padding-top: 22px;
+        border-top: 1px solid #e2e8f0;
+      }
+      .grade-note h2 {
+        font-size: 14px;
+        font-weight: 600;
+        color: #475569;
+        margin: 0 0 10px;
+      }
+      .grade-note ul {
+        list-style: none;
+        margin: 0 0 8px;
+        padding: 0;
+      }
+      .grade-note li {
+        margin: 0 0 6px;
+        line-height: 1.7;
+      }
+      .grade-note strong { color: #475569; }
+      .grade-note p {
+        margin: 8px 0 0;
+        color: #94a3b8;
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
       @media (max-width: 620px) {
         .wrap { padding: 28px 16px 56px; }
         .card {
@@ -650,6 +679,20 @@
         <a href="https://github.com/dujeongil-galaxy/shuangxiugou" target="_blank" rel="noopener noreferrer">本站源码</a>
         <a href="https://github.com/dujeongil-galaxy/shuangxiugou/issues" target="_blank" rel="noopener noreferrer">纠错 / 补充</a>
       </nav>
+
+      <!-- 数据来源分级说明：从 index.html 页脚迁来，说明为什么放在这里。
+           这四档是给「想核实数据的人」看的补充材料，不该挤在首页的
+           友情链接和投票中间抢注意力，所以整段挪到导航页末尾。 -->
+      <section class="grade-note">
+        <h2>数据来源分级说明</h2>
+        <ul>
+          <li><strong>公开司法 / 行政记录</strong>：裁判文书、仲裁裁决、官方公示，作为评级主干。</li>
+          <li><strong>匿名员工线索</strong>：用于补充一线感受，不单独定级。</li>
+          <li><strong>线下一手调查</strong>：反映现场访谈情况，但样本有限，可能存在受访者偏颇。</li>
+          <li><strong>媒体报道</strong>：用于交叉验证，不直接作为唯一依据。</li>
+        </ul>
+        <p>这样读者会明白：不是所有信息都同等可信，网站也没有把「店员随口说的」和「法院认定的」放在同一层级。</p>
+      </section>
     </div>
   </body>
 </html>
