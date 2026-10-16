@@ -1051,6 +1051,16 @@
        索引数据在 pinyin-index.js，必须先于本脚本加载。 -->
   <script src="./pinyin-index.js?v=1"></script>
   <script src="./pinyin-search.js?v=1"></script>
+
+  <!-- 彻底禁用数字搜索。2026-10-17 用户反馈：输入「1」「2」会搜出一堆无关卡片。
+       根因：bundle 的搜索是纯子串匹配，条件含 name/companyName/category/
+       searchKeywords/keyProducts/summary/id，而 summary 与 keyProducts 里
+       满是年份与百分比，所以单个数字几乎必然命中一堆卡片。
+       站内没有「按数字检索品牌」的需求，这是噪声不是功能，所以在输入层
+       拦掉：数字键直接不响应，粘贴/输入法带进来的数字会被剔除，
+       React 收到的查询词里永远不含数字。
+       必须在 pinyin-search.js 之后：联想层要先拿到干净的查询词。 -->
+  <script src="./block-numeric-search.js?v=1"></script>
   <!-- 《答案之书》随机占位：把搜索框的 placeholder 换成每次刷新随机一条的答案。
        原来那句「消费前，先了解这个品牌是否双休；用订单（消费力），反向考核企业」
        太长太重，压在搜索框里像广告语。

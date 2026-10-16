@@ -105,3 +105,9 @@ jobs:
       # 症状是输出出现「✓ true」—— 标签被当成条件，检查照样绿灯。
       - name: 校验脚本自检
         run: node scripts/test-verify-self.cjs
+
+      # 数字搜索必须彻底禁用。
+      # 起因：bundle 的搜索是纯子串匹配，条件含 summary / keyProducts，
+      # 而这两处满是年份与百分比，输入「1」「2」会命中一堆无关卡片。
+      - name: 数字搜索禁用测试
+        run: node scripts/test-block-numeric-search.cjs

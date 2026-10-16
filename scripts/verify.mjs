@@ -3107,6 +3107,28 @@ if (exists('.github/workflows/verify.yml')) {
     'CI 里已接入校验脚本自检');
 }
 
+// ---------- 20f. 数字搜索必须彻底禁用 ----------
+// 起因（用户截图）：搜「1」命中宁德时代、搜「2」命中三家。
+// 根因：bundle 的搜索是纯子串匹配，条件含 summary 与 keyProducts，
+// 而这两处满是年份与百分比。站内没有「按数字检索品牌」的需求，这是噪声。
+section('20f. 数字搜索禁用');
+const NSB = 'block-numeric-search.js';
+if (exists(NSB)) {
+  check(read('index.html').includes(NSB), `${NSB} 已在 index.html 引入`);
+  const iNsb = read('index.html').indexOf(NSB);
+  const iPs = read('index.html').indexOf('pinyin-search.js');
+  check(iNsb > iPs && iPs > 0,
+    '在 pinyin-search.js 之后加载（联想层要先拿到干净查询词）');
+  check(exists('scripts/test-block-numeric-search.cjs'), '存在数字搜索禁用的行为测试');
+  if (exists('.github/workflows/verify.yml')) {
+    check(read('.github/workflows/verify.yml').includes('test-block-numeric-search.cjs'),
+      'CI 里已接入数字搜索禁用测试');
+  }
+} else {
+  err(`${NSB} 不存在`,
+    '删除它会让搜索框重新接受数字：输「1」「2」会因 summary 里的年份与百分比命中一堆无关卡片');
+}
+
 // ---------- 20c. 员工投稿必须真能入库 ----------
 // 背景：这功能曾经是**假入库** —— 压缩包里的 onSubmit 只做 React 本地
 // state 更新（setTimeout 400ms 后关窗），全站 fetch 都是 React 内部库，
