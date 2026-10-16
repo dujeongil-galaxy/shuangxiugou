@@ -410,7 +410,11 @@ section('7. 文档数字口径一致性');
  * 这三种后面跟的是别的量纲或过去时态，一律不算口径错误。
  */
 const EXPECT = { builtin: BUILTIN_COUNT, custom: CUSTOM_COUNT, total: BUILTIN_COUNT + CUSTOM_COUNT };
-const docs = ['README.md', 'FORK_GUIDE.md', 'MAINTAINING.md', '员工实测数据核实修改清单.md'].filter(exists);
+// ⚠️ 必须列出**全部**文档，漏一个就会漏掉其中的假哈希。
+//   2026-10-16 踩过：新建 CHANGELOG.md 后没加进这个列表，
+//   结果它和另外几个文档里的 9 个假哈希全部逃过了检查。
+const docs = ['README.md', 'FORK_GUIDE.md', 'MAINTAINING.md', 'CHANGELOG.md',
+  'AGENTS.md', 'PITFALLS.md', 'DESIGN.md', '员工实测数据核实修改清单.md'].filter(exists);
 
 /** 判断一个数字是否属于「正当的局部/历史/分档用法」 */
 function isLegitimateNumber(line, num) {
