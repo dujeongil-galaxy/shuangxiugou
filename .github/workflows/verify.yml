@@ -88,3 +88,8 @@ jobs:
       # 这组测试锁住「必须真的跳 GitHub」且「不许再出现已入库的假承诺」。
       - name: 员工投稿转 Issue 测试
         run: node scripts/test-employee-report.cjs
+
+      # 推荐位：不得把 C 级当成「良心双休替代品牌」推给读者。
+      # 起因是读者发现宁德时代详情里推荐了同为 C 级的比亚迪。
+      - name: 推荐位逻辑测试
+        run: node scripts/test-alternatives.cjs

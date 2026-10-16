@@ -3015,12 +3015,46 @@ if (exists('.github/workflows/verify.yml')) {
     'CI 里已接入整页渲染测试');
 }
 
-// ---------- 20b. 员工投稿必须真能入库 ----------
+// ---------- 20b. 推荐位不得推荐同级 ----------
+// 起因（读者反馈）：宁德时代详情底部「良心双休替代品牌」里列着 BYD，
+// 而 BYD 自己也是 C 级。两家「都没查清」的公司互相推荐，还叫良心替代，
+// 等于拿不确定当结论卖。判定只认一条硬规则：不得 C→C。
+section('20b. 推荐位逻辑');
+check(exists('scripts/test-alternatives.cjs'),
+  '存在推荐位逻辑测试',
+  '推荐位把「没查清」的公司互相推荐，读者最敏感，必须有测试盯着');
+if (exists('.github/workflows/verify.yml')) {
+  check(read('.github/workflows/verify.yml').includes('test-alternatives.cjs'),
+    'CI 里已接入推荐位逻辑测试');
+}
+
+// 数据层直接查：C 级卡片的 alternatives 不得含 C 级
+const tierMap = new Map(brandCards.map((c) => [c.id, c.tier]));
+const sameTierPairs = [];
+for (let ci = 0; ci < brandCards.length; ci++) {
+  const c = brandCards[ci];
+  if (c.tier !== 'C') continue;
+  const end = ci + 1 < brandCards.length ? brandCards[ci + 1].pos : bundle.length;
+  const chunk = bundle.slice(c.pos, end);
+  const altM = /alternatives:\[([^\]]*)\]/.exec(chunk);
+  if (!altM) continue;
+  const alts = [...altM[1].matchAll(/`([^`]+)`/g)].map((x) => x[1]);
+  for (const a of alts) {
+    if (tierMap.get(a) === 'C') sameTierPairs.push(`${c.name} → ${a}`);
+  }
+}
+// ⚠️ check 的签名是 (cond, msg, detail)，条件必须在第一个参数。
+// 写反的话标签会被当成条件、表达式会被当成标签打印（表现为「✓ true」）。
+check(sameTierPairs.length === 0,
+  '没有 C 级把 C 级当「良心替代」推荐',
+  sameTierPairs.join(', '));
+
+// ---------- 20c. 员工投稿必须真能入库 ----------
 // 背景：这功能曾经是**假入库** —— 压缩包里的 onSubmit 只做 React 本地
 // state 更新（setTimeout 400ms 后关窗），全站 fetch 都是 React 内部库，
 // 数据刷新即丢、站长收不到，但按钮却写着「入库公证中…」。
 // 一旦注入层被误删，页面会静默退回「看起来提交成功、实际丢数据」。
-section('20b. 员工投稿入库路径');
+section('20c. 员工投稿入库路径');
 const RPT = 'employee-report-to-issue.js';
 if (exists(RPT)) {
   const rpt = read(RPT);
