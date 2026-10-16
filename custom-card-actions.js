@@ -114,6 +114,12 @@
       '.sxg-field input{width:100%;padding:8px 10px;font-size:13px;font-family:inherit;',
       'color:#0f172a;background:#fff;border:1px solid #cbd5e1;border-radius:8px;outline:none}',
       '.sxg-field input:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.2)}',
+      // 「本次新增」输入框 + 右侧累计，窄屏也不会挤成两行
+      '.sxg-amount-row{display:flex;align-items:center;gap:8px}',
+      '.sxg-amount-row input{flex:1;min-width:0}',
+      '.sxg-total{flex-shrink:0;font-size:12px;color:rgba(255,255,255,.72);white-space:nowrap}',
+      '.sxg-total b{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;',
+      'font-weight:800;color:#34d399}',
       '.sxg-form-tip{font-size:11px;color:rgba(255,255,255,.6);line-height:1.6;margin-top:10px}'
     ].join('');
     document.head.appendChild(style);
@@ -193,10 +199,30 @@
      清缓存 / 换浏览器 / 无痕窗口都会丢，这是刻意的 —— 站点不留档。 */
 
   var PROFILE_KEY = 'sxg-visitor-profile';
-  var DEFAULT_AMOUNT = 199;
+
+  // 累计金额上限。防止手滑或脚本错误累加出一个天文数字，
+  // 也防止存进 localStorage 的数值大到破坏布局。
+  var MAX_TOTAL = 99999999;
 
   function defaultProfile() {
-    return { name: '', amount: DEFAULT_AMOUNT, reason: '' };
+    // total = 历史累计，lastDelta = 上次填的「本次新增」，reason = 上次理由
+    return { name: '', total: 0, lastDelta: 0, reason: '' };
+  }
+
+  // 旧版本存的是 { name, amount, reason }，amount 是单次值。
+  // 首次读到旧结构时，把那个 amount 当作「历史累计」迁移过来，
+  // 否则老用户升级后累计金额会凭空归零 —— 那是会让人察觉的丢数据。
+  function migrateLegacy(p) {
+    if (typeof p.total === 'number' && isFinite(p.total)) return p;
+    if (typeof p.amount === 'number' && isFinite(p.amount) && p.amount > 0) {
+      return {
+        name: p.name,
+        total: Math.min(Math.round(p.amount), MAX_TOTAL),
+        lastDelta: 0,
+        reason: p.reason
+      };
+    }
+    return p;
   }
 
   function loadProfile() {
@@ -204,10 +230,13 @@
     try {
       var raw = window.localStorage.getItem(PROFILE_KEY);
       if (!raw) return base;
-      var p = JSON.parse(raw);
+      var p = migrateLegacy(JSON.parse(raw) || {});
       return {
         name: typeof p.name === 'string' ? p.name.slice(0, 40) : base.name,
-        amount: clampAmount(p.amount),
+        total: clampTotal(p.total),
+        lastDelta: typeof p.lastDelta === 'number' && p.lastDelta > 0
+          ? Math.min(Math.round(p.lastDelta), MAX_TOTAL)
+          : base.lastDelta,
         reason: typeof p.reason === 'string' ? p.reason.slice(0, 120) : base.reason
       };
     } catch (e) {
@@ -224,11 +253,21 @@
     }
   }
 
-  // 金额只允许正整数，上限 10 万，避免手滑输出一堆 0
-  function clampAmount(v) {
+  // 累计值只允许非负整数，上限封顶
+  function clampTotal(v) {
     var n = parseInt(v, 10);
-    if (isNaN(n) || n <= 0) return DEFAULT_AMOUNT;
-    return Math.min(n, 100000);
+    if (isNaN(n) || n < 0) return 0;
+    return Math.min(n, MAX_TOTAL);
+  }
+
+  // 本次新增额：允许留空（= 不增加），非正数按 0 处理而不是回退到 199 ——
+  // 用户既然留空了就是想不加，凭什么替他加 199。
+  function clampDelta(v) {
+    var s = String(v == null ? '' : v).trim();
+    if (!s) return 0;
+    var n = parseInt(s, 10);
+    if (isNaN(n) || n <= 0) return 0;
+    return Math.min(n, MAX_TOTAL);
   }
 
   // 没填昵称时给个匿名编号，跟内置小票的观感一致
@@ -252,9 +291,12 @@
       '</div>' +
 
       '<div class="sxg-field">' +
-        '<label for="sxg-f-amount">已转移/支持消费（元）</label>' +
-        '<input id="sxg-f-amount" type="number" inputmode="numeric" min="1" max="100000" ' +
-          'value="' + profile.amount + '" />' +
+        '<label for="sxg-f-amount">本次新增消费（元）</label>' +
+        '<div class="sxg-amount-row">' +
+          '<input id="sxg-f-amount" type="number" inputmode="numeric" min="0" ' +
+            'max="' + MAX_TOTAL + '" placeholder="留空则不增加" />' +
+          '<span class="sxg-total">累计 <b id="sxg-total">￥0</b></span>' +
+        '</div>' +
       '</div>' +
 
       '<div class="sxg-field">' +
@@ -265,7 +307,7 @@
       '</div>' +
 
       '<div class="sxg-form-tip">' +
-        '仅保存在你自己的浏览器里，不会上传服务器；清缓存即消失。' +
+        '累计金额与昵称只存在你自己的浏览器里，不上传服务器；清缓存即消失。' +
       '</div>';
     return form;
   }
@@ -305,21 +347,38 @@
     var fName = $('#sxg-f-name', form);
     var fAmount = $('#sxg-f-amount', form);
     var fReason = $('#sxg-f-reason', form);
+    var fTotal = $('#sxg-total', form);
+
+    // baseTotal 是「打开这个弹窗那一刻」的累计值，是个常量。
+    //
+    // 为什么必须是常量而不是每次读 profile.total：
+    // 如果直接累加，用户只是「打开弹窗看了一眼」就把钱算进去了；
+    // 关掉重开一次会加一次，来回几次金额就离谱了。
+    // 正确语义是：只有在明确点「复制小票文本」时才结算本次新增。
+    var baseTotal = profile.total;
+
+    // 预览态累计 = 打开时的累计 + 本次已填的新增（尚未落盘）
+    function previewTotal() {
+      return Math.min(baseTotal + clampDelta(fAmount.value), MAX_TOTAL);
+    }
 
     function currentProfile() {
       return {
         name: (fName.value || '').trim(),
-        amount: clampAmount(fAmount.value),
+        total: baseTotal,
+        lastDelta: clampDelta(fAmount.value),
         reason: (fReason.value || '').trim()
       };
     }
 
     function refreshPreview() {
       var p = currentProfile();
+      var shown = previewTotal();
       var nameEl = $('#sxg-t-name', receipt);
       var amountEl = $('#sxg-t-amount', receipt);
       if (nameEl) nameEl.textContent = displayName(p.name);
-      if (amountEl) amountEl.textContent = '￥' + p.amount;
+      if (amountEl) amountEl.textContent = '￥' + shown;
+      if (fTotal) fTotal.textContent = '￥' + shown;
       // 理由是后加的一行，实时输入时需要补出来
       var reasonKv = receipt.querySelector('[data-sxg-reason]');
       if (p.reason) {
@@ -337,7 +396,7 @@
       } else if (reasonKv && reasonKv.parentNode) {
         reasonKv.parentNode.removeChild(reasonKv);
       }
-      return p;
+      return { profile: p, shown: shown };
     }
 
     [fName, fAmount, fReason].forEach(function (input) {
@@ -372,8 +431,8 @@
         kv('所属企业:', '<span class="sxg-bold">' + esc(cfg.company || '—') + '</span>') +
         kv('企业评级:', '<span class="sxg-bold">' + esc(cfg.grade || 'C级') + '</span>') +
         kv('工时政策:', '<span class="sxg-bold">' + esc(cfg.workPolicy || '—') + '</span>') +
-        kv('已转移/支持消费:', '<span class="sxg-bold" style="color:#059669" id="sxg-t-amount">' +
-          '￥' + profile.amount + '</span>') +
+        kv('累计已转移/支持消费:', '<span class="sxg-bold" style="color:#059669" id="sxg-t-amount">' +
+          '￥' + profile.total + '</span>') +
         (profile.reason
           ? kv('理由:', '<span class="sxg-bold">' + esc(profile.reason) + '</span>')
           : '') +
@@ -398,9 +457,26 @@
     var copyBtn = el('button', 'sxg-btn sxg-btn-primary', '复制小票文本');
     var doneBtn = el('button', 'sxg-btn sxg-btn-dark', '完成');
     copyBtn.addEventListener('click', function () {
-      // 以点击这一刻表单里的内容为准，并落盘供下次使用
-      var p = currentProfile();
-      saveProfile(p);
+      // 以点击这一刻表单里的内容为准。
+      var st = refreshPreview();
+      var p = st.profile;
+      var shown = st.shown;
+
+      // 结算：把「本次新增」并入累计，并把新增额清零，
+      // 这样同一次弹窗里再点一次复制不会重复累加。
+      //
+      // ⚠️ 先保存再清空输入框，顺序反了会在赋值前就把 0 存进去。
+      var next = {
+        name: p.name,
+        total: shown,
+        lastDelta: 0,
+        reason: p.reason
+      };
+      saveProfile(next);
+      baseTotal = shown;          // 让后续预览以此为新基准
+      fAmount.value = '';         // 已结算，别让用户误以为还能再加一次
+      if (fTotal) fTotal.textContent = '￥' + baseTotal;
+
       var text =
         '【双休购 · 反向考核小票】\n' +
         '凭证编号：' + code + '\n' +
@@ -408,7 +484,7 @@
         '企业评级：' + (cfg.grade || 'C级') + '\n' +
         '考核执行官：' + displayName(p.name) + '\n' +
         (p.reason ? '理由：' + p.reason + '\n' : '') +
-        '已转移/支持消费：￥' + p.amount + '\n' +
+        '累计已转移/支持消费：￥' + shown + '\n' +
         '“老板考核你的KPI，你的钱包考核老板的良心”\n' +
         '数据查验来自开源双休购：shuangxiugou.vercel.app';
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -529,9 +605,20 @@
     var profile = loadProfile();
     receipt.setAttribute('data-sxg-builtin', '1');
 
+    // 与自定义卡弹窗同一条规则：打开时的累计是个常量，
+    // 只有用户明确点「完成 / 复制」才把本次新增结算进去。
+    // 否则光是打开看一眼就会算一次钱。
+    var baseTotal = profile.total;
+
+    function previewTotalOf() {
+      var fA = document.getElementById('sxg-f-amount');
+      return Math.min(baseTotal + clampDelta(fA ? fA.value : ''), MAX_TOTAL);
+    }
+
     // 定位「考核执行官」和金额所在的值节点
     var nameSpan = findValueNode(receipt, '考核执行官:');
-    var amountSpan = findValueNode(receipt, '已转移/支持消费:');
+    var amountSpan = findValueNode(receipt, '已转移/支持消费:')
+                  || findValueNode(receipt, '累计已转移/支持消费:');
 
     if (nameSpan) {
       nameSpan.id = 'sxg-t-name';
@@ -539,7 +626,7 @@
     }
     if (amountSpan) {
       amountSpan.id = 'sxg-t-amount';
-      amountSpan.textContent = '￥' + profile.amount;
+      amountSpan.textContent = '￥' + baseTotal;
     }
 
     // 在小票前面插入填写区
@@ -547,6 +634,7 @@
     if (form && receipt.parentNode) {
       receipt.parentNode.insertBefore(form, receipt);
     }
+    var fTotal = $('#sxg-total', form);
 
     // 实时联动
     if (form) {
@@ -555,24 +643,41 @@
       var fReason = $('#sxg-f-reason', form);
       [fName, fAmount, fReason].forEach(function (input) {
         input.addEventListener('input', function () {
-          var p = {
-            name: (fName.value || '').trim(),
-            amount: clampAmount(fAmount.value),
-            reason: (fReason.value || '').trim()
-          };
-          applyToBuiltin(receipt, p);
+          var shown = previewTotalOf();
+          var nameEl = $('#sxg-t-name', receipt);
+          var amountEl = $('#sxg-t-amount', receipt);
+          if (nameEl) nameEl.textContent = displayName(fName.value);
+          if (amountEl) amountEl.textContent = '￥' + shown;
+          if (fTotal) fTotal.textContent = '￥' + shown;
+          applyReasonToBuiltin(receipt, (fReason.value || '').trim());
         });
       });
     }
 
-    // 用户点「完成」关闭前落盘；点「复制」由页面自己处理
+    // 用户点「完成 / 复制」才结算本次新增。
+    // 用捕获阶段监听，因为「复制」是 bundle 内部处理的，我们只旁挂结算。
     var box = receipt.closest('.max-w-sm') || receipt.parentNode;
     if (box) {
       box.addEventListener('click', function (ev) {
         var t = (ev.target && ev.target.textContent) || '';
-        if (t.indexOf('完成') !== -1 || t.indexOf('复制') !== -1) {
-          saveProfile(readForm(receipt));
-        }
+        if (t.indexOf('完成') === -1 && t.indexOf('复制') === -1) return;
+        var fA = document.getElementById('sxg-f-amount');
+        var fN = document.getElementById('sxg-f-name');
+        var fR = document.getElementById('sxg-f-reason');
+        var delta = clampDelta(fA ? fA.value : '');
+        var total = Math.min(baseTotal + delta, MAX_TOTAL);
+        saveProfile({
+          name: (fN ? fN.value : '').trim(),
+          total: total,
+          lastDelta: 0,
+          reason: (fR ? fR.value : '').trim()
+        });
+        // 结算后清空新增额并以新累计为基准，连点两次不会加两次
+        baseTotal = total;
+        if (fA) fA.value = '';
+        if (fTotal) fTotal.textContent = '￥' + total;
+        var amountEl2 = $('#sxg-t-amount', receipt);
+        if (amountEl2) amountEl2.textContent = '￥' + total;
       }, true);
     }
 
@@ -595,11 +700,22 @@
     return null;
   }
 
-  function applyToBuiltin(receipt, p) {
-    var nameEl = $('#sxg-t-name', receipt);
-    var amountEl = $('#sxg-t-amount', receipt);
-    if (nameEl) nameEl.textContent = displayName(p.name);
-    if (amountEl) amountEl.textContent = '￥' + p.amount;
+  function applyReasonToBuiltin(receipt, reason) {
+    var reasonKv = receipt.querySelector('[data-sxg-reason]');
+    if (reason) {
+      if (!reasonKv) {
+        var amountEl = $('#sxg-t-amount', receipt);
+        var holder = amountEl ? amountEl.closest('.sxg-kv') : null;
+        if (!holder || !holder.parentNode) return;
+        reasonKv = el('div', 'sxg-kv');
+        reasonKv.setAttribute('data-sxg-reason', '1');
+        reasonKv.innerHTML = '<span class="k">理由:</span><span class="v"></span>';
+        holder.parentNode.insertBefore(reasonKv, holder.nextSibling);
+      }
+      reasonKv.querySelector('.v').textContent = reason;
+    } else if (reasonKv && reasonKv.parentNode) {
+      reasonKv.parentNode.removeChild(reasonKv);
+    }
   }
 
   function syncBuiltin(receipt) {
@@ -607,21 +723,10 @@
     if ($('#sxg-t-name', receipt)) return;
     var p = loadProfile();
     var nameSpan = findValueNode(receipt, '考核执行官:');
-    var amountSpan = findValueNode(receipt, '已转移/支持消费:');
+    var amountSpan = findValueNode(receipt, '已转移/支持消费:')
+                  || findValueNode(receipt, '累计已转移/支持消费:');
     if (nameSpan) { nameSpan.id = 'sxg-t-name'; nameSpan.textContent = displayName(p.name); }
-    if (amountSpan) { amountSpan.id = 'sxg-t-amount'; amountSpan.textContent = '￥' + p.amount; }
-  }
-
-  function readForm(receipt) {
-    var fName = document.getElementById('sxg-f-name');
-    var fAmount = document.getElementById('sxg-f-amount');
-    var fReason = document.getElementById('sxg-f-reason');
-    if (!fName) return loadProfile();
-    return {
-      name: (fName.value || '').trim(),
-      amount: clampAmount(fAmount ? fAmount.value : DEFAULT_AMOUNT),
-      reason: (fReason ? fReason.value : '').trim()
-    };
+    if (amountSpan) { amountSpan.id = 'sxg-t-amount'; amountSpan.textContent = '￥' + p.total; }
   }
 
   /* ------------------------------- 弹窗 3：首页顶部按钮的引导（去档案卡打卡） */

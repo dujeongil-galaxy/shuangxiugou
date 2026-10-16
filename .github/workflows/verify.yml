@@ -63,3 +63,7 @@ jobs:
 
       - name: 端到端测试
         run: node scripts/test-pinyin-e2e.cjs
+
+      # 小票累计金额：199 + 299 = 498 的结算逻辑 + 旧数据迁移
+      - name: 小票累计金额测试
+        run: node scripts/test-ticket-total.cjs

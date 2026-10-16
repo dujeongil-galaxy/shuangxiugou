@@ -2776,6 +2776,51 @@ if (!exists(PINYIN_IDX)) {
   ok('拼音功能只做联想回填，未改写压缩 bundle');
 }
 
+// ---------- 17. 小票累计金额 ----------
+// 背景：小票原本只有「本次金额」单值，每次打开覆盖保存。
+// 现改为累计：填「本次新增」，累加到历史总额。
+// 这类改动最容易出的错是「打开弹窗就把钱算进去」——
+// 用户只是看一眼，来回开关几次金额就离谱了。
+// 判据是源码里必须存在「打开时的基准累计」这个常量。
+section('17. 小票累计金额');
+
+if (exists('custom-card-actions.js')) {
+  const cca = read('custom-card-actions.js');
+  const html17 = read('index.html');
+
+  check(!/function\s+clampAmount/.test(cca),
+    '旧单值函数 clampAmount 已删除（不是改个名继续用）');
+  check(!/profile\.amount/.test(cca),
+    '不再有 profile.amount 引用（应为 profile.total）');
+  check(/本次新增消费/.test(cca),
+    '表单标签是「本次新增消费（元）」');
+  check(/累计已转移\/支持消费/.test(cca),
+    '小票正文是「累计已转移/支持消费」');
+  check(/id="sxg-total"/.test(cca),
+    '有累计金额展示元素 #sxg-total');
+
+  // 防「打开即累加」：必须有基准常量
+  check(/var baseTotal = profile\.total/.test(cca),
+    '存在打开时的基准累计 baseTotal（防止打开弹窗就累加）');
+  check(/saveProfile\(next\)/.test(cca) && /baseTotal = shown/.test(cca),
+    '结算后才更新基准，并清空本次新增额（连点复制不会加两次）');
+
+  // 旧数据迁移：老用户存的是 { amount }，不迁移会凭空归零
+  check(/function\s+migrateLegacy/.test(cca),
+    '有旧结构迁移函数 migrateLegacy（旧 amount 不会被丢掉）');
+  check(/typeof p\.amount === 'number'/.test(cca),
+    'migrateLegacy 确实处理了旧的 p.amount 字段');
+
+  // 隐私边界：这个功能不能顺手加上传
+  check(!/fetch\(|XMLHttpRequest|navigator\.sendBeacon/.test(cca),
+    '小票档案仍然只写本地，没有任何网络上传');
+
+  check(/custom-card-actions\.js\?v=\d+/.test(html17),
+    'index.html 引入了 custom-card-actions.js');
+} else {
+  warn('custom-card-actions.js 不存在，跳过小票累计检查');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {
