@@ -847,7 +847,14 @@ if (exists('notes.html')) {
     .replace(/<style[\s\S]*?<\/style>/g, '')
     .replace(/<script[\s\S]*?<\/script>/g, '')
     .replace(/<head[\s\S]*?<\/head>/g, '')
-    .replace(/<!--[\s\S]*?-->/g, '');
+    .replace(/<!--[\s\S]*?-->/g, '')
+    // ⚠️ CSS font-family 里的字体名必须剥掉，否则会误判成点名收录企业。
+    //   实测踩过：正文里的 `font-family: system-ui, "Microsoft YaHei", sans-serif`
+    //   被判成点名「微软（Microsoft中国）」——「Microsoft YaHei」是字体名，
+    //   不是在谈论这家企业。这属于典型的假阳性，比漏报更烦人：
+    //   每次解密验证都报同一个错，久而久之人就懒得看了。
+    .replace(/font-family\s*:[^;}]+/gi, '')
+    .replace(/"(Microsoft YaHei|微软雅黑|PingFang SC|Hiragino Sans GB|Segoe UI)"/gi, '');
     // ⚠️ 中文品牌名**不能用任何词边界/前后瞻**。
     //
     // 「比亚迪很有性价比」里「亚」后面紧跟「有」，「有」是汉字 → 落在 \w 范围内，
@@ -857,8 +864,17 @@ if (exists('notes.html')) {
     // 英文名后面若紧跟**ASCII 字母或数字**，视为更长标识符（如 BYDX），跳过；
     // 后面是汉字则直接算命中（`BYD很有性价比` 里的 BYD 就是点名）。
     const isAscii = (s) => /^[\x20-\x7e]+$/.test(s);
+    // ⚠️ 白名单必须逐条写理由，不能当成「什么都往里塞」的桶。
+    //   每一条都对应站长本人的明确决定（2026-10-17），并写清为什么可以例外。
+    //   新增条目时问自己：这是「站长愿意以真名被检索」的，还是「我懒得改」？
+    const WHITELIST = {
+      '比亚迪': '站长 2026-10-17 明确决定保留。原句是购车后的自述'
+        + '「2026 年下半年双休购上线，我才知道比亚迪是 C 级」，'
+        + '属个人消费经历而非对企业的公开指控，与本站其他卡片的证据型表述不同性质。',
+    };
     const hit = plain === null ? [] : suspects.filter((n) => {
       const s = n.trim();
+      if (Object.prototype.hasOwnProperty.call(WHITELIST, s)) return false;
       if (isAscii(s)) {
         return new RegExp(`${s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z0-9])`).test(plainVisible);
       }
@@ -870,6 +886,17 @@ if (exists('notes.html')) {
         ? `出现品牌名：${hit.slice(0, 5).join('、')} —— 随笔里点名企业会被当成公开指控，` +
           '与项目「证据可核实」的口径冲突。应写「某车企」「某个品牌」'
         : '');
+
+    // 白名单必须每条都有理由，且理由不能是空串或占位符 ——
+    // 否则「给白名单加个空注释」就能悄悄放过任何点名。
+    const ws = read('scripts/verify.mjs');
+    const wlBlock = /const WHITELIST = \{([\s\S]*?)\n {4}\};/.exec(ws);
+    if (wlBlock) {
+      const entries = [...wlBlock[1].matchAll(/'([^']+)'\s*:\s*'([^']*)'/g)];
+      check(entries.every((e) => e[2].trim().length >= 20),
+        `点名白名单每条都写明了理由（${entries.length} 条）`,
+        entries.filter((e) => e[2].trim().length < 20).map((e) => e[1]).join(', '));
+    }
   }
 
   // ⑩「有些伤是收不回来的」这一节必须保留。
