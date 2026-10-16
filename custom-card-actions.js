@@ -103,7 +103,18 @@
       '.sxg-kv .k{color:#64748b;white-space:nowrap;flex:none}',
       '.sxg-kv .v{font-weight:700;color:#0f172a;text-align:right;overflow:hidden;',
       'text-overflow:ellipsis;white-space:nowrap;max-width:190px}',
-      '.sxg-vote-off{opacity:.45;cursor:not-allowed}'
+      '.sxg-vote-off{opacity:.45;cursor:not-allowed}',
+      /* 访客填写区 */
+      '.sxg-form{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);',
+      'border-radius:12px;padding:14px;margin-bottom:4px}',
+      '.sxg-form-title{font-size:12px;font-weight:700;color:#fff;margin-bottom:10px}',
+      '.sxg-field{margin-bottom:10px}',
+      '.sxg-field:last-of-type{margin-bottom:0}',
+      '.sxg-field label{display:block;font-size:11px;color:rgba(255,255,255,.72);margin-bottom:4px}',
+      '.sxg-field input{width:100%;padding:8px 10px;font-size:13px;font-family:inherit;',
+      'color:#0f172a;background:#fff;border:1px solid #cbd5e1;border-radius:8px;outline:none}',
+      '.sxg-field input:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.2)}',
+      '.sxg-form-tip{font-size:11px;color:rgba(255,255,255,.6);line-height:1.6;margin-top:10px}'
     ].join('');
     document.head.appendChild(style);
   }
@@ -177,6 +188,56 @@
     if (ev.key === 'Escape') closeLayer();
   });
 
+  /* ------------------------------------------------- 访客档案（仅存本地浏览器）
+     隐私边界：只写 localStorage，不发任何网络请求，不上传服务器。
+     清缓存 / 换浏览器 / 无痕窗口都会丢，这是刻意的 —— 站点不留档。 */
+
+  var PROFILE_KEY = 'sxg-visitor-profile';
+  var DEFAULT_AMOUNT = 199;
+
+  function defaultProfile() {
+    return { name: '', amount: DEFAULT_AMOUNT, reason: '' };
+  }
+
+  function loadProfile() {
+    var base = defaultProfile();
+    try {
+      var raw = window.localStorage.getItem(PROFILE_KEY);
+      if (!raw) return base;
+      var p = JSON.parse(raw);
+      return {
+        name: typeof p.name === 'string' ? p.name.slice(0, 40) : base.name,
+        amount: clampAmount(p.amount),
+        reason: typeof p.reason === 'string' ? p.reason.slice(0, 120) : base.reason
+      };
+    } catch (e) {
+      return base;
+    }
+  }
+
+  function saveProfile(p) {
+    try {
+      window.localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+    } catch (e) {
+      // 隐私模式 / 存储已满：本次会话仍可用，只是不跨刷新
+      diag('访客档案保存失败（可能处于无痕模式）：' + e);
+    }
+  }
+
+  // 金额只允许正整数，上限 10 万，避免手滑输出一堆 0
+  function clampAmount(v) {
+    var n = parseInt(v, 10);
+    if (isNaN(n) || n <= 0) return DEFAULT_AMOUNT;
+    return Math.min(n, 100000);
+  }
+
+  // 没填昵称时给个匿名编号，跟内置小票的观感一致
+  function displayName(name) {
+    var s = (name || '').trim();
+    if (s) return s;
+    return '匿名打工人 #' + Math.floor(1000 + Math.random() * 9000);
+  }
+
   /* ----------------------------------------------- 弹窗 1：打卡小票（对齐内置 jn） */
 
   function openTicketModal(cfg) {
@@ -190,6 +251,8 @@
       year: 'numeric', month: '2-digit', day: '2-digit'
     });
 
+    var profile = loadProfile();
+
     var wrap = el('div', 'sxg-receipt-wrap');
     wrap.style.padding = '16px 0';
 
@@ -202,6 +265,78 @@
     closeBtn.addEventListener('click', closeLayer);
     head.appendChild(closeBtn);
     wrap.appendChild(head);
+
+    /* ---- 填写区：昵称 / 金额 / 理由，填完实时反映到小票上 ---- */
+    var form = el('div', 'sxg-form');
+    form.innerHTML =
+      '<div class="sxg-form-title">这张小票要署名，填一次就记住了</div>' +
+
+      '<div class="sxg-field">' +
+        '<label for="sxg-f-name">你的称呼（可留空，默认匿名）</label>' +
+        '<input id="sxg-f-name" type="text" maxlength="40" ' +
+          'placeholder="例如：清醒打工人 / 匿名打工人 #1234" ' +
+          'value="' + esc(profile.name) + '" />' +
+      '</div>' +
+
+      '<div class="sxg-field">' +
+        '<label for="sxg-f-amount">已转移/支持消费（元）</label>' +
+        '<input id="sxg-f-amount" type="number" inputmode="numeric" min="1" max="100000" ' +
+          'value="' + profile.amount + '" />' +
+      '</div>' +
+
+      '<div class="sxg-field">' +
+        '<label for="sxg-f-reason">理由（可留空）</label>' +
+        '<input id="sxg-f-reason" type="text" maxlength="120" ' +
+          'placeholder="例如：双休落实不错 / 门店单休太频繁" ' +
+          'value="' + esc(profile.reason) + '" />' +
+      '</div>' +
+
+      '<div class="sxg-form-tip">' +
+        '仅保存在你自己的浏览器里，不会上传服务器；清缓存即消失。' +
+      '</div>';
+    wrap.appendChild(form);
+
+    var fName = $('#sxg-f-name', form);
+    var fAmount = $('#sxg-f-amount', form);
+    var fReason = $('#sxg-f-reason', form);
+
+    function currentProfile() {
+      return {
+        name: (fName.value || '').trim(),
+        amount: clampAmount(fAmount.value),
+        reason: (fReason.value || '').trim()
+      };
+    }
+
+    function refreshPreview() {
+      var p = currentProfile();
+      var nameEl = $('#sxg-t-name', receipt);
+      var amountEl = $('#sxg-t-amount', receipt);
+      if (nameEl) nameEl.textContent = displayName(p.name);
+      if (amountEl) amountEl.textContent = '￥' + p.amount;
+      // 理由是后加的一行，实时输入时需要补出来
+      var reasonKv = receipt.querySelector('[data-sxg-reason]');
+      if (p.reason) {
+        if (!reasonKv) {
+          var holder = amountEl ? amountEl.closest('.sxg-kv') : null;
+          if (holder) {
+            reasonKv = el('div', 'sxg-kv');
+            reasonKv.setAttribute('data-sxg-reason', '1');
+            reasonKv.innerHTML = '<span class="k">理由:</span>' +
+              '<span class="v"></span>';
+            holder.parentNode.insertBefore(reasonKv, holder.nextSibling);
+          }
+        }
+        if (reasonKv) reasonKv.querySelector('.v').textContent = p.reason;
+      } else if (reasonKv && reasonKv.parentNode) {
+        reasonKv.parentNode.removeChild(reasonKv);
+      }
+      return p;
+    }
+
+    [fName, fAmount, fReason].forEach(function (input) {
+      input.addEventListener('input', refreshPreview);
+    });
 
     // 小票主体：样式与内置卡片的小票保持一致
     var receipt = el('div', 'receipt-tear-top receipt-tear-bottom sxg-mono');
@@ -225,12 +360,17 @@
       '</div>' +
 
       '<div class="sxg-dashed" style="padding:16px 0">' +
-        kv('考核执行官:', '<span class="sxg-bold">清醒打工人 #7709</span>') +
+        kv('考核执行官:', '<span class="sxg-bold" id="sxg-t-name">' +
+          esc(displayName(profile.name)) + '</span>') +
         kv('考核品牌:', '<span class="sxg-bold">' + esc(cfg.name) + '</span>') +
         kv('所属企业:', '<span class="sxg-bold">' + esc(cfg.company || '—') + '</span>') +
         kv('企业评级:', '<span class="sxg-bold">' + esc(cfg.grade || 'C级') + '</span>') +
         kv('工时政策:', '<span class="sxg-bold">' + esc(cfg.workPolicy || '—') + '</span>') +
-        kv('已转移/支持消费:', '<span class="sxg-bold" style="color:#059669">￥199</span>') +
+        kv('已转移/支持消费:', '<span class="sxg-bold" style="color:#059669" id="sxg-t-amount">' +
+          '￥' + profile.amount + '</span>') +
+        (profile.reason
+          ? kv('理由:', '<span class="sxg-bold">' + esc(profile.reason) + '</span>')
+          : '') +
       '</div>' +
 
       '<div class="sxg-dashed" style="padding:16px 0">' +
@@ -252,12 +392,17 @@
     var copyBtn = el('button', 'sxg-btn sxg-btn-primary', '复制小票文本');
     var doneBtn = el('button', 'sxg-btn sxg-btn-dark', '完成');
     copyBtn.addEventListener('click', function () {
+      // 以点击这一刻表单里的内容为准，并落盘供下次使用
+      var p = currentProfile();
+      saveProfile(p);
       var text =
         '【双休购 · 反向考核小票】\n' +
         '凭证编号：' + code + '\n' +
         '考核目标：' + (cfg.name || '') + '\n' +
         '企业评级：' + (cfg.grade || 'C级') + '\n' +
-        '已转移/支持消费：￥199\n' +
+        '考核执行官：' + displayName(p.name) + '\n' +
+        (p.reason ? '理由：' + p.reason + '\n' : '') +
+        '已转移/支持消费：￥' + p.amount + '\n' +
         '“老板考核你的KPI，你的钱包考核老板的良心”\n' +
         '数据查验来自开源双休购：shuangxiugou.vercel.app';
       if (navigator.clipboard && navigator.clipboard.writeText) {
