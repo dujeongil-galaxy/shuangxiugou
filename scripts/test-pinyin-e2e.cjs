@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');
 
-const ROOT = 'C:/Users/dujeo/WorkBuddy/2026-10-13-03-23-38/shuangxiugou';
+const ROOT = path.resolve(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 
 const dom = new JSDOM(

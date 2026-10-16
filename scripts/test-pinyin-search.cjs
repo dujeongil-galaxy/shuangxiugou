@@ -1,12 +1,17 @@
 // 拼音联想搜索的真实 DOM 行为测试
-// 跑法：NODE_PATH=<workspace>/node_modules node scripts/_test_pinyin.cjs
+// 跑法：npm install --no-save jsdom && node scripts/test-pinyin-search.cjs
+//
+// ⚠️ 不要硬编码仓库绝对路径 —— 那样在 CI（Linux runner）和别人的机器上
+//    必然读不到文件。必须从 __dirname 推导仓库根。
 const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');
 
-const ROOT = 'C:/Users/dujeo/WorkBuddy/2026-10-13-03-23-38/shuangxiugou';
-const idx = fs.readFileSync(path.join(ROOT, 'pinyin-index.js'), 'utf8');
-const lib = fs.readFileSync(path.join(ROOT, 'pinyin-search.js'), 'utf8');
+const ROOT = path.resolve(__dirname, '..');
+const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
+
+const idx = read('pinyin-index.js');
+const lib = read('pinyin-search.js');
 
 const dom = new JSDOM(
   `<!DOCTYPE html><html><body>

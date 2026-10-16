@@ -39,3 +39,27 @@ jobs:
       # 有任何一项检查失败即 exit 1，GitHub 会把这次 push 标红。
       - name: 运行校验
         run: node scripts/verify.mjs
+
+  pinyin:
+    name: 拼音搜索测试
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      # 拼音搜索的两个测试需要 jsdom（DOM 行为 + 真实 bundle 端到端）。
+      # 只装 jsdom，不装整个 package.json —— 那个里的 next/react 与
+      # 本仓库的静态部署架构无关，装了只是拖慢 CI。
+      - name: 安装 jsdom
+        run: npm install --no-save jsdom
+
+      # 端到端测试会加载真实 bundle 并复刻它的原生过滤算法，
+      # 断言「回填的词真能被原生搜索命中」——这是用户最终看到的结果。
+      - name: DOM 行为测试
+        run: node scripts/test-pinyin-search.cjs
+
+      - name: 端到端测试
+        run: node scripts/test-pinyin-e2e.cjs
