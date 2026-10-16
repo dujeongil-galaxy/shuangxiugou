@@ -25,6 +25,18 @@
 
   var FOOTER_ID = 'related-sites-footer';
 
+  // 每块内容套一层白底卡片，边框+圆角+内边距。
+  // 为什么加：几块内容原本是直接贴在灰底页脚上的纯文本行，
+  // 标题一多就糊成一片，扫读时找不到边界（站长 2026-10-16 要求加框）。
+  function makeCard() {
+    var box = document.createElement('div');
+    box.setAttribute('data-fcard', '1');
+    box.setAttribute('style',
+      'background:#fff;border:1px solid #e2e8f0;border-radius:12px;' +
+      'padding:16px 18px;margin:0 0 16px');
+    return box;
+  }
+
   function insert() {
     if (document.getElementById(FOOTER_ID)) return;
 
@@ -72,10 +84,11 @@
        但翻到底部的人正是要源码的那批人 —— 与 favicon 之外的
        「同类项目把仓库放页脚」做法一致。
        ---------------------------------------------------------------- */
+    var linksCard = makeCard();
     var heading = document.createElement('div');
-    heading.setAttribute('style', 'font-weight:600;color:#475569;margin-bottom:10px;font-size:14px');
+    heading.setAttribute('style', 'font-weight:600;color:#334155;margin:0 0 10px;font-size:14px');
     heading.textContent = '友情链接';
-    footer.appendChild(heading);
+    linksCard.appendChild(heading);
 
     var list = document.createElement('div');
     LINKS.forEach(function (item) {
@@ -100,7 +113,8 @@
       list.appendChild(line);
     });
 
-    footer.appendChild(list);
+    linksCard.appendChild(list);
+    footer.appendChild(linksCard);
 
     /* ----------------------------------------------------------------
        「数据来源分级说明」已移到 projects.html 底部
@@ -117,15 +131,16 @@
        外部平台的公开投票结果，作为读者态度的参考放在底部。
        票数与百分比一并标注，避免读者自己心算占比。
        ---------------------------------------------------------------- */
+    var pollCard = makeCard();
     var pollHeading = document.createElement('div');
-    pollHeading.setAttribute('style', 'font-weight:600;color:#475569;margin:26px 0 4px;font-size:14px');
+    pollHeading.setAttribute('style', 'font-weight:600;color:#334155;margin:0 0 4px;font-size:14px');
     pollHeading.textContent = '你愿意为双休企业的产品多花钱吗';
-    footer.appendChild(pollHeading);
+    pollCard.appendChild(pollHeading);
 
     var pollMeta = document.createElement('div');
     pollMeta.setAttribute('style', 'margin:0 0 12px;color:#94a3b8');
     pollMeta.textContent = '微博投票 · 305 人参与 · 投票已结束';
-    footer.appendChild(pollMeta);
+    pollCard.appendChild(pollMeta);
 
     var POLL = [
       ['愿意，贵一点也要支持双休', 212, '69.5%', '#0F766E', '#99f6e4'],
@@ -155,13 +170,15 @@
       track.appendChild(bar);
       wrap.appendChild(track);
 
-      footer.appendChild(wrap);
+      pollCard.appendChild(wrap);
     });
 
     var pollSource = document.createElement('div');
-    pollSource.setAttribute('style', 'margin-top:10px;color:#94a3b8');
+    pollSource.setAttribute('style', 'color:#94a3b8');
     pollSource.textContent = '数据来源：微博投票 @Vista看天下创建';
-    footer.appendChild(pollSource);
+    pollCard.appendChild(pollSource);
+
+    footer.appendChild(pollCard);
 
     /* ----------------------------------------------------------------
        第四块：搜索排名公示
@@ -171,15 +188,16 @@
        一、名次随时间浮动，只代表某一天的实测快照；
        二、词形必须连写（「双休购github」），加空格会搜不到。
        ---------------------------------------------------------------- */
+    var seoCard = makeCard();
     var seoHeading = document.createElement('div');
-    seoHeading.setAttribute('style', 'font-weight:600;color:#475569;margin:26px 0 4px;font-size:14px');
+    seoHeading.setAttribute('style', 'font-weight:600;color:#334155;margin:0 0 4px;font-size:14px');
     seoHeading.textContent = '搜索排名公示';
-    footer.appendChild(seoHeading);
+    seoCard.appendChild(seoHeading);
 
     var seoMeta = document.createElement('div');
     seoMeta.setAttribute('style', 'margin:0 0 12px;color:#94a3b8');
     seoMeta.textContent = '2026-10-16 实测 · 无痕窗口';
-    footer.appendChild(seoMeta);
+    seoCard.appendChild(seoMeta);
 
     var SEO_ROWS = [
       ['双休购github', '1', 'Google · Bing'],
@@ -193,7 +211,9 @@
     ];
     SEO_ROWS.forEach(function (row) {
       var line = document.createElement('div');
-      line.setAttribute('style', 'display:flex;justify-content:space-between;margin:0 0 6px;gap:12px');
+      line.setAttribute('style',
+        'display:flex;justify-content:space-between;align-items:baseline;' +
+        'margin:0 0 2px;gap:12px;padding:5px 8px;border-radius:6px');
 
       var kw = document.createElement('span');
       kw.textContent = row[0];
@@ -205,25 +225,28 @@
 
       line.appendChild(kw);
       line.appendChild(val);
-      footer.appendChild(line);
+      seoCard.appendChild(line);
     });
 
     var seoNote = document.createElement('div');
-    seoNote.setAttribute('style', 'margin-top:8px;color:#94a3b8');
+    seoNote.setAttribute('style', 'margin-top:10px;padding-top:10px;border-top:1px dashed #e2e8f0;color:#94a3b8');
     seoNote.textContent =
       '词形要连写，加空格就搜不到；Google 对本站更严格，目前只有「双休购github」能进第一页。以上为 2026-10-16 当天的实测结果，名次会随时间浮动。';
-    footer.appendChild(seoNote);
+    seoCard.appendChild(seoNote);
+
+    footer.appendChild(seoCard);
 
     /*第五块：Bing 积分商城邀请（放在搜索排名公示下面） */
+    var bingCard = makeCard();
     var bingHeading = document.createElement('div');
-    bingHeading.setAttribute('style', 'font-weight:600;color:#475569;margin:26px 0 8px;font-size:14px');
+    bingHeading.setAttribute('style', 'font-weight:600;color:#334155;margin:0 0 4px;font-size:14px');
     bingHeading.textContent = '推荐朋友加入 Bing 积分商城';
-    footer.appendChild(bingHeading);
+    bingCard.appendChild(bingHeading);
 
     var bingDesc = document.createElement('div');
     bingDesc.setAttribute('style', 'margin:0 0 8px;color:#64748b');
     bingDesc.textContent = '每月最多可获得额外 7,500 积分，积分能换礼品卡和优惠券。';
-    footer.appendChild(bingDesc);
+    bingCard.appendChild(bingDesc);
 
     var bingLink = document.createElement('a');
     bingLink.href = 'https://rewards.bing.com/welcome?rh=pFnTzt_G80U&ref=rafsrchae';
@@ -232,7 +255,9 @@
     bingLink.textContent = '通过我的链接加入 →';
     bingLink.setAttribute('style',
       'display:inline-block;color:#0F766E;font-weight:700;text-decoration:underline');
-    footer.appendChild(bingLink);
+    bingCard.appendChild(bingLink);
+
+    footer.appendChild(bingCard);
 
     // 追加到页面最底部
     host.appendChild(footer);
