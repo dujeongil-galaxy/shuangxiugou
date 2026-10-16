@@ -46,7 +46,10 @@
     top: 88px;
     right: 16px;
     z-index: 9990;
-    width: 152px;
+    /* 152px → 176px：品牌行改成「（限时推广）良配 - AI婚恋」后有 14 个字符，
+       原宽度放不下会被挤断行。右侧是固定定位，加宽只向左侵占留白，
+       不影响正文排版。 */
+    width: 176px;
     padding: 14px 12px 12px;
     border: 1px solid var(--lp-border);
     border-radius: 16px;
@@ -63,6 +66,15 @@
 
   .lp-ad__body {
     display: block;
+  }
+
+  /* 竖排卡片宽 176px，内容区 152px。
+     品牌行 10 个全角 + 「 - AI」约 2.5 个全角宽，合计约 12.5 字宽，
+     11.5px 字号下约 144px，单行能放下且留有余量；
+     12px 时约 150px 已贴边，不同字体度量稍有出入就会溢出，所以锁 11.5px。 */
+  .lp-ad__brand {
+    font-size: 11.5px;
+    letter-spacing: 0;
   }
 
   .lp-ad__logo {
@@ -184,6 +196,10 @@
   font-size: 17px;
   font-weight: 800;
   color: var(--lp-text);
+  /* 品牌行是「（限时推广）良配 - AI婚恋」，14 个字符。
+     用户要求必须完整显示在一行内，所以强制 nowrap：
+     宁可字号小一点也不许折行。 */
+  white-space: nowrap;
 }
 
 .lp-ad__title {

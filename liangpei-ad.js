@@ -13,11 +13,19 @@
   'use strict';
 
   var CONFIG = {
+    // aria-label 与 LOGO 用的短名，保持「良配」两字
     brand: '良配',
+    // 品牌行（LOGO 下方的第一行文字）。
+    // 2026-10-16 用户要求这一行写「（限时推广）良配 - AI婚恋」，
+    // 且**必须完整显示在一行内**，不允许折行。
+    // 为此 CSS 里给 .lp-ad__brand 加了 white-space:nowrap，
+    // 并把竖排卡片从 152px 加宽到 176px、字号压到 12px，
+    // 否则 14 个字符在 152px 里放不下会被挤断。
+    brandLine: '（限时推广）良配 - AI婚恋',
     // 官方未公布活动结束时间，故不设倒计时
     // 2026-10-16 去掉徽标（CONFIG.badge 及其 DOM 节点已一并删除），
-    // 「AI 婚恋」这类品类标签与下方主文案重复且显别扭，不如不要，
-    // 腾出的空间给正文，把字号放大。
+    // 「AI 婚恋」这类品类标签不再单独占一行，
+    // 并入上方的品牌行，省下的空间给正文，把字号放大。
     title: '注册即送<br>喜茶 20 元<br>无门槛消费红包',
     cta: '立即注册',
     note: '微信小程序 · 推广合作',
@@ -162,7 +170,7 @@
       '<div class="lp-ad__body">' +
         '<div class="lp-ad__logo" aria-hidden="true">' + LOGO_TEXT + '</div>' +
         '<div class="lp-ad__text">' +
-          '<div class="lp-ad__brand">' + CONFIG.brand + '</div>' +
+          '<div class="lp-ad__brand">' + CONFIG.brandLine + '</div>' +
           '<div class="lp-ad__title">' + CONFIG.title + '</div>' +
         '</div>' +
       '</div>' +
