@@ -238,6 +238,38 @@
     return '匿名打工人 #' + Math.floor(1000 + Math.random() * 9000);
   }
 
+  // 自定义卡与内置卡共用的填写区，避免两处 UI 走样
+  function buildProfileForm(profile) {
+    var form = el('div', 'sxg-form');
+    form.innerHTML =
+      '<div class="sxg-form-title">这张小票要署名，填一次就记住了</div>' +
+
+      '<div class="sxg-field">' +
+        '<label for="sxg-f-name">你的称呼（可留空，默认匿名）</label>' +
+        '<input id="sxg-f-name" type="text" maxlength="40" ' +
+          'placeholder="例如：清醒打工人 / 匿名打工人 #1234" ' +
+          'value="' + esc(profile.name) + '" />' +
+      '</div>' +
+
+      '<div class="sxg-field">' +
+        '<label for="sxg-f-amount">已转移/支持消费（元）</label>' +
+        '<input id="sxg-f-amount" type="number" inputmode="numeric" min="1" max="100000" ' +
+          'value="' + profile.amount + '" />' +
+      '</div>' +
+
+      '<div class="sxg-field">' +
+        '<label for="sxg-f-reason">理由（可留空）</label>' +
+        '<input id="sxg-f-reason" type="text" maxlength="120" ' +
+          'placeholder="例如：双休落实不错 / 门店单休太频繁" ' +
+          'value="' + esc(profile.reason) + '" />' +
+      '</div>' +
+
+      '<div class="sxg-form-tip">' +
+        '仅保存在你自己的浏览器里，不会上传服务器；清缓存即消失。' +
+      '</div>';
+    return form;
+  }
+
   /* ----------------------------------------------- 弹窗 1：打卡小票（对齐内置 jn） */
 
   function openTicketModal(cfg) {
@@ -267,33 +299,7 @@
     wrap.appendChild(head);
 
     /* ---- 填写区：昵称 / 金额 / 理由，填完实时反映到小票上 ---- */
-    var form = el('div', 'sxg-form');
-    form.innerHTML =
-      '<div class="sxg-form-title">这张小票要署名，填一次就记住了</div>' +
-
-      '<div class="sxg-field">' +
-        '<label for="sxg-f-name">你的称呼（可留空，默认匿名）</label>' +
-        '<input id="sxg-f-name" type="text" maxlength="40" ' +
-          'placeholder="例如：清醒打工人 / 匿名打工人 #1234" ' +
-          'value="' + esc(profile.name) + '" />' +
-      '</div>' +
-
-      '<div class="sxg-field">' +
-        '<label for="sxg-f-amount">已转移/支持消费（元）</label>' +
-        '<input id="sxg-f-amount" type="number" inputmode="numeric" min="1" max="100000" ' +
-          'value="' + profile.amount + '" />' +
-      '</div>' +
-
-      '<div class="sxg-field">' +
-        '<label for="sxg-f-reason">理由（可留空）</label>' +
-        '<input id="sxg-f-reason" type="text" maxlength="120" ' +
-          'placeholder="例如：双休落实不错 / 门店单休太频繁" ' +
-          'value="' + esc(profile.reason) + '" />' +
-      '</div>' +
-
-      '<div class="sxg-form-tip">' +
-        '仅保存在你自己的浏览器里，不会上传服务器；清缓存即消失。' +
-      '</div>';
+    var form = buildProfileForm(profile);
     wrap.appendChild(form);
 
     var fName = $('#sxg-f-name', form);
@@ -499,6 +505,125 @@
     }
   }
 
+  /* ------------------- 内置品牌卡的小票：DOM 层接管（不改压缩包） -------------------
+     内置小票由压缩包里的 React 组件渲染，「清醒打工人 #7709」和金额 199
+     都写死在构建产物里。改压缩包风险高（34 万字符，改错整站白屏），
+     且下次重新构建会被覆盖。
+
+     这里的做法：等内置小票渲染出来后，用 DOM 找到那两个文本节点，
+     换成访客填的值，并在小票上方插入同一套填写区。
+     —— 视觉与自定义卡完全一致，且与构建流程解耦。            */
+
+  var builtinPatched = null;
+
+  function patchBuiltinTicket() {
+    // 内置小票容器：带receipt-tear-top 的那张米色纸
+    var receipt = document.querySelector('.receipt-tear-top');
+    if (!receipt) return;
+    if (receipt.getAttribute('data-sxg-builtin') === '1') {
+      // 已处理过，只同步数值
+      syncBuiltin(receipt);
+      return;
+    }
+
+    var profile = loadProfile();
+    receipt.setAttribute('data-sxg-builtin', '1');
+
+    // 定位「考核执行官」和金额所在的值节点
+    var nameSpan = findValueNode(receipt, '考核执行官:');
+    var amountSpan = findValueNode(receipt, '已转移/支持消费:');
+
+    if (nameSpan) {
+      nameSpan.id = 'sxg-t-name';
+      nameSpan.textContent = displayName(profile.name);
+    }
+    if (amountSpan) {
+      amountSpan.id = 'sxg-t-amount';
+      amountSpan.textContent = '￥' + profile.amount;
+    }
+
+    // 在小票前面插入填写区
+    var form = buildProfileForm(profile);
+    if (form && receipt.parentNode) {
+      receipt.parentNode.insertBefore(form, receipt);
+    }
+
+    // 实时联动
+    if (form) {
+      var fName = $('#sxg-f-name', form);
+      var fAmount = $('#sxg-f-amount', form);
+      var fReason = $('#sxg-f-reason', form);
+      [fName, fAmount, fReason].forEach(function (input) {
+        input.addEventListener('input', function () {
+          var p = {
+            name: (fName.value || '').trim(),
+            amount: clampAmount(fAmount.value),
+            reason: (fReason.value || '').trim()
+          };
+          applyToBuiltin(receipt, p);
+        });
+      });
+    }
+
+    // 用户点「完成」关闭前落盘；点「复制」由页面自己处理
+    var box = receipt.closest('.max-w-sm') || receipt.parentNode;
+    if (box) {
+      box.addEventListener('click', function (ev) {
+        var t = (ev.target && ev.target.textContent) || '';
+        if (t.indexOf('完成') !== -1 || t.indexOf('复制') !== -1) {
+          saveProfile(readForm(receipt));
+        }
+      }, true);
+    }
+
+    diag('已接管内置小票的署名与金额');
+  }
+
+  // 内置小票是「标签: 值」左右两格的布局，按标签文字找到右边的值
+  function findValueNode(root, label) {
+    var spans = $$('span', root);
+    for (var i = 0; i < spans.length; i++) {
+      if ((spans[i].textContent || '').trim() === label) {
+        var p = spans[i].parentNode;
+        if (!p) continue;
+        var kids = p.children;
+        for (var j = 0; j < kids.length; j++) {
+          if (kids[j] !== spans[i]) return kids[j];
+        }
+      }
+    }
+    return null;
+  }
+
+  function applyToBuiltin(receipt, p) {
+    var nameEl = $('#sxg-t-name', receipt);
+    var amountEl = $('#sxg-t-amount', receipt);
+    if (nameEl) nameEl.textContent = displayName(p.name);
+    if (amountEl) amountEl.textContent = '￥' + p.amount;
+  }
+
+  function syncBuiltin(receipt) {
+    // 小票重新渲染后（React 重渲染）把已存的值再写回去
+    if ($('#sxg-t-name', receipt)) return;
+    var p = loadProfile();
+    var nameSpan = findValueNode(receipt, '考核执行官:');
+    var amountSpan = findValueNode(receipt, '已转移/支持消费:');
+    if (nameSpan) { nameSpan.id = 'sxg-t-name'; nameSpan.textContent = displayName(p.name); }
+    if (amountSpan) { amountSpan.id = 'sxg-t-amount'; amountSpan.textContent = '￥' + p.amount; }
+  }
+
+  function readForm(receipt) {
+    var fName = document.getElementById('sxg-f-name');
+    var fAmount = document.getElementById('sxg-f-amount');
+    var fReason = document.getElementById('sxg-f-reason');
+    if (!fName) return loadProfile();
+    return {
+      name: (fName.value || '').trim(),
+      amount: clampAmount(fAmount ? fAmount.value : DEFAULT_AMOUNT),
+      reason: (fReason ? fReason.value : '').trim()
+    };
+  }
+
   /* ------------------------------- 弹窗 3：首页顶部按钮的引导（去档案卡打卡） */
 
   var guideShown = false;
@@ -645,6 +770,7 @@
   function init() {
     try { bindHeaderButton(); } catch (e) { diag('绑定顶部按钮出错: ' + e); }
     try { bindCustomCards(); } catch (e) { diag('绑定自定义卡片出错: ' + e); }
+    try { patchBuiltinTicket(); } catch (e) { diag('接管内置小票出错: ' + e); }
   }
 
   init();
