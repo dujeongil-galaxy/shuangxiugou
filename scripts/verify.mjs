@@ -159,11 +159,42 @@ brandCards.forEach((c, i) => {
   const chunk = bundle.slice(c.pos, end);
   const rate = chunk.match(/realDoubleWeekendRate:([^,}]+)/)?.[1]?.trim();
   const off = chunk.match(/avgOffWorkTime:`?([^,`}]+)/)?.[1]?.trim();
-  // 0 是可疑值：要么真的实测为 0（极罕见），要么是历史占位
-  if (rate === '0') err(`${c.name} 的 realDoubleWeekendRate 是 0`, '未核实应填 null（页面显示「—」），0 会被读成「实测无人双休」');
+  // 0 是可疑值：要么真的实测为 0（极罕见），要么是历史占位。
+  // 例外：若同一 employeeStats 里带 rateSource:`derived`，
+  // 说明这个 0 是**由公示口径换算**得来的（如「做六休一→真实双休率 0」），
+  // 不是占位，也不是实测。放行但要求必须写明换算依据。
+  const derived = chunk.includes('rateSource:`derived`');
+  if (rate === '0' && !derived) err(`${c.name} 的 realDoubleWeekendRate 是 0`, '未核实应填 null（页面显示「—」），0 会被读成「实测无人双休」。若确为口径换算，请同时加 rateSource:`derived` 字段');
+  if (rate === '0' && derived) {
+    // 换算值不得与实测投票数混存，否则读者无法判断这个 0 的来源
+    const votes = chunk.match(/totalEmployeeVotes:([^,}]+)/)?.[1]?.trim();
+    if (votes && votes !== 'null') {
+      err(`${c.name} 同时有换算值与实测投票数（totalEmployeeVotes=${votes}）`,
+        '换算值与投票值不能混存，否则读者无法判断这个数字的来源');
+    }
+  }
   if (off === '0') err(`${c.name} 的 avgOffWorkTime 是 0`, '未核实应填 null');
 });
-ok('内置卡数值字段无占位 0');
+ok('内置卡数值字段无占位 0（换算值须带 rateSource:derived）');
+
+// 反向自检：光写 rateSource:`derived` 就能骗过上面的断言，
+// 所以必须同时要求 rateBasis 指向具体的证据来源。
+const derivedCards = brandCards.filter((c, i) => {
+  const end = i + 1 < brandCards.length ? brandCards[i + 1].pos : bundle.length;
+  return bundle.slice(c.pos, end).includes('rateSource:`derived`');
+});
+const badDerived = derivedCards.filter((c, i) => {
+  const idx = brandCards.indexOf(c);
+  const end = idx + 1 < brandCards.length ? brandCards[idx + 1].pos : bundle.length;
+  const chunk = bundle.slice(c.pos, end);
+  if (!chunk.includes('rateBasis:`derived_from_official_disclosure`')) return true;
+  // 换算依据必须能对应到一条真实存在的证据 id
+  const ids = [...chunk.matchAll(/id:`(ev-[a-z0-9-]+)`/g)].map((x) => x[1]);
+  return ids.length === 0;
+});
+check(badDerived.length === 0,
+  `换算值均写明依据（rateBasis + 可追溯的 ev- 证据 id）`,
+  badDerived.map((c) => c.name).join(', '));
 
 // ---------- 2b. 证据链完整性 ----------
 section('2b. 证据链完整性');
