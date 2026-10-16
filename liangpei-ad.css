@@ -11,9 +11,8 @@
 
 .lp-ad {
   /* 只在本组件内定义变量，不污染全局
-     注：原--lp-secondary（黄 #f5c234）和 --lp-bg（米 #fffaf5）已无人引用，
-     2026-10-16 随徽标改浅紫粉一并移除，避免以后误用回黄色。
-     徽标新配色直接写在 .lp-ad__badge 里，不走变量。 */
+     注：原 --lp-secondary（黄 #f5c234）和 --lp-bg（米 #fffaf5）已无人引用，
+     2026-10-16 随徽标整块删除一并移除，避免以后误用回黄色。 */
   --lp-primary: #3dad8a;
   --lp-primary-dark: #2e8b6f;
   --lp-accent: #99d93f;
@@ -67,23 +66,24 @@
   }
 
   .lp-ad__logo {
-    width: 44px;
-    height: 44px;
-    margin: 8px auto 8px;
-    font-size: 22px;
+    width: 48px;
+    height: 48px;
+    margin: 8px auto 10px;
+    font-size: 24px;
   }
 
   /* 竖排卡片宽度有限，主文案按语义手动断行，
-     避免浏览器在「无门槛红 / 包」这类词中间折断 */
+     避免浏览器在「无门槛红 / 包」这类词中间折断。
+     徽标删除后不用再让位，字号从 12.5px 上调到 14px。 */
   .lp-ad__title {
-    font-size: 12.5px;
-    line-height: 1.7;
+    font-size: 14px;
+    line-height: 1.75;
   }
 
   .lp-ad__note {
     display: block;
-    margin-top: 9px;
-    font-size: 10px;
+    margin-top: 10px;
+    font-size: 11px;
     line-height: 1.6;
     color: var(--lp-text-3);
     /* 两行都放得下，不折行 */
@@ -102,36 +102,18 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    /* 顶部留出徽标的高度。
-       ⚠️ 早先徽标是 position:absolute + translateY(-50%)浮在左上角，
-       结果**直接压住了 title 第一行**（用户截图：「注册即送 喜茶 20 元
-       无门槛」被盖住一半）。改为参与文档流放在最上方后不再重叠，
-       这里必须同步留出 padding，否则徽标会挤出容器。 */
-    padding: 10px 40px 10px 12px;
-    padding-top: 26px;
-    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    /* 2026-10-16 徽标删除后，这里不再需要为徽标预留顶部高度。
+       原先 padding-top:26px 是给浮在左上角的徽标让位，
+       徽标整块删掉后一并收回，让正文上移。 */
+    padding: 12px 40px 12px 12px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid var(--lp-border);
     background: var(--lp-surface);
     box-shadow: 0 -6px 22px rgba(42, 38, 32, 0.1);
   }
 
-  /* 徽标放在最上方，左对齐，不占横向空间也不压任何内容。
-     与 body 是兄弟节点，body 的 flex:1 依然成立。 */
-  .lp-ad__badge {
-    position: absolute;
-    top: 5px;
-    left: 12px;
-    right: auto;
-    margin-right: 0;
-    padding: 1px 7px;
-    border-radius: 6px;
-    font-size: 10px;
-    line-height: 1.5;
-    text-align: left;
-    white-space: nowrap;
-    /* 徽标自身不参与flex 布局会脱离，改为 absolute 后需让 body 下移。
-       这里用 padding-top 已解决纵向空间，横向不需要额外处理。 */
-  }
+  /* 2026-10-16：原先这里放 .lp-ad__badge 的 absolute 定位规则，
+     徽标整块删除后规则一并移除，body 直接顶到容器上沿。 */
 
   .lp-ad__body {
     display: flex;
@@ -142,11 +124,11 @@
   }
 
   .lp-ad__logo {
-    width: 38px;
-    height: 38px;
+    width: 42px;
+    height: 42px;
     margin: 0;
     flex: 0 0 auto;
-    font-size: 19px;
+    font-size: 21px;
   }
 
   .lp-ad__text {
@@ -154,17 +136,14 @@
   }
 
   .lp-ad__brand {
-    font-size: 13px;
-    margin-bottom: 1px;
+    font-size: 15px;
+    margin-bottom: 2px;
   }
 
   .lp-ad__title {
-    font-size: 12px;
-    line-height: 1.45;
-    /* 标题已完整显示在徽标下方，不再需要限制行数 ——
-       早先 line-clamp:2 是为了给浮在上面的徽标让位，
-       徽标改为不遮挡后，两行 clamp 会截断「消费红包」这类词，
-       反而让文案读不全（用户截图中「消费红包」被挤到第二行且很挤）。 */
+    font-size: 13.5px;
+    line-height: 1.5;
+    /* 标题已完整显示，徽标删除后不再需要限制行数 */
     display: block;
     overflow: visible;
   }
@@ -176,30 +155,16 @@
 
   .lp-ad__cta {
     flex: 0 0 auto;
-    padding: 9px 16px;
-    font-size: 13px;
+    padding: 10px 18px;
+    font-size: 14px;
     white-space: nowrap;
   }
 }
 
 /* ---------- 通用零件 ---------- */
-/* 徽标文案改短后（「AI 婚恋」不再折行），右边距可收窄一些，
-   仍留 22px 给关闭按钮，避免文字被 ✕ 压住。
-   底色：原先是黄橙渐变，配深棕字。站长要求换浅色，
-   改用淡紫粉（AI 婚恋品类更贴切），字色改为深紫灰，保证对比度。 */
-.lp-ad__badge {
-  display: block;
-  margin-right: 22px;
-  padding: 3px 6px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #f3e8ff, #fce7f3);
-  color: #5b2d7d;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.5;
-  letter-spacing: 0.02em;
-  text-align: center;
-}
+/* 2026-10-16：徽标整块删除（原先的 .lp-ad__badge 规则已移除）。
+   徽标占的那行高度让给正文，LOGO、品牌名、正文、按钮、备注的字号整体上调。
+   右上角仍留出关闭按钮的位置，body 不再需要为徽标让位。 */
 
 .lp-ad__logo {
   display: flex;
@@ -209,21 +174,21 @@
   background: linear-gradient(135deg, var(--lp-primary), var(--lp-primary-dark));
   color: #fff;
   /* LOGO 为「良配」两字，字号较单字时调小 */
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 800;
   letter-spacing: 0.02em;
   box-shadow: 0 4px 12px rgba(61, 173, 138, 0.32);
 }
 
 .lp-ad__brand {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 800;
   color: var(--lp-text);
 }
 
 .lp-ad__title {
-  margin-top: 6px;
-  font-size: 12.5px;
+  margin-top: 5px;
+  font-size: 14px;
   line-height: 1.6;
   color: var(--lp-text-2);
 }
@@ -238,11 +203,11 @@
 .lp-ad__cta {
   display: block;
   margin-top: 10px;
-  padding: 10px 14px;
+  padding: 11px 15px;
   border-radius: 10px;
   background: linear-gradient(135deg, var(--lp-primary), var(--lp-primary-dark));
   color: #fff;
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 700;
   text-align: center;
   text-decoration: none;
