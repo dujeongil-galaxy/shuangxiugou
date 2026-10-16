@@ -31,3 +31,7 @@
 # （历史上 *.mdtext 少打一个空格，就让整类文件没被锁定 LF）
 *.yml  text eol=lf
 *.yaml text eol=lf
+
+# dotfile（.gitignore 等）也要锁 LF，否则 Windows 上提交时会有转换警告
+.gitignore text eol=lf
+.gitattributes text eol=lf
