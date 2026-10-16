@@ -1706,6 +1706,40 @@ if (exists('liangpei-ad.css')) {
     '品牌行强制单行（white-space: nowrap）',
     '维护者要求「（限时推广）良配 - AI婚恋」必须完整显示在一行内');
 
+  /* ----------------------------------------------------------------
+     基础样式与断点样式的**源码顺序**必须正确
+     ------------------------------------------------------------------
+     2026-10-16 真实踩过：通用零件段写在文件后半部，
+     而 @media (min-width:1440px) 段写在前半部。
+     两者选择器相同、优先级相同，**后写的赢** ——
+     于是竖排卡里精心设的 brand 11.5px 被通用段的 17px 覆盖，
+     「（限时推广）良配 - AI婚恋」撑破 176px 卡片、被裁在视口外。
+
+     ⚠️ 这类故障**完全静默**：CSS 不报错，DOM 正常，
+        只有肉眼在页面上才发现文字被裁。属性存在 ≠ 生效，
+        之前那几条 check 只验证了「nowrap 写没写」，
+        完全没验证「生效的是哪个值」，所以也没拦住。
+
+     判据：通用零件段必须在两个断点段**之前**。
+     ------------------------------------------------------------------ */
+  const posGen = lp.search(/\/\* -+ 通用零件 -+ \*\//);
+  const posWide = lp.search(/@media\s*\(min-width:\s*1440px\)\s*\{\s*\.lp-ad\s*\{/);
+  const posBar = lp.search(/@media\s*\(max-width:\s*1439px\)/);
+  if (posGen >= 0 && posWide >= 0) {
+    check(posGen < posWide,
+      '通用零件段写在断点段之前（断点值能正确覆盖基础值）',
+      '基础样式若写在 @media 之后会反向覆盖断点值，且故障完全静默');
+  }
+  if (posGen >= 0 && posBar >= 0) {
+    check(posGen < posBar, '通用零件段写在吸底条断点之前');
+  }
+
+  // nowrap 一旦遇上字体度量偏宽就会溢出卡片，必须有 hidden 兜底
+  check(/overflow:\s*hidden/.test(stripCssComments(
+    (lp.match(/@media\s*\(min-width:\s*1440px\)\s*\{[\s\S]*?\n\}/) || [''])[0])),
+    '竖排卡片有 overflow:hidden 兜底',
+    '品牌行是 nowrap，若字体偏宽文字会溢出卡片被裁在视口外（已真实发生过）');
+
   const sideRaw = (lp.match(/@media\s*\(min-width:\s*1440px\)\s*\{[\s\S]*?\n\}/) || [''])[0];
   check(sideRaw.length > 0, '竖排卡片规则仍存在（两种形态都有定义）');
 
