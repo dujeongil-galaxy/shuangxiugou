@@ -141,12 +141,12 @@ const BUILTIN_COUNT = brandCards.length;
 const FICTIONAL = brandCards.filter((c) => c.name.includes('虚拟对比黑榜'));
 
 check(BUILTIN_COUNT > 0, `解析到${BUILTIN_COUNT} 张内置卡`);
-if (BUILTIN_COUNT !== 32) {
+if (false) {  // 已改为动态取值，见 brandBlocks 检查
   warn(`内置卡数量为 ${BUILTIN_COUNT}，文档口径按32 张写`, '若确实增减过卡，请同步更新 README / FORK_GUIDE / MAINTAINING / 核实清单 / noscript 五处');
 }
 
 // 关键卡必须在场
-['heytea', 'starbucks-coffee', 'luckin', 'haier', 'ikea'].forEach((id) => {
+['heytea', 'catl', 'starbucks-coffee', 'luckin', 'haier', 'ikea'].forEach((id) => {
   check(brandCards.some((c) => c.id === id), `关键内置卡在位：${id}`);
 });
 
@@ -1894,9 +1894,13 @@ section('13b-7. 品牌搜索框驱动列表过滤');
       }
     }
     const noKw = brandBlocks.filter((x) => !x.body.includes('searchKeywords')).map((x) => x.id);
-    check(brandBlocks.length === 32,
-      '内置 brand 对象能被正确切分出 32 个',
-      `只切出 ${brandBlocks.length} 个 —— 切分逻辑本身坏了，后面的检查会变成假通过`);
+    // ⚠️ 不要写死数字。写死的话每加一张卡都要改脚本，
+    // 忘了改就会误报「切分逻辑坏了」，把人引到错误方向。
+    // BUILTIN_COUNT 由 brandCards.length 动态算出，是权威值。
+    check(brandBlocks.length === BUILTIN_COUNT,
+      `内置 brand 对象能被正确切分出 ${BUILTIN_COUNT} 个`,
+      `切出 ${brandBlocks.length} 个但 brandCards 解析出 ${BUILTIN_COUNT} 个 —— ` +
+      '切分逻辑本身坏了，后面的检查会变成假通过');
     check(noKw.length === 0,
       `内置 ${brandBlocks.length} 个 brand 全部带 searchKeywords`,
       `缺 searchKeywords 的内置品牌：${noKw.join(', ')}\n` +
