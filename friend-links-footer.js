@@ -214,6 +214,26 @@
       '词形要连写，加空格就搜不到；Google 对本站更严格，目前只有「双休购github」能进第一页。以上为 2026-10-16 当天的实测结果，名次会随时间浮动。';
     footer.appendChild(seoNote);
 
+    /*第五块：Bing 积分商城邀请（放在搜索排名公示下面） */
+    var bingHeading = document.createElement('div');
+    bingHeading.setAttribute('style', 'font-weight:600;color:#475569;margin:26px 0 8px;font-size:14px');
+    bingHeading.textContent = '推荐朋友加入 Bing 积分商城';
+    footer.appendChild(bingHeading);
+
+    var bingDesc = document.createElement('div');
+    bingDesc.setAttribute('style', 'margin:0 0 8px;color:#64748b');
+    bingDesc.textContent = '每月最多可获得额外 7,500 积分，积分能换礼品卡和优惠券。';
+    footer.appendChild(bingDesc);
+
+    var bingLink = document.createElement('a');
+    bingLink.href = 'https://rewards.bing.com/welcome?rh=pFnTzt_G80U&ref=rafsrchae';
+    bingLink.target = '_blank';
+    bingLink.rel = 'nofollow noopener';
+    bingLink.textContent = '通过我的链接加入 →';
+    bingLink.setAttribute('style',
+      'display:inline-block;color:#0F766E;font-weight:700;text-decoration:underline');
+    footer.appendChild(bingLink);
+
     // 追加到页面最底部
     host.appendChild(footer);
   }
