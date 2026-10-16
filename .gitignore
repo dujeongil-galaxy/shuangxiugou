@@ -51,3 +51,6 @@ docs-SEO外链与收录操作清单.md
 # ===== 加密正文：明文只留本地，绝不入库 =====
 notes-plaintext.md
 notes-plaintext*.html
+
+# WorkBuddy 本地记忆目录，不入库
+.workbuddy/
