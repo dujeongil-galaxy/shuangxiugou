@@ -133,8 +133,11 @@
   /* --------------------------------------------------------- 挂载拦截 */
 
   function findSubmitBtn(root) {
+    // 按钮文案在 React 提交瞬间会变成「入库公证中…」——
+    // 那是压缩包里的**假承诺**（其实什么都没发出去）。
+    // 这里两个文案都要认，只为了尽快找到按钮并改掉它。
     return $$('button[type="submit"]', root).filter(function (b) {
-      return /提交我的真实工时票|入库公证中/.test(text(b));
+      return /提交我的真实工时票/.test(text(b));
     })[0] || null;
   }
 
@@ -158,14 +161,11 @@
       window.open(url, '_blank', 'noopener');
     }, true);
 
-    // 把按钮文案改成真实的、去误导的说法
+    // 把按钮文案改成真实的、去误导的说法：
+    // 明确告诉用户会跳到 GitHub，而不是暗示已经存好了。
     var span = btn.querySelector('span') || btn;
-    var cur = text(span);
-    if (/提交我的真实工时票/.test(cur)) {
-      span.textContent = '提交我的真实工时票（将跳转 GitHub 记录）';
-    } else if (/入库公证中/.test(cur)) {
-      span.textContent = '提交我的真实工时票（将跳转 GitHub 记录）';
-    }
+    var want = '提交我的真实工时票（将跳转 GitHub 记录）';
+    if (text(span) !== want) span.textContent = want;
 
     return true;
   }

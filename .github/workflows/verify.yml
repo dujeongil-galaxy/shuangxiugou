@@ -82,3 +82,9 @@ jobs:
       # 字符串断言全部通过但页面白屏的情况，只有这一组能抓到。
       - name: 整页渲染测试
         run: node scripts/test-render-page.cjs
+
+      # 员工投稿转 GitHub Issue。原来的实现是「假入库」——
+      # onSubmit 只改 React 本地 state，400ms 后关窗，数据刷新即丢。
+      # 这组测试锁住「必须真的跳 GitHub」且「不许再出现已入库的假承诺」。
+      - name: 员工投稿转 Issue 测试
+        run: node scripts/test-employee-report.cjs

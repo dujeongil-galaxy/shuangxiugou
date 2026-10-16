@@ -3015,6 +3015,30 @@ if (exists('.github/workflows/verify.yml')) {
     'CI 里已接入整页渲染测试');
 }
 
+// ---------- 20b. 员工投稿必须真能入库 ----------
+// 背景：这功能曾经是**假入库** —— 压缩包里的 onSubmit 只做 React 本地
+// state 更新（setTimeout 400ms 后关窗），全站 fetch 都是 React 内部库，
+// 数据刷新即丢、站长收不到，但按钮却写着「入库公证中…」。
+// 一旦注入层被误删，页面会静默退回「看起来提交成功、实际丢数据」。
+section('20b. 员工投稿入库路径');
+const RPT = 'employee-report-to-issue.js';
+if (exists(RPT)) {
+  const rpt = read(RPT);
+  check(read('index.html').includes(RPT), `${RPT} 已在 index.html 引入`);
+  check(/addEventListener\('submit'[\s\S]{0,400}?\},\s*true\s*\)/.test(rpt),
+    '在捕获阶段拦截 submit（挡在 React 的 onSubmit 之前）');
+  check(/encodeURIComponent/.test(rpt), 'URL 拼接做了编码（防用户输入注入）');
+  check(rpt.includes('issues/new'), '指向 GitHub issues/new');
+  check(exists('scripts/test-employee-report.cjs'), '存在员工投稿的行为测试');
+  if (exists('.github/workflows/verify.yml')) {
+    check(read('.github/workflows/verify.yml').includes('test-employee-report.cjs'),
+      'CI 里已接入员工投稿测试');
+  }
+} else {
+  err(`${RPT} 不存在`,
+    '删除它会让「提交我的真实工时票」静默退回假入库：数据只留在页面内存里，刷新即丢，站长收不到，而按钮仍写着「入库公证中…」');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {
