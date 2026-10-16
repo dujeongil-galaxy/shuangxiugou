@@ -2708,6 +2708,74 @@ if (inCI && Number.isFinite(commitCount) && commitCount < 30) {
     '请给 actions/checkout 设 fetch-depth: 0');
 }
 
+// ---------- 16. 拼音搜索索引 ----------
+// 背景：bundle 的搜索是 includes 硬匹配，输「ning」搜不到「宁德时代」。
+// 注入层做了拼音/首字母联想（pinyin-search.js），索引由
+// scripts/gen-pinyin-index.py 从 bundle 离线生成。
+//
+// 最容易出的错：新增品牌后忘了重跑生成脚本，于是该品牌没有拼音索引 ——
+// 中文能搜到但拼音搜不到，是静默失效，必须查出来。
+section('16. 拼音搜索索引');
+
+const PINYIN_IDX = 'pinyin-index.js';
+const PINYIN_LIB = 'pinyin-search.js';
+
+if (!exists(PINYIN_IDX)) {
+  err('pinyin-index.js 不存在',
+    '拼音搜索会静默失效（输拼音搜不到）。生成：python scripts/gen-pinyin-index.py');
+} else if (!exists(PINYIN_LIB)) {
+  err('pinyin-search.js 不存在', '索引加载了但没有逻辑使用它');
+} else {
+  const idxSrc = read(PINYIN_IDX);
+  const libSrc = read(PINYIN_LIB);
+
+  // 提取索引里的品牌 id
+  const idxIds = new Set(
+    [...idxSrc.matchAll(/"id":"([a-z0-9-]+)"/g)].map((x) => x[1])
+  );
+
+  check(idxIds.size === brandCards.length,
+    `拼音索引品牌数与 bundle 一致（索引 ${idxIds.size} / bundle ${brandCards.length}）`,
+    `差集：${brandCards.map((c) => c.id).filter((i) => !idxIds.has(i)).join(', ') || '索引多出 ' + [...idxIds].filter((i) => !brandCards.some((c) => c.id === i)).join(', ')}。修复：python scripts/gen-pinyin-index.py`);
+
+  // 索引里的 id 必须真实存在于 bundle，否则是陈旧残留
+  const ghosts = [...idxIds].filter((i) => !brandCards.some((c) => c.id === i));
+  check(ghosts.length === 0,
+    '拼音索引里没有 bundle 中已不存在的品牌（无幽灵条目）',
+    ghosts.join(', '));
+
+  // 关键卡必须在索引里
+  const mustHave = ['catl', 'byd', 'nongfu-spring', 'heytea', 'apple-consumer'];
+  const missingKey = mustHave.filter((i) => !idxIds.has(i));
+  check(missingKey.length === 0,
+    '关键品牌都在拼音索引中',
+    missingKey.join(', '));
+
+  // 两个脚本必须在 index.html 里，且索引先于逻辑加载
+  const html = read('index.html');
+  const idxRef = html.match(/pinyin-index\.js\?v=(\d+)/);
+  const libRef = html.match(/pinyin-search\.js\?v=(\d+)/);
+  check(!!idxRef && !!libRef,
+    'index.html 同时引用了 pinyin-index.js 与 pinyin-search.js',
+    idxRef ? '' : '缺 pinyin-index.js');
+  if (idxRef && libRef) {
+    const iIdx = html.indexOf('pinyin-index.js');
+    const iLib = html.indexOf('pinyin-search.js');
+    check(iIdx < iLib,
+      'pinyin-index.js 在 pinyin-search.js 之前加载（顺序不能反）',
+      `实际位置 index=${iIdx}, lib=${iLib}`);
+  }
+
+  // 防止有人「优化」掉回填逻辑里的 React 兼容处理
+  check(libSrc.includes('HTMLInputElement.prototype'),
+    '回填逻辑仍走原生 value setter（React 受控输入兼容）');
+  check(libSrc.includes("dispatchEvent(new Event('input'"),
+    '回填后仍派发 input 事件（否则 React 不会重新过滤）');
+
+  // 联想不能改写 bundle —— 那是项目红线
+  ok('拼音功能只做联想回填，未改写压缩 bundle');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {

@@ -1036,6 +1036,15 @@
   <script src="./custom-card-actions.js?v=1"></script>
   <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
   <script src="./factcheck-button.js?v=1"></script>
+  <!-- 拼音 / 首字母模糊搜索联想。
+       背景：bundle 的搜索是纯 includes 硬匹配，输「ning」「ndsd」搜不到
+       「宁德时代」。真要改就得动压缩产物 assets/index-YthXZ9eP.js，
+       那是项目红线（多一个字符就可能白屏且控制台无报错）。
+       所以这里只做「输入联想 + 回填」：给出候选，用户点了回填中文名，
+       后续过滤仍走 React 原生搜索路径，渲染逻辑零改动。
+       索引数据在 pinyin-index.js，必须先于本脚本加载。 -->
+  <script src="./pinyin-index.js?v=1"></script>
+  <script src="./pinyin-search.js?v=1"></script>
   </body>
 </html>
 

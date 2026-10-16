@@ -22,7 +22,10 @@
     "format:write": "prettier --write \"**/*.{ts,tsx,mdx}\" --cache",
     "format:check": "prettier --check \"**/*.{ts,tsx,mdx}\" --cache",
     "seo:brands": "python scripts/seo/extract-brands.py && python scripts/seo/generate-brand-pages.py && python scripts/seo/link-brand-pages.py && python scripts/seo/generate-sitemap.py",
-    "seo:sitemap": "python scripts/seo/generate-sitemap.py"
+    "seo:sitemap": "python scripts/seo/generate-sitemap.py",
+    "pinyin:build": "python scripts/gen-pinyin-index.py",
+    "test:pinyin": "node scripts/test-pinyin-search.cjs",
+    "test:pinyin:e2e": "node scripts/test-pinyin-e2e.cjs"
   },
   "dependencies": {
     "framer-motion": "^11.2.4",
@@ -38,6 +41,7 @@
     "@types/react-dom": "18.2.18",
     "autoprefixer": "10.4.17",
     "encoding": "^0.1.13",
+    "jsdom": "^25.0.0",
     "postcss": "8.4.33",
     "prettier": "^2.8.8",
     "tailwindcss": "3.4.1",
