@@ -93,3 +93,15 @@ jobs:
       # 起因是读者发现宁德时代详情里推荐了同为 C 级的比亚迪。
       - name: 推荐位逻辑测试
         run: node scripts/test-alternatives.cjs
+
+      # 广告位 LOGO 必须横排「良配」两字。
+      # 起因：容器宽度与「2 字 × 字号」正好相等，一个字距偏差就折成竖排两行
+      #（用户截图实际发生过）。这类问题 CSS 校验抓不到，只能断言尺寸关系。
+      - name: 广告 LOGO 横排测试
+        run: node scripts/test-ad-logo.cjs
+
+      # verify.mjs 自身的自检：check() 参数顺序、节号连续性。
+      # 今天曾在同一天内两次把 check(cond, msg) 写成 check(msg, cond)，
+      # 症状是输出出现「✓ true」—— 标签被当成条件，检查照样绿灯。
+      - name: 校验脚本自检
+        run: node scripts/test-verify-self.cjs

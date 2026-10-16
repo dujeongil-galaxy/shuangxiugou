@@ -3049,6 +3049,64 @@ check(sameTierPairs.length === 0,
   '没有 C 级把 C 级当「良心替代」推荐',
   sameTierPairs.join(', '));
 
+// ---------- 20d. 广告位 LOGO 必须横排 ----------
+// 起因（用户截图）：右上角广告卡的 LOGO「良配」被显示成「良/配」竖排两行。
+// 根因是容器宽度与「2 字 × 字号」正好相等（48px vs 2×24px），
+// 任何字距/字重/字体度量偏差就折行 —— 这种临界值设计本身是错的。
+// 这里直接断言「容器宽度必须比 2 字所需宽至少 8px」。
+section('20d. 广告位 LOGO');
+const ADC = 'liangpei-ad.css';
+const ADJ = 'liangpei-ad.js';
+if (exists(ADC) && exists(ADJ)) {
+  const adCss = read(ADC);
+  const adJs = read(ADJ);
+  const logoM = /var LOGO_TEXT = '([^']*)'/.exec(adJs);
+  check(!!logoM, '能读到 LOGO_TEXT', '广告 JS 结构变了，请同步本节检查');
+  if (logoM) {
+    const n = logoM[1].length;
+    // 两个断点段各取一次：min-width:1440 与 max-width:1439
+    const collect = (from) => {
+      const i = adCss.indexOf('.lp-ad__logo {', from);
+      if (i === -1) return null;
+      return adCss.slice(i, adCss.indexOf('}', i) + 1);
+    };
+    const i1440 = adCss.indexOf('@media (min-width: 1440px)');
+    const iWide = collect(i1440);
+    const iNarrow = collect(adCss.indexOf('@media (max-width: 1439px)'));
+    for (const [label, block] of [['≥1440px 竖排卡片', iWide], ['<1440px 吸底条', iNarrow]]) {
+      if (!block) { err(`${label}：找不到 .lp-ad__logo 规则`); continue; }
+      const w = parseFloat(/width:\s*([\d.]+)px/.exec(block)?.[1] ?? '0');
+      const f = parseFloat(/font-size:\s*([\d.]+)px/.exec(block)?.[1] ?? '0');
+      const need = n * f;
+      // ⚠️ check 的签名是 (cond, msg, detail)，条件必须在第一个参数。
+      check(w - need >= 8,
+        `${label}：LOGO 容器(${w}px) 比 ${n} 字所需(${need}px) 至少宽 8px`,
+        { width: w, fontSize: f, needed: need, slack: w - need });
+      check(/white-space:\s*nowrap/.test(block),
+        `${label}：LOGO 设了 white-space:nowrap`);
+    }
+  }
+  check(exists('scripts/test-ad-logo.cjs'), '存在广告 LOGO 的布局测试');
+  if (exists('.github/workflows/verify.yml')) {
+    check(read('.github/workflows/verify.yml').includes('test-ad-logo.cjs'),
+      'CI 里已接入广告 LOGO 测试');
+  }
+}
+
+// ---------- 20e. 校验脚本自检 ----------
+// 今天在同一天内两次把 check(cond, msg, detail) 写成 check(msg, cond)，
+// 症状是输出里出现「✓ true」—— 标签被当成条件打印，
+// 真实条件落到 detail 位，屏幕上只剩 true/false。
+// 这种错误不会让检查失败，只会让输出变得不可读，非常隐蔽。
+section('20e. 校验脚本自检');
+check(exists('scripts/test-verify-self.cjs'),
+  '存在校验脚本自检（抓 check 参数顺序写反）',
+  '今天两次把 check(cond,msg) 写成 check(msg,cond)，输出出现「✓ true」却没人发现');
+if (exists('.github/workflows/verify.yml')) {
+  check(read('.github/workflows/verify.yml').includes('test-verify-self.cjs'),
+    'CI 里已接入校验脚本自检');
+}
+
 // ---------- 20c. 员工投稿必须真能入库 ----------
 // 背景：这功能曾经是**假入库** —— 压缩包里的 onSubmit 只做 React 本地
 // state 更新（setTimeout 400ms 后关窗），全站 fetch 都是 React 内部库，

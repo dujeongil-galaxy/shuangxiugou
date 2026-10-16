@@ -55,6 +55,10 @@
   font-size: 17px;
   font-weight: 800;
   letter-spacing: 0.02em;
+  /* 两字 LOGO 永远横排：方块容器里竖排「良/配」非常难看，
+     而且容器宽度一旦被调窄就会立刻折行（2026-10-17 实际发生过）。
+     从根上禁止折行，具体容器尺寸交给各断点段决定。 */
+  white-space: nowrap;
   box-shadow: 0 4px 12px rgba(61, 173, 138, 0.32);
 }
 
@@ -234,11 +238,18 @@
     letter-spacing: 0;
   }
 
+  /* LOGO 是「良配」两个汉字，必须**横排**。
+     ⚠️ 这里踩过一次：容器 48px、字号 24px，2×24=48px 正好等于容器宽度，
+     一个字距/字重偏差就折成「良/配」竖排两行（2026-10-17 用户实际遇到）。
+     修法不是缩字号，而是把容器放宽到内容宽 + 安全余量，
+     并用 white-space:nowrap 从根上禁止折行 —— 竖排在这种方块里永远别扭。 */
   .lp-ad__logo {
-    width: 48px;
-    height: 48px;
+    width: 64px;
+    height: 44px;
     margin: 8px auto 10px;
-    font-size: 24px;
+    font-size: 22px;
+    white-space: nowrap;
+    letter-spacing: 0.04em;
   }
 
   /* 竖排卡片宽度有限，主文案按语义手动断行，
@@ -292,12 +303,15 @@
     min-width: 0;
   }
 
+  /* 同上：42px 装 2×21px 同样卡在临界点，横向略放宽即可。
+     吸底条高度不变（仍是 42px 高），只是横向多占一点。 */
   .lp-ad__logo {
-    width: 42px;
+    width: 56px;
     height: 42px;
     margin: 0;
     flex: 0 0 auto;
-    font-size: 21px;
+    font-size: 20px;
+    white-space: nowrap;
   }
 
   .lp-ad__text {

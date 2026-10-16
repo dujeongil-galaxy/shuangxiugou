@@ -24,7 +24,10 @@
       content="双休购：把老板考核你的 KPI，变成打工人考核老板的货币选票。查公司双休、企业工时评级、避雷单休大小周血汗工厂，开源劳工友好品牌索引与浏览器网购透镜。"
     />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://github.com/dujeongil-galaxy/shuangxiugou" />
+    <!-- og:url 必须与 canonical 指向同一页面。原来这里写的是 GitHub 仓库地址，
+         社交平台与部分爬虫会据此把 og:url 当成规范地址，导致 canonical 被降权，
+         也让分享出去的卡片链接指向仓库而不是站点本身。 -->
+    <meta property="og:url" content="https://dujeongil-galaxy.github.io/shuangxiugou/" />
     <meta property="og:site_name" content="双休购 · ShuangxiuGo" />
     <meta property="og:locale" content="zh_CN" />
     <meta property="og:image" content="https://dujeongil-galaxy.github.io/shuangxiugou/assets/og-cover.png" />
@@ -33,6 +36,7 @@
     <meta property="og:image:alt" content="双休购｜查公司双休评级，避雷单休大小周 996 血汗工厂" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@dujeongil_galaxy" />
+    <meta name="twitter:url" content="https://dujeongil-galaxy.github.io/shuangxiugou/" />
     <meta name="twitter:image" content="https://dujeongil-galaxy.github.io/shuangxiugou/assets/og-cover.png" />
     <meta name="twitter:title" content="双休购｜查公司双休评级，避雷单休大小周 996" />
     <meta name="twitter:description" content="查公司双休制度、企业工时评级，避雷单休、大小周、996 血汗工厂。数据附公开证据链。" />
@@ -108,7 +112,7 @@
     <script type="module" crossorigin src="./assets/index-YthXZ9eP.js?v=26"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-BgVofs0W.css">
     <!-- 良配 · 限时推广广告位（独立文件，改文案/样式不必动主页面；改完请把 ?v=N 的 N +1 防缓存） -->
-    <link rel="stylesheet" href="./liangpei-ad.css?v=5">
+    <link rel="stylesheet" href="./liangpei-ad.css?v=6">
     <!-- 首页视频推荐弹窗（改完请把 ?v=N 的 N +1 防缓存） -->
     <link rel="stylesheet" href="./douyin-prompt.css?v=6">
     <!-- 移动端排版修复（须在主 CSS 之后：靠覆盖生效；改完请把 ?v=N 的 N +1） -->
