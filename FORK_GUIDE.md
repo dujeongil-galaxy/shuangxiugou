@@ -380,7 +380,7 @@ __shuangxiugouDiag// { warn: 0, err: 0 }  // 本次加载的告警与错误计�
 | **手工编辑压缩 bundle 极易出错** | 已加 `node --check` 校验（CI 上权威，本地 Windows 可能跑不了） | 多打一个 `[{` 就会让React 整个挂不上，**页面全白但控制台通常无报错**。改完务必看 CI 是否变绿 |
 | **证据日期过早** | 最早一条 2021-01 | 与当前实际情况可能已脱节，建议复核 |
 | ⚠️ **没有版本 tag** | 仅有 1 个 `baseline-2026-10-09` | 无法按版本回滚，出问题只能回到基线点。建议每次较大改动打 tag |
-| ⚠️ **无 CHANGELOG.md** | 改动记录只在 `git log` 与 `MAINTAINING.md` | 后续 fork 者难以快速了解「这个 fork 改了什么」 |
+| ⚠️ **无 CHANGELOG.md** | **已解决（2026-10-16）**：新增 [`CHANGELOG.md`](CHANGELOG.md)，记录 2026-10-13 之后的改动及真实提交哈希 | 商业广告位（`liangpei-ad.*`）的改动**不在其收录范围**，那是站点运营内容而非技术改动 |
 | `sponsor.html` 手动维护 | 无模板 | 与 `app/sponsor/page.tsx` 并存，勿改错位置 |
 | `.gitattributes` 未锁 `*.ts` / `*.tsx` | 仅锁了 html/md/json/xml/mjs/yml/yaml | 源码文件不在部署产物里，影响较小，但与 bundle 锁定规则不一致 |
 
@@ -430,6 +430,9 @@ __shuangxiugouDiag// { warn: 0, err: 0 }  // 本次加载的告警与错误计�
       第五处 `index.html` 的 noscript
 - [ ] **无法核实的数值填 `null`，不要填 `0`**（`0` 会被读成「实测为 0」）
 - [ ] 定位卡片元素 → `querySelector('h2') || querySelector('h3')`，只查 h3 会静默失效
+- [ ] **改自定义卡上的按钮 → 别指望 React `onClick`**，克隆卡不在 React 树内，见 13.1
+- [ ] **改内置小票的写死值 → 走 DOM 层**，不要手改压缩 bundle，见 13.2
+- [ ] **手写 Tailwind 类名可能根本没输出**，JIT 只打包源码用到的类
 - [ ] 调试运行时问题 → F12 控制台看 `[双休购]` 告警
 - [ ] 不要动根目录那份同名 js 副本
 - [ ] 不要 `npm run build` 后部署（会覆盖线上数据）
@@ -458,7 +461,47 @@ __shuangxiugouDiag// { warn: 0, err: 0 }  // 本次加载的告警与错误计�
 | 自定义卡插入机制 | `customCardsConfig` 配置化，新增卡不用改渲染逻辑 |
 | 推荐平替的等级校验 | 渲染层过滤掉同为 C 级的「平替」，避免把避雷品牌推荐成避雷品牌的替代品 |
 | 标题层级 H2 修复 | 1×H1 + 多个×H3 → 补齐 H2（注意其副作用，见第五节） |
-| noscript SEO 兜底 | 纯客户端渲染下给爬虫提供静态正文 |
+| noscript SEO兜底 | 纯客户端渲染下给爬虫提供静态正文 |
+| **自定义卡按钮可用**（`588527d`） | 克隆卡不在 React 树内，`onClick` 无效，需外部脚本绑事件（见 13.1） |
+| **小票访客填写**（`2b7a3e3`/`1789bd7`） | 昵称/金额/理由由访客填，**只存 localStorage 不上传**，见 13.2 |
+| **页脚卡片化 + Bing 邀请**（`b917a9a`/`f0b3bbf`） | 四块内容各套白底卡片，外观调整，内容未改 |
+
+### 13.1 自定义卡的按钮为什么点不动（新增）
+
+自定义卡是通过 `templateCard.cloneNode(true)` 克隆出来的，**不在 React 组件树内**，
+所以 React 的 `onClick` 对它们**完全无效**。这不是 bug，是架构的必然结果。
+
+修复要点（`custom-card-actions.js`）：
+
+```js
+// React 19 的事件委托挂在 #root 上，走冒泡阶段。
+// 外部脚本必须在**捕获阶段**拦截并阻断冒泡，否则会和 React 的处理打架。
+btn.addEventListener('click', function (ev) {
+  ev.preventDefault();
+  ev.stopPropagation();
+}, true);   // ← 第三个参数 true 是关键
+```
+
+> ⚠️ **另一个坑**：主CSS `index-BgVofs0W.css` 是 Tailwind JIT 产物，
+> **只包含源码实际用到的类**。`bg-slate-950/70`、`max-h-[85vh]`、`z-[999]`
+> 这些手写类名**根本没被输出**，写了等于没写。
+> `custom-card-actions.js` 因此自己内联注入了一套 `sxg-` 前缀的样式。
+
+### 13.2 内置小票的写死值怎么改（新增）
+
+内置小票的昵称与金额写死在压缩后的 bundle 里
+（「清醒打工人 #7709」在 byte 256717，`useState)(199)` 在 byte 292842）。
+
+**正确做法：DOM 层接管，不要改 bundle。**
+
+`patchBuiltinTicket()` 用 `findValueNode()` 找到对应文本节点，
+盖上 `id` 后直接改 `textContent`。全程压缩包零改动。
+
+> ⚠️ **手改压缩 bundle 风险极高**：多打一个 `[{` 就会让 React 整个挂不上，
+> **页面全白但控制台无任何报错**。详见 `PITFALLS.md`。
+>
+> **已知未修**：内置小票的「复制小票文本」仍会复制到旧的写死文本——
+> 那是 bundle 内部模板函数生成的，外部无法干预。
 
 ### 工程与可信度
 

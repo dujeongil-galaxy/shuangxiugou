@@ -1651,20 +1651,24 @@ if (exists('mobile-fixes.css')) {
 }
 
 /* ------------------------------------------------------------------
-   广告吸底条：徽标不得压住正文
+   广告吸底条：不得压住正文
    ------------------------------------------------------------------
    背景（用户截图）：≤1439px 的吸底条里，
-   徽标「推广限时活动」用 position:absolute + translateY(-50%)
+   徽标「推广限时活动」曾用 position:absolute + translateY(-50%)
    浮在左上角，**直接盖住了 title 第一行**
    （「注册即送 喜茶 20 元 无门槛」被压掉一半）。
 
-   徽标和 body 是兄弟节点，absolute 定位后脱离文档流，
-   容器必须自己留出padding-top，否则内容顶上。
-
-   判据：徽标仍在 absolute（不占横向空间）时，
-   吸底条必须有足够 padding-top，且徽标 top 值小于它。
+   2026-10-16：徽标已按维护者要求**整块删除**
+   （CONFIG.badge、DOM 节点、.lp-ad__badge 规则、absolute 定位规则
+   以及为它预留的 padding-top:26px 全部移除）。
+   所以判据要跟着改：
+     · 徽标规则必须**不存在**（存在即说明删漏了）
+     · 为徽标预留的 padding-top 必须已收回，否则下方留一段空白
+     · translateY(-50%) 这个元凶写法不得复活
+     · 标题行数仍不得限制
+     · 品牌行要求「必须完整显示在一行内」，用 nowrap 兜住
    ------------------------------------------------------------------ */
-section('13b-6. 广告吸底条徽标不遮挡');
+section('13b-6. 广告吸底条不遮挡');
 if (exists('liangpei-ad.css')) {
   const lp = read('liangpei-ad.css');
   const barRaw = (lp.match(/@media\s*\(max-width:\s*1439px\)\s*\{[\s\S]*?\n\}/) || [''])[0];
@@ -1673,19 +1677,30 @@ if (exists('liangpei-ad.css')) {
   //    全文搜索会把注释当成声明（今天已栽两次，见 stripCssComments 的注释）。
   const bar = stripCssComments(barRaw);
 
-  check(/position:\s*absolute/.test(bar), '吸底条内徽标为absolute（不占横向空间）');
+  check(!/\.lp-ad__badge\s*\{/.test(lp),
+    '徽标已整块删除（CSS 中无 .lp-ad__badge 规则）',
+    '徽标已按维护者要求删除，若仍在请连同 CONFIG.badge 与 DOM 节点一并移除');
 
+  check(!/\.lp-ad__badge/.test(bar),
+    '吸底条内无徽标定位规则',
+    '徽标已删除，吸底条里不应再有它的 absolute 定位');
+
+  // 为徽标预留的 padding-top 已收回，正文才能真正上移
   const pt = (bar.match(/padding-top:\s*(\d+)px/) || [, '0'])[1];
-  const bt = (bar.match(/\.lp-ad__badge\s*\{[\s\S]*?top:\s*(\d+)px/) || [, '999'])[1];
-  check(Number(pt) >= 16,
-    `吸底条 padding-top: ${pt}px ≥ 徽标高度（约 19px 的一半 + 间距）`,
-    `徽标 top: ${bt}px，若 padding-top 不足会压住正文第一行`);
+  check(!/padding-top:\s*\d+px/.test(bar),
+    `吸底条未再为徽标预留 padding-top（当前 ${pt}px）`,
+    '徽标已删，为它预留的 padding-top 必须一并收回，否则下方留一段空白');
 
   check(!/translateY\(-50%\)/.test(bar),
-    '吸底条内徽标未使用 translateY(-50%)（该写法会让徽标骑在内容上）');
+    '吸底条未使用 translateY(-50%)（该写法会让元素骑在内容上）');
 
   check(!/-webkit-line-clamp/.test(bar),
     '吸底条标题未限制行数（clamp 会截断「消费红包」这类词）');
+
+  // 品牌行要求「必须完整显示在一行内」
+  check(/white-space:\s*nowrap/.test(lp),
+    '品牌行强制单行（white-space: nowrap）',
+    '维护者要求「（限时推广）良配 - AI婚恋」必须完整显示在一行内');
 
   const sideRaw = (lp.match(/@media\s*\(min-width:\s*1440px\)\s*\{[\s\S]*?\n\}/) || [''])[0];
   check(sideRaw.length > 0, '竖排卡片规则仍存在（两种形态都有定义）');
