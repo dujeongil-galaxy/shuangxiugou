@@ -77,3 +77,8 @@ jobs:
       # 答案之书随机占位：数据完整性 + 加载顺序 + 真 DOM 覆盖行为
       - name: 答案之书占位测试
         run: node scripts/test-answer-book.cjs
+
+      # 整页渲染：真实 bundle 挂上 React、新卡片真出现在 DOM、无致命报错。
+      # 字符串断言全部通过但页面白屏的情况，只有这一组能抓到。
+      - name: 整页渲染测试
+        run: node scripts/test-render-page.cjs

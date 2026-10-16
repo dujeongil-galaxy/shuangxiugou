@@ -383,7 +383,7 @@ stdout 在 `e.stdout` 里。不接`catch` 就会把所有「本该报错」的�
 
 | 内容 | 真实位置 |
 |---|---|
-| 33 张内置品牌卡 | `assets/index-YthXZ9eP.js`（压缩） |
+| 34 张内置品牌卡 | `assets/index-YthXZ9eP.js`（压缩） |
 | 5 张自定义卡 | 根目录 `index.html` 的 `customCardsConfig` |
 | `app/` 下的 Next.js 源码 | **未构建成线上页面** |
 
@@ -969,6 +969,49 @@ check(consumed < start || consumed > end,
 if ((span.textContent || '').trim() !== want) span.textContent = want;
 ```
 
+### 6.8 语法对 ≠ 页面能跑：静态断言抓不到「白屏」
+
+**症状**：改完压缩 bundle，`node --check` 通过，390 项verify 全绿，
+推上线 —— 结果页面白屏，而且**浏览器控制台没有任何报错**。
+
+**为什么现有检查全都抓不到**：它们读的要么是源码字符串，
+要么是抠出来的局部函数。没��一个真正把整页跑起来看 `#root` 有没有内容。
+React 挂载失败时，页面 DOM 几乎是空的，但**不抛异常**，
+所以「无致命报错」这种断言也是绿的。
+
+**必须有的检查**（`scripts/test-render-page.cjs`）：
+
+```js
+const root = doc.getElementById('root');
+check('#root 已被 React 填充（不是白屏）', root.children.length > 0);
+check('页面出现新卡片名', doc.body.textContent.includes('宏碁'));
+```
+
+**同一个测试脚本还抓出了另外四个「不检查就会漏」的真问题**：
+
+1. **引用了不存在的 id**：`alternatives:['lenovo','dell']` —— 站内压根没这两张卡。
+   写卡片数据时，引用的每个 id 都要在 bundle 里查一遍。
+2. **文本模式读写悄悄改了换行符**：Python `open(p, encoding='utf-8').read()`
+   会做 universal newlines 转换，把 bundle 里原有的 10 个 `\r\n` 统一成 `\n`。
+   语法照样通过、内容只多不少，但属于**意料之外的整文件改动**。
+   改压缩产物必须**二进制读写** + 自检「卡外字节完全未变」。
+3. **派生数据没重跑**：改了 bundle 里的品牌，`pinyin-index.js` 不会自动更新。
+   （同§6.5）
+4. **写死的计数口径**：`test-pinyin-search.cjs` 里写死「索引品牌数 = 33」，
+   加卡后就变成长期红灯。**能从源数据推导的就别写死**。
+   ⚠️推导时注意口径：全文正则会把 `recommendedAlternatives` 里的重复引用
+   一并数进来（实测 `pepsi-drinks` 只出现在推荐位），34会数成 35。
+   必须与 `verify.mjs` 用同一套口径（扫 `brands:[...]` 主数组）。
+
+**写测试脚手架时自己踩的坑**：jsdom 里 `document.querySelectorAll` 查不到
+`<noscript>` 里的 `<a>` —— 启用 JS 时 noscript 内容按规范**不解析成元素**，
+只能读 `textContent`。查它就得用文本匹配。
+
+**还有一条**：`isLegitimateNumber` 这类「豁免规则」里
+写死 `合计 3[27] 张` 这样的数字，会随卡片增减悄悄失效。
+想放宽成 `\d+` 更糟 —— 那会让规则恒真、等于没有检查（§3.6）。
+正确做法是**按实际总数动态生成正则**。
+
 ---
 
 ## 七、改动前的检查清单
@@ -992,6 +1035,22 @@ if ((span.textContent || '').trim() !== want) span.textContent = want;
 - [ ] 这个字符串**有没有被别的代码当选择器**用？（§1.1）
 - [ ] 新增的 CSS 选择器在**同一 media 块内唯一**？（§1.2）
 
+**改压缩 bundle（新增/修改内置卡数据）**
+
+这一类风险最高：**语法能过、静态断言能过，页面照样白屏。**
+
+- [ ] `node --check assets/index-YthXZ9eP.js` 通过？
+- [ ] **整页渲染测试过了吗**（`node scripts/test-render-page.cjs`）？
+      这是唯一能抓「白屏」的检查，语法检查和字符串断言都抓不到。（§6.8）
+- [ ] 插入用的脚本是**二进制读写**的？卡外字节校验过完全未变？
+      （文本模式会偷偷把 `\r\n` 变成 `\n`）（§6.8）
+- [ ] 卡片里引用的每个 id（`alternatives` 等）**都在 bundle 里真实存在**？（§6.8）
+- [ ] 反引号包裹的每项都成对？（上次漏了一个，直接语法崩）
+- [ ] **派生数据重跑了吗**：`python scripts/gen-pinyin-index.py`（§6.5、§6.8）
+- [ ] 测试脚本里**没有写死的卡片数**？要推导就与 `verify.mjs` 用同一口径。（§6.8）
+- [ ] 文档里的家数口径、页脚「全部 N 家」都同步了？
+      （这次顺带发现 36 个页面停在「36 家」、另一个停在「37 家」，全都不对）
+
 **改状态/交互**
 
 - [ ] 新增的 state 变量**真的被消费了吗**？
@@ -1008,6 +1067,7 @@ if ((span.textContent || '').trim() !== want) span.textContent = want;
 - [ ] 报错信息**没说反**？（§3.4）
 - [ ] **注入故障验证过它真能抓到**？（§3.5）
 - [ ] **把断言的内容改坏，看它是否真的报错**？（§3.6，恒真检查自检）
+- [ ] **豁免规则里没有写死的数字**，也没有放宽成 `\d+` 恒真？（§6.8）
 
 **改布局**
 

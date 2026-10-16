@@ -106,6 +106,7 @@ setTimeout(() => {
     ['ning', '宁德时代'], ['ndsd', '宁德时代'], ['ningde', '宁德时代'],
     ['byd', '比亚迪'], ['hw', '华为'], ['nongfu', '农夫山泉'],
     ['mt', '美团'], ['sf', '顺丰'], ['tt', '优衣库'],
+    ['hongqi', '宏碁'], ['hq', '宏碁'], ['acer', '宏碁'], ['hongji', '宏碁'],
   ];
   for (const [q, expect] of cases) {
     fire(q);
@@ -155,6 +156,15 @@ setTimeout(() => {
   check('原生搜「苹果」= 1 家', nativeSearch('苹果').length === 1, nativeSearch('苹果').map(b=>b.name));
   check('原生搜空串 = 全部', nativeSearch('').length === BRANDS.length);
   check('原生搜乱码 = 0 家', nativeSearch('zzzzzz').length === 0);
+
+  console.log('\n=== 回归：新增的宏碁卡必须能被搜到（含常见错别字）===');
+  check('原生搜「宏碁」= 1 家', nativeSearch('宏碁').length === 1, nativeSearch('宏碁').map(b=>b.name));
+  check('原生搜「宏基」（错别字）= 1 家', nativeSearch('宏基').length === 1, nativeSearch('宏基').map(b=>b.name));
+  check('原生搜「Acer」= 1 家', nativeSearch('Acer').length === 1, nativeSearch('Acer').map(b=>b.name));
+  check('原生搜「acer」小写= 1 家', nativeSearch('acer').length === 1);
+  check('原生搜「笔记本」能带出宏碁', nativeSearch('笔记本').some(b=>b.id==='acer'));
+  check('宏碁卡片在 bundle 里，tier 为 B', nativeSearch('宏碁')[0] && nativeSearch('宏碁')[0].tier === 'B');
+  check('宏碁客服口径文案可搜到', nativeSearch('客服').some(b=>b.id==='acer'));
 
   console.log('\n' + '='.repeat(52));
   console.log(`通过 ${pass} 项，失败 ${fail} 项`);

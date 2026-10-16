@@ -149,8 +149,39 @@ setTimeout(() => {
   const missing = window.__PINYIN_INDEX__.filter(e => bundle.indexOf('id:`' + e.id + '`') === -1);
   check('索引里的每个品牌都真实存在于 bundle（无幽灵条目）',
         missing.length === 0, missing.map(m => m.id));
-  check('索引品牌数 = 33', window.__PINYIN_INDEX__.length === 33,
-        window.__PINYIN_INDEX__.length);
+  // 品牌数从 bundle 动态推导，不要写死—— 否则每次加卡都要改测试，
+  // 忘了改就会变成一个长期报错的假警报，或者更糟：被忽略而失去意义。
+  const BT = String.fromCharCode(96);
+  // 只统计 brands 主数组里的卡片， 与 verify.mjs 口径一致。
+  // 不能用全文正则：那会连 recommendedAlternatives 里的重复引用一起数进来
+  // （实测 pepsi-drinks 就只出现在推荐位，导致 35 ≠ 34 的假警报）。
+  const brandsStart = bundle.indexOf('brands:[') + 'brands:['.length;
+  let depth = 0, cardStart = null, j = brandsStart;
+  const cards = [];
+  while (j < bundle.length) {
+    const ch = bundle[j];
+    if (ch === BT) {
+      j++;
+      while (j < bundle.length) {
+        if (bundle[j] === BT && bundle[j - 1] !== '\\') break;
+        j++;
+      }
+    } else if (ch === '{') {
+      if (depth === 0) cardStart = j;
+      depth++;
+    } else if (ch === '}') {
+      depth--;
+      if (depth === 0) cards.push(bundle.slice(cardStart, j + 1));
+      else if (depth < 0) break;
+    }
+    j++;
+  }
+  const bundleIds = new Set(cards
+    .map((o) => /\{id:`([a-z0-9-]+)`,name:`/.exec(o))
+    .filter(Boolean).map((m) => m[1]));
+  check('索引品牌数与 brands 主数组一致（动态推导，不写死）',
+        window.__PINYIN_INDEX__.length === bundleIds.size,
+        { 索引: window.__PINYIN_INDEX__.length, brands数组: bundleIds.size });
 
   console.log('\n--- 标签页延迟渲染（真实场景）---');
   // bundle 里搜索框是 `brands&&...` 条件渲染：页面初始在别的标签时

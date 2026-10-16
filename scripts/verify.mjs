@@ -421,7 +421,9 @@ function isLegitimateNumber(line, num) {
   if (/20\d\d-\d\d-\d\d/.test(line)) return true;                       // 历史记录带日期
   if (/(已核实|确认原值|未核实)\s*\d+\s*张/.test(line)) return true;     // 分档拆分
   if (/(noscript|爬虫|项\s*=|真实内置)/i.test(line)) return true;        // noscript 局部口径
-  if (/合计\s*3[27]\s*张|共\s*3[27]\s*张/.test(line)) return true;        // 正确合计
+  // 正确合计：只放过与实际总数一致的两个数，避免规则过宽变成永真
+  const totalRe = new RegExp(`(合计|共)\\\\s*(${EXPECT.total}|${EXPECT.builtin}|${EXPECT.custom})\\\\s*张`);
+  if (totalRe.test(line)) return true;
   return false;
 }
 
@@ -2966,6 +2968,20 @@ if (exists('answer-book-data.js') && exists('answer-book.js')) {
     '存在答案之书的 DOM 测试脚本');
 } else {
   warn('answer-book 文件不存在，跳过答案之书检查');
+}
+
+// ============ 20. 整页渲染测试的存在性 ============
+// 为什么单列一节：改压缩 bundle 后最危险的失败模式是「语法没错、断言全过、
+// 页面白屏且控制台无报错」。静态字符串检查抓不到，只有真跑一遍整页能抓到。
+section('20. 整页渲染测试');
+check(exists('scripts/test-render-page.cjs'),
+  '存在整页渲染测试（抓「语法对但白屏」）',
+  '新增 scripts/test-render-page.cjs：加载完整 index.html + 真实 bundle，断言 React 挂载成功');
+check(read('scripts/test-render-page.cjs').includes('#root'),
+  '整页渲染测试真的断言了 #root 有内容（而非空壳）');
+if (exists('.github/workflows/verify.yml')) {
+  check(read('.github/workflows/verify.yml').includes('test-render-page.cjs'),
+    'CI 里已接入整页渲染测试');
 }
 
 // ---------- 汇总 ----------
