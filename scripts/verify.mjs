@@ -2895,6 +2895,79 @@ if (exists('assets/index-YthXZ9eP.js') && exists('custom-card-actions.js')) {
   warn('压缩包或 custom-card-actions.js 不存在，跳过内置卡 DOM 定位检查');
 }
 
+// ---------- 19. 答案之书随机占位 ----------
+// 搜索框 placeholder 原句「消费前，先了解这个品牌是否双休；用订单（消费力），
+// 反向考核企业」太长太重，压在搜索框里像广告语。
+// 换成《答案之书》随机一条，每次刷新不同。
+//
+// 这一节的判据与 §6.7 同源：数据/逻辑两个文件 + 加载顺序 + 真 DOM 测试。
+section('19. 答案之书随机占位');
+
+if (exists('answer-book-data.js') && exists('answer-book.js')) {
+  const data = read('answer-book-data.js');
+  const lib = read('answer-book.js');
+  const html19 = read('index.html');
+  const bundle19 = exists('assets/index-YthXZ9eP.js')
+    ? read('assets/index-YthXZ9eP.js') : '';
+
+  // ---- 数据完整性 ----
+  const arrMatch = data.match(/window\.__ANSWER_BOOK__\s*=\s*\[([\s\S]*?)\];/);
+  check(!!arrMatch, '数据文件里有 __ANSWER_BOOK__ 数组');
+  const answers = arrMatch
+    ? (arrMatch[1].match(/'((?:[^'\\]|\\.)*)'/g) || [])
+        .map((s) => s.slice(1, -1))
+    : [];
+  check(answers.length >= 300, `答案条数 ${answers.length} ≥ 300`);
+  check(new Set(answers).size === answers.length, '答案无重复');
+  check(answers.every((x) => x && x === x.trim()), '答案无空串与首尾空白');
+  check(answers.every((x) => x.length <= 20),
+    '答案都在 20 字内（placeholder 装得下）',
+    answers.filter((x) => x.length > 20).slice(0, 3));
+  check(answers.includes('别失望'), '含原版首条「别失望」');
+  check(answers.includes('空想'), '含原版末条「空想」');
+  check(!answers.some((x) => / /.test(x)), '答案无半角空格残留');
+
+  // ---- 加载顺序：数据必须先于逻辑 ----
+  // 反了的话逻辑层开头 `if (!BOOK) return` 直接退出，
+  // 页面不报错、placeholder 也不变 —— 又是一次静默失效。
+  const iData = html19.indexOf('answer-book-data.js');
+  const iLogic = html19.search(/answer-book\.js\?v=\d/);
+  check(iData !== -1, 'index.html 引入了 answer-book-data.js');
+  check(iLogic !== -1, 'index.html 引入了 answer-book.js');
+  check(iData !== -1 && iLogic !== -1 && iData < iLogic,
+    '数据文件先于逻辑文件加载（否则逻辑层静默退出）', { iData, iLogic });
+  check(/answer-book-data\.js\?v=\d+/.test(html19)
+    && /answer-book\.js\?v=\d+/.test(html19),
+    '两个文件都有 ?v= 缓存版本号');
+
+  // ---- 逻辑层契约 ----
+  check(/var BOOK = window\.__ANSWER_BOOK__/.test(lib),
+    '逻辑层从 window.__ANSWER_BOOK__ 取数据');
+  check(/if \(!BOOK \|\| !BOOK\.length\) return;/.test(lib),
+    '数据缺失时安静退出而不是抛异常');
+  check(/Math\.floor\(Math\.random\(\) \* BOOK\.length\)/.test(lib),
+    '用 Math.random 真正随机抽取');
+  check(/dataset\.answerBookBound/.test(lib),
+    '有幂等标记，重复触发不会重复绑事件');
+  check(/data-answer-book-pick/.test(lib),
+    '记录抽中的那条（供 React 重挂载后比对恢复）');
+  check(!/input\.value\s*=/.test(lib),
+    '不改搜索框的 value（不干扰拼音搜索层与用户输入）');
+
+  // ---- 压缩包里的原句（说明这次确实替换了它）----
+  check(bundle19.includes('消费前，先了解这个品牌是否双休'),
+    '压缩包里写死了原 placeholder（本次替换的对象）');
+  // 只检查代码体里没有原句（文件头注释引用它作为说明是允许的）
+  const libBody = lib.replace(/^[\s\S]*?\(\s*function\s*\(\)\s*\{/, '(function(){');
+  check(libBody.indexOf('消费前，先了解这个品牌是否双休') === -1,
+    '逻辑层代码体里不硬编码原句，走 DOM 覆盖');
+
+  check(exists('scripts/test-answer-book.cjs'),
+    '存在答案之书的 DOM 测试脚本');
+} else {
+  warn('answer-book 文件不存在，跳过答案之书检查');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {

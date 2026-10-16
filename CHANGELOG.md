@@ -17,6 +17,34 @@
 
 ## 2026-10-16
 
+### 搜索框占位改为《答案之书》随机句
+
+- **文件**：新增 `answer-book-data.js`、`answer-book.js`、`scripts/test-answer-book.cjs`；改动 `index.html`、`scripts/verify.mjs`、`FORK_GUIDE.md`、`.github/workflows/verify.yml`
+
+**问题**：搜索框 placeholder 是「消费前，先了解这个品牌是否双休；用订单（消费力），反向考核企业」。26 个字挤在输入框里，用户反馈「越看越觉得不太舒服」。
+
+**现在**：每次刷新随机显示一条《答案之书》答案；点一下空着的搜索框可再换一条。
+
+**答案来源**：知乎 <https://zhuanlan.zhihu.com/p/469772880> 的 001–319 完整版，去重后 318 条（原列表「等待」重复出现于编号 170、171）。少数派《罗技鼠标lua脚本…答案之书》是同源前 143 条，可交叉校验前段。⚠️ 纸质书共 640 页，这个 319 条是社区整理版，非官方授权完整清单，只作文案素材使用。
+
+**架构**（与拼音搜索一致，数据与逻辑分离）：
+
+| 文件 | 职责 |
+|---|---|
+| `answer-book-data.js` | 纯数据，挂 `window.__ANSWER_BOOK__` |
+| `answer-book.js` | 随机抽取 + DOM 覆盖 |
+
+**为什么走 DOM 层**：placeholder 写死在 `assets/index-YthXZ9eP.js` 里，手改压缩包是项目红线。
+
+**两个实现要点**：
+
+1. **React 重挂载会把 placeholder 冲回原值**（切标签时 input 被重建）。每次 `sweep()` 复核但不重抽 —— 抽中的那条记在 `data-answer-book-pick` 上，仅在当前值 ≠ 记录值时补写。这样用户点出来的新答案不会被 observer 冲掉，而 React 冲掉的能恢复。
+2. **不改 `input.value`**。拼音搜索层绑同一个 input，本脚本只写 placeholder。点击换一条仅在 `value` 为空时触发。
+
+⚠️ **数据文件必须先于逻辑文件加载**，否则逻辑层开头 `if (!BOOK) return` 静默退出 —— 页面不报错、placeholder 也不变。verify 第 19 节专门盯这个顺序。
+
+**验证**：`node scripts/test-answer-book.cjs`（40 项，含数据完整性、加载顺序、真 DOM 覆盖、点击换一条、React 重挂载恢复、幂等、不干扰 value、数据缺失时安静退出）。verify 新增第 19 节（21 项），累计 369 → **390 项**。
+
 ### 小票金额改为累计（存本地浏览器）
 
 - **文件**：`custom-card-actions.js`（`?v=1` → `?v=2`）、`scripts/test-ticket-total.cjs`、`scripts/verify.mjs`、`index.html`

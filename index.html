@@ -1045,6 +1045,14 @@
        索引数据在 pinyin-index.js，必须先于本脚本加载。 -->
   <script src="./pinyin-index.js?v=1"></script>
   <script src="./pinyin-search.js?v=1"></script>
+  <!-- 《答案之书》随机占位：把搜索框的 placeholder 换成每次刷新随机一条的答案。
+       原来那句「消费前，先了解这个品牌是否双休；用订单（消费力），反向考核企业」
+       太长太重，压在搜索框里像广告语。
+       placeholder 写死在压缩产物里，同样不能手改，走 DOM 层覆盖。
+       ⚠️ 数据文件必须先于逻辑文件加载，否则逻辑层开头 `if (!BOOK) return`
+          会直接静默退出 —— 页面不报错，placeholder 也不变。 -->
+  <script src="./answer-book-data.js?v=1"></script>
+  <script src="./answer-book.js?v=1"></script>
   </body>
 </html>
 

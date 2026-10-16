@@ -73,3 +73,7 @@ jobs:
       # 代码改了、界面没动，还推上线了。详见 PITFALLS 6.7。
       - name: 内置卡小票 DOM 测试
         run: node scripts/test-builtin-ticket-dom.cjs
+
+      # 答案之书随机占位：数据完整性 + 加载顺序 + 真 DOM 覆盖行为
+      - name: 答案之书占位测试
+        run: node scripts/test-answer-book.cjs

@@ -27,7 +27,8 @@
     "test:pinyin": "node scripts/test-pinyin-search.cjs",
     "test:pinyin:e2e": "node scripts/test-pinyin-e2e.cjs",
     "test:ticket": "node scripts/test-ticket-total.cjs",
-    "test:ticket:dom": "node scripts/test-builtin-ticket-dom.cjs"
+    "test:ticket:dom": "node scripts/test-builtin-ticket-dom.cjs",
+    "test:answer": "node scripts/test-answer-book.cjs"
   },
   "dependencies": {
     "framer-motion": "^11.2.4",
