@@ -67,3 +67,9 @@ jobs:
       # 小票累计金额：199 + 299 = 498 的结算逻辑 + 旧数据迁移
       - name: 小票累计金额测试
         run: node scripts/test-ticket-total.cjs
+
+      # 内置卡小票的 DOM 定位。这组不能省 ——
+      # 上一版就是缺了它，定位逻辑写了但对不上真实 DOM，
+      # 代码改了、界面没动，还推上线了。详见 PITFALLS 6.7。
+      - name: 内置卡小票 DOM 测试
+        run: node scripts/test-builtin-ticket-dom.cjs

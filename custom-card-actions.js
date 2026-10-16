@@ -592,10 +592,118 @@
 
   var builtinPatched = null;
 
+  // 内置小票纸面上的金额行，标签有两个（按是否违规避雷二选一）：
+  //   转移撤销消费金额: / 注入良心企业预算:
+  // 值是它右边的 span，内容形如「+ ¥ 199」。
+  //
+  // ⚠️ 这里的标签不是「已转移/支持消费:」——那句话只存在于复制文本的
+  // 模板字符串里，纸面上根本没有。踩过这个坑：早期版本按复制文本里的
+  // 文案去定位，纸面金额永远定位不到，代码改了但界面纹丝不动。
+  var AMOUNT_LABELS = ['转移撤销消费金额:', '注入良心企业预算:'];
+  var RATING_LABEL = '工时健康评级:';
+  var BUILTIN_INPUT_LABEL = '本次投票消费金额:';
+  var TOTAL_LABEL = '累计已转移/支持消费:';
+
+  // 用户正在输入时的预览值。null 表示以存档的 profile.total 为准。
+  // React 重渲染会把纸面内容冲回写死的 199，observer 触发 syncBuiltin
+  // 重绘时必须用这个值，否则用户填到一半的预览会被 199 覆盖掉。
+  var builtinPreview = null;
+
+  function findLabelNode(root, labels) {
+    var spans = $$('span', root);
+    for (var i = 0; i < spans.length; i++) {
+      var txt = (spans[i].textContent || '').trim();
+      for (var j = 0; j < labels.length; j++) {
+        if (txt === labels[j]) return spans[i];
+      }
+    }
+    return null;
+  }
+
+  function findBuiltinAmountSpan(receipt) {
+    for (var i = 0; i < AMOUNT_LABELS.length; i++) {
+      var n = findValueNode(receipt, AMOUNT_LABELS[i]);
+      if (n) return n;
+    }
+    return null;
+  }
+
+  // 把纸面金额行改写成「累计已转移/支持消费:￥498」
+  // 只在内容不同时才写，避免 MutationObserver 自己触发自己无限循环。
+  function paintBuiltinAmount(receipt, total) {
+    var span = findBuiltinAmountSpan(receipt);
+    if (span) {
+      span.id = 'sxg-t-amount';
+      var want = '￥' + total;
+      if ((span.textContent || '').trim() !== want) span.textContent = want;
+    }
+    var label = findLabelNode(receipt, AMOUNT_LABELS);
+    if (label && (label.textContent || '') !== TOTAL_LABEL) {
+      label.textContent = TOTAL_LABEL;
+    }
+    return !!span;
+  }
+
+  // 隐藏 bundle 自带的「本次投票消费金额」输入行。
+  // 金额统一由注入的「本次新增消费（元）」框录入，两个框并存会让人填错。
+  function hideBuiltinAmountInput(root) {
+    var label = findLabelNode(root, [BUILTIN_INPUT_LABEL]);
+    if (!label) return false;
+    var row = label.closest('.flex.items-center.justify-between') || label.parentNode;
+    if (!row) return false;
+    if (row.getAttribute('data-sxg-hidden') !== '1') {
+      row.style.display = 'none';
+      row.setAttribute('data-sxg-hidden', '1');
+    }
+    return true;
+  }
+
+  // 理由行挂在「工时健康评级」之后。
+  // 这里不能用 .sxg-kv 定位 —— 那是自定义卡才有的 class，
+  // 内置小票上没有，holder 恒为 null，理由就永远插不进去。
+  function paintBuiltinReason(receipt, reason) {
+    var anchor = findLabelNode(receipt, [RATING_LABEL]);
+    var holder = anchor && anchor.parentNode;
+    if (!holder || !holder.parentNode) return;
+    var row = receipt.querySelector('[data-sxg-reason]');
+    if (reason) {
+      if (!row) {
+        row = el('div', 'flex justify-between items-start gap-2 text-xs');
+        row.setAttribute('data-sxg-reason', '1');
+        row.innerHTML =
+          '<span class="text-slate-500 whitespace-nowrap">理由:</span>' +
+          '<span class="font-bold text-slate-900 text-right truncate max-w-[180px]"></span>';
+        holder.parentNode.insertBefore(row, holder.nextSibling);
+      }
+      var v = row.lastChild;
+      if (v && (v.textContent || '') !== reason) v.textContent = reason;
+    } else if (row && row.parentNode) {
+      row.parentNode.removeChild(row);
+    }
+  }
+
+  // 小票重新渲染后（React 重渲染）把已存的值再写回去。
+  // 不做「已处理过就 return」的短路：React 复用同一个 span 节点时 id 还在，
+  // 但内容已被重置成 199，那次短路会让 199 留在屏幕上。
+  function syncBuiltin(receipt) {
+    var p = loadProfile();
+    var want = builtinPreview != null ? builtinPreview : p.total;
+    var nameSpan = findValueNode(receipt, '考核执行官:');
+    if (nameSpan) {
+      nameSpan.id = 'sxg-t-name';
+      var nm = displayName(p.name);
+      if ((nameSpan.textContent || '').trim() !== nm) nameSpan.textContent = nm;
+    }
+    paintBuiltinAmount(receipt, want);
+    paintBuiltinReason(receipt, (p.reason || '').trim());
+    hideBuiltinAmountInput(receipt);
+  }
+
   function patchBuiltinTicket() {
     // 内置小票容器：带receipt-tear-top 的那张米色纸
     var receipt = document.querySelector('.receipt-tear-top');
     if (!receipt) return;
+    hideBuiltinAmountInput(receipt.parentNode || document);
     if (receipt.getAttribute('data-sxg-builtin') === '1') {
       // 已处理过，只同步数值
       syncBuiltin(receipt);
@@ -609,24 +717,11 @@
     // 只有用户明确点「完成 / 复制」才把本次新增结算进去。
     // 否则光是打开看一眼就会算一次钱。
     var baseTotal = profile.total;
+    builtinPreview = baseTotal;
 
     function previewTotalOf() {
       var fA = document.getElementById('sxg-f-amount');
       return Math.min(baseTotal + clampDelta(fA ? fA.value : ''), MAX_TOTAL);
-    }
-
-    // 定位「考核执行官」和金额所在的值节点
-    var nameSpan = findValueNode(receipt, '考核执行官:');
-    var amountSpan = findValueNode(receipt, '已转移/支持消费:')
-                  || findValueNode(receipt, '累计已转移/支持消费:');
-
-    if (nameSpan) {
-      nameSpan.id = 'sxg-t-name';
-      nameSpan.textContent = displayName(profile.name);
-    }
-    if (amountSpan) {
-      amountSpan.id = 'sxg-t-amount';
-      amountSpan.textContent = '￥' + baseTotal;
     }
 
     // 在小票前面插入填写区
@@ -634,7 +729,15 @@
     if (form && receipt.parentNode) {
       receipt.parentNode.insertBefore(form, receipt);
     }
+
+    // 纸面金额与标签一次画好。找不到金额行时必须出声，
+    // 不能再像以前那样静默失败 —— 静默失败正是这个 bug 上线的直接原因。
+    var okAmount = paintBuiltinAmount(receipt, baseTotal);
+    var okName = !!findValueNode(receipt, '考核执行官:');
+    if (!okAmount) diag('内置小票未找到金额行，纸面金额仍是写死的值');
+
     var fTotal = $('#sxg-total', form);
+    if (fTotal) fTotal.textContent = '￥' + baseTotal;
 
     // 实时联动
     if (form) {
@@ -644,23 +747,27 @@
       [fName, fAmount, fReason].forEach(function (input) {
         input.addEventListener('input', function () {
           var shown = previewTotalOf();
+          builtinPreview = shown;
           var nameEl = $('#sxg-t-name', receipt);
           var amountEl = $('#sxg-t-amount', receipt);
           if (nameEl) nameEl.textContent = displayName(fName.value);
           if (amountEl) amountEl.textContent = '￥' + shown;
           if (fTotal) fTotal.textContent = '￥' + shown;
-          applyReasonToBuiltin(receipt, (fReason.value || '').trim());
+          paintBuiltinReason(receipt, (fReason.value || '').trim());
         });
       });
     }
 
-    // 用户点「完成 / 复制」才结算本次新增。
-    // 用捕获阶段监听，因为「复制」是 bundle 内部处理的，我们只旁挂结算。
+    // 用户点「完成 / 复制 / 确认打卡并计入全网总额」才结算本次新增。
+    // 用捕获阶段监听，因为这些按钮是 bundle 内部处理的，我们只旁挂结算。
     var box = receipt.closest('.max-w-sm') || receipt.parentNode;
     if (box) {
       box.addEventListener('click', function (ev) {
         var t = (ev.target && ev.target.textContent) || '';
-        if (t.indexOf('完成') === -1 && t.indexOf('复制') === -1) return;
+        var settle = t.indexOf('完成') !== -1
+                  || t.indexOf('复制') !== -1
+                  || t.indexOf('确认打卡') !== -1;
+        if (!settle) return;
         var fA = document.getElementById('sxg-f-amount');
         var fN = document.getElementById('sxg-f-name');
         var fR = document.getElementById('sxg-f-reason');
@@ -674,14 +781,15 @@
         });
         // 结算后清空新增额并以新累计为基准，连点两次不会加两次
         baseTotal = total;
+        builtinPreview = total;
         if (fA) fA.value = '';
         if (fTotal) fTotal.textContent = '￥' + total;
-        var amountEl2 = $('#sxg-t-amount', receipt);
-        if (amountEl2) amountEl2.textContent = '￥' + total;
+        paintBuiltinAmount(receipt, total);
       }, true);
     }
 
-    diag('已接管内置小票的署名与金额');
+    diag('已接管内置小票的署名与金额（金额行 ' + (okAmount ? '已改写' : '未找到')
+        + '，署名行 ' + (okName ? '已改写' : '未找到') + '）');
   }
 
   // 内置小票是「标签: 值」左右两格的布局，按标签文字找到右边的值
@@ -700,34 +808,13 @@
     return null;
   }
 
-  function applyReasonToBuiltin(receipt, reason) {
-    var reasonKv = receipt.querySelector('[data-sxg-reason]');
-    if (reason) {
-      if (!reasonKv) {
-        var amountEl = $('#sxg-t-amount', receipt);
-        var holder = amountEl ? amountEl.closest('.sxg-kv') : null;
-        if (!holder || !holder.parentNode) return;
-        reasonKv = el('div', 'sxg-kv');
-        reasonKv.setAttribute('data-sxg-reason', '1');
-        reasonKv.innerHTML = '<span class="k">理由:</span><span class="v"></span>';
-        holder.parentNode.insertBefore(reasonKv, holder.nextSibling);
-      }
-      reasonKv.querySelector('.v').textContent = reason;
-    } else if (reasonKv && reasonKv.parentNode) {
-      reasonKv.parentNode.removeChild(reasonKv);
-    }
-  }
-
-  function syncBuiltin(receipt) {
-    // 小票重新渲染后（React 重渲染）把已存的值再写回去
-    if ($('#sxg-t-name', receipt)) return;
-    var p = loadProfile();
-    var nameSpan = findValueNode(receipt, '考核执行官:');
-    var amountSpan = findValueNode(receipt, '已转移/支持消费:')
-                  || findValueNode(receipt, '累计已转移/支持消费:');
-    if (nameSpan) { nameSpan.id = 'sxg-t-name'; nameSpan.textContent = displayName(p.name); }
-    if (amountSpan) { amountSpan.id = 'sxg-t-amount'; amountSpan.textContent = '￥' + p.total; }
-  }
+  // 说明：内置小票的「理由」行由 paintBuiltinReason 负责，
+  // 它挂在「工时健康评级」之后。早前这里叫 applyReasonToBuiltin，
+  // 依赖 .sxg-kv 定位，而那是自定义卡才有的 class —— 内置小票上
+  // holder 恒为 null，理由永远插不进去。已并入 paintBuiltinReason。
+  //
+  // 说明：syncBuiltin 也已上移到 paintBuiltin* 那一组，
+  // 现在无短路、每次都按 builtinPreview 重绘（见该函数上方注释）。
 
   /* ------------------------------- 弹窗 3：首页顶部按钮的引导（去档案卡打卡） */
 

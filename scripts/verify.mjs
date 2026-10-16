@@ -2821,6 +2821,80 @@ if (exists('custom-card-actions.js')) {
   warn('custom-card-actions.js 不存在，跳过小票累计检查');
 }
 
+// ---------- 18. 内置卡小票 DOM 定位（源码断言不够，必须打真实 bundle） ----------
+// 这节来自一次真实事故：小票金额改累计时，只改了代码、只做了源码字符串
+// 断言就推送上线，而内置小票的金额标签根本不是源码里写的那句
+// （那句只存在于复制文本模板），定位恒为 null，界面纹丝不动。
+// 用户实测发现并批评「你不检查就推送上线吗？」
+//
+// 因此这里不能只查字符串，必须直接读压缩包、确认定位用的标签
+// 真的出现在小票纸面的渲染区间里。DOM 行为由
+// scripts/test-builtin-ticket-dom.cjs 负责（那才是真跑一遍）。
+section('18. 内置卡小票 DOM 定位');
+
+if (exists('assets/index-YthXZ9eP.js') && exists('custom-card-actions.js')) {
+  const bundle = read('assets/index-YthXZ9eP.js');
+  const cca = read('custom-card-actions.js');
+
+  const paperStart = bundle.indexOf('receipt-tear-top');
+  const paperEnd = bundle.indexOf('本次投票消费金额:');
+  const paper = bundle.slice(paperStart, paperEnd);
+
+  check(paperStart !== -1 && paperEnd > paperStart,
+    '压缩包里能切出内置小票纸面区间');
+
+  // 定位用的两个标签必须真的在纸面上（合规 / 违规二选一）
+  check(paper.includes('转移撤销消费金额:') && paper.includes('注入良心企业预算:'),
+    '纸面金额的两个候选标签都在压缩包纸面区间内');
+  check(paper.includes('考核执行官:') && paper.includes('工时健康评级:'),
+    '纸面署名行与评级行标签都在压缩包纸面区间内');
+
+  // 纸面金额是 span 改写，不是 input 赋值
+  check(/text-xl font-black font-mono/.test(paper),
+    '纸面金额值是 span（所以要改 textContent，而不是设 value）');
+
+  // 关键否定断言：那句文案只在复制文本里，不在纸面 DOM 上
+  const consumed = bundle.indexOf('已转移/支持消费');
+  check(consumed < paperStart || consumed > paperEnd,
+    '「已转移/支持消费」不在纸面区间内（只能用于复制文本，不能用于 DOM 定位）');
+  check(!/findValueNode\(\s*receipt\s*,\s*'已转移\/支持消费/.test(cca),
+    '源码里不再用「已转移/支持消费」定位内置卡纸面金额');
+
+  // 必须有这两个真实标签做定位
+  check(/转移撤销消费金额/.test(cca) && /注入良心企业预算/.test(cca),
+    '源码按纸面真实标签定位金额行');
+  check(/function\s+paintBuiltinAmount/.test(cca),
+    '有统一的纸面金额绘制函数 paintBuiltinAmount');
+
+  // 同值重绘必须不写 DOM，否则全局 MutationObserver 会被自己触发成死循环
+  check(/\(span\.textContent \|\| ''\)\.trim\(\) !== want/.test(cca),
+    '重绘前先比对现值（幂等，避免 observer 自激）');
+
+  // 隐藏 bundle 自带的金额输入行，避免两个金额框并存
+  check(/function\s+hideBuiltinAmountInput/.test(cca)
+    && /本次投票消费金额/.test(cca),
+    '有隐藏 bundle 自带金额输入行的逻辑');
+
+  // 预览值：React 重渲染会把纸面冲回 199，重绘时必须用预览值而非存档值
+  check(/builtinPreview/.test(cca),
+    '有 builtinPreview，重渲染后用预览值而非存档值重绘');
+
+  // 静默失败是这次事故的直接原因，必须留告警
+  check(/内置小票未找到金额行/.test(cca),
+    '定位失败时有告警，不再静默失败（静默失败正是漏检的原因）');
+
+  // 旧的死函数不能留着误导后人
+  check(!/function\s+applyReasonToBuiltin/.test(cca),
+    '旧的 applyReasonToBuiltin 已删除（它依赖自定义卡才有的 .sxg-kv）');
+  check(/function\s+paintBuiltinReason/.test(cca),
+    '理由行改由 paintBuiltinReason 挂在「工时健康评级」之后');
+
+  check(exists('scripts/test-builtin-ticket-dom.cjs'),
+    '存在内置卡小票的真 DOM 端到端测试脚本');
+} else {
+  warn('压缩包或 custom-card-actions.js 不存在，跳过内置卡 DOM 定位检查');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {
