@@ -10,12 +10,13 @@
    ========================================================================== */
 
 .lp-ad {
-  /* 只在本组件内定义变量，不污染全局 */
+  /* 只在本组件内定义变量，不污染全局
+     注：原--lp-secondary（黄 #f5c234）和 --lp-bg（米 #fffaf5）已无人引用，
+     2026-10-16 随徽标改浅紫粉一并移除，避免以后误用回黄色。
+     徽标新配色直接写在 .lp-ad__badge 里，不走变量。 */
   --lp-primary: #3dad8a;
   --lp-primary-dark: #2e8b6f;
-  --lp-secondary: #f5c234;
   --lp-accent: #99d93f;
-  --lp-bg: #fffaf5;
   --lp-surface: #ffffff;
   --lp-border: #e8dfd3;
   --lp-text: #2a2620;
@@ -182,15 +183,17 @@
 }
 
 /* ---------- 通用零件 ---------- */
-/* 徽标为 7 字「推广期限时活动」，竖排卡片仅 152px 宽，nowrap 会撑破卡片，
-   故允许折行；右上角留出 22px 给关闭按钮，避免文字被 ✕ 压住 */
+/* 徽标文案改短后（「AI 婚恋」不再折行），右边距可收窄一些，
+   仍留 22px 给关闭按钮，避免文字被 ✕ 压住。
+   底色：原先是黄橙渐变，配深棕字。站长要求换浅色，
+   改用淡紫粉（AI 婚恋品类更贴切），字色改为深紫灰，保证对比度。 */
 .lp-ad__badge {
   display: block;
   margin-right: 22px;
   padding: 3px 6px;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--lp-secondary), #e0a820);
-  color: #4a3600;
+  background: linear-gradient(135deg, #f3e8ff, #fce7f3);
+  color: #5b2d7d;
   font-size: 11px;
   font-weight: 700;
   line-height: 1.5;
@@ -226,7 +229,7 @@
 }
 
 .lp-ad__title b {
-  /* 主文案统一用正文色，不再单独给「喜茶 20 元」上色：
+  /* 主文案统一用正文色，不再单独给某个金额/词组上色：
      同一句话里换色会让人误以为这几字是按钮或另一种行动号召 */
   color: inherit;
   font-weight: inherit;
