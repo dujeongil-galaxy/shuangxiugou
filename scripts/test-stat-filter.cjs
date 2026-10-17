@@ -1,10 +1,10 @@
 // stat-filter 端到端 DOM 测试：真渲染整页 → 真点四格 → 断言筛选结果
 // 跑法：node scripts/test-stat-filter.cjs（需 jsdom，同 CI 其他测试）
 //
-// 预期数字（2026-10-17 实测）：jsdom 整页渲染后自定义卡（4C+1B）也会插入，
-// badge 卡共 58 张（53 内置含 1 虚拟 + 5 自定义）。筛选结果与顶部四格显示一致：
-// 红榜(S/A)=16、观察(B)=8、避雷(C，不含虚拟卡)=16；「全部」=44（含虚拟卡，
-// 收录品牌盒显示的 43 = 44 − 虚拟卡，虚拟卡不进任何分档）。
+// 预期数字（2026-10-18 实测）：jsdom 整页渲染后自定义卡（4C+1B）也会插入，
+// badge 卡共 58 张（53 内置含 1 虚拟 + 5 自定义）。筛选结果与顶部五格显示一致：
+// 红榜(S/A)=19、观察(B)=14、避雷(C，不含虚拟卡)=19、待核实(U)=5；
+// 19+14+19+5 = 57 = 收录总数；「全部」=58（含虚拟卡，虚拟卡不进任何分档）。
 const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');
@@ -71,11 +71,16 @@ setTimeout(() => {
   const zhou = boxOf('大小周观察');
   const lei = boxOf('避雷预警');
   const all = boxOf('收录品牌');
-  check('四个统计盒都已绑定筛选（data-sxg-stat）', !!red && !!zhou && !!lei && !!all
+  const u = boxOf('待核实');
+  check('五个统计盒都已绑定筛选（data-sxg-stat，含新增「待核实」）',
+    !!red && !!zhou && !!lei && !!all && !!u
     && red.getAttribute('data-sxg-stat') === 'red'
     && zhou.getAttribute('data-sxg-stat') === 'zhou'
     && lei.getAttribute('data-sxg-stat') === 'lei'
-    && all.getAttribute('data-sxg-stat') === 'all');
+    && all.getAttribute('data-sxg-stat') === 'all'
+    && u.getAttribute('data-sxg-stat') === 'u');
+  check('第五格「待核实」数字 = 5（与 U 级卡数一致）',
+    u.children[0].textContent === '5', u.children[0].textContent);
 
   const base = snapshot();
   check('初始全部可见（badge 卡 ' + base.total + ' 张）', base.visible.length === base.total && base.total === 58,
@@ -112,12 +117,20 @@ setTimeout(() => {
     s.visible.length === 19 && s.visible.every((c) => tierOf(c) === 'C'),
     { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
 
+  // —— 待核实：只显示 U ——
+  click(u);
+  s = snapshot();
+  check('点「待核实」→ 仅 U 级可见（5 张；19+14+19+5=57 对账）',
+    s.visible.length === 5 && s.visible.every((c) => tierOf(c) === 'U'),
+    { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
+  check('待核实激活态写上 data-sxg-active', u.getAttribute('data-sxg-active') === '1');
+
   // —— 收录品牌：清除筛选 ——
   click(all);
   s = snapshot();
   check('点「收录品牌」→ 清除筛选恢复全部', s.visible.length === s.total,
     { visible: s.visible.length, total: s.total });
-  check('清除后无激活态', ['双休红榜', '大小周观察', '避雷预警'].every((lbl) => {
+  check('清除后无激活态', ['双休红榜', '大小周观察', '避雷预警', '待核实'].every((lbl) => {
     const b = boxOf(lbl);
     return b && !b.hasAttribute('data-sxg-active');
   }));

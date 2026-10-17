@@ -129,6 +129,7 @@ const harnessSrc = [
   // 2026-10-17 回归测试需要：syncBuiltin 引用的模块级状态与存档桩。
   // builtinAnonId 用固定值，断言「同一次弹窗内 #号稳定」才可复现。
   'var builtinPreview = null;',
+  'var builtinBrandPreview = null;',
   'var builtinAnonId = 7163;',
   'function loadProfile(){ return { name: "", total: 0, lastDelta: 0, reason: "" }; }',
   'var MAX_TOTAL = 99999999;',
@@ -152,6 +153,7 @@ const harnessSrc = [
   extractFn('findLabelNode'),
   extractFn('findBuiltinAmountSpan'),
   extractFn('paintBuiltinAmount'),
+  extractFn('paintBuiltinBrandRow'),
   extractFn('hideBuiltinAmountInput'),
   extractFn('paintBuiltinReason'),
   extractFn('syncBuiltin'),
@@ -159,7 +161,7 @@ const harnessSrc = [
 var AMOUNT_LABELS = ['转移撤销消费金额:', '注入良心企业预算:'];
 var RATING_LABEL = '工时健康评级:';
 var BUILTIN_INPUT_LABEL = '本次投票消费金额:';
-var TOTAL_LABEL = '累计已转移/支持消费:';`;
+var TOTAL_LABEL = '全站累计已转移/支持消费:';`;
 
 // 装一个含真实 DOM + 真实定位逻辑的环境
 function mount(opts, storageData) {
@@ -177,7 +179,7 @@ function mount(opts, storageData) {
   w.__diag = [];
   const fn = new Function('window', 'document', harnessSrc
     + '\nreturn {findValueNode,findLabelNode,findBuiltinAmountSpan,'
-    + 'paintBuiltinAmount,hideBuiltinAmountInput,paintBuiltinReason,syncBuiltin};');
+    + 'paintBuiltinAmount,paintBuiltinBrandRow,hideBuiltinAmountInput,paintBuiltinReason,syncBuiltin};');
   const api = fn(w, w.document);
   api.window = w;
   api.storage = data;
@@ -200,7 +202,7 @@ function paperAmountLabel(E) {
   for (const s of spans) {
     const t = (s.textContent || '').trim();
     if (t === '转移撤销消费金额:' || t === '注入良心企业预算:'
-        || t === '累计已转移/支持消费:') return t;
+        || t === '累计已转移/支持消费:' || t === '全站累计已转移/支持消费:') return t;
   }
   return null;
 }
@@ -216,8 +218,8 @@ console.log('\n=== 2. 纸面金额定位（合规企业）===');
 
   E.paintBuiltinAmount(E.receipt, 498);
   check('改写后纸面显示 ￥498', paperAmount(E) === '￥498', paperAmount(E));
-  check('标签已改为「累计已转移/支持消费:」',
-    paperAmountLabel(E) === '累计已转移/支持消费:', paperAmountLabel(E));
+  check('标签已改为「全站累计已转移/支持消费:」',
+    paperAmountLabel(E) === '全站累计已转移/支持消费:', paperAmountLabel(E));
 }
 
 console.log('\n=== 3. 纸面金额定位（违规避雷企业，标签是另一个）===');
@@ -228,7 +230,7 @@ console.log('\n=== 3. 纸面金额定位（违规避雷企业，标签是另一�
   E.paintBuiltinAmount(E.receipt, 498);
   check('违规小票改写后显示 ￥498', paperAmount(E) === '￥498', paperAmount(E));
   check('违规小票标签也被改掉',
-    paperAmountLabel(E) === '累计已转移/支持消费:', paperAmountLabel(E));
+    paperAmountLabel(E) === '全站累计已转移/支持消费:', paperAmountLabel(E));
 }
 
 console.log('\n=== 4. 幂等：重复重绘不会让 observer 自激 ===');
@@ -331,6 +333,27 @@ console.log('\n=== 4. 幂等：重复重绘不会让 observer 自激 ===');
       await new Promise((r) => setTimeout(r, 30));
       check('署名行同值重绘不产生 DOM 变更（observer 不会自激）',
         nameMutations === 0, nameMutations);
+    }
+
+    console.log('\n=== 9. 本品牌累计行（2026-10-18 两级显示）===');
+    {
+      const E6 = mount({ violation: false });
+      E6.paintBuiltinAmount(E6.receipt, 498);
+      const ok = E6.paintBuiltinBrandRow(E6.receipt, '测试品牌', 66);
+      check('本品牌行插入成功', ok);
+      const row = E6.receipt.querySelector('[data-sxg-brand-row]');
+      check('行存在且带 data 标记', !!row);
+      check('标签为「本品牌累计（测试品牌）:」',
+        row.children[0].textContent === '本品牌累计（测试品牌）:', row.children[0].textContent);
+      check('值为 ￥66', row.children[1].textContent === '￥66', row.children[1].textContent);
+      check('值节点带 id 供预览联动', !!E6.receipt.querySelector('#sxg-t-amount-brand'));
+      const before = row.innerHTML;
+      E6.paintBuiltinBrandRow(E6.receipt, '测试品牌', 66);
+      check('同值重绘不改动 DOM（幂等）', row.innerHTML === before);
+      E6.paintBuiltinBrandRow(E6.receipt, '测试品牌', 99);
+      check('数值变化时更新为 ￥99', row.children[1].textContent === '￥99');
+      check('本品牌行在「全站累计」行之前（上下行：本品牌在上）',
+        row.nextSibling && (row.nextSibling.textContent || '').indexOf('全站累计') !== -1);
     }
 
     console.log('\n' + '='.repeat(54));

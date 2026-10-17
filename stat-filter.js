@@ -33,10 +33,11 @@
     all: { tiers: null, title: '显示全部收录品牌（含待核实）；点击可清除筛选' },
     red: { tiers: ['S', 'A'], title: '仅显示 S/A 级（模范标杆与合规双休）' },
     zhou: { tiers: ['B'], title: '仅显示 B 级（大小周或数据存疑）' },
-    lei: { tiers: ['C'], title: '仅显示 C 级（避雷预警）' }
+    lei: { tiers: ['C'], title: '仅显示 C 级（避雷预警）' },
+    u: { tiers: ['U'], title: '仅显示待核实（U 级 · 不评级）' }
   };
 
-  var active = null; // null = 全部；'red' | 'zhou' | 'lei'
+  var active = null; // null = 全部；'red' | 'zhou' | 'lei' | 'u'
 
   function $(sel, root) { return (root || document).querySelector(sel); }
   function $$(sel, root) {
@@ -125,6 +126,73 @@
   }
 
   /* ---------------------------------------------------------- 绑定盒子 */
+  function bindBox(box, key) {
+    box.setAttribute('data-sxg-stat-bound', '1');
+    box.setAttribute('data-sxg-stat', key);
+    box.classList.add('sxg-stat-box');
+    box.setAttribute('role', 'button');
+    box.setAttribute('tabindex', '0');
+    box.setAttribute('aria-pressed', 'false');
+    box.title = FILTERS[key].title;
+    box.addEventListener('click', function (k) {
+      return function (ev) {
+        ev.stopPropagation();
+        active = (k === 'all' || active === k) ? null : k;
+        applyTierFilter();
+        scrollToArchive();
+      };
+    }(key));
+    box.addEventListener('keydown', function (k) {
+      return function (ev) {
+        if (ev.key !== 'Enter' && ev.key !== ' ') return;
+        ev.preventDefault();
+        ev.stopPropagation();
+        active = (k === 'all' || active === k) ? null : k;
+        applyTierFilter();
+        scrollToArchive();
+      };
+    }(key));
+  }
+
+  // 第五格「待核实」（2026-10-18 站长）：19+14+19 只覆盖 S/A、B、C 三档，
+  // U 级（待核实·不评级）不在任何分档里 —— 加一格让 19+14+19+5=57 对上。
+  // 结构用「避雷预警」盒克隆（含配色改为中性灰），数字实时数卡，
+  // React 重渲染后由 observer 幂等重建。
+  function countUCards() {
+    var n = 0;
+    $$(CARD_SEL).forEach(function (card) {
+      if (cardTier(card) === 'U') n += 1;
+    });
+    return n;
+  }
+
+  function ensureUBox() {
+    var lei = $('[data-sxg-stat="lei"]');
+    if (!lei || !lei.parentNode) return;
+    var existing = lei.parentNode.querySelector('[data-sxg-stat="u"]');
+    if (existing) {
+      var num = existing.children && existing.children[0];
+      var want = String(countUCards());
+      if (num && (num.textContent || '') !== want) num.textContent = want;
+      return;
+    }
+    var box = lei.cloneNode(true);
+    box.removeAttribute('data-sxg-stat-bound');
+    box.removeAttribute('data-sxg-stat');
+    box.removeAttribute('data-sxg-active');
+    box.removeAttribute('aria-pressed');
+    box.removeAttribute('title');
+    var kids = box.children;
+    if (kids.length >= 2) {
+      kids[0].textContent = String(countUCards());
+      kids[0].className = (kids[0].className || '').replace('text-rose-700', 'text-slate-700');
+      kids[1].textContent = '待核实';
+    }
+    if (lei.nextSibling) lei.parentNode.insertBefore(box, lei.nextSibling);
+    else lei.parentNode.appendChild(box);
+    bindBox(box, 'u');
+  }
+
   function bindStatBoxes() {
     var divs = $$('div');
     for (var i = 0; i < divs.length; i++) {
@@ -134,32 +202,9 @@
       if (!key) continue;
       var box = d.parentElement;
       if (!box || box.getAttribute('data-sxg-stat-bound') === '1') continue;
-      box.setAttribute('data-sxg-stat-bound', '1');
-      box.setAttribute('data-sxg-stat', key);
-      box.classList.add('sxg-stat-box');
-      box.setAttribute('role', 'button');
-      box.setAttribute('tabindex', '0');
-      box.setAttribute('aria-pressed', 'false');
-      box.title = FILTERS[key].title;
-      box.addEventListener('click', function (k) {
-        return function (ev) {
-          ev.stopPropagation();
-          active = (k === 'all' || active === k) ? null : k;
-          applyTierFilter();
-          scrollToArchive();
-        };
-      }(key));
-      box.addEventListener('keydown', function (k) {
-        return function (ev) {
-          if (ev.key !== 'Enter' && ev.key !== ' ') return;
-          ev.preventDefault();
-          ev.stopPropagation();
-          active = (k === 'all' || active === k) ? null : k;
-          applyTierFilter();
-          scrollToArchive();
-        };
-      }(key));
+      bindBox(box, key);
     }
+    ensureUBox();
     refreshActiveMarks();
   }
 

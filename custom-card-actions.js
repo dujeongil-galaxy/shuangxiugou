@@ -120,6 +120,11 @@
       '.sxg-total{flex-shrink:0;font-size:12px;color:rgba(255,255,255,.72);white-space:nowrap}',
       '.sxg-total b{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;',
       'font-weight:800;color:#34d399}',
+      '.sxg-total-2{display:flex;flex-direction:column;align-items:flex-end;gap:2px;line-height:1.35}',
+      '.sxg-total-2 .sxg-total-line{font-size:11px;white-space:nowrap;max-width:150px;',
+      'overflow:hidden;text-overflow:ellipsis}',
+      '.sxg-total-2 b{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;',
+      'font-weight:800;color:#34d399}',
       '.sxg-btn-clear{flex:none;padding:7px 10px;border:1px solid #fecaca;background:#fff;color:#b91c1c;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}',
       '.sxg-btn-clear:hover{background:#fef2f2}',
       '.sxg-form-tip{font-size:11px;color:rgba(255,255,255,.6);line-height:1.6;margin-top:10px}'
@@ -295,6 +300,40 @@
     return Math.min(n, MAX_TOTAL);
   }
 
+  /* 分品牌累计（2026-10-18 站长）：「累计」拆两级显示——
+     第一行 = 本品牌累计（当前打开的卡片对应企业）；
+     第二行 = 全站累计（本站所有品牌金额加总 = profile.total）。
+     brandTotals 以「考核品牌」名称为键，仍只存本浏览器、不上传。 */
+  var BRAND_TOTALS_KEY = 'sxg-brand-totals-v1';
+
+  function loadBrandTotals() {
+    try {
+      var raw = window.localStorage.getItem(BRAND_TOTALS_KEY);
+      var o = raw ? JSON.parse(raw) : null;
+      var out = {};
+      if (o && typeof o === 'object') {
+        for (var k in o) {
+          if (Object.prototype.hasOwnProperty.call(o, k)
+            && typeof o[k] === 'number' && isFinite(o[k]) && o[k] > 0) {
+            out[k] = Math.min(Math.round(o[k]), MAX_TOTAL);
+          }
+        }
+      }
+      return out;
+    } catch (e) { return {}; }
+  }
+
+  function saveBrandTotals(map) {
+    try {
+      window.localStorage.setItem(BRAND_TOTALS_KEY, JSON.stringify(map || {}));
+    } catch (e) { diag('分品牌累计保存失败（可能处于无痕模式）'); }
+  }
+
+  function brandKeyOf(name) {
+    var s = String(name || '').replace(/\s+/g, ' ').trim();
+    return s ? s.slice(0, 60) : '当前品牌';
+  }
+
   // 本次新增额：允许留空（= 不增加），非正数按 0 处理而不是回退到 199 ——
   // 用户既然留空了就是想不加，凭什么替他加 199。
   function clampDelta(v) {
@@ -320,7 +359,9 @@
   }
 
   // 自定义卡与内置卡共用的填写区，避免两处 UI 走样
-  function buildProfileForm(profile) {
+  function buildProfileForm(profile, brandKey, brandBase) {
+    var brandLabel = brandKey || '当前品牌';
+    var brandBase0 = (typeof brandBase === 'number' && brandBase > 0) ? brandBase : 0;
     var form = el('div', 'sxg-form');
     form.innerHTML =
       '<div class="sxg-form-title">这张小票要署名，填一次就记住了</div>' +
@@ -337,7 +378,10 @@
         '<div class="sxg-amount-row">' +
           '<input id="sxg-f-amount" type="number" inputmode="numeric" min="0" ' +
             'max="' + MAX_TOTAL + '" placeholder="留空则不增加" />' +
-          '<span class="sxg-total">累计 <b id="sxg-total">￥0</b></span>' +
+          '<span class="sxg-total sxg-total-2">' +
+            '<span class="sxg-total-line">本品牌（' + esc(brandLabel) + '）<b id="sxg-total-brand">￥' + brandBase0 + '</b></span>' +
+            '<span class="sxg-total-line">全站累计 <b id="sxg-total">￥0</b></span>' +
+          '</span>' +
           '<button type="button" id="sxg-f-clear" class="sxg-btn-clear">清空</button>' +
         '</div>' +
       '</div>' +
@@ -370,6 +414,10 @@
 
     var profile = loadProfile();
 
+    // 分品牌累计：本品牌 = brandTotals[当前卡片企业名]
+    var brandKey = brandKeyOf(cfg.name);
+    var brandBase = loadBrandTotals()[brandKey] || 0;
+
     var anonId = Math.floor(1000 + Math.random() * 9000); // 本次弹窗内稳定
     var wrap = el('div', 'sxg-receipt-wrap');
     wrap.style.padding = '16px 0';
@@ -385,13 +433,14 @@
     wrap.appendChild(head);
 
     /* ---- 填写区：昵称 / 金额 / 理由，填完实时反映到小票上 ---- */
-    var form = buildProfileForm(profile);
+    var form = buildProfileForm(profile, brandKey, brandBase);
     wrap.appendChild(form);
 
     var fName = $('#sxg-f-name', form);
     var fAmount = $('#sxg-f-amount', form);
     var fReason = $('#sxg-f-reason', form);
     var fTotal = $('#sxg-total', form);
+    var fTotalBrand = $('#sxg-total-brand', form);
 
     // baseTotal 是「打开这个弹窗那一刻」的累计值，是个常量。
     //
@@ -422,6 +471,10 @@
       var amountEl = $('#sxg-t-amount', receipt);
       if (nameEl) nameEl.textContent = displayName(p.name, anonId);
       if (amountEl) amountEl.textContent = '￥' + shown;
+      var brandShown = Math.min(brandBase + clampDelta(fAmount.value), MAX_TOTAL);
+      if (fTotalBrand) fTotalBrand.textContent = '￥' + brandShown;
+      var brandEl = $('#sxg-t-amount-brand', receipt);
+      if (brandEl) brandEl.textContent = '￥' + brandShown;
       if (fTotal) fTotal.textContent = '￥' + shown;
       // 理由是后加的一行，实时输入时需要补出来
       var reasonKv = receipt.querySelector('[data-sxg-reason]');
@@ -453,11 +506,16 @@
       openClearConfirm(function () {
         var p2 = loadProfile();
         saveProfile({ name: p2.name, total: 0, lastDelta: 0, reason: p2.reason });
+        saveBrandTotals({});
         baseTotal = 0;
+        brandBase = 0;
         fAmount.value = '';
         if (fTotal) fTotal.textContent = '￥0';
+        if (fTotalBrand) fTotalBrand.textContent = '￥0';
         var amountEl = $('#sxg-t-amount', receipt);
         if (amountEl) amountEl.textContent = '￥0';
+        var brandEl = $('#sxg-t-amount-brand', receipt);
+        if (brandEl) brandEl.textContent = '￥0';
       });
     });
 
@@ -489,7 +547,9 @@
         kv('所属企业:', '<span class="sxg-bold">' + esc(cfg.company || '—') + '</span>') +
         kv('企业评级:', '<span class="sxg-bold">' + esc(cfg.grade || 'C级') + '</span>') +
         kv('工时政策:', '<span class="sxg-bold">' + esc(cfg.workPolicy || '—') + '</span>') +
-        kv('累计已转移/支持消费:', '<span class="sxg-bold" style="color:#059669" id="sxg-t-amount">' +
+        kv('本品牌累计（' + esc(cfg.name) + '）:', '<span class="sxg-bold" style="color:#059669" id="sxg-t-amount-brand">' +
+          '￥' + brandBase + '</span>') +
+        kv('全站累计已转移/支持消费:', '<span class="sxg-bold" style="color:#059669" id="sxg-t-amount">' +
           '￥' + profile.total + '</span>') +
         (profile.reason
           ? kv('理由:', '<span class="sxg-bold">' + esc(profile.reason) + '</span>')
@@ -531,9 +591,15 @@
         reason: p.reason
       };
       saveProfile(next);
+      var brandNext = Math.min(brandBase + clampDelta(fAmount.value), MAX_TOTAL);
+      var bt = loadBrandTotals();
+      bt[brandKey] = brandNext;
+      saveBrandTotals(bt);
+      brandBase = brandNext;
       baseTotal = shown;          // 让后续预览以此为新基准
       fAmount.value = '';         // 已结算，别让用户误以为还能再加一次
       if (fTotal) fTotal.textContent = '￥' + baseTotal;
+      if (fTotalBrand) fTotalBrand.textContent = '￥' + brandNext;
 
       var text =
         '【双休购 · 反向考核小票】\n' +
@@ -542,7 +608,8 @@
         '企业评级：' + (cfg.grade || 'C级') + '\n' +
         '考核执行官：' + displayName(p.name, anonId) + '\n' +
         (p.reason ? '理由：' + p.reason + '\n' : '') +
-        '累计已转移/支持消费：￥' + shown + '\n' +
+        '本品牌累计（' + (cfg.name || '') + '）：￥' + brandNext + '\n' +
+        '全站累计已转移/支持消费：￥' + shown + '\n' +
         '“老板考核你的KPI，你的钱包考核老板的良心”\n' +
         '数据查验来自开源双休购：shuangxiugou.vercel.app';
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -662,12 +729,14 @@
   var AMOUNT_LABELS = ['转移撤销消费金额:', '注入良心企业预算:'];
   var RATING_LABEL = '工时健康评级:';
   var BUILTIN_INPUT_LABEL = '本次投票消费金额:';
-  var TOTAL_LABEL = '累计已转移/支持消费:';
+  var TOTAL_LABEL = '全站累计已转移/支持消费:';
 
   // 用户正在输入时的预览值。null 表示以存档的 profile.total 为准。
   // React 重渲染会把纸面内容冲回写死的 199，observer 触发 syncBuiltin
   // 重绘时必须用这个值，否则用户填到一半的预览会被 199 覆盖掉。
   var builtinPreview = null;
+  // 本品牌累计的预览值（当次弹窗内）；null = 以存档的分品牌累计为准
+  var builtinBrandPreview = null;
 
   function findLabelNode(root, labels) {
     var spans = $$('span', root);
@@ -702,6 +771,32 @@
       label.textContent = TOTAL_LABEL;
     }
     return !!span;
+  }
+
+  // 本品牌累计行（2026-10-18）：插在「全站累计」行上方，两级上下行显示。
+  // 幂等：行已存在时只改文本（不同才写），避免 observer 自激。
+  function paintBuiltinBrandRow(receipt, brandKey, brandVal) {
+    if (!brandKey) return false;
+    var label = findLabelNode(receipt, [TOTAL_LABEL]);
+    if (!label) return false;
+    var holder = label.parentNode;
+    if (!holder || !holder.parentNode) return false;
+    var row = receipt.querySelector('[data-sxg-brand-row]');
+    var wantLabel = '本品牌累计（' + brandKey + '）:';
+    var wantVal = '￥' + brandVal;
+    if (!row) {
+      row = el('div', 'flex justify-between items-baseline gap-2 text-xs');
+      row.setAttribute('data-sxg-brand-row', '1');
+      row.innerHTML =
+        '<span class="text-slate-600 font-semibold whitespace-nowrap"></span>' +
+        '<span class="font-bold font-mono text-sm text-emerald-700" id="sxg-t-amount-brand"></span>';
+      holder.parentNode.insertBefore(row, holder);
+    }
+    var lab = row.children[0];
+    var val = row.children[1];
+    if ((lab.textContent || '') !== wantLabel) lab.textContent = wantLabel;
+    if ((val.textContent || '') !== wantVal) val.textContent = wantVal;
+    return true;
   }
 
   // 隐藏 bundle 自带的「本次投票消费金额」输入行。
@@ -745,9 +840,13 @@
   // 小票重新渲染后（React 重渲染）把已存的值再写回去。
   // 不做「已处理过就 return」的短路：React 复用同一个 span 节点时 id 还在，
   // 但内容已被重置成 199，那次短路会让 199 留在屏幕上。
-  function syncBuiltin(receipt) {
+  function syncBuiltin(receipt, brandKey, brandBase) {
     var p = loadProfile();
     var want = builtinPreview != null ? builtinPreview : p.total;
+    var totals = brandKey ? loadBrandTotals() : null;
+    var brandWant = builtinBrandPreview != null
+      ? builtinBrandPreview
+      : (totals && totals[brandKey] ? totals[brandKey] : (brandBase || 0));
     var nameSpan = findValueNode(receipt, '考核执行官:');
     if (nameSpan) {
       nameSpan.id = 'sxg-t-name';
@@ -755,6 +854,7 @@
       if ((nameSpan.textContent || '').trim() !== nm) nameSpan.textContent = nm;
     }
     paintBuiltinAmount(receipt, want);
+    paintBuiltinBrandRow(receipt, brandKey, brandWant);
     paintBuiltinReason(receipt, (p.reason || '').trim());
     hideBuiltinAmountInput(receipt);
   }
@@ -774,6 +874,11 @@
     receipt.setAttribute('data-sxg-builtin', '1');
     builtinAnonId = Math.floor(1000 + Math.random() * 9000); // 本次弹窗内稳定
 
+    // 分品牌累计：本品牌 = brandTotals[纸面「考核品牌」]
+    var brandKey = brandKeyOf((findValueNode(receipt, '考核品牌:') || {}).textContent);
+    var brandBase = loadBrandTotals()[brandKey] || 0;
+    builtinBrandPreview = brandBase;
+
     // 与自定义卡弹窗同一条规则：打开时的累计是个常量，
     // 只有用户明确点「完成 / 复制」才把本次新增结算进去。
     // 否则光是打开看一眼就会算一次钱。
@@ -786,7 +891,7 @@
     }
 
     // 在小票前面插入填写区
-    var form = buildProfileForm(profile);
+    var form = buildProfileForm(profile, brandKey, brandBase);
     if (form && receipt.parentNode) {
       receipt.parentNode.insertBefore(form, receipt);
     }
@@ -796,9 +901,12 @@
     var okAmount = paintBuiltinAmount(receipt, baseTotal);
     var okName = !!findValueNode(receipt, '考核执行官:');
     if (!okAmount) diag('内置小票未找到金额行，纸面金额仍是写死的值');
+    paintBuiltinBrandRow(receipt, brandKey, brandBase);
 
     var fTotal = $('#sxg-total', form);
+    var fTotalBrand = $('#sxg-total-brand', form);
     if (fTotal) fTotal.textContent = '￥' + baseTotal;
+    if (fTotalBrand) fTotalBrand.textContent = '￥' + brandBase;
 
     // 实时联动
     if (form) {
@@ -809,11 +917,15 @@
         input.addEventListener('input', function () {
           var shown = previewTotalOf();
           builtinPreview = shown;
+          var brandShown = Math.min(brandBase + clampDelta(fAmount.value), MAX_TOTAL);
+          builtinBrandPreview = brandShown;
           var nameEl = $('#sxg-t-name', receipt);
           var amountEl = $('#sxg-t-amount', receipt);
           if (nameEl) nameEl.textContent = displayName(fName.value, builtinAnonId);
           if (amountEl) amountEl.textContent = '￥' + shown;
           if (fTotal) fTotal.textContent = '￥' + shown;
+          if (fTotalBrand) fTotalBrand.textContent = '￥' + brandShown;
+          paintBuiltinBrandRow(receipt, brandKey, brandShown);
           paintBuiltinReason(receipt, (fReason.value || '').trim());
         });
       });
@@ -826,12 +938,17 @@
       openClearConfirm(function () {
         var p2 = loadProfile();
         saveProfile({ name: p2.name, total: 0, lastDelta: 0, reason: p2.reason });
+        saveBrandTotals({});
         baseTotal = 0;
         builtinPreview = 0;
+        brandBase = 0;
+        builtinBrandPreview = 0;
         var fAmt = document.getElementById('sxg-f-amount');
         if (fAmt) fAmt.value = '';
         if (fTotal) fTotal.textContent = '￥0';
+        if (fTotalBrand) fTotalBrand.textContent = '￥0';
         paintBuiltinAmount(receipt, 0);
+        paintBuiltinBrandRow(receipt, brandKey, 0);
       });
     });
 
@@ -856,12 +973,20 @@
           lastDelta: 0,
           reason: (fR ? fR.value : '').trim()
         });
+        var brandNext = Math.min(brandBase + delta, MAX_TOTAL);
+        var bt = loadBrandTotals();
+        bt[brandKey] = brandNext;
+        saveBrandTotals(bt);
+        brandBase = brandNext;
+        builtinBrandPreview = brandNext;
         // 结算后清空新增额并以新累计为基准，连点两次不会加两次
         baseTotal = total;
         builtinPreview = total;
         if (fA) fA.value = '';
         if (fTotal) fTotal.textContent = '￥' + total;
+        if (fTotalBrand) fTotalBrand.textContent = '￥' + brandNext;
         paintBuiltinAmount(receipt, total);
+        paintBuiltinBrandRow(receipt, brandKey, brandNext);
       }, true);
     }
 

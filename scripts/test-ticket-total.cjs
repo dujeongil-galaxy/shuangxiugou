@@ -184,9 +184,9 @@ console.log('\n=== 5. 源码层面的防回归检查 ===');
   check('本次新增输入框默认为空（占位提示而非 value）',
     /id="sxg-f-amount"[\s\S]{0,200}?placeholder="留空则不增加"/.test(SRC));
   check('结算后清空新增额（防连点重复累加）',
-    /saveProfile\(next\);[\s\S]{0,200}?fAmount\.value = '';/.test(SRC));
+    /saveProfile\(next\);[\s\S]{0,600}?fAmount\.value = '';/.test(SRC));
   check('结算后以新累计为基准（baseTotal 被更新）',
-    /saveProfile\(next\);[\s\S]{0,120}?baseTotal = shown;/.test(SRC));
+    /saveProfile\(next\);[\s\S]{0,600}?baseTotal = shown;/.test(SRC));
   check('隐私提示已更新为「累计金额」',
     SRC.includes('累计金额与昵称只存在你自己的浏览器里'));
 }
