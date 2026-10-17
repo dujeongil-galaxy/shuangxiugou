@@ -338,6 +338,61 @@ brandCards.forEach((c, i) => {
 });
 check(uCards.length >= 1, '存在 U 级卡（宁德时代应已切 U）', uCards.join(', ') || '无');
 check(badU.length === 0, 'U 级卡数值全 null 且两项口径均 unknown（U 不是逃逸档位）', badU.join(', '));
+section('2e. 统计计数一致性（顶部四格 + 页脚清单）');
+// 口径（2026-10-17 审计确定，改动前 36/16/8/12 与任何口径都对不上）：
+//   收录品牌 = 实名企业卡 =（内置卡 - 虚拟对比卡）+ 自定义卡
+//   双休红榜 = S/A 级卡数；大小周观察 = B 级卡数；避雷预警 = C 级卡数（内置 + 自定义）
+//   U（待核实）不参与三个分桶，只计入收录总数。
+//   「某代工烘焙食品 (虚拟对比黑榜)」是上游设计的匿名对比工具，无详情页，不计入任何统计。
+const tier2e = { S: 0, A: 0, B: 0, C: 0, U: 0 };
+let builtin2e = 0;
+let virtual2e = 0;
+brandCards.forEach((c, i) => {
+  const end = i + 1 < brandCards.length ? brandCards[i + 1].pos : bundle.length;
+  const chunk = bundle.slice(c.pos, end);
+  if (chunk.includes('id:`some-overtime-snack`')) { virtual2e += 1; return; }
+  builtin2e += 1;
+  const tm = chunk.match(/tier:`([SABCU])`/);
+  if (tm) tier2e[tm[1]] += 1;
+});
+const cfg2e = html.match(/var customCardsConfig = \[([\s\S]*?)\n      \];/);
+const customPairs2e = cfg2e
+  ? [...cfg2e[1].matchAll(/id:\s*'([^']+)'[\s\S]*?grade:\s*'([^']+)'/g)].map((m) => ({ id: m[1], grade: m[2] }))
+  : [];
+const byGrade2e = (g) => customPairs2e.filter((c) => c.grade === g).length;
+const statTotal = builtin2e + customPairs2e.length;
+const statHong = tier2e.S + tier2e.A + byGrade2e('S级') + byGrade2e('A级');
+const statZhou = tier2e.B + byGrade2e('B级');
+const statLei = tier2e.C + byGrade2e('C级');
+const headerStat = (label, cls) => {
+  const re = new RegExp('children:(\\d+)\\}\\),\\(0,A\\.jsx\\)\\(`div`,\\{className:`' + cls + '`,children:`' + label + '`');
+  const m = bundle.match(re);
+  return m ? Number(m[1]) : null;
+};
+check(virtual2e === 1, '虚拟对比卡恰 1 张（口径排除依据，id 变更需同步本节）', '实际 ' + virtual2e);
+check(customPairs2e.length === 5, '能解析全部自定义卡（5 张）', '实际 ' + customPairs2e.length);
+check(headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') === statTotal,
+  '顶部「收录品牌」= 实名企业卡总数', '页面 ' + headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') + ' / 计算 ' + statTotal + '（改 bundle 顶部统计常数）');
+check(headerStat('双休红榜', 'text-emerald-700/70 text-\\[11px\\]') === statHong,
+  '顶部「双休红榜」= S/A 级卡数', '页面 ' + headerStat('双休红榜', 'text-emerald-700/70 text-\\[11px\\]') + ' / 计算 ' + statHong);
+check(headerStat('大小周观察', 'text-amber-700/70 text-\\[11px\\]') === statZhou,
+  '顶部「大小周观察」= B 级卡数', '页面 ' + headerStat('大小周观察', 'text-amber-700/70 text-\\[11px\\]') + ' / 计算 ' + statZhou);
+check(headerStat('避雷预警', 'text-rose-700/70 text-\\[11px\\]') === statLei,
+  '顶部「避雷预警」= C 级卡数', '页面 ' + headerStat('避雷预警', 'text-rose-700/70 text-\\[11px\\]') + ' / 计算 ' + statLei);
+check(new RegExp('共\\s*' + statTotal + '\\s*家').test(html),
+  '页脚清单「共 N 家」与收录总数一致', '应含「共 ' + statTotal + ' 家」');
+const brandPages2e = readdirSync(join(ROOT, 'brand')).filter((f) => f.endsWith('.html')).length;
+check(brandPages2e === statTotal, 'brand/ 详情页数量 = 收录总数（虚拟对比卡无详情页）', '页面 ' + brandPages2e + ' / 计算 ' + statTotal);
+const badCustomU2e = customPairs2e.filter((c) => {
+  if (c.grade !== 'U级') return false;
+  const seg = cfg2e[1].slice(cfg2e[1].indexOf("id: '" + c.id + "'"));
+  const nxt = seg.indexOf("id: '", 10);
+  const body = nxt === -1 ? seg : seg.slice(0, nxt);
+  return !/doubleRestRate:\s*null/.test(body) || !/offWorkTime:\s*null/.test(body);
+});
+check(badCustomU2e.length === 0,
+  '自定义 U 级卡数值全 null（U 不是逃逸档位）',
+  badCustomU2e.length ? badCustomU2e.map((c) => c.id).join(', ') : '合规 ' + byGrade2e('U级') + ' 张');
 
 section('3. 自定义卡（index.html 的 customCardsConfig）');
 

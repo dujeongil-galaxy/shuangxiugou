@@ -163,7 +163,7 @@ setTimeout(() => {
   check('原生搜「Acer」= 1 家', nativeSearch('Acer').length === 1, nativeSearch('Acer').map(b=>b.name));
   check('原生搜「acer」小写= 1 家', nativeSearch('acer').length === 1);
   check('原生搜「笔记本」能带出宏碁', nativeSearch('笔记本').some(b=>b.id==='acer'));
-  check('宏碁卡片在 bundle 里，tier 为 B', nativeSearch('宏碁')[0] && nativeSearch('宏碁')[0].tier === 'B');
+  check('宏碁卡片在 bundle 里，tier 为 U（2026-10-17 改档：无工时证据不评级）', nativeSearch('宏碁')[0] && nativeSearch('宏碁')[0].tier === 'U');
   check('宏碁客服口径文案可搜到', nativeSearch('客服').some(b=>b.id==='acer'));
 
   console.log('\n' + '='.repeat(52));
