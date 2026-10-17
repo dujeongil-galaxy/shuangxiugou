@@ -135,10 +135,16 @@ for (const m of html.matchAll(/<script[^>]*\bsrc="([^"]+)"/g)) {
 
 setTimeout(() => {
   const txt = window.document.body.textContent;
-  const at = txt.indexOf('宁德时代 (CATL)');
-  check('页面上找得到宁德时代卡片', at > 0);
-  if (at > 0) {
-    const cardTxt = txt.slice(at, at + 700);
+  // 2026-10-17 修正：固定 700 字符窗口会扫进相邻卡（CATL 之后是肯悦，自带推荐位），
+  // 造成与断言本意无关的误报。改为定位 CATL 自己的卡片容器，在其节点内检查。
+  const h = [...window.document.querySelectorAll('h2, h3')]
+    .find((x) => x.textContent.indexOf('宁德时代 (CATL)') === 0);
+  check('页面上找得到宁德时代卡片', !!h);
+  if (h) {
+    let node = h.parentElement;
+    while (node && !(/rounded-2xl/.test(node.className || ''))) node = node.parentElement;
+    check('定位到宁德时代卡片容器', !!node);
+    const cardTxt = node ? node.textContent : '';
     check('宁德时代卡片内不再出现推荐位标题',
       !cardTxt.includes('打工人推荐双休平替'),
       cardTxt.slice(0, 120));

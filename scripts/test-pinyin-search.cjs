@@ -92,11 +92,15 @@ setTimeout(() => {
   n = names();
   check('sf → 顺丰第一', n[0] && /顺丰/.test(n[0][0]), n.map(x => x[0]));
 
-  // ms 的正确行为：微软首字母是 wr，不是 ms；ms 唯一命中「美式」
+  // ms 的正确行为：微软首字母是 wr，不是 ms。
+  // 2026-10-17 三星 (Samsung) 入驻后，"samsung" 含子串 ms（L0），排序在 L2「美式」之前；
+  // 断言拆成两条：首位是三星（子串命中），星巴克（拼音词条「美式」）仍在候选中。
   fire('ms');
   n = names();
-  check('ms 命中星巴克并标出命中词条「美式」',
-        n.length && /星巴克/.test(n[0][0]) && /美式/.test(n[0][2]), n);
+  check('ms 首位命中三星（Samsung 子串，非微软）',
+        n.length && /三星/.test(n[0][0]) && /Samsung/i.test(n[0][2]), n);
+  check('ms 候选中仍有星巴克并标出命中词条「美式」',
+        n.some((x) => /星巴克/.test(x[0]) && /美式/.test(x[2])), n);
 
   fire('苹果');
   n = names();
