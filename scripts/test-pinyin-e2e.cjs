@@ -105,7 +105,8 @@ setTimeout(() => {
   const cases = [
     ['ning', '宁德时代'], ['ndsd', '宁德时代'], ['ningde', '宁德时代'],
     ['byd', '比亚迪'], ['hw', '华为'], ['nongfu', '农夫山泉'],
-    ['mt', '美团'], ['sf', '顺丰'], ['tt', '优衣库'],
+    ['mt', '美团'], ['sf', '顺丰'], ['tt', '库迪咖啡'],
+    ['cotti', '库迪咖啡'], ['mixue', '蜜雪冰城'], ['kenyue', '肯悦咖啡'], ['uniqlo', '优衣库'],
     ['hongqi', '宏碁'], ['hq', '宏碁'], ['acer', '宏碁'], ['hongji', '宏碁'],
   ];
   for (const [q, expect] of cases) {
