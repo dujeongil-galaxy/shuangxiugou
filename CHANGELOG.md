@@ -16,7 +16,31 @@
 ---
 ## 2026-10-17
 
-### 新功能：顶部四格统计变点击筛选（红榜=S/A、观察=B、避雷=C、收录=全部），DOM 层补丁不改压缩包
+### 同类项目普查：新增格力/美的/大疆/胖东来/长城汽车/名创优品 6 卡（收录 43→49），并修复并行会话遗留的结构错误
+**背景**：按 projects.html 所列同类站点做数据库对比——扒取姊妹站 shuangxiugou-guide（data.js，275 条：verified 6 / reported 20 / candidate 92 / caution 50 / pending 107）与 tdwc.luomor.com（92 家社区清单），与站内品牌求差集，逐个核实证据后决定建卡与否。证据原文均先行抓取核对（广州日报 huacheng、澎湃/新浪、腾讯网、北京商报）。
+
+**新增 6 卡**（各含 LOGO 或文字角标、brand/ 详情页、卡内逐条证据）：
+- **格力 (GREE)** A 级：官方盖章通知官宣双休（做五休二、作息 8:30-11:45/13:30-17:30、取消所有加班须审批并调休）+ 员工证实；avgOffWorkTime 17:30（官方作息口径），双休率 null（销售/分公司执行节奏不同）。
+- **美的 (Midea)** B 级：六条禁令（严禁下班时间开会、形式主义加班，企业回应确认）；双休未官宣、18:20 未确认为正式文件，数值全 null。
+- **大疆 DJI** B 级：2025-03 强制 21 点下班（经济观察报/澎湃多源+员工证实；「强制 9 点上班」曾被辟谣）；avgOffWorkTime 21:00（管控口径），双休率 null。
+- **胖东来** A 级：于东来官宣 2027-03 起全员双休、每日 7 小时（周 35 小时）；现行周二闭店+年假 30-40 天+10 天不开心假；普通员工现以单休为主，双休率留空不猜测。
+- **长城汽车 (GWM)** U 级：仅公开汇总+社区清单称「2026 年起 52 个完整双休」，无企业通知级一手来源，不评级、数值全 null。
+- **名创优品 (MINISO)** U 级：总部「六大要求」（会议 333 原则）不构成工时口径，tdwc 标注门店单休/排班，不评级、数值全 null。
+
+**结构修复（接管另一会话未完成的半成品改动）**：
+- gree/midea/dji 三卡此前被误插进 haier/sony 卡的 evidence 数组内部（`,{id:` 前缀与 evidence 条目前缀相同所致），运行时被宿主卡吞掉；本轮按括号配平定位宿主卡真实结尾后重新插入顶层，gwm/miniso 同类误插一并修复；修复后配平扫描 45 个顶层对象、0 合并。
+- 新卡 `employeeStats` 形状缺 `anonymousComments` 等渲染层必读字段导致 React 渲染崩溃（jsdom 实测 #root 白屏），统一改为 acer 同款空形状 `realDoubleWeekendRate:null,…,anonymousComments:[]`（6 处）。
+- 字段名统一：先行改动新卡用的 `realRate:` 与全库 `realDoubleWeekendRate:` 不一致（渲染层只认后者），更名 3 处。
+
+**计数影响**：内置 45（含虚拟对比卡 1）/ 自定义 5 = 50 张卡；收录 49 家（brand/ 49 页）；顶部四格 49/18/10/16，tab 角标 49，U 级 5 张（acer/samsung/chagee/gwm/miniso）。
+
+**文件**：`assets/index-YthXZ9eP.js`（+3 卡、结构修复、字段统一、计数 46→49/17→18/43→49）、`index.html`（?v=38→39、brandLogos +5、页脚「共 49 家」、两清单 +3 行并修复挤行）、`brand/`（gree/midea/dji/pdl/gwm/miniso 6 张新页 + 43 张旧页页脚 43→49）、`projects.html`（h2 46→49、+3 行）、`sitemap.xml`（+3）、`pinyin-index.js`（重跑，45 品牌/427+ 词条）、`scripts/test-stat-filter.cjs`（50/18/10/32 断言同步）、`scripts/test-pinyin-e2e.cjs`（+3 用例）、`assets/`（gree/midea/dji/pdl/gwm.png 5 张新 LOGO；名创优品无干净图源，回退文字角标）。
+
+**测试**：12 个套件全绿（render-page 13 项恢复通过；stat-filter 11 项含新计数）；verify.mjs 430 项口径全过。
+
+**线索池登记（不建卡、不评级）**：姊妹站 candidate 92 + caution 50 + pending 107 条与 tdwc 未建卡条目基本同源于一篇汇总文（interviewasssistant.com，2026-07-11，自述「部门差异和二手信息风险」），单一二手来源不足以评级，已在 `员工实测数据核实修改清单.md` 附二登记约 250 条线索与核实路径。
+
+（红榜=S/A、观察=B、避雷=C、收录=全部），DOM 层补丁不改压缩包
 **文件**：新增 `stat-filter.js`（?v=1）、`scripts/test-stat-filter.cjs`（e2e：真渲染真点击，11 项断言）、`index.html`（挂载）、`.github/workflows/verify.yml`（CI 接入）、`AGENTS.md`（站点结构表 +1 行）、本文件
 **交互**：点「双休红榜」→ 仅显示 S/A 级（B 级存疑不算红榜）；点「大小周观察」→ 仅 B 级；点「避雷预警」→ 仅 C 级；点「收录品牌」→ 清除筛选显示全部（含 U）；再点一次当前激活按钮 = 取消。点击后自动滚到品牌档案区；激活的四格带描边高亮（data-sxg-active），支持键盘 Enter/空格（role=button）。
 **实现约束**：纯 DOM 层补丁——盒子按叶子标签文本定位（不依赖 Tailwind class），卡片档位读卡内第一个档位徽章文本（S/A/B/C 级/待核实），「虚拟对比黑榜」卡与顶部四格口径一致不进任何分档；React 重渲染（品类筛选/搜索）后由 MutationObserver 重新套用当前筛选，与既有筛选共存。

@@ -25,7 +25,7 @@
 | `sponsor.html` | 赞助页 |
 | `jiahua-fact-check.html` | 云南嘉华事件核查页 |
 | `notes.html` | 站长随笔。**正文加密**，见下方专节 |
-| `brand/*.html` | 43 个品牌详情页，title 格式 `{品牌名} 几点下班 双休率X%｜双休购` |
+| `brand/*.html` | 49 个品牌详情页，title 格式 `{品牌名} 几点下班 双休率X%｜双休购` |
 | `friend-links-footer.js` | 首页页脚内容（友情链接、微博投票、搜索排名公示） |
 | `stat-filter.js` | 顶部四格统计点击筛选（红榜=S/A、观察=B、避雷=C、收录=全部），DOM 层补丁 |
 | `custom-card-actions.js` | 打卡引导弹窗 + 自定义品牌卡按钮修复，见下方专节 |

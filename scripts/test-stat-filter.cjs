@@ -2,7 +2,7 @@
 // 跑法：node scripts/test-stat-filter.cjs（需 jsdom，同 CI 其他测试）
 //
 // 预期数字（2026-10-17 实测）：jsdom 整页渲染后自定义卡（4C+1B）也会插入，
-// badge 卡共 44 张（39 内置含 1 虚拟 + 5 自定义）。筛选结果与顶部四格显示一致：
+// badge 卡共 50 张（45 内置含 1 虚拟 + 5 自定义）。筛选结果与顶部四格显示一致：
 // 红榜(S/A)=16、观察(B)=8、避雷(C，不含虚拟卡)=16；「全部」=44（含虚拟卡，
 // 收录品牌盒显示的 43 = 44 − 虚拟卡，虚拟卡不进任何分档）。
 const fs = require('fs');
@@ -78,16 +78,16 @@ setTimeout(() => {
     && all.getAttribute('data-sxg-stat') === 'all');
 
   const base = snapshot();
-  check('初始全部可见（badge 卡 ' + base.total + ' 张）', base.visible.length === base.total && base.total === 44,
+  check('初始全部可见（badge 卡 ' + base.total + ' 张）', base.visible.length === base.total && base.total === 50,
     { total: base.total, visible: base.visible.length });
 
   // —— 双休红榜：只显示 S/A ——
   click(red);
   let s = snapshot();
-  const okRed = s.visible.length === 16
+  const okRed = s.visible.length === 18
     && s.visible.every((c) => { const t = tierOf(c); return t === 'S' || t === 'A'; })
-    && s.hidden === s.total - 16;
-  check('点「双休红榜」→ 仅 S/A 级可见（16 张）', okRed,
+    && s.hidden === s.total - 18;
+  check('点「双休红榜」→ 仅 S/A 级可见（18 张）', okRed,
     { visible: s.visible.length, hidden: s.hidden,
       tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
   check('红榜激活态写上 data-sxg-active', red.getAttribute('data-sxg-active') === '1');
@@ -101,8 +101,8 @@ setTimeout(() => {
   // —— 大小周观察：只显示 B ——
   click(zhou);
   s = snapshot();
-  check('点「大小周观察」→ 仅 B 级可见（8 张，与四格「大小周观察 8」一致）',
-    s.visible.length === 8 && s.visible.every((c) => tierOf(c) === 'B'),
+  check('点「大小周观察」→ 仅 B 级可见（10 张，与四格「大小周观察 10」一致）',
+    s.visible.length === 10 && s.visible.every((c) => tierOf(c) === 'B'),
     { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
 
   // —— 避雷预警：只显示 C（虚拟卡除外）——

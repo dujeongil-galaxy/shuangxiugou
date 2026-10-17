@@ -107,7 +107,13 @@ setTimeout(() => {
     ['byd', '比亚迪'], ['hw', '华为'], ['nongfu', '农夫山泉'],
     ['mt', '美团'], ['sf', '顺丰'], ['tt', '库迪咖啡'],
     ['cotti', '库迪咖啡'], ['mixue', '蜜雪冰城'], ['kenyue', '肯悦咖啡'], ['uniqlo', '优衣库'],
-['chagee', '霸王茶姬'], ['samsung', '三星'],
+['chagee', '霸王茶姬'],
+  ['gree', '格力'],
+  ['midea', '美的'],
+  ['dji', '大疆'], ['samsung', '三星'],
+  ['pdl', '胖东来'],
+  ['gwm', '长城汽车'],
+  ['miniso', '名创优品'],
     ['hongqi', '宏碁'], ['hq', '宏碁'], ['acer', '宏碁'], ['hongji', '宏碁'],
   ];
   for (const [q, expect] of cases) {
