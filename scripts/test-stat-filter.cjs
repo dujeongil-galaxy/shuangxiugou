@@ -142,8 +142,35 @@ setTimeout(() => {
   check('再点一次「双休红榜」= 取消筛选', s.visible.length === s.total,
     { visible: s.visible.length, total: s.total });
 
-  console.log('\n' + '='.repeat(54));
-  console.log('通过 ' + pass + ' 项，失败 ' + fail + ' 项');
-  if (fail) console.log('失败项：\n  - ' + fails.join('\n  - '));
-  process.exit(fail ? 1 : 0);
+  // —— 回归（2026-10-18）：搜索过滤会卸载 U 卡，第五格不得清零/变粉 ——
+  (async () => {
+    const uCards = [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
+      .filter((c) => tierOf(c) === 'U');
+    check('前置：DOM 中 U 级卡 5 张', uCards.length === 5, uCards.length);
+    const removed = uCards.map((c) => {
+      const p = c.parentNode; const nx = c.nextSibling;
+      p.removeChild(c); return { c, p, nx };
+    });
+    await new Promise((r) => setTimeout(r, 450));
+    const u2 = boxOf('待核实');
+    check('搜索过滤（U 卡被卸载）后待核实数字仍为 5（不清零）',
+      u2 && u2.children[0].textContent === '5', u2 && u2.children[0].textContent);
+    removed.forEach(({ c, p, nx }) => {
+      try { nx ? p.insertBefore(c, nx) : p.appendChild(c); }
+      catch (e) { try { p.appendChild(c); } catch (e2) { /* 容器已被替换则放弃恢复 */ } }
+    });
+    await new Promise((r) => setTimeout(r, 450));
+    const u3 = boxOf('待核实');
+    check('恢复全部卡片后待核实数字仍为 5',
+      u3 && u3.children[0].textContent === '5', u3 && u3.children[0].textContent);
+    check('待核实盒不含避雷粉色系类名（rose）',
+      u3 && !/rose/.test(u3.className), u3 && u3.className);
+    check('待核实盒仍绑定筛选（data-sxg-stat=u）',
+      u3 && u3.getAttribute('data-sxg-stat') === 'u');
+
+    console.log('\n' + '='.repeat(54));
+    console.log('通过 ' + pass + ' 项，失败 ' + fail + ' 项');
+    if (fail) console.log('失败项：\n  - ' + fails.join('\n  - '));
+    process.exit(fail ? 1 : 0);
+  })();
 }, 1500);

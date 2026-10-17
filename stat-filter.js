@@ -169,6 +169,24 @@
     return n;
   }
 
+  // 第五格数字推导（2026-10-18 bug 修复）：搜索/品类筛选会「卸载」不匹配
+  // 卡片（React 条件渲染，节点不在 DOM），按可见 U 卡计数会在输入任意
+  // 字符时清零。改为从四个手写常数盒推导：
+  //   待核实 = 收录品牌 − 双休红榜 − 大小周观察 − 避雷预警
+  // 与卡片显隐完全解耦；四格常数调整时第五格自动跟随。
+  function uCountFromBoxes() {
+    function num(key) {
+      var b = $('[data-sxg-stat="' + key + '"]');
+      if (!b || !b.children || !b.children[0]) return null;
+      var v = parseInt((b.children[0].textContent || ''), 10);
+      return isNaN(v) ? null : v;
+    }
+    var all = num('all'), red = num('red'), zhou = num('zhou'), lei = num('lei');
+    if (all === null || red === null || zhou === null || lei === null) return null;
+    var u = all - red - zhou - lei;
+    return u >= 0 ? u : null;
+  }
+
   function ensureUBox() {
     var lei = $('[data-sxg-stat="lei"]');
     if (!lei || !lei.parentNode) return;
@@ -176,10 +194,11 @@
     if (gridBox && gridBox.getAttribute('data-sxg-stat-grid') !== '1') {
       gridBox.setAttribute('data-sxg-stat-grid', '1');
     }
+    var uN = uCountFromBoxes();
+    var want = String(uN != null ? uN : countUCards());
     var existing = lei.parentNode.querySelector('[data-sxg-stat="u"]');
     if (existing) {
       var num = existing.children && existing.children[0];
-      var want = String(countUCards());
       if (num && (num.textContent || '') !== want) num.textContent = want;
       return;
     }
@@ -189,9 +208,12 @@
     box.removeAttribute('data-sxg-active');
     box.removeAttribute('aria-pressed');
     box.removeAttribute('title');
+    // 克隆源是避雷盒：rose 系（底色/边框/数字）全部换 slate 中性灰，
+    // 避免「待核实」看起来像避雷预警（2026-10-18 bug 修复）
+    box.className = (box.className || '').replace(/rose/g, 'slate');
     var kids = box.children;
     if (kids.length >= 2) {
-      kids[0].textContent = String(countUCards());
+      kids[0].textContent = want;
       kids[0].className = 'font-bold text-slate-900 text-base';
       kids[1].textContent = '待核实';
     }
