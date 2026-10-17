@@ -114,6 +114,14 @@ setTimeout(() => {
   ['pdl', '胖东来'],
   ['gwm', '长城汽车'],
   ['miniso', '名创优品'],
+  ['bytedance', '字节跳动'],
+  ['kuaishou', '快手'],
+  ['xiaohongshu', '小红书'],
+  ['mihoyo', '米哈游'],
+  ['ctrip', '携程'],
+  ['chery', '奇瑞汽车'],
+  ['haidilao', '海底捞'],
+  ['hema', '盒马'],
     ['hongqi', '宏碁'], ['hq', '宏碁'], ['acer', '宏碁'], ['hongji', '宏碁'],
   ];
   for (const [q, expect] of cases) {
