@@ -383,6 +383,11 @@ check(new RegExp('共\\s*' + statTotal + '\\s*家').test(html),
   '页脚清单「共 N 家」与收录总数一致', '应含「共 ' + statTotal + ' 家」');
 const brandPages2e = readdirSync(join(ROOT, 'brand')).filter((f) => f.endsWith('.html')).length;
 check(brandPages2e === statTotal, 'brand/ 详情页数量 = 收录总数（虚拟对比卡无详情页）', '页面 ' + brandPages2e + ' / 计算 ' + statTotal);
+// 「企业真假双休档案」tab 上的数字角标也是手写常数（2026-10-17 发现它停在 36，
+// 比四格统计更晚跟上收录数），纳入 2e 自动核对，防止增减卡后再漏。
+const tabBadge2e = (bundle.match(/children:`企业真假双休档案`\}\),\(0,A\.jsx\)\(`span`,\{className:`text-\[10px\] font-mono bg-emerald-200\/60 text-emerald-900 px-1\.5 py-0\.5 rounded-full`,children:(\d+)\}\)/) || [])[1];
+check(tabBadge2e !== undefined && Number(tabBadge2e) === statTotal,
+  '「企业真假双休档案」tab 角标 = 收录总数', '页面 ' + tabBadge2e + ' / 计算 ' + statTotal);
 const badCustomU2e = customPairs2e.filter((c) => {
   if (c.grade !== 'U级') return false;
   const seg = cfg2e[1].slice(cfg2e[1].indexOf("id: '" + c.id + "'"));
