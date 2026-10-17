@@ -57,7 +57,10 @@
       '.sxg-stat-box:hover{transform:translateY(-1px);' +
         'box-shadow:0 6px 16px rgba(0,0,0,.08)}' +
       '.sxg-stat-box[data-sxg-active="1"]{outline:2px solid #059669;outline-offset:2px}' +
-      '.sxg-stat-box:focus-visible{outline:2px solid #059669;outline-offset:2px}';
+      '.sxg-stat-box:focus-visible{outline:2px solid #059669;outline-offset:2px}' +
+      // 第五格「待核实」加入后，容器原为固定 grid-cols-4 会把第五格挤到第二行；
+      // 注入 5 列覆盖，让五格始终横排（2026-10-18 站长要求）
+      '[data-sxg-stat-grid="1"]{grid-template-columns:repeat(5,minmax(0,1fr))!important}';
     document.head.appendChild(style);
   }
 
@@ -169,6 +172,10 @@
   function ensureUBox() {
     var lei = $('[data-sxg-stat="lei"]');
     if (!lei || !lei.parentNode) return;
+    var gridBox = lei.parentElement;
+    if (gridBox && gridBox.getAttribute('data-sxg-stat-grid') !== '1') {
+      gridBox.setAttribute('data-sxg-stat-grid', '1');
+    }
     var existing = lei.parentNode.querySelector('[data-sxg-stat="u"]');
     if (existing) {
       var num = existing.children && existing.children[0];
@@ -185,7 +192,7 @@
     var kids = box.children;
     if (kids.length >= 2) {
       kids[0].textContent = String(countUCards());
-      kids[0].className = (kids[0].className || '').replace('text-rose-700', 'text-slate-700');
+      kids[0].className = 'font-bold text-slate-900 text-base';
       kids[1].textContent = '待核实';
     }
     if (lei.nextSibling) lei.parentNode.insertBefore(box, lei.nextSibling);
