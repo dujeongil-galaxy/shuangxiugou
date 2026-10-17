@@ -120,6 +120,8 @@
       '.sxg-total{flex-shrink:0;font-size:12px;color:rgba(255,255,255,.72);white-space:nowrap}',
       '.sxg-total b{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;',
       'font-weight:800;color:#34d399}',
+      '.sxg-btn-clear{flex:none;padding:7px 10px;border:1px solid #fecaca;background:#fff;color:#b91c1c;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}',
+      '.sxg-btn-clear:hover{background:#fef2f2}',
       '.sxg-form-tip{font-size:11px;color:rgba(255,255,255,.6);line-height:1.6;margin-top:10px}'
     ].join('');
     document.head.appendChild(style);
@@ -193,6 +195,39 @@
   document.addEventListener('keydown', function (ev) {
     if (ev.key === 'Escape') closeLayer();
   });
+
+  /* ------------------------------------- 清空累计：二次确认（2026-10-17）
+     站长要求：累计金额旁加「清空」，点击必须弹出提示告知
+     「一经删除则不可恢复，是否确认」。用独立于 openLayer 的第二层，
+     叠在小票层之上；确认后只清金额，保留昵称与理由。 */
+  function openClearConfirm(onConfirm) {
+    var layer = el('div', 'sxg-layer');
+    layer.style.zIndex = '10002'; // 盖住小票层（9999）与广告 toast（10001）
+    layer.addEventListener('click', function (ev) {
+      if (ev.target === layer && layer.parentNode) layer.parentNode.removeChild(layer);
+    });
+    var box = el('div', 'sxg-box');
+    box.style.maxWidth = '360px';
+    box.innerHTML =
+      '<div class="sxg-pad">' +
+        '<h3 class="sxg-h3">清空累计金额？</h3>' +
+        '<p class="sxg-p" style="margin-top:8px">「累计已转移/支持消费」将清为零。' +
+        '<strong>一经删除则不可恢复</strong>（昵称与理由会保留），是否确认？</p>' +
+        '<div class="sxg-actions right" style="padding-top:14px">' +
+          '<button type="button" class="sxg-btn sxg-btn-ghost sxg-btn-sm" data-sxg-clear-cancel>取消</button>' +
+          '<button type="button" class="sxg-btn sxg-btn-primary sxg-btn-sm" data-sxg-clear-ok>确认清空</button>' +
+        '</div>' +
+      '</div>';
+    layer.appendChild(box);
+    document.body.appendChild(layer);
+    layer.querySelector('[data-sxg-clear-cancel]').addEventListener('click', function () {
+      if (layer.parentNode) layer.parentNode.removeChild(layer);
+    });
+    layer.querySelector('[data-sxg-clear-ok]').addEventListener('click', function () {
+      if (layer.parentNode) layer.parentNode.removeChild(layer);
+      onConfirm();
+    });
+  }
 
   /* ------------------------------------------------- 访客档案（仅存本地浏览器）
      隐私边界：只写 localStorage，不发任何网络请求，不上传服务器。
@@ -271,10 +306,17 @@
   }
 
   // 没填昵称时给个匿名编号，跟内置小票的观感一致
-  function displayName(name) {
+  // 没填昵称时给个匿名编号，跟内置小票的观感一致。
+  // stableId（2026-10-17 修复「#号一直滚动」）：同一次弹窗内必须稳定 ——
+  // 以前每次重绘都重新随机，MutationObserver 触发 syncBuiltin 时
+  // 「随机值 ≠ 现值」恒成立 → 每次都写 DOM → 再次触发 observer → 自激循环。
+  function displayName(name, stableId) {
     var s = (name || '').trim();
     if (s) return s;
-    return '匿名打工人 #' + Math.floor(1000 + Math.random() * 9000);
+    var id = (typeof stableId === 'number' && stableId >= 1000)
+      ? stableId
+      : Math.floor(1000 + Math.random() * 9000);
+    return '匿名打工人 #' + id;
   }
 
   // 自定义卡与内置卡共用的填写区，避免两处 UI 走样
@@ -296,6 +338,7 @@
           '<input id="sxg-f-amount" type="number" inputmode="numeric" min="0" ' +
             'max="' + MAX_TOTAL + '" placeholder="留空则不增加" />' +
           '<span class="sxg-total">累计 <b id="sxg-total">￥0</b></span>' +
+          '<button type="button" id="sxg-f-clear" class="sxg-btn-clear">清空</button>' +
         '</div>' +
       '</div>' +
 
@@ -327,6 +370,7 @@
 
     var profile = loadProfile();
 
+    var anonId = Math.floor(1000 + Math.random() * 9000); // 本次弹窗内稳定
     var wrap = el('div', 'sxg-receipt-wrap');
     wrap.style.padding = '16px 0';
 
@@ -376,7 +420,7 @@
       var shown = previewTotal();
       var nameEl = $('#sxg-t-name', receipt);
       var amountEl = $('#sxg-t-amount', receipt);
-      if (nameEl) nameEl.textContent = displayName(p.name);
+      if (nameEl) nameEl.textContent = displayName(p.name, anonId);
       if (amountEl) amountEl.textContent = '￥' + shown;
       if (fTotal) fTotal.textContent = '￥' + shown;
       // 理由是后加的一行，实时输入时需要补出来
@@ -403,6 +447,20 @@
       input.addEventListener('input', refreshPreview);
     });
 
+    // 清空累计（2026-10-17）：二次确认后才清零，只清金额，保留昵称与理由
+    var clearBtn = $('#sxg-f-clear', form);
+    if (clearBtn) clearBtn.addEventListener('click', function () {
+      openClearConfirm(function () {
+        var p2 = loadProfile();
+        saveProfile({ name: p2.name, total: 0, lastDelta: 0, reason: p2.reason });
+        baseTotal = 0;
+        fAmount.value = '';
+        if (fTotal) fTotal.textContent = '￥0';
+        var amountEl = $('#sxg-t-amount', receipt);
+        if (amountEl) amountEl.textContent = '￥0';
+      });
+    });
+
     // 小票主体：样式与内置卡片的小票保持一致
     var receipt = el('div', 'receipt-tear-top receipt-tear-bottom sxg-mono');
     receipt.style.cssText =
@@ -426,7 +484,7 @@
 
       '<div class="sxg-dashed" style="padding:16px 0">' +
         kv('考核执行官:', '<span class="sxg-bold" id="sxg-t-name">' +
-          esc(displayName(profile.name)) + '</span>') +
+          esc(displayName(profile.name, anonId)) + '</span>') +
         kv('考核品牌:', '<span class="sxg-bold">' + esc(cfg.name) + '</span>') +
         kv('所属企业:', '<span class="sxg-bold">' + esc(cfg.company || '—') + '</span>') +
         kv('企业评级:', '<span class="sxg-bold">' + esc(cfg.grade || 'C级') + '</span>') +
@@ -482,7 +540,7 @@
         '凭证编号：' + code + '\n' +
         '考核目标：' + (cfg.name || '') + '\n' +
         '企业评级：' + (cfg.grade || 'C级') + '\n' +
-        '考核执行官：' + displayName(p.name) + '\n' +
+        '考核执行官：' + displayName(p.name, anonId) + '\n' +
         (p.reason ? '理由：' + p.reason + '\n' : '') +
         '累计已转移/支持消费：￥' + shown + '\n' +
         '“老板考核你的KPI，你的钱包考核老板的良心”\n' +
@@ -591,6 +649,8 @@
      —— 视觉与自定义卡完全一致，且与构建流程解耦。            */
 
   var builtinPatched = null;
+  // 当次内置小票弹窗的稳定匿名编号（每次弹窗重开时重新生成一次）
+  var builtinAnonId = null;
 
   // 内置小票纸面上的金额行，标签有两个（按是否违规避雷二选一）：
   //   转移撤销消费金额: / 注入良心企业预算:
@@ -691,7 +751,7 @@
     var nameSpan = findValueNode(receipt, '考核执行官:');
     if (nameSpan) {
       nameSpan.id = 'sxg-t-name';
-      var nm = displayName(p.name);
+      var nm = displayName(p.name, builtinAnonId);
       if ((nameSpan.textContent || '').trim() !== nm) nameSpan.textContent = nm;
     }
     paintBuiltinAmount(receipt, want);
@@ -712,6 +772,7 @@
 
     var profile = loadProfile();
     receipt.setAttribute('data-sxg-builtin', '1');
+    builtinAnonId = Math.floor(1000 + Math.random() * 9000); // 本次弹窗内稳定
 
     // 与自定义卡弹窗同一条规则：打开时的累计是个常量，
     // 只有用户明确点「完成 / 复制」才把本次新增结算进去。
@@ -750,13 +811,29 @@
           builtinPreview = shown;
           var nameEl = $('#sxg-t-name', receipt);
           var amountEl = $('#sxg-t-amount', receipt);
-          if (nameEl) nameEl.textContent = displayName(fName.value);
+          if (nameEl) nameEl.textContent = displayName(fName.value, builtinAnonId);
           if (amountEl) amountEl.textContent = '￥' + shown;
           if (fTotal) fTotal.textContent = '￥' + shown;
           paintBuiltinReason(receipt, (fReason.value || '').trim());
         });
       });
     }
+
+    // 清空累计（2026-10-17）：二次确认后才清零，只清金额，保留昵称与理由。
+    // baseTotal/builtinPreview 同步归零，React 重渲染后 syncBuiltin 也写 0。
+    var clearBtnB = $('#sxg-f-clear', form);
+    if (clearBtnB) clearBtnB.addEventListener('click', function () {
+      openClearConfirm(function () {
+        var p2 = loadProfile();
+        saveProfile({ name: p2.name, total: 0, lastDelta: 0, reason: p2.reason });
+        baseTotal = 0;
+        builtinPreview = 0;
+        var fAmt = document.getElementById('sxg-f-amount');
+        if (fAmt) fAmt.value = '';
+        if (fTotal) fTotal.textContent = '￥0';
+        paintBuiltinAmount(receipt, 0);
+      });
+    });
 
     // 用户点「完成 / 复制 / 确认打卡并计入全网总额」才结算本次新增。
     // 用捕获阶段监听，因为这些按钮是 bundle 内部处理的，我们只旁挂结算。

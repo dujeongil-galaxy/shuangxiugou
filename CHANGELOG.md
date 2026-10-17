@@ -16,6 +16,18 @@
 ---
 ## 2026-10-17
 
+### 修复内置小票「#号自激滚动」+ 累计「清空」按钮（二次确认）+ 四张品牌 logo + CATL 深查证据后改档 C
+**文件**：`custom-card-actions.js`（?v=4：displayName 加 stableId、清空按钮与确认层）、`scripts/test-builtin-ticket-dom.cjs`（harness 换真 displayName + 新增第 8 节回归）、`index.html`（logo 映射 +4、bundle 缓存号 ?v=34、custom-card-actions ?v=4）、`assets/chagee.png`/`samsung.png`/`catl.png`/`acer.png`（新增 256px 方图）、`assets/index-YthXZ9eP.js`（CATL 卡整卡替换 + 避雷预警 15→16）、`brand/catl.html`（重写为 C 级页）、`projects.html`（CATL 行）、`员工实测数据核实修改清单.md`（两条备注）、`scripts/verify.mjs`（2d 提示文案随 U 级成员更新）
+**Bug 现象（站长实测）**：内置小票「考核执行官: 匿名打工人 #7163」的 #号后四位数持续滚动不停；本地无缓存时「累计已转移/支持消费」显示 ¥666。
+**滚动根因（留档）**：2026-10-16 晚三笔提交（1789bd7/5549a72/2aa0a83）给内置小票加「访客填写区 + DOM 接管」后，`syncBuiltin` 会在每次 MutationObserver 触发时重写署名行，写入 `displayName(p.name)`。昵称为空时 `displayName` 返回**随机** #号——「随机值 ≠ 现值」恒成立 → 每次都真实写 DOM（textContent 赋值会替换文本节点）→ childList 变更 → observer（300ms 防抖）再次触发 → 再写新随机数 → **自激循环**。金额行有「同值不写」守卫所以从不滚动，署名行没有同款守卫。为什么测试没拦住：`test-builtin-ticket-dom.cjs` 的 harness 把 `displayName` 换成了确定性桩（返回「匿名打工人」无 #号），随机性从未进过测试。**修复**：`displayName(name, stableId)`——每次弹窗打开（自定义卡 openTicketModal / 内置卡首次接管）生成一次稳定编号，弹窗内所有重绘复用同一编号，配合既有「同值不写」守卫，写一次即停；harness 改用真实 displayName 并新增第 8 节（重复 sync 后 #号不变 + observer 计数为 0）。
+**¥666 留档**：全仓检索无 666 字面量（bundle 与 custom-card-actions.js 均 0 命中）——它不是默认值，是浏览器 localStorage `sxg-visitor-profile` 里 10-16 晚功能上线后的历史累计（点「完成 / 复制 / 确认打卡」都会把「本次新增」并入累计），localStorage 不随「清除浏览器缓存」消失。直面该诉求的改动：填写区新增「清空」按钮 → 独立确认层（z-index 10002）提示「**一经删除则不可恢复**，是否确认？」→ 确认后金额清零（昵称/理由保留），baseTotal/builtinPreview 同步归零，React 重渲染后仍显示 ￥0。
+**LOGO**：站长指出新卡无 logo。新增 4 张 256px 方图（霸王/三星/CATL/Acer，来源见检索记录，白底或透明底），按 logoText 短名接入 index.html 的 brandLogos 映射；logo 替换是运行时 DOM 补丁，不需要改 bundle。
+**CATL 改档 C（U→C）**：AI 深查证据链——官方认证招聘 JD 公示「两班倒」（智联，2026-10-17 已抓原文）+ 财联社四基地 30 余名工人调查「两班倒 12 小时、做六休一至做七休一（月休约 2-4 天）」+ 每人Auto 互证（加班费 1.5/2/3 倍）+ 2023 年末淡季阶段性「强制双休/五天八小时」（伴随计薪下降）+ 官方 ESG 无量化双休承诺 + 「896」辟谣记录（不作依据）+ 法宝无本体力争文书。weekendPolicy overtime、overtimeComp statutory_paid；真实双休率等数值仍 null（无普惠占比可核算）；避雷预警 15→16；brand/catl.html 同步重写。**三星/宏碁**：第二轮定向检索无新口径，如实保持 U（备注已写入核实清单）。
+**计数影响**：内置 39（含虚拟对比卡 1）/ 自定义 5 = 44 张卡；收录 43 家；顶部 43/16/8/16，U 级 3 张（acer/samsung/chagee），16+8+16+3 = 43 闭合，verify 2e 自动核对通过（430 项全过，含新增 tab 角标核对）。
+
+---
+## 2026-10-17
+
 ### 修复「企业真假双休档案」tab 角标停在同一处手写旧计数（36→43），并纳入 2e 自动核对
 **文件**：`assets/index-YthXZ9eP.js`（brands tab 角标 36→43）、`scripts/verify.mjs`（2e 节新增 tab 角标=收录总数核对）、`index.html`（缓存号 ?v=33）
 **起因**：站长截图指出 brands tab 上的数字角标仍是 36。审计确认这是四格统计之外的第 5 处手写计数，此前两次增卡（38→41、41→43）都没带上它；本次改到 43 并把「角标=收录总数」写进 verify 2e，与四格统计同一口径（实名企业卡 = 内置-虚拟 + 自定义），以后增减卡漏改会直接报错。

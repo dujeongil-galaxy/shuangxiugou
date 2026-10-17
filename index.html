@@ -15,7 +15,7 @@
     <meta name="format-detection" content="telephone=no" />
     <meta name="msvalidate.01" content="1CA900F523A02F4764BEA0EA3134789B" />
     <link rel="canonical" href="https://dujeongil-galaxy.github.io/shuangxiugou/" />
-    <link rel="preload" as="script" href="./assets/index-YthXZ9eP.js?v=33" />
+    <link rel="preload" as="script" href="./assets/index-YthXZ9eP.js?v=34" />
     <link rel="preload" as="style" href="./assets/index-BgVofs0W.css" />
     <link rel="dns-prefetch" href="https://dujeongil-galaxy.github.io" />
     <meta property="og:title" content="双休购｜查公司双休评级，避雷单休大小周 996 血汗工厂" />
@@ -109,7 +109,7 @@
   ]
 }
     </script>
-    <script type="module" crossorigin src="./assets/index-YthXZ9eP.js?v=33"></script>
+    <script type="module" crossorigin src="./assets/index-YthXZ9eP.js?v=34"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-BgVofs0W.css">
     <!-- 良配 · 限时推广广告位（独立文件，改文案/样式不必动主页面；改完请把 ?v=N 的 N +1 防缓存） -->
     <link rel="stylesheet" href="./liangpei-ad.css?v=6">
@@ -168,7 +168,7 @@
           <li><strong><a href="./brand/vivo.html">vivo (维沃移动)</a></strong>：B 级 · 真实双休率 60% · 平均下班 19:30</li> <a href="./brand/vivo.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/haier.html">海尔 (Haier)</a></strong>：B 级 · 真实双休率 50% · 平均下班 19:40</li> <a href="./brand/haier.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/heytea.html">喜茶 (HEYTEA)</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 null</li> <a href="./brand/heytea.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/catl.html">宁德时代 (CATL)</a></strong>：待核实（未评级） · 真实双休率 null% · 平均下班 null</li> <a href="./brand/catl.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/catl.html">宁德时代 (CATL)</a></strong>：C 级 · 真实双休率 null% · 平均下班 null</li> <a href="./brand/catl.html" style="color:#0F766E">详细→</a>
 <li><strong><a href="./brand/kenyue.html">肯悦咖啡 (KCOFFEE)</a></strong>：C 级 · 真实双休率 null% · 平均下班 null</li> <a href="./brand/kenyue.html" style="color:#0F766E">详细→</a>
 <li><strong><a href="./brand/cotti.html">库迪咖啡 (COTTI COFFEE)</a></strong>：C 级 · 真实双休率 null% · 平均下班 null</li> <a href="./brand/cotti.html" style="color:#0F766E">详细→</a>
 <li><strong><a href="./brand/mixue.html">蜜雪冰城 (MIXUE)</a></strong>：C 级 · 真实双休率 null% · 平均下班 null</li> <a href="./brand/mixue.html" style="color:#0F766E">详细→</a>
@@ -270,7 +270,7 @@
           <li><a href="./brand/vivo.html">vivo (维沃移动)</a> —— B 级 · 双休率 60% · 平均下班 19:30</li>
           <li><a href="./brand/haier.html">海尔 (Haier)</a> —— B 级 · 双休率 50% · 平均下班 19:40</li>
           <li><a href="./brand/heytea.html">喜茶 (HEYTEA)</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 null</li>
-          <li><a href="./brand/catl.html">宁德时代 (CATL)</a> —— 待核实（未评级） · 双休率 null% · 平均下班 null</li>
+          <li><a href="./brand/catl.html">宁德时代 (CATL)</a> —— C 级 · 双休率 null% · 平均下班 null</li>
 <li><a href="./brand/kenyue.html">肯悦咖啡 (KCOFFEE)</a> —— C 级 · 双休率 null% · 平均下班 null</li>
 <li><a href="./brand/cotti.html">库迪咖啡 (COTTI COFFEE)</a> —— C 级 · 双休率 null% · 平均下班 null</li>
 <li><a href="./brand/mixue.html">蜜雪冰城 (MIXUE)</a> —— C 级 · 双休率 null% · 平均下班 null</li>
@@ -409,7 +409,11 @@
         '赵一鸣/零食很忙': './assets/snack-logo.png',
         '某烘焙': './assets/mouhongbei.png?v=2',
         'PTG': './assets/patagonia.png',
-        '星宇': './assets/xingyu.png'
+        '星宇': './assets/xingyu.png',
+        '霸王': './assets/chagee.png',
+        '三星': './assets/samsung.png',
+        'CATL': './assets/catl.png',
+        'Acer': './assets/acer.png'
       };
 
       // 替换所有卡片的logo
@@ -1071,7 +1075,7 @@
   <!-- 打卡引导 + 自定义卡片按钮修复：
        1) 顶部「打卡并生成小票」改为弹窗，引导去品牌档案卡打卡（原来默认给第一家品牌打卡，会误导）
        2) 自定义品牌卡（DOM 克隆）没有 React onClick，补上「打卡」「详情证据」功能 -->
-  <script src="./custom-card-actions.js?v=3"></script>
+  <script src="./custom-card-actions.js?v=4"></script>
   <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
   <script src="./factcheck-button.js?v=1"></script>
   <!-- 拼音 / 首字母模糊搜索联想。

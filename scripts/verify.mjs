@@ -336,7 +336,7 @@ brandCards.forEach((c, i) => {
   if (!chunk.includes('overtimeComp:`unknown`')) problems.push('加班费口径不是 unknown');
   if (problems.length) badU.push((c.name || c.id) + '：' + problems.join('、'));
 });
-check(uCards.length >= 1, '存在 U 级卡（宁德时代应已切 U）', uCards.join(', ') || '无');
+check(uCards.length >= 1, '存在 U 级卡（宏碁/三星/霸王茶姬应为 U）', uCards.join(', ') || '无');
 check(badU.length === 0, 'U 级卡数值全 null 且两项口径均 unknown（U 不是逃逸档位）', badU.join(', '));
 section('2e. 统计计数一致性（顶部四格 + 页脚清单）');
 // 口径（2026-10-17 审计确定，改动前 36/16/8/12 与任何口径都对不上）：

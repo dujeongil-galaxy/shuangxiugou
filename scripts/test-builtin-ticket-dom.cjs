@@ -126,6 +126,11 @@ function extractFn(name) {
 }
 
 const harnessSrc = [
+  // 2026-10-17 回归测试需要：syncBuiltin 引用的模块级状态与存档桩。
+  // builtinAnonId 用固定值，断言「同一次弹窗内 #号稳定」才可复现。
+  'var builtinPreview = null;',
+  'var builtinAnonId = 7163;',
+  'function loadProfile(){ return { name: "", total: 0, lastDelta: 0, reason: "" }; }',
   'var MAX_TOTAL = 99999999;',
   'function clampTotal(v){var n=Number(v); if(!isFinite(n)||n<0) n=0;',
   '  n=Math.round(n); return Math.min(n, MAX_TOTAL);}',
@@ -136,7 +141,7 @@ const harnessSrc = [
   '  if(typeof p.amount==="number"&&isFinite(p.amount)&&p.amount>0)',
   '    return {name:p.name,total:Math.min(Math.round(p.amount),MAX_TOTAL),lastDelta:0,reason:p.reason};',
   '  return p;}',
-  'function displayName(name){var s=String(name||"").trim(); return s||"匿名打工人";}',
+  extractFn('displayName'),
   'function $(sel,root){return (root||document).querySelector(sel);}',
   'function $$(sel,root){return Array.prototype.slice.call((root||document).querySelectorAll(sel));}',
   'function el(tag,cls,html){var n=document.createElement(tag); if(cls)n.className=cls;',
@@ -149,6 +154,7 @@ const harnessSrc = [
   extractFn('paintBuiltinAmount'),
   extractFn('hideBuiltinAmountInput'),
   extractFn('paintBuiltinReason'),
+  extractFn('syncBuiltin'),
 ].join('\n') + `
 var AMOUNT_LABELS = ['转移撤销消费金额:', '注入良心企业预算:'];
 var RATING_LABEL = '工时健康评级:';
@@ -171,7 +177,7 @@ function mount(opts, storageData) {
   w.__diag = [];
   const fn = new Function('window', 'document', harnessSrc
     + '\nreturn {findValueNode,findLabelNode,findBuiltinAmountSpan,'
-    + 'paintBuiltinAmount,hideBuiltinAmountInput,paintBuiltinReason};');
+    + 'paintBuiltinAmount,hideBuiltinAmountInput,paintBuiltinReason,syncBuiltin};');
   const api = fn(w, w.document);
   api.window = w;
   api.storage = data;
@@ -302,6 +308,29 @@ console.log('\n=== 4. 幂等：重复重绘不会让 observer 自激 ===');
         ok === false, ok);
       check('源码里有「未找到金额行」的告警文案',
         SRC.includes('内置小票未找到金额行'));
+    }
+
+    console.log('\n=== 8. 署名行 #号不得自激滚动（2026-10-17 回归）===');
+    {
+      const E5 = mount({ violation: false });
+      E5.syncBuiltin(E5.receipt);
+      const nameEl = E5.receipt.querySelector('#sxg-t-name');
+      check('syncBuiltin 把署名行改成「匿名打工人 #编号」',
+        !!nameEl && /^匿名打工人 #\d+$/.test((nameEl.textContent || '').trim()),
+        nameEl && nameEl.textContent);
+      const first = (nameEl.textContent || '').trim();
+      const w5 = E5.window;
+      let nameMutations = 0;
+      const mo5 = new w5.MutationObserver((recs) => { nameMutations += recs.length; });
+      mo5.observe(E5.receipt, { childList: true, subtree: true, characterData: true });
+      E5.syncBuiltin(E5.receipt);
+      E5.syncBuiltin(E5.receipt);
+      check('重复 sync 后署名不变（同一次弹窗内 #号稳定）',
+        (nameEl.textContent || '').trim() === first,
+        (nameEl.textContent || '') + ' vs ' + first);
+      await new Promise((r) => setTimeout(r, 30));
+      check('署名行同值重绘不产生 DOM 变更（observer 不会自激）',
+        nameMutations === 0, nameMutations);
     }
 
     console.log('\n' + '='.repeat(54));
