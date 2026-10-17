@@ -111,3 +111,8 @@ jobs:
       # 而这两处满是年份与百分比，输入「1」「2」会命中一堆无关卡片。
       - name: 数字搜索禁用测试
         run: node scripts/test-block-numeric-search.cjs
+
+      # 四格统计点击筛选（红榜=S/A、观察=B、避雷=C）：真渲染整页后真点按钮，
+      # 断言各档可见卡数与四格显示一致（16/8/16），虚拟卡不进任何分档。
+      - name: 四格筛选测试
+        run: node scripts/test-stat-filter.cjs
