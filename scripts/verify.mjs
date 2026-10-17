@@ -187,7 +187,10 @@ const badDerived = derivedCards.filter((c, i) => {
   const idx = brandCards.indexOf(c);
   const end = idx + 1 < brandCards.length ? brandCards[idx + 1].pos : bundle.length;
   const chunk = bundle.slice(c.pos, end);
-  if (!chunk.includes('rateBasis:`derived_from_official_disclosure`')) return true;
+  // 2026-10-17：合法换算依据扩展为三类（官方公示 / 媒体调查 / 招聘与员工爆料折中），
+  // 都要求卡片内存在可追溯的 ev- 证据 id（下一行断言）。
+  const LEGIT_BASIS = ['derived_from_official_disclosure', 'derived_from_investigation_reports', 'derived_from_recruiting_and_worker_reports'];
+  if (!LEGIT_BASIS.some((x) => chunk.includes('rateBasis:`' + x + '`'))) return true;
   // 换算依据必须能对应到一条真实存在的证据 id
   const ids = [...chunk.matchAll(/id:`(ev-[a-z0-9-]+)`/g)].map((x) => x[1]);
   return ids.length === 0;
