@@ -318,6 +318,27 @@ if (curCheck === 'ok') {
 }
 
 // ---------- 自定义卡解析 ----------
+// ---------- 2d. U 级（待核实）纪律 ----------
+// 背景：2026-10-17 宁德时代改档 U（tier:`U`）。U 是「不评级」，不是更差的 C：
+// 该档位必须数值全 null、两项口径 unknown，防止 U 变成绕过证据纪律的逃逸档位。
+// 灰色渲染层（徽章「待核实 · 无证据不作评级」）自 c9b2753 起已内置，本节盯数据层。
+section('2d. U 级（待核实）纪律');
+const uCards = [];
+const badU = [];
+brandCards.forEach((c, i) => {
+  const end = i + 1 < brandCards.length ? brandCards[i + 1].pos : bundle.length;
+  const chunk = bundle.slice(c.pos, end);
+  if (!chunk.includes('tier:`U`')) return;
+  uCards.push(c.name || c.id);
+  const problems = [];
+  if (!chunk.includes('realDoubleWeekendRate:null')) problems.push('真实双休率不是 null');
+  if (!chunk.includes('weekendPolicy:`unknown`')) problems.push('休息制度口径不是 unknown');
+  if (!chunk.includes('overtimeComp:`unknown`')) problems.push('加班费口径不是 unknown');
+  if (problems.length) badU.push((c.name || c.id) + '：' + problems.join('、'));
+});
+check(uCards.length >= 1, '存在 U 级卡（宁德时代应已切 U）', uCards.join(', ') || '无');
+check(badU.length === 0, 'U 级卡数值全 null 且两项口径均 unknown（U 不是逃逸档位）', badU.join(', '));
+
 section('3. 自定义卡（index.html 的 customCardsConfig）');
 
 const cfgBlock = html.match(/var customCardsConfig = \[([\s\S]*?)\n      \];/);
