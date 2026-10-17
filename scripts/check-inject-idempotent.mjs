@@ -55,9 +55,12 @@ function mkNode(tag, cls, text) {
 }
 
 function queryIn(root, sel) {
+  // 支持两种选择器：类选择（.flex-wrap）与标签选择（h2,h3，标题精确匹配用）
+  const tags = sel.indexOf(',') >= 0 ? sel.split(',') : [];
   const cls = sel.replace(/^\./, '');
   const walk = (n) => {
     for (const c of n.children) {
+      if (tags.length && tags.includes(c.tagName)) return c;
       if ((c.className || '').split(' ').includes(cls)) return c;
       const r = walk(c);
       if (r) return r;
@@ -69,6 +72,11 @@ function queryIn(root, sel) {
 
 const root = mkNode('div', 'root');
 const appleCard = mkNode('div', 'bg-white rounded-2xl border', 'Apple (苹果中国) iPhone MacBook');
+// 标题元素：insertAppleNote 按「卡片标题」识别品牌（2026-10-18 起，
+// 不再全文子串匹配——华为卡替代推荐区含 Apple 文本会误判）
+const appleTitle = mkNode('h3', '', 'Apple (苹果中国)');
+appleTitle.parentNode = appleCard;
+appleCard.children.push(appleTitle);
 const tagsRow = mkNode('div', 'flex-wrap');
 tagsRow.parentNode = appleCard;
 appleCard.children.push(tagsRow);

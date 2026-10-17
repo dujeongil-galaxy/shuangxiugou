@@ -5,6 +5,8 @@
 // badge 卡共 58 张（53 内置含 1 虚拟 + 5 自定义）。筛选结果与顶部五格显示一致：
 // 红榜(S/A)=19、观察(B)=14、避雷(C，不含虚拟卡)=19、待核实(U)=5；
 // 19+14+19+5 = 57 = 收录总数；「全部」=58（含虚拟卡，虚拟卡不进任何分档）。
+// 末尾另有苹果「富士康补充说明」框回归（PITFALLS 1.10 第二变体）：
+// 搜索「啊」→ 摘除；清空 → 插回；节点被复用为华为卡 → 不残留；隐藏子树 → 摘除。
 const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');
@@ -167,6 +169,61 @@ setTimeout(() => {
       u3 && !/rose/.test(u3.className), u3 && u3.className);
     check('待核实盒仍绑定筛选（data-sxg-stat=u）',
       u3 && u3.getAttribute('data-sxg-stat') === 'u');
+
+    // —— 回归（2026-10-18）：搜索过滤时「富士康补充说明」框残留（PITFALLS 1.10 第二变体）——
+    // 真实故障：搜索「啊」无匹配 → 所有卡消失，但 #apple-note 黄框孤零零留在搜索面板；
+    // 或搜索后 React 按位置复用节点，note 泄漏进华为卡。
+    // 修复：①搜索框有输入即摘除（捕获阶段同步）；②Apple 卡不在 DOM /
+    // 整棵子树隐藏即摘除；③按卡片标题匹配品牌（华为卡替代推荐区也含
+    // "Apple (苹果中国)"，全文子串匹配会误插进华为卡）。
+    const note = () => window.document.getElementById('apple-note');
+    const appleTextCards = () => [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
+      .filter((c) => (c.textContent || '').includes('Apple (苹果中国)'));
+    const ancestorCardOf = (n) => {
+      let p = n && n.parentNode;
+      while (p) { if (p.classList && p.classList.contains('bg-white')) return p; p = p.parentNode; }
+      return null;
+    };
+    const noteInApple = () => {
+      const n = note();
+      if (!n) return false;
+      return appleTextCards().some((a) => a.contains && a.contains(n));
+    };
+    const searchInput = () => window.document.getElementById('site-search-input');
+    const type = (v) => {
+      const i = searchInput();
+      i.value = v;
+      i.dispatchEvent(new window.Event('input', { bubbles: true }));
+    };
+    await new Promise((r) => setTimeout(r, 300)); // 等 React 挂载稳定
+    check('前置：note 存在且在 Apple 卡内', !!note() && noteInApple());
+    type('啊'); // 无匹配：React 会卸载全部卡
+    await new Promise((r) => setTimeout(r, 500));
+    check('搜索「啊」（无匹配）后 note 不在 DOM', !note());
+    type(''); // 清空搜索
+    await new Promise((r) => setTimeout(r, 500));
+    check('清空搜索后 note 重新插回 Apple 卡', noteInApple());
+    // React 按位置复用节点（原 bug①）：把持有 note 的 Apple 卡标题改成华为
+    //（只改标题文本，保留卡内其他子节点——与 React 文本更新复用节点的行为一致）
+    const host = ancestorCardOf(note());
+    const hostTitle = host.querySelector('h2,h3');
+    hostTitle.textContent = hostTitle.textContent.replace('Apple (苹果中国)', '华为 (HUAWEI)');
+    await new Promise((r) => setTimeout(r, 500));
+    check('节点被复用为华为卡：note 被摘除（不残留、不误插华为卡）', !note());
+    hostTitle.textContent = hostTitle.textContent.replace('华为 (HUAWEI)', 'Apple (苹果中国)');
+    await new Promise((r) => setTimeout(r, 500));
+    check('恢复 Apple 标题后 note 重新插回且唯一',
+      noteInApple() && window.document.querySelectorAll('#apple-note').length === 1);
+    // 隐藏子树闸门（①之外的第二道闸）：Apple 卡被 display:none 隐藏时摘除
+    const host2 = ancestorCardOf(note());
+    host2.style.display = 'none';
+    type(''); // 触发 input 监听器 → rAF → insertAppleNote 走隐藏子树闸门
+    await new Promise((r) => setTimeout(r, 500));
+    check('Apple 卡整棵子树隐藏后 note 被摘除', !note());
+    host2.style.display = '';
+    type('');
+    await new Promise((r) => setTimeout(r, 500));
+    check('Apple 卡恢复显示后 note 重新插回', noteInApple());
 
     console.log('\n' + '='.repeat(54));
     console.log('通过 ' + pass + ' 项，失败 ' + fail + ' 项');

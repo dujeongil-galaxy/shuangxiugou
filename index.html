@@ -846,6 +846,18 @@
       //
       // ⚠️⚠️ 必须保持幂等，否则整页卡死。
       //
+      // 2026-10-18：搜索一有输入立即摘除说明框（捕获阶段同步执行），
+      // 不等 observer 防抖——React 位置复用会把 note 带到错误位置，
+      // 异步清理会有可见残留。清空搜索后由 insertAppleNote 重新插回。
+      // （放在本脚本末尾：check-inject-idempotent.mjs 按「下一个 function
+      // 声明」切函数体，监听器混在 insertAppleNote 与下个函数之间会被切坏。）
+      document.addEventListener('input', function (ev) {
+        if (ev.target && ev.target.id === 'site-search-input') {
+          var n = document.getElementById('apple-note');
+          if (n && n.parentNode) n.parentNode.removeChild(n);
+        }
+      }, true);
+
       // 本文件末尾有 `new MutationObserver(init)`：init() 里的任何 DOM 改动
       // 都会再次触发 observer → 又调 init() → 又改 DOM → **无限循环**，
       // 浏览器直接弹「页面没有响应」。
@@ -865,14 +877,46 @@
 
         var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
         var appleCard = null;
+        // 2026-10-18：按「卡片标题」匹配品牌，不再全文子串匹配。
+        // 华为卡的同品类替代推荐区含「Apple (苹果中国)」文本，全文匹配会把
+        // 说明框误插进华为卡（PITFALLS 1.10 真正机制之一：标题才是品牌身份，
+        // 正文里的提及不是）。标题 = 卡内第一个 h2/h3 的文本。
         for (var i = 0; i < cards.length; i++) {
-          if (cards[i].textContent.includes('Apple (苹果中国)')) {
+          var titleEl = cards[i].querySelector('h2,h3');
+          var title = titleEl ? titleEl.textContent.trim() : '';
+          if (title.indexOf('Apple') === 0) {
             appleCard = cards[i];
           }
         }
 
+        // 2026-10-18 修复（PITFALLS 1.10 第二变体）：搜索/筛选会按位置复用
+        // 卡片节点，note 会跟着节点泄漏进搜索面板或别家卡。两道闸：
+        // ① 搜索框有输入 → 说明框必须摘除（它是浏览态的辅助说明）；
+        // ② Apple 卡不在 DOM 或不可见（display:none / 祖先隐藏）→ 摘除。
+        var searchInputEl = document.getElementById('site-search-input');
+        if (searchInputEl && searchInputEl.value.trim() !== '') {
+          if (note && note.parentNode) note.parentNode.removeChild(note);
+          return;
+        }
+        // 可见性用纯 DOM 结构检查（沿祖先找 inline display:none），
+        // 覆盖四格筛选与自定义卡过滤的隐藏方式；不依赖布局引擎。
+        function sxgHiddenSubtree(el) {
+          var n = el;
+          while (n && n !== document.body) {
+            if (n.style && n.style.display === 'none') return true;
+            n = n.parentNode;
+          }
+          return false;
+        }
+        var appleHidden = appleCard && sxgHiddenSubtree(appleCard);
+
         // 当前列表没有苹果卡（例如搜索过滤掉了）→ 说明框不该存在
         if (!appleCard) {
+          if (note && note.parentNode) note.parentNode.removeChild(note);
+          return;
+        }
+        // Apple 卡在 DOM 里但整棵子树被隐藏（四格筛选/自定义卡过滤）→ 同样摘除
+        if (appleHidden) {
           if (note && note.parentNode) note.parentNode.removeChild(note);
           return;
         }
@@ -883,11 +927,27 @@
           return;
         }
 
-        // 已经挂在正确的苹果卡里 → 什么都不做（保持幂等，避免自激循环）
-        if (note && note.parentNode === tagsRow.parentNode
+        // 已经挂在正确的苹果卡里 → 什么都不做（保持幂等，避免自激循环）。
+        // 包含关系判断：优先 contains，桩环境无该方法时走祖先链回退
+        //（check-inject-idempotent.mjs 的最小 DOM 桩没有 contains）。
+        var noteInsideApple = false;
+        if (note) {
+          if (appleCard.contains && appleCard.contains(note)) {
+            noteInsideApple = true;
+          } else {
+            var anc = note.parentNode;
+            while (anc) {
+              if (anc === appleCard) { noteInsideApple = true; break; }
+              anc = anc.parentNode;
+            }
+          }
+        }
+        if (note && noteInsideApple
+                   && note.parentNode === tagsRow.parentNode
                    && note.previousSibling === tagsRow) {
           return;
         }
+        // note 挂在别的容器里（React 位置复用导致泄漏）→ 下面先清后插纠正
 
         // 位置不对才纠正：先摘掉可能挂在别的卡上的旧节点
         if (note && note.parentNode) note.parentNode.removeChild(note);
