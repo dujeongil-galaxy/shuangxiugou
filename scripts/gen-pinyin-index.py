@@ -257,7 +257,7 @@ def search(q, index):
 HEADER = """// ============================================================
 // 拼音/首字母模糊搜索索引 —— 自动生成，请勿手改
 //
-// 来源：assets/index-YthXZ9eP.js 的 brands 数组
+// 来源：assets/index-YthXZ9eP.js 的 brands 数组（剔除「虚拟对比黑榜」卡）
 //       + index.html 的 customCardsConfig（自定义卡）
 // 生成：scripts/gen-pinyin-index.py（依赖 pypinyin）
 // 字段 t = [原文, 全拼, 首字母, 重要度]
@@ -274,7 +274,11 @@ if __name__ == '__main__':
         sys.exit('找不到 bundle：' + BUNDLE)
 
     brands = extract_brands(open(BUNDLE, encoding='utf-8').read())
-    print('从 bundle 解析出品牌数：', len(brands))
+    # 虚构对比黑榜卡（某代工烘焙食品）不对外联想 —— 它不是真实企业，
+    # 也不计入收录口径，进了联想会误导「查品牌」的用户（2026-10-18 修复）。
+    # 识别口径与 verify.mjs 的 FICTIONAL 一致：名称含「虚拟对比黑榜」。
+    brands = [b for b in brands if '虚拟对比黑榜' not in (b['name'] or '')]
+    print('从 bundle 解析出品牌数（已剔除虚拟对比卡）：', len(brands))
 
     if os.path.exists(INDEX_HTML):
         customs = parse_custom_configs(open(INDEX_HTML, encoding='utf-8').read())

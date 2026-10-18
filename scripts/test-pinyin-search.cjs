@@ -190,11 +190,15 @@ setTimeout(() => {
     j++;
   }
   const bundleIds = new Set(cards
-    .map((o) => /\{id:`([a-z0-9-]+)`,name:`/.exec(o))
+    .map((o) => /\{id:`([a-z0-9-]+)`,name:`([^`]*)`/.exec(o))
     .filter(Boolean).map((m) => m[1]));
-  check('索引品牌数与 brands 主数组 + 自定义卡一致（动态推导，不写死）',
-        window.__PINYIN_INDEX__.length === bundleIds.size + customIds.size,
-        { 索引: window.__PINYIN_INDEX__.length, brands数组: bundleIds.size, 自定义卡: customIds.size });
+  // 虚构对比黑榜卡不进联想索引（2026-10-18），期望数 = 真实内置卡 + 自定义卡
+  const virtualIds = new Set(cards
+    .map((o) => /\{id:`([a-z0-9-]+)`,name:`([^`]*)`/.exec(o))
+    .filter((m) => m && m[2].includes('虚拟对比黑榜')).map((m) => m[1]));
+  check('索引品牌数与 brands 主数组（不含虚拟卡）+ 自定义卡一致（动态推导，不写死）',
+        window.__PINYIN_INDEX__.length === bundleIds.size - virtualIds.size + customIds.size,
+        { 索引: window.__PINYIN_INDEX__.length, 真实内置: bundleIds.size - virtualIds.size, 自定义卡: customIds.size });
 
   console.log('\n--- 标签页延迟渲染（真实场景）---');
   // bundle 里搜索框是 `brands&&...` 条件渲染：页面初始在别的标签时
