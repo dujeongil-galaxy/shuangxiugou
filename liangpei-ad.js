@@ -1,33 +1,156 @@
 /* ==========================================================================
-   双休购 · 站点推广广告位 —— 渲染与交互
+   良配 · 限时推广广告位 —— 渲染与交互
    --------------------------------------------------------------------------
-   2026-10-18 站长指示：原「良配」商业推广位改为本站自我推广，
-   文案「必应搜索，雙休購996」——「双休购」简体为输入拦截词，改用繁体。
-   点击 CTA 直接跳必应搜索「雙休購996」，不做微信口令复制。
-
-   ⚠️ 关闭规则（2026-10-18 变更）：不再写 localStorage「关闭后 7 天
-   不再显示」的记忆——点关闭只隐藏本次页面，刷新后广告重新出现。
+   ⚠️ 关键点：推广链接是微信小程序 scheme（#小程序://良配/B1ZcfI0N4ii3skj）。
+      这种链接无法在网页里直接打开，微信的玩法是：
+      复制口令 → 粘贴到任意聊天窗口并发送 → 点自己刚发出的那条消息，
+      微信会把它识别成小程序卡片并唤起。
+      所以按环境分支：
+        · 微信内 → 直接跳转 scheme，唤起小程序
+        · 微信外 → 复制口令，并提示上述发送步骤
    ========================================================================== */
 (function () {
   'use strict';
 
   var CONFIG = {
-    // aria-label 与 LOGO 用的短名
-    brand: '雙休購',
+    // aria-label 与 LOGO 用的短名，保持「良配」两字
+    brand: '良配',
     // 品牌行（LOGO 下方的第一行文字）。
-    // 2026-10-18 站长要求这一行写「必应搜索，雙休購996」，
+    // 2026-10-16 用户要求这一行写「（限时推广）良配 - AI婚恋」，
     // 且**必须完整显示在一行内**，不允许折行。
-    // 为此 CSS 里给 .lp-ad__brand 加了 white-space:nowrap。
-    brandLine: '必应搜索，雙休購996',
-    // 正文
-    title: '查公司双休评级，<br>避雷单休大小周 996',
-    cta: '去必应搜索',
-    note: '搜「雙休購996」直达双休购',
-    // 点击 CTA 跳必应搜索繁体词（简体「双休购」为输入拦截词，不直接用）
-    link: 'https://www.bing.com/search?q=' + encodeURIComponent('雙休購996')
+    // 为此 CSS 里给 .lp-ad__brand 加了 white-space:nowrap，
+    // 并把竖排卡片从 152px 加宽到 176px、字号压到 12px，
+    // 否则 14 个字符在 152px 里放不下会被挤断。
+    brandLine: '（限时推广）良配 - AI婚恋',
+    // 官方未公布活动结束时间，故不设倒计时
+    // 2026-10-16 去掉徽标（CONFIG.badge 及其 DOM 节点已一并删除），
+    // 「AI 婚恋」这类品类标签不再单独占一行，
+    // 并入上方的品牌行，省下的空间给正文，把字号放大。
+    title: '注册即送<br>喜茶 20 元<br>无门槛消费红包',
+    cta: '立即注册',
+    note: '微信小程序 · 推广合作',
+    scheme: '#小程序://良配/B1ZcfI0N4ii3skj',
+    storageKey: 'lp_ad_dismissed_at',
+    // 关闭后多久再展示（毫秒），7 天
+    reappearAfter: 7 * 24 * 60 * 60 * 1000
   };
 
-  var LOGO_TEXT = '雙休購';
+  var LOGO_TEXT = '良配';
+
+  // 2026-10-18 站长指示：不再做「关闭后 7 天不再显示」的记忆 ——
+  // 点关闭只隐藏本次页面，刷新后广告重新出现（原 localStorage 逻辑停用）。
+  function isDismissedRecently() {
+    return false;
+  }
+
+  function markDismissed() {
+    // 空操作：不再写 localStorage
+  }
+
+  function isWeChat() {
+    return /MicroMessenger/i.test(navigator.userAgent);
+  }
+
+  /* 把文本写入剪贴板。
+     ⚠️ 这里有两个实测踩到的坑，顺序不能改：
+
+     1) document.execCommand('copy') 的返回值不可信。选区为空、元素不可聚焦
+        时它照样返回 true，但剪贴板里什么都没有。结果就是 UI 提示「已复制」，
+        用户粘贴出来是空的。
+
+     2) 用户手势只在「点击事件的同步执行栈」内有效。一旦写成
+        promise.then(...) 或 setTimeout，浏览器就认为手势已结束，
+        真正的复制会被静默拒绝。所以 execCommand 必须同步调用，
+        不能放进 Promise 链里。
+
+     因此这里的顺序是：同步 execCommand 打头（趁手势还在），
+     异步 clipboard API 兜底（现代浏览器里最稳），最后手动复制提示。 */
+  function copyText(text) {
+    // 第 1 级：同步执行，必须留在点击回调的同步栈里
+    var syncOk = copySync(text);
+
+    // 第 2 级：clipboard API。已在异步阶段，只能作为补充。
+    return tryClipboardApi(text)
+      .then(function () { return true; })
+      .catch(function () { return syncOk; });
+  }
+
+  /* 同步复制：接管 copy 事件用 setData 显式写入。
+     这是本次实测中最可靠的一条——不依赖选区状态，
+     clipboardData 在事件内可完整回读验证内容。 */
+  function copySync(text) {
+    try {
+      var onCopy = function (e) {
+        if (!e.clipboardData) return;
+        e.clipboardData.setData('text/plain', text);
+        e.preventDefault();
+      };
+      document.addEventListener('copy', onCopy);
+      var ok = document.execCommand('copy');
+      document.removeEventListener('copy', onCopy);
+      return !!ok;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  // clipboard API 兜底（iOS Safari / 移动端 WebView 下 execCommand 常被禁）
+  function tryClipboardApi(text) {
+    if (!navigator.clipboard || !navigator.clipboard.writeText) {
+      return Promise.reject(new Error('clipboard api unavailable'));
+    }
+    return navigator.clipboard.writeText(text);
+  }
+
+  var toastEl = null;
+  var toastTimer = null;
+
+  function showToast(html, keepOpen) {
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      toastEl.className = 'lp-ad-toast';
+      toastEl.setAttribute('role', 'status');
+      toastEl.setAttribute('aria-live', 'polite');
+      document.body.appendChild(toastEl);
+    }
+    toastEl.innerHTML = html;
+    // 强制回流，保证连续调用时 transition 能重新触发
+    void toastEl.offsetWidth;
+    toastEl.classList.add('is-show');
+    clearTimeout(toastTimer);
+    // 展示口令的提示不自动消失：用户可能需要时间切到微信
+    toastTimer = setTimeout(function () {
+      toastEl.classList.remove('is-show');
+    }, keepOpen ? 15000 : 4200);
+
+    // 口令支持点击再复制一次：自动复制万一没生效，用户点一下能立刻补上
+    var code = toastEl.querySelector('code');
+    if (code) {
+      code.addEventListener('click', function () {
+        copyText(CONFIG.scheme);
+        code.textContent = CONFIG.scheme + ' ✓';
+        setTimeout(function () {
+          if (code.isConnected) code.textContent = CONFIG.scheme;
+        }, 1400);
+      });
+    }
+  }
+
+  /* 把 toast 里的口令选中。
+     user-select:all 已让用户点击时全选，这里再主动选中一次：
+     部分移动端浏览器不会因为点击而弹出复制气泡，需要先有真实选区。 */
+  function selectManualText() {
+    if (!toastEl) return;
+    var code = toastEl.querySelector('code');
+    if (!code) return;
+    try {
+      var range = document.createRange();
+      range.selectNodeContents(code);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } catch (e) {}
+  }
 
   function build() {
     var aside = document.createElement('aside');
@@ -48,21 +171,38 @@
       '<div class="lp-ad__note">' + CONFIG.note + '</div>';
 
     var cta = aside.querySelector('.lp-ad__cta');
-    cta.href = CONFIG.link;
-    cta.target = '_blank';
-    cta.rel = 'noopener noreferrer';
+    // 微信外点击会被 JS 拦下改成「复制口令」，href 只在微信内真正生效
+    cta.href = CONFIG.scheme;
     cta.textContent = CONFIG.cta;
+    cta.addEventListener('click', function (e) {
+      if (isWeChat()) return; // 微信内放行默认行为，唤起小程序
 
-    // 关闭：仅本次会话隐藏。2026-10-18 起不再写 localStorage，
-    // 刷新页面广告即重新出现（原「关闭后 7 天不再显示」规则已删除）。
+      e.preventDefault();
+      // copyText 统一 resolve 成布尔值：同步 execCommand 或 clipboard API 任一成功即为 true
+      copyText(CONFIG.scheme).then(function (ok) {
+        // 无论自动复制成功与否，都把口令本身显示出来。
+        // 自动复制在各家浏览器的可用性差异很大（iOS WebView、部分国产浏览器、
+        // 非安全上下文都可能静默失败），只提示「已复制」而把口令藏起来，
+        // 一旦实际没复制成功，用户就彻底没有出路了。
+        showToast(
+          (ok ? '已复制，去微信里粘贴发送' : '请复制下方口令') +
+            '<br><code>' + CONFIG.scheme + '</code>' +
+            '<span class="lp-ad-toast__steps">在微信里发给任意聊天窗口 → 点自己刚发的那条链接</span>',
+          true
+        );
+        selectManualText();
+      });
+    });
+
     aside.querySelector('.lp-ad__close').addEventListener('click', function () {
+      markDismissed();
       aside.classList.add('is-hidden');
     });
 
     document.body.appendChild(aside);
 
     // 竖排（≥1440px）靠 <br> 手动断行；窄屏横排时 <br> 会把文案截断，
-    // 这里按当前视口宽度移除 <br>，交由 CSS 控制行数。
+    // 这里按当前视口宽度移除 <br>，交由 CSS 的 -webkit-line-clamp 控制行数。
     // 用 matchMedia 而非 resize 监听：只随断点切换时执行，无需频繁重排。
     var wideQuery = window.matchMedia('(min-width: 1440px)');
 
@@ -94,7 +234,8 @@
   }
 
   function init() {
-    // 2026-10-18：不再判断「关闭后 N 天不再显示」，每次进入页面都展示
+    // 官方未公布活动结束时间，不做倒计时与过期隐藏
+    if (isDismissedRecently()) return; // 用户刚关闭过：7 天内不再打扰
     build();
   }
 

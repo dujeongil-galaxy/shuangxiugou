@@ -9,7 +9,7 @@
    - 不用 Tailwind 类（index-BgVofs0W.css 是按源码生成的，未用到的类不存在），
      样式自带 <style>，选择器用 sxg- 前缀避免冲突；
    - 幂等：已存在 #sxg-top-btn 直接返回，防止重复注入；
-   - 与吸底广告（liangpei-ad.css）避让：
+   - 与良配吸底广告（liangpei-ad.css）避让：
      <1440px  广告条吸底（z-index 9990）→ 按钮放广告条上方（bottom 96px + 安全区）；
      >=1440px  广告卡在右上（top 88px）→ 按钮放右下角；
      按钮 z-index 9000，低于广告条，万一重叠也是广告在上。

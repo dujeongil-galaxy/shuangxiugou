@@ -1,13 +1,10 @@
-// 广告位 LOGO 渲染验证：确保「雙休購」三字永远横排，不竖排
+// 广告位 LOGO 渲染验证：确保「良配」两字永远横排，不竖排
 //
 // 起因（用户截图）：右上角广告卡的 LOGO 显示成「良/配」竖排两行，
 // 标题也被挤成怪样子。用户原话：「我从未说过竖着写，你不觉得很别扭？」
 //
 // 根因：容器宽度与「2 字 × 字号」正好相等（48px vs 2×24px），
 // 任何字距/字重偏差就折行。这个临界值设计本身就是错的。
-//
-// 2026-10-18：广告位改为本站推广，LOGO 由「良配」两字改为「雙休購」三字，
-// 容器宽度按三字重算（64px 容器 / 18px 字号 = 54px 内容，余量 10px）。
 //
 // 本测试用 jsdom + 真实 CSS 计算，断言 logo 容器宽度 > 文字所需宽度，
 // 并且 white-space 是 nowrap —— 不依赖肉眼。
@@ -34,7 +31,7 @@ const js = read('liangpei-ad.js');
 const logoM = /var LOGO_TEXT = '([^']*)'/.exec(js);
 const brandM = /brandLine: '([^']*)'/.exec(js);
 check('JS 里能读到 LOGO_TEXT', !!logoM, logoM && logoM[1]);
-check('LOGO 是「雙休購」三个字', logoM && logoM[1] === '雙休購', logoM && logoM[1]);
+check('LOGO 是「良配」两个字', logoM && logoM[1] === '良配', logoM && logoM[1]);
 const logoText = logoM ? logoM[1] : '';
 const charCount = logoText.length;
 
@@ -76,7 +73,7 @@ for (const [label, block] of blocks) {
   const slack = width - needed;
 
   // 留 8px 余量（字距、字重、字体度量差异）
-  check(`${label}：容器(${width}px) 比 ${charCount} 字所需(${needed}px) 至少宽 8px`,
+  check(`${label}：容器(${width}px) 比 2 字所需(${needed}px) 至少宽 8px`,
     slack >= 8,
     { width, fontSize, needed, slack });
 
@@ -99,7 +96,7 @@ const doc = dom.window.document;
 // 没有固定宽度小于内容、没有 white-space:normal 覆盖。
 const logoEl = doc.querySelector('.lp-ad__logo');
 check('渲染出了 logo 元素', !!logoEl);
-check('logo 元素文本是「雙休購」', logoEl && logoEl.textContent === '雙休購');
+check('logo 元素文本是「良配」', logoEl && logoEl.textContent === '良配');
 
 const sheetText = Array.from(doc.styleSheets)
   .flatMap((s) => Array.from(s.cssRules).map((r) => r.cssText)).join('\n');
