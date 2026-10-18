@@ -16,12 +16,12 @@
     // aria-label 与 LOGO 用的短名，保持「良配」两字
     brand: '良配',
     // 品牌行（LOGO 下方的第一行文字）。
-    // 2026-10-16 用户要求这一行写「（限时推广）良配 - AI婚恋」，
-    // 且**必须完整显示在一行内**，不允许折行。
-    // 为此 CSS 里给 .lp-ad__brand 加了 white-space:nowrap，
-    // 并把竖排卡片从 152px 加宽到 176px、字号压到 12px，
-    // 否则 14 个字符在 152px 里放不下会被挤断。
-    brandLine: '（限时推广）良配 - AI婚恋',
+    // 2026-10-18 用户要求拆成两行：
+    //   第 1 行「（限时推广）」—— 左对齐，压在 LOGO 上方；
+    //   第 2 行「良配 - AI婚恋」—— 继续居中，LOGO 与它的位置不动。
+    // 两行都必须是 nowrap（品牌行 14 个字符在竖排 176px 卡片里放不下会被挤断）。
+    limitLine: '（限时推广）',
+    brandLine: '良配 - AI婚恋',
     // 官方未公布活动结束时间，故不设倒计时
     // 2026-10-16 去掉徽标（CONFIG.badge 及其 DOM 节点已一并删除），
     // 「AI 婚恋」这类品类标签不再单独占一行，
@@ -161,6 +161,8 @@
     aside.innerHTML =
       '<button class="lp-ad__close" type="button" aria-label="关闭广告">&times;</button>' +
       '<div class="lp-ad__body">' +
+        // 限时推广：竖排卡片里独立一行、靠左，压在 LOGO 上方（不是品牌行的一部分）
+        '<div class="lp-ad__limit">' + CONFIG.limitLine + '</div>' +
         '<div class="lp-ad__logo" aria-hidden="true">' + LOGO_TEXT + '</div>' +
         '<div class="lp-ad__text">' +
           '<div class="lp-ad__brand">' + CONFIG.brandLine + '</div>' +

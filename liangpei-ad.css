@@ -62,13 +62,25 @@
   box-shadow: 0 4px 12px rgba(61, 173, 138, 0.32);
 }
 
+.lp-ad__limit {
+  /* 「（限时推广）」：竖排卡片里绝对定位在 LOGO 正上方、靠左贴边；
+     独占一行，不参与 body 的居中流，所以 LOGO 与品牌行的位置完全不动。 */
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--lp-text-3);
+  white-space: nowrap;
+}
+
 .lp-ad__brand {
   font-size: 17px;
   font-weight: 800;
   color: var(--lp-text);
-  /* 品牌行是「（限时推广）良配 - AI婚恋」，14 个字符。
+  /* 品牌行是「良配 - AI婚恋」，9 个字符。
      用户要求必须完整显示在一行内，所以强制 nowrap：
-     宁可字号小一点也不许折行。 */
+     宁可字号小一点也不许折行。
+     注：2026-10-18 起「（限时推广）」已拆成独立的 .lp-ad__limit 行，
+     不再挤在这行里。 */
   white-space: nowrap;
 }
 
@@ -227,14 +239,31 @@
 
   .lp-ad__body {
     display: block;
+    position: relative;
   }
 
   /* 竖排卡片宽 176px，内容区 152px。
-     品牌行 10 个全角 + 「 - AI」约 2.5 个全角宽，合计约 12.5 字宽，
-     11.5px 字号下约 144px，单行能放下且留有余量；
-     12px 时约 150px 已贴边，不同字体度量稍有出入就会溢出，所以锁 11.5px。 */
+     ⚠️ 2026-10-18 踩过一次：在 176px 卡片里给文字多留 12px 的右内边距，
+     内容宽只剩 140px，「良配 - AI婚恋」约 145px 直接溢出到视口外。
+     所以左右内边距保持对称 12px，不加任何单侧留白。 */
+  .lp-ad__limit {
+    /* 压在 LOGO 正上方、与卡片内容左边缘对齐（不居中）。
+       ⚠️ 不能用 absolute 叠上去：LOGO 是不透明的绿色实心块（还带阴影），
+       同层级下会把「（限时推广）」的左半截直接盖掉（2026-10-18 实测）。
+       所以放在正常流里、独占一行，LOGO 的 margin-top 让位给这行。 */
+    display: block;
+    margin: 0 0 4px;
+    font-size: 11px;
+    line-height: 1.5;
+    text-align: left;
+    color: var(--lp-text-3);
+    white-space: nowrap;
+  }
+
+  /* 品牌行 9 个字符（「良配 - AI婚恋」在 152px 里约 100px），
+     12px 字号下宽裕，比原先塞 14 个字符时更好读。 */
   .lp-ad__brand {
-    font-size: 11.5px;
+    font-size: 12px;
     letter-spacing: 0;
   }
 
@@ -242,11 +271,13 @@
      ⚠️ 这里踩过一次：容器 48px、字号 24px，2×24=48px 正好等于容器宽度，
      一个字距/字重偏差就折成「良/配」竖排两行（2026-10-17 用户实际遇到）。
      修法不是缩字号，而是把容器放宽到内容宽 + 安全余量，
-     并用 white-space:nowrap 从根上禁止折行 —— 竖排在这种方块里永远别扭。 */
+     并用 white-space:nowrap 从根上禁止折行 —— 竖排在这种方块里永远别扭。
+     2026-10-18：上方多了「（限时推广）」一行，margin-top 由 8px 改为 2px，
+     卡片总高度基本不变，LOGO 与品牌行的视觉位置保持原样。 */
   .lp-ad__logo {
-    width: 64px;
-    height: 44px;
-    margin: 8px auto 10px;
+    width: 72px;
+    height: 42px;
+    margin: 2px auto 10px;
     font-size: 22px;
     white-space: nowrap;
     letter-spacing: 0.04em;
@@ -321,6 +352,21 @@
   .lp-ad__brand {
     font-size: 15px;
     margin-bottom: 2px;
+  }
+
+  /* 吸底条是横向一条，「（限时推广）」不能压到 LOGO 上，
+     而是缩成一个小标签，紧跟品牌行前面、与品牌行同一行显示。 */
+  .lp-ad__limit {
+    display: inline-block;
+    margin-bottom: 3px;
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: #f6f1e9;
+    color: var(--lp-text-3);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.4;
+    vertical-align: 1px;
   }
 
   .lp-ad__title {

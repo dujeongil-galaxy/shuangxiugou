@@ -1140,7 +1140,48 @@
           b.setAttribute('aria-disabled', 'true');
         }
       });
+
+      patchVoteCounts();
     });
+  }
+
+  /* ------------------- 修「投票数显示 null」 -------------------
+     新增卡片的数据里 totalEmployeeVotes 写成 null（表示「尚无实测投票」，
+     是正常业务状态，不是脏数据）。bundle 只在卡片头部做了判空，详情弹窗里
+     仍是直接拼接 `内部员工匿名投票汇总 ( {votes} 票 )`。
+
+     ⚠️ 两个实测踩到的坑（2026-10-18）：
+     1) React 遇到 null 子节点会**跳过不渲染**，页面上不是字面 "null"，
+        而是「内部员工匿名投票汇总 ( 票)」——数字整个消失，括号里空着。
+     2) React 把这段文案拆成**多个相邻文本节点**（`"…汇总 ("` + `" 票)"`），
+        逐个文本节点跑正则永远匹配不到。所以必须按**父元素整体文本**判定，
+        命中后整块重写成一句话。 */
+  var VOTE_NULL_RE = /内部员工匿名投票汇总\s*[（(]\s*(null|undefined|—)?\s*票\s*[）)]/;
+
+  function patchVoteText(root) {
+    if (!root || !root.querySelectorAll) return false;
+    var changed = false;
+    var spans = root.querySelectorAll('span, div');
+    for (var i = 0; i < spans.length; i++) {
+      var e = spans[i];
+      var t = e.textContent || '';
+      if (t.indexOf('内部员工匿名投票汇总') === -1) continue;
+      // 只处理「文字直接挂在它下面」的最近一层，别动整块卡片的容器
+      if (e.querySelector('span, div')) continue;
+      if (!VOTE_NULL_RE.test(t)) continue;
+      e.textContent = t.replace(VOTE_NULL_RE, '内部员工匿名投票汇总（暂无实测投票）');
+      changed = true;
+    }
+    return changed;
+  }
+
+  function patchVoteCounts() {
+    var layer = document.querySelector('.sxg-layer');
+    var cards = $$('div.bg-white.rounded-2xl.border');
+    var hit = false;
+    if (layer) hit = patchVoteText(layer) || hit;
+    for (var i = 0; i < cards.length; i++) hit = patchVoteText(cards[i]) || hit;
+    return hit;
   }
 
   /* ------------------------------------------------------------------ 杂项 */
@@ -1165,6 +1206,7 @@
     try { bindHeaderButton(); } catch (e) { diag('绑定顶部按钮出错: ' + e); }
     try { bindCustomCards(); } catch (e) { diag('绑定自定义卡片出错: ' + e); }
     try { patchBuiltinTicket(); } catch (e) { diag('接管内置小票出错: ' + e); }
+    try { patchVoteCounts(); } catch (e) { diag('修正投票数显示出错: ' + e); }
   }
 
   init();
