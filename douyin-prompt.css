@@ -7,6 +7,10 @@
   inset: 0;
   z-index: 100000;
   display: none;
+  /* 2026-10-19 修复：容器以前是实心全屏层，自动弹出后整个页面的按钮
+     （员工投票/打卡等）全被它挡住，点了没反应——点击全落在容器上被吞。
+     现在 pointer-events 穿透容器，只有遮罩和面板接收点击。 */
+  pointer-events: none;
   font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
 
@@ -20,13 +24,15 @@
   box-sizing: border-box;
 }
 
-/* 遮罩：只遮背景，不锁滚动——用户可能想继续浏览页面 */
+/* 遮罩：只遮背景，不锁滚动——用户可能想继续浏览页面。
+   容器已 pointer-events:none，遮罩自己要恢复接收点击。 */
 .dyp__mask {
   position: absolute;
   inset: 0;
   background: rgba(24, 20, 16, 0.55);
   backdrop-filter: blur(2px);
   animation: dyp-fade 0.22s ease;
+  pointer-events: auto;
 }
 
 @keyframes dyp-fade {
@@ -47,6 +53,7 @@
   background: #fffaf5;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
   animation: dyp-pop 0.26s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+  pointer-events: auto;
 }
 
 @keyframes dyp-pop {

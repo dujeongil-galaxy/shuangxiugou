@@ -706,6 +706,161 @@
     }
   }
 
+  /* ------------------------------------- 弹窗 3：员工投票（2026-10-19）
+     自定义卡是克隆内置卡模板生成的，克隆体上的「员工投票」按钮
+     没有React onClick（克隆不带 React 内部 fiber 事件），而
+     bindCustomCards 此前只绑了「打卡」「详情证据」——用户点
+     「员工投票」**完全没反应**，看起来就像按钮坏了/数据是 null。
+     这里补一个与内置投票弹窗对齐的表单：岗位/双休情况/下班时间/
+     加班费，提交后把票数写进 localStorage（后续云同步再上传）。 */
+
+  var VOTE_STORE_KEY = 'sxg-custom-votes';
+
+  function loadCustomVotes() {
+    try { return JSON.parse(localStorage.getItem(VOTE_STORE_KEY) || '{}'); }
+    catch (e) { return {}; }
+  }
+  function saveCustomVotes(data) {
+    try { localStorage.setItem(VOTE_STORE_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  function openVoteModal(cfg) {
+    closeLayer();
+    var layer = ensureLayer();
+
+    var box = el('div', 'sxg-box sxg-box-lg');
+    var body = el('div', 'sxg-pad sxg-space');
+
+    // 已投过的本地记录（按品牌 id 存最新一票）
+    var votes = loadCustomVotes();
+    var mine = votes[cfg.id];
+
+    var roleOpts = ['研发技术', '产线工人', '职能/人事/财务', '一线门店/骑手/销售'];
+    var weekendOpts = [
+      ['100', '100% 双休（严格双休从不打折）'],
+      ['80', '周末基本不占用（大小周/阶段性加班）'],
+      ['50', '隔周单休或常态加班'],
+      ['20', '月休 4 天或更少']
+    ];
+    var timeOpts = ['17:30 之前', '18:00 准点', '19:00 左右', '20:30 左右', '22:00 以后'];
+
+    body.innerHTML =
+      '<div class="sxg-row-top">' +
+        '<div>' +
+          '<h2 class="sxg-h2">投出你在 ' + esc(cfg.name) + ' 的真实工时</h2>' +
+          '<p class="sxg-sub">全程匿名，只记录一次汇总，不留任何个人信息</p>' +
+        '</div>' +
+        '<button type="button" class="sxg-btn sxg-btn-ghost sxg-btn-sm" data-vote-close>✕</button>' +
+      '</div>' +
+
+      '<div class="sxg-panel">' +
+        '<div class="sxg-title-sm">你的岗位类型</div>' +
+        '<div style="margin-top:8px;display:grid;gap:6px">' +
+          roleOpts.map(function (o, i) {
+            return '<label class="sxg-p" style="display:flex;gap:6px;align-items:center;cursor:pointer">' +
+              '<input type="radio" name="sxg-vote-role" value="' + esc(o) + '"' + (i === 0 ? ' checked' : '') + '> ' + esc(o) + '</label>';
+          }).join('') +
+        '</div>' +
+      '</div>' +
+
+      '<div class="sxg-panel">' +
+        '<div class="sxg-title-sm">周末休息真实情况</div>' +
+        '<div style="margin-top:8px;display:grid;gap:6px">' +
+          weekendOpts.map(function (o, i) {
+            return '<label class="sxg-p" style="display:flex;gap:6px;align-items:center;cursor:pointer">' +
+              '<input type="radio" name="sxg-vote-weekend" value="' + o[0] + '"' + (i === 0 ? ' checked' : '') + '> ' + esc(o[1]) + '</label>';
+          }).join('') +
+        '</div>' +
+      '</div>' +
+
+      '<div class="sxg-panel">' +
+        '<div class="sxg-title-sm">平时平均下班时间</div>' +
+        '<div style="margin-top:8px;display:grid;gap:6px">' +
+          timeOpts.map(function (o, i) {
+            return '<label class="sxg-p" style="display:flex;gap:6px;align-items:center;cursor:pointer">' +
+              '<input type="radio" name="sxg-vote-time" value="' + esc(o) + '"' + (i === 0 ? ' checked' : '') + '> ' + esc(o) + '</label>';
+          }).join('') +
+        '</div>' +
+      '</div>' +
+
+      '<div class="sxg-panel">' +
+        '<div class="sxg-title-sm">一句话补充（可选）</div>' +
+        '<textarea data-vote-comment rows="2" style="margin-top:8px;width:100%;box-sizing:border-box;border:1px solid #e2e8f0;' +
+          'border-radius:8px;padding:8px;font-size:12px;font-family:inherit" ' +
+          'placeholder="例如：赶项目时周末必来，平时到点走"></textarea>' +
+      '</div>' +
+
+      (mine
+        ? '<p class="sxg-xs">你之前投过一票（' + esc(mine.weekendLabel || '') + '），再次提交会覆盖。</p>'
+        : '') +
+
+      '<div class="sxg-actions right">' +
+        '<button type="button" class="sxg-btn sxg-btn-ghost sxg-btn-sm" data-vote-close>取消</button>' +
+        '<button type="button" class="sxg-btn sxg-btn-primary sxg-btn-sm" data-vote-submit>提交我的真实工时票</button>' +
+      '</div>';
+
+    box.appendChild(body);
+    layer.appendChild(box);
+
+    body.querySelectorAll('[data-vote-close]').forEach(function (b) {
+      b.addEventListener('click', closeLayer);
+    });
+
+    body.querySelector('[data-vote-submit]').addEventListener('click', function () {
+      var role = (body.querySelector('input[name="sxg-vote-role"]:checked') || {}).value || '';
+      var weekendEl = body.querySelector('input[name="sxg-vote-weekend"]:checked');
+      var time = (body.querySelector('input[name="sxg-vote-time"]:checked') || {}).value || '';
+      var comment = (body.querySelector('[data-vote-comment]') || {}).value || '';
+      if (!weekendEl) return;
+      var weekendLabel = (weekendOpts.filter(function (o) { return o[0] === weekendEl.value; })[0] || ['', ''])[1];
+
+      var votesNow = loadCustomVotes();
+      votesNow[cfg.id] = {
+        role: role,
+        weekend: Number(weekendEl.value),
+        weekendLabel: weekendLabel,
+        offWorkTime: time,
+        comment: comment.trim(),
+        at: new Date().toISOString()
+      };
+      saveCustomVotes(votesNow);
+
+      // 卡面上的「N 人已投票」同步 +1（本地视角）
+      var card = document.getElementById(cfg.id);
+      if (card) {
+        var cnt = card.querySelector('.bg-slate-900 .font-mono');
+        if (cnt) {
+          var n = parseInt((cnt.textContent || '0'), 10);
+          if (isNaN(n)) n = 0;
+          cnt.textContent = (n + 1) + ' 人已投票';
+        }
+      }
+      closeLayer();
+      openVoteThanks(cfg, weekendLabel, time);
+    });
+  }
+
+  // 投票成功回执（轻量，不 confetti —— confetti 库在 bundle 内部拿不到）
+  function openVoteThanks(cfg, weekendLabel, time) {
+    closeLayer();
+    var layer = ensureLayer();
+    var box = el('div', 'sxg-box');
+    box.innerHTML =
+      '<div class="sxg-pad" style="text-align:center">' +
+        '<div style="font-size:34px;line-height:1">🗳️</div>' +
+        '<h3 class="sxg-h3" style="margin-top:10px">投票成功</h3>' +
+        '<p class="sxg-p" style="margin-top:8px">你在 <strong>' + esc(cfg.name) + '</strong> 的一票已记下：<br>' +
+          esc(weekendLabel) + ' · ' + esc(time || '') + '</p>' +
+        '<p class="sxg-xs" style="margin-top:8px">目前投票保存在你的浏览器本地；' +
+          '云同步上线后会自动汇总到全站数据。</p>' +
+        '<div class="sxg-actions" style="justify-content:center;padding-top:14px">' +
+          '<button type="button" class="sxg-btn sxg-btn-primary sxg-btn-sm" data-thanks-ok>好的</button>' +
+        '</div>' +
+      '</div>';
+    layer.appendChild(box);
+    box.querySelector('[data-thanks-ok]').addEventListener('click', closeLayer);
+  }
+
   /* ------------------- 内置品牌卡的小票：DOM 层接管（不改压缩包） -------------------
      内置小票由压缩包里的 React 组件渲染，「清醒打工人 #7709」和金额 199
      都写死在构建产物里。改压缩包风险高（34 万字符，改错整站白屏），
@@ -1129,6 +1284,18 @@
         });
       } else {
         diag('自定义卡「' + cfg.name + '」找不到「详情证据」按钮');
+      }
+
+      // 员工投票（2026-10-19）：克隆模板丢了 React onClick，之前点了没反应
+      var voteBtn = findByText(card, '员工投票');
+      if (voteBtn) {
+        voteBtn.addEventListener('click', function (ev) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          openVoteModal(cfg);
+        });
+      } else {
+        diag('自定义卡「' + cfg.name + '」找不到「员工投票」按钮');
       }
 
       // 点赞 / 点踩：按用户要求暂不实现，先明确置灰避免误以为坏了
