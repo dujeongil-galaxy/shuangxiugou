@@ -512,6 +512,53 @@ if (ns) {
   const missingCustom = customCards.filter((c) => !brands.some((b) => b.includes(c.name.split('/')[0].slice(0, 3))));
   check(missingCustom.length === 0, `${CUSTOM_COUNT} 张自定义卡全部在 noscript 清单中`,
     missingCustom.length ? `漏了：${missingCustom.map((c) => c.name).join('、')}` : '');
+
+  /* noscript 是给爬虫看的正文兜底 —— 用户看不见，所以这东西坏了没人举报。
+   *
+   * 它由「React 卡片数据 → 手写 HTML」人工抄写而来，抄错/抄旧都完全静默：
+   * 页面（JS 渲染）显示「未核实 / —」，爬虫抓到的却是「null% / 平均下班 null」。
+   * 同一家企业在搜索结果里和站内是两个样，还可能被读成「双休率 0%」以外
+   * 的第三种错误语义。所以这里逐条比对：noscript 里每个品牌描述里的
+   * 「双休率 X · 平均下班 Y」必须与其详情页 brand/<slug>.html 的 kv 值一致，
+   * 且不允许出现裸 null（详情页对未核实字段显示「未核实」/「—」）。
+   */
+  const stripTags = (s) => s.replace(/<[^>]+>/g, '');
+  const nsLines = ns[1].split('\n').filter((l) => /href="\.\/brand\/[a-z0-9-]+\.html"/.test(l));
+  const detailOf = {};
+  for (const line of nsLines) {
+    const slug = line.match(/href="\.\/brand\/([a-z0-9-]+)\.html"/)[1];
+    if (detailOf[slug] === undefined) {
+      const p = join(ROOT, 'brand', `${slug}.html`);
+      if (!existsSync(p)) { detailOf[slug] = null; continue; }
+      const b = readFileSync(p, 'utf8');
+      const rate = b.match(/真实双休率<\/p><p class="v">([^<]*)</);
+      const off = b.match(/平均下班时间<\/p><p class="v">([^<]*)</);
+      detailOf[slug] = { rate: rate ? rate[1].trim() : null, off: off ? off[1].trim() : null };
+    }
+  }
+
+  const nullLines = nsLines.filter((l) => /\bnull\b/.test(stripTags(l)));
+  check(nullLines.length === 0,
+    'noscript 清单无裸 null（未核实字段写「未核实」/「—」）',
+    nullLines.length ? `${nullLines.length} 行含 null，例：${stripTags(nullLines[0]).trim().slice(0, 60)}—— 爬虫会读到 null` : '');
+
+  const mismatch = [];
+  for (const line of nsLines) {
+    const slug = line.match(/href="\.\/brand\/([a-z0-9-]+)\.html"/)[1];
+    const d = detailOf[slug];
+    if (!d) { mismatch.push(`${slug}（详情页缺失）`); continue; }
+    const m = stripTags(line).match(/双休率\s*(.+?)\s*·\s*平均下班\s*([^\s详]+)/);
+    if (!m) continue;
+    // 详情页平均下班可能带口径后缀（如「19:00（1075 口径）」），noscript 允许只写时分，
+    // 但反过来不行：noscript 不能比详情页多出数值。
+    const okOff = d.off && (m[2].trim() === d.off || d.off.startsWith(m[2].trim()));
+    if (m[1].trim() !== d.rate || !okOff) {
+      mismatch.push(`${slug}: noscript「${m[1].trim()} / ${m[2].trim()}」≠ 详情页「${d.rate} / ${d.off}」`);
+    }
+  }
+  check(mismatch.length === 0,
+    `noscript ${nsLines.length} 条品牌数值与详情页一致`,
+    mismatch.length ? `${mismatch.length} 条不一致：${mismatch.slice(0, 5).join('；')}` : '');
 }
 
 // ---------- 7. 文档数字口径 ----------
