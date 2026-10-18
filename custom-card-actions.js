@@ -1176,12 +1176,36 @@
   }
 
   function patchVoteCounts() {
-    var layer = document.querySelector('.sxg-layer');
-    var cards = $$('div.bg-white.rounded-2xl.border');
-    var hit = false;
-    if (layer) hit = patchVoteText(layer) || hit;
-    for (var i = 0; i < cards.length; i++) hit = patchVoteText(cards[i]) || hit;
+    // 2026-10-19 修复「详情弹窗偶发残留 ( 票)」：
+    // 旧版只扫 .sxg-layer（我们自己的弹窗）和卡片容器，React 详情弹窗
+    // 是渲染在 #root 下的 fixed 覆盖层，两者都不是 → 首次打开时补丁
+    // 要等 MutationObserver 防抖 300ms 才落到，用户肉眼可见「( 票)」闪一下。
+    // 现在直接全页扫描（元素数量 ~千级，开销可忽略），并在「详情证据」
+    // 点击后用 rAF 立刻补一次，弹窗一出现就是正确文案。
+    var hit = patchVoteText(document.body);
     return hit;
+  }
+
+  // 「详情证据」被点击 → React 渲染详情弹窗 → 弹窗里若有空票数文案，
+  // 在渲染完成后的下一帧立刻改写，不等 300ms 防抖。
+  // 捕获阶段监听 + 多次 rAF 重试：React 提交渲染可能在 rAF 之后，多试几帧。
+  function bindVotePatchOnClick() {
+    if (bindVotePatchOnClick.done) return;
+    bindVotePatchOnClick.done = true;
+    document.addEventListener('click', function (ev) {
+      var t = ev.target;
+      var btn = t && t.closest ? t.closest('button') : null;
+      if (!btn) return;
+      var txt = btn.textContent || '';
+      if (txt.indexOf('详情证据') === -1 && txt.indexOf('员工投票') === -1) return;
+      var tryPatch = function (left) {
+        requestAnimationFrame(function () {
+          patchVoteCounts();
+          if (left > 0) tryPatch(left - 1);
+        });
+      };
+      tryPatch(8); // 约 8 帧 ≈ 130ms，覆盖 React 渲染完成时机
+    }, true);
   }
 
   /* ------------------------------------------------------------------ 杂项 */
@@ -1206,6 +1230,7 @@
     try { bindHeaderButton(); } catch (e) { diag('绑定顶部按钮出错: ' + e); }
     try { bindCustomCards(); } catch (e) { diag('绑定自定义卡片出错: ' + e); }
     try { patchBuiltinTicket(); } catch (e) { diag('接管内置小票出错: ' + e); }
+    try { bindVotePatchOnClick(); } catch (e) { diag('绑定投票补丁点击监听出错: ' + e); }
     try { patchVoteCounts(); } catch (e) { diag('修正投票数显示出错: ' + e); }
   }
 

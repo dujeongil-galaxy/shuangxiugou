@@ -408,6 +408,14 @@
         });
       }
 
+      // 2026-10-19 追加：自定义卡的「工时政策/加班对待」label 必须与模板卡一致。
+      // 肯德基卡（v10 新增）当时只写了值、没写 label，克隆模板后沿用模板的
+      // label 文案，页面上出现「工时政策：综合工时制…」的字面错位。
+      // 以后加自定义卡若要改这两个 label，在此处登记即可，否则保持 undefined 用默认。
+      var customCardLabels = {
+        'kfc-card': { work: '工时排班：', overtime: '加班对待：' }
+      };
+
       // 品牌logo映射表
       var brandLogos = {
         'IKEA': './assets/ikea.png',
@@ -797,6 +805,17 @@
           var infoRows = newCard.querySelectorAll('.bg-slate-50 > div');
           var workEl = infoRows[0] && infoRows[0].querySelectorAll('span')[1];
           var overEl = infoRows[1] && infoRows[1].querySelectorAll('span')[1];
+          // 2026-10-19：label 也按配置覆盖（肯德基卡需要「工时排班/加班对待」，
+          // 否则克隆模板后沿用「工时政策/加班实情」，与值文案对不上）。
+          var lblCfg = customCardLabels[config.id] || {};
+          if (lblCfg.work && infoRows[0]) {
+            var workLbl = infoRows[0].querySelectorAll('span')[0];
+            if (workLbl) workLbl.textContent = lblCfg.work;
+          }
+          if (lblCfg.overtime && infoRows[1]) {
+            var overLbl = infoRows[1].querySelectorAll('span')[0];
+            if (overLbl) overLbl.textContent = lblCfg.overtime;
+          }
           if (workEl) workEl.textContent = config.workPolicy;
           else diagWarn('自定义卡「' + config.name + '」找不到工时政策字段');
           if (overEl) overEl.textContent = config.overtime;
@@ -1232,7 +1251,7 @@
   <!-- 打卡引导 + 自定义卡片按钮修复：
        1) 顶部「打卡并生成小票」改为弹窗，引导去品牌档案卡打卡（原来默认给第一家品牌打卡，会误导）
        2) 自定义品牌卡（DOM 克隆）没有 React onClick，补上「打卡」「详情证据」功能 -->
-  <script src="./custom-card-actions.js?v=9"></script>
+  <script src="./custom-card-actions.js?v=10"></script>
   <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
   <script src="./factcheck-button.js?v=1"></script>
   <!-- 拼音 / 首字母模糊搜索联想。
