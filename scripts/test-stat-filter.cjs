@@ -2,9 +2,9 @@
 // 跑法：node scripts/test-stat-filter.cjs（需 jsdom，同 CI 其他测试）
 //
 // 预期数字（2026-10-18 实测）：jsdom 整页渲染后自定义卡（5C+1B）也会插入，
-// badge 卡共 59 张（53 内置含 1 虚拟 + 6 自定义）。筛选结果与顶部五格显示一致：
-// 红榜(S/A)=19、观察(B)=14、避雷(C，不含虚拟卡)=20、待核实(U)=5；
-// 19+14+20+5 = 58 = 收录总数；「全部」=59（含虚拟卡，虚拟卡不进任何分档）。
+// badge 卡共 60 张（53 内置含 1 虚拟 + 7 自定义）。筛选结果与顶部五格显示一致：
+// 红榜(S/A)=19、观察(B)=14、避雷(C，不含虚拟卡)=21、待核实(U)=5；
+// 19+14+21+5 = 59 = 收录总数；「全部」=60（含虚拟卡，虚拟卡不进任何分档）。
 // 末尾另有苹果「富士康补充说明」框回归（PITFALLS 1.10 第二变体）：
 // 搜索「啊」→ 摘除；清空 → 插回；节点被复用为华为卡 → 不残留；隐藏子树 → 摘除。
 const fs = require('fs');
@@ -85,7 +85,7 @@ setTimeout(() => {
     u.children[0].textContent === '5', u.children[0].textContent);
 
   const base = snapshot();
-  check('初始全部可见（badge 卡 ' + base.total + ' 张）', base.visible.length === base.total && base.total === 59,
+  check('初始全部可见（badge 卡 ' + base.total + ' 张）', base.visible.length === base.total && base.total === 60,
     { total: base.total, visible: base.visible.length });
 
   // —— 双休红榜：只显示 S/A ——
@@ -115,14 +115,14 @@ setTimeout(() => {
   // —— 避雷预警：只显示 C（虚拟卡除外）——
   click(lei);
   s = snapshot();
-  check('点「避雷预警」→ 仅 C 级可见（20 张，与四格「避雷预警 20」一致，虚拟卡除外）',
-    s.visible.length === 20 && s.visible.every((c) => tierOf(c) === 'C'),
+  check('点「避雷预警」→ 仅 C 级可见（21 张，与四格「避雷预警 21」一致，虚拟卡除外）',
+    s.visible.length === 21 && s.visible.every((c) => tierOf(c) === 'C'),
     { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
 
   // —— 待核实：只显示 U ——
   click(u);
   s = snapshot();
-  check('点「待核实」→ 仅 U 级可见（5 张；19+14+20+5=58 对账）',
+  check('点「待核实」→ 仅 U 级可见（5 张；19+14+21+5=59 对账）',
     s.visible.length === 5 && s.visible.every((c) => tierOf(c) === 'U'),
     { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
   check('待核实激活态写上 data-sxg-active', u.getAttribute('data-sxg-active') === '1');
@@ -166,7 +166,7 @@ setTimeout(() => {
     // 互斥：点 React 评级按钮应清掉五格筛选（否则 observer 把旧 display 套回去出空面板）
     click(red);
     s = snapshot();
-    check('互斥前置：点红榜后隐藏 ' + (s.total - s.visible.length) + ' 张', s.hidden === 40, s.hidden);
+    check('互斥前置：点红榜后隐藏 ' + (s.total - s.visible.length) + ' 张', s.hidden === 41, s.hidden);
     const allBtn = rowBtn('全部评级');
     if (allBtn) click(allBtn);
     s = snapshot();

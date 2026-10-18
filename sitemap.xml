@@ -293,7 +293,8 @@
     <lastmod>2026-10-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
-    <url>
+  </url>
+  <url>
     <loc>https://dujeongil-galaxy.github.io/shuangxiugou/brand/pdl.html</loc>
     <lastmod>2026-10-17</lastmod>
     <changefreq>monthly</changefreq>
@@ -365,5 +366,10 @@
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://dujeongil-galaxy.github.io/shuangxiugou/brand/lingshiyouming.html</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>
