@@ -142,6 +142,36 @@ def parse_custom_configs(html):
     return out
 
 
+def native_search_keys(brands):
+    """
+    返回 bundle 原生搜索「真正能命中」的所有小写字面串。
+
+    React 首页过滤只查三个字段：
+        name / companyName / keyProducts
+    （压缩后：ne = n.filter(e => e.name.includes(kw) || e.companyName.includes(kw)
+      || e.keyProducts.some(p => p.includes(kw)))）
+
+    为什么需要：拼音联想是「用拼音找到中文名，再回填给 React」的两步走。
+    第一步命中、第二步回填却没命中，用户看到的就是
+    「候选里有这家，点进去却说未找到匹配的品牌信息」（2026-10-19 用户截图）。
+
+    ⚠️ 入参必须是 extract_brands() 的结果，不要自己再解析一遍 bundle。
+       压缩产物里同一个 id 还会出现在 alternatives / recommendedAlternatives
+       等引用位置，二次解析会拿错对象（实测华为被读成「华为终端 (huawei)」），
+       合法品牌因此被误判「不可搜」而踢出联想。
+    """
+    keys = set()
+    for b in brands:
+        for v in (b['name'], b['company'], b['category'], b['id']):
+            if v:
+                keys.add(v.lower())
+        for v in b['products']:
+            keys.add(v.lower())
+        # searchKeywords 不在 React 过滤里，但保留进来只会让判定更宽松，
+        # 反而是安全隐患（放了搜不到的词）。所以不加。
+    return keys
+
+
 def to_pinyin(text):
     return (''.join(lazy_pinyin(text, style=Style.NORMAL)),
             ''.join(lazy_pinyin(text, style=Style.FIRST_LETTER)))
@@ -287,7 +317,35 @@ if __name__ == '__main__':
         customs = []
         print('警告：找不到 index.html，自定义卡不入索引')
 
-    index = build_index(brands + customs)
+    # ⚠️ 自定义卡只做「展示用索引」，不进联想候选。
+    #
+    # 原因（2026-10-19 用户截图 bug）：自定义卡不在 bundle 的 brands 数组里，
+    # 是 insertAllCustomCards() 事后插进 DOM 的。React 的搜索结果列表为 0 时
+    # 会把整片内容替换成「未找到匹配的品牌信息」，插进去的卡片随父节点一起消失，
+    # 且 React 之后不会再调 insertAllCustomCards —— 卡片彻底回不来。
+    # 所以无论回填什么词，这 7 张卡都不可能在「搜索态」里被看到。
+    # 联想里出现它们 = 骗用户点一下然后看空态。
+    # 它们的搜索由 filterCustomCards() 独立负责（输入事件驱动，能正确显隐）。
+    print('自定义卡只入展示索引，不进联想候选（React 空结果会整片替换，插卡消失）')
+
+    index = build_index(brands)
+    # 回查 bundle：只保留真实能被原生搜索命中的回填词，避免「点了变空态」。
+    native_keys = native_search_keys(brands)
+    # 用来验证「这个中文字面串确实能在某条记录里搜到」，
+    # 而不是「某个字段刚好等于它」—— cn 是从 name 里抽出来的，
+    # 未必等于 name 或 company 全串（如「罗技」vs「Logitech (罗技)」）。
+    haystack = '\n'.join(sorted(native_keys))
+    safe, dropped = [], []
+    for e in index:
+        if e['cn'] and e['cn'].lower() in haystack:
+            safe.append(e)
+        else:
+            dropped.append((e['id'], e['name'], e['cn']))
+    index = safe
+    if dropped:
+        print('\n=== 以下品牌的主名不是 bundle 原生可搜字面串，已排除联想 ===')
+        for did, dname, dcn in dropped:
+            print('  - %s(%s)  cn=%r' % (dname, did, dcn))
     slim = [{
         'id': e['id'], 'name': e['name'], 'cn': e['cn'],
         't': [[x['t'], x['f'], x['i'], x['w']] for x in e['terms']],

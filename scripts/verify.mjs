@@ -2925,12 +2925,52 @@ if (!exists(PINYIN_IDX)) {
     [...idxSrc.matchAll(/"id":"([a-z0-9-]+)"/g)].map((x) => x[1])
   );
   const customIds = new Set(customCards.map((c) => c.id));
-  // 虚拟对比黑榜卡不进联想索引（2026-10-18），期望数 = 真实内置卡 + 自定义卡
-  const expectIdx = brandCards.length - FICTIONAL.length + customIds.size;
+  // ⚠️ 2026-10-19 起不再要求「索引数 = 全量卡片数」。
+  //
+  // 那个等式是错的产品假设：联想候选必须「点了真能搜到」。有两类卡天生做不到：
+  //   1) 自定义卡（7 张）不在 bundle 的 brands 数组里，React 结果为空时
+  //      会整片替换成「未找到匹配的品牌信息」，插进去的卡随之消失；
+  //   2) 主名带括号后缀的（星宇/百事），React 只查 name/companyName/keyProducts，
+  //      抽出来的纯中文串不一定是字面子串。
+  // 这正是用户截图「输 Ls 出现赵一鸣，点进去空态」的成因。
+  //
+  // 现在改验「可回填性」这个真正的约束：每条索引的主名必须能在
+  // bundle 的 name/companyName/keyProducts 里命中。
+  check(!idxIds.has([...customIds][0]),
+    `拼音索引不含自定义卡（自定义卡 ${customIds.size} 张由 filterCustomCards 管，进联想必空态）`,
+    `混入：${[...idxIds].filter((i) => customIds.has(i)).join(', ') || '无'}`);
 
-  check(idxIds.size === expectIdx,
-    `拼音索引品牌数与全量卡片一致（索引 ${idxIds.size} / 内置 ${brandCards.length - FICTIONAL.length}（不含虚拟）+ 自定义 ${customIds.size}）`,
-    `差集：${brandCards.map((c) => c.id).filter((i) => !FICTIONAL.some((f) => f.id === i) && !idxIds.has(i)).join(', ') || [...idxIds].filter((i) => !brandCards.some((c) => c.id === i) && !customIds.has(i)).join(', ') || '无'}。修复：python scripts/gen-pinyin-index.py`);
+  // 逐条校验：索引里的每个 cn 都必须能在 bundle 的可搜字段里找到
+  const searchableText = (() => {
+    const src = read(BUNDLE);
+    // 用与 gen-pinyin-index.py 相同的口径：brands 主数组里每条记录的
+    // name / companyName / keyProducts
+    const BT = '`';
+    const start = src.indexOf('brands:[') + 'brands:['.length;
+    let depth = 0, cur = null, j = start;
+    const objs = [];
+    while (j < src.length) {
+      const ch = src[j];
+      if (ch === BT) {
+        j++;
+        while (j < src.length) { if (src[j] === BT && src[j - 1] !== '\\') break; j++; }
+      } else if (ch === '{') { if (depth === 0) cur = j; depth++; }
+      else if (ch === '}') { depth--; if (depth === 0) objs.push(src.slice(cur, j + 1)); else if (depth < 0) break; }
+      j++;
+    }
+    const one = (o, k) => { const m = new RegExp(k + ':' + BT + '([^' + BT + ']*)' + BT).exec(o); return m ? m[1] : ''; };
+    const list = (o, k) => {
+      const m = new RegExp(k + ':\\[([^\\]]*)\\]').exec(o);
+      return m ? [...m[1].matchAll(new RegExp(BT + '([^' + BT + ']*)' + BT, 'g'))].map((x) => x[1]) : [];
+    };
+    return objs.map((o) => [one(o, 'name'), one(o, 'companyName')].concat(list(o, 'keyProducts')).join(' ').toLowerCase()).join('\n');
+  })();
+  const idxEntries = [...idxSrc.matchAll(/"id":"([a-z0-9-]+)","name":"([^"]*)","cn":"([^"]*)"/g)]
+    .map((m) => ({ id: m[1], cn: m[3] }));
+  const unfillable = idxEntries.filter((e) => e.cn && !searchableText.includes(e.cn.toLowerCase()));
+  check(unfillable.length === 0,
+    `拼音索引 ${idxEntries.length} 条全部可回填（主名能被 React 原生搜索命中）`,
+    `点了会变空态：${unfillable.map((e) => e.id + '(' + e.cn + ')').join(', ')}。修复：python scripts/gen-pinyin-index.py`);
 
   // 索引里的 id 必须真实存在于 bundle 或 customCardsConfig，否则是陈旧残留
   const ghosts = [...idxIds].filter(

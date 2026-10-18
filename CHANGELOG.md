@@ -14,6 +14,32 @@
 > 那属于站点运营内容而非 fork 者需要参考的技术改动。
 
 ---
+### 修复：拼音联想候选点了变「未找到匹配的品牌信息」（提交 `<待回填>`）
+**背景**：站长实测——搜索框输入 `Ls`，候选里出现「赵一鸣 / 零食很忙」，点选后页面变成「未找到匹配的品牌信息」。
+
+**根因（三层，缺一不可）**：
+1. React 首页过滤只查三个字段：
+   ```js
+   ne = brands.filter(e => e.name.includes(kw)
+     || e.companyName.includes(kw)
+     || e.keyProducts.some(p => p.includes(kw)))
+   ```
+   **`searchKeywords` / `summary` / `category` 都不查。** 而拼音联想的「命中词条」正好大量来自 `searchKeywords`（「零售」「零食」「户外」），回填这些词必然搜不到。
+2. 自定义卡（赵一鸣/零食有鸣/茶百道/兵立王/肯德基/小米/一点点，7 张）压根不在 bundle 的 `brands` 数组里，是 `insertAllCustomCards()` 事后插进 DOM 的。React 的 `ne.length === 0` 时会把整片内容替换成空态，插进去的卡片随父节点一起消失，且 React 之后不会再调插入函数。
+3. 旧 `fillTerm()` 在命中词条是纯英文时才用 `entry.cn`，否则直接回填命中词条 —— 于是「零售」被填进搜索框。
+
+**修复**：
+1. `pinyin-search.js`：`fillTerm(entry)` 一律返回 `entry.cn`（主名中文字，必然命中 `name`）；无 `cn` 的条目直接不进候选。
+2. `scripts/gen-pinyin-index.py`：自定义卡不再进联想索引；新增 `native_search_keys()`，生成时回查 bundle，**主名的中文字必须能在 `name`/`companyName`/`keyProducts` 里命中**，否则整条剔除（本次剔除 2 个：星宇「常州星宇股份车灯及汽车消费品」、百事「百事食品乐事桂格燕麦」——括号后缀拼接后不是 bundle 里的字面串）。
+3. `scripts/verify.mjs`：把旧的「索引数 = 全量卡片数」等式换成两条真正的约束——① 索引不含自定义卡；② **索引每条的主名都能被原生搜索命中**（逐条校验，不再数数）。
+4. `scripts/test-pinyin-e2e.cjs`：`nativeSearch()` 之前多算了 `searchKeywords`/`summary`/`id`，比 React 宽松 → 虚假通过。改为与 bundle 一字不差的三个字段，并新增 `keywordSearch()` 区分「词条链路」与「回填链路」。新增 6 条回归断言（扫全部索引 × 16 个查询，没有任何候选点回去是空态）。
+5. `index.html`：`pinyin-index.js?v=5`、`pinyin-search.js?v=2`。
+
+**注入验证**：手动把 `snack-card` 塞回索引 → e2e 3 条 + `test-pinyin-search.cjs` 3 条同时报红；把某条 `cn` 改成不可搜串 → verify 的「50 条全部可回填」报红。还原后 443 项 + 12 个测试全绿。
+
+**实测**：Edge 无头 CDP 1600px——输入 `Ls` 候选为「胖东来 / OSRAM / 三星 / 盒马」，无「赵一鸣」；点选「胖东来」后输入框变「胖东来」，卡片 1 张，空态消失。
+
+---
 ### 修复：noscript SEO 兜底正文残留 36 处 `null`，与站内口径不一致（提交 `10a79a4`）
 **背景**：排查投票 null 时顺带发现——`index.html` 的 `<noscript>` 兜底清单（爬虫唯一能读到的正文）里，未核实字段写的是 `真实双休率 null% · 平均下班 null`，共 18 行。
 **为什么静默**：这段 HTML 只在无 JS 环境（爬虫、页面预渲染）里被读到，普通用户**永远看不见**，所以坏了没人会来举报。而它由「React 卡片数据 → 手写 HTML」人工抄录，天然会脱节：详情页显示「未核实 / —」，搜索结果摘要却是 `null%`。

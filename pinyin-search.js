@@ -98,6 +98,8 @@
     var hits = [];
     for (var n = 0; n < INDEX.length; n++) {
       var entry = INDEX[n];
+      // 没有可回填的主名 = 点了也搜不到，宁可不显示（见 fillTerm 注释）
+      if (!fillTerm(entry)) continue;
       var best = null;
       for (var k = 0; k < entry.t.length; k++) {
         var s = scoreTerm(q, entry.t[k]);
@@ -128,14 +130,21 @@
   }
 
   // ---------- 回填用词 ----------
-  // 必须是 bundle 原生搜索能命中的字面串，否则点了没反应。
-  var FILLABLE = /[一-鿿]/;
-
-  function fillTerm(entry, hitTerm) {
-    // 优先用带中文的主名（entry.cn），命中词条是纯英文时也能回填中文名
-    if (entry.cn && FILLABLE.test(entry.cn)) return entry.cn;
-    if (FILLABLE.test(hitTerm)) return hitTerm;
-    return entry.cn || hitTerm;
+  // 必须是 React 原生搜索能命中的字面串，否则点了没反应。
+  //
+  // ⚠️ React 的真实过滤只查三个字段（bundle 里压缩后是）：
+  //      ne = n.filter(e => e.name.toLowerCase().includes(kw)
+  //        || e.companyName.toLowerCase().includes(kw)
+  //        || e.keyProducts.some(p => p.toLowerCase().includes(kw)))
+  //    searchKeywords / summary / category **都不参与**。
+  //    所以「命中词条」不能直接拿去回填 —— 词条可能来自 searchKeywords
+  //    （如「零售」「零食」）或产品名，回填后 React 一个都搜不到。
+  //
+  //    正确做法：一律回填 entry.cn（主名里的中文字），它必然命中 name。
+  //    这条规则由 gen-pinyin-index.py 保证：生成时回查 bundle，
+  //    主名不是原生可搜字面串的品牌直接不入索引（2026-10-19 修复）。
+  function fillTerm(entry) {
+    return entry.cn || entry.name || '';
   }
 
   function matchKind(lv) {
@@ -195,7 +204,7 @@
       var row = document.createElement('button');
       row.type = 'button';
       row.setAttribute('role', 'option');
-      row.setAttribute('data-fill', fillTerm(h.entry, h.hitTerm));
+      row.setAttribute('data-fill', fillTerm(h.entry));
       row.style.cssText = [
         'display:flex', 'align-items:center', 'gap:8px', 'width:100%',
         'padding:9px 14px', 'background:#fff', 'border:0', 'cursor:pointer',
