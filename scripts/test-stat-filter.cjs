@@ -144,6 +144,36 @@ setTimeout(() => {
   check('再点一次「双休红榜」= 取消筛选', s.visible.length === s.total,
     { visible: s.visible.length, total: s.total });
 
+  // —— 评级过滤行补「待核实」入口（2026-10-18 站长：上面有待核实，下面到 C 级就没了）——
+  const rowBtn = (txt) => [...window.document.querySelectorAll('button')]
+    .find((b) => (b.textContent || '').trim() === txt);
+  const rowU = rowBtn('待核实');
+  check('评级过滤行末尾注入了「待核实」按钮（data-sxg-row-u）',
+    !!rowU && rowU.getAttribute('data-sxg-row-u') === '1',
+    !!rowU ? rowU.outerHTML.slice(0, 120) : '未找到按钮');
+  if (rowU) {
+    click(rowU);
+    s = snapshot();
+    check('点评级行「待核实」→ 仅 5 张 U 级卡可见',
+      s.visible.length === 5 && s.visible.every((c) => tierOf(c) === 'U'),
+      { visible: s.visible.length });
+    check('行内「待核实」按钮激活态（bg-slate-900）',
+      rowU.className.includes('bg-slate-900'), rowU.className);
+    click(rowU);
+    s = snapshot();
+    check('再点行内「待核实」→ 恢复全部', s.visible.length === s.total,
+      { visible: s.visible.length, total: s.total });
+    // 互斥：点 React 评级按钮应清掉五格筛选（否则 observer 把旧 display 套回去出空面板）
+    click(red);
+    s = snapshot();
+    check('互斥前置：点红榜后隐藏 ' + (s.total - s.visible.length) + ' 张', s.hidden === 39, s.hidden);
+    const allBtn = rowBtn('全部评级');
+    if (allBtn) click(allBtn);
+    s = snapshot();
+    check('再点 React「全部评级」→ 五格筛选被清空（无残留 display:none）',
+      s.hidden === 0, s.hidden);
+  }
+
   // —— 回归（2026-10-18）：搜索过滤会卸载 U 卡，第五格不得清零/变粉 ——
   (async () => {
     const uCards = [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]

@@ -990,11 +990,14 @@
         });
         
         // 获取当前选中的评级
+        // ⚠️ 选中态类名是 bg-slate-900（bundle 渲染），早先只查 bg-black/bg-gray-900
+        // → 永远匹配不上，自定义卡的评级筛选静默失效（2026-10-18 修复）。
+        // 「待核实」是 stat-filter.js 注入评级行的 U 按钮，选中时同样带 bg-slate-900。
         var activeGrade = '全部评级';
         categoryBtns.forEach(function(btn) {
           var text = btn.textContent.trim();
-          if (['全部评级', 'S 级', 'A 级', 'B 级', 'C 级'].includes(text)) {
-            if (btn.className.includes('bg-black') || btn.className.includes('bg-gray-900')) {
+          if (['全部评级', 'S 级', 'A 级', 'B 级', 'C 级', '待核实'].includes(text)) {
+            if (btn.className.includes('bg-black') || btn.className.includes('bg-gray-900') || btn.className.includes('bg-slate-900')) {
               activeGrade = text;
             }
           }
@@ -1214,7 +1217,7 @@
        不用 fetch 调 GitHub API：token 放前端等于公开，会被滥用刷 issue。 -->
   <script src="./employee-report-to-issue.js?v=1"></script>
 <script src="./top-button.js?v=1"></script>
-<script src="./stat-filter.js?v=4"></script>
+<script src="./stat-filter.js?v=5"></script>
   </body>
 </html>
 

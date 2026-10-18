@@ -237,11 +237,70 @@
     refreshActiveMarks();
   }
 
+  /* --------------------------------------------- 评级过滤行补 U 按钮 */
+  // 下方「评级过滤」行由 bundle 渲染，写死为 全部评级/S 级/A 级/B 级/C 级
+  // （bundle 内数组 [`全部`,`S`,`A`,`B`,`C`].map(...)），U 级无入口。
+  // 2026-10-18 站长要求：行尾补一个「待核实」按钮，点击复用本文件 u 筛选。
+  // 不改 bundle：克隆 C 级按钮 DOM，幂等注入；React 重渲染擦除后 observer 重建。
+  var ROW_U_SEL = '[data-sxg-row-u="1"]';
+  var ROW_RATING_TEXTS = ['全部评级', 'S 级', 'A 级', 'B 级', 'C 级'];
+  var ROW_ACTIVE_CLS = 'bg-slate-900 text-white';
+  var ROW_INACTIVE_CLS = 'bg-slate-100 hover:bg-slate-200 text-slate-600';
+
+  function setRowUStyle(btn) {
+    if (!btn) return;
+    var orig = btn.getAttribute('data-sxg-row-u-class') || '';
+    if (active === 'u') {
+      btn.className = orig.replace(ROW_INACTIVE_CLS, ROW_ACTIVE_CLS);
+    } else {
+      btn.className = orig;
+    }
+  }
+
+  function ensureRowUButton() {
+    var cBtn = null;
+    $$('button').forEach(function (b) {
+      if ((b.textContent || '').trim() === 'C 级') cBtn = b;
+    });
+    if (!cBtn || !cBtn.parentNode) return;
+    var existing = cBtn.parentNode.querySelector(ROW_U_SEL);
+    if (existing) { setRowUStyle(existing); return; }
+    var btn = cBtn.cloneNode(true);
+    btn.setAttribute('data-sxg-row-u', '1');
+    btn.setAttribute('data-sxg-row-u-class', btn.className || '');
+    btn.textContent = '待核实';
+    btn.title = '仅显示待核实（U 级 · 无证据不评级）';
+    btn.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      active = (active === 'u') ? null : 'u';
+      applyTierFilter();
+      setRowUStyle(btn); // 激活态立即切换，不等 observer 的 200ms 防抖
+      scrollToArchive();
+    });
+    if (cBtn.nextSibling) cBtn.parentNode.insertBefore(btn, cBtn.nextSibling);
+    else cBtn.parentNode.appendChild(btn);
+    setRowUStyle(btn);
+  }
+
+  // 两套筛选互斥：点 React 评级行（S/A/B/C/全部）时清掉五格筛选，
+  // 避免 React 重渲染后 observer 又把 u/red 等 display 状态套回去出现空面板。
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t || t.tagName !== 'BUTTON') return;
+    var text = (t.textContent || '').trim();
+    if (ROW_RATING_TEXTS.indexOf(text) === -1) return;
+    if (active) {
+      active = null;
+      applyTierFilter();
+    }
+  }, true);
+
   /* ------------------------------------------------------------- 启动 */
   function init() {
     injectStyle();
     try { bindStatBoxes(); } catch (e) { diag('stat-filter 绑定四格按钮出错: ' + e); }
     try { if (active) applyTierFilter(); } catch (e) { diag('stat-filter 套用筛选出错: ' + e); }
+    try { ensureRowUButton(); } catch (e) { diag('stat-filter 注入评级行 U 按钮出错: ' + e); }
   }
 
   if (document.readyState === 'loading') {
