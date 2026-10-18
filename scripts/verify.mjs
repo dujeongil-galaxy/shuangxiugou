@@ -373,7 +373,7 @@ const headerStat = (label, cls) => {
   return m ? Number(m[1]) : null;
 };
 check(virtual2e === 1, '虚拟对比卡恰 1 张（口径排除依据，id 变更需同步本节）', '实际 ' + virtual2e);
-check(customPairs2e.length === 5, '能解析全部自定义卡（5 张）', '实际 ' + customPairs2e.length);
+check(customPairs2e.length === 6, '能解析全部自定义卡（6 张）', '实际 ' + customPairs2e.length);
 check(headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') === statTotal,
   '顶部「收录品牌」= 实名企业卡总数', '页面 ' + headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') + ' / 计算 ' + statTotal + '（改 bundle 顶部统计常数）');
 check(headerStat('双休红榜', 'text-emerald-700/70 text-\\[11px\\]') === statHong,
@@ -429,7 +429,7 @@ if (cfgBlock) {
   }
 }
 const CUSTOM_COUNT = customCards.length;
-check(CUSTOM_COUNT === 5, `自定义卡 ${CUSTOM_COUNT} 张（期望 5）`);
+check(CUSTOM_COUNT === 6, `自定义卡 ${CUSTOM_COUNT} 张（期望 6）`);
 
 // null 规则：双休率 / 下班时间不得为占位 0，也不得是字符串 '未知'
 customCards.forEach((c) => {
