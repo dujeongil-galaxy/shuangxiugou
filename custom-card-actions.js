@@ -301,7 +301,8 @@
   }
 
   /* 分品牌累计（2026-10-18 站长）：「累计」拆两级显示——
-     第一行 = 本品牌累计（当前打开的卡片对应企业）；
+     第一行 = 本品牌累计（标签不再带企业名：企业名一长会被累计 chip 的
+     max-width:150px + ellipsis 截断，行尾金额正好看不见，2026-10-18 精简）；
      第二行 = 全站累计（本站所有品牌金额加总 = profile.total）。
      brandTotals 以「考核品牌」名称为键，仍只存本浏览器、不上传。 */
   var BRAND_TOTALS_KEY = 'sxg-brand-totals-v1';
@@ -360,7 +361,6 @@
 
   // 自定义卡与内置卡共用的填写区，避免两处 UI 走样
   function buildProfileForm(profile, brandKey, brandBase) {
-    var brandLabel = brandKey || '当前品牌';
     var brandBase0 = (typeof brandBase === 'number' && brandBase > 0) ? brandBase : 0;
     var form = el('div', 'sxg-form');
     form.innerHTML =
@@ -379,7 +379,7 @@
           '<input id="sxg-f-amount" type="number" inputmode="numeric" min="0" ' +
             'max="' + MAX_TOTAL + '" placeholder="留空则不增加" />' +
           '<span class="sxg-total sxg-total-2">' +
-            '<span class="sxg-total-line">本品牌（' + esc(brandLabel) + '）<b id="sxg-total-brand">￥' + brandBase0 + '</b></span>' +
+            '<span class="sxg-total-line">本品牌累计 <b id="sxg-total-brand">￥' + brandBase0 + '</b></span>' +
             '<span class="sxg-total-line">全站累计 <b id="sxg-total">￥0</b></span>' +
           '</span>' +
           '<button type="button" id="sxg-f-clear" class="sxg-btn-clear">清空</button>' +
@@ -547,7 +547,7 @@
         kv('所属企业:', '<span class="sxg-bold">' + esc(cfg.company || '—') + '</span>') +
         kv('企业评级:', '<span class="sxg-bold">' + esc(cfg.grade || 'C级') + '</span>') +
         kv('工时政策:', '<span class="sxg-bold">' + esc(cfg.workPolicy || '—') + '</span>') +
-        kv('本品牌累计（' + esc(cfg.name) + '）:', '<span class="sxg-bold" style="color:#059669" id="sxg-t-amount-brand">' +
+        kv('本品牌累计:', '<span class="sxg-bold" style="color:#059669" id="sxg-t-amount-brand">' +
           '￥' + brandBase + '</span>') +
         kv('全站累计已转移/支持消费:', '<span class="sxg-bold" style="color:#059669" id="sxg-t-amount">' +
           '￥' + profile.total + '</span>') +
@@ -608,7 +608,7 @@
         '企业评级：' + (cfg.grade || 'C级') + '\n' +
         '考核执行官：' + displayName(p.name, anonId) + '\n' +
         (p.reason ? '理由：' + p.reason + '\n' : '') +
-        '本品牌累计（' + (cfg.name || '') + '）：￥' + brandNext + '\n' +
+        '本品牌累计：￥' + brandNext + '\n' +
         '全站累计已转移/支持消费：￥' + shown + '\n' +
         '“老板考核你的KPI，你的钱包考核老板的良心”\n' +
         '数据查验来自开源双休购：shuangxiugou.vercel.app';
@@ -782,7 +782,7 @@
     var holder = label.parentNode;
     if (!holder || !holder.parentNode) return false;
     var row = receipt.querySelector('[data-sxg-brand-row]');
-    var wantLabel = '本品牌累计（' + brandKey + '）:';
+    var wantLabel = '本品牌累计:';
     var wantVal = '￥' + brandVal;
     if (!row) {
       row = el('div', 'flex justify-between items-baseline gap-2 text-xs');

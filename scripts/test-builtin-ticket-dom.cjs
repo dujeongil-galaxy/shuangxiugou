@@ -343,8 +343,8 @@ console.log('\n=== 4. 幂等：重复重绘不会让 observer 自激 ===');
       check('本品牌行插入成功', ok);
       const row = E6.receipt.querySelector('[data-sxg-brand-row]');
       check('行存在且带 data 标记', !!row);
-      check('标签为「本品牌累计（测试品牌）:」',
-        row.children[0].textContent === '本品牌累计（测试品牌）:', row.children[0].textContent);
+      check('标签为「本品牌累计:」',
+        row.children[0].textContent === '本品牌累计:', row.children[0].textContent);
       check('值为 ￥66', row.children[1].textContent === '￥66', row.children[1].textContent);
       check('值节点带 id 供预览联动', !!E6.receipt.querySelector('#sxg-t-amount-brand'));
       const before = row.innerHTML;
