@@ -14,6 +14,20 @@
 > 那属于站点运营内容而非 fork 者需要参考的技术改动。
 
 ---
+### 修复：自定义卡无拼音索引（零食有鸣等 7 张卡拼音联想搜不到）（提交哈希待 push 后回填）
+**背景**：站长截图反馈——搜 `ls`（零食）拼音联想里没有刚收录的「零食有鸣」，反而出现内置虚拟黑榜卡「某代工烘焙食品」。
+
+**根因**：`pinyin-index.js` 由 `scripts/gen-pinyin-index.py` 从 bundle 的 `brands` 数组离线生成，只覆盖内置卡；7 张自定义卡（肯德基/小米/兵立王/茶百道/赵一鸣/零食很忙/一点点/零食有鸣）的 name/company/keywords/tags 在 `index.html` 的 `customCardsConfig` 里，从未进入拼音索引 → 拼音联想永久查不到自定义卡（静默失效，中文能搜、拼音搜不到）。
+
+**修复**：
+1. `scripts/gen-pinyin-index.py`：新增 `parse_custom_configs()` 解析 `index.html` 的 `customCardsConfig`（name/company/keywords/tags/category/grade），按同一套词条权重并入索引；头部注释与自测查询同步更新（`ls`→命中零食有鸣、`ydd`→一点点）；
+2. `pinyin-index.js`：重跑生成（53 内置 + 7 自定义 = 60 品牌 / 619 词条），`index.html` 引用 `?v=2→3`；
+3. `scripts/verify.mjs` §16：索引品牌数口径改为「内置 + 自定义」，幽灵条目校验按 customCardsConfig id 白名单放行；
+4. `scripts/test-pinyin-search.cjs`：索引一致性校验同步放行自定义卡（无幽灵条目 + 数量 = brands + customCardsConfig）；
+5. 文档：`FORK_GUIDE.md`（索引数据来源说明）、`PITFALLS.md`（6.5 新增自定义卡坑位记录）、`CHANGELOG.md`（本条目）。
+
+**测试**：verify 440 项全过；test-pinyin-search 31 项、test-pinyin-e2e 52 项、test-stat-filter 32 项全过。
+
 ### 新增「零食有鸣」品牌卡（C 级）；全站计数 58→59 / 自定义卡 6→7 同步（提交 `1592807`）
 **背景**：站长要求联网核实「零食有鸣」与「零食很忙/赵一鸣」是否同一家（怀疑不是），并核实近期店员反馈「分情况、不是固定单休一天/月休 4 天」的排班口径，据此补充本站收录信息。核实完成后才暴露站长身份（见详情页证据块）。
 

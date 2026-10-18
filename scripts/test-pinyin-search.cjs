@@ -148,10 +148,19 @@ setTimeout(() => {
         window.document.querySelectorAll('#pinyin-suggest').length === 1);
   check('重复执行后仍能联想', names().length > 0);
 
-  console.log('\n--- 索引与 bundle 的一致性 ---');
+  console.log('\n--- 索引与 bundle / customCardsConfig 的一致性 ---');
   const bundle = fs.readFileSync(path.join(ROOT, 'assets/index-YthXZ9eP.js'), 'utf8');
-  const missing = window.__PINYIN_INDEX__.filter(e => bundle.indexOf('id:`' + e.id + '`') === -1);
-  check('索引里的每个品牌都真实存在于 bundle（无幽灵条目）',
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  // 自定义卡（肯德基/小米/兵立王/茶百道/赵一鸣/一点点/零食有鸣）不在 bundle，
+  // 但 gen-pinyin-index.py 已把它们并入索引，校验时一并放行（2026-10-18 修复）
+  const cfgM = html.match(/var customCardsConfig = \[([\s\S]*?)\n      \];/);
+  const customIds = new Set(
+    cfgM ? [...cfgM[1].matchAll(/id:\s*'([^']+)'/g)].map((m) => m[1]) : []
+  );
+  const missing = window.__PINYIN_INDEX__.filter(
+    (e) => bundle.indexOf('id:`' + e.id + '`') === -1 && !customIds.has(e.id)
+  );
+  check('索引里的每个品牌都真实存在于 bundle 或 customCardsConfig（无幽灵条目）',
         missing.length === 0, missing.map(m => m.id));
   // 品牌数从 bundle 动态推导，不要写死—— 否则每次加卡都要改测试，
   // 忘了改就会变成一个长期报错的假警报，或者更糟：被忽略而失去意义。
@@ -183,9 +192,9 @@ setTimeout(() => {
   const bundleIds = new Set(cards
     .map((o) => /\{id:`([a-z0-9-]+)`,name:`/.exec(o))
     .filter(Boolean).map((m) => m[1]));
-  check('索引品牌数与 brands 主数组一致（动态推导，不写死）',
-        window.__PINYIN_INDEX__.length === bundleIds.size,
-        { 索引: window.__PINYIN_INDEX__.length, brands数组: bundleIds.size });
+  check('索引品牌数与 brands 主数组 + 自定义卡一致（动态推导，不写死）',
+        window.__PINYIN_INDEX__.length === bundleIds.size + customIds.size,
+        { 索引: window.__PINYIN_INDEX__.length, brands数组: bundleIds.size, 自定义卡: customIds.size });
 
   console.log('\n--- 标签页延迟渲染（真实场景）---');
   // bundle 里搜索框是 `brands&&...` 条件渲染：页面初始在别的标签时

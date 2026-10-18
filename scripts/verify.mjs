@@ -2877,15 +2877,19 @@ if (!exists(PINYIN_IDX)) {
   const idxIds = new Set(
     [...idxSrc.matchAll(/"id":"([a-z0-9-]+)"/g)].map((x) => x[1])
   );
+  const customIds = new Set(customCards.map((c) => c.id));
+  const expectIdx = brandCards.length + customIds.size;
 
-  check(idxIds.size === brandCards.length,
-    `拼音索引品牌数与 bundle 一致（索引 ${idxIds.size} / bundle ${brandCards.length}）`,
-    `差集：${brandCards.map((c) => c.id).filter((i) => !idxIds.has(i)).join(', ') || '索引多出 ' + [...idxIds].filter((i) => !brandCards.some((c) => c.id === i)).join(', ')}。修复：python scripts/gen-pinyin-index.py`);
+  check(idxIds.size === expectIdx,
+    `拼音索引品牌数与全量卡片一致（索引 ${idxIds.size} / 内置 ${brandCards.length} + 自定义 ${customIds.size}）`,
+    `差集：${brandCards.map((c) => c.id).filter((i) => !idxIds.has(i)).join(', ') || [...idxIds].filter((i) => !brandCards.some((c) => c.id === i) && !customIds.has(i)).join(', ') || '无'}。修复：python scripts/gen-pinyin-index.py`);
 
-  // 索引里的 id 必须真实存在于 bundle，否则是陈旧残留
-  const ghosts = [...idxIds].filter((i) => !brandCards.some((c) => c.id === i));
+  // 索引里的 id 必须真实存在于 bundle 或 customCardsConfig，否则是陈旧残留
+  const ghosts = [...idxIds].filter(
+    (i) => !brandCards.some((c) => c.id === i) && !customIds.has(i)
+  );
   check(ghosts.length === 0,
-    '拼音索引里没有 bundle 中已不存在的品牌（无幽灵条目）',
+    '拼音索引里没有已不存在的品牌（无幽灵条目）',
     ghosts.join(', '));
 
   // 关键卡必须在索引里

@@ -2,13 +2,18 @@
 """
 生成拼音/首字母搜索索引 pinyin-index.js
 
-流程：解析 bundle 里的 brands 数组 → 汉字转拼音 → 排序规则自检 → 写文件
+流程：解析 bundle 里的 brands 数组 + index.html 的 customCardsConfig
+      → 汉字转拼音 → 排序规则自检 → 写文件
 
 为什么需要它
 ------------
 bundle 的搜索是纯 includes 硬匹配，输「ning」「ndsd」搜不到「宁德时代」。
 真正的模糊搜索要改 React 内部数组，那只能手改压缩产物 —— 项目红线。
 所以改为在注入层做联想回填，索引由本脚本离线生成。
+
+自定义卡（肯德基/小米/兵立王/茶百道/赵一鸣/一点点/零食有鸣）不在 bundle 里，
+而是 index.html 的 customCardsConfig（含 name/company/keywords/tags），
+本脚本一并解析进索引，否则拼音联想永远查不到它们（2026-10-18 修复）。
 
 依赖：pypinyin
     <managed python> -m pip install pypinyin
@@ -28,6 +33,7 @@ from pypinyin import lazy_pinyin, Style
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BUNDLE = os.path.join(ROOT, 'assets', 'index-YthXZ9eP.js')
+INDEX_HTML = os.path.join(ROOT, 'index.html')
 OUT = os.path.join(ROOT, 'pinyin-index.js')
 
 BT = chr(96)
@@ -89,6 +95,49 @@ def extract_brands(src):
             'tier': field(o, 'tier'),
             'kw': arr(o, 'searchKeywords'),
             'products': arr(o, 'keyProducts'),
+        })
+    return out
+
+
+def parse_custom_configs(html):
+    """
+    从 index.html 解析 customCardsConfig 数组，返回与 extract_brands 同构的列表
+    （id/name/company/category/tier/kw/products）。自定义卡没有 products，
+    用 keywords + tags 并成 kw。
+    """
+    m = re.search(r'var customCardsConfig = \[([\s\S]*?)\n      \];', html)
+    if not m:
+        print('警告：未在 index.html 找到 customCardsConfig，自定义卡不入索引')
+        return []
+    body = m.group(1)
+    out = []
+    # 按配置项切片：与 verify.mjs §3 同一套切法（read() 已归一化为 LF）
+    item_re = re.compile(r"\{\s*id:\s*'([^']+)',([\s\S]*?)\n\s*\},?\n")
+    for im in item_re.finditer(body):
+        cid, chunk = im.group(1), im.group(2)
+        f = lambda key: (re.search(key + r":\s*'([^']*)'", chunk) or [None, None])[1]
+        name = f('name') or cid
+        company = f('company') or ''
+        category = f('category') or ''
+        grade = f('grade') or ''
+        tier = {'S级': 's', 'A级': 'a', 'B级': 'b', 'C级': 'c',
+                'U级': 'u', '待核实（未评级）': 'u'}.get(grade, '')
+        kw = re.findall(r"keywords:\s*\[([^\]]*)\]", chunk)
+        kw_items = []
+        if kw:
+            kw_items = re.findall(r"'([^']*)'", kw[0])
+        tags = re.findall(r"tags:\s*\[([^\]]*)\]", chunk)
+        tag_items = []
+        if tags:
+            tag_items = re.findall(r"'([^']*)'", tags[0])
+        merged = []
+        for t in kw_items + tag_items:
+            t = t.strip()
+            if t and t not in merged:
+                merged.append(t)
+        out.append({
+            'id': cid, 'name': name, 'company': company,
+            'category': category, 'tier': tier, 'kw': merged, 'products': [],
         })
     return out
 
@@ -209,6 +258,7 @@ HEADER = """// ============================================================
 // 拼音/首字母模糊搜索索引 —— 自动生成，请勿手改
 //
 // 来源：assets/index-YthXZ9eP.js 的 brands 数组
+//       + index.html 的 customCardsConfig（自定义卡）
 // 生成：scripts/gen-pinyin-index.py（依赖 pypinyin）
 // 字段 t = [原文, 全拼, 首字母, 重要度]
 // 重要度：0 主名 / 1 英文名 / 2 公司全称 / 3 关键词 / 4 产品名
@@ -226,15 +276,22 @@ if __name__ == '__main__':
     brands = extract_brands(open(BUNDLE, encoding='utf-8').read())
     print('从 bundle 解析出品牌数：', len(brands))
 
-    index = build_index(brands)
+    if os.path.exists(INDEX_HTML):
+        customs = parse_custom_configs(open(INDEX_HTML, encoding='utf-8').read())
+        print('从 index.html 解析出自定义卡数：', len(customs))
+    else:
+        customs = []
+        print('警告：找不到 index.html，自定义卡不入索引')
+
+    index = build_index(brands + customs)
     slim = [{
         'id': e['id'], 'name': e['name'], 'cn': e['cn'],
         't': [[x['t'], x['f'], x['i'], x['w']] for x in e['terms']],
     } for e in index]
 
     print('\n=== 排序自测（L层级/W重要度/命中词条）===')
-    for q in ['ning', 'ndsd', 'byd', 'hw', 'ping', 'mt', 'sf', 'ms', '苹果', 'logi']:
-        r = [(h[1]['name'], h[0]) for h in search(q, index)][:3]
+    for q in ['ning', 'ndsd', 'byd', 'hw', 'ping', 'mt', 'sf', 'ms', '苹果', 'logi', 'ls', 'lsym', 'ydd']:
+        r = [(h[1]['name'], h[0]) for h in search(q, index)][:4]
         print(' ', q.ljust(8), '->',
               ' | '.join('%s [L%d/W%d 命中「%s」]' % (n, lv, w, hit)
                          for n, (lv, w, p, hit) in r))
