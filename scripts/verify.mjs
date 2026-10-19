@@ -3424,6 +3424,67 @@ if (exists(RPT)) {
     '删除它会让「提交我的真实工时票」静默退回假入库：数据只留在页面内存里，刷新即丢，站长收不到，而按钮仍写着「入库公证中…」');
 }
 
+// ---------- 20g. 公告栏版本号必须等于「上一次提交」 ----------
+// 背景：2026-10-19 站长指出首页「当前版本号 2db67d9」与近期提交对不上。
+//   根因是它写死在 index.html 里，多轮发版都没同步。规则本身 AGENTS.md 早有记载
+//  （「两条硬规则 · 一、公告栏版本号：取上一次提交的哈希」），但只写在文档里、
+//   没有任何机器校验，于是照样能被漏掉。这一节把文档规则变成红灯。
+//
+// 语义：页面上显示版本号 = 「上一个已推送提交」的 short hash，不是当前 HEAD。
+//   因为哈希由文件内容算出，把哈希写进文件会改变内容、进而改变哈希 —— 无法自指。
+//   所以每次推送完，要把公告栏改成刚推上去那个哈希，再提交一次。
+//
+// 判据：版本号必须真实存在于仓库，且等于 HEAD~1。
+//   写成 HEAD      → 判红（那样会稳定落后两拍）
+//   等于 HEAD~1    → 通过（正确）
+//   等于 HEAD~2    → 容忍，仅提示（CI 同步补提交尚未生成的中间态）
+//   落后 3 拍以上  → 判红（真忘了同步）
+section('20g. 公告栏版本号');
+
+{
+  // 必须锚定到 </span>：上面这段注释里也出现了「当前版本号」四个字，
+  // 不限定结束边界的话正则会命中注释而不是真实的公告栏节点。
+  const m = /当前版本号\s*([0-9a-fA-F]{7}|[0-9a-fA-F]{40})\s*<\/span>/.exec(html);
+  const shown = m ? m[1].slice(0, 7).toLowerCase() : null;
+
+  const shortOf = (rev) => {
+    try {
+      return execSync(`git rev-parse --short=7 ${rev}`, { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+    } catch { return null; }
+  };
+
+  const chain = ['HEAD', 'HEAD~1', 'HEAD~2'].map(shortOf);
+
+  if (!chain[1]) {
+    note('仓库不足两个提交，跳过版本号比对');
+  } else if (!shown) {
+    err('index.html 公告栏里找不到「当前版本号 xxxxxxx</span>',
+      '版本号是读者核对页面版本的唯一依据，不能删掉或写错格式');
+  } else {
+    // ⚠️ 不能写 `${shown}^{commit}`：Windows 的 cmd.exe 把 ^ 当转义符，
+    //    会把 ^{commit} 吞掉，导致所有真实哈希都被误判成「不存在」。
+    //    短哈希直接对象查询即可（git 会自行消歧到唯object）。
+    let real = false;
+    try { execSync(`git cat-file -e ${shown}`, { cwd: ROOT, stdio: 'ignore' }); real = true; } catch { real = false; }
+
+    if (!real) {
+      err(`公告栏版本号 ${shown} 在本仓库里不存在`,
+        '不能手写或编造哈希。同步命令：node scripts/sync-version.mjs');
+    } else if (shown === chain[0]) {
+      err(`公告栏版本号 ${shown} 写成了当前 HEAD，应为 HEAD~1 的 ${chain[1]}`,
+        '哈希由内容算出，写成当前 HEAD 会让它稳定落后两拍。');
+    } else if (shown === chain[1]) {
+      ok(`公告栏版本号 ${shown} = HEAD~1，符合「上一个推送」语义`);
+    } else if (shown === chain[2]) {
+      note(`公告栏版本号 ${shown} = HEAD~2（CI 同步补提交尚未生成的中间态）`);
+    } else {
+      const behind = execSync(`git rev-list --count ${shown}..HEAD`, { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+      err(`公告栏版本号 ${shown} 落后 ${behind} 个提交，远超允许的 2 拍`,
+        '多轮发版忘了同步。运行 node scripts/sync-version.mjs 自动写回。');
+    }
+  }
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {

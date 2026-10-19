@@ -1,0 +1,54 @@
+name: 公告栏版本号自动同步
+
+# 首页公告栏的「当前版本号 xxxxxxx」写死在 index.html 里，靠人记得改必然漏。
+# 2026-10-19 站长发现它停在 2db67d9，落后了 6 个提交才被发现 ——
+# 期间 TOP 按钮、红色标记、卡片本地说明等多轮发版都没同步。
+# 规则本身 AGENTS.md 早有记载，但文档没有强制力。本工作流把它变成自动执行。
+#
+# 语义：页面上显示的是「上一次推送」的哈希。因为哈希由文件内容算出，
+# 写进文件会改变内容、进而改变哈希 —— 无法自指，只能退一拍（详见 AGENTS.md）。
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  sync-version:
+    name: 写回版本号
+    runs-on: ubuntu-latest
+    steps:
+      # fetch-depth: 0 —— sync-version.mjs 要跑 git rev-parse HEAD~1，
+      # 默认浅克隆（只有 1 个提交）会让这条命令直接失败。
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      # --check 先探测：已经是最新就跳过后续所有步骤，
+      # 避免「每次推送都多一个 bot 提交」把提交历史刷满。
+      - name: 检查是否需要同步
+        id: check
+        continue-on-error: true
+        run: node scripts/sync-version.mjs --check
+
+      - name: 写回版本号
+        if: steps.check.outcome == 'failure'
+        run: node scripts/sync-version.mjs
+
+      - name: 提交并推回
+        if: steps.check.outcome == 'failure'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.io"
+          git add index.html
+          VER="$(grep -oP '当前版本号 \K[0-9a-f]{7}' index.html | head -1)"
+          # ⚠️ [skip ci] 必须保留：否则这次提交会再次触发本工作流，
+          #    陷入「提交 → 触发 → 提交」的死循环。
+          git commit -m "chore: 公告栏版本号同步至 ${VER} [skip ci]"
+          git push origin main
