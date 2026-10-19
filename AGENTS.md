@@ -102,16 +102,21 @@
 
 | 层次 | 位置 | 作用 |
 |---|---|---|
-| ① 本地命令 | `npm run sync-version`（`scripts/sync-version.mjs`） | 自动写回上一次推送的哈希，不用手抄 |
-| ② 校验红线 | `scripts/verify.mjs` §20g | 落后超过一拍、或写成当前 HEAD，直接判红 |
-| ③ CI 自动写回 | `.github/workflows/sync-version.yml` | 每次 push 到 main 后自动同步并补提交 |
+| ① 本地命令 | `npm run sync-version`（`scripts/sync-version.mjs`） | 写入**当前 HEAD** 的哈希；补提交后它自然变成 HEAD~1 |
+| ② 校验红线 | `scripts/verify.mjs` §20g | 落后超一拍、写成 HEAD、哈希不存在，直接判红 |
+| ③ CI 自动写回 | `.github/workflows/sync-version.yml` | 每次 push 到 main 后自动同步并补提交（无需手动） |
 
 **日常不需要手动改**，CI 会补。只有 CI 没覆盖的场景（离线提交、改完不推）
-才需要跑 `npm run sync-version`。
+才需要跑 `npm run sync-version`，跑完**必须把 index.html 单独再提交一次**。
 
-**不要**手写版本号，也不要试图写成当前 HEAD —— 前者可能编造出仓库里
-不存在的哈希，后者会导致永远落后两拍。两种情况 §20g 都会判红
-（判据见 `scripts/verify.mjs` §20g 段首注释）。
+**不要**手写版本号（可能编造出仓库里不存在的哈希）。§20g 会判红。
+
+> ⚠️ **为什么脚本默认写 HEAD 而不是 HEAD~1 —— 别把它「修正」回去：**
+>    写完之后还要再提交一次改动才落地，那个提交一落地，刚写进去的哈希
+>    正好从 HEAD 变成 HEAD~1，即规则要求的「上一次推送」。
+>    若写成 HEAD~1，补完提交会滑到 HEAD~2，反而多落后一拍。
+>    2026-10-19 实测：第一次按 HEAD~1 写，结果版本号停在 HEAD~2；
+>    改成写 HEAD 后，CI 写入 `1d41ac5` → 补提交 `54b7525` → 显示恰为 HEAD~1。
 
 ### 二、notes.html 加密流程
 
