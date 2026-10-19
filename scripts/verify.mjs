@@ -666,6 +666,60 @@ if (!Number.isFinite(commitCount) || commitCount < 30) {
   if (hashBad === 0) ok(`核验了 ${hashTotal} 个提交号，全部真实存在（仓库共 ${commitCount} 个提交）`);
 }
 
+// ---------- 9b. CHANGELOG 每条必须带「改动时间 + 提交哈希」，且时间倒序 ----------
+// 背景：2026-10-19 站长指出「改动记录要写日期、什么时候改的、哈希多少」——
+//   此前 CHANGELOG 有 6 条只写「提交 xxx」没日期、有 1 条「提交见 git log」
+//   压根没哈希、还有 17 条改动从未记录。改完 commit message 才知道「大概那天」，
+//   但 CHANGELOG 是给人看的，必须能一眼看到精确时间。
+//   本项把「人肉纪律」变成机器检查：漏写 / 格式不符 / 顺序错都会报错。
+section('9b. CHANGELOG 条目格式（时间 + 哈希 + 倒序）');
+
+if (exists('CHANGELOG.md')) {
+  const clog = read('CHANGELOG.md');
+  const entries = [];
+  for (const raw of clog.split('\n')) {
+    if (!raw.startsWith('### ')) continue;
+    const title = raw.slice(4).trim();
+    // 跳过两类非改动条目：
+    //   ① 「1. 改加密正文…」这类实操提醒小节
+    //   ② 头部「标题统一格式」里的模板示例（含 YYYY-MM-DD 占位符）
+    if (/^\d+\.\s/.test(title)) continue;
+    if (/YYYY-MM-DD|XXX|占位|示例/.test(title)) continue;
+    entries.push(title);
+  }
+
+  const noStamp = [];
+  entries.forEach((title) => {
+    const m = title.match(/（(\d{4}-\d{2}-\d{2} \d{2}:\d{2})\s*·\s*提交\s*`[0-9a-f]{7}`(?:[^）]*)）\s*$/);
+    if (!m) noStamp.push(title.slice(0, 50));
+  });
+  check(noStamp.length === 0,
+    `CHANGELOG ${entries.length} 条改动记录全部带「时间 · 提交哈希」`,
+    noStamp.length ? `缺时间戳或哈希：\n      - ${noStamp.join('\n      - ')}` : '');
+
+  // 解析时间戳并检查严格倒序（第一条最新）
+  const stamps = entries
+    .map((title) => {
+      const m = title.match(/（(\d{4}-\d{2}-\d{2} \d{2}:\d{2})\s*·\s*提交/);
+      return m ? { t: m[1], title: title.slice(0, 40) } : null;
+    })
+    .filter(Boolean);
+  const outOfOrder = [];
+  for (let i = 1; i < stamps.length; i++) {
+    if (stamps[i].t > stamps[i - 1].t) {
+      outOfOrder.push(`第 ${i} 条「${stamps[i].title}」（${stamps[i].t}）排在上一条（${stamps[i - 1].t}）之前`);
+    }
+  }
+  check(outOfOrder.length === 0,
+    `CHANGELOG ${stamps.length} 条记录严格按时间倒序`,
+    outOfOrder.length ? outOfOrder.join('\n      ') : '');
+
+  // 「提交见 git log」这类占位是禁止的——等于这条记录没有可核验的锚点
+  check(!/提交见\s*git log|待回填|回填提交号/.test(clog),
+    'CHANGELOG 没有「提交见 git log / 待回填」这类无法核验的占位',
+    '每条都必须写真实哈希，写不出来说明这条改动还没提交');
+}
+
 // ---------- 10. 运行时补丁健壮性 ----------
 section('10. 运行时补丁健壮性（静默失效防护）');
 
