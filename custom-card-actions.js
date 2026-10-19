@@ -104,6 +104,8 @@
       '.sxg-kv .v{font-weight:700;color:#0f172a;text-align:right;overflow:hidden;',
       'text-overflow:ellipsis;white-space:nowrap;max-width:190px}',
       '.sxg-vote-off{opacity:.45;cursor:not-allowed}',
+      /* 点赞/点踩按下后的反馈（本地记录态） */
+      '.sxg-thumb-on{outline:2px solid #10b981;outline-offset:1px;border-radius:8px}',
       /* 访客填写区 */
       '.sxg-form{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);',
       'border-radius:12px;padding:14px;margin-bottom:4px}',
@@ -715,6 +717,9 @@
      加班费，提交后把票数写进 localStorage（后续云同步再上传）。 */
 
   var VOTE_STORE_KEY = 'sxg-custom-votes';
+  // 2026-10-19 站长定版：员工投票与内置卡一致，提交后跳 GitHub Issues 入库；
+  // 点赞/点踩只记本地（弹提示告知），上传 GitHub 云端是后续功能。
+  var ISSUE_REPO = 'https://github.com/dujeongil-galaxy/shuangxiugou/issues/new';
 
   function loadCustomVotes() {
     try { return JSON.parse(localStorage.getItem(VOTE_STORE_KEY) || '{}'); }
@@ -796,7 +801,7 @@
 
       '<div class="sxg-actions right">' +
         '<button type="button" class="sxg-btn sxg-btn-ghost sxg-btn-sm" data-vote-close>取消</button>' +
-        '<button type="button" class="sxg-btn sxg-btn-primary sxg-btn-sm" data-vote-submit>提交我的真实工时票</button>' +
+        '<button type="button" class="sxg-btn sxg-btn-primary sxg-btn-sm" data-vote-submit>提交我的真实工时票（跳转 GitHub 记录）</button>' +
       '</div>';
 
     box.appendChild(body);
@@ -825,6 +830,32 @@
       };
       saveCustomVotes(votesNow);
 
+      // 跳转 GitHub Issues 入库（与内置卡 employee-report-to-issue.js 同一套路：
+      // 拼预填的「新建 issue」URL，用户在 GitHub 点一下确认才真正提交）
+      var params =
+        '?title=' + encodeURIComponent('[员工工时投稿] ' + cfg.name) +
+        '&body=' + encodeURIComponent(
+          '## 员工工时投稿（自动生成，请补充可查证来源）\n' +
+          '\n' +
+          '| 项目 | 填写内容 |\n' +
+          '| --- | --- |\n' +
+          '| 企业 | ' + cfg.name + ' |\n' +
+          '| 部门/岗位 | ' + role + ' |\n' +
+          '| 周末休息真实情况 | ' + weekendLabel + ' |\n' +
+          '| 平时平均下班时间 | ' + (time || '未选择') + ' |\n' +
+          '\n' +
+          '### 一句话补充\n' +
+          (comment.trim() || '（未填写）') + '\n' +
+          '\n' +
+          '---\n' +
+          '\n' +
+          '**这份投稿只作核查线索，不直接计入统计。**核实后本站会更新品牌详情页。\n' +
+          '\n' +
+          '（本条由自定义品牌卡「员工投票」表单自动生成）'
+        ) +
+        '&labels=' + encodeURIComponent('员工投稿');
+      window.open(ISSUE_REPO + params, '_blank', 'noopener');
+
       // 卡面上的「N 人已投票」同步 +1（本地视角）
       var card = document.getElementById(cfg.id);
       if (card) {
@@ -851,14 +882,37 @@
         '<h3 class="sxg-h3" style="margin-top:10px">投票成功</h3>' +
         '<p class="sxg-p" style="margin-top:8px">你在 <strong>' + esc(cfg.name) + '</strong> 的一票已记下：<br>' +
           esc(weekendLabel) + ' · ' + esc(time || '') + '</p>' +
-        '<p class="sxg-xs" style="margin-top:8px">目前投票保存在你的浏览器本地；' +
-          '云同步上线后会自动汇总到全站数据。</p>' +
+        '<p class="sxg-xs" style="margin-top:8px">已为你打开 GitHub 的新建 Issue 页面，' +
+          '在 GitHub 点「Submit new issue」后投稿即入库；本页票数同步记入浏览器本地。</p>' +
         '<div class="sxg-actions" style="justify-content:center;padding-top:14px">' +
           '<button type="button" class="sxg-btn sxg-btn-primary sxg-btn-sm" data-thanks-ok>好的</button>' +
         '</div>' +
       '</div>';
     layer.appendChild(box);
     box.querySelector('[data-thanks-ok]').addEventListener('click', closeLayer);
+  }
+
+  // 点赞/点踩后的提示（2026-10-19 站长定版文案）：
+  // 数据保存在本地浏览器 Cookie（localStorage），上传 GitHub 云端是后续功能
+  function openThumbToast(cfg, kind, repeat) {
+    closeLayer();
+    var layer = ensureLayer();
+    var box = el('div', 'sxg-box');
+    var label = kind === 'like' ? '点赞' : '点踩';
+    box.innerHTML =
+      '<div class="sxg-pad" style="text-align:center">' +
+        '<div style="font-size:34px;line-height:1">' + (kind === 'like' ? '👍' : '👎') + '</div>' +
+        '<h3 class="sxg-h3" style="margin-top:10px">' + (repeat ? '你已经' + label + '过啦' : label + '成功') + '</h3>' +
+        '<p class="sxg-p" style="margin-top:8px">你对 <strong>' + esc(cfg.name) + '</strong> 的' + label +
+          '已记录。</p>' +
+        '<p class="sxg-xs" style="margin-top:8px">你的数据将保存在本地浏览器 Cookie 中，仅自己可见；' +
+          '上传 GitHub 云端是后续考虑开发的功能。</p>' +
+        '<div class="sxg-actions" style="justify-content:center;padding-top:14px">' +
+          '<button type="button" class="sxg-btn sxg-btn-primary sxg-btn-sm" data-thumb-ok>好的</button>' +
+        '</div>' +
+      '</div>';
+    layer.appendChild(box);
+    box.querySelector('[data-thumb-ok]').addEventListener('click', closeLayer);
   }
 
   /* ------------------- 内置品牌卡的小票：DOM 层接管（不改压缩包） -------------------
@@ -1298,14 +1352,46 @@
         diag('自定义卡「' + cfg.name + '」找不到「员工投票」按钮');
       }
 
-      // 点赞 / 点踩：按用户要求暂不实现，先明确置灰避免误以为坏了
+      // 点赞 / 点踩（2026-10-19 站长定版）：点击有效，数据只保存在浏览器本地
+      // （localStorage，等价于站点可用的持久存储），并弹提示告知；
+      // 上传 GitHub 云端汇总是后续开发功能。
+      var THUMB_KEY = 'sxg-custom-thumbs';
+      function readThumbs() {
+        try { return JSON.parse(localStorage.getItem(THUMB_KEY) || '{}'); }
+        catch (e) { return {}; }
+      }
       $$('button', card).forEach(function (b) {
         var txt = (b.textContent || '').trim();
-        if (/^\d+$/.test(txt) || /^\d+$/.test((b.querySelector('span') || {}).textContent || '')) {
-          b.classList.add('sxg-vote-off');
-          b.setAttribute('title', '点赞/点踩需要数据库支持，暂未开放');
-          b.setAttribute('aria-disabled', 'true');
+        var inner = ((b.querySelector('span') || {}).textContent || '').trim();
+        var kind = null;
+        if (/^\d+$/.test(txt) || /^\d+$/.test(inner)) kind = 'like';
+        else if (/^踩$/.test(txt) || /点踩|踩 \(/.test(txt)) kind = 'dislike';
+        if (!kind) return;
+
+        var saved = readThumbs()[cfg.id];
+        if (saved) {
+          b.classList.add('sxg-thumb-on');
+          b.setAttribute('title', '你已' + (saved === 'like' ? '点赞' : '点踩') + '过（保存在本地浏览器）');
+        } else {
+          b.setAttribute('title', '点击后记录保存在你的浏览器本地');
         }
+        b.removeAttribute('aria-disabled');
+        b.classList.remove('sxg-vote-off');
+        b.addEventListener('click', function (ev) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          var t = readThumbs();
+          if (t[cfg.id]) {
+            // 重复点击：提示已记录，不重复计
+            openThumbToast(cfg, t[cfg.id], true);
+            return;
+          }
+          t[cfg.id] = kind;
+          try { localStorage.setItem(THUMB_KEY, JSON.stringify(t)); } catch (e) {}
+          b.classList.add('sxg-thumb-on');
+          b.setAttribute('title', '你已' + (kind === 'like' ? '点赞' : '点踩') + '过（保存在本地浏览器）');
+          openThumbToast(cfg, kind, false);
+        });
       });
 
       patchVoteCounts();

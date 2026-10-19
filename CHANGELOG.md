@@ -14,6 +14,22 @@
 > 那属于站点运营内容而非 fork 者需要参考的技术改动。
 
 ---
+### 功能定版：自定义卡「员工投票」跳转 GitHub Issues + 点赞/点踩本地记录（2026-10-19）
+**站长要求**：员工投票提交改为**跳转 GitHub Issues 记录**（与内置卡 `employee-report-to-issue.js`
+同一套路）；点赞/点踩**先记录在本地**，点击后弹提示告知「数据将保存在本地浏览器 Cookie，
+上传 GitHub 云端是后续考虑开发的功能」。
+
+**改动**（`custom-card-actions.js?v=12`）：
+- 员工投票提交：本地照存 `sxg-custom-votes`，同时 `window.open` 打开
+  `github.com/dujeongil-galaxy/shuangxiugou/issues/new`，预填标题
+  `[员工工时投稿] <品牌>` 与 Markdown 表格正文，labels=员工投稿；
+  按钮文案改「提交我的真实工时票（跳转 GitHub 记录）」，回执文案同步说明。
+- 点赞/点踩：移除置灰，点击有效——按品牌记入 `localStorage('sxg-custom-thumbs')`，
+  弹提示（点赞成功 / 你已经点过啦），按钮加高亮描边；重复点击与跨类切换（已赞又点踩）
+  均只提示不重复计。
+- 修复 `employee-report-to-issue.js` 中 issue 模板残留的 `null` 字样。
+
+---
 ### 修复：自定义卡「员工投票」按钮点了没反应 + 视频弹窗遮罩吞点击（提交见 git log）
 **背景**：站长截图反馈「零食品牌员工投票按钮还是 null」。排查结论：按钮不是显示 null，
 而是**压根没绑事件**——自定义卡是克隆内置卡模板生成的，克隆体不携带 React onClick，
