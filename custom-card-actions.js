@@ -1540,10 +1540,12 @@
      内置卡和自定义卡是同一套结构，一条链路天然全覆盖。
      React 重渲染会把整个卡片换掉，所以加 MutationObserver 补挂（复用外层 observer）。 */
 
+  // 文案按数据实际去向分述（站长 2026-10-19 更正）：
+  // 点赞/点踩只写 localStorage；员工投票是跳 GitHub Issues 公开提交，两者不能混为一谈。
   var LOCAL_NOTE_HTML =
     '<span aria-hidden="true">💾</span>' +
-    '<span>你的打卡、投票与点赞<b>当前仅保存在本地浏览器</b>，不上传云端；' +
-    '清除浏览器 Cookie 与缓存会丢失。</span>';
+    '<span><b>点赞、点踩</b>仅保存在本地浏览器，不上传云端；' +
+    '清除 Cookie 与缓存会丢失。<b>员工投票</b>会提交到 GitHub Issues 公开记录。</span>';
 
   function cardRootOf(btn) {
     // 按钮 → div.flex.items-center.gap-2 → div.px-5.py-3 → 卡片根

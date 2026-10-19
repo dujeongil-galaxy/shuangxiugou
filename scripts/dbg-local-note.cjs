@@ -87,8 +87,12 @@ async function main() {
   const d = JSON.parse(detail);
   if (!d.found) { console.log('FAIL: 找不到 .sxg-localnote 节点'); ok = false; }
   else {
-    if (!/仅保存在本地/.test(d.text)) { console.log('FAIL: 文案缺少「仅保存在本地」'); ok = false; }
+    if (!/点赞、点踩/.test(d.text)) { console.log('FAIL: 文案缺少「点赞、点踩」'); ok = false; }
+    if (!/仅保存在本地浏览器/.test(d.text)) { console.log('FAIL: 文案缺少「仅保存在本地浏览器」'); ok = false; }
     if (!/不上传云端/.test(d.text)) { console.log('FAIL: 文案缺少「不上传云端」'); ok = false; }
+    if (!/员工投票/.test(d.text)) { console.log('FAIL: 文案缺少「员工投票」去向说明'); ok = false; }
+    // text 已 strip 空白，单词间空白为零，正则用 \s* 兼容
+    if (!/GitHub\s*Issues/.test(d.text)) { console.log('FAIL: 文案缺少「GitHub Issues」'); ok = false; }
     if (!d.visible) { console.log('FAIL: 提示不可见（高度为 0）'); ok = false; }
     if (d.display !== 'flex') { console.log('FAIL: display 不是 flex，可能被覆盖'); ok = false; }
   }
