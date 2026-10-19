@@ -841,7 +841,7 @@
     box.appendChild(body);
     layer.appendChild(box);
 
-    body.querySelectorAll('[data-vote-close]').forEach(function (b) {
+    box.querySelectorAll('[data-vote-close]').forEach(function (b) {
       b.addEventListener('click', closeLayer);
     });
 
