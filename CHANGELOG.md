@@ -30,6 +30,36 @@
 > 那属于站点运营内容而非 fork 者需要参考的技术改动（除非附带 verify 断言等可复用的防回归机制）。
 
 ---
+### 修复：投票弹窗右上角 ✕ 仍点不动，改为直接触发「取消」动作（2026-10-19 13:58 · 提交 `9de2f0a`）
+
+**起因（站长原话）**：「还是按不动哦，把那个 x 绑定到取消按钮值吧……反正我还是点不动 x」。
+上一条 `d1829b1` 的 `box.querySelectorAll` 绑定在实际环境仍未生效（疑似站点旧缓存或事件被遮蔽），站长明确指示：让 ✕ 复用「取消」按钮的动作。
+
+**修复（`custom-card-actions.js` `openVoteModal`）**：
+1. ✕ 的 click 处理改为**直接调用「取消」按钮的 `.click()`**（同一处理函数，与站长要求一致）；找不到「取消」时兜底 `closeLayer()`。
+2. 另加**捕获阶段兜底**：`box` 上 `addEventListener('click', ..., true)`，从 `e.target` 沿父链找 `[data-vote-close]`（排除「取消」本身），命中即关闭——即使头部 ✕ 的常规绑定被任何因素吃掉也能关。
+3. 缓存版本号 `custom-card-actions.js?v=14` → `?v=15`（强制刷新旧 v13/v14 缓存）。
+
+**验证**：`node --check` 语法通过；`verify.mjs` 448 项全绿。
+
+---
+### 修复：投票弹窗右上角 ✕ 点击无响应（2026-10-19 12:59 · 提交 `d1829b1`）
+
+**起因（站长原话）**：「点击 x 毫无响应（5 张还是 7 张自定义卡片均存在 bug）」，附截图。
+
+**根因**：`custom-card-actions.js` 的 `openVoteModal` 里，✕ 按钮写在深色头部 `head` 中
+（`head.innerHTML = '...<button data-vote-close>✕</button>...'`），
+但关闭事件绑定写的是 `body.querySelectorAll('[data-vote-close]')` —— **只查了正文 `body`，
+头部那颗 ✕ 从头到尾没绑上事件**。「取消」按钮在 `body` 里所以能关，
+Esc 也能关，唯独 ✕ 死活没反应。7 张自定义卡共用同一个 `openVoteModal`，全部中招。
+
+**修复**：`body.querySelectorAll` → `box.querySelectorAll`（`box` = 头 + 正文整个弹窗容器）。
+
+**验证**：无头 Edge + CDP 真实鼠标点击 —— 打开投票弹窗 → 点 ✕ →
+`document.querySelector('.sxg-layer')` 变 null（弹窗移除）；重开后点「取消」仍正常关闭（回归通过）。
+缓存版本号 `custom-card-actions.js?v=13` → `?v=14`。
+
+---
 ### 文档：CHANGELOG 全量补齐「改动时间 + 提交哈希」，verify 新增 §9b 自动拦截漏记（2026-10-19 12:19 · 提交 `37d0163` / `e9892a7`）
 
 **起因（站长原话）**：「改动记录要写日期，什么时候改的，哈希值多少，本次你是否已经做了呢？」
