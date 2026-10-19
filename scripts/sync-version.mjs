@@ -12,9 +12,15 @@
  *   所以做不到「显示当前版本」，只能退而求其次显示上一版。见 AGENTS.md。
  *
  * 用法：
- *   node scripts/sync-version.mjs              # 写回 HEAD~1（默认）
+ *   node scripts/sync-version.mjs              # 写回 HEAD（默认）
  *   node scripts/sync-version.mjs 0c65eef      # 写回指定提交
- *   node scripts/sync-version.mjs --check      # 只检查是否已同步，不改文件
+ *   node scripts/sync-version.mjs --check      # 只检查是否与 HEAD 一致，不改文件
+ *
+ * ⚠️ 默认是 HEAD 而不是 HEAD~1 —— 这里是刻意这么定的：
+ *    本脚本改完 index.html 后还要**再提交一次**才能让改动落地，
+ *    那个提交一落地，刚才写进去的哈希就从 HEAD 变成了 HEAD~1。
+ *    若图省事直接写 HEAD~1，补完提交后会变成 HEAD~2，反而多落后一拍
+ *  （2026-10-19 实测：写了 0ef45a3，补提交后它成了 HEAD~2）。
  *
  * 退出码：0 = 已同步或写回成功；1 = 未同步/失败（CI 会标红）
  */
@@ -29,7 +35,7 @@ const INDEX_HTML = join(ROOT, 'index.html');
 
 const args = process.argv.slice(2);
 const CHECK_ONLY = args.includes('--check');
-const REV = args.find((a) => !a.startsWith('--')) || 'HEAD~1';
+const REV = args.find((a) => !a.startsWith('--')) || 'HEAD';
 
 function shortHash(rev) {
   try {
