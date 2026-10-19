@@ -75,7 +75,7 @@
           '<a class="dyp__go" target="_blank" rel="noopener noreferrer"></a>' +
           '<a class="dyp__later" href="./notes.html">站长随笔</a>' +
         '</div>' +
-        '<p class="dyp__tip">在抖音 App 或网页端观看更佳</p>' +
+        '<p class="dyp__tip">希望无论劳动者还是企业，都可以走到良性发展的道路上，让我们一起推动这件事，在此广纳贤言并期待听到你的声音；对，别回头，说的就是你！</p>' +
       '</div>';
 
     box.querySelector('.dyp__title').textContent = CONFIG.title;
