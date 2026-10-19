@@ -142,7 +142,13 @@
       'font-weight:800;color:#34d399}',
       '.sxg-btn-clear{flex:none;padding:7px 10px;border:1px solid #fecaca;background:#fff;color:#b91c1c;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}',
       '.sxg-btn-clear:hover{background:#fef2f2}',
-      '.sxg-form-tip{font-size:11px;color:rgba(255,255,255,.6);line-height:1.6;margin-top:10px}'
+      '.sxg-form-tip{font-size:11px;color:rgba(255,255,255,.6);line-height:1.6;margin-top:10px}',
+      /* 每张品牌卡底部的一行「数据只在本地」说明（2026-10-19 站长要求全站卡片都加）。
+         px-5 是 20px，左右用同值 padding 才能和上方按钮条对齐。 */
+      '.sxg-localnote{display:flex;align-items:flex-start;gap:6px;',
+      'margin:8px 0 0;padding:8px 20px 0;border-top:1px dashed #e2e8f0;',
+      'font-size:11px;line-height:1.65;color:#94a3b8}',
+      '.sxg-localnote b{color:#b45309;font-weight:700}'
     ].join('');
     document.head.appendChild(style);
   }
@@ -1525,6 +1531,49 @@
 
   /* ------------------------------------------------------------------ 杂项 */
 
+  /* ------------------------------------------------ 每张品牌卡：本地存储说明
+     站长 2026-10-19 要求：所有卡片（内置 React 卡 + 克隆出来的自定义卡）
+     都要写明「数据当前仅保存在本地，不上传云端」。
+
+     做法不看卡片来源，而是从卡片底部的操作按钮反查卡片根节点：
+     「员工投票」按钮往上走 4 层就是 div.bg-white.rounded-2xl.border，
+     内置卡和自定义卡是同一套结构，一条链路天然全覆盖。
+     React 重渲染会把整个卡片换掉，所以加 MutationObserver 补挂（复用外层 observer）。 */
+
+  var LOCAL_NOTE_HTML =
+    '<span aria-hidden="true">💾</span>' +
+    '<span>你的打卡、投票与点赞<b>当前仅保存在本地浏览器</b>，不上传云端；' +
+    '清除浏览器 Cookie 与缓存会丢失。</span>';
+
+  function cardRootOf(btn) {
+    // 按钮 → div.flex.items-center.gap-2 → div.px-5.py-3 → 卡片根
+    return btn.closest('.bg-white.rounded-2xl') || btn.parentElement.parentElement.parentElement;
+  }
+
+  function patchLocalNotes() {
+    var btns = $$('button, a');
+    var done = 0;
+    btns.forEach(function (b) {
+      if (!/员工投票/.test(b.textContent || '')) return;
+      var card = cardRootOf(b);
+      if (!card) return;
+      // 已挂过就跳过：幂等，否则 observer 每次重渲染都会追加一行
+      if (card.getAttribute('data-sxg-localnote') === '1') return;
+
+      // 插到按钮条（支付的那一行灰底容器）之后，紧跟在按钮下面
+      var bar = b.closest('.px-5') || card.lastElementChild;
+      if (!bar) return;
+
+      var note = document.createElement('div');
+      note.className = 'sxg-localnote';
+      note.innerHTML = LOCAL_NOTE_HTML;
+      bar.parentNode.insertBefore(note, bar.nextSibling);
+      card.setAttribute('data-sxg-localnote', '1');
+      done++;
+    });
+    return done;
+  }
+
   function esc(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -1547,6 +1596,7 @@
     try { patchBuiltinTicket(); } catch (e) { diag('接管内置小票出错: ' + e); }
     try { bindVotePatchOnClick(); } catch (e) { diag('绑定投票补丁点击监听出错: ' + e); }
     try { patchVoteCounts(); } catch (e) { diag('修正投票数显示出错: ' + e); }
+    try { patchLocalNotes(); } catch (e) { diag('补挂本地存储说明出错: ' + e); }
   }
 
   init();
