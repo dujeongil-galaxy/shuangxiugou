@@ -841,9 +841,24 @@
     box.appendChild(body);
     layer.appendChild(box);
 
+    // ✕ 与「取消」绑定同一个动作：直接点「取消」按钮（同一处理函数），再加文档级捕获兜底
+    var cancelBtn = body.querySelector('.sxg-actions [data-vote-close]');
     box.querySelectorAll('[data-vote-close]').forEach(function (b) {
-      b.addEventListener('click', closeLayer);
+      if (b === cancelBtn) return;
+      b.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (cancelBtn) { cancelBtn.click(); } else { closeLayer(); }
+      });
     });
+    // 兜底：无论点击落在弹窗任何位置的 ✕（含未来重复渲染），捕获阶段直接关闭
+    box.addEventListener('click', function (e) {
+      var t = e.target;
+      while (t && t !== box) {
+        if (t.hasAttribute && t.hasAttribute('data-vote-close') && t !== cancelBtn) { closeLayer(); return; }
+        t = t.parentNode;
+      }
+    }, true);
 
     body.querySelector('[data-vote-submit]').addEventListener('click', function () {
       var role = (body.querySelector('input[name="sxg-vote-role"]:checked') || {}).value || '';
