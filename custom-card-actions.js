@@ -57,6 +57,19 @@
       '.sxg-accent{color:#059669}',
       '.sxg-panel{background:#f8fafc;border:1px solid #f1f5f9;border-radius:12px;padding:14px}',
       '.sxg-panel-dark{background:#0f172a;color:#fff;border-radius:16px;padding:16px}',
+      /* 投票弹窗（与内置弹窗视觉对齐：深色头部 / 药丸选项 / 墨绿主按钮） */
+      '.sxg-vote-head{background:#0f172a;color:#fff;border-radius:14px 14px 0 0;padding:20px 22px 16px}',
+      '.sxg-vote-head .sxg-h2{color:#fff}',
+      '.sxg-vote-head .sxg-sub{color:#94a3b8}',
+      '.sxg-vote-head [data-vote-close]{background:rgba(255,255,255,.12);color:#fff;border:0;border-radius:10px;width:32px;height:32px;font-size:15px;cursor:pointer;flex:none}',
+      '.sxg-vote-head [data-vote-close]:hover{background:rgba(255,255,255,.22)}',
+      '.sxg-vote-body{border-radius:0 0 14px 14px;background:#fff}',
+      '.sxg-pill{display:inline-flex;align-items:center;padding:7px 12px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;color:#334155;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}',
+      '.sxg-pill:hover{border-color:#10b981;color:#059669}',
+      '.sxg-pill input{position:absolute;opacity:0;pointer-events:none}',
+      '.sxg-pill input:checked + span{color:#059669}',
+      '.sxg-pill:has(input:checked){background:#ecfdf5;border-color:#10b981;color:#047857}',
+      '.sxg-vote-note{background:#f8fafc;border-radius:10px;padding:10px 12px;font-size:11px;color:#64748b}',
       '.sxg-dark-label{font-size:12px;font-weight:700;color:#34d399;display:flex;',
       'align-items:center;gap:6px}',
       '.sxg-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;',
@@ -734,63 +747,81 @@
     var layer = ensureLayer();
 
     var box = el('div', 'sxg-box sxg-box-lg');
-    var body = el('div', 'sxg-pad sxg-space');
+    box.style.padding = '0';
+    box.style.overflow = 'hidden';
+    var head = el('div', 'sxg-vote-head');
+    var body = el('div', 'sxg-vote-body sxg-pad sxg-space');
 
     // 已投过的本地记录（按品牌 id 存最新一票）
     var votes = loadCustomVotes();
     var mine = votes[cfg.id];
 
     var roleOpts = ['研发技术', '产线工人', '职能/人事/财务', '一线门店/骑手/销售'];
-    var weekendOpts = [
-      ['100', '100% 双休（严格双休从不打折）'],
-      ['80', '周末基本不占用（大小周/阶段性加班）'],
-      ['50', '隔周单休或常态加班'],
-      ['20', '月休 4 天或更少']
+    var     weekendOpts = [
+      ['100', '严格双休从不打折', '100% 双休'],
+      ['80', '周末基本不占用', '大小周/阶段性加班'],
+      ['50', '隔周单休或常态加班', '周末经常被占用'],
+      ['20', '月休 4 天或更少', '单休/更少']
     ];
     var timeOpts = ['17:30 之前', '18:00 准点', '19:00 左右', '20:30 左右', '22:00 以后'];
 
-    body.innerHTML =
-      '<div class="sxg-row-top">' +
+    function pillGroup(name, opts) {
+      // opts: [value, 主文案, 副文案或空]
+      return opts.map(function (o, i) {
+        return '<label class="sxg-pill">' +
+          '<input type="radio" name="' + name + '" value="' + esc(o[0]) + '"' + (i === 0 ? ' checked' : '') + '>' +
+          '<span>' + esc(o[1]) + (o[2] && o[2] !== o[1] ? '<em style="display:block;font-style:normal;font-weight:400;font-size:10px;color:#94a3b8">' + esc(o[2]) + '</em>' : '') + '</span></label>';
+      }).join('');
+    }
+
+    head.innerHTML =
+      '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">' +
         '<div>' +
-          '<h2 class="sxg-h2">投出你在 ' + esc(cfg.name) + ' 的真实工时</h2>' +
-          '<p class="sxg-sub">全程匿名，只记录一次汇总，不留任何个人信息</p>' +
+          '<span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:.05em;background:rgba(16,185,129,.18);color:#6ee7b7;border-radius:999px;padding:3px 10px">内部员工匿名传真实工时公证</span>' +
+          '<h2 class="sxg-h2" style="margin:8px 0 0">投出你在 ' + esc(cfg.name) + ' 的真实工时</h2>' +
+          '<p class="sxg-sub" style="margin-top:4px">保护隐私：全程匿名投票，只记录汇总结果，不留任何个人信息。</p>' +
         '</div>' +
-        '<button type="button" class="sxg-btn sxg-btn-ghost sxg-btn-sm" data-vote-close>✕</button>' +
+        '<button type="button" data-vote-close>✕</button>' +
+      '</div>';
+
+    body.innerHTML =
+      '<div>' +
+        '<div class="sxg-title-sm">你的部门/岗位类型：</div>' +
+        '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px">' + pillGroup('sxg-vote-role', roleOpts.map(function (o) { return [o, o, '']; })) + '</div>' +
       '</div>' +
 
-      '<div class="sxg-panel">' +
-        '<div class="sxg-title-sm">你的岗位类型</div>' +
-        '<div style="margin-top:8px;display:grid;gap:6px">' +
-          roleOpts.map(function (o, i) {
-            return '<label class="sxg-p" style="display:flex;gap:6px;align-items:center;cursor:pointer">' +
-              '<input type="radio" name="sxg-vote-role" value="' + esc(o) + '"' + (i === 0 ? ' checked' : '') + '> ' + esc(o) + '</label>';
-          }).join('') +
-        '</div>' +
-      '</div>' +
-
-      '<div class="sxg-panel">' +
-        '<div class="sxg-title-sm">周末休息真实情况</div>' +
-        '<div style="margin-top:8px;display:grid;gap:6px">' +
+      '<div>' +
+        '<div style="display:flex;align-items:center;justify-content:space-between">' +
+          '<div class="sxg-title-sm">周末休息真实情况（选最符合的一项）：</div>' +
+        '</div>' +        '<div style="margin-top:8px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px" data-vote-weekend-group>' +
           weekendOpts.map(function (o, i) {
-            return '<label class="sxg-p" style="display:flex;gap:6px;align-items:center;cursor:pointer">' +
-              '<input type="radio" name="sxg-vote-weekend" value="' + o[0] + '"' + (i === 0 ? ' checked' : '') + '> ' + esc(o[1]) + '</label>';
+            return '<label class="sxg-pill" style="flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px">' +
+              '<input type="radio" name="sxg-vote-weekend" value="' + o[0] + '"' + (i === 0 ? ' checked' : '') + '>' +
+              '<span style="font-weight:700">' + esc(o[1]) + '</span>' +
+              '<em style="font-style:normal;font-size:10px;color:#94a3b8">' + esc(o[2]) + '</em></label>';
           }).join('') +
         '</div>' +
       '</div>' +
 
-      '<div class="sxg-panel">' +
-        '<div class="sxg-title-sm">平时平均下班时间</div>' +
-        '<div style="margin-top:8px;display:grid;gap:6px">' +
-          timeOpts.map(function (o, i) {
-            return '<label class="sxg-p" style="display:flex;gap:6px;align-items:center;cursor:pointer">' +
-              '<input type="radio" name="sxg-vote-time" value="' + esc(o) + '"' + (i === 0 ? ' checked' : '') + '> ' + esc(o) + '</label>';
-          }).join('') +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+        '<div>' +
+          '<div class="sxg-title-sm">平时平均下班时间：</div>' +
+          '<select data-vote-time style="margin-top:6px;width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:8px;padding:8px;font-size:12px;background:#fff;color:#334155">' +
+            timeOpts.map(function (o) { return '<option value="' + esc(o) + '">' + esc(o) + '</option>'; }).join('') +
+          '</select>' +
+        '</div>' +
+        '<div>' +
+          '<div class="sxg-title-sm">法定加班费/福利补贴：</div>' +
+          '<div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">' +
+            '<label class="sxg-pill"><input type="radio" name="sxg-vote-bonus" value="ok" checked><span>✅ 依法足额发放</span></label>' +
+            '<label class="sxg-pill"><input type="radio" name="sxg-vote-bonus" value="no"><span>❌ 克扣/强制自愿</span></label>' +
+          '</div>' +
         '</div>' +
       '</div>' +
 
-      '<div class="sxg-panel">' +
-        '<div class="sxg-title-sm">一句话补充（可选）</div>' +
-        '<textarea data-vote-comment rows="2" style="margin-top:8px;width:100%;box-sizing:border-box;border:1px solid #e2e8f0;' +
+      '<div>' +
+        '<div class="sxg-title-sm">一句话补充（可选，匿名显示）：</div>' +
+        '<textarea data-vote-comment rows="2" style="margin-top:6px;width:100%;box-sizing:border-box;border:1px solid #e2e8f0;' +
           'border-radius:8px;padding:8px;font-size:12px;font-family:inherit" ' +
           'placeholder="例如：赶项目时周末必来，平时到点走"></textarea>' +
       '</div>' +
@@ -799,11 +830,14 @@
         ? '<p class="sxg-xs">你之前投过一票（' + esc(mine.weekendLabel || '') + '），再次提交会覆盖。</p>'
         : '') +
 
+      '<div class="sxg-vote-note">全程匿名投票：不记录 IP、不关联任何社交账户，你的选择只参与本站综合评分。</div>' +
+
       '<div class="sxg-actions right">' +
         '<button type="button" class="sxg-btn sxg-btn-ghost sxg-btn-sm" data-vote-close>取消</button>' +
         '<button type="button" class="sxg-btn sxg-btn-primary sxg-btn-sm" data-vote-submit>提交我的真实工时票（跳转 GitHub 记录）</button>' +
       '</div>';
 
+    box.appendChild(head);
     box.appendChild(body);
     layer.appendChild(box);
 
@@ -814,7 +848,8 @@
     body.querySelector('[data-vote-submit]').addEventListener('click', function () {
       var role = (body.querySelector('input[name="sxg-vote-role"]:checked') || {}).value || '';
       var weekendEl = body.querySelector('input[name="sxg-vote-weekend"]:checked');
-      var time = (body.querySelector('input[name="sxg-vote-time"]:checked') || {}).value || '';
+      var time = (body.querySelector('[data-vote-time]') || {}).value || '';
+      var bonus = (body.querySelector('input[name="sxg-vote-bonus"]:checked') || {}).value || 'ok';
       var comment = (body.querySelector('[data-vote-comment]') || {}).value || '';
       if (!weekendEl) return;
       var weekendLabel = (weekendOpts.filter(function (o) { return o[0] === weekendEl.value; })[0] || ['', ''])[1];
@@ -825,6 +860,7 @@
         weekend: Number(weekendEl.value),
         weekendLabel: weekendLabel,
         offWorkTime: time,
+        bonus: bonus === 'ok' ? '依法足额发放' : '克扣/强制自愿',
         comment: comment.trim(),
         at: new Date().toISOString()
       };
@@ -843,6 +879,7 @@
           '| 部门/岗位 | ' + role + ' |\n' +
           '| 周末休息真实情况 | ' + weekendLabel + ' |\n' +
           '| 平时平均下班时间 | ' + (time || '未选择') + ' |\n' +
+          '| 法定加班费/福利补贴 | ' + (bonus === 'ok' ? '依法足额发放' : '克扣/强制自愿') + ' |\n' +
           '\n' +
           '### 一句话补充\n' +
           (comment.trim() || '（未填写）') + '\n' +
@@ -905,7 +942,8 @@
         '<h3 class="sxg-h3" style="margin-top:10px">' + (repeat ? '你已经' + label + '过啦' : label + '成功') + '</h3>' +
         '<p class="sxg-p" style="margin-top:8px">你对 <strong>' + esc(cfg.name) + '</strong> 的' + label +
           '已记录。</p>' +
-        '<p class="sxg-xs" style="margin-top:8px">你的数据将保存在本地浏览器 Cookie 中，仅自己可见；' +
+        '<p class="sxg-xs" style="margin-top:8px">你的数据将保存在本地浏览器 Cookie / 缓存中，仅自己可见；' +
+          '<strong style="color:#b45309">请勿清除浏览器 Cookie 与缓存</strong>，否则记录会丢失。' +
           '上传 GitHub 云端是后续考虑开发的功能。</p>' +
         '<div class="sxg-actions" style="justify-content:center;padding-top:14px">' +
           '<button type="button" class="sxg-btn sxg-btn-primary sxg-btn-sm" data-thumb-ok>好的</button>' +
@@ -1360,12 +1398,21 @@
         try { return JSON.parse(localStorage.getItem(THUMB_KEY) || '{}'); }
         catch (e) { return {}; }
       }
+      // 区分赞/踩：内置卡两个按钮都是「图标 + 数字」，文本区分不出来。
+      // 以 title 属性为准（赞=我支持这家良心品牌，踩=用脚投票抵制单休），
+      // 兜底看 SVG 图标 path（thumbs-up 含 M7 10v12，thumbs-down 含 M17 14V2）。
+      function thumbKind(b) {
+        var title = b.getAttribute('title') || '';
+        if (/支持|认同|点赞/.test(title)) return 'like';
+        if (/抵制|点踩|踩/.test(title)) return 'dislike';
+        var d = '';
+        [...b.querySelectorAll('svg path')].forEach(function (p) { d += (p.getAttribute('d') || ''); });
+        if (/M17 14V2/.test(d)) return 'dislike';
+        if (/M7 10v12/.test(d)) return 'like';
+        return null;
+      }
       $$('button', card).forEach(function (b) {
-        var txt = (b.textContent || '').trim();
-        var inner = ((b.querySelector('span') || {}).textContent || '').trim();
-        var kind = null;
-        if (/^\d+$/.test(txt) || /^\d+$/.test(inner)) kind = 'like';
-        else if (/^踩$/.test(txt) || /点踩|踩 \(/.test(txt)) kind = 'dislike';
+        var kind = thumbKind(b);
         if (!kind) return;
 
         var saved = readThumbs()[cfg.id];
