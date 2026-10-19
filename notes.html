@@ -12,7 +12,10 @@
     --ink-3: #6b7280;
     --line: #e5e7eb;
     --bg: #ffffff;
+    --bg-soft: #f8fafc;
     --accent: #0f766e;
+    --accent-soft: #ccfbf1;
+    --accent-ink: #134e4a;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -21,7 +24,10 @@
       --ink-3: #8d949e;
       --line: #2a2f36;
       --bg: #14171a;
+      --bg-soft: #1b2025;
       --accent: #5eead4;
+      --accent-soft: #113b38;
+      --accent-ink: #99f6e4;
     }
   }
   * { box-sizing: border-box; }
@@ -31,9 +37,22 @@
     background: var(--bg);
     color: var(--ink);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
-                 "Hiragino Sans GB", "Microsoft YaHe", sans-serif;
+                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     line-height: 1.9;
     -webkit-font-smoothing: antialiased;
+  }
+  /* 锁屏底纹：极淡的方格纸纹理，给空白页一点"手写稿纸"的暗示 */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 32px 32px;
+    opacity: 0.25;
+    pointer-events: none;
   }
   .box { max-width: 42rem; margin: 0 auto; }
   /*锁屏：内容少，必须真正居中（水平 + 垂直），
@@ -46,21 +65,48 @@
     justify-content: center;
     text-align: center;
   }
+  .lock__card {
+    width: 100%;
+    max-width: 28rem;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 2.2rem 1.8rem 1.8rem;
+    box-shadow: 0 12px 40px -18px rgba(15, 118, 110, 0.35);
+  }
+  /* 顶部一枚小"墨水笔尖"徽标，让锁屏不那么干 */
+  .lock__badge {
+    width: 2.75rem;
+    height: 2.75rem;
+    margin: 0 auto 1.1rem;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .lock__badge svg { width: 1.35rem; height: 1.35rem; stroke: var(--accent); }
   .lock__title {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: 700;
     letter-spacing: -0.01em;
+    margin: 0 0 0.5rem;
+  }
+  .lock__sub {
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+    letter-spacing: 0.22em;
     margin: 0 0 1.4rem;
   }
   /* 密码框不占满 42rem，否则按钮会被推到很远的右边 */
-  .lock form { max-width: 26rem; width: 100%; }
+  .lock form { max-width: 100%; }
   .lock__desc {
     color: var(--ink-2);
-    font-size: 0.9375rem;
-    max-width: 26rem;
+    font-size: 0.875rem;
+    max-width: 24rem;
     /* .err 有 min-height 预留了 1.4em（密码错时才显示文字），
        所以这里间距压小，否则提示句会离密码框太远。 */
-    margin: 0.4rem 0 0;
+    margin: 0.4rem auto 0;
   }
   .err { color: #b91c1c; min-height: 1.4em; margin: 0.8rem 0 0; font-size: 0.875rem; }
   /* ⚠️ 必须加 !important。
@@ -75,27 +121,40 @@
   form { display: flex; gap: 0.5rem; flex-wrap: wrap; }
   input {
     flex: 1 1 12rem;
-    padding: 0.55rem 0.7rem;
+    padding: 0.65rem 0.8rem;
     border: 1px solid var(--line);
-    border-radius: 6px;
-    background: transparent;
+    border-radius: 8px;
+    background: var(--bg-soft);
     color: var(--ink);
     font-family: inherit;
     font-size: 0.9375rem;
+    transition: border-color 0.15s ease;
   }
-  input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  input:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
   button {
-    padding: 0.55rem 1.1rem;
+    padding: 0.65rem 1.2rem;
     border: 1px solid var(--accent);
-    border-radius: 6px;
+    border-radius: 8px;
     background: var(--accent);
-    color: #fff;
+    color: var(--bg);
     font-family: inherit;
     font-size: 0.9375rem;
+    font-weight: 600;
     cursor: pointer;
+    transition: opacity 0.15s ease, transform 0.15s ease;
   }
   button:hover { opacity: 0.9; }
+  button:active { transform: scale(0.98); }
   button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---- 锁屏底部 AI 声明：纯文本，不做成链接（避免被搜索引擎顺着抓） ---- */
+  .ai-note {
+    margin: 2.4rem auto 0;
+    max-width: 26rem;
+    font-size: 0.75rem;
+    color: var(--ink-3);
+    line-height: 1.7;
+  }
 
   /* ---- 写作进度面板 ---- */
   #panel { margin-top: 2.5rem; }
@@ -190,14 +249,30 @@
        「正在写」标签和「暂不提供预览」已按站长要求删除，不再出现。 -->
 
   <div class="lock" id="lock">
-    <h1 class="lock__title">站长随笔</h1>
-    <form id="f" autocomplete="off">
-      <input id="pw" type="password" placeholder="请输入访问密码" aria-label="访问密码" />
-      <button type="submit">打开</button>
-    </form>
-    <p class="err" id="err" role="alert"></p>
-    <p class="lock__desc">这一页还没写完，我不想拿半成品糊弄你。写好了会自己上线，
-    到时候你再来看。</p>
+    <div class="lock__card">
+      <div class="lock__badge" aria-hidden="true">
+        <!-- 羽毛笔图标（描边风，与主站 lucide 图标一致） -->
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/>
+          <line x1="16" y1="8" x2="2" y2="22"/>
+          <line x1="17.5" y1="15" x2="9" y2="15"/>
+        </svg>
+      </div>
+      <h1 class="lock__title">站长随笔</h1>
+      <p class="lock__sub">NOTES · SHUANGXIUGO</p>
+      <form id="f" autocomplete="off">
+        <input id="pw" type="password" placeholder="请输入访问密码" aria-label="访问密码" />
+        <button type="submit">打开</button>
+      </form>
+      <p class="err" id="err" role="alert"></p>
+      <p class="lock__desc">这一页还没写完，我不想拿半成品糊弄你。写好了会自己上线，
+      到时候你再来看。</p>
+    </div>
+
+    <!-- AI 声明：纯文本、非链接。不进 sitemap、页面本身 noindex nofollow，
+         纯文本形式是为了不给搜索引擎任何可循的出口。 -->
+    <p class="ai-note">本页下方将附一篇由 AI 随机生成的文章，内容为虚构习作，
+    不代表本站观点，也与本站品牌数据无关。</p>
   </div>
 
   <!-- ============ 写作进度面板（密码正确后显示） ============

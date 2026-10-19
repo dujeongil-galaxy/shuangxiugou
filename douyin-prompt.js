@@ -73,7 +73,7 @@
         '<ul class="dyp__points"></ul>' +
         '<div class="dyp__acts">' +
           '<a class="dyp__go" target="_blank" rel="noopener noreferrer"></a>' +
-          '<button class="dyp__later" type="button">站长随笔</button>' +
+          '<a class="dyp__later" href="./notes.html">站长随笔</a>' +
         '</div>' +
         '<p class="dyp__tip">在抖音 App 或网页端观看更佳</p>' +
       '</div>';
@@ -87,59 +87,15 @@
       .join('');
 
     // 关闭方式：遮罩、✕、Esc
-    // 「站长随笔」已锁：点开只弹公告，不跳转 notes.html
+    // 「站长随笔」直接跳 notes.html（该页保留密码锁，robots noindex）
     box.querySelector('.dyp__mask').onclick = close;
     box.querySelector('.dyp__x').onclick = close;
-    box.querySelector('.dyp__later').onclick = openNotice;
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
-      // 公告开着就先关公告
-      if (notice && notice.classList.contains('is-open')) {
-        closeNotice();
-      } else {
-        close();
-      }
+      close();
     });
 
     document.body.appendChild(box);
-    buildNotice();
-  }
-
-  /* ---- 站长随笔公告（notes.html 暂未开放） ---- */
-
-  var notice = null;
-
-  function buildNotice() {
-    notice = document.createElement('div');
-    notice.className = 'dyp dyp--notice';
-    notice.setAttribute('role', 'dialog');
-    notice.setAttribute('aria-modal', 'true');
-    notice.setAttribute('aria-labelledby', 'dypn-title');
-    notice.innerHTML =
-      '<div class="dyp__mask"></div>' +
-      '<div class="dyp__panel">' +
-        '<button class="dyp__x" type="button" aria-label="关闭">&times;</button>' +
-        '<div class="dyp__tag">正在写</div>' +
-        '<h2 class="dyp__title" id="dypn-title">站长随笔还在写</h2>' +
-        '<p class="dyp__summary">这一页还没写完，我不想拿半成品糊弄你。' +
-        '写好了会自己上线，到时候你再来看。</p>' +
-        '<p class="dyp__tip">暂不提供预览</p>' +
-      '</div>';
-
-    notice.querySelector('.dyp__mask').onclick = closeNotice;
-    notice.querySelector('.dyp__x').onclick = closeNotice;
-    document.body.appendChild(notice);
-  }
-
-  function openNotice() {
-    // 先关掉视频弹窗，避免两层遮罩叠在一起
-    close();
-    if (!notice) buildNotice();
-    notice.classList.add('is-open');
-  }
-
-  function closeNotice() {
-    if (notice) notice.classList.remove('is-open');
   }
 
   function open() {

@@ -265,16 +265,6 @@
   text-align: center;
 }
 
-/* 公告弹窗：与视频弹窗同结构，但层级更高 ——
-   「站长随笔」点了不跳 notes.html，改弹「还在写」。 */
-.dyp--notice {
-  z-index: 100001;
-}
-
-.dyp--notice .dyp__summary {
-  margin-bottom: 0;
-}
-
 /* 窄屏：面板贴底，拇指更容易够到按钮 */
 @media (max-width: 520px) {
   .dyp__panel {
