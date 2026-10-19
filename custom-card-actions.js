@@ -851,7 +851,7 @@
         if (cancelBtn) { cancelBtn.click(); } else { closeLayer(); }
       });
     });
-    // 兜底：无论点击落在弹窗任何位置的 ✕（含未来重复渲染），捕获阶段直接关闭
+    if (cancelBtn) cancelBtn.addEventListener('click', closeLayer);
     box.addEventListener('click', function (e) {
       var t = e.target;
       while (t && t !== box) {
