@@ -11,6 +11,9 @@ name: 公告栏版本号自动同步
 on:
   push:
     branches: [main]
+  # 手动触发：新增工作流文件的那次推送本身不会触发它，
+  # 首次启用必须靠这里（`gh workflow run` 或 Actions 页面的 Run workflow 按钮）。
+  workflow_dispatch:
 
 permissions:
   contents: write
