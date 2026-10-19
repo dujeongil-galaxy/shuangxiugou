@@ -196,19 +196,33 @@
 
     var seoMeta = document.createElement('div');
     seoMeta.setAttribute('style', 'margin:0 0 12px;color:#94a3b8');
-    seoMeta.textContent = '2026-10-16 实测 · 无痕窗口';
+    seoMeta.textContent = '本次实测 2026-10-20 · 上次 2026-10-16 · 无痕窗口';
     seoCard.appendChild(seoMeta);
 
+    /* [关键词, 本次名次, 上次名次, 引擎]
+       名次：整数位次，或特殊串（如「第一页末位」）原样显示。
+       两次都是站长本机无痕窗口的实测快照，变化由代码算，不手写：
+       位次变小=↑上升，变大=▼下降，相等=持平。 */
     var SEO_ROWS = [
-      ['双休购github', '1', 'Google · Bing'],
-      ['双休购996', '2', 'Bing'],
-      ['双休购数据', '2', 'Bing'],
-      ['双休购官网', '5', 'Bing'],
-      ['双休购', '7', 'Bing'],
-      ['双休企业', '第一页末位', 'Bing'],
-      ['shuangxiugou', '第 4 位', 'Bing'],
-      ['shuangxiugo', '第 5 位', 'Bing'],
+      ['双休购github', '1', '1', 'Google · Bing'],
+      ['双休购996', '2', '2', 'Bing'],
+      ['双休购数据', '2', '2', 'Bing'],
+      ['双休购官网', '5', '5', 'Bing'],
+      ['双休购', '4', '7', 'Bing'],
+      ['双休企业', '第一页末位', '第一页末位', 'Bing'],
+      ['shuangxiugou', '4', '4', 'Bing'],
+      ['shuangxiugo', '5', '5', 'Bing'],
     ];
+
+    function seoDelta(cur, prev) {
+      if (cur === prev) return { text: '持平', color: '#94a3b8' };
+      var ci = parseInt(cur, 10);
+      var pi = parseInt(prev, 10);
+      if (isNaN(ci) || isNaN(pi)) return { text: '—', color: '#94a3b8' };
+      if (ci < pi) return { text: '↑' + (pi - ci), color: '#0F766E' };
+      return { text: '↓' + (ci - pi), color: '#b91c1c' };
+    }
+
     SEO_ROWS.forEach(function (row) {
       var line = document.createElement('div');
       line.setAttribute('style',
@@ -217,21 +231,39 @@
 
       var kw = document.createElement('span');
       kw.textContent = row[0];
-      kw.setAttribute('style', 'color:#334155;font-weight:600');
+      kw.setAttribute('style', 'color:#334155;font-weight:600;flex:1');
 
-      var val = document.createElement('span');
-      val.textContent = row[1] + ' · ' + row[2];
-      val.setAttribute('style', 'color:#0F766E;font-weight:700;white-space:nowrap');
+      // 本次名次：整数补「第 N 位」，特殊串原样
+      var curText = isNaN(parseInt(row[1], 10)) ? row[1] : '第 ' + row[1] + ' 位';
+      var cur = document.createElement('span');
+      cur.textContent = curText + ' · ' + row[3];
+      cur.setAttribute('style', 'color:#0F766E;font-weight:700;white-space:nowrap');
+
+      // 上次名次 + 变化
+      var prevText = isNaN(parseInt(row[2], 10)) ? row[2] : '上次 ' + row[2];
+      var delta = seoDelta(row[1], row[2]);
+      var prev = document.createElement('span');
+      prev.setAttribute('style',
+        'white-space:nowrap;font-size:12px;color:#94a3b8;min-width:7.5em;text-align:right');
+      prev.setAttribute('title', '上次实测 2026-10-16');
+      prev.textContent = prevText + ' · ';
+      var deltaSpan = document.createElement('span');
+      deltaSpan.textContent = delta.text;
+      deltaSpan.setAttribute('style', 'color:' + delta.color + ';font-weight:700');
+      prev.appendChild(deltaSpan);
 
       line.appendChild(kw);
-      line.appendChild(val);
+      line.appendChild(cur);
+      line.appendChild(prev);
       seoCard.appendChild(line);
     });
 
     var seoNote = document.createElement('div');
     seoNote.setAttribute('style', 'margin-top:10px;padding-top:10px;border-top:1px dashed #e2e8f0;color:#94a3b8');
     seoNote.textContent =
-      '词形要连写，加空格就搜不到；Google 对本站更严格，目前只有「双休购github」能进第一页。以上为 2026-10-16 当天的实测结果，名次会随时间浮动。';
+      '词形要连写，加空格就搜不到；Google 对本站更严格，目前只有「双休购github」能进第一页。' +
+      '名次是站长本机无痕窗口的实测快照，会随地区、时间与登录态浮动；' +
+      '↑/↓ 为相对上次（2026-10-16）的变化：↑=位次提升，↓=位次下滑。';
     seoCard.appendChild(seoNote);
 
     footer.appendChild(seoCard);
