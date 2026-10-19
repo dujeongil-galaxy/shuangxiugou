@@ -30,6 +30,12 @@
 > 那属于站点运营内容而非 fork 者需要参考的技术改动（除非附带 verify 断言等可复用的防回归机制）。
 
 ---
+### 新增：随笔页 notes.html 加「TOP」回顶按钮（2026-10-19 15:38 · 提交 `453ef32`）
+复用首页的 `top-button.js` 并做三点扩展：新增 `data-bottom` 属性覆盖底距
+（首页给吸底广告留 96px，随笔页无广告用 28px）、补 `prefers-color-scheme: dark`
+暗色配色、尊重 `prefers-reduced-motion`（关闭平滑滚动与过渡）。
+新增 `scripts/dbg-notes-top.cjs` 无头验证：真实鼠标点击后 scrollY 600 → 0，ALL-PASS。
+---
 ### 内容：notes.html 补贴入 AI 随机生成文章全文（2026-10-19 15:28 · 提交 `4926a90`）
 上一轮只放了 AI 声明漏了文章本体。现已在锁屏声明下方以纯 HTML（非链接）贴入
 AI 生成的虚构习作《双休购》全文，样式克制：虚线分隔、段首缩进、末句点题居中绿色。
