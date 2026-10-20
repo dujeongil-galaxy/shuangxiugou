@@ -204,7 +204,6 @@
        两次都是站长本机的实测快照（本次普通窗口、上次无痕窗口），
        变化由代码算，不手写：位次变小=↑上升，变大=▼下降，相等=持平。 */
     var SEO_ROWS = [
-      ['双休购github', '1', '1', 'Google · Bing'],
       ['双休购996', '2', '2', 'Bing'],
       ['双休购数据', '2', '2', 'Bing'],
       ['双休购官网', '4', '5', 'Bing'],
@@ -263,7 +262,7 @@
     var seoNote = document.createElement('div');
     seoNote.setAttribute('style', 'margin-top:10px;padding-top:10px;border-top:1px dashed #e2e8f0;color:#94a3b8');
     seoNote.textContent =
-      '词形要连写，加空格就搜不到；Google 对本站更严格，目前只有「双休购github」能进第一页。' +
+      '词形要连写，加空格就搜不到；Google 对本站更严格。' +
       '名次是站长本机的实测快照，会随地区、时间、登录态与是否无痕浮动；' +
       '↑/↓ 为相对上次（2026-10-16）的变化：↑=位次提升，↓=位次下滑。';
     seoCard.appendChild(seoNote);
