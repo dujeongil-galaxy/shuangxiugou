@@ -341,6 +341,34 @@ brandCards.forEach((c, i) => {
 });
 check(uCards.length >= 1, '存在 U 级卡（宏碁/三星/霸王茶姬应为 U）', uCards.join(', ') || '无');
 check(badU.length === 0, 'U 级卡数值全 null 且两项口径均 unknown（U 不是逃逸档位）', badU.join(', '));
+
+// 2026-10-20 长城/名创改档 C 级 0%（口径换算）。这是站长拍板的数据结论，
+// 加防回退断言：若有人把这两张卡改回 U 或删掉 derived 标注，verify 必须判红。
+section('2f. 改档锁定（长城/名创 C 级 0% 口径换算）');
+const lockedCards = [
+  { id: 'gwm', name: '长城汽车', policy: 'alternate' },
+  { id: 'miniso', name: '名创优品', policy: 'single' },
+];
+const badLocked = [];
+for (const lc of lockedCards) {
+  const idx = brandCards.findIndex((c) => c.id === lc.id);
+  if (idx === -1) { badLocked.push(lc.id + '：卡不存在'); continue; }
+  const end = idx + 1 < brandCards.length ? brandCards[idx + 1].pos : bundle.length;
+  const chunk = bundle.slice(brandCards[idx].pos, end);
+  const problems = [];
+  if (!chunk.includes('tier:`C`')) problems.push('档位不是 C');
+  if (!chunk.includes('realDoubleWeekendRate:0')) problems.push('双休率不是 0');
+  if (!chunk.includes('rateSource:`derived`')) problems.push('缺 rateSource:derived');
+  if (!chunk.includes('rateBasis:`derived_from_recruiting_and_worker_reports`')) problems.push('rateBasis 不符');
+  if (!chunk.includes('weekendPolicy:`' + lc.policy + '`')) problems.push('weekendPolicy 不符');
+  const evIds = [...chunk.matchAll(/id:`(ev-[a-z0-9-]+)`/g)].map((x) => x[1]);
+  if (evIds.length < 5) problems.push('证据 id 不足 5 条（改档证据链被删？）');
+  if (problems.length) badLocked.push(lc.name + '：' + problems.join('、'));
+}
+check(badLocked.length === 0,
+  '长城/名创维持 C 级 0%（口径换算）且证据链完整（2026-10-20 改档锁定）',
+  badLocked.join(', ') || '锁定生效');
+
 section('2e. 统计计数一致性（顶部四格 + 页脚清单）');
 // 口径（2026-10-17 审计确定，改动前 36/16/8/12 与任何口径都对不上）：
 //   收录品牌 = 实名企业卡 =（内置卡 - 虚拟对比卡）+ 自定义卡
