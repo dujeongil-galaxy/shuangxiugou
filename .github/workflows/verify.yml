@@ -37,8 +37,14 @@ jobs:
 
       # 脚本零依赖，不需要 npm install，直接跑。
       # 有任何一项检查失败即 exit 1，GitHub 会把这次 push 标红。
+      # 先把版本号同步到 HEAD~1 再校验：一次 push 带两个提交（内容+记账）时，
+      # index.html 里的版本号可能落后 3 拍，被 §20g 判红——
+      # 而 sync-version.yml 的补提交与本 workflow 并行，verify 跑在它之前
+      #（2026-10-21 run #576 实际发生）。此处只写工作区文件不提交，无副作用。
       - name: 运行校验
-        run: node scripts/verify.mjs
+        run: |
+          node scripts/sync-version.mjs HEAD~1
+          node scripts/verify.mjs
 
   pinyin:
     name: 拼音搜索测试
