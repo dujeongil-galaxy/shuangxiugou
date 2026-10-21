@@ -409,7 +409,7 @@ stdout 在 `e.stdout` 里。不接`catch` 就会把所有「本该报错」的�
 | 内容 | 真实位置 |
 |---|---|
 | 53 张内置品牌卡 | `assets/index-YthXZ9eP.js`（压缩） |
-| 7 张自定义卡 | 根目录 `index.html` 的 `customCardsConfig` |
+| 10 张自定义卡 | 根目录 `index.html` 的 `customCardsConfig` |
 | `app/` 下的 Next.js 源码 | **未构建成线上页面** |
 
 仓库根目录另有一份同名 `index-YthXZ9eP.js` 是**非部署副本**，改它无效。

@@ -1,10 +1,10 @@
 // stat-filter 端到端 DOM 测试：真渲染整页 → 真点四格 → 断言筛选结果
 // 跑法：node scripts/test-stat-filter.cjs（需 jsdom，同 CI 其他测试）
 //
-// 预期数字（2026-10-18 实测）：jsdom 整页渲染后自定义卡（5C+1B）也会插入，
-// badge 卡共 60 张（53 内置含 1 虚拟 + 7 自定义）。筛选结果与顶部五格显示一致：
-// 红榜(S/A)=19、观察(B)=14、避雷(C，不含虚拟卡)=21、待核实(U)=5；
-// 19+14+21+5 = 59 = 收录总数；「全部」=60（含虚拟卡，虚拟卡不进任何分档）。
+// 预期数字（2026-10-21 更新）：jsdom 整页渲染后自定义卡（5C+1B+3U）也会插入，
+// badge 卡共 63 张（53 内置含 1 虚拟 + 10 自定义）。筛选结果与顶部五格显示一致：
+// 红榜(S/A)=19、观察(B)=14、避雷(C，不含虚拟卡)=23、待核实(U)=6；
+// 19+14+23+6 = 62 = 收录总数；「全部」=63（含虚拟卡，虚拟卡不进任何分档）。
 // 末尾另有苹果「富士康补充说明」框回归（PITFALLS 1.10 第二变体）：
 // 搜索「啊」→ 摘除；清空 → 插回；节点被复用为华为卡 → 不残留；隐藏子树 → 摘除。
 const fs = require('fs');
@@ -81,11 +81,11 @@ setTimeout(() => {
     && lei.getAttribute('data-sxg-stat') === 'lei'
     && all.getAttribute('data-sxg-stat') === 'all'
     && u.getAttribute('data-sxg-stat') === 'u');
-  check('第五格「待核实」数字 = 3（与 U 级卡数一致）',
-    u.children[0].textContent === '3', u.children[0].textContent);
+  check('第五格「待核实」数字 = 6（与 U 级卡数一致）',
+    u.children[0].textContent === '6', u.children[0].textContent);
 
   const base = snapshot();
-  check('初始全部可见（badge 卡 ' + base.total + ' 张）', base.visible.length === base.total && base.total === 60,
+  check('初始全部可见（badge 卡 ' + base.total + ' 张）', base.visible.length === base.total && base.total === 63,
     { total: base.total, visible: base.visible.length });
 
   // —— 双休红榜：只显示 S/A ——
@@ -122,8 +122,8 @@ setTimeout(() => {
   // —— 待核实：只显示 U ——
   click(u);
   s = snapshot();
-  check('点「待核实」→ 仅 U 级可见（3 张；19+14+23+3=59 对账）',
-    s.visible.length === 3 && s.visible.every((c) => tierOf(c) === 'U'),
+  check('点「待核实」→ 仅 U 级可见（6 张；19+14+23+6=62 对账）',
+    s.visible.length === 6 && s.visible.every((c) => tierOf(c) === 'U'),
     { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
   check('待核实激活态写上 data-sxg-active', u.getAttribute('data-sxg-active') === '1');
 
@@ -154,8 +154,8 @@ setTimeout(() => {
   if (rowU) {
     click(rowU);
     s = snapshot();
-    check('点评级行「待核实」→ 仅 3 张 U 级卡可见',
-      s.visible.length === 3 && s.visible.every((c) => tierOf(c) === 'U'),
+    check('点评级行「待核实」→ 仅 6 张 U 级卡可见',
+      s.visible.length === 6 && s.visible.every((c) => tierOf(c) === 'U'),
       { visible: s.visible.length });
     check('行内「待核实」按钮激活态（bg-slate-900）',
       rowU.className.includes('bg-slate-900'), rowU.className);
@@ -166,7 +166,7 @@ setTimeout(() => {
     // 互斥：点 React 评级按钮应清掉五格筛选（否则 observer 把旧 display 套回去出空面板）
     click(red);
     s = snapshot();
-    check('互斥前置：点红榜后隐藏 ' + (s.total - s.visible.length) + ' 张', s.hidden === 41, s.hidden);
+    check('互斥前置：点红榜后隐藏 ' + (s.total - s.visible.length) + ' 张', s.hidden === 44, s.hidden);
     const allBtn = rowBtn('全部评级');
     if (allBtn) click(allBtn);
     s = snapshot();
@@ -178,23 +178,23 @@ setTimeout(() => {
   (async () => {
     const uCards = [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
       .filter((c) => tierOf(c) === 'U');
-    check('前置：DOM 中 U 级卡 3 张', uCards.length === 3, uCards.length);
+    check('前置：DOM 中 U 级卡 6 张', uCards.length === 6, uCards.length);
     const removed = uCards.map((c) => {
       const p = c.parentNode; const nx = c.nextSibling;
       p.removeChild(c); return { c, p, nx };
     });
     await new Promise((r) => setTimeout(r, 450));
     const u2 = boxOf('待核实');
-    check('搜索过滤（U 卡被卸载）后待核实数字仍为 3（不清零）',
-      u2 && u2.children[0].textContent === '3', u2 && u2.children[0].textContent);
+    check('搜索过滤（U 卡被卸载）后待核实数字仍为 6（不清零）',
+      u2 && u2.children[0].textContent === '6', u2 && u2.children[0].textContent);
     removed.forEach(({ c, p, nx }) => {
       try { nx ? p.insertBefore(c, nx) : p.appendChild(c); }
       catch (e) { try { p.appendChild(c); } catch (e2) { /* 容器已被替换则放弃恢复 */ } }
     });
     await new Promise((r) => setTimeout(r, 450));
     const u3 = boxOf('待核实');
-    check('恢复全部卡片后待核实数字仍为 3',
-      u3 && u3.children[0].textContent === '3', u3 && u3.children[0].textContent);
+    check('恢复全部卡片后待核实数字仍为 6',
+      u3 && u3.children[0].textContent === '6', u3 && u3.children[0].textContent);
     check('待核实盒不含避雷粉色系类名（rose）',
       u3 && !/rose/.test(u3.className), u3 && u3.className);
     check('待核实盒仍绑定筛选（data-sxg-stat=u）',

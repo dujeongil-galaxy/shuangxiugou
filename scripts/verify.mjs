@@ -401,7 +401,7 @@ const headerStat = (label, cls) => {
   return m ? Number(m[1]) : null;
 };
 check(virtual2e === 1, '虚拟对比卡恰 1 张（口径排除依据，id 变更需同步本节）', '实际 ' + virtual2e);
-check(customPairs2e.length === 7, '能解析全部自定义卡（7 张）', '实际 ' + customPairs2e.length);
+check(customPairs2e.length === 10, '能解析全部自定义卡（10 张）', '实际 ' + customPairs2e.length);
 check(headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') === statTotal,
   '顶部「收录品牌」= 实名企业卡总数', '页面 ' + headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') + ' / 计算 ' + statTotal + '（改 bundle 顶部统计常数）');
 check(headerStat('双休红榜', 'text-emerald-700/70 text-\\[11px\\]') === statHong,
@@ -457,7 +457,7 @@ if (cfgBlock) {
   }
 }
 const CUSTOM_COUNT = customCards.length;
-check(CUSTOM_COUNT === 7, `自定义卡 ${CUSTOM_COUNT} 张（期望 7）`);
+check(CUSTOM_COUNT === 10, `自定义卡 ${CUSTOM_COUNT} 张（期望 10）`);
 
 // null 规则：双休率 / 下班时间不得为占位 0，也不得是字符串 '未知'
 customCards.forEach((c) => {
@@ -617,7 +617,11 @@ function isLegitimateNumber(line, num) {
   return false;
 }
 
-docs.forEach((d) => {
+// CHANGELOG.md 是「追加式历史流水」，正文里「7 张自定义卡」等数字是**当时**的规模、
+//   按下的 bug，属历史记录而非当前口径，改它等于篡改历史。故卡片数字口径校验跳过它
+//   （它仍参与 §8 链接校验与哈希校验）。当前规模口径只对「会随卡片增减改写的说明文档」生效。
+const countDocs = docs.filter((d) => d !== 'CHANGELOG.md');
+countDocs.forEach((d) => {
   const t = read(d);
   const bad = [];
   for (const line of t.split('\n')) {
