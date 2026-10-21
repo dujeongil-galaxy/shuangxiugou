@@ -181,95 +181,41 @@
     footer.appendChild(pollCard);
 
     /* ----------------------------------------------------------------
-       第四块：搜索排名公示
+       第四块：Bing 设置教程（替代已删除的「搜索排名公示」）
        ----------------------------------------------------------------
-       把本站实测过的搜索词与名次直接挂在页脚，不藏起来。
-       两点说明写在下面：
-       一、名次随时间浮动，只代表某一天的实测快照；
-       二、词形必须连写（「双休购github」），加空格会搜不到。
+       站长 2026-10-21 要求：搜索排名公示整块删掉（名次一天浮动好几次，
+       实测快照维护不过来）；页脚卡片保留，改成「如何把浏览器设为 Bing」教程，
+       引导访客用 Bing 搜本站。完整历史实测记录在仓库 SEO-RANKING.md。
        ---------------------------------------------------------------- */
     var seoCard = makeCard();
+
     var seoHeading = document.createElement('div');
-    seoHeading.setAttribute('style', 'font-weight:600;color:#334155;margin:0 0 4px;font-size:14px');
-    seoHeading.textContent = '搜索排名公示';
+    seoHeading.setAttribute('style', 'font-weight:600;color:#334155;margin:0 0 6px;font-size:14px');
+    seoHeading.textContent = '如何用 Bing 搜到本站';
     seoCard.appendChild(seoHeading);
 
-    var seoMeta = document.createElement('div');
-    seoMeta.setAttribute('style', 'margin:0 0 12px;color:#94a3b8');
-    seoMeta.textContent = '本次实测 2026-10-20（普通窗口）· 上次 2026-10-16（无痕窗口）';
-    seoCard.appendChild(seoMeta);
+    var seoIntro = document.createElement('div');
+    seoIntro.setAttribute('style', 'margin:0 0 8px;color:#64748b');
+    seoIntro.textContent = '其他搜索引擎对本站收录不全。把浏览器设为 Bing、用 Bing 搜「双休购」（词要连写，不要空格）就能找到。';
+    seoCard.appendChild(seoIntro);
 
-    /* [关键词, 本次名次, 上次名次, 引擎]
-       名次：整数位次，或特殊串（如「第一页末位」）原样显示。
-       两次都是站长本机的实测快照（本次普通窗口、上次无痕窗口），
-       变化由代码算，不手写：位次变小=↑上升，变大=▼下降，相等=持平。 */
-    var SEO_ROWS = [
-      ['双休购996', '1', '2', 'Bing'],
-      ['双休购数据', '1', '2', 'Bing'],
-      ['双休购官网', '2', '5', 'Bing'],
-      ['双休购', '4', '7', 'Bing'],
-      ['双休企业', '4', '第一页末位', 'Bing'],
-      ['shuangxiugou', '3', '6', 'Bing'],
-      ['shuangxiugo', '3', '5', 'Bing'],
-    ];
-
-    function seoDelta(cur, prev) {
-      if (cur === prev) return { text: '持平', color: '#94a3b8' };
-      var ci = parseInt(cur, 10);
-      var pi = parseInt(prev, 10);
-      // 「第一页末位」这类特殊串转不出数字：进入第一页记 ↑，跌出记 ↓，不标位数
-      if (isNaN(ci)) return { text: '↓', color: '#b91c1c' };
-      if (isNaN(pi)) return { text: '↑', color: '#0F766E' };
-      if (ci < pi) return { text: '↑' + (pi - ci), color: '#0F766E' };
-      return { text: '↓' + (ci - pi), color: '#b91c1c' };
-    }
-
-    SEO_ROWS.forEach(function (row) {
-      var line = document.createElement('div');
-      line.setAttribute('style',
-        'display:flex;justify-content:space-between;align-items:baseline;' +
-        'margin:0 0 2px;gap:12px;padding:5px 8px;border-radius:6px');
-
-      var kw = document.createElement('span');
-      kw.textContent = row[0];
-      kw.setAttribute('style', 'color:#334155;font-weight:600;flex:1');
-
-      // 本次名次：整数补「第 N 位」，特殊串原样
-      var curText = isNaN(parseInt(row[1], 10)) ? row[1] : '第 ' + row[1] + ' 位';
-      var cur = document.createElement('span');
-      cur.textContent = curText + ' · ' + row[3];
-      cur.setAttribute('style', 'color:#0F766E;font-weight:700;white-space:nowrap');
-
-      // 上次名次 + 变化
-      var prevText = isNaN(parseInt(row[2], 10)) ? row[2] : '上次 ' + row[2];
-      var delta = seoDelta(row[1], row[2]);
-      var prev = document.createElement('span');
-      prev.setAttribute('style',
-        'white-space:nowrap;font-size:12px;color:#94a3b8;min-width:7.5em;text-align:right');
-      prev.setAttribute('title', '上次实测 2026-10-16');
-      prev.textContent = prevText + ' · ';
-      var deltaSpan = document.createElement('span');
-      deltaSpan.textContent = delta.text;
-      deltaSpan.setAttribute('style', 'color:' + delta.color + ';font-weight:700');
-      prev.appendChild(deltaSpan);
-
-      line.appendChild(kw);
-      line.appendChild(cur);
-      line.appendChild(prev);
-      seoCard.appendChild(line);
-    });
-
-    var seoNote = document.createElement('div');
-    seoNote.setAttribute('style', 'margin-top:10px;padding-top:10px;border-top:1px dashed #e2e8f0;color:#94a3b8');
-    seoNote.textContent =
-      '词形要连写，加空格就搜不到；Google 对本站更严格。' +
-      '名次是站长本机的实测快照，会随地区、时间、登录态与是否无痕浮动；' +
-      '↑/↓ 为相对上次（2026-10-16）的变化：↑=位次提升，↓=位次下滑。';
-    seoCard.appendChild(seoNote);
+    var seoOl = document.createElement('ol');
+    seoOl.setAttribute('style', 'margin:0 0 8px;padding-left:18px;color:#334155;line-height:1.7');
+    seoOl.innerHTML =
+      '<li style="margin:0 0 6px">把默认搜索引擎设为 <b>Bing</b>：' +
+      '<br>· Chrome：设置 → 搜索引擎 → 地址栏使用的搜索引擎 → 选 Bing' +
+      '<br>· Edge：设置 → 隐私、搜索和服务 → 地址栏 → 搜索引擎 → 选 Bing' +
+      '<br>· QQ浏览器：设置 → 搜索引擎 → 选 Bing</li>' +
+      '<li style="margin:0 0 6px">把主页（启动时打开的页）设为 <b>https://cn.bing.com</b>：' +
+      '<br>· Chrome / Edge：设置 → 启动时 → 打开特定网页或一组网页 → 添加 https://cn.bing.com</li>' +
+      '<li style="margin:0 0 6px">不想改设置？直接打开 ' +
+      '<a href="https://cn.bing.com" target="_blank" rel="nofollow noopener" ' +
+      'style="color:#0F766E;font-weight:700">cn.bing.com</a> 也行。</li>';
+    seoCard.appendChild(seoOl);
 
     footer.appendChild(seoCard);
 
-    /*第五块：Bing 积分商城邀请（放在搜索排名公示下面） */
+    /*第五块：Bing 积分商城邀请（放在搜索引导下面） */
     var bingCard = makeCard();
     var bingHeading = document.createElement('div');
     bingHeading.setAttribute('style', 'font-weight:600;color:#334155;margin:0 0 4px;font-size:14px');
