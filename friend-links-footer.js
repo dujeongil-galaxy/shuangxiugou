@@ -181,6 +181,36 @@
     footer.appendChild(pollCard);
 
     /* ----------------------------------------------------------------
+       站长随笔入口（2026-10-21 新增，同日按站长要求移到 Bing 教程之前）
+       一篇关于「为什么支持双休购」的随笔，正文较长，
+       单独做成 why-shuangxiugou.html 阅读页，这里只放入口卡片。
+       卡片改浅青底+青边框：站长反馈页脚卡片全是同款白框「很眼睛难受」，
+       用底色把它和其余白卡区分开。
+       ---------------------------------------------------------------- */
+    var essayCard = makeCard();
+    essayCard.setAttribute('style',
+      'background:#f0fdfa;border:1px solid #5eead4;border-radius:12px;' +
+      'padding:16px 18px;margin:0 0 16px');
+    var essayHeading = document.createElement('div');
+    essayHeading.setAttribute('style', 'font-weight:600;color:#0F766E;margin:0 0 4px;font-size:14px');
+    essayHeading.textContent = '我为什么支持双休购';
+    essayCard.appendChild(essayHeading);
+
+    var essayDesc = document.createElement('div');
+    essayDesc.setAttribute('style', 'margin:0 0 8px;color:#64748b');
+    essayDesc.textContent = '买东西前多问一句「你们公司双休吗」，用钱包替嘴说话。';
+    essayCard.appendChild(essayDesc);
+
+    var essayLink = document.createElement('a');
+    essayLink.href = './why-shuangxiugou.html';
+    essayLink.textContent = '读全文（AI 生成随笔）→';
+    essayLink.setAttribute('style',
+      'display:inline-block;color:#0F766E;font-weight:700;text-decoration:underline');
+    essayCard.appendChild(essayLink);
+
+    footer.appendChild(essayCard);
+
+    /* ----------------------------------------------------------------
        第四块：Bing 设置教程（替代已删除的「搜索排名公示」）
        ----------------------------------------------------------------
        站长 2026-10-21 要求：搜索排名公示整块删掉（名次一天浮动好几次，
@@ -237,32 +267,6 @@
     bingCard.appendChild(bingLink);
 
     footer.appendChild(bingCard);
-
-    /* ----------------------------------------------------------------
-       第六块：站长随笔入口（2026-10-21 新增）
-       一篇关于「为什么支持双休购」的随笔，正文较长，
-       单独做成 why-shuangxiugou.html 阅读页，这里只放入口卡片，
-       避免在页脚硬塞长文撑破版式。
-       ---------------------------------------------------------------- */
-    var essayCard = makeCard();
-    var essayHeading = document.createElement('div');
-    essayHeading.setAttribute('style', 'font-weight:600;color:#334155;margin:0 0 4px;font-size:14px');
-    essayHeading.textContent = '我为什么支持双休购';
-    essayCard.appendChild(essayHeading);
-
-    var essayDesc = document.createElement('div');
-    essayDesc.setAttribute('style', 'margin:0 0 8px;color:#64748b');
-    essayDesc.textContent = '买东西前多问一句「你们公司双休吗」，用钱包替嘴说话。';
-    essayCard.appendChild(essayDesc);
-
-    var essayLink = document.createElement('a');
-    essayLink.href = './why-shuangxiugou.html';
-    essayLink.textContent = '读全文（AI 生成随笔）→';
-    essayLink.setAttribute('style',
-      'display:inline-block;color:#0F766E;font-weight:700;text-decoration:underline');
-    essayCard.appendChild(essayLink);
-
-    footer.appendChild(essayCard);
 
     // 追加到页面最底部
     host.appendChild(footer);
