@@ -25,14 +25,17 @@
 
   var FOOTER_ID = 'related-sites-footer';
 
-  // 每块内容套一层白底卡片，边框+圆角+内边距。
+  // 每块内容套一张卡片，边框+圆角+内边距。
   // 为什么加：几块内容原本是直接贴在灰底页脚上的纯文本行，
   // 标题一多就糊成一片，扫读时找不到边界（站长 2026-10-16 要求加框）。
-  function makeCard() {
+  // 2026-10-21 支持自定义配色：站长反馈五张卡全是同款白框
+  // 「不同框不同颜色，反而可能会更好」，各卡配柔和淡色系互相区分。
+  function makeCard(bg, border) {
     var box = document.createElement('div');
     box.setAttribute('data-fcard', '1');
     box.setAttribute('style',
-      'background:#fff;border:1px solid #e2e8f0;border-radius:12px;' +
+      'background:' + (bg || '#fff') + ';border:1px solid ' + (border || '#e2e8f0') +
+      ';border-radius:12px;' +
       'padding:16px 18px;margin:0 0 16px');
     return box;
   }
@@ -131,9 +134,9 @@
        外部平台的公开投票结果，作为读者态度的参考放在底部。
        票数与百分比一并标注，避免读者自己心算占比。
        ---------------------------------------------------------------- */
-    var pollCard = makeCard();
+    var pollCard = makeCard('#eff6ff', '#93c5fd'); // 淡蓝底 + 蓝边框
     var pollHeading = document.createElement('div');
-    pollHeading.setAttribute('style', 'font-weight:600;color:#334155;margin:0 0 4px;font-size:14px');
+    pollHeading.setAttribute('style', 'font-weight:600;color:#1d4ed8;margin:0 0 4px;font-size:14px');
     pollHeading.textContent = '你愿意为双休企业的产品多花钱吗';
     pollCard.appendChild(pollHeading);
 
@@ -187,10 +190,7 @@
        卡片改浅青底+青边框：站长反馈页脚卡片全是同款白框「很眼睛难受」，
        用底色把它和其余白卡区分开。
        ---------------------------------------------------------------- */
-    var essayCard = makeCard();
-    essayCard.setAttribute('style',
-      'background:#f0fdfa;border:1px solid #5eead4;border-radius:12px;' +
-      'padding:16px 18px;margin:0 0 16px');
+    var essayCard = makeCard('#f0fdfa', '#5eead4'); // 浅青底 + 青边框
     var essayHeading = document.createElement('div');
     essayHeading.setAttribute('style', 'font-weight:600;color:#0F766E;margin:0 0 4px;font-size:14px');
     essayHeading.textContent = '我为什么支持双休购';
@@ -217,10 +217,10 @@
        实测快照维护不过来）；页脚卡片保留，改成「如何把浏览器设为 Bing」教程，
        引导访客用 Bing 搜本站。完整历史实测记录在仓库 SEO-RANKING.md。
        ---------------------------------------------------------------- */
-    var seoCard = makeCard();
+    var seoCard = makeCard('#fffbeb', '#fcd34d'); // 淡琥珀底 + 琥珀边框
 
     var seoHeading = document.createElement('div');
-    seoHeading.setAttribute('style', 'font-weight:600;color:#334155;margin:0 0 6px;font-size:14px');
+    seoHeading.setAttribute('style', 'font-weight:600;color:#b45309;margin:0 0 6px;font-size:14px');
     seoHeading.textContent = '如何用 Bing 搜到本站';
     seoCard.appendChild(seoHeading);
 
@@ -240,15 +240,15 @@
       '<br>· Chrome / Edge：设置 → 启动时 → 打开特定网页或一组网页 → 添加 https://cn.bing.com</li>' +
       '<li style="margin:0 0 6px">不想改设置？直接打开 ' +
       '<a href="https://cn.bing.com" target="_blank" rel="nofollow noopener" ' +
-      'style="color:#0F766E;font-weight:700">cn.bing.com</a> 也行。</li>';
+      'style="color:#b45309;font-weight:700">cn.bing.com</a> 也行。</li>';
     seoCard.appendChild(seoOl);
 
     footer.appendChild(seoCard);
 
     /*第五块：Bing 积分商城邀请（放在搜索引导下面） */
-    var bingCard = makeCard();
+    var bingCard = makeCard('#f5f3ff', '#c4b5fd'); // 淡紫底 + 紫边框
     var bingHeading = document.createElement('div');
-    bingHeading.setAttribute('style', 'font-weight:600;color:#334155;margin:0 0 4px;font-size:14px');
+    bingHeading.setAttribute('style', 'font-weight:600;color:#6d28d9;margin:0 0 4px;font-size:14px');
     bingHeading.textContent = '推荐朋友加入 Bing 积分商城';
     bingCard.appendChild(bingHeading);
 
@@ -263,7 +263,7 @@
     bingLink.rel = 'nofollow noopener';
     bingLink.textContent = '通过我的链接加入 →';
     bingLink.setAttribute('style',
-      'display:inline-block;color:#0F766E;font-weight:700;text-decoration:underline');
+      'display:inline-block;color:#6d28d9;font-weight:700;text-decoration:underline');
     bingCard.appendChild(bingLink);
 
     footer.appendChild(bingCard);
