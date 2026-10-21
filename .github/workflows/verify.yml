@@ -122,3 +122,9 @@ jobs:
       # 断言各档可见卡数与四格显示一致（16/8/16），虚拟卡不进任何分档。
       - name: 四格筛选测试
         run: node scripts/test-stat-filter.cjs
+
+      # 「富士康补充说明」注入位置（PITFALLS 1.10 的bug ①③④）：
+      # 搜中苹果卡要保留、苹果卡被过滤/隐藏要摘除、不得泄漏进华为卡。
+      # bug ④ 是「修 bug ③ 时加了道过防御的闸，把说明框当成只属浏览态」。
+      - name: 苹果补充说明注入位置测试
+        run: node scripts/test-apple-note.cjs

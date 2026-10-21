@@ -227,12 +227,34 @@ setTimeout(() => {
     };
     await new Promise((r) => setTimeout(r, 300)); // 等 React 挂载稳定
     check('前置：note 存在且在 Apple 卡内', !!note() && noteInApple());
-    type('啊'); // 无匹配：React 会卸载全部卡
+    // 2026-10-22（bug ④ 修复）：原断言是「搜索『啊』后 note 不在 DOM」，
+    // 它依赖已被删除的「搜索框一有输入就无条件摘除 note」那道闸。
+    // 新判据是「苹果卡在不在当前可见列表」—— 而 jsdom 里 bundle 的搜索
+    // 并不真的卸载卡片，Apple 卡仍在 DOM，所以 note 保留是**正确**行为。
+    // 这里显式模拟 React 卸载该卡节点（= 搜索把它过滤掉的真实效果），
+    // 断言的是「目标卡片消失 → note 必须跟着消失」这条真正的约定。
+    type('啊'); // 无匹配：真实浏览器里 React 会卸载全部卡
     await new Promise((r) => setTimeout(r, 500));
-    check('搜索「啊」（无匹配）后 note 不在 DOM', !note());
+    {
+      const host = ancestorCardOf(note());
+      if (host && host.parentNode) host.parentNode.removeChild(host); // 模拟卸载
+    }
+    await new Promise((r) => setTimeout(r, 500));
+    check('苹果卡被搜索过滤掉（模拟卸载）后 note 不在 DOM', !note());
+    // 复原一张 Apple 卡（模拟清空搜索后 React 重新挂载），note 应重新插回。
+    // 这里刻意造一张结构完整的卡（h2 + .flex-wrap 标签行），insertAppleNote
+    // 需要 .flex-wrap 作为插入锚点，缺了只会打警告不插入。
+    // ⚠️ 本段在 async 作用域里跑，只能用 window.document（裸 document 不在作用域）。
+    {
+      const re = window.document.createElement('div');
+      re.className = 'bg-white rounded-2xl border';
+      re.innerHTML = '<h2>Apple (苹果中国)</h2><div class="flex-wrap"><span>iPhone</span></div>';
+      window.document.getElementById('root').appendChild(re);
+    }
     type(''); // 清空搜索
     await new Promise((r) => setTimeout(r, 500));
-    check('清空搜索后 note 重新插回 Apple 卡', noteInApple());
+    check('清空搜索后 note 重新插回 Apple 卡', noteInApple(),
+      { hasNote: !!note() });
     // React 按位置复用节点（原 bug①）：把持有 note 的 Apple 卡标题改成华为
     //（只改标题文本，保留卡内其他子节点——与 React 文本更新复用节点的行为一致）
     const host = ancestorCardOf(note());

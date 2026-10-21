@@ -17,7 +17,6 @@
     "verify": "node scripts/verify.mjs",
     "verify:quiet": "node scripts/verify.mjs --quiet",
     "sync-version": "node scripts/sync-version.mjs",
-    "sync-version": "node scripts/sync-version.mjs",
     "sync-version:check": "node scripts/sync-version.mjs --check",
     "precommit": "node scripts/verify.mjs --quiet",
     "lint": "npm run check-types",
@@ -31,7 +30,8 @@
     "test:pinyin:e2e": "node scripts/test-pinyin-e2e.cjs",
     "test:ticket": "node scripts/test-ticket-total.cjs",
     "test:ticket:dom": "node scripts/test-builtin-ticket-dom.cjs",
-    "test:answer": "node scripts/test-answer-book.cjs"
+    "test:answer": "node scripts/test-answer-book.cjs",
+    "test:apple-note": "node scripts/test-apple-note.cjs"
   },
   "dependencies": {
     "framer-motion": "^11.2.4",

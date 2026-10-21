@@ -1002,8 +1002,28 @@
       // 声明」切函数体，监听器混在 insertAppleNote 与下个函数之间会被切坏。）
       document.addEventListener('input', function (ev) {
         if (ev.target && ev.target.id === 'site-search-input') {
-          var n = document.getElementById('apple-note');
-          if (n && n.parentNode) n.parentNode.removeChild(n);
+          // 2026-10-22 修正（站长实测 bug ④，详见 PITFALLS 1.10）：
+          // 原实现是「搜索框一有输入就无条件摘除说明框」，把「说明框只属浏览态」
+          // 当成硬规则，于是搜索**命中苹果卡**的词（如「苹果」）时，苹果卡明明在
+          // 结果列表里，黄框却被摘掉了（截图：搜索苹果 → 说明框消失）。
+          //
+          // 正确判据是「苹果卡在不在当前可见列表」，而不是「有没有在搜索」。
+          // 这里保留同步清理（PITFALLS 1.10 bug ③ 要求不等防抖），
+          // 但仅在苹果卡确实已不可见时才摘 —— 命中搜索结果时保留说明框。
+          var cardsNow = document.querySelectorAll('div.bg-white.rounded-2xl.border');
+          var appleVisibleNow = false;
+          for (var ci = 0; ci < cardsNow.length; ci++) {
+            var titleNow = cardsNow[ci].querySelector('h2,h3');
+            if (!titleNow || titleNow.textContent.trim().indexOf('Apple') !== 0) continue;
+            var walker = cardsNow[ci], hiddenNow = false;
+            while (walker && walker !== document.body) {
+              if (walker.style && walker.style.display === 'none') { hiddenNow = true; break; }
+              walker = walker.parentNode;
+            }
+            if (!hiddenNow) { appleVisibleNow = true; break; }
+          }
+          var n2 = document.getElementById('apple-note');
+          if (!appleVisibleNow && n2 && n2.parentNode) n2.parentNode.removeChild(n2);
         }
       }, true);
 
@@ -1038,15 +1058,15 @@
           }
         }
 
-        // 2026-10-18 修复（PITFALLS 1.10 第二变体）：搜索/筛选会按位置复用
-        // 卡片节点，note 会跟着节点泄漏进搜索面板或别家卡。两道闸：
-        // ① 搜索框有输入 → 说明框必须摘除（它是浏览态的辅助说明）；
-        // ② Apple 卡不在 DOM 或不可见（display:none / 祖先隐藏）→ 摘除。
-        var searchInputEl = document.getElementById('site-search-input');
-        if (searchInputEl && searchInputEl.value.trim() !== '') {
-          if (note && note.parentNode) note.parentNode.removeChild(note);
-          return;
-        }
+        // 2026-10-22 修正（站长实测 bug ④）：原来这里有一道
+        // 「搜索框有输入 → 无条件摘除并return」的闸，等于宣布「说明框只属浏览态」。
+        // 但搜索命中苹果卡时（如搜「苹果」），苹果卡就在结果列表里，说明框应当显示。
+        // 该闸已删除 —— 判据统一交给下面两条「结构性」判据：
+        //   ① 当前 DOM 里没有苹果卡 → 摘除（搜索把它过滤掉了）
+        //   ② 苹果卡在 DOM 但整棵子树被隐藏（四格筛选/评级过滤）→ 摘除
+        // 这样既守住 PITFALLS 1.10 bug ③（无匹配词时空面板不残留黄框），
+        // 又不会误伤「搜索命中苹果卡」这一正常场景。
+        //
         // 可见性用纯 DOM 结构检查（沿祖先找 inline display:none），
         // 覆盖四格筛选与自定义卡过滤的隐藏方式；不依赖布局引擎。
         function sxgHiddenSubtree(el) {

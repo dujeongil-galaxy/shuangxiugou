@@ -3456,6 +3456,36 @@ if (exists(RPT)) {
     '删除它会让「提交我的真实工时票」静默退回假入库：数据只留在页面内存里，刷新即丢，站长收不到，而按钮仍写着「入库公证中…」');
 }
 
+// ---------- 20h. 苹果补充说明的注入闸门不能退回「搜索即摘除」 ----------
+// 背景（2026-10-22 站长截图）：修 PITFALLS 1.10 bug ③（搜索无匹配词时黄框残留）
+// 时加的那道闸是「搜索框一有输入就无条件摘除说明框」，把「说明框只属浏览态」
+// 当成硬规则 —— 于是搜「苹果」这种**命中苹果卡**的词时，苹果卡明明在结果列表里，
+// 黄框却被摘掉了（bug ④）。本节把「判据必须是目标卡片在不在可见列表」钉成红线，
+// 防止后人「简化」代码时把bug ④ 带回来。
+section('20h. 苹果补充说明注入闸门');
+const idxApple = read('index.html');
+check(/appleVisibleNow/.test(idxApple),
+  '同步清理以「苹果卡是否可见」为判据，不是「搜索框有没有输入」');
+check(!/var searchInputEl[\s\S]{0,200}?trim\(\)\s*!==\s*''[\s\S]{0,120}?removeChild\(note\)[\s\S]{0,40}?return/.test(idxApple),
+  'insertAppleNote 里没有「搜索有输入就无条件摘除并return」的旧闸');
+check(/if \(appleHidden\)/.test(idxApple),
+  '保留「苹果卡在 DOM 但整棵子树被隐藏 → 摘除」这道闸（四格筛选场景）');
+check(/if \(!appleCard\)/.test(idxApple),
+  '保留「当前列表没有苹果卡 → 摘除」这道闸（搜索过滤场景）');
+check(exists('scripts/test-apple-note.cjs'), '存在苹果补充说明注入位置的行为测试');
+if (exists('scripts/test-apple-note.cjs')) {
+  const tApple = read('scripts/test-apple-note.cjs');
+  // 测试必须覆盖 bug ④ 的核心判据，否则等于没测
+  check(/同步清理阶段未误摘说明框/.test(tApple),
+    '测试断言「同步清理那一瞬」不误摘（等稳定态会被 rAF 重插掩盖，抓不到 bug ④）');
+  check(/display = 'none'/.test(tApple),
+    '测试覆盖「苹果卡在 DOM 但子树被隐藏」分支（四格筛选）');
+}
+if (exists('.github/workflows/verify.yml')) {
+  check(read('.github/workflows/verify.yml').includes('test-apple-note.cjs'),
+    'CI 里已接入苹果补充说明注入位置测试');
+}
+
 // ---------- 20g. 公告栏版本号必须等于「上一次提交」 ----------
 // 背景：2026-10-19 站长指出首页「当前版本号 2db67d9」与近期提交对不上。
 //   根因是它写死在 index.html 里，多轮发版都没同步。规则本身 AGENTS.md 早有记载
