@@ -4,8 +4,16 @@
 
 > **项目定位：本仓库是「双休购」主站**（线上应用，GitHub Pages 部署）。请与账号下另外两个双休购相关仓库区分：
 >
-> - **shuangxiugou-guide**（[仓库](https://github.com/dujeongil-galaxy/shuangxiugou-guide)）→ 独立的「双休购 2.0」公开资料与消费决策工具站（246 条企业/品牌记录 + 证据护照评分），与本主站是不同形态的产品；
+> - **shuangxiugou-guide**（[仓库](https://github.com/dujeongil-galaxy/shuangxiugou-guide)）→ 「双休购 2.0」公开资料站（[线上](https://dujeongil-galaxy.github.io/shuangxiugou-guide/)）的全量**纯静态备份**，收录 246 条企业/品牌线索（调研基准日 2026-09-09）。该仓库未做任何二次开发，无提交改动记录，内容与上游 [FuzzyLogic112/shuangxiugou-guide](https://github.com/FuzzyLogic112/shuangxiugou-guide) 保持一致。
 > - **shuangxiu-go-archive**（[仓库](https://github.com/dujeongil-galaxy/shuangxiu-go-archive)）→ 第三方网站「双休GO」(shuangxiu-go.cn) 的全量静态存档备份，与本主站数据无关联。
+>
+> **两站数据的关系**：guide 站的 246 条是**研究线索**，按证据强度分为 A 公开确认 / B 媒体报道 / C 汇总候选 / 风险提示 / 作息待核验五档，其中大部分尚未取得一手证据。本主站只收录其中证据链完整、足以支撑评级结论的条目，其余线索保留在 guide 站作为待核实素材，因此两站收录数量不同是预期结果，并非数据冲突。
+>
+> **主站的收录原则**（唯一标准，不因品牌知名度、规模或舆论热度而放宽）：
+>
+> 1. **客观中立**——只呈现可查证的公开信息，不掺杂立场好恶；
+> 2. **不做情绪化表述**——描述作息与加班时以事实描述为准，避免掺入褒贬色彩或情绪化措辞；
+> 3. **证据链不完善一律不评级**——归入「待核实 · 不评级」（U 级），数值字段留空显示「—」，不用估算值、招聘方单方口径或论坛传言填充。此口径同样适用于国有大企业、上市公司与知名消费品牌。
 
 > 基于 [ZhiqingHeyi/shuangxiugou](https://github.com/ZhiqingHeyi/shuangxiugou) 修改，MIT License
 
