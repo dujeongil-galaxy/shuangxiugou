@@ -196,7 +196,7 @@
           <li><strong><a href="./brand/sony.html">Sony (索尼中国)</a></strong>：A 级 · 真实双休率 90% · 平均下班 18:00</li> <a href="./brand/sony.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/dji.html">大疆 DJI</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 21:00</li> <a href="./brand/dji.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/luckin.html">瑞幸咖啡 (Luckin Coffee)</a></strong>：C 级 · 真实双休率 40% · 平均下班 21:30</li> <a href="./brand/luckin.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/starbucks.html">Starbucks (星巴克中国)</a></strong>：A 级 · 真实双休率 85% · 平均下班 22:30</li> <a href="./brand/starbucks.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/starbucks.html">Starbucks (星巴克中国)</a></strong>：A 级 · 真实双休率 98% · 平均下班 22:30</li> <a href="./brand/starbucks.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/tencent.html">Tencent (腾讯)</a></strong>：B 级 · 真实双休率 82% · 平均下班 20:30</li> <a href="./brand/tencent.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/mihoyo.html">米哈游 (miHoYo)</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 18:00</li> <a href="./brand/mihoyo.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/ctrip.html">携程 (Ctrip)</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/ctrip.html" style="color:#0F766E">详细→</a>
@@ -317,7 +317,7 @@
           <li><a href="./brand/sony.html">Sony (索尼中国)</a> —— A 级 · 双休率 90% · 平均下班 18:00</li>
           <li><a href="./brand/dji.html">大疆 DJI</a> —— B 级 · 双休率 未核实 · 平均下班 21:00</li>
           <li><a href="./brand/luckin.html">瑞幸咖啡 (Luckin Coffee)</a> —— C 级 · 双休率 40% · 平均下班 21:30</li>
-          <li><a href="./brand/starbucks.html">Starbucks (星巴克中国)</a> —— A 级 · 双休率 85% · 平均下班 22:30</li>
+          <li><a href="./brand/starbucks.html">Starbucks (星巴克中国)</a> —— A 级 · 双休率 98% · 平均下班 22:30</li>
           <li><a href="./brand/tencent.html">Tencent (腾讯)</a> —— B 级 · 双休率 82% · 平均下班 20:30</li>
           <li><a href="./brand/mihoyo.html">米哈游 (miHoYo)</a> —— B 级 · 双休率 未核实 · 平均下班 18:00</li>
           <li><a href="./brand/ctrip.html">携程 (Ctrip)</a> —— A 级 · 双休率 未核实 · 平均下班 —</li>
@@ -1230,6 +1230,39 @@
         tagsRow.parentNode.insertBefore(note, tagsRow.nextSibling);
       }
 
+      // 星巴克「真实双休率」显示覆盖（2026-10-22 站长指示：显示为 98%，A 级评级不变）。
+      // 该值源自冻结 bundle 的 realDoubleWeekendRate:85，bundle 按铁律不可改，
+      // 故在 DOM 层覆盖显示值。与 insertStarbucksNote **平行实现**：找标题以 Starbucks
+      // 开头的卡，按「标签→数值」同源逻辑（与 rate-note-patch.js 一致）定位「真实双休率」
+      // 数值节点（font-mono 子节点），已是 98% 则跳过（幂等，避免 MutationObserver 把
+      // textContent 改动当成新 mutation 自激）。标签形如「真实双休率:」或「真实双休率」。
+      var SBUX_RATE_OVERRIDE = '98%';
+      function patchStarbucksRate() {
+        var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
+        for (var i = 0; i < cards.length; i++) {
+          var titleEl = cards[i].querySelector('h2,h3');
+          var title = titleEl ? titleEl.textContent.trim() : '';
+          if (title.indexOf('Starbucks') !== 0) continue;
+          var labels = cards[i].querySelectorAll('div');
+          for (var k = 0; k < labels.length; k++) {
+            var el = labels[k];
+            if (!el.childNodes || el.childNodes.length !== 1) continue;
+            var t = (el.textContent || '').trim();
+            if (t.indexOf('真实双休率') !== 0) continue;
+            var row = el.parentElement;
+            if (!row) continue;
+            var valueEl = null;
+            for (var j = 0; j < row.children.length; j++) {
+              var c = row.children[j];
+              if (c !== el && /font-mono/.test(c.className || '')) { valueEl = c; break; }
+            }
+            if (!valueEl) continue;
+            if ((valueEl.textContent || '').trim() === SBUX_RATE_OVERRIDE) continue; // 幂等
+            valueEl.textContent = SBUX_RATE_OVERRIDE;
+          }
+        }
+      }
+
       // 自定义卡片的元数据（从配置自动生成，不用手动维护）
       var customCardsMeta = {};
       customCardsConfig.forEach(function(config) {
@@ -1326,6 +1359,7 @@
         replaceAllLogos();
         insertAppleNote();
         insertStarbucksNote();
+        patchStarbucksRate();
         filterCustomCards();
         scheduleHeadingFix();
       }
@@ -1393,6 +1427,7 @@
           requestAnimationFrame(function() {
             try { insertAppleNote(); } catch (err) { diagError('insertAppleNote 抛异常', err); }
             try { insertStarbucksNote(); } catch (err) { diagError('insertStarbucksNote 抛异常', err); }
+            try { patchStarbucksRate(); } catch (err) { diagError('patchStarbucksRate 抛异常', err); }
           });
         }
       });
@@ -1404,6 +1439,7 @@
             filterCustomCards();
             try { insertAppleNote(); } catch (err) { diagError('insertAppleNote 抛异常', err); }
             try { insertStarbucksNote(); } catch (err) { diagError('insertStarbucksNote 抛异常', err); }
+            try { patchStarbucksRate(); } catch (err) { diagError('patchStarbucksRate 抛异常', err); }
           }, 100);
         }
       });
