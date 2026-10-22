@@ -151,10 +151,10 @@ setTimeout(() => {
   console.log('\n--- 索引与 bundle / customCardsConfig 的一致性 ---');
   const bundle = fs.readFileSync(path.join(ROOT, 'assets/index-YthXZ9eP.js'), 'utf8');
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  // 自定义卡（肯德基/小米/兵立王/茶百道/赵一鸣/一点点/零食有鸣）不在 bundle，
-  // ⚠️ 2026-10-19 起它们**不再进联想索引**：React 空结果会整片替换成
-  //    「未找到匹配的品牌信息」，插进去的卡片跟着父节点一起消失，
-  //    联想里出现它们 = 骗用户点一下看空态（用户截图 bug）。
+  // 自定义卡（肯德基/小米/兵立王/茶百道/赵一鸣/一点点/零食有鸣/三家银行）
+  // 不在 bundle。⚠️ 2026-10-22 起它们**重新进入联想索引**，带 custom 标记、
+  // 点击走「定位」链路（locateCard）—— 10-19 曾因「点选后空态」被整体踢出，
+  // 导致输 ls 永远搜不出零食品牌（站长：「修复过无数次」的那个坑）。
   const cfgM = html.match(/var customCardsConfig = \[([\s\S]*?)\n      \];/);
   const customIds = new Set(
     cfgM ? [...cfgM[1].matchAll(/id:\s*'([^']+)'/g)].map((m) => m[1]) : []
@@ -164,9 +164,12 @@ setTimeout(() => {
   );
   check('索引里的每个品牌都真实存在于 bundle 或 customCardsConfig（无幽灵条目）',
         missing.length === 0, missing.map(m => m.id));
-  check('自定义卡不进联想索引（点了必然空态）',
-        window.__PINYIN_INDEX__.every((e) => !customIds.has(e.id)),
-        window.__PINYIN_INDEX__.filter((e) => customIds.has(e.id)).map((e) => e.id));
+  check('★ 自定义卡全部在联想索引里（输 ls 必须能搜出零食品牌）',
+        [...customIds].every((id) => window.__PINYIN_INDEX__.some((e) => e.id === id)),
+        [...customIds].filter((id) => !window.__PINYIN_INDEX__.some((e) => e.id === id)));
+  check('自定义卡条目都带 custom 标记（前端据此走定位而非回填）',
+        window.__PINYIN_INDEX__.filter((e) => customIds.has(e.id)).every((e) => e.custom === 1),
+        window.__PINYIN_INDEX__.filter((e) => customIds.has(e.id) && e.custom !== 1).map((e) => e.id));
   // 品牌数从 bundle 动态推导，不要写死—— 否则每次加卡都要改测试，
   // 忘了改就会变成一个长期报错的假警报，或者更糟：被忽略而失去意义。
   const BT = String.fromCharCode(96);
@@ -198,13 +201,20 @@ setTimeout(() => {
     .map((o) => /\{id:`([a-z0-9-]+)`,name:`([^`]*)`/.exec(o))
     .filter(Boolean).map((m) => m[1]));
   check(`bundle 主数组共 ${bundleIds.size} 张卡（探针基准，非断言阈值）`, bundleIds.size > 0);
-  // 虚构对比黑榜卡不进联想索引（2026-10-18）；自定义卡也不进（2026-10-19）。
+  // 虚构对比黑榜卡不进联想索引（2026-10-18）；自定义卡 10-22 起进（带标记）。
   // 这里只校验「不混入」这一件事，品牌数不做等式断言 —— 等式会把
   // 「索引条数」和「哪些品牌可搜」两件事绑死，改一条规则就要同时改两处。
-  const countCheck = cards.length > 0 && window.__PINYIN_INDEX__.length > 0;
-  check('索引非空且少于 bundle 原始条目数（确实做了剔除，不是全量照搬）',
-        countCheck && window.__PINYIN_INDEX__.length < cards.length,
-        { 索引: window.__PINYIN_INDEX__.length, bundle条目: cards.length });
+  // 2026-10-22：索引 = 内置卡（已剔除黑榜等）+ 自定义卡（走定位链路）。
+  // 原来的「索引总数 < bundle 条目数」等式因此失效（自定义卡本就不在 bundle 里），
+  // 拆成两条分别验：内置卡确实做了剔除；自定义卡确实进来了。
+  const idxBuiltinCount = window.__PINYIN_INDEX__.filter((e) => !e.custom).length;
+  const idxCustomCount = window.__PINYIN_INDEX__.filter((e) => e.custom).length;
+  check('索引非空，且内置卡条目少于 bundle 原始条目数（确实做了剔除，不是全量照搬）',
+        cards.length > 0 && idxBuiltinCount > 0 && idxBuiltinCount < cards.length,
+        { 索引内置卡: idxBuiltinCount, bundle条目: cards.length });
+  check('索引含全部自定义卡条目（2026-10-22 起走定位链路）',
+        idxCustomCount === customIds.size,
+        { 索引自定义卡: idxCustomCount, customCardsConfig: customIds.size });
   // 回查 bundle：主名里的中文字必须能在 name/companyName/keyProducts 里命中
   const fields = (o) => {
     const one = (k) => { const m = new RegExp(k + ':' + BT + '([^' + BT + ']*)' + BT).exec(o); return m ? m[1] : ''; };
@@ -215,13 +225,13 @@ setTimeout(() => {
     return [one('name'), one('companyName')].concat(list('keyProducts')).join(' ').toLowerCase();
   };
   const nativeKeys = cards.map(fields).join('\n');
-  const searchable = window.__PINYIN_INDEX__.filter((e) => nativeKeys.indexOf((e.cn || '').toLowerCase()) !== -1);
-  check('索引里每个品牌的主名都能被 React 原生搜索命中（点了不会变空态）',
-        searchable.length === window.__PINYIN_INDEX__.length,
-        window.__PINYIN_INDEX__.filter((e) => nativeKeys.indexOf((e.cn || '').toLowerCase()) === -1).map((e) => e.id));
-  check('索引没有混入自定义卡（自定义卡由 filterCustomCards 管，不在 React 列表里）',
-        window.__PINYIN_INDEX__.every((e) => !customIds.has(e.id)),
-        window.__PINYIN_INDEX__.filter((e) => customIds.has(e.id)).map((e) => e.id));
+  const inNative = (e) => nativeKeys.indexOf((e.cn || '').toLowerCase()) !== -1;
+  // 可回填性只对「回填链路」的内置卡成立；custom 条目走定位，不要求可回填
+  const unfillable = window.__PINYIN_INDEX__.filter((e) => !e.custom && !inNative(e));
+  check('内置卡条目的主名都能被 React 原生搜索命中（点了不会变空态）',
+        unfillable.length === 0, unfillable.map((e) => e.id));
+  check('custom 条目不要求可回填（它们走定位链路，见 locateCard）',
+        window.__PINYIN_INDEX__.filter((e) => e.custom).length > 0);
 
   console.log('\n--- 标签页延迟渲染（真实场景）---');
   // bundle 里搜索框是 `brands&&...` 条件渲染：页面初始在别的标签时

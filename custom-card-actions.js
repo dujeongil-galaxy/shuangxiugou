@@ -265,6 +265,21 @@
   // 也防止存进 localStorage 的数值大到破坏布局。
   var MAX_TOTAL = 99999999;
 
+  // 金额统一保留两位小数（2026-10-22 站长截图要求：
+  // 「金额也只能整数，不支持小数点后两位吗？」—— 以前 parseInt 会把
+  // 10.5 截成 10、0.5 直接归零，用户输小数像被无视）。
+  // 浮点二进制表示有误差（0.1+0.2=0.30000000000000004），
+  // 先放大 100 倍取整再除回，才是真正的「两位小数」。
+  function round2(n) {
+    return Math.round(n * 100) / 100;
+  }
+
+  // 展示格式：两位小数。整数也显示成 ￥10.00，与真实消费凭据一致；
+  // 旧数据（localStorage 里存的整数）经此格式化后视觉统一。
+  function fmtMoney(n) {
+    return round2(n).toFixed(2);
+  }
+
   function defaultProfile() {
     // total = 历史累计，lastDelta = 上次填的「本次新增」，reason = 上次理由
     return { name: '', total: 0, lastDelta: 0, reason: '' };
@@ -278,7 +293,7 @@
     if (typeof p.amount === 'number' && isFinite(p.amount) && p.amount > 0) {
       return {
         name: p.name,
-        total: Math.min(Math.round(p.amount), MAX_TOTAL),
+        total: Math.min(round2(p.amount), MAX_TOTAL),
         lastDelta: 0,
         reason: p.reason
       };
@@ -296,7 +311,7 @@
         name: typeof p.name === 'string' ? p.name.slice(0, 40) : base.name,
         total: clampTotal(p.total),
         lastDelta: typeof p.lastDelta === 'number' && p.lastDelta > 0
-          ? Math.min(Math.round(p.lastDelta), MAX_TOTAL)
+          ? Math.min(round2(p.lastDelta), MAX_TOTAL)
           : base.lastDelta,
         reason: typeof p.reason === 'string' ? p.reason.slice(0, 120) : base.reason
       };
@@ -314,11 +329,11 @@
     }
   }
 
-  // 累计值只允许非负整数，上限封顶
+  // 累计值只允许非负、最多两位小数，上限封顶
   function clampTotal(v) {
-    var n = parseInt(v, 10);
+    var n = parseFloat(v);
     if (isNaN(n) || n < 0) return 0;
-    return Math.min(n, MAX_TOTAL);
+    return Math.min(round2(n), MAX_TOTAL);
   }
 
   /* 分品牌累计（2026-10-18 站长）：「累计」拆两级显示——
@@ -337,7 +352,7 @@
         for (var k in o) {
           if (Object.prototype.hasOwnProperty.call(o, k)
             && typeof o[k] === 'number' && isFinite(o[k]) && o[k] > 0) {
-            out[k] = Math.min(Math.round(o[k]), MAX_TOTAL);
+            out[k] = Math.min(round2(o[k]), MAX_TOTAL);
           }
         }
       }
@@ -358,12 +373,13 @@
 
   // 本次新增额：允许留空（= 不增加），非正数按 0 处理而不是回退到 199 ——
   // 用户既然留空了就是想不加，凭什么替他加 199。
+  // 2026-10-22：parseInt → parseFloat + 两位小数，支持「小数点后两位」。
   function clampDelta(v) {
     var s = String(v == null ? '' : v).trim();
     if (!s) return 0;
-    var n = parseInt(s, 10);
+    var n = parseFloat(s);
     if (isNaN(n) || n <= 0) return 0;
-    return Math.min(n, MAX_TOTAL);
+    return Math.min(round2(n), MAX_TOTAL);
   }
 
   // 没填昵称时给个匿名编号，跟内置小票的观感一致
@@ -397,11 +413,14 @@
       '<div class="sxg-field">' +
         '<label for="sxg-f-amount">本次新增消费（元）</label>' +
         '<div class="sxg-amount-row">' +
-          '<input id="sxg-f-amount" type="number" inputmode="numeric" min="0" ' +
+          // step=0.01：不设的话浏览器默认 step=1，输 10.5 会被判 invalid，
+          //  spinner 也不让往下调到小数（2026-10-22 站长截图：金额只能整数）。
+          //  inputmode=decimal 配合移动端弹出带小数点的键盘。
+          '<input id="sxg-f-amount" type="number" inputmode="decimal" min="0" step="0.01" ' +
             'max="' + MAX_TOTAL + '" placeholder="留空则不增加" />' +
           '<span class="sxg-total sxg-total-2">' +
-            '<span class="sxg-total-line">本品牌累计 <b id="sxg-total-brand">￥' + brandBase0 + '</b></span>' +
-            '<span class="sxg-total-line">全站累计 <b id="sxg-total">￥0</b></span>' +
+            '<span class="sxg-total-line">本品牌累计 <b id="sxg-total-brand">￥' + fmtMoney(brandBase0) + '</b></span>' +
+            '<span class="sxg-total-line">全站累计 <b id="sxg-total">￥0.00</b></span>' +
           '</span>' +
           '<button type="button" id="sxg-f-clear" class="sxg-btn-clear">清空</button>' +
         '</div>' +
@@ -491,12 +510,12 @@
       var nameEl = $('#sxg-t-name', receipt);
       var amountEl = $('#sxg-t-amount', receipt);
       if (nameEl) nameEl.textContent = displayName(p.name, anonId);
-      if (amountEl) amountEl.textContent = '￥' + shown;
+      if (amountEl) amountEl.textContent = '￥' + fmtMoney(shown);
       var brandShown = Math.min(brandBase + clampDelta(fAmount.value), MAX_TOTAL);
-      if (fTotalBrand) fTotalBrand.textContent = '￥' + brandShown;
+      if (fTotalBrand) fTotalBrand.textContent = '￥' + fmtMoney(brandShown);
       var brandEl = $('#sxg-t-amount-brand', receipt);
-      if (brandEl) brandEl.textContent = '￥' + brandShown;
-      if (fTotal) fTotal.textContent = '￥' + shown;
+      if (brandEl) brandEl.textContent = '￥' + fmtMoney(brandShown);
+      if (fTotal) fTotal.textContent = '￥' + fmtMoney(shown);
       // 理由是后加的一行，实时输入时需要补出来
       var reasonKv = receipt.querySelector('[data-sxg-reason]');
       if (p.reason) {
@@ -531,12 +550,12 @@
         baseTotal = 0;
         brandBase = 0;
         fAmount.value = '';
-        if (fTotal) fTotal.textContent = '￥0';
-        if (fTotalBrand) fTotalBrand.textContent = '￥0';
+        if (fTotal) fTotal.textContent = '￥0.00';
+        if (fTotalBrand) fTotalBrand.textContent = '￥0.00';
         var amountEl = $('#sxg-t-amount', receipt);
-        if (amountEl) amountEl.textContent = '￥0';
+        if (amountEl) amountEl.textContent = '￥0.00';
         var brandEl = $('#sxg-t-amount-brand', receipt);
-        if (brandEl) brandEl.textContent = '￥0';
+        if (brandEl) brandEl.textContent = '￥0.00';
       });
     });
 
@@ -569,9 +588,9 @@
         kv('企业评级:', '<span class="sxg-bold">' + esc(cfg.grade || 'C级') + '</span>') +
         kv('工时政策:', '<span class="sxg-bold">' + esc(cfg.workPolicy || '—') + '</span>') +
         kv('本品牌累计:', '<span class="sxg-bold" style="color:#059669" id="sxg-t-amount-brand">' +
-          '￥' + brandBase + '</span>') +
+          '￥' + fmtMoney(brandBase) + '</span>') +
         kv('全站累计已转移/支持消费:', '<span class="sxg-bold" style="color:#059669" id="sxg-t-amount">' +
-          '￥' + profile.total + '</span>') +
+          '￥' + fmtMoney(profile.total) + '</span>') +
         (profile.reason
           ? kv('理由:', '<span class="sxg-bold">' + esc(profile.reason) + '</span>')
           : '') +
@@ -619,8 +638,8 @@
       brandBase = brandNext;
       baseTotal = shown;          // 让后续预览以此为新基准
       fAmount.value = '';         // 已结算，别让用户误以为还能再加一次
-      if (fTotal) fTotal.textContent = '￥' + baseTotal;
-      if (fTotalBrand) fTotalBrand.textContent = '￥' + brandNext;
+      if (fTotal) fTotal.textContent = '￥' + fmtMoney(baseTotal);
+      if (fTotalBrand) fTotalBrand.textContent = '￥' + fmtMoney(brandNext);
 
       var text =
         '【双休购 · 反向考核小票】\n' +
@@ -629,8 +648,8 @@
         '企业评级：' + (cfg.grade || 'C级') + '\n' +
         '考核执行官：' + displayName(p.name, anonId) + '\n' +
         (p.reason ? '理由：' + p.reason + '\n' : '') +
-        '本品牌累计：￥' + brandNext + '\n' +
-        '全站累计已转移/支持消费：￥' + shown + '\n' +
+        '本品牌累计：￥' + fmtMoney(brandNext) + '\n' +
+        '全站累计已转移/支持消费：￥' + fmtMoney(shown) + '\n' +
         '“老板考核你的KPI，你的钱包考核老板的良心”\n' +
         '数据查验来自开源双休购：shuangxiugou.vercel.app';
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1025,13 +1044,32 @@
     return null;
   }
 
+  // 署名行改写成访客填的称呼；没填则用本次弹窗的稳定匿名编号。
+  //
+  // ⚠️ 2026-10-22 站长截图 bug：昵称框输入「test」后小票纹丝不动。
+  //    根因是「首次接管只画金额、不画名字」—— 署名 span 的
+  //    id="sxg-t-name" 只在 syncBuiltin（第二次进入）里才设，
+  //    而实时联动的 input 监听用 $('#sxg-t-name', receipt) 找节点，
+  //    首次进入时永远是 null → if (nameEl) 静默跳过 → 输入毫无反应。
+  //    修法：① 抽出本函数，首次接管就改写署名行并设 id；
+  //          ② input 监听改用 findValueNode 按标签文字定位，
+  //             不依赖 id（React 重建节点后 id 会丢，届时又会失效）。
+  function paintBuiltinName(receipt, name) {
+    var span = findValueNode(receipt, '考核执行官:');
+    if (!span) return false;
+    span.id = 'sxg-t-name';
+    var want = displayName(name, builtinAnonId);
+    if ((span.textContent || '').trim() !== want) span.textContent = want;
+    return true;
+  }
+
   // 把纸面金额行改写成「累计已转移/支持消费:￥498」
   // 只在内容不同时才写，避免 MutationObserver 自己触发自己无限循环。
   function paintBuiltinAmount(receipt, total) {
     var span = findBuiltinAmountSpan(receipt);
     if (span) {
       span.id = 'sxg-t-amount';
-      var want = '￥' + total;
+      var want = '￥' + fmtMoney(total);
       if ((span.textContent || '').trim() !== want) span.textContent = want;
     }
     var label = findLabelNode(receipt, AMOUNT_LABELS);
@@ -1051,7 +1089,7 @@
     if (!holder || !holder.parentNode) return false;
     var row = receipt.querySelector('[data-sxg-brand-row]');
     var wantLabel = '本品牌累计:';
-    var wantVal = '￥' + brandVal;
+    var wantVal = '￥' + fmtMoney(brandVal);
     if (!row) {
       row = el('div', 'flex justify-between items-baseline gap-2 text-xs');
       row.setAttribute('data-sxg-brand-row', '1');
@@ -1115,12 +1153,7 @@
     var brandWant = builtinBrandPreview != null
       ? builtinBrandPreview
       : (totals && totals[brandKey] ? totals[brandKey] : (brandBase || 0));
-    var nameSpan = findValueNode(receipt, '考核执行官:');
-    if (nameSpan) {
-      nameSpan.id = 'sxg-t-name';
-      var nm = displayName(p.name, builtinAnonId);
-      if ((nameSpan.textContent || '').trim() !== nm) nameSpan.textContent = nm;
-    }
+    paintBuiltinName(receipt, p.name);
     paintBuiltinAmount(receipt, want);
     paintBuiltinBrandRow(receipt, brandKey, brandWant);
     paintBuiltinReason(receipt, (p.reason || '').trim());
@@ -1167,14 +1200,16 @@
     // 纸面金额与标签一次画好。找不到金额行时必须出声，
     // 不能再像以前那样静默失败 —— 静默失败正是这个 bug 上线的直接原因。
     var okAmount = paintBuiltinAmount(receipt, baseTotal);
-    var okName = !!findValueNode(receipt, '考核执行官:');
+    // 署名行同样要在首次接管时改写（2026-10-22 bug：只画金额不画名字，
+    // 导致实时联动的 nameEl 永远找不到，昵称输入无反应）
+    var okName = paintBuiltinName(receipt, profile.name);
     if (!okAmount) diag('内置小票未找到金额行，纸面金额仍是写死的值');
     paintBuiltinBrandRow(receipt, brandKey, brandBase);
 
     var fTotal = $('#sxg-total', form);
     var fTotalBrand = $('#sxg-total-brand', form);
-    if (fTotal) fTotal.textContent = '￥' + baseTotal;
-    if (fTotalBrand) fTotalBrand.textContent = '￥' + brandBase;
+    if (fTotal) fTotal.textContent = '￥' + fmtMoney(baseTotal);
+    if (fTotalBrand) fTotalBrand.textContent = '￥' + fmtMoney(brandBase);
 
     // 实时联动
     if (form) {
@@ -1187,12 +1222,17 @@
           builtinPreview = shown;
           var brandShown = Math.min(brandBase + clampDelta(fAmount.value), MAX_TOTAL);
           builtinBrandPreview = brandShown;
-          var nameEl = $('#sxg-t-name', receipt);
+          // 按标签文字定位，不依赖 id —— React 重渲染会重建 span 节点，
+          // 届时 id 丢失（2026-10-22 bug 的次要根因，见 paintBuiltinName 注释）
+          var nameEl = findValueNode(receipt, '考核执行官:');
+          if (nameEl) {
+            nameEl.id = 'sxg-t-name';
+            nameEl.textContent = displayName(fName.value, builtinAnonId);
+          }
           var amountEl = $('#sxg-t-amount', receipt);
-          if (nameEl) nameEl.textContent = displayName(fName.value, builtinAnonId);
-          if (amountEl) amountEl.textContent = '￥' + shown;
-          if (fTotal) fTotal.textContent = '￥' + shown;
-          if (fTotalBrand) fTotalBrand.textContent = '￥' + brandShown;
+          if (amountEl) amountEl.textContent = '￥' + fmtMoney(shown);
+          if (fTotal) fTotal.textContent = '￥' + fmtMoney(shown);
+          if (fTotalBrand) fTotalBrand.textContent = '￥' + fmtMoney(brandShown);
           paintBuiltinBrandRow(receipt, brandKey, brandShown);
           paintBuiltinReason(receipt, (fReason.value || '').trim());
         });
@@ -1213,8 +1253,8 @@
         builtinBrandPreview = 0;
         var fAmt = document.getElementById('sxg-f-amount');
         if (fAmt) fAmt.value = '';
-        if (fTotal) fTotal.textContent = '￥0';
-        if (fTotalBrand) fTotalBrand.textContent = '￥0';
+        if (fTotal) fTotal.textContent = '￥0.00';
+        if (fTotalBrand) fTotalBrand.textContent = '￥0.00';
         paintBuiltinAmount(receipt, 0);
         paintBuiltinBrandRow(receipt, brandKey, 0);
       });
@@ -1251,8 +1291,8 @@
         baseTotal = total;
         builtinPreview = total;
         if (fA) fA.value = '';
-        if (fTotal) fTotal.textContent = '￥' + total;
-        if (fTotalBrand) fTotalBrand.textContent = '￥' + brandNext;
+        if (fTotal) fTotal.textContent = '￥' + fmtMoney(total);
+        if (fTotalBrand) fTotalBrand.textContent = '￥' + fmtMoney(brandNext);
         paintBuiltinAmount(receipt, total);
         paintBuiltinBrandRow(receipt, brandKey, brandNext);
       }, true);

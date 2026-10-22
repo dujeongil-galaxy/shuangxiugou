@@ -138,6 +138,9 @@ def parse_custom_configs(html):
         out.append({
             'id': cid, 'name': name, 'company': company,
             'category': category, 'tier': tier, 'kw': merged, 'products': [],
+            # 2026-10-22：自定义卡重新进入联想，但候选点击走「定位」而非
+            # 「回填搜索词」—— 详见 pinyin-search.js 的 locateCard。
+            'custom': True,
         })
     return out
 
@@ -224,6 +227,8 @@ def build_index(brands):
         index.append({
             'id': b['id'], 'name': b['name'], 'cn': cn or b['name'],
             'cat': b['category'], 'tier': b['tier'], 'terms': terms,
+            # 自定义卡标记：pinyin-search.js 据此把候选点击切成「定位」语义
+            'custom': bool(b.get('custom')),
         })
     return index
 
@@ -317,16 +322,9 @@ if __name__ == '__main__':
         customs = []
         print('警告：找不到 index.html，自定义卡不入索引')
 
-    # ⚠️ 自定义卡只做「展示用索引」，不进联想候选。
-    #
-    # 原因（2026-10-19 用户截图 bug）：自定义卡不在 bundle 的 brands 数组里，
-    # 是 insertAllCustomCards() 事后插进 DOM 的。React 的搜索结果列表为 0 时
-    # 会把整片内容替换成「未找到匹配的品牌信息」，插进去的卡片随父节点一起消失，
-    # 且 React 之后不会再调 insertAllCustomCards —— 卡片彻底回不来。
-    # 所以无论回填什么词，这 7 张卡都不可能在「搜索态」里被看到。
-    # 联想里出现它们 = 骗用户点一下然后看空态。
-    # 它们的搜索由 filterCustomCards() 独立负责（输入事件驱动，能正确显隐）。
-    print('自定义卡只入展示索引，不进联想候选（React 空结果会整片替换，插卡消失）')
+    # 自定义卡并入联想（2026-10-22，理由见下方 index_custom 处的长注释）：
+    # 不走回填链路，候选点击走「定位」链路，因此不经过 native_keys 回查过滤。
+    print('自定义卡进入联想候选（点击走定位链路，不走回填）')
 
     index = build_index(brands)
     # 回查 bundle：只保留真实能被原生搜索命中的回填词，避免「点了变空态」。
@@ -346,22 +344,39 @@ if __name__ == '__main__':
         print('\n=== 以下品牌的主名不是 bundle 原生可搜字面串，已排除联想 ===')
         for did, dname, dcn in dropped:
             print('  - %s(%s)  cn=%r' % (dname, did, dcn))
+    # ⚠️ 自定义卡 2026-10-22 重新进入联想候选（此前 10-19 因「点选后空态」
+    #    被整体剔除，导致输「ls」永远搜不出赵一鸣/零食有鸣等零食品牌，
+    #    站长截图：「关于零食这个分类，修复过无数次」）。
+    #
+    #    空态的根因不是「自定义卡不该被搜到」，而是「回填链路用错了」：
+    #    自定义卡不在 bundle 的 brands 数组里，回填中文名给 React 必然 0 结果，
+    #    而 React 的 0 结果会把整片内容替换成空态、把注入的卡片一起销毁。
+    #    正确解法是换链路：自定义卡候选点击后走「定位」—— 清空搜索让
+    #    React 恢复全量列表，等 insertAllCustomCards 把卡片插回来，
+    #    再滚动过去并高亮（见 pinyin-search.js 的 locateCard）。
+    #    因此自定义卡**不经过**下面的 native_keys 回查过滤（那个过滤是
+    #    为「回填链路」设计的），直接并入索引并打 custom 标记。
+    index_custom = build_index(customs)
+    index_all = index + index_custom
+
     slim = [{
         'id': e['id'], 'name': e['name'], 'cn': e['cn'],
+        'custom': 1 if e['custom'] else 0,
         't': [[x['t'], x['f'], x['i'], x['w']] for x in e['terms']],
-    } for e in index]
+    } for e in index_all]
 
     print('\n=== 排序自测（L层级/W重要度/命中词条）===')
     for q in ['ning', 'ndsd', 'byd', 'hw', 'ping', 'mt', 'sf', 'ms', '苹果', 'logi', 'ls', 'lsym', 'ydd']:
-        r = [(h[1]['name'], h[0]) for h in search(q, index)][:4]
+        r = [((h[1]['name'], h[1]['custom']), h[0]) for h in search(q, index_all)][:4]
         print(' ', q.ljust(8), '->',
-              ' | '.join('%s [L%d/W%d 命中「%s」]' % (n, lv, w, hit)
-                         for n, (lv, w, p, hit) in r))
+              ' | '.join('%s [L%d/W%d 命中「%s」]%s' % (n, lv, w, hit, '（自定义·定位）' if cust else '')
+                         for (n, cust), (lv, w, p, hit) in r))
 
     payload = json.dumps(slim, ensure_ascii=False, separators=(',', ':'))
     open(OUT, 'w', encoding='utf-8').write(HEADER + payload + ';\n')
 
     print()
-    print('词条数：', sum(len(e['terms']) for e in index))
+    print('词条数：', sum(len(e['terms']) for e in index_all))
     print('已写出：', os.path.relpath(OUT, ROOT),
-          '(%d 字符, %d 品牌)' % (len(payload), len(slim)))
+          '(%d 字符, %d 品牌，其中自定义卡 %d 张)'
+          % (len(payload), len(slim), len(index_custom)))

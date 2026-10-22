@@ -1462,8 +1462,8 @@
        所以这里只做「输入联想 + 回填」：给出候选，用户点了回填中文名，
        后续过滤仍走 React 原生搜索路径，渲染逻辑零改动。
        索引数据在 pinyin-index.js，必须先于本脚本加载。 -->
-  <script src="./pinyin-index.js?v=5"></script>
-  <script src="./pinyin-search.js?v=2"></script>
+  <script src="./pinyin-index.js?v=6"></script>
+  <script src="./pinyin-search.js?v=3"></script>
 
   <!-- 彻底禁用数字搜索。2026-10-17 用户反馈：输入「1」「2」会搜出一堆无关卡片。
        根因：bundle 的搜索是纯子串匹配，条件含 name/companyName/category/

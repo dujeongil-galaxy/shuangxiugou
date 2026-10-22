@@ -547,23 +547,35 @@ btn.addEventListener('click', function (ev) {
 **为什么不做成真正的模糊搜索**：那需要改 React 内部的 `brands` 数组，
 而它只存在于压缩产物里 —— 手改压缩 bundle 是项目红线（见 13.2 的警告）。
 
-**本仓库的做法：联想回填**。
+**本仓库的做法：联想 + 按卡片类型分流**。
 
-`pinyin-search.js` 监听搜索框，输入超过 2 个字符时在下方给出拼音候选，
-用户点一下或按 Enter，**把搜索框回填成中文名**，之后过滤仍然完全交给
-React 原生搜索。渲染路径零改动，所以不会触发白屏风险。
+`pinyin-search.js` 监听搜索框，输入超过 2 个字符时在下方给出拼音候选。
+用户点一下或按 Enter 后，**按候选类型走两条完全不同的链路**：
 
 ```
-用户输 ning
+用户输 ls
    ↓
-pinyin-search.js 用 pinyin-index.js 匹配出「宁德时代」
+pinyin-search.js 用 pinyin-index.js 匹配出「零食有鸣」等候选
    ↓
-显示候选「宁德时代 (CATL) ｜「宁德时代」全拼」
+显示候选（带命中词条与匹配类型）
    ↓ 用户点击
-搜索框被回填为「宁德时代」，派发 input 事件
-   ↓
-React 原生搜索正常过滤出该卡
+┌─ 内置卡（无 custom 标记）→ 回填：搜索框填入中文名，派发 input 事件，
+│    React 原生搜索过滤出该卡（渲染路径零改动，不碰 bundle）
+└─ 自定义卡（custom:1）→ 定位 locateCard()：清空搜索框让 React 恢复
+    全量列表 → 轮询等卡片插回 → scrollIntoView + 金色描高亮
 ```
+
+**为什么自定义卡不能回填**：它们不在 bundle 的 `brands` 数组里，是
+`insertAllCustomCards()` 事后插进 DOM 的。回填后 React 必然 0 结果，
+而 0 结果会把整片内容替换成「未找到匹配的品牌信息」，
+插进去的卡片随父节点一起销毁，且 React 不会再插回来。
+2026-10-19 曾因此把自定义卡整体踢出联想索引（输 `ls` 永远搜不出零食品牌，
+站长：「修复过无数次」），2026-10-22 修正为「候选照常出现 + 点击定位」。
+
+**定位链路只滚一次不够**（2026-10-22 无头 Edge 实测）：点击候选时页面常停在
+上一轮搜索的过滤态，清空搜索后 React 才把被过滤掉的内置卡插回列表，
+目标卡被挤到下方几千像素。所以滚动后带 watch 补滚窗口（250ms × 5 次），
+目标跑出视口就再滚 —— 不要猜 React 的渲染时序。
 
 **新增品牌后必须重跑索引**：
 
@@ -577,8 +589,10 @@ python scripts/gen-pinyin-index.py
 
 **索引的数据来源有两个**（2026-10-18 起）：`assets/index-YthXZ9eP.js` 的
 `brands` 数组（内置卡）＋ `index.html` 的 `customCardsConfig`（自定义卡，
-肯德基/小米/兵立王/茶百道/赵一鸣/一点点/零食有鸣）。早先自定义卡不在索引里，
-拼音联想永远查不到它们 —— 已修复并纳入 verify 第 16 节校验。
+肯德基/小米/兵立王/茶百道/赵一鸣/一点点/零食有鸣/工行/建行/中行）。
+⚠️ 2026-10-19 曾把自定义卡整体移出索引（修「点选空态」修反了），
+2026-10-22 恢复并入并打 `custom:1` 标记 —— 自定义卡必须一直在索引里，
+漏掉的症状是「输首字母联想永远不出现该品牌」（静默失效）。
 
 **维护索引时最容易踩的三个坑**（都是本仓库开发时真实踩到的）：
 
@@ -614,6 +628,11 @@ python scripts/gen-pinyin-index.py
 
 界面上：输入框是**「本次新增消费（元）」，默认为空**（留空表示不增加），
 右侧实时显示**累计金额**。你只填要加的那一笔，不用自己算总和。
+
+**金额支持两位小数**（2026-10-22 修）：`parseFloat` + `round2` 规范化，
+输入框 `step="0.01"` / `inputmode="decimal"`，所有显示走 `fmtMoney()`
+（统一两位，如 `￥12.34`）。此前 `parseInt` 会把 `12.34` 吞成 `12`。
+老数据是整数的照常显示 `￥498.00`，迁移路径不动。
 
 **三条必须遵守的实现规则**（改这个功能前先读）：
 
@@ -663,6 +682,10 @@ python scripts/gen-pinyin-index.py
 
 - `AMOUNT_LABELS` 两个候选标签，任选其一定位
 - `paintBuiltinAmount()` 统一绘制，并把标签改写成「累计已转移/支持消费:」
+- `paintBuiltinName()` 首次接管即改写署名行（`考核执行官:`），并给节点设
+  `id="sxg-t-name"`；input 实时联动按 `findValueNode(receipt, '考核执行官:')`
+  结构定位，不依赖 id —— 2026-10-22 修的 bug 就是「首次不画名字 +
+  按 id 找节点永远 null、`if (nameEl)` 静默跳过」
 - `hideBuiltinAmountInput()` **隐藏 bundle 自带的「本次投票消费金额」输入行**，
   金额统一由注入的「本次新增消费（元）」框录入 —— 两个框并存会让人填错
 - `paintBuiltinReason()` 把理由挂在「工时健康评级」之后
@@ -679,9 +702,10 @@ python scripts/gen-pinyin-index.py
 
 **验证**：
 
-- `node scripts/test-ticket-total.cjs`（41 项，
-  含 199 + 299 = 498 的完整结算路径与旧数据迁移）
-- `node scripts/test-builtin-ticket-dom.cjs`（30 项，**真 DOM 端到端**）
+- `node scripts/test-ticket-total.cjs`（含 199 + 299 = 498 的完整结算路径、
+  旧数据迁移、两位小数 clamp 行为）
+- `node scripts/test-builtin-ticket-dom.cjs`（**真 DOM 端到端**，
+  含昵称实时联动与两位小数显示断言）
 
 > **别用源码字符串断言代替真 DOM 测试。**
 > 这次就是只做了源码断言就推送上线，被用户实测发现并批评

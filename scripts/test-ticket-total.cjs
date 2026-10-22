@@ -37,6 +37,7 @@ function extractFn(name) {
 const helperSrc = [
   'var MAX_TOTAL = 99999999;',
   'function isFiniteSafe(v){return typeof v==="number" && isFinite(v);}',
+  extractFn('round2'),
   extractFn('migrateLegacy'),
   extractFn('clampTotal'),
   extractFn('clampDelta'),
@@ -75,7 +76,12 @@ console.log('=== 1. 输入规整 ===');
   check('纯空格 → 0', E.clampDelta('   ') === 0);
   check('0 → 0', E.clampDelta('0') === 0);
   check('负数 → 0（不是回退，是加 0）', E.clampDelta('-50') === 0);
-  check('小数取整 199.9 → 199', E.clampDelta('199.9') === 199);
+  // 2026-10-22 站长截图：「金额也只能整数，不支持小数点后两位吗？」
+  // parseInt → parseFloat + 两位小数，下列断言随需求变更（不是迁就 bug）：
+  check('小数保留两位 199.9 → 199.9（不再截断成 199）', E.clampDelta('199.9') === 199.9);
+  check('三位小数四舍五入 10.567 → 10.57', E.clampDelta('10.567') === 10.57);
+  check('小于 1 的小数 0.5 → 0.5（以前 parseInt 直接归零）', E.clampDelta('0.5') === 0.5);
+  check('负小数 → 0', E.clampDelta('-3.5') === 0);
   check('带符号 +199 → 199', E.clampDelta('+199') === 199);
   check('正常 299 → 299', E.clampDelta('299') === 299);
   check('超出上限被封顶', E.clampDelta('999999999') === 99999999);
@@ -85,6 +91,8 @@ console.log('=== 1. 输入规整 ===');
   check('累计非数字 → 0', E.clampTotal('abc') === 0);
   check('累计超上限封顶', E.clampTotal(999999999) === 99999999);
   check('累计 498 保持不变', E.clampTotal(498) === 498);
+  check('累计小数保留 498.5 → 498.5', E.clampTotal(498.5) === 498.5);
+  check('累计字符串小数 10.567 → 10.57', E.clampTotal('10.567') === 10.57);
 }
 
 console.log('\n=== 2. 旧数据迁移（不能丢用户已存的金额）===');

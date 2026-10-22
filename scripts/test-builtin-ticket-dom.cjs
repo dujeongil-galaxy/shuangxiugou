@@ -133,14 +133,19 @@ const harnessSrc = [
   'var builtinAnonId = 7163;',
   'function loadProfile(){ return { name: "", total: 0, lastDelta: 0, reason: "" }; }',
   'var MAX_TOTAL = 99999999;',
-  'function clampTotal(v){var n=Number(v); if(!isFinite(n)||n<0) n=0;',
-  '  n=Math.round(n); return Math.min(n, MAX_TOTAL);}',
-  'function clampDelta(v){var n=Number(v); if(!isFinite(n)||n<0) n=0;',
-  '  n=Math.round(n); return Math.min(n, MAX_TOTAL);}',
+  // 2026-10-22 起金额支持两位小数，桩必须与真代码同语义，
+  // 否则测的是被改掉的旧行为（假测试比没测试更危险）。
+  'function round2(n){ return Math.round(n*100)/100; }',
+  'function fmtMoney(n){ return round2(n).toFixed(2); }',
+  'function clampTotal(v){var n=parseFloat(v); if(isNaN(n)||n<0) n=0;',
+  '  return Math.min(round2(n), MAX_TOTAL);}',
+  'function clampDelta(v){var s=String(v==null?"":v).trim(); if(!s) return 0;',
+  '  var n=parseFloat(s); if(isNaN(n)||n<=0) return 0;',
+  '  return Math.min(round2(n), MAX_TOTAL);}',
   'function migrateLegacy(p){p=p||{};',
   '  if(typeof p.total==="number"&&isFinite(p.total)) return p;',
   '  if(typeof p.amount==="number"&&isFinite(p.amount)&&p.amount>0)',
-  '    return {name:p.name,total:Math.min(Math.round(p.amount),MAX_TOTAL),lastDelta:0,reason:p.reason};',
+  '    return {name:p.name,total:Math.min(round2(p.amount),MAX_TOTAL),lastDelta:0,reason:p.reason};',
   '  return p;}',
   extractFn('displayName'),
   'function $(sel,root){return (root||document).querySelector(sel);}',
@@ -153,6 +158,7 @@ const harnessSrc = [
   extractFn('findLabelNode'),
   extractFn('findBuiltinAmountSpan'),
   extractFn('paintBuiltinAmount'),
+  extractFn('paintBuiltinName'),
   extractFn('paintBuiltinBrandRow'),
   extractFn('hideBuiltinAmountInput'),
   extractFn('paintBuiltinReason'),
@@ -179,7 +185,7 @@ function mount(opts, storageData) {
   w.__diag = [];
   const fn = new Function('window', 'document', harnessSrc
     + '\nreturn {findValueNode,findLabelNode,findBuiltinAmountSpan,'
-    + 'paintBuiltinAmount,paintBuiltinBrandRow,hideBuiltinAmountInput,paintBuiltinReason,syncBuiltin};');
+    + 'paintBuiltinAmount,paintBuiltinName,paintBuiltinBrandRow,hideBuiltinAmountInput,paintBuiltinReason,syncBuiltin};');
   const api = fn(w, w.document);
   api.window = w;
   api.storage = data;
@@ -217,7 +223,7 @@ console.log('\n=== 2. 纸面金额定位（合规企业）===');
     paperAmount(E));
 
   E.paintBuiltinAmount(E.receipt, 498);
-  check('改写后纸面显示 ￥498', paperAmount(E) === '￥498', paperAmount(E));
+  check('改写后纸面显示 ￥498.00（两位小数）', paperAmount(E) === '￥498.00', paperAmount(E));
   check('标签已改为「全站累计已转移/支持消费:」',
     paperAmountLabel(E) === '全站累计已转移/支持消费:', paperAmountLabel(E));
 }
@@ -228,7 +234,7 @@ console.log('\n=== 3. 纸面金额定位（违规避雷企业，标签是另一�
   check('违规小票也能定位到金额行', !!E.findBuiltinAmountSpan(E.receipt));
   check('改写前是「- ¥ 199」', paperAmount(E) === '- ¥ 199', paperAmount(E));
   E.paintBuiltinAmount(E.receipt, 498);
-  check('违规小票改写后显示 ￥498', paperAmount(E) === '￥498', paperAmount(E));
+  check('违规小票改写后显示 ￥498.00（两位小数）', paperAmount(E) === '￥498.00', paperAmount(E));
   check('违规小票标签也被改掉',
     paperAmountLabel(E) === '全站累计已转移/支持消费:', paperAmountLabel(E));
 }
@@ -335,6 +341,55 @@ console.log('\n=== 4. 幂等：重复重绘不会让 observer 自激 ===');
         nameMutations === 0, nameMutations);
     }
 
+    console.log('\n=== 8b. 首次接管必须改写署名行（2026-10-22 站长截图 bug）===');
+    {
+      // 现象：昵称框输入「test」，小票上的「考核执行官」纹丝不动。
+      // 根因：首次接管只画金额不画名字，署名 span 的 id 只在
+      //       syncBuiltin（第二次进入）里才设，实时联动的
+      //       $('#sxg-t-name') 首次进入时永远是 null → 静默跳过。
+      const E7 = mount({ violation: false });
+      const okName = E7.paintBuiltinName(E7.receipt, 'test');
+      check('paintBuiltinName 能定位署名行并改写', okName === true, okName);
+      const nameEl = E7.receipt.querySelector('#sxg-t-name');
+      check('★ 首次接管后署名即显示访客输入（修复前输入毫无反应）',
+        !!nameEl && (nameEl.textContent || '').trim() === 'test',
+        nameEl && nameEl.textContent);
+
+      // 没填昵称 → 稳定匿名编号（builtinAnonId 在 harness 里固定为 7163）
+      E7.paintBuiltinName(E7.receipt, '');
+      check('留空时回退到稳定匿名编号',
+        (nameEl.textContent || '').trim() === '匿名打工人 #7163',
+        nameEl.textContent);
+
+      // 同值重绘不得产生 DOM 变更（observer 自激防线）。
+      // ⚠️ 必须先把状态稳定到目标值再挂 observer：挂上后再从别的值改过来，
+      //    那次「值变化」的合法写入会被计入，测的就不是幂等性了。
+      E7.paintBuiltinName(E7.receipt, 'test');
+      let nm = 0;
+      const mo7 = new E7.window.MutationObserver((recs) => { nm += recs.length; });
+      mo7.observe(E7.receipt, { childList: true, subtree: true, characterData: true });
+      E7.paintBuiltinName(E7.receipt, 'test');
+      E7.paintBuiltinName(E7.receipt, 'test');
+      await new Promise((r) => setTimeout(r, 30));
+      check('署名行同值重绘不产生 DOM 变更', nm === 0, nm);
+
+      // 源码级防线：首次接管必须调用；实时联动必须按标签文字定位
+      check('源码中首次接管调用 paintBuiltinName（不只画金额）',
+        SRC.includes('var okName = paintBuiltinName'));
+      check('实时联动按标签文字定位署名行，不依赖 id（React 重建后 id 会丢）',
+        SRC.includes("var nameEl = findValueNode(receipt, '考核执行官:')"));
+
+      // 空 DOM 下必须返回 false 供上层报警，不许静默失败
+      const dom8 = new JSDOM(
+        '<!DOCTYPE html><html><body><div id="root"></div></body></html>',
+        { runScripts: 'outside-only', pretendToBeVisual: true });
+      const w8 = dom8.window;
+      const api8 = new Function('window', 'document', harnessSrc
+        + '\nreturn {paintBuiltinName};')(w8, w8.document);
+      check('空 DOM 下 paintBuiltinName 返回 false（供上层报警）',
+        api8.paintBuiltinName(w8.document.getElementById('root'), 'x') === false);
+    }
+
     console.log('\n=== 9. 本品牌累计行（2026-10-18 两级显示）===');
     {
       const E6 = mount({ violation: false });
@@ -345,13 +400,13 @@ console.log('\n=== 4. 幂等：重复重绘不会让 observer 自激 ===');
       check('行存在且带 data 标记', !!row);
       check('标签为「本品牌累计:」',
         row.children[0].textContent === '本品牌累计:', row.children[0].textContent);
-      check('值为 ￥66', row.children[1].textContent === '￥66', row.children[1].textContent);
+      check('值为 ￥66.00（两位小数）', row.children[1].textContent === '￥66.00', row.children[1].textContent);
       check('值节点带 id 供预览联动', !!E6.receipt.querySelector('#sxg-t-amount-brand'));
       const before = row.innerHTML;
       E6.paintBuiltinBrandRow(E6.receipt, '测试品牌', 66);
       check('同值重绘不改动 DOM（幂等）', row.innerHTML === before);
       E6.paintBuiltinBrandRow(E6.receipt, '测试品牌', 99);
-      check('数值变化时更新为 ￥99', row.children[1].textContent === '￥99');
+      check('数值变化时更新为 ￥99.00', row.children[1].textContent === '￥99.00');
       check('本品牌行在「全站累计」行之前（上下行：本品牌在上）',
         row.nextSibling && (row.nextSibling.textContent || '').indexOf('全站累计') !== -1);
     }

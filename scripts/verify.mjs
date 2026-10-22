@@ -3089,20 +3089,34 @@ if (!exists(PINYIN_IDX)) {
     [...idxSrc.matchAll(/"id":"([a-z0-9-]+)"/g)].map((x) => x[1])
   );
   const customIds = new Set(customCards.map((c) => c.id));
-  // ⚠️ 2026-10-19 起不再要求「索引数 = 全量卡片数」。
+  // ⚠️ 2026-10-22 规则再次变更：自定义卡**必须**进入联想（带 custom 标记）。
   //
-  // 那个等式是错的产品假设：联想候选必须「点了真能搜到」。有两类卡天生做不到：
-  //   1) 自定义卡（7 张）不在 bundle 的 brands 数组里，React 结果为空时
-  //      会整片替换成「未找到匹配的品牌信息」，插进去的卡随之消失；
-  //   2) 主名带括号后缀的（星宇/百事），React 只查 name/companyName/keyProducts，
-  //      抽出来的纯中文串不一定是字面子串。
-  // 这正是用户截图「输 Ls 出现赵一鸣，点进去空态」的成因。
+  // 同一个坑踩了三次，每次都修成另一个极端：
+  //   10-18 332d854：自定义卡无拼音索引 → 输 ls 搜不出零食品牌。修：入索引。
+  //   10-19 ff69fd6：入索引后点选变「未找到匹配」空态（回填链路对自定义卡
+  //                  不成立：它们不在 bundle 的 brands 数组里）。修：踢出。
+  //   10-22 站长截图：踢出后输 ls 还是搜不出零食品牌
+  //                  「关于零食这个分类，修复过无数次」。本次正解：
+  //      自定义卡入联想 + 打 custom 标记 + 候选点击走「定位」而非「回填」
+  //      （pinyin-search.js 的 locateCard：清空搜索 → React 恢复全量 →
+  //      滚动到目标卡并高亮）。**空态的根因是链路用错，不是「不该被搜到」。**
   //
-  // 现在改验「可回填性」这个真正的约束：每条索引的主名必须能在
-  // bundle 的 name/companyName/keyProducts 里命中。
-  check(!idxIds.has([...customIds][0]),
-    `拼音索引不含自定义卡（自定义卡 ${customIds.size} 张由 filterCustomCards 管，进联想必空态）`,
-    `混入：${[...idxIds].filter((i) => customIds.has(i)).join(', ') || '无'}`);
+  // 于是约束拆成两条，各自只管各自的链路：
+  //   ① custom=1：主名不要求可回填（不走回填链路），但 id 必须真实在
+  //      customCardsConfig 里；
+  //   ② custom=0：主名必须能被 bundle 原生搜索命中（回填链路的前提）。
+  const idxEntries = [...idxSrc.matchAll(/"id":"([a-z0-9-]+)","name":"([^"]*)","cn":"([^"]*)","custom":([01])/g)]
+    .map((m) => ({ id: m[1], cn: m[3], custom: m[4] === '1' }));
+  const idxCustom = idxEntries.filter((e) => e.custom);
+  const idxBuiltin = idxEntries.filter((e) => !e.custom);
+  check(idxCustom.length === customIds.size,
+    `拼音索引包含全部 ${customIds.size} 张自定义卡（带 custom 标记，走定位链路）`,
+    `缺失：${[...customIds].filter((i) => !idxEntries.some((e) => e.id === i)).join(', ') || '无'}。
+     修复：python scripts/gen-pinyin-index.py`);
+  const ghostCustom = idxCustom.filter((e) => !customIds.has(e.id));
+  check(ghostCustom.length === 0,
+    '索引里的 custom 条目全部真实存在于 customCardsConfig（无陈旧残留）',
+    ghostCustom.map((e) => e.id).join(', '));
 
   // 逐条校验：索引里的每个 cn 都必须能在 bundle 的可搜字段里找到
   const searchableText = (() => {
@@ -3129,12 +3143,25 @@ if (!exists(PINYIN_IDX)) {
     };
     return objs.map((o) => [one(o, 'name'), one(o, 'companyName')].concat(list(o, 'keyProducts')).join(' ').toLowerCase()).join('\n');
   })();
-  const idxEntries = [...idxSrc.matchAll(/"id":"([a-z0-9-]+)","name":"([^"]*)","cn":"([^"]*)"/g)]
-    .map((m) => ({ id: m[1], cn: m[3] }));
-  const unfillable = idxEntries.filter((e) => e.cn && !searchableText.includes(e.cn.toLowerCase()));
+  const idxEntries2 = [...idxSrc.matchAll(/"id":"([a-z0-9-]+)","name":"([^"]*)","cn":"([^"]*)","custom":([01])/g)]
+    .map((m) => ({ id: m[1], cn: m[3], custom: m[4] === '1' }));
+  // 可回填性只对「回填链路」的内置卡成立；custom 条目走定位，不要求
+  const unfillable = idxEntries2.filter((e) => !e.custom && e.cn
+    && !searchableText.includes(e.cn.toLowerCase()));
   check(unfillable.length === 0,
-    `拼音索引 ${idxEntries.length} 条全部可回填（主名能被 React 原生搜索命中）`,
+    `拼音索引 ${idxEntries2.filter((e) => !e.custom).length} 条内置卡全部可回填（主名能被 React 原生搜索命中）`,
     `点了会变空态：${unfillable.map((e) => e.id + '(' + e.cn + ')').join(', ')}。修复：python scripts/gen-pinyin-index.py`);
+
+  // 行为防线：定位链路必须真的实现了，否则自定义卡候选点了还是走 applyFill
+  // → 空态回归（2026-10-19 的 bug 原样复发）
+  check(/function locateCard/.test(libSrc)
+     && /data-custom/.test(libSrc),
+    'pinyin-search.js 实现了自定义卡定位链路（locateCard + data-custom 标记）',
+    '缺定位链路 → 自定义卡候选点击后会变「未找到匹配」空态');
+  check(/!entry\.custom && !fillTerm\(entry\)/.test(libSrc),
+    '自定义卡条目不被「无可回填主名」规则过滤（否则又搜不出零食品牌）');
+  check(/locateCard\(input, box, first\.getAttribute\('data-entry-id'\)\)/.test(libSrc),
+    'Enter 键对自定义卡候选同样走定位链路（与点击同语义）');
 
   // 索引里的 id 必须真实存在于 bundle 或 customCardsConfig，否则是陈旧残留
   const ghosts = [...idxIds].filter(

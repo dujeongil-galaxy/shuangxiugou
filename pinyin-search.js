@@ -16,6 +16,18 @@
 // 回填中文名，之后的过滤完全交给 React 原生搜索。
 // 渲染路径没变，零风险；回填的词保证是 bundle 能原生命中的名字。
 //
+// 两条链路（2026-10-22 起，自定义卡重新入联想）
+// ------------------------------------------
+// ① 回填（内置卡）：applyFill —— 把主名填进搜索框，交给 React 过滤。
+// ② 定位（自定义卡）：locateCard —— 清空搜索让 React 恢复全量列表，
+//    滚动到目标卡并高亮。**不能**走回填：自定义卡不在 bundle 的
+//    brands 数组里，回填后 React 必然 0 结果，而 0 结果会把整片内容
+//    替换成「未找到匹配的品牌信息」，注入的卡片随父节点一起销毁
+//    （2026-10-19 的错误解法是把自定义卡全部踢出联想，导致输「ls」
+//    永远搜不出零食品牌 —— 站长：「关于零食这个分类，修复过无数次」）。
+//    点候选的意图是「我要看这家」，不是「我要用这个词搜索」，
+//    所以定位才是对的语义。
+//
 // 排序规则
 // --------
 // 命中层级（越小越前）
@@ -98,8 +110,10 @@
     var hits = [];
     for (var n = 0; n < INDEX.length; n++) {
       var entry = INDEX[n];
-      // 没有可回填的主名 = 点了也搜不到，宁可不显示（见 fillTerm 注释）
-      if (!fillTerm(entry)) continue;
+      // 自定义卡走「定位」链路，不需要「可回填的主名」——
+      // 「主名能被 React 原生命中」这个前提只对回填链路成立
+      // （2026-10-22：自定义卡重新入联想，见 locateCard 注释）
+      if (!entry.custom && !fillTerm(entry)) continue;
       var best = null;
       for (var k = 0; k < entry.t.length; k++) {
         var s = scoreTerm(q, entry.t[k]);
@@ -200,41 +214,49 @@
     ].join(';');
     box.appendChild(label);
 
-    hits.forEach(function (h) {
-      var row = document.createElement('button');
-      row.type = 'button';
-      row.setAttribute('role', 'option');
-      row.setAttribute('data-fill', fillTerm(h.entry));
-      row.style.cssText = [
-        'display:flex', 'align-items:center', 'gap:8px', 'width:100%',
-        'padding:9px 14px', 'background:#fff', 'border:0', 'cursor:pointer',
-        'text-align:left', 'font-size:13px', 'font-family:inherit', 'color:#0f172a'
-      ].join(';');
+      hits.forEach(function (h) {
+        var row = document.createElement('button');
+        row.type = 'button';
+        row.setAttribute('role', 'option');
+        row.setAttribute('data-fill', fillTerm(h.entry));
+        // 自定义卡候选带 id 与 custom 标记：点击走定位而非回填
+        row.setAttribute('data-entry-id', h.entry.id || '');
+        row.setAttribute('data-custom', h.entry.custom ? '1' : '0');
+        row.style.cssText = [
+          'display:flex', 'align-items:center', 'gap:8px', 'width:100%',
+          'padding:9px 14px', 'background:#fff', 'border:0', 'cursor:pointer',
+          'text-align:left', 'font-size:13px', 'font-family:inherit', 'color:#0f172a'
+        ].join(';');
 
-      var nm = document.createElement('span');
-      nm.textContent = h.entry.name;
-      nm.style.cssText = 'font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+        var nm = document.createElement('span');
+        nm.textContent = h.entry.name;
+        nm.style.cssText = 'font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
 
-      // 显示命中词条：让用户知道「凭什么匹配到这家」
-      var why = document.createElement('span');
-      why.textContent = '「' + h.hitTerm + '」' + matchKind(h.lv);
-      why.style.cssText = [
-        'margin-left:auto', 'font-size:11px', 'color:#94a3b8',
-        'flex-shrink:0', 'padding-left:8px', 'white-space:nowrap'
-      ].join(';');
+        // 显示命中词条：让用户知道「凭什么匹配到这家」
+        var why = document.createElement('span');
+        why.textContent = '「' + h.hitTerm + '」' + matchKind(h.lv)
+          + (h.entry.custom ? ' · 定位' : '');
+        why.style.cssText = [
+          'margin-left:auto', 'font-size:11px', 'color:#94a3b8',
+          'flex-shrink:0', 'padding-left:8px', 'white-space:nowrap'
+        ].join(';');
 
-      row.appendChild(nm);
-      row.appendChild(why);
-      row.addEventListener('mouseenter', function () { row.style.background = '#f0fdf4'; });
-      row.addEventListener('mouseleave', function () { row.style.background = '#fff'; });
-      // mousedown 而非 click：click 在 input blur 之后才触发，
-      // 那时联想框可能已隐藏，事件就丢了
-      row.addEventListener('mousedown', function (ev) {
-        ev.preventDefault();
-        applyFill(input, box, row.getAttribute('data-fill'));
+        row.appendChild(nm);
+        row.appendChild(why);
+        row.addEventListener('mouseenter', function () { row.style.background = '#f0fdf4'; });
+        row.addEventListener('mouseleave', function () { row.style.background = '#fff'; });
+        // mousedown 而非 click：click 在 input blur 之后才触发，
+        // 那时联想框可能已隐藏，事件就丢了
+        row.addEventListener('mousedown', function (ev) {
+          ev.preventDefault();
+          if (row.getAttribute('data-custom') === '1') {
+            locateCard(input, box, row.getAttribute('data-entry-id'));
+          } else {
+            applyFill(input, box, row.getAttribute('data-fill'));
+          }
+        });
+        box.appendChild(row);
       });
-      box.appendChild(row);
-    });
 
     box.style.display = 'block';
   }
@@ -251,6 +273,72 @@
     input.dispatchEvent(new Event('input', { bubbles: true }));
     hide(box);
     input.focus();
+  }
+
+  // ---------- 定位（自定义卡专用，2026-10-22）----------
+  // 见文件头「两条链路」：自定义卡不能走 applyFill 回填 ——
+  // 它们不在 bundle 的 brands 数组里，回填后 React 0 结果，
+  // 而 React 的 0 结果会把整片内容替换成空态、把注入的卡片一起销毁
+  // （2026-10-19 站长截图 bug；当时的错误解法是把自定义卡踢出联想）。
+  //
+  // 定位语义：清空搜索 → React 恢复全量列表 → 注入层把卡片插回来
+  // → 滚动到该卡并高亮一闪。轮询等待卡片出现（React 重渲染与
+  // insertAllCustomCards 都是异步的，不可能同步拿到）。
+  function locateCard(input, box, entryId) {
+    hide(box);
+    var setter = Object.getOwnPropertyDescriptor(
+      window.HTMLInputElement.prototype, 'value');
+    if (setter && setter.set) setter.set.call(input, '');
+    else input.value = '';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.focus();
+
+    function scrollTo(card) {
+      card.scrollIntoView({ block: 'center' });
+    }
+
+    var tries = 0;
+    function subtreeHidden(node) {
+      var w = node;
+      while (w && w !== document.body) {
+        if (w.style && w.style.display === 'none') return true;
+        w = w.parentNode;
+      }
+      return false;
+    }
+    (function poll() {
+      var card = entryId ? document.getElementById(entryId) : null;
+      // 卡片必须在「当前可见列表」里：filterCustomCards 可能还处于
+      // 上一轮搜索的过滤态，此时滚动到一个隐藏的卡是白滚
+      var visible = !!card && !subtreeHidden(card);
+      if (visible) {
+        scrollTo(card);
+        var oldShadow = card.style.boxShadow;
+        card.style.transition = 'box-shadow .3s';
+        card.style.boxShadow = '0 0 0 3px #fbbf24';
+        setTimeout(function () { card.style.boxShadow = oldShadow; }, 1200);
+        // ⚠️ 只滚一次不够（2026-10-22 实测）：点击候选时页面往往还停在
+        // 「上一轮搜索的过滤态」，清空搜索后 React 会把被过滤掉的内置卡
+        // 逐个插回列表，目标卡被挤到下方几千像素 —— 我们滚到的位置
+        // 立刻就失效。所以滚动后再盯一小段窗口：目标跑出视口就再滚，
+        // 最多补 5 次。这不是防御性编程，是页面真实时序。
+        var guard = 0;
+        (function watch() {
+          if (guard++ >= 5) return;
+          setTimeout(function () {
+            var c = entryId ? document.getElementById(entryId) : null;
+            if (!c || !c.parentNode) return; // 卡被卸载，放弃
+            var r = c.getBoundingClientRect();
+            var vh = window.innerHeight || document.documentElement.clientHeight || 800;
+            if (r.top < -20 || r.bottom > vh + 20) scrollTo(c);
+            watch();
+          }, 250);
+        })();
+        return;
+      }
+      // 卡片还没插回来/还在过滤态：最多等 2 秒（20 × 100ms），超时就当没发生过
+      if (++tries < 20) setTimeout(poll, 100);
+    })();
   }
 
   // ---------- 绑定 ----------
@@ -285,6 +373,11 @@
       var first = box.querySelector('button[data-fill]');
       if (!first) return;
       ev.preventDefault();
+      // 第一条是自定义卡 → 走定位链路（Enter 与点击必须同语义）
+      if (first.getAttribute('data-custom') === '1') {
+        locateCard(input, box, first.getAttribute('data-entry-id'));
+        return;
+      }
       applyFill(input, box, first.getAttribute('data-fill'));
     });
 
