@@ -31,6 +31,17 @@
 
 ---
 ---
+### 小票双卡弹窗统一 + 昵称被存档刷回 + 条形码被连坐抹掉三件事一次修完（2026-10-23 02:05 · 提交 `4f0c2e9`）
+
+站长截图提出三件事：①星巴克（内置卡）与赵一鸣（自定义卡）的小票弹窗长得不一样，「就不能统一吗？我之前也说过这个问题」；②金额 bug 修完后昵称仍有 bug——先记录过一次 B043 产生 Cookie 后，第二次无论输入什么，小票下方仍显示第一次的昵称；③要求修复后如实汇报 README，且统一未完成前严禁上传 README。
+
+- **双卡统一（以内置卡为基准）**：内置卡小票由冻结 bundle 的 `jn` 组件渲染，bundle 按铁律不可改，只能让自定义卡靠拢。`openTicketModal` 的小票 DOM 逐类名照抄内置卡 receipt JSX（容器 `receipt-tear-top/bottom bg-[#faf8f5] p-6 shadow-2xl border-x border-[#ebe5dc] relative font-mono select-none overflow-hidden` + 同款 radial-gradient 底纹、右上角斜置印章、`text-center pb-4 border-b border-dashed` 头部、`flex justify-between items-start gap-2` 信息行、`items-baseline` 金额行、同款引语、**同一组 23 根固定条纹条形码**、水印、法律免责）；三枚按钮类名与 lucide 同款行内 SVG 图标逐条对齐（复制文本 = 结算+复制 / 保存高清图 = 结算+存 PNG / 确认打卡 = 仅结算+关闭，语义与内置卡完全一致）。
+- **保存高清图**：新增 `vendor/html-to-image.js`（html-to-image@1.11.13 UMD 构建，约 20KB），由自定义卡按需 `<script>` 注入（路径相对——站点部署在 github.io 子路径 `/shuangxiugou/` 下，绝对根路径会 404）；参数对齐内置卡（`pixelRatio:3`、`backgroundColor:'#faf8f5'`）。
+- **昵称 bug 定性为真 bug 并修复**：根因是 `syncBuiltin` 每次 React 重渲染后用**存档** `p.name` 重绘小票——金额有 `builtinPreview` 预览保护，昵称和理由没有，用户 `input` 监听刚写入的真实值会被 MutationObserver 防抖回调刷回存档值。修法：新增 `builtinNamePreview` / `builtinReasonPreview` 模块级预览态，input 监听记录当次输入，结算落盘后清空恢复以存档为准；`syncBuiltin` 优先用预览值。（未采用「新增提示语告知只能用第一次昵称」分支，因 bug 成立。）
+- **过程中挖出并修复第二个 bug——条形码被连坐抹掉（真实浏览器截图发现）**：`paintBuiltinCaption`（上游死链水印改写成本站域名）按 `textContent` 匹配 div，而 bundle 的真实 DOM 里条形码外套了一层 `flex flex-col items-center justify-center pt-1` 容器、条形码自身无文字，**外层容器的 textContent 恰好等于水印文案**——先命中的是外层容器，`textContent = SXG_CAPTION` 一写上去，23 根条纹连同水印节点一起被清空，内置小票条形码整个消失（截图里引语下方只剩空白）。修法：只认叶子节点（`children.length === 0`），外层容器天然被排除。此前单测没抓到是因为测试 DOM 少了外层容器——已把外层容器 + 23 根条纹补进 `buildReceiptDom`，并新增「改写水印后 23 根条纹原样保留」回归断言。
+- 改了哪些文件：`custom-card-actions.js`（`openTicketModal` 重构、预览态、`paintBuiltinCaption` 修复）、`vendor/html-to-image.js`（新增）、`scripts/test-builtin-ticket-dom.cjs`（harness 定义修正 + 8c 段重写 + 条形码回归）、`scripts/test-ticket-total.cjs`（结算调用点 2→3 处同步）、`index.html`（`custom-card-actions.js?v=17→18`）。
+- 验证：`test-builtin-ticket-dom.cjs` 57/57、`test-ticket-total.cjs` 52/52、其余 13 组 `test-*.cjs` 全过、`node scripts/verify.mjs` 503 项全绿；**故障注入**——把 `paintBuiltinCaption` 还原成旧版，新增两项断言判红、恢复后全绿；**无头 Edge 真渲染验收**——内置卡（Patagonia）与自定义卡（赵一鸣）小票逐区域截图比对：容器/印章/信息行/金额行/引语/条形码/水印/三按钮完全一致，水印均为本站域名（死链不再出现）。
+---
 ### 小票按钮语义定稿：「完成」仅记录不复制；「数据查验」死链换成本站网址（2026-10-23 00:44 · 提交 `b4e3825`）
 
 站长定稿（原话要点）：「复制小票文本，会自动复制文字，保持现状不改变！而完成，仅记录本次消费，但不会自动复制到剪切板」；并质问小票上为何印上游网址。
