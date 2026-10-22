@@ -132,26 +132,32 @@ async function main() {
     .slice(plaintext.indexOf('<body>'))
     .replace(/<script[\s\S]*?<\/script>/g, '')  // 脚本样板不算正文
     .replace(/<[^>]+>/g, '\n');
-  const sentences = bodyText
+  // ⚠️ 2026-10-22 隐私纪律整改：旧版在这里硬编码了三段正文片段做判据
+  //    （章节标题、动作原句等）——那等于把随笔正文抄进了公开仓库。
+  //    现改为动态抽取：正文里所有 ≥4 字的中文片段全部查一遍，
+  //    仓库里不存任何正文内容。短片段（标题往往不足 12 字）也因此
+  //    首次纳入覆盖，不再需要硬编码清单兜底。
+  const fragments = bodyText
     .split('\n')
     .map((s) => s.trim())
-    // 只查中文句子：JS 片段、短标签在密文页里也会出现，会误报
-    .filter((s) => s.length >= 12 && /[一-龥]/.test(s));
-  for (const s of sentences) {
+    // 只查中文片段：JS 片段、短标签在密文页里也会出现，会误报
+    .filter((s) => s.length >= 4 && /[一-龥]/.test(s));
+  for (const s of fragments) {
     // 锁屏上有意明文展示的内容（如声明副本）不算泄露 —— 以加密前的页面为准
     if (pageBefore.includes(s)) continue;
     if (html.includes(s)) {
-      console.error(`自查失败：明文句子出现在产物中 →「${s.slice(0, 40)}…」`);
+      // 报错只给长度 + sha256，不打印片段本身（本地日志也不落正文）
+      const fp = crypto.createHash('sha256').update(s, 'utf8').digest('hex').slice(0, 16);
+      console.error(`自查失败：明文片段出现在产物中（长度 ${s.length}，sha256 ${fp}…），已中止。`);
       process.exit(1);
     }
   }
-  // 关键内容必须查不到（与上面同理：锁屏有意展示的除外）
-  for (const must of ['2025 川西自驾游', '伸出左手', '反手一句：再叫砍死你']) {
-    if (pageBefore.includes(must)) continue;
-    if (html.includes(must)) {
-      console.error(`自查失败：产物中仍含「${must}」，已中止。`);
-      process.exit(1);
-    }
+  // 门禁自查：密文必须是纯 ASCII（base64 + JSON 外壳）。
+  // 这条不是恒真检查：一旦有人改脚本、把明文直接塞进 payload
+  // （或跳过加密），中文字符就会出现在密文里，这里立刻抓住。
+  if (/[^\x20-\x7e]/.test(payload)) {
+    console.error('自查失败：密文含非 ASCII 字符 → 可能误把明文写进了 payload，已中止。');
+    process.exit(1);
   }
   // 门禁自查：替换只允许发生一次，且页面其余行数不得变化
   const beforeCount = pageBefore.split('\n').length;

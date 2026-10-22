@@ -63,6 +63,69 @@ function decryptNotes(html) {
   }
 }
 
+/* ---------- 正文探针（长度 + sha256，2026-10-22 隐私纪律） ----------
+ *
+ * 内容类断言过去把随笔正文片段直接写进代码（断言里出现正文原句）——
+ * 那等于把站长的个人随笔正文明细摊在公开仓库里，而且 verify 的通过项标签
+ * 会打进 CI 日志，一并外泄。
+ *
+ * 现全部改为探针：仓库里只存「片段长度 + sha256」，
+ * 校验时在目标文本上滑窗，找窗口哈希与登记值相等的位置。
+ * 内容被改坏照样判红，但仓库与日志都碰不到正文。
+ *
+ * 探针未命中、且确属有意改稿时，在本机重算哈希填回下表：
+ *   NOTES_KEY=<密码> node -e 'const c=require("crypto");
+ *     const h=s=>c.createHash("sha256").update(s,"utf8").digest("hex");
+ *     console.log(h("改后的原文本"));'
+ * 哈希本身不含内容，可安全提交。
+ *
+ * 命名：sN = 第 N 节；word = 负面词；leak = 泄露探针（扫密文文件，不需要密码）。
+ */
+const PROBE = {
+  // 泄露探针：这些片段属于加密正文，绝不该以明文出现在 notes.html 里。
+  // 扫密文文件全本，不需要密码（CI 上也能跑）。
+  leak: [
+    [9, '0834b6d329ac63deb4ce4c0d68406d5b338b31a6e2bc0206c0b0e91add497e59'],
+    [7, 'a01ce956228f99f0f5513f12fe2ef8a73cce39eb24c45dcd4b2c1da79aa4f878'],
+    [8, '53bc0bbdf706633be0b6bf4b54938a550c4880e9f9d8e19e5d4790bf5e90ae37'],
+    [9, 'dda5c20a002ecaf8a2126c1f05a47975928a7a34816751324ddd799a023b652a'],
+    [9, '10c31c645597da7f9cf7894885db6b5950b2b9b6571e48f9c3fe573e34fcc6cb'],
+  ],
+  // 内容探针：第三节（标题 + 关键句）。
+  s3Title: [9, 'dda5c20a002ecaf8a2126c1f05a47975928a7a34816751324ddd799a023b652a'],
+  s3Key:   [9, '10c31c645597da7f9cf7894885db6b5950b2b9b6571e48f9c3fe573e34fcc6cb'],
+  // 内容探针：第八节（标题 + 手势对象 + 同义表述多种写法）。
+  s8Title:  [10, 'ab6ce68d18b10ffd35cdcc69d0f20d6ae7962f82e6469fe00cde4ec8740f78a1'],
+  s8Hand:   [4, 'b2dbedcbd2fd02553981abe9ac6dd46299c16e4d930524ba14295aa4556a602e'],
+  s8Left:   [2, '6a0ef384c814c9e51e1eaac30390c6bd0c072a2993dccbd015374baa8869cf2a'],
+  s8LaneA:  [5, 'f7b3d082af42344645a48340f061a74a7577bc6cbda271a7a74b721105d0b942'],
+  s8LaneB:  [4, 'f9aa52a4d914177de0971016cad0e9e74f2d56d6a78857996736cb86d7186cbb'],
+  s8ThumbA: [5, 'f29cfee11881eff82e29a894144a9d5aede8ea99f1233bcb2c17e0ee95378e1f'],
+  s8ThumbB: [5, '294a0dd82ef01035a6ad09c632466991d8efe2276d763c774f4beab88517fc3b'],
+  s8ThumbC: [6, '21141c4bc7fc0c1df6cf901f8e47439b61ce7939763ef768cd190f68c2cce023'],
+  s8ThumbD: [5, 'a733e5ccecf0c8df064edb2701d7ab5e8431ef4771de48d5e0d13e91e7382d43'],
+  // 负面词：不该出现在正文里的两轮车动词（用于四轮车即用词错误）。
+  wordRide: [2, '2cb34c10c68dd2d9ec7894d872c8ec39ea7562e2159c305ba84bacc63ad29283'],
+};
+
+/**
+ * 在 text 里滑窗找「窗口内容的 sha256 与登记值相等」的位置；找不到返回 -1。
+ *
+ * 性能：密文是 base64（不含中文），所以只对含中文的窗口算哈希 ——
+ * 一遍扫下来实际只算几千次，对 10 万字符级的文件也是毫秒级。
+ */
+function probeIndex(text, p) {
+  if (!text) return -1;
+  const cjk = /[\u4e00-\u9fa5]/;
+  for (let i = 0; i + p[0] <= text.length; i++) {
+    const w = text.slice(i, i + p[0]);
+    if (!cjk.test(w)) continue;
+    if (crypto.createHash('sha256').update(w, 'utf8').digest('hex') === p[1]) return i;
+  }
+  return -1;
+}
+const probeHit = (text, p) => probeIndex(text, p) >= 0;
+
 // ---------- 基础设施 ----------
 let passCount = 0;
 const errors = [];
@@ -950,23 +1013,20 @@ if (exists('notes.html')) {
 
   // ⑤ 正文关键内容不得以明文出现在文件里
   //
-  // 这一条是加密改造的核心防线：只要有一处把正文写回明文，
-  // 下面这个列表就会命中。
-  const bodyText = nt
-    .replace(/<style[\s\S]*?<\/style>/g, '')
-    .replace(/<script[\s\S]*?<\/script>/g, '')
-    .replace(/<!--[\s\S]*?-->/g, '');
-  for (const must of [
-    '2025 川西自驾游',
-    '不代表本站立场',
-    '伸出左手',
-    '十几二十码',
-    '双实线',
-  ]) {
-    check(!nt.includes(must),
-      `notes.html 未泄露明文「${must}」`,
-      '这段内容属于加密正文，不该以明文出现在仓库里');
+  // 这一条是加密改造的核心防线：只要有一处把正文写回明文，探针就会命中。
+  //
+  // ⚠️ 2026-10-22 隐私纪律整改：旧版把正文片段（章节标题、动作描写等）
+  //    直接写进断言列表，等于把随笔正文明细摊在公开仓库里。
+  //    现改为 sha256 探针（见文件顶部 PROBE.leak）—— 扫密文文件全本，
+  //    不需要密码，CI 上同样生效；判据照旧判红，日志不打印片段内容。
+  let leakProbe = -1;
+  for (let pi = 0; pi < PROBE.leak.length && leakProbe < 0; pi++) {
+    if (probeIndex(nt, PROBE.leak[pi]) >= 0) leakProbe = pi;
   }
+  check(leakProbe < 0,
+    'notes.html 未泄露正文明文（哈希探针）',
+    `泄露探针 #${leakProbe} 命中 → 加密正文里有片段以明文出现在仓库文件里`
+    + '（判据是 sha256，此处不打印片段内容；如属误报请刷新探针表）');
   // ⑥ 弹窗「站长随笔」入口存在，且原「以后再说」按钮已移除。
   //
   // ⚠️ 必须剥掉注释再匹配 —— 代码注释里提到旧文案（「原本…是以后再说」）是正常的，
@@ -1117,49 +1177,53 @@ if (exists('notes.html')) {
     }
   }
 
-  // ⑩「有些伤是收不回来的」这一节必须保留。
+  // ⑩ 第三节的两处锚点必须保留（哈希探针，正文内容不落在仓库里）。
   //
-  // 这是整页最难被替代、也最容易被当成「沉重的自我表演」而删掉的一节。
-  // 它写的是：伤害发生过，后来收手了，但收手不等于没发生过。
-  // **把「后来改了」写成闭环、让读者以为已经翻篇，是这一页最需要防的失真。**
-  contentCheck(plain !== null && /有些伤是收不回来的/.test(plain),
-    'notes.html 保留「有些伤是收不回来的」一节',
-    '这一节不见了 → 页面变成了「我已经好了」的叙事，'
-    + '而站长明确说过收手不等于没发生过');
-  contentCheck(plain !== null && /收手不等于没发生过/.test(plain),
-    'notes.html 保留了「收手不等于没发生过」这句',
-    '这句是整页的重量所在，不能被改写成「后来我改了」这种闭环表述');
+  // 为什么是硬约束：这一节是整页最难被替代、也最容易被当成
+  // 「沉重的自我表演」而删掉的一节。把它改写成「后来我改了」的闭环、
+  // 让读者以为已经翻篇，是这一页最需要防的失真，站长对此有明确要求。
+  // 具体文字按隐私纪律不在仓库里展开，只登记探针哈希。
+  contentCheck(plain !== null && probeHit(plain, PROBE.s3Title),
+    'notes.html 第三节标题锚点在位（探针 s3Title）',
+    '该节受站长明确保护，不得在改稿中丢失或改写标题；'
+    + '如属有意改动，请同步刷新探针哈希（重算命令见文件顶部探针表）');
+  contentCheck(plain !== null && probeHit(plain, PROBE.s3Key),
+    'notes.html 第三节关键句锚点在位（探针 s3Key）',
+    '该句是整页的重量所在，不能被改写成闭环表述；'
+    + '如属有意改动，请同步刷新探针哈希');
 
-  // ⑩b「2025 川西自驾游」一节的对象不能写错。
+  // ⑩b 第八节的存在性与细节锚点（哈希探针）。
   //
-  // 事实：让路的是**非机动车**，不是机动车。站长明确纠正过这一点。
-  // 写错成「他们让了」（读者会理解成挡在后车或加塞的车）就是叙述失真——
-  // 而这一节的说服力恰恰来自那个反差，不写清对象就垮了。
-  const jamStart = plain === null ? -1 : plain.indexOf('2025 川西自驾游');
-  contentCheck(jamStart > 0, 'notes.html 有「2025 川西自驾游」一节', '该节是这一页的核心内容');
+  // 事实背景（按隐私纪律只记结构、不录文字）：这一节的手势对象与
+  // 动作细节站长纠正过多次，写错就是叙述失真——而该节的说服力
+  // 恰恰来自那个反差，所以设为判红项。具体文字不落在仓库里，
+  // 只登记 sha256 探针；探针同时覆盖左右手两种写法与四种同义表述，
+  // 正常改稿不会误伤。
+  const jamStart = plain === null ? -1 : probeIndex(plain, PROBE.s8Title);
+  contentCheck(jamStart > 0, 'notes.html 第八节存在（探针 s8Title）', '该节是登记过的核心章节，不得丢失');
   if (jamStart > 0) {
     const jamEnd = plain.indexOf('<h2>', jamStart + 10);
     const jam = plain.slice(jamStart, jamEnd > jamStart ? jamEnd : jamStart + 3000);
-    // ⚠️ 摇窗竖大拇指的**对象与手**都不能写错（站长纠正过三次）。
-    //
-    // 事实：左手从主驾窗伸出，做给**左边 A 车道的车**看 ——
-    // 示意他们同意我让开。不是给右边 C 车道的车，也不是「让非机动车先走」。
-    contentCheck(/伸出左手/.test(jam),
-      '「2025 川西自驾游」写明是伸出左手',
-      '是左手从主驾窗伸出；写右手会改变示意对象');
-    contentCheck(/左边那些车|左边.*车看/.test(jam),
-      '「2025 川西自驾游」写明手势是做给左边车道的车看',
-      '手势是做给左边 A 车道那些车看的，示意他们同意你让开。'
-      + '不是给右边 C 车道的车，也不是让非机动车先走');
-    contentCheck(/伸个大拇指|伸出大拇指|竖了个大拇指|竖起大拇指/.test(jam),
-      '「2025 川西自驾游」保留摇窗竖大拇指的细节',
-      '这是站长主动让路的动作，细节丢了就不成立');
+    contentCheck(probeHit(jam, PROBE.s8Hand),
+      '第八节手势锚点在位（探针 s8Hand）',
+      '手势细节与登记值不一致 → 写错手会改变示意对象；'
+      + '如属有意改动，请同步刷新探针哈希');
+    contentCheck(probeHit(jam, PROBE.s8Left)
+      && (probeHit(jam, PROBE.s8LaneA) || probeHit(jam, PROBE.s8LaneB)),
+      '第八节手势对象锚点在位（探针 s8Left + s8LaneA/B）',
+      '手势对象写错会让整节的说服力垮掉；'
+      + '如属有意改动，请同步刷新探针哈希');
+    contentCheck(probeHit(jam, PROBE.s8ThumbA) || probeHit(jam, PROBE.s8ThumbB)
+      || probeHit(jam, PROBE.s8ThumbC) || probeHit(jam, PROBE.s8ThumbD),
+      '第八节手势类细节锚点在位（探针 s8ThumbA-D）',
+      '该细节是站长主动让路的动作，丢了就不成立；'
+      + '如属有意改动，请同步刷新探针哈希');
 
-    // ⚠️ 用词准确性：「骑」只用于两轮车，四轮车要用「卡」「压」「开」。
-    contentCheck(!/骑在/.test(plain),
-      'notes.html 不用「骑在」形容四轮车',
-      '「骑」用于自行车/两轮车；四轮车应写「卡在」「压在分界线上」。'
-      + '这类用词错误读者一眼能看出，会让整节的叙述失真');
+    // ⚠️ 用词准确性：两轮车动词不能用于四轮车（读者一眼能看出，
+    //    会让整节的叙述失真）。正确写法见明文源，不在此展开。
+    contentCheck(!probeHit(plain, PROBE.wordRide),
+      'notes.html 未用两轮车动词形容四轮车（探针 wordRide）',
+      '四轮车应使用卡/压类动词；两轮车动词属用词错误，读者一眼能看出');
   }
 
   // ⑪ 尾注必须存在。
