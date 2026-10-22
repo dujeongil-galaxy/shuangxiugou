@@ -31,6 +31,20 @@
 
 ---
 ---
+### 星巴克真实双休率 85%→98%，A 级评级不变、不追加备注（2026-10-23 00:25 · 提交 `31e0b1b`）
+
+站长明确指示：星巴克真实双休率标记为 98%（原话「星巴克比其他品牌双休率要高得多，暂时标记这个数字」），评级 A 级保持不动，不追加任何说明备注。
+
+- 改动背景：上一轮核实后曾建议改「未核实」，站长拍板维持具体数值 98%。
+- 改了哪些文件：
+  - `brand/starbucks.html`：标题 / meta description / og:title / og:description / twitter:title / twitter:description / JSON-LD / 可见值 `<p class="v">` 共 8 处 `85%`→`98%`。
+  - `index.html` 总表两处列表条目 `85%`→`98%`。
+  - `projects.html` 总表一处列表条目 `85%`→`98%`。
+  - `index.html` 新增 `patchStarbucksRate()`：主交互卡的真实双休率源自冻结 bundle 的 `realDoubleWeekendRate:85`，bundle 按铁律不可改，故在 DOM 层按「标签→font-mono 数值」同源逻辑（与 rate-note-patch.js 一致）覆盖为 `98%`；与 `insertStarbucksNote` 平行，挂载于 init / 搜索输入 / 按钮点击三处调用点，幂等（已是 98% 则跳过）以避免 MutationObserver 自激。
+- A 级评级字段（`badge`「A 级评级」）未改动；未新增任何备注 / 脚注。
+- 验证：`node scripts/verify.mjs`（486 项全绿）、`test-starbucks-note.cjs`（10/10）、`test-render-page.cjs`（13/13，React 正常挂载）；并用无头 Edge `--dump-dom` 实渲渲染确认星巴克卡 `真实双休率: 98%`（font-mono 值）、`index.html` 列表 `真实双休率 98%`、A 级评级不变。剩余 `85%` 仅剩迪卡侬（独立品牌，正确）与 CHANGELOG 历史记录。
+
+---
 ### 修复站长截图两处 bug：拼音联想搜不出零食品牌、小票昵称不联动/金额只收整数（2026-10-22 22:59 · 提交 `3339940`）
 
 站长一张截图两个 bug：「LS 不出现自定义零食品牌（关于零食这个分类，修复过无数次）」「星巴克双休率 85% 对吗」「小票里已经输入了 test，为什么下方无变化？金额也只能整数，不支持小数点后两位吗？」
