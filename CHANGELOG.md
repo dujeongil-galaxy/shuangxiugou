@@ -31,6 +31,31 @@
 
 ---
 ---
+### 修复站长截图两处 bug：拼音联想搜不出零食品牌、小票昵称不联动/金额只收整数（2026-10-22 22:59 · 提交 `3339940`）
+
+站长一张截图两个 bug：「LS 不出现自定义零食品牌（关于零食这个分类，修复过无数次）」「星巴克双休率 85% 对吗」「小票里已经输入了 test，为什么下方无变化？金额也只能整数，不支持小数点后两位吗？」
+
+**bug ① 拼音联想输 `LS` 永远不出现赵一鸣/零食有鸣（PITFALLS 新增 1.10b）**
+- 根因（历史层）：`ff69fd6`（2026-10-19）为修「点选后空态」——自定义卡不在 bundle 的 brands 数组里，React 搜索 0 结果会把整片内容替换成「未找到匹配的品牌信息」，插进去的卡随父节点销毁且 React 不会再插回来——当时的解法是把自定义卡**整个踢出**拼音索引（gen 脚本 native_search_keys 过滤）。症状是「链路用错」，却把「候选该出现」这个正确前提也删了，治标治反。
+- 正解：候选照常出现 + 点击分流。`scripts/gen-pinyin-index.py` 重新并入 10 张自定义卡（带 `custom:1` 标记，排序自测里 ls/lsym 命中赵一鸣/零食有鸣）；`pinyin-search.js` 的 mousedown 按标记分流：custom → `locateCard()` 定位链路（清空搜索让 React 恢复全量列表 → 轮询等卡插回 → scrollIntoView + 金色描高亮），其余 → `applyFill()` 回填。语义上点候选的意图是「我要看这家」而非「我要用这个词搜索」。
+- 定位只滚一次不够（本次实测第二个坑）：点击候选时页面常停在上一轮搜索的过滤态，清空后 React 才把被过滤的内置卡插回列表，目标卡被挤到下方几千像素（无头 Edge 实测：scrollIntoView 后 top=-22，200ms 后 top=3765）。已加 watch 补滚窗口（250ms × 5 次，目标跑出视口就再滚）。
+- `index.html`：`pinyin-index.js?v=5→6`、`pinyin-search.js?v=2→3`。
+- `scripts/verify.mjs`：§16 原「索引不含自定义卡」断言翻转为「自定义卡必须入索引且带 custom 标记」；新增定位链路结构断言。
+- 测试：`scripts/test-pinyin-e2e.cjs` 66 项、`scripts/test-pinyin-search.cjs` 37 项。**两个摆设陷阱已记入 PITFALLS**：① `Atomics.wait` 会冻结整个事件循环，jsdom 定时器一次不跑（实测 1500ms fired=0）——「同步等待」是假等待；② 僵尸 locateCard poll（找不到卡重试 2 秒）会在补插卡片后「复活」并滚动一次，把 `__scrolled` 污染成 2——已改为真实异步等待 + 耗尽旧 poll + 换不同 entryId 候选。
+
+**bug ② 小票弹窗两个问题（PITFALLS 新增 1.10c）**
+- 昵称无实时联动：`patchBuiltinTicket` 首次接管只画金额行、不画署名行，也没设 `id="sxg-t-name"`；input 实时联动按 `$('#sxg-t-name', receipt)` 找节点永远为 null，`if (nameEl)` 静默跳过。修法：抽出 `paintBuiltinName()`（首次接管即改写署名行并设 id），input 监听改 `findValueNode(receipt, '考核执行官:')` 按结构定位。
+- 金额只收整数：`clampDelta`/`clampTotal` 用 `parseInt`，input 无 `step`。修法：`parseFloat` + `round2` 两位小数规范化；`step="0.01"`、`inputmode="decimal"`；显示统一 `fmtMoney()`（￥12.34）。既有 localStorage 整数数据不受影响（迁移路径保留）。
+- 测试：`scripts/test-ticket-total.cjs`、`scripts/test-builtin-ticket-dom.cjs` 断言按新行为更新（￥498 → ￥498.00）。
+
+**验证（按纪律逐项做实）**
+- 双向故障注入四类全部实测判红：删 watch 补滚（滚动次数 1）/ 索引清 custom 标记 / `clampDelta` 换回 parseInt / 首次不画名字+按 id 找。
+- 无头 Edge + CDP 视觉验收三场景：输 LS 联想出现零食品牌候选；点击候选滚动定位+金色高亮且卡在视口内；小票昵称「测试昵称ABC」实时联动到纸面、金额 ￥12.34 两位小数。
+- `NOTES_KEY=*** node scripts/verify.mjs` 503 项全绿；无密码（CI）模式 486 项全绿；15 组 `test-*.cjs` 全过；`check-inject-idempotent.mjs` 通过。
+- 记账文档同步：README「最近更新」+ FORK_GUIDE 13.3（联想分流链路）/13.4（两位小数）+ PITFALLS 1.10b/1.10c。
+
+---
+---
 ### 星巴克卡新增「消费入座」公告黄框，机制与苹果补充说明同构（2026-10-22 19:21 · 提交 `007a7f7`）
 
 - **背景（站长要求）**：站长看到 2026-10-21 星巴克中国官宣「消费入座」的新闻（Vista看天下等报道），要求「按苹果的这个备注，对星巴克加一条公告」。经核实：星巴克中国 10-21 官宣《第三空间倡议》，**10-22 起全国门店施行「消费入座」**，店内摆放「星巴克营业空间，请消费入座」提示牌；官方称执行保有温度（孕妇、行动不便者优先协助，降雨等临时落脚需求仍可进店休息）——央广网、证券时报、中国新闻周刊等多方报道一致。按主站「客观中立、不情绪化、证据链不完善不评级」的收录原则，公告只做事实陈述，并显式声明「不影响本站对其员工工时与休息制度的评级」。
