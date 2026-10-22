@@ -1024,6 +1024,25 @@
           }
           var n2 = document.getElementById('apple-note');
           if (!appleVisibleNow && n2 && n2.parentNode) n2.parentNode.removeChild(n2);
+
+          // 星巴克备注（2026-10-22 新增）：判据与苹果**逐条平行**——
+          // 「星巴克卡在不在当前可见列表」，同样不是「有没有在搜索」。
+          // 上面苹果那段是逐字保留的样板（PITFALLS 1.10 bug ④ 的修复成果），
+          // 这里照抄同一结构；两段若改了一段忘了另一段，
+          // verify.mjs §20i 的镜像断言会判红。
+          var sbuxVisibleNow = false;
+          for (var si = 0; si < cardsNow.length; si++) {
+            var stitleNow = cardsNow[si].querySelector('h2,h3');
+            if (!stitleNow || stitleNow.textContent.trim().indexOf('Starbucks') !== 0) continue;
+            var swalker = cardsNow[si], sHiddenNow = false;
+            while (swalker && swalker !== document.body) {
+              if (swalker.style && swalker.style.display === 'none') { sHiddenNow = true; break; }
+              swalker = swalker.parentNode;
+            }
+            if (!sHiddenNow) { sbuxVisibleNow = true; break; }
+          }
+          var n3 = document.getElementById('starbucks-note');
+          if (!sbuxVisibleNow && n3 && n3.parentNode) n3.parentNode.removeChild(n3);
         }
       }, true);
 
@@ -1129,6 +1148,88 @@
         tagsRow.parentNode.insertBefore(note, tagsRow.nextSibling);
       }
 
+      // 在星巴克卡片下面插入「消费入座」公告框（2026-10-22 站长要求，
+      // 形式照苹果补充说明：黄框、不动任何评级字段）。
+      //
+      // ⚠️ 本函数是 insertAppleNote 的**平行实现**，判据结构逐条照搬：
+      //    标题匹配（Starbucks 前缀）→ 无卡摘除 → 子树隐藏摘除 →
+      //    已在正确位置则什么都不做（幂等）→ 位置不对先摘后插。
+      //    PITFALLS 1.10 的三个坑（React 位置复用泄漏、observer 自激、
+      //    搜索命中时误摘）在这里同样成立，别「简化」任何一道判据。
+      //    verify.mjs §20i 用镜像断言盯着两段结构的一致性。
+      function insertStarbucksNote() {
+        var note = document.getElementById('starbucks-note');
+
+        var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
+        var sbuxCard = null;
+        for (var i = 0; i < cards.length; i++) {
+          var titleEl = cards[i].querySelector('h2,h3');
+          var title = titleEl ? titleEl.textContent.trim() : '';
+          if (title.indexOf('Starbucks') === 0) {
+            sbuxCard = cards[i];
+          }
+        }
+
+        // 与苹果同款：可见性用纯 DOM 结构检查（沿祖先找 inline display:none），
+        // 覆盖四格筛选与自定义卡过滤的隐藏方式；不依赖布局引擎。
+        function sxgHiddenSubtree2(el) {
+          var n = el;
+          while (n && n !== document.body) {
+            if (n.style && n.style.display === 'none') return true;
+            n = n.parentNode;
+          }
+          return false;
+        }
+        var sbuxHidden = sbuxCard && sxgHiddenSubtree2(sbuxCard);
+
+        // 当前列表没有星巴克卡（例如搜索过滤掉了）→ 公告框不该存在
+        if (!sbuxCard) {
+          if (note && note.parentNode) note.parentNode.removeChild(note);
+          return;
+        }
+        // 星巴克卡在 DOM 里但整棵子树被隐藏（四格筛选/自定义卡过滤）→ 同样摘除
+        if (sbuxHidden) {
+          if (note && note.parentNode) note.parentNode.removeChild(note);
+          return;
+        }
+
+        var tagsRow = sbuxCard.querySelector('.flex-wrap');
+        if (!tagsRow) {
+          diagWarn('insertStarbucksNote 找不到星巴克卡的产品标签行（.flex-wrap），未插入公告框');
+          return;
+        }
+
+        // 已经挂在正确的星巴克卡里 → 什么都不做（保持幂等，避免自激循环）
+        var noteInsideSbux = false;
+        if (note) {
+          if (sbuxCard.contains && sbuxCard.contains(note)) {
+            noteInsideSbux = true;
+          } else {
+            var anc = note.parentNode;
+            while (anc) {
+              if (anc === sbuxCard) { noteInsideSbux = true; break; }
+              anc = anc.parentNode;
+            }
+          }
+        }
+        if (note && noteInsideSbux
+                   && note.parentNode === tagsRow.parentNode
+                   && note.previousSibling === tagsRow) {
+          return;
+        }
+        // note 挂在别的容器里（React 位置复用导致泄漏）→ 下面先清后插纠正
+
+        // 位置不对才纠正：先摘掉可能挂在别的卡上的旧节点
+        if (note && note.parentNode) note.parentNode.removeChild(note);
+        if (!note) {
+          note = document.createElement('div');
+          note.id = 'starbucks-note';
+          note.style.cssText = 'margin-top:12px;padding:10px 14px;background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;color:#92400e;font-size:13px;';
+          note.innerHTML = '💡 <strong>补充说明：</strong>2026-10-21 星巴克中国官宣《第三空间倡议》，10-22 起全国门店施行「消费入座」（店内摆放「星巴克营业空间，请消费入座」提示牌）。官方称执行保有温度：孕妇、行动不便者等有特殊需求者优先协助，降雨等临时落脚需求仍可进店休息。该公告属门店顾客秩序管理，不影响本站对其员工工时与休息制度的评级。';
+        }
+        tagsRow.parentNode.insertBefore(note, tagsRow.nextSibling);
+      }
+
       // 自定义卡片的元数据（从配置自动生成，不用手动维护）
       var customCardsMeta = {};
       customCardsConfig.forEach(function(config) {
@@ -1224,6 +1325,7 @@
         insertAllCustomCards();
         replaceAllLogos();
         insertAppleNote();
+        insertStarbucksNote();
         filterCustomCards();
         scheduleHeadingFix();
       }
@@ -1290,6 +1392,7 @@
           // （否则苹果卡被过滤掉后，富士康说明会留在原地那张卡上）
           requestAnimationFrame(function() {
             try { insertAppleNote(); } catch (err) { diagError('insertAppleNote 抛异常', err); }
+            try { insertStarbucksNote(); } catch (err) { diagError('insertStarbucksNote 抛异常', err); }
           });
         }
       });
@@ -1300,6 +1403,7 @@
           setTimeout(function() {
             filterCustomCards();
             try { insertAppleNote(); } catch (err) { diagError('insertAppleNote 抛异常', err); }
+            try { insertStarbucksNote(); } catch (err) { diagError('insertStarbucksNote 抛异常', err); }
           }, 100);
         }
       });

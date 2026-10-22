@@ -7,9 +7,45 @@ import path from 'node:path';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const h = fs.readFileSync(ROOT + '/index.html', 'utf8');
 
-const s = h.indexOf('function insertAppleNote()');
-const e = h.indexOf('\n      // 自定义卡片的元数据', s);
-const fnSrc = h.slice(s, e);
+// 函数体切分：从 `function insertAppleNote()` 头部开始做**花括号配对**。
+//
+// ⚠️ 不要改回「找下一个注释标记 / 下一个 function 关键字」的定位方式。
+//    2026-10-22 在 insertAppleNote 后面新增了 insertStarbucksNote（平行实现），
+//    「下一个 function 声明」式切分会把两个函数体粘在一起，
+//    eval 时直接 SyntaxError（真实发生过：verify 报「insertAppleNote 幂等仿真」失败）。
+//    花括号配对与函数插入顺序无关，且正确跳过字符串与注释里的花括号。
+function extractFnBody(src, header) {
+  const start = src.indexOf(header);
+  if (start < 0) return null;
+  let i = src.indexOf('{', start);
+  if (i < 0) return null;
+  let depth = 0;
+  let str = null;        // 当前所处的字符串引号（' " `）
+  let lineComment = false;
+  let blockComment = false;
+  for (; i < src.length; i++) {
+    const c = src[i];
+    const n = src[i + 1];
+    if (lineComment) { if (c === '\n') lineComment = false; continue; }
+    if (blockComment) { if (c === '*' && n === '/') { blockComment = false; i++; } continue; }
+    if (str) { if (c === '\\') { i++; continue; } if (c === str) str = null; continue; }
+    if (c === '/' && n === '/') { lineComment = true; i++; continue; }
+    if (c === '/' && n === '*') { blockComment = true; i++; continue; }
+    if (c === "'" || c === '"' || c === '`') { str = c; continue; }
+    if (c === '{') depth++;
+    else if (c === '}') {
+      depth--;
+      if (depth === 0) return src.slice(start, i + 1);
+    }
+  }
+  return null;
+}
+
+const fnSrc = extractFnBody(h, 'function insertAppleNote()');
+if (!fnSrc || fnSrc.indexOf("'apple-note'") < 0) {
+  console.error('✗ 在 index.html 里找不到 function insertAppleNote() 的完整函数体');
+  process.exit(1);
+}
 
 let mutations = 0;
 

@@ -294,6 +294,26 @@ note 会跟着泄漏到残留容器。**修法不只靠异步重定位，要加�
 
 > 通用判据：**挂在 `MutationObserver` 回调里的 DOM 操作，必须以「不产生变动」为默认分支。**
 
+---
+
+**bug ⑥（2026-10-22 补记）**：给星巴克加「消费入座」公告框时，按苹果的写法新增了
+平行函数 `insertStarbucksNote`（逐条照搬 `insertAppleNote` 的判据）。
+结果 `scripts/check-inject-idempotent.mjs` 立刻挂了 —— 它按
+「`insertAppleNote` 之后到某个注释标记」切函数体，新增函数被切进同一段，
+`eval('(' + fnSrc + ')')` 直接 `SyntaxError: Unexpected token 'function'`，
+verify 的「insertAppleNote 幂等仿真」项判红。
+
+修法：切分改为**花括号配对**（从函数头第一个 `{` 起计数，正确跳过字符串与注释里的
+花括号），与「后面插了几个函数、插在哪儿」完全解耦。**教训：凡是按「下一个标记」
+定位代码边界的脚本，都会被后来的新增内容打脸 —— 定位要按语法结构，不按相邻文本。**
+
+平行实现纪律（本次新增）：两个注入函数共享同一套判据，**改一段必须同步改另一段**，
+否则会出现「同一页面两种行为」且后来者毫无察觉。`verify.mjs` §20i 用镜像断言
+（`sbuxVisibleNow` / `sbuxHidden` / `!sbuxCard` / `walker` 与 `swalker` 同构等）
+盯着两段结构，漂移即判红；行为回归除 `test-apple-note.cjs` 外新增
+`scripts/test-starbucks-note.cjs`（10 项，CI 已接入），
+并同样做过双向故障注入验证（无条件摘除 / 删隐藏闸，均正确判红）。
+
 
 ### 1.11 个人性质页面：robots 屏蔽不够，三道闸门缺一不可
 

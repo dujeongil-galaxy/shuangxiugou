@@ -3550,6 +3550,57 @@ if (exists('.github/workflows/verify.yml')) {
     'CI 里已接入苹果补充说明注入位置测试');
 }
 
+// ---------- 20i. 星巴克公告框与苹果说明框必须保持同构 ----------
+// 背景（2026-10-22 站长要求）：按苹果补充说明的形式，给星巴克加一条
+// 「消费入座」公告（黄框、不动评级字段）。insertStarbucksNote 是
+// insertAppleNote 的平行实现 —— 平行意味着**两处必须一起改**：
+// 只改一段会造成「同一个页面两种行为」，而且后人看不出来。
+// 本节把「同构」钉成红线：星巴克段少任何一道判据、或判据写法漂移，都判红。
+section('20i. 星巴克公告框注入闸门（与苹果同构）');
+{
+  const idx = read('index.html');
+  // ① 同步清理以「星巴克卡是否可见」为判据，不是「搜索框有没有输入」
+  check(/sbuxVisibleNow/.test(idx),
+    '同步清理以「星巴克卡是否可见」为判据，不是「搜索框有没有输入」');
+  check(/!sbuxVisibleNow && n3 && n3\.parentNode/.test(idx),
+    '星巴克备注的同步清理条件写法与苹果段平行（!sbuxVisibleNow && n3 …）');
+  // ② insertStarbucksNote 函数体存在，且两道结构性闸都在
+  check(/function insertStarbucksNote\(\)/.test(idx),
+    '存在 insertStarbucksNote 函数（星巴克公告的注入入口）');
+  check(/if \(sbuxHidden\)/.test(idx),
+    '保留「星巴克卡在 DOM 但整棵子树被隐藏 → 摘除」这道闸（四格筛选场景）');
+  check(/if \(!sbuxCard\)/.test(idx),
+    '保留「当前列表没有星巴克卡 → 摘除」这道闸（搜索过滤场景）');
+  check(/init\(\)[\s\S]{0,400}?insertStarbucksNote\(\)/.test(idx)
+     || /insertStarbucksNote\(\);[\s\S]{0,200}?filterCustomCards\(\);/.test(idx),
+    'init() 里调用了 insertStarbucksNote（否则浏览态不显示公告框）');
+  // ③ 行为测试存在且覆盖核心判据
+  check(exists('scripts/test-starbucks-note.cjs'), '存在星巴克公告注入位置的行为测试');
+  if (exists('scripts/test-starbucks-note.cjs')) {
+    const tSbux = read('scripts/test-starbucks-note.cjs');
+    check(/同步清理阶段未误摘公告框/.test(tSbux),
+      '测试断言「同步清理那一瞬」不误摘（等稳定态会被 rAF 重插掩盖，抓不到 bug ④）');
+    check(/display = 'none'/.test(tSbux),
+      '测试覆盖「星巴克卡在 DOM 但子树被隐藏」分支（四格筛选）');
+  }
+  if (exists('.github/workflows/verify.yml')) {
+    check(read('.github/workflows/verify.yml').includes('test-starbucks-note.cjs'),
+      'CI 里已接入星巴克公告注入位置测试');
+  }
+  // ④ 公告内容必须包含事实要素与「不影响评级」的边界声明
+  //    （客观中立是主站收录原则：公告只说事实，不情绪化，不牵连评级）
+  check(/第三空间倡议/.test(idx) && /消费入座/.test(idx),
+    '公告框写明《第三空间倡议》与「消费入座」事实要素');
+  check(/不影响本站对其员工工时与休息制度的评级/.test(idx),
+    '公告框带「不影响员工工时评级」的边界声明（公告属顾客秩序管理，不牵连双休评级）');
+  // ⑤ 镜像防漂移：两段的隐藏判据代码必须同构
+  //    （只改一段时，另一段的 walker/display 判据会对不上）
+  check(/walker !== document\.body/.test(idx) && /swalker !== document\.body/.test(idx),
+    '苹果段与星巴克段的隐藏判据代码同构（walker / swalker 都在）');
+  check(/style\.display === 'none'/.test(idx),
+    '隐藏判据用 inline display:none（不依赖布局引擎）');
+}
+
 // ---------- 20g. 公告栏版本号必须等于「上一次提交」 ----------
 // 背景：2026-10-19 站长指出首页「当前版本号 2db67d9」与近期提交对不上。
 //   根因是它写死在 index.html 里，多轮发版都没同步。规则本身 AGENTS.md 早有记载

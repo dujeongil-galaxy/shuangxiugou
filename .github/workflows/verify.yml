@@ -128,3 +128,8 @@ jobs:
       # bug ④ 是「修 bug ③ 时加了道过防御的闸，把说明框当成只属浏览态」。
       - name: 苹果补充说明注入位置测试
         run: node scripts/test-apple-note.cjs
+
+      # 「星巴克消费入座公告」注入位置：与苹果同一套机制（insertStarbucksNote
+      # 是 insertAppleNote 的平行实现），PITFALLS 1.10 的三个坑同样要防。
+      - name: 星巴克公告注入位置测试
+        run: node scripts/test-starbucks-note.cjs

@@ -151,11 +151,21 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
    识别目标卡片用**标题**（卡内 h2/h3）而不是全文子串：华为卡的同品类替代
    推荐区也含「Apple (苹果中国)」，全文匹配会把说明框误插进华为卡。
 
-   改完用 `npm run test:apple-note` 验收：它用无头浏览器跑真实 React 搜索，
-   覆盖「搜中目标卡保留 / 无匹配词摘除 / 清空复原 / 搜别家不泄漏」四类场景
+   改完用 `npm run test:apple-note` / `npm run test:starbucks-note` 验收：
+   它用无头浏览器跑真实 React 搜索，覆盖「搜中目标卡保留 / 无匹配词摘除 /
+   清空复原 / 搜别家不泄漏 / 子树被隐藏时摘除」五类场景
    （测React 受控输入要用原生 `value` setter 绕过其value tracker，否则事件不触发）。
 
-   现有的 `insertAppleNote()` 和 `insertAllCustomCards()` 都是这个模式，改动时留意。
+   现有的 `insertAppleNote()`、`insertStarbucksNote()` 和 `insertAllCustomCards()`
+   都是这个模式，改动时留意。
+
+   ⚠️ **平行实现必须一起改（2026-10-22）**：苹果补充说明与星巴克「消费入座」公告
+   是同一套机制的两个平行实例（`insertStarbucksNote` 逐条照搬 `insertAppleNote`
+   的判据）。只改一段会造成「同一页面两种行为」，且后来者看不出来 ——
+   `verify.mjs` §20i 用镜像断言盯着两段结构（标识符与判据写法），漂移即判红。
+   另注意 `scripts/check-inject-idempotent.mjs` 按**花括号配对**切函数体
+   （早期按「下一个 function 声明」切，新增平行函数后直接把两个函数体粘在一起、
+   eval 语法错误）—— 往这两个函数后面再加新函数时，别再改回脆弱定位方式。
 
 
 ---

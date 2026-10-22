@@ -31,7 +31,8 @@
     "test:ticket": "node scripts/test-ticket-total.cjs",
     "test:ticket:dom": "node scripts/test-builtin-ticket-dom.cjs",
     "test:answer": "node scripts/test-answer-book.cjs",
-    "test:apple-note": "node scripts/test-apple-note.cjs"
+    "test:apple-note": "node scripts/test-apple-note.cjs",
+    "test:starbucks-note": "node scripts/test-starbucks-note.cjs"
   },
   "dependencies": {
     "framer-motion": "^11.2.4",
