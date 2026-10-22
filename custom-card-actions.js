@@ -15,6 +15,10 @@
 (function () {
   'use strict';
 
+  /* 本站实际可访问的「数据查验」网址。上游模板写死的上游域名已死
+     （2026-10-09 实测无法访问，projects.html 同源记录），不能再往小票上印死链。 */
+  var SXG_SITE_URL = 'dujeongil-galaxy.github.io/shuangxiugou';
+
   /* ---------------------------------------------------------------- 工具 */
 
   function $(sel, root) { return (root || document).querySelector(sel); }
@@ -604,7 +608,7 @@
       '</div>' +
 
       '<div class="sxg-xs" style="text-align:center;padding-top:12px">' +
-        '数据查验来自开源双休购 shuangxiugou.vercel.app' +
+        '数据查验来自开源双休购 ' + SXG_SITE_URL +
       '</div>';
 
     wrap.appendChild(receipt);
@@ -614,16 +618,20 @@
     actions.style.padding = '0 4px';
     var copyBtn = el('button', 'sxg-btn sxg-btn-primary', '复制小票文本');
     var doneBtn = el('button', 'sxg-btn sxg-btn-dark', '完成');
-    copyBtn.addEventListener('click', function () {
+
+    // 结算：把「本次新增」并入累计并清空新增额，同一次弹窗里再点不会重复累加。
+    //
+    // 2026-10-23 站长定稿按钮语义：
+    //   复制小票文本 = 结算（记录）+ 复制，保持不变；
+    //   完成         = 仅结算（记录本次消费），不碰剪切板。
+    // 旧版「完成」只 closeLayer —— 填了金额直接点完成会静默丢账。
+    //
+    // ⚠️ 先保存再清空输入框，顺序反了会在赋值前就把 0 存进去。
+    function settleReceipt() {
       // 以点击这一刻表单里的内容为准。
       var st = refreshPreview();
       var p = st.profile;
       var shown = st.shown;
-
-      // 结算：把「本次新增」并入累计，并把新增额清零，
-      // 这样同一次弹窗里再点一次复制不会重复累加。
-      //
-      // ⚠️ 先保存再清空输入框，顺序反了会在赋值前就把 0 存进去。
       var next = {
         name: p.name,
         total: shown,
@@ -640,18 +648,22 @@
       fAmount.value = '';         // 已结算，别让用户误以为还能再加一次
       if (fTotal) fTotal.textContent = '￥' + fmtMoney(baseTotal);
       if (fTotalBrand) fTotalBrand.textContent = '￥' + fmtMoney(brandNext);
+      return { name: p.name, reason: p.reason, shown: shown, brandNext: brandNext };
+    }
 
+    copyBtn.addEventListener('click', function () {
+      var r = settleReceipt();
       var text =
         '【双休购 · 反向考核小票】\n' +
         '凭证编号：' + code + '\n' +
         '考核目标：' + (cfg.name || '') + '\n' +
         '企业评级：' + (cfg.grade || 'C级') + '\n' +
-        '考核执行官：' + displayName(p.name, anonId) + '\n' +
-        (p.reason ? '理由：' + p.reason + '\n' : '') +
-        '本品牌累计：￥' + fmtMoney(brandNext) + '\n' +
-        '全站累计已转移/支持消费：￥' + fmtMoney(shown) + '\n' +
+        '考核执行官：' + displayName(r.name, anonId) + '\n' +
+        (r.reason ? '理由：' + r.reason + '\n' : '') +
+        '本品牌累计：￥' + fmtMoney(r.brandNext) + '\n' +
+        '全站累计已转移/支持消费：￥' + fmtMoney(r.shown) + '\n' +
         '“老板考核你的KPI，你的钱包考核老板的良心”\n' +
-        '数据查验来自开源双休购：shuangxiugou.vercel.app';
+        '数据查验来自开源双休购：' + SXG_SITE_URL;
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(function () {
           copyBtn.textContent = '已复制 ✓';
@@ -663,7 +675,10 @@
         window.prompt('请手动复制以下小票文本：', text);
       }
     });
-    doneBtn.addEventListener('click', closeLayer);
+    doneBtn.addEventListener('click', function () {
+      settleReceipt();
+      closeLayer();
+    });
     actions.appendChild(copyBtn);
     actions.appendChild(doneBtn);
     wrap.appendChild(actions);
@@ -1174,6 +1189,23 @@
     var profile = loadProfile();
     receipt.setAttribute('data-sxg-builtin', '1');
     builtinAnonId = Math.floor(1000 + Math.random() * 9000); // 本次弹窗内稳定
+
+    // 上游模板把复制文本里的「数据查验」网址写死为上游死链域名，
+    // 而该上游站点 2026-10-09 实测已无法访问（见 projects.html 同源记录）。
+    // bundle 按铁律不可改，这里对 clipboard.writeText 做一次性窄包装：
+    // 只改写包含该死链的小票文本，其余剪贴板写入原样放行。
+    (function fixBuiltinCopyUrl() {
+      var cb = window.navigator && window.navigator.clipboard;
+      if (!cb || typeof cb.writeText !== 'function' || cb.__sxgUrlFix) return;
+      var orig = cb.writeText.bind(cb);
+      cb.writeText = function (t) {
+        if (typeof t === 'string' && t.indexOf('shuangxiugou.vercel.app') !== -1) {
+          t = t.split('shuangxiugou.vercel.app').join(SXG_SITE_URL);
+        }
+        return orig(t);
+      };
+      cb.__sxgUrlFix = true;
+    })();
 
     // 分品牌累计：本品牌 = brandTotals[纸面「考核品牌」]
     var brandKey = brandKeyOf((findValueNode(receipt, '考核品牌:') || {}).textContent);

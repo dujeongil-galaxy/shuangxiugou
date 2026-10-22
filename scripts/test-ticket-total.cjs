@@ -197,6 +197,32 @@ console.log('\n=== 5. 源码层面的防回归检查 ===');
     /saveProfile\(next\);[\s\S]{0,600}?baseTotal = shown;/.test(SRC));
   check('隐私提示已更新为「累计金额」',
     SRC.includes('累计金额与昵称只存在你自己的浏览器里'));
+
+  // —— 2026-10-23 站长定稿按钮语义：复制=结算+复制；完成=仅结算，不碰剪切板 ——
+  check('「完成」按钮会先结算再关闭（settleReceipt + closeLayer）',
+    /doneBtn\.addEventListener\('click', function \(\) \{\s*settleReceipt\(\);\s*closeLayer\(\);/.test(SRC));
+  check('「完成」处理器内不碰剪切板/不弹手动复制',
+    (function () {
+      const m = SRC.match(/doneBtn\.addEventListener\('click', function \(\) \{([\s\S]*?)\}\);/);
+      return !!m && m[1].indexOf('clipboard') === -1 && m[1].indexOf('prompt') === -1;
+    })());
+  check('复制与完成共用同一结算函数 settleReceipt（恰好两处调用）',
+    (SRC.match(/settleReceipt\(\);/g) || []).length === 2,
+    (SRC.match(/settleReceipt\(\);/g) || []).length);
+
+  // —— 2026-10-23 上游死链清理：小票上的「数据查验」网址换成本站 ——
+  // 死链字面量只允许出现在 fixBuiltinCopyUrl 窄包装里（检测/替换用），
+  // 小票页脚与复制文本一律走 SXG_SITE_URL。
+  check('上游死链 shuangxiugou.vercel.app 只出现在窄包装内，不再印到小票上',
+    (function () {
+      const wrap = SRC.match(/function fixBuiltinCopyUrl\(\) \{[\s\S]*?\}\)\(\);/);
+      if (!wrap) return false;
+      return !SRC.replace(wrap[0], '').includes('shuangxiugou.vercel.app');
+    })());
+  check('小票印本站可访问网址（SXG_SITE_URL 常量）',
+    SRC.includes('SXG_SITE_URL') && SRC.includes('dujeongil-galaxy.github.io/shuangxiugou'));
+  check('内置卡复制文本的死链已做 clipboard.writeText 窄包装（__sxgUrlFix）',
+    SRC.includes('__sxgUrlFix'));
 }
 
 console.log('\n' + '='.repeat(54));
