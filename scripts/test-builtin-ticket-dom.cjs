@@ -70,6 +70,19 @@ check('纸面金额值是 span（不是 input）',
 
 // 搭一个与 bundle 渲染结果结构一致的 DOM。
 // 结构来源是压缩包里那段 JSX 的 className 与 children 顺序，逐条照抄。
+// ⚠️ 条形码区必须照抄 bundle 的真实嵌套：
+//      <div class="flex flex-col items-center justify-center pt-1">
+//        <div class="flex items-center gap-[2px] h-9">…23 根条纹…</div>
+//        <div class="text-[9px] …">SHUANGXIUGOU.VERCEL.APP</div>
+//      </div>
+//    2026-10-23 之前的测试版少了外层容器，导致 paintBuiltinCaption 把
+//    textContent 写到外层容器上、连带清掉条形码这个真 bug 测不出来
+//    （真实浏览器截图才发现内置小票条形码被抹没）。
+const TEST_BARS = [2, 1, 3, 1, 2, 4, 1, 3, 2, 1, 4, 1, 2, 3, 1, 2, 1, 3, 4, 1, 2, 3, 1];
+const TEST_BARS_HTML = TEST_BARS.map(function (w) {
+  return '<div class="bg-slate-800 h-full" style="width:' + (w * 1.5) + 'px"></div>';
+}).join('');
+
 function buildReceiptDom(opts) {
   const tier = opts.tier || 'S';
   const amountLabel = opts.violation ? '转移撤销消费金额:' : '注入良心企业预算:';
@@ -95,6 +108,13 @@ function buildReceiptDom(opts) {
       <div class="flex justify-between items-baseline">
         <span class="text-slate-600 font-semibold">${amountLabel}</span>
         <span class="text-xl font-black font-mono ${opts.violation ? 'text-rose-600' : 'text-emerald-700'}">${sign} ¥ 199</span>
+      </div>
+    </div>
+    <div class="pt-4 text-center space-y-3">
+      <div class="text-[11px] text-slate-700 italic font-medium leading-relaxed px-2">"老板考核你的 KPI，<br>你的钱包考核老板的良心。"</div>
+      <div class="flex flex-col items-center justify-center pt-1">
+        <div class="flex items-center gap-[2px] h-9">${TEST_BARS_HTML}</div>
+        <div class="text-[9px] text-slate-400 font-mono tracking-widest pt-1">SHUANGXIUGOU.VERCEL.APP</div>
       </div>
     </div>
   </div>
@@ -125,13 +145,18 @@ function extractFn(name) {
   return m[0];
 }
 
-const harnessSrc = [
+const HARNESS_FNS = [
   // 2026-10-17 回归测试需要：syncBuiltin 引用的模块级状态与存档桩。
   // builtinAnonId 用固定值，断言「同一次弹窗内 #号稳定」才可复现。
   'var builtinPreview = null;',
   'var builtinBrandPreview = null;',
+  'var builtinNamePreview = null;',
+  'var builtinReasonPreview = null;',
   'var builtinAnonId = 7163;',
-  'function loadProfile(){ return { name: "", total: 0, lastDelta: 0, reason: "" }; }',
+  // 存档桩做成可变的：8c 段要测「存档昵称 vs 当次输入」两条路径
+  'var __profile = { name: "", total: 0, lastDelta: 0, reason: "" };',
+  'function loadProfile(){ return __profile; }',
+  'function loadBrandTotals(){ return {}; }',
   'var MAX_TOTAL = 99999999;',
   // 2026-10-22 起金额支持两位小数，桩必须与真代码同语义，
   // 否则测的是被改掉的旧行为（假测试比没测试更危险）。
@@ -162,12 +187,20 @@ const harnessSrc = [
   extractFn('paintBuiltinBrandRow'),
   extractFn('hideBuiltinAmountInput'),
   extractFn('paintBuiltinReason'),
+  extractFn('paintBuiltinCaption'),
   extractFn('syncBuiltin'),
-].join('\n') + `
+].join('\n');
+
+// 被测函数依赖的模块级常量（8c 段的 mkEnv 也会复用）
+const HARNESS_CONSTANTS = `
 var AMOUNT_LABELS = ['转移撤销消费金额:', '注入良心企业预算:'];
 var RATING_LABEL = '工时健康评级:';
 var BUILTIN_INPUT_LABEL = '本次投票消费金额:';
-var TOTAL_LABEL = '全站累计已转移/支持消费:';`;
+var TOTAL_LABEL = '全站累计已转移/支持消费:';
+var BUILTIN_CAPTION = 'SHUANGXIUGOU.VERCEL.APP';
+var SXG_CAPTION = 'DUJEONGIL-GALAXY.GITHUB.IO/SHUANGXIUGOU';`;
+
+const harnessSrc = HARNESS_FNS + HARNESS_CONSTANTS;
 
 // 装一个含真实 DOM + 真实定位逻辑的环境
 function mount(opts, storageData) {
@@ -388,6 +421,96 @@ console.log('\n=== 4. 幂等：重复重绘不会让 observer 自激 ===');
         + '\nreturn {paintBuiltinName};')(w8, w8.document);
       check('空 DOM 下 paintBuiltinName 返回 false（供上层报警）',
         api8.paintBuiltinName(w8.document.getElementById('root'), 'x') === false);
+    }
+
+    console.log('\n=== 8c. 存档昵称不得刷掉当次输入；条码水印改本站（2026-10-23）===');
+    {
+      // 现象（站长截图）：存档过 B043 后，第二次无论输入什么昵称，
+      // 小票恒显示 B043。根因：syncBuiltin 每次按存档 p.name 重绘，
+      // 金额有 builtinPreview 保护、昵称没有 —— 输入监听刚写入的值
+      // 被 observer 防抖回调刷回存档值。
+      // harness 里 __profile / builtinNamePreview 是 new Function 作用域内的
+      // 变量，外部改不到，故用 mkEnv 在每次挂载时把「存档昵称」与「当次输入」
+      // 注入到 harness 源码里，分别覆盖「存档为准」与「当次输入优先」两条路径。
+      // 路径一：无当次输入（builtinNamePreview=null）→ 以存档为准
+      const mkEnv = (savedName, preview) => {
+        const domE = new JSDOM(
+          `<!DOCTYPE html><html><body>${buildReceiptDom({})}</body></html>`,
+          { runScripts: 'outside-only', pretendToBeVisual: true });
+        const wE = domE.window;
+        const dataE = {};
+        wE.localStorage = {
+          getItem: (k) => (k in dataE ? dataE[k] : null),
+          setItem: (k, v) => { dataE[k] = String(v); },
+          removeItem: (k) => { delete dataE[k]; },
+        };
+        // 在完整 harness 基础上把存档昵称与当次输入覆盖进初始状态
+        const src = harnessSrc
+          .replace('var builtinNamePreview = null;',
+            'var builtinNamePreview = ' + JSON.stringify(preview) + ';')
+          .replace('var __profile = { name: "", total: 0, lastDelta: 0, reason: "" };',
+            'var __profile = { name: ' + JSON.stringify(savedName) + ', total: 0, lastDelta: 0, reason: "" };');
+        const fnE = new Function('window', 'document', src
+          + '\nreturn {syncBuiltin,paintBuiltinName};');
+        const apiE = fnE(wE, wE.document);
+        apiE.receipt = wE.document.querySelector('.receipt-tear-top');
+        return apiE;
+      };
+
+      const savedOnly = mkEnv('B043', null);
+      savedOnly.syncBuiltin(savedOnly.receipt);
+      let el9 = savedOnly.receipt.querySelector('#sxg-t-name');
+      check('无当次输入时，小票显示存档昵称 B043',
+        (el9.textContent || '').trim() === 'B043', el9.textContent);
+
+      // 路径二：有当次输入（builtinNamePreview='new test'）→ 输入优先，不被刷回
+      const typing = mkEnv('B043', 'new test');
+      typing.syncBuiltin(typing.receipt);
+      el9 = typing.receipt.querySelector('#sxg-t-name');
+      check('★ 有当次输入时，小票显示输入值 new test（修复前恒为存档值）',
+        (el9.textContent || '').trim() === 'new test', el9.textContent);
+
+      // 源码防线：输入监听必须记录当次输入；结算后必须清空预览
+      check('源码中内置卡输入监听记录 builtinNamePreview',
+        SRC.includes('builtinNamePreview = fName.value'));
+      check('源码中内置卡输入监听记录 builtinReasonPreview',
+        SRC.includes('builtinReasonPreview = fReason.value'));
+      check('源码中结算落盘后清空昵称/理由预览（恢复以存档为准）',
+        /saveProfile\(\{[\s\S]{0,220}?\}\);\s*\n\s*\/\/ 已落盘[\s\S]{0,120}?builtinNamePreview = null;/.test(SRC));
+
+      // 条码水印：bundle 印的上游死链大写形式必须被改写为本站域名
+      check('接管后条码水印改为本站域名（不再印上游死链）',
+        (function () {
+          const E10 = mount({ violation: false });
+          E10.syncBuiltin(E10.receipt);
+          const divs = E10.receipt.querySelectorAll('div');
+          for (const d of divs) {
+            const t = (d.textContent || '').trim();
+            if (t === 'SHUANGXIUGOU.VERCEL.APP') return false;
+            if (t === 'DUJEONGIL-GALAXY.GITHUB.IO/SHUANGXIUGOU') return true;
+          }
+          return false;
+        })());
+      // ★ 2026-10-23 回归（真实浏览器截图发现）：改写水印不许连条形码一起清掉。
+      //   早前版本把 textContent 写到外层容器上（外层包着条形码、textContent
+      //   恰好等于水印文案），23 根条纹被连坐抹掉。旧测试 DOM 少了外层容器，
+      //   所以这个 bug 在单测里看不见 —— 现已把外层容器补进 buildReceiptDom。
+      check('★ 改写水印后条形码 23 根条纹原样保留（不连坐清掉）',
+        (function () {
+          const E11 = mount({ violation: false });
+          E11.syncBuiltin(E11.receipt);
+          let bc = null;
+          E11.receipt.querySelectorAll('div').forEach(function (d) {
+            if (d.children.length === 23) bc = d;
+          });
+          return !!bc && bc.children.length === 23
+            && bc.querySelector('.bg-slate-800') !== null;
+        })());
+      // 源码防线：只认叶子节点，跳过有子节点的容器
+      check('源码中 paintBuiltinCaption 跳过有子节点的容器（children.length 检查）',
+        /function paintBuiltinCaption[\s\S]*?children\.length !== 0/.test(SRC));
+      check('源码中 syncBuiltin 调用 paintBuiltinCaption',
+        SRC.includes('paintBuiltinCaption(receipt)'));
     }
 
     console.log('\n=== 9. 本品牌累计行（2026-10-18 两级显示）===');

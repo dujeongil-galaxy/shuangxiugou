@@ -206,8 +206,11 @@ console.log('\n=== 5. 源码层面的防回归检查 ===');
       const m = SRC.match(/doneBtn\.addEventListener\('click', function \(\) \{([\s\S]*?)\}\);/);
       return !!m && m[1].indexOf('clipboard') === -1 && m[1].indexOf('prompt') === -1;
     })());
-  check('复制与完成共用同一结算函数 settleReceipt（恰好两处调用）',
-    (SRC.match(/settleReceipt\(\);/g) || []).length === 2,
+  // 2026-10-23 统一后自定义卡三键同源：复制文本 / 保存高清图 / 确认打卡
+  // 都先结算（settleReceipt）再各自动作。恰好三处调用是回归红线：
+  // 任一把结算漏掉（例如回到「完成只 closeLayer 不结算」）都会判红。
+  check('复制文本 / 保存高清图 / 确认打卡 三键共用同一结算函数 settleReceipt（恰好三处调用）',
+    (SRC.match(/settleReceipt\(\);/g) || []).length === 3,
     (SRC.match(/settleReceipt\(\);/g) || []).length);
 
   // —— 2026-10-23 上游死链清理：小票上的「数据查验」网址换成本站 ——

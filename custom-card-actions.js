@@ -18,6 +18,15 @@
   /* 本站实际可访问的「数据查验」网址。上游模板写死的上游域名已死
      （2026-10-09 实测无法访问，projects.html 同源记录），不能再往小票上印死链。 */
   var SXG_SITE_URL = 'dujeongil-galaxy.github.io/shuangxiugou';
+  /* 条形码下的域名水印（内置卡印的是上游死链大写形式，DOM 层改写为本站） */
+  var BUILTIN_CAPTION = 'SHUANGXIUGOU.VERCEL.APP';
+  var SXG_CAPTION = 'DUJEONGIL-GALAXY.GITHUB.IO/SHUANGXIUGOU';
+
+  /* lucide 图标（内置卡按钮同款 path，行内 SVG，不依赖 React 组件） */
+  var ICON_COPY = '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
+  var ICON_CHECK_GREEN = '<svg class="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+  var ICON_DOWNLOAD = '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>';
+  var ICON_SPARKLES = '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>';
 
   /* ---------------------------------------------------------------- 工具 */
 
@@ -400,6 +409,19 @@
     return '匿名打工人 #' + id;
   }
 
+  // 按需加载 vendored html-to-image（UMD 构建，挂在 window.htmlToImage）。
+  // 只有自定义卡点「保存高清图」时才注入 <script>，平时零开销。
+  // 内置卡的保存高清图由 bundle 自带实现，不走这里。
+  // 路径必须相对：站点部署在 github.io 子路径 /shuangxiugou/ 下，绝对根路径会 404。
+  function loadHtmlToImage(cb) {
+    if (window.htmlToImage) return cb(true);
+    var s = document.createElement('script');
+    s.src = 'vendor/html-to-image.js';
+    s.onload = function () { cb(!!window.htmlToImage); };
+    s.onerror = function () { cb(false); };
+    document.head.appendChild(s);
+  }
+
   // 自定义卡与内置卡共用的填写区，避免两处 UI 走样
   function buildProfileForm(profile, brandKey, brandBase) {
     var brandBase0 = (typeof brandBase === 'number' && brandBase > 0) ? brandBase : 0;
@@ -520,17 +542,19 @@
       var brandEl = $('#sxg-t-amount-brand', receipt);
       if (brandEl) brandEl.textContent = '￥' + fmtMoney(brandShown);
       if (fTotal) fTotal.textContent = '￥' + fmtMoney(shown);
-      // 理由是后加的一行，实时输入时需要补出来
+      // 理由是后加的一行，实时输入时需要补出来。
+      // 锚点是评级行（data-sxg-rating-row），与内置卡 paintBuiltinReason 同位。
       var reasonKv = receipt.querySelector('[data-sxg-reason]');
       if (p.reason) {
         if (!reasonKv) {
-          var holder = amountEl ? amountEl.closest('.sxg-kv') : null;
-          if (holder) {
-            reasonKv = el('div', 'sxg-kv');
+          var anchor = receipt.querySelector('[data-sxg-rating-row]');
+          if (anchor && anchor.parentNode) {
+            reasonKv = el('div', 'flex justify-between items-start gap-2');
             reasonKv.setAttribute('data-sxg-reason', '1');
-            reasonKv.innerHTML = '<span class="k">理由:</span>' +
-              '<span class="v"></span>';
-            holder.parentNode.insertBefore(reasonKv, holder.nextSibling);
+            reasonKv.innerHTML =
+              '<span class="text-slate-500 whitespace-nowrap">理由:</span>' +
+              '<span class="v font-bold text-slate-900 text-right truncate max-w-[180px]"></span>';
+            anchor.parentNode.insertBefore(reasonKv, anchor.nextSibling);
           }
         }
         if (reasonKv) reasonKv.querySelector('.v').textContent = p.reason;
@@ -563,68 +587,137 @@
       });
     });
 
-    // 小票主体：样式与内置卡片的小票保持一致
-    var receipt = el('div', 'receipt-tear-top receipt-tear-bottom sxg-mono');
-    receipt.style.cssText =
-      'background:#faf8f5;color:#0f172a;padding:24px;position:relative;overflow:hidden;' +
-      'border-left:1px solid #ebe5dc;border-right:1px solid #ebe5dc;' +
-      'box-shadow:0 25px 50px -12px rgba(0,0,0,.45);' +
-      'background-image:radial-gradient(rgba(0,0,0,.02) 1px,transparent 0);background-size:8px 8px';
+    // 小票主体：类名逐条照抄内置卡的 receipt JSX（bundle 307795 起），
+    // 保证两种卡的小票肉眼无差 —— 2026-10-23 站长要求统一。
+    var receipt = el('div', 'receipt-tear-top receipt-tear-bottom bg-[#faf8f5] text-slate-900 ' +
+      'p-6 shadow-2xl border-x border-[#ebe5dc] relative font-mono select-none overflow-hidden');
+    receipt.style.backgroundImage = 'radial-gradient(rgba(0,0,0,0.02) 1px, transparent 0)';
+    receipt.style.backgroundSize = '8px 8px';
 
-    var stampCls = isC ? 'sxg-stamp sxg-stamp-bad' : 'sxg-stamp sxg-stamp-good';
-    var stampTxt = isC ? '违规避雷' : '良心认证';
+    // 印章（右上角斜置）
+    var stampHtml = isC
+      ? '<div class="border-2 border-rose-600 text-rose-600 rounded-lg px-2.5 py-1 text-[11px] font-black tracking-widest uppercase shadow-sm">违规避雷</div>'
+      : '<div class="border-2 border-emerald-600 text-emerald-600 rounded-lg px-2.5 py-1 text-[11px] font-black tracking-widest uppercase shadow-sm">良心认证</div>';
+
+    // 评级徽章配色：与内置卡同款映射（S/A/B/U/其余）
+    var badgeCls = tier === 'S' ? 'bg-emerald-100 text-emerald-800'
+      : tier === 'A' ? 'bg-green-100 text-green-800'
+      : tier === 'B' ? 'bg-amber-100 text-amber-800'
+      : tier === 'U' ? 'bg-slate-100 text-slate-500'
+      : 'bg-rose-100 text-rose-800';
+
+    // 条形码：与内置卡同一组固定条纹
+    var BARS = [2, 1, 3, 1, 2, 4, 1, 3, 2, 1, 4, 1, 2, 3, 1, 2, 1, 3, 4, 1, 2, 3, 1];
+    var barsHtml = '';
+    for (var bi = 0; bi < BARS.length; bi++) {
+      barsHtml += '<div class="bg-slate-800 h-full" style="width:' + (BARS[bi] * 1.5) + 'px"></div>';
+    }
 
     receipt.innerHTML =
-      '<div class="' + stampCls + '">' + stampTxt + '</div>' +
-
-      '<div class="sxg-dashed" style="text-align:center;padding-bottom:16px">' +
-        '<div style="font-size:16px;font-weight:900;letter-spacing:-.02em;color:#020617">' +
-        '★ 双休购 · 反向考核小票 ★</div>' +
-        '<div class="sxg-xs">SHUANGXIUGOU CONSUMER AUDIT RECEIPT</div>' +
-        '<div class="sxg-xs sxg-mono" style="padding-top:4px">NO. ' + code + ' · ' + today + '</div>' +
+      '<div class="absolute right-4 top-20 pointer-events-none opacity-85 rotate-[-14deg]">' +
+        stampHtml +
       '</div>' +
 
-      '<div class="sxg-dashed" style="padding:16px 0">' +
-        kv('考核执行官:', '<span class="sxg-bold" id="sxg-t-name">' +
-          esc(displayName(profile.name, anonId)) + '</span>') +
-        kv('考核品牌:', '<span class="sxg-bold">' + esc(cfg.name) + '</span>') +
-        kv('所属企业:', '<span class="sxg-bold">' + esc(cfg.company || '—') + '</span>') +
-        kv('企业评级:', '<span class="sxg-bold">' + esc(cfg.grade || 'C级') + '</span>') +
-        kv('工时政策:', '<span class="sxg-bold">' + esc(cfg.workPolicy || '—') + '</span>') +
-        kv('本品牌累计:', '<span class="sxg-bold" style="color:#059669" id="sxg-t-amount-brand">' +
-          '￥' + fmtMoney(brandBase) + '</span>') +
-        kv('全站累计已转移/支持消费:', '<span class="sxg-bold" style="color:#059669" id="sxg-t-amount">' +
-          '￥' + fmtMoney(profile.total) + '</span>') +
+      '<div class="text-center pb-4 border-b border-dashed border-slate-300 space-y-1">' +
+        '<div class="text-base font-black tracking-tighter text-slate-950">★ 双休购 · 反向考核小票 ★</div>' +
+        '<div class="text-[10px] text-slate-500 tracking-tight">SHUANGXIUGOU CONSUMER AUDIT RECEIPT</div>' +
+        '<div class="text-[10px] text-slate-400 font-mono pt-1">NO. ' + code + ' · ' + today + '</div>' +
+      '</div>' +
+
+      '<div class="py-4 border-b border-dashed border-slate-300 space-y-2 text-xs">' +
+        '<div class="flex justify-between items-start">' +
+          '<span class="text-slate-500">考核执行官:</span>' +
+          '<span class="font-bold text-slate-800" id="sxg-t-name">' +
+            esc(displayName(profile.name, anonId)) + '</span>' +
+        '</div>' +
+        '<div class="flex justify-between items-start gap-2">' +
+          '<span class="text-slate-500 whitespace-nowrap">考核品牌:</span>' +
+          '<span class="font-bold text-slate-900 text-right truncate max-w-[180px]">' + esc(cfg.name) + '</span>' +
+        '</div>' +
+        '<div class="flex justify-between items-start gap-2">' +
+          '<span class="text-slate-500 whitespace-nowrap">所属企业:</span>' +
+          '<span class="text-[11px] text-slate-600 text-right truncate max-w-[180px]">' + esc(cfg.company || '—') + '</span>' +
+        '</div>' +
+        '<div class="flex justify-between items-center pt-1" data-sxg-rating-row="1">' +
+          '<span class="text-slate-500">工时健康评级:</span>' +
+          '<span class="font-black px-1.5 py-0.5 rounded text-xs ' + badgeCls + '">' +
+            esc(cfg.grade || 'C级') + ' · ' + esc(cfg.workPolicy || '—') + '</span>' +
+        '</div>' +
         (profile.reason
-          ? kv('理由:', '<span class="sxg-bold">' + esc(profile.reason) + '</span>')
+          ? '<div class="flex justify-between items-start gap-2" data-sxg-reason="1">' +
+            '<span class="text-slate-500 whitespace-nowrap">理由:</span>' +
+            '<span class="v font-bold text-slate-900 text-right truncate max-w-[180px]">' +
+              esc(profile.reason) + '</span>' +
+            '</div>'
           : '') +
       '</div>' +
 
-      '<div class="sxg-dashed" style="padding:16px 0">' +
-        '<div class="sxg-p" style="font-style:italic">' +
-        '“老板考核你的 KPI，你的钱包考核老板的良心”</div>' +
-        '<div class="sxg-xs" style="padding-top:6px">' +
-        '本小票为消费立场表达，不构成对任何企业的法律或名誉评价。</div>' +
+      '<div class="py-4 border-b border-dashed border-slate-300 space-y-2 text-xs">' +
+        '<div class="flex justify-between items-baseline">' +
+          '<span class="text-slate-600 font-semibold whitespace-nowrap">本品牌累计:</span>' +
+          '<span class="font-bold font-mono text-sm text-emerald-700" id="sxg-t-amount-brand">' +
+            '￥' + fmtMoney(brandBase) + '</span>' +
+        '</div>' +
+        '<div class="flex justify-between items-baseline">' +
+          '<span class="text-slate-600 font-semibold">全站累计已转移/支持消费:</span>' +
+          '<span class="text-xl font-black font-mono ' + (isC ? 'text-rose-600' : 'text-emerald-700') + '" id="sxg-t-amount">' +
+            '￥' + fmtMoney(profile.total) + '</span>' +
+        '</div>' +
+        '<div class="text-[10px] text-slate-500 leading-normal">' +
+          (isC
+            ? '已从单休/严重违规企业剥离该消费额，并将订单优先转移给合规双休平替。'
+            : '用每一次下单，奖励真正实行周末双休、尊重员工休息权的良心品牌。') +
+        '</div>' +
       '</div>' +
 
-      '<div class="sxg-xs" style="text-align:center;padding-top:12px">' +
-        '数据查验来自开源双休购 ' + SXG_SITE_URL +
+      '<div class="pt-4 text-center space-y-3">' +
+        '<div class="text-[11px] text-slate-700 italic font-medium leading-relaxed px-2">' +
+          '“老板考核你的 KPI，<br>你的钱包考核老板的良心。”</div>' +
+        '<div class="flex flex-col items-center justify-center pt-1">' +
+          '<div class="flex items-center gap-[2px] h-9">' + barsHtml + '</div>' +
+          '<div class="text-[9px] text-slate-400 font-mono tracking-widest pt-1">' +
+            SXG_CAPTION + '</div>' +
+        '</div>' +
+        '<div class="text-[10px] text-slate-500 leading-normal px-2">' +
+          '本小票为消费立场表达，不构成对任何企业的法律或名誉评价。</div>' +
       '</div>';
 
     wrap.appendChild(receipt);
 
-    // 操作按钮
-    var actions = el('div', 'sxg-actions');
-    actions.style.padding = '0 4px';
-    var copyBtn = el('button', 'sxg-btn sxg-btn-primary', '复制小票文本');
-    var doneBtn = el('button', 'sxg-btn sxg-btn-dark', '完成');
+    // 操作按钮：与内置卡完全同一套（2026-10-23 站长要求统一）——
+    // 类名逐条照抄 bundle 按钮的 className，图标用 lucide 同款行内 SVG。
+    // 语义三键一致：复制文本=结算+复制；保存高清图=结算+存PNG；确认打卡=仅结算+关闭。
+    var actions = el('div', 'bg-white/95 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl space-y-3');
+    var btnRow = el('div', 'grid grid-cols-2 gap-2 pt-1');
+
+    var copyBtn = el('button', 'py-2.5 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-xs');
+    copyBtn.type = 'button';
+    function paintCopyBtn(copied) {
+      copyBtn.innerHTML = copied
+        ? ICON_CHECK_GREEN + '<span>已复制</span>'
+        : ICON_COPY + '<span>复制文本</span>';
+    }
+    paintCopyBtn(false);
+
+    var saveBtn = el('button', 'py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-md shadow-slate-900/20');
+    saveBtn.type = 'button';
+    function paintSaveBtn(state) {
+      saveBtn.innerHTML = ICON_DOWNLOAD +
+        '<span>' + (state === 'busy' ? '生成中...' : '保存高清图') + '</span>';
+    }
+    paintSaveBtn('idle');
+
+    var doneBtn = el('button', 'w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20');
+    doneBtn.type = 'button';
+    doneBtn.innerHTML = ICON_SPARKLES + '<span>确认打卡并计入全网总额</span>';
 
     // 结算：把「本次新增」并入累计并清空新增额，同一次弹窗里再点不会重复累加。
     //
-    // 2026-10-23 站长定稿按钮语义：
-    //   复制小票文本 = 结算（记录）+ 复制，保持不变；
-    //   完成         = 仅结算（记录本次消费），不碰剪切板。
-    // 旧版「完成」只 closeLayer —— 填了金额直接点完成会静默丢账。
+    // 2026-10-23 站长定稿按钮语义（与内置卡统一后三键同源）：
+    //   复制文本               = 结算（记录）+ 复制；
+    //   保存高清图             = 结算（记录）+ 下载 PNG；
+    //   确认打卡并计入全网总额 = 仅结算（记录本次消费），不碰剪切板。
+    // （旧版自定义卡的「完成」只 closeLayer —— 填了金额直接点完成会静默丢账。）
     //
     // ⚠️ 先保存再清空输入框，顺序反了会在赋值前就把 0 存进去。
     function settleReceipt() {
@@ -666,8 +759,8 @@
         '数据查验来自开源双休购：' + SXG_SITE_URL;
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(function () {
-          copyBtn.textContent = '已复制 ✓';
-          setTimeout(function () { copyBtn.textContent = '复制小票文本'; }, 2000);
+          paintCopyBtn(true);
+          setTimeout(function () { paintCopyBtn(false); }, 2000);
         }, function () {
           window.prompt('请手动复制以下小票文本：', text);
         });
@@ -675,11 +768,44 @@
         window.prompt('请手动复制以下小票文本：', text);
       }
     });
+
+    // 保存高清图：与内置卡同款参数（pixelRatio 3 / 底色 #faf8f5）。
+    // html-to-image 从 vendor 目录按需加载（~70KB，平时零开销）。
+    function captureReceipt() {
+      paintSaveBtn('busy');
+      saveBtn.disabled = true;
+      window.htmlToImage.toPng(receipt, {
+        cacheBust: true,
+        pixelRatio: 3,
+        backgroundColor: '#faf8f5'
+      }).then(function (dataUrl) {
+        var a = document.createElement('a');
+        a.download = '双休购考核小票-' + (cfg.name || '') + '-' + code + '.png';
+        a.href = dataUrl;
+        a.click();
+      }).catch(function () {
+        window.alert('生成图片失败，可尝试直接复制小票文本');
+      }).then(function () {
+        saveBtn.disabled = false;
+        paintSaveBtn('idle');
+      });
+    }
+    saveBtn.addEventListener('click', function () {
+      settleReceipt();
+      if (window.htmlToImage) { captureReceipt(); return; }
+      loadHtmlToImage(function (ok) {
+        if (ok) { captureReceipt(); return; }
+        window.alert('生成图片组件加载失败，可使用「复制文本」');
+      });
+    });
+
     doneBtn.addEventListener('click', function () {
       settleReceipt();
       closeLayer();
     });
-    actions.appendChild(copyBtn);
+    btnRow.appendChild(copyBtn);
+    btnRow.appendChild(saveBtn);
+    actions.appendChild(btnRow);
     actions.appendChild(doneBtn);
     wrap.appendChild(actions);
 
@@ -1040,6 +1166,14 @@
   // 本品牌累计的预览值（当次弹窗内）；null = 以存档的分品牌累计为准
   var builtinBrandPreview = null;
 
+  // 昵称/理由的当次预览值（2026-10-23 站长截图 bug：存档过一次昵称后，
+  // 第二次无论输入什么都显示第一次的昵称）。根因：syncBuiltin 每次都按
+  // 存档 p.name / p.reason 重绘 —— 金额有 builtinPreview 保护，昵称和理由
+  // 没有，输入监听刚写入的真实值会被 observer 防抖回调刷回存档值。
+  // null = 以存档为准（弹窗刚打开、还没输入时）。
+  var builtinNamePreview = null;
+  var builtinReasonPreview = null;
+
   function findLabelNode(root, labels) {
     var spans = $$('span', root);
     for (var i = 0; i < spans.length; i++) {
@@ -1168,11 +1302,43 @@
     var brandWant = builtinBrandPreview != null
       ? builtinBrandPreview
       : (totals && totals[brandKey] ? totals[brandKey] : (brandBase || 0));
-    paintBuiltinName(receipt, p.name);
+    // 昵称/理由同金额：用户当次输入的值优先于存档值，否则输入即被刷回（见上方注释）
+    paintBuiltinName(receipt, builtinNamePreview != null ? builtinNamePreview : p.name);
     paintBuiltinAmount(receipt, want);
     paintBuiltinBrandRow(receipt, brandKey, brandWant);
-    paintBuiltinReason(receipt, (p.reason || '').trim());
+    paintBuiltinReason(receipt, (builtinReasonPreview != null
+      ? builtinReasonPreview
+      : (p.reason || '')).trim());
+    paintBuiltinCaption(receipt);
     hideBuiltinAmountInput(receipt);
+  }
+
+  // 条形码下的域名水印（bundle 印死的是上游死链大写形式，改写为本站）
+  //
+  // ⚠️ 2026-10-23 真实浏览器截图发现的坑：bundle 的 DOM 是
+  //      <div class="flex flex-col items-center justify-center pt-1">
+  //        <div class="flex items-center gap-[2px] h-9">…23 根条纹…</div>
+  //        <div class="text-[9px] …">SHUANGXIUGOU.VERCEL.APP</div>
+  //      </div>
+  //    外层容器包着条形码，而条形码 div 没有文字，所以外层容器的
+  //    textContent 也整好等于水印文案。早前版本按 textContent 匹配，
+  //    先命中的是外层容器，把 textContent 写上去 = 连条形码带水印
+  //    节点一起清空，内置小票的条形码就这样被抹没了（截图里
+  //    引语下方只剩一片空白）。
+  //    修法：只认叶子节点（children.length === 0）——外层容器有子节点，
+  //    天然被排除；真正的水印 div 只有文字，才会被改写。
+  function paintBuiltinCaption(receipt) {
+    var divs = $$('div', receipt);
+    for (var i = 0; i < divs.length; i++) {
+      var d = divs[i];
+      if (d.children.length !== 0) continue; // 外层容器会连带清掉条形码，跳过
+      var txt = (d.textContent || '').trim();
+      if (txt === BUILTIN_CAPTION) {
+        if (txt !== SXG_CAPTION) d.textContent = SXG_CAPTION;
+        return true;
+      }
+    }
+    return false;
   }
 
   function patchBuiltinTicket() {
@@ -1189,6 +1355,8 @@
     var profile = loadProfile();
     receipt.setAttribute('data-sxg-builtin', '1');
     builtinAnonId = Math.floor(1000 + Math.random() * 9000); // 本次弹窗内稳定
+    builtinNamePreview = null;   // 新弹窗，没有「当次输入」可言
+    builtinReasonPreview = null;
 
     // 上游模板把复制文本里的「数据查验」网址写死为上游死链域名，
     // 而该上游站点 2026-10-09 实测已无法访问（见 projects.html 同源记录）。
@@ -1237,6 +1405,7 @@
     var okName = paintBuiltinName(receipt, profile.name);
     if (!okAmount) diag('内置小票未找到金额行，纸面金额仍是写死的值');
     paintBuiltinBrandRow(receipt, brandKey, brandBase);
+    paintBuiltinCaption(receipt);
 
     var fTotal = $('#sxg-total', form);
     var fTotalBrand = $('#sxg-total-brand', form);
@@ -1252,6 +1421,10 @@
         input.addEventListener('input', function () {
           var shown = previewTotalOf();
           builtinPreview = shown;
+          // 记录当次输入：observer 回调 syncBuiltin 重绘时以此为准，
+          // 不能让它拿存档值把用户正在输入的内容刷掉（昵称 bug 根因）
+          builtinNamePreview = fName.value;
+          builtinReasonPreview = fReason.value;
           var brandShown = Math.min(brandBase + clampDelta(fAmount.value), MAX_TOTAL);
           builtinBrandPreview = brandShown;
           // 按标签文字定位，不依赖 id —— React 重渲染会重建 span 节点，
@@ -1292,7 +1465,7 @@
       });
     });
 
-    // 用户点「完成 / 复制 / 确认打卡并计入全网总额」才结算本次新增。
+    // 用户点「完成 / 复制 / 保存高清图 / 确认打卡并计入全网总额」才结算本次新增。
     // 用捕获阶段监听，因为这些按钮是 bundle 内部处理的，我们只旁挂结算。
     var box = receipt.closest('.max-w-sm') || receipt.parentNode;
     if (box) {
@@ -1300,6 +1473,7 @@
         var t = (ev.target && ev.target.textContent) || '';
         var settle = t.indexOf('完成') !== -1
                   || t.indexOf('复制') !== -1
+                  || t.indexOf('高清图') !== -1
                   || t.indexOf('确认打卡') !== -1;
         if (!settle) return;
         var fA = document.getElementById('sxg-f-amount');
@@ -1313,6 +1487,9 @@
           lastDelta: 0,
           reason: (fR ? fR.value : '').trim()
         });
+        // 已落盘，预览值清空，syncBuiltin 恢复以存档为准
+        builtinNamePreview = null;
+        builtinReasonPreview = null;
         var brandNext = Math.min(brandBase + delta, MAX_TOTAL);
         var bt = loadBrandTotals();
         bt[brandKey] = brandNext;
