@@ -133,3 +133,23 @@ jobs:
       # 是 insertAppleNote 的平行实现），PITFALLS 1.10 的三个坑同样要防。
       - name: 星巴克公告注入位置测试
         run: node scripts/test-starbucks-note.cjs
+
+      # 照片 Star 门禁：真校验（拉 GitHub 公开 star 列表）+ Cookie 记忆自动
+      # 验证 + 解锁委托 photo-vault。站长四轮实测反馈都在这组断言里
+      # （输入即验 / 无痕补验 / 限流自动重试 / 取消 Star 重新上锁）。
+      - name: 照片 Star 门禁测试
+        run: node scripts/test-photo-gate.cjs
+
+      # 照片解密与灯箱：仓库里只有 .enc 密文，真 .enc + 源码真口令解出与
+      # 明文逐字节一致（CI 无明文原件时退而验 JPEG magic），另有 reveal
+      # 成功/失败/幂等、灯箱开合与来源免责提示。
+      - name: 照片解密与灯箱测试
+        run: node scripts/test-photo-vault.cjs
+
+      # 搜索口径修正：summary 命中不得串品牌（「搜瑞幸咖啡出库迪咖啡」）。
+      - name: 搜索口径修正测试
+        run: node scripts/test-search-scope-fix.cjs
+
+      # notes.html 锁屏的「我同意/我不同意」门禁行为。
+      - name: 笔记锁屏同意门测试
+        run: node scripts/test-notes-agree.cjs

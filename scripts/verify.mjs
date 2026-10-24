@@ -1027,8 +1027,9 @@ if (exists('notes.html')) {
     'notes.html 未泄露正文明文（哈希探针）',
     `泄露探针 #${leakProbe} 命中 → 加密正文里有片段以明文出现在仓库文件里`
     + '（判据是 sha256，此处不打印片段内容；如属误报请刷新探针表）');
-  // ⑥ 弹窗「解锁彩蛋」入口存在，且原「以后再说」按钮已移除。
-  // （2026-10-24 站长要求：按钮文字由「站长随笔」→「解锁菜单」→「解锁彩蛋」，跳转目标不变。）
+  // ⑥ 弹窗「站长随笔」入口存在，且原「以后再说」按钮已移除。
+  // （2026-10-25 站长要求：按钮文字还原为「站长随笔」，跳转目标不变。
+  //   沿革：「站长随笔」→「解锁菜单」→「解锁彩蛋」→「站长随笔」。）
   //
   // ⚠️ 必须剥掉注释再匹配 —— 代码注释里提到旧文案（「原本…是以后再说」）是正常的，
   //    但全文匹配会把注释当成「按钮还在」。这正是 PITFALLS 3.1 记的坑。
@@ -1036,22 +1037,27 @@ if (exists('notes.html')) {
   const dp = dpRaw
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/^\s*\/\/.*$/gm, '');
-  check(/解锁彩蛋/.test(dp),
-    '弹窗底部有「解锁彩蛋」入口',
+  check(/站长随笔/.test(dp),
+    '弹窗底部有「站长随笔」入口',
     '入口缺失 → 页面存在但无人能到');
   // ⚠️ 2026-10-19 站长决定：notes.html 锁屏可直接访问（保留密码锁），
   //    弹窗入口改为直接跳转，原「还在写」公告弹窗整体移除。
-  //    （2026-10-24 该入口文字由「站长随笔」→「解锁菜单」→「解锁彩蛋」，仍跳 notes.html。）
+  //    （2026-10-25 该入口文字还原为「站长随笔」，仍跳 notes.html。）
   //    剥注释后再匹配，避免注释里的说明文字被当成真实跳转。
   check(/href\s*=\s*["']\.\/notes\.html/.test(dp),
-    '「解锁彩蛋」直接跳转到 notes.html',
+    '「站长随笔」直接跳转到 notes.html',
     '入口缺失或仍是弹公告 → 页面存在但无人能到');
   check(!/dyp--notice/.test(dp),
     '「还在写」公告弹窗已移除',
     'notes.html 已可直接访问（保留密码锁），公告弹窗不应再出现');
   check(!/以后再说/.test(dp),
     '弹窗已移除「以后再说」按钮',
-    '该位置已改为「解锁彩蛋」，两个文案不应并存（注释中提及旧文案不算）');
+    '该位置已改为「站长随笔」，两个文案不应并存（注释中提及旧文案不算）');
+  // 2026-10-25 站长明确「还原」：剥注释后不应再出现「解锁彩蛋」
+  // （注释里记沿革没关系，按钮上不行）。
+  check(!/解锁彩蛋/.test(dp),
+    '弹窗按钮已还原为「站长随笔」（不再是「解锁彩蛋」）',
+    '站长 2026-10-25 原话：「解锁彩蛋按钮还原为站长随笔」');
 
   // 写作进度面板的小节提取必须限定在 .wrap 内。
   //
@@ -3638,11 +3644,16 @@ section('20i. 星巴克公告框注入闸门（与苹果同构）');
 //   ②「刷新一下连我自己也锁了」——无痕/清缓存后浏览器恢复输入框内容但不发
 //   input 事件，mount 必须补验；③限流要给出重置时刻并到点自动重试；
 //   ④解锁后给「别取消 Star / 更多福利」提示。
-//   实现：photo-gate.js（UMD，逻辑外链；行为测试 test-photo-gate.cjs 55 项）。
+//   2026-10-25 站长定稿访问节奏：每次刷新/关闭浏览器再访问都重新验证；
+//   不清理浏览器本地数据（Cookie / localStorage）就自动用记忆的用户名验；
+//   同时照片改为仓库内加密（.enc 密文），解锁动作委托 photo-vault.js 解密显示
+//   （见 20l）。Cookie 双写：读写都走 Cookie 优先、localStorage 兜底。
+//   实现：photo-gate.js（UMD，逻辑外链；行为测试 test-photo-gate.cjs 66 项）。
 // 判据：门禁表单齐全、校验打的是 GitHub starred API、按 full_name 认本站仓库、
-//   满页翻页、解锁前不预载照片、data-src 目标文件存在、解锁才写 src、
-//   不信本地 flag（取消 Star 重新上锁）、[hidden] 兜底、页面明示真校验、
-//   输入即验、恢复值补验、限流重置重试、解锁提示条。
+//   满页翻页、解锁前不预载照片、data-enc 指向 .enc 密文、解锁委托 vault、
+//   Cookie/localStorage 双写双清、不信本地 flag（取消 Star 重新上锁）、
+//   [hidden] 兜底、页面明示真校验、输入即验、恢复值补验、限流重置重试、
+//   解锁提示条。
 {
   const why = read('why-shuangxiugou.html');
   const pg = read('photo-gate.js');
@@ -3652,7 +3663,7 @@ section('20i. 星巴克公告框注入闸门（与苹果同构）');
     '门禁表单齐全（gate-box / 表单 / 用户名输入 / 验证按钮 / 消息位）');
   check(/href="https:\/\/github\.com\/dujeongil-galaxy\/shuangxiugou"/.test(why),
     '去 Star 链接指向本站仓库（不是上游站）');
-  check(exists('photo-gate.js') && /<script src="\.\/photo-gate\.js\?v=2"><\/script>/.test(why),
+  check(exists('photo-gate.js') && /<script src="\.\/photo-gate\.js\?v=3"><\/script>/.test(why),
     '门禁逻辑外链 photo-gate.js（可单测，不塞内联）');
   check(/api\.github\.com\/users\//.test(pg) && /starred\?per_page=100&page=/.test(pg),
     '校验打的是 GitHub 公开 starred 列表 API');
@@ -3666,16 +3677,27 @@ section('20i. 星巴克公告框注入闸门（与苹果同构）');
   //   且只数 <img> 标签——script 的 src="./photo-gate.js" 是合法引用，不能连坐。
   const imgTags = (why.match(/<img\b[^>]*>/g) || []);
   const imgsWithRealSrc = imgTags.filter((t) => /(?<!data-)src="/.test(t)).length;
-  const imgsWithDataSrc = imgTags.filter((t) => /data-src="/.test(t)).length;
-  check(imgsWithRealSrc === 0 && imgsWithDataSrc === 2,
-    `照片 img 只用 data-src 懒加载（带真实 src= 的 img ${imgsWithRealSrc} 个，应为 0；data-src ${imgsWithDataSrc} 个，应为 2）`);
-  const photoRefs = [...why.matchAll(/data-src="([^"]+)"/g)].map((m) => m[1]);
+  const imgsWithDataEnc = imgTags.filter((t) => /data-enc="/.test(t)).length;
+  check(imgsWithRealSrc === 0 && imgsWithDataEnc === 2,
+    `照片 img 只用 data-enc 懒引用密文（带真实 src= 的 img ${imgsWithRealSrc} 个，应为 0；data-enc ${imgsWithDataEnc} 个，应为 2）`);
+  const photoRefs = [...why.matchAll(/data-enc="([^"]+)"/g)].map((m) => m[1]);
   check(photoRefs.length === 2 && photoRefs.every((r) => localExists(r)),
-    'data-src 指向的照片文件真实存在',
+    'data-enc 指向的 .enc 密文文件真实存在',
     photoRefs.map((r) => `${r} → ${localExists(r) ? '存在' : '缺失'}`).join('；'));
-  check(/imgs\[i\]\.src = imgs\[i\]\.getAttribute\('data-src'\)/.test(pg),
-    '解锁逻辑完整（验证通过后才写 img.src）');
-  // 语义是「localStorage 只记用户名，不记已解锁 flag」。早先用 !/unlocked/i 子串匹配，
+  // 页面上不许再出现明文照片引用（加密的意义就在于 URL 也拿不到原图）
+  check(!/photo-kuromi\.jpg"/.test(why) && !/photo-melody\.jpg"/.test(why)
+    && !/photo-kuromi\.jpg'/.test(why) && !/photo-melody\.jpg'/.test(why),
+    '页面不再引用明文 jpg（只有 .enc 密文）');
+  // 解锁动作必须委托 vault：仓库里只有密文，门禁自己不解密
+  check(/vault\.reveal\(grid, status, \{ fetch: fetchImpl \}\)/.test(pg)
+    && /root\.SXGPhotoVault/.test(pg),
+    '验证通过后委托 SXGPhotoVault.reveal（取密文→解密→显示，门禁不解密）',
+    '把 vault.reveal 改成门禁自己写 img.src，等于照片退回明文');
+  // vault 没加载上时的兜底：明示错误，不允许「解锁了却是一排空框」
+  check(/解密组件没有加载成功/.test(pg) && /grid\.hidden = true/.test(pg),
+    'vault 缺失时状态位出红字、网格保持隐藏（不静默显示空框）');
+  // ---- Cookie / localStorage 双写（2026-10-25 站长定稿的访问节奏） ----
+  // 语义是「只记用户名，不记已解锁 flag」。早先用 !/unlocked/i 子串匹配，
   //   结果元素 id sxg-gate-unlocked-note 里的 unlocked 误判——改成枚举所有 setItem 的键，
   //   必须全部是 USER_KEY（字符串键也要抓，防止 store.setItem('sxg-unlocked', 1) 漏网）。
   const setItemKeys = [...pg.matchAll(/\.setItem\(\s*(?:'([^']*)'|"([^"]*)"|([A-Za-z_$][\w$]*))\s*,/g)]
@@ -3683,11 +3705,27 @@ section('20i. 星巴克公告框注入闸门（与苹果同构）');
   check(setItemKeys.length >= 1 && setItemKeys.every((k) => k === 'USER_KEY'),
     'localStorage 只记用户名、不记「已解锁」flag（取消 Star 重新上锁）',
     `setItem 的键：[${setItemKeys.join(', ') || '无'}]，应全部为 USER_KEY`);
+  // Cookie 双写：读要 Cookie 优先，写要两个都写，清要两个都清
+  check(/\(cookie && cookie\.read\(\)\) \|\| \(store && store\.getItem\(USER_KEY\)\)/.test(pg),
+    'mount 时 Cookie 优先读记忆用户名（localStorage 兜底）',
+    '站长口径：「不清理浏览器 Cookie 就自动用这个用户名重新验证」');
+  check(/cookie && cookie\.write\(u\)/.test(pg) && /cookie && cookie\.clear\(\)/.test(pg),
+    '验证成功 Cookie+localStorage 双写；用户名不存在时两个都清');
+  // ⚠️ 2026-10-25 行为测试实测抓到的真 bug：清 Cookie 的串少了「=」，
+  //   RFC 6265 规定没有 '=' 的 set-cookie 串整个被忽略——clear() 变空操作，
+  //   错名字永远赖在 Cookie 里。隔离实验里手写串带 = 所以没暴露，是行为测试抓到的。
+  check(/USER_KEY \+ '=; path=\/; max-age=0'/.test(pg),
+    '清 Cookie 的串带等号（少个 = 浏览器整个忽略，clear 是空操作）',
+    '2026-10-25 test-photo-gate.cjs 实测：缺 = 时 cookie 原样留着');
+  check(/path=\/; max-age=/.test(pg) && /SameSite=Lax/.test(pg),
+    'Cookie 写全属性（path / max-age / SameSite）');
   check(/\.photo-grid\[hidden\]\s*\{\s*display:\s*none/.test(why),
     '照片网格有 [hidden] 显示兜底（否则 display:grid 会盖掉 hidden 属性，锁定态占位框外露）',
     '无头浏览器实测过的坑：.photo-grid{display:grid} 会覆盖 hidden 属性的 UA display:none');
   check(/真校验/.test(why),
     '页面明示这是真校验（拉 GitHub star 列表，不是点一下就说已 Star）');
+  check(/每次刷新/.test(why) && /Cookie \/ 本地存储/.test(why),
+    '页面写明访问节奏（每次访问重新验证；不清本地数据就自动用记忆用户名验）');
   // ---- 2026-10-24 深夜站长实测反馈后的新增断言 ----
   check(/addEventListener\('input'/.test(pg) && /setTimeout\(/.test(pg) && /DEBOUNCE_MS/.test(pg),
     '输入停顿即自动验证（不用非点按钮；防抖省 API 调用）',
@@ -3720,7 +3758,7 @@ section('20i. 星巴克公告框注入闸门（与苹果同构）');
   check(/note\.hidden = false/.test(pg) && /请勿取消 Star/.test(why) && /更多福利/.test(why),
     '解锁后显示「别取消 Star / 不定期更新更多福利」提示');
   check(exists('scripts/test-photo-gate.cjs'),
-    '存在门禁行为测试（jsdom + 桩 fetch，55 项）');
+    '存在门禁行为测试（jsdom + 桩 fetch，66 项）');
 }
 
 // ---------- 20k. 搜索口径修正：summary 命中不得串品牌 ----------
@@ -3778,6 +3816,96 @@ section('20i. 星巴克公告框注入闸门（与苹果同构）');
     'input 事件真的绑了（不是只定义了处理器函数）');
   check(exists('scripts/test-search-scope-fix.cjs'),
     '存在口径修正行为测试（jsdom + 桩 fetch，30 项）');
+}
+
+// ---------- 20l. 照片仓库内加密 + 解密渲染 + 点击放大灯箱 ----------
+// 背景：2026-10-25 站长要求「照片在仓库中加密」。此前 photo-kuromi.jpg /
+//   photo-melody.jpg 是 git 跟踪的明文（clone 即可得）；现在仓库里只有
+//   .enc 密文容器（scripts/encrypt-photos.mjs：PBKDF2-SHA256 21 万次 +
+//   AES-256-GCM，与 notes.html 同参数），Star 门禁通过后由 photo-vault.js
+//   在浏览器本地解密成 Blob 显示。
+//   ⚠️ 已推历史里的旧明文：按本项目铁律不重写历史，只能保证「从今往后
+//      仓库（工作区 + 新提交）只有密文」——所以 git ls-files 必须盯着，
+//      明文一旦被重新跟踪，加密就白做了。
+//   ⚠️ 口令在前端源码里（浏览器解密要用）：防的是「仓库躺明文」，
+//      不防刻意读源码的人——真正的门是 Star 门禁。别在文案里吹军事级。
+//   同时站长要求：图片可点击放大，放大后必须有「图片来源于网络，请不要
+//   恶意传播，否则隐私权等法律纠纷一律与本站无关」的提示。
+// 判据：.enc 在库、明文不被跟踪、.gitignore 兜底、加密脚本带往返自检、
+//   口令同源、前端 KDF/GCM/tag 拼接/Blob URL、失败不静默、灯箱结构与免责提示。
+{
+  const pv = read('photo-vault.js');
+  const why = read('why-shuangxiugou.html');
+  section('20l. 照片仓库内加密 + 解密灯箱');
+  check(exists('photo-kuromi.jpg.enc') && exists('photo-melody.jpg.enc'),
+    '两张照片的 .enc 密文容器在仓库里',
+    '缺 .enc → 照片加密名不副实');
+  // git 层：明文不许再被跟踪，密文必须被跟踪。
+  // 光看文件存在不够——明文在本机磁盘上永远在（要留着重新加密），
+  // 只有 git ls-files 能区分「在库里」和「只在本机」。
+  let tracked = [];
+  try {
+    tracked = execSync('git ls-files', { cwd: ROOT, encoding: 'utf8' })
+      .split('\n').map((s) => s.trim()).filter(Boolean);
+  } catch (e) { /* git 不可用时跳过 git 层断言，其余断言照跑 */ }
+  if (tracked.length) {
+    const stillTracked = tracked.filter((t) => t === 'photo-kuromi.jpg' || t === 'photo-melody.jpg');
+    check(stillTracked.length === 0,
+      '明文照片未被 git 跟踪（clone 拿不到原图）',
+      `仍被跟踪：${stillTracked.join('、')}（git rm --cached 移出，.gitignore 兜底）`);
+    check(tracked.includes('photo-kuromi.jpg.enc') && tracked.includes('photo-melody.jpg.enc'),
+      '.enc 密文已被 git 跟踪（随仓库推送，访客页面才取得到）');
+  }
+  check(/photo-kuromi\.jpg/.test(read('.gitignore')) && /photo-melody\.jpg/.test(read('.gitignore')),
+    '.gitignore 收录两张明文照片（防误 git add 回来）');
+  // 加密脚本：同参数 + 往返自检（参数写错时带着错密文上线，访客全解不开）
+  const ep = exists('scripts/encrypt-photos.mjs') ? read('scripts/encrypt-photos.mjs') : '';
+  check(/pbkdf2Sync/.test(ep) && /aes-256-gcm/.test(ep)
+    && /decryptContainer/.test(ep) && /roundtrip\.equals/.test(ep),
+    '加密脚本在仓库里（PBKDF2-SHA256 + AES-256-GCM，写完当场解密比对）');
+  // 口令同源：加密脚本与前端口令漂移的话，上线后所有人都解不开——
+  // 这种故障静态审查看不出来，test-photo-vault.cjs 用真 .enc 真口令盯着。
+  // ⚠️ 必须比对**完整值**，不能只比前缀：2026-10-25 故障注入实测，只写
+  //   /PASSPHRASE = 'sxg-photo-vault-/ 的话，把值改成同前缀另一串照样绿
+  //   （前缀是约定俗成的起手式，不是身份）——同前缀 ≠ 同值。
+  const pvPass = /PASSPHRASE = '([^']+)'/.exec(pv);
+  const epPass = /PASSPHRASE = '([^']+)'/.exec(ep);
+  check(!!pvPass && !!epPass && pvPass[1] === epPass[1] && pvPass[1].length >= 12,
+    '前端口令与加密脚本口令完全一致（同值且 ≥12 位）',
+    `不一致：前端「${pvPass ? pvPass[1] : '未找到'}」 vs 脚本「${epPass ? epPass[1] : '未找到'}」`
+    + '——两边改漏一个，线上就是「门禁过了、照片永远解不开」；跑 node scripts/test-photo-vault.cjs 可验');
+  // 前端解密链：KDF → GCM → tag 拼接 → Blob → createObjectURL
+  check(/importKey\('raw'/.test(pv) && /PBKDF2/.test(pv) && /SHA-256/.test(pv)
+    && /deriveKey/.test(pv) && /AES-GCM/.test(pv) && /tagLength: 128/.test(pv),
+    '前端用 Web Crypto 同参数解密（PBKDF2-SHA256 → AES-256-GCM）');
+  // data 和 tag 必须分别解码再拼接：直接拼 base64 字符串会因各自 padding 解出乱码
+  check(/buf\.set\(tag, body\.length\)/.test(pv),
+    '密文与 tag 分别 base64 解码再拼接（Web Crypto 的 GCM 要 tag 附在尾部）',
+    'notes.html 同款口径；直接拼 base64 串是经典坑');
+  check(/createObjectURL/.test(pv) && /setAttribute\('src'/.test(pv),
+    '解密产物走 Blob URL 写 img.src（不把 base64 塞进 src 属性）');
+  // 失败不许静默：全成功才显网格，失败出红字且网格保持隐藏
+  check(/grid\.hidden = false/.test(pv) && /data-vault-done/.test(pv) && /解密失败/.test(pv),
+    '全部解密成功才显网格；失败出红字、网格保持隐藏（幂等标记防重复取密文）',
+    '半截照片比没有更糟；静默空框是 2026-10-24 定过的红线');
+  // 灯箱：结构、交互、免责提示、[hidden] 兜底、放大光标
+  check(/id="sxg-photo-lightbox"/.test(why) && /id="sxg-photo-lightbox-img"/.test(why)
+    && /id="sxg-photo-lightbox-cap"/.test(why) && /data-close="1"/.test(why),
+    '灯箱结构齐全（遮罩与 ✕ 可关、大图位、标题位）');
+  check(/图片来源于网络，请不要恶意传播，否则隐私权等法律纠纷一律与本站无关/.test(why),
+    '灯箱带来源免责提示（站长 2026-10-25 要求的原文）',
+    '图片来源于网络，放大后必须明示；这句话被截图外传也不会让站长为难');
+  check(/\.photo-lightbox\[hidden\]\s*\{\s*display:\s*none/.test(why),
+    '灯箱有 [hidden] 显示兜底（display:flex 会盖掉 hidden 属性，遮罩会浮在页面上）',
+    'photo-grid 同款坑：2026-10-24 无头截图实测');
+  check(/cursor:\s*zoom-in/.test(why),
+    '照片有放大光标提示（可点击）');
+  check(/id="sxg-photo-status"/.test(why) && /\.photo-status\[hidden\]\s*\{\s*display:\s*none/.test(why),
+    '解密状态位存在且有 [hidden] 显示兜底');
+  check(/addEventListener\('click'/.test(pv) && /Escape/.test(pv) && /data-close/.test(pv),
+    '灯箱交互齐全（委托点击放大 + Esc/遮罩/✕ 关闭）');
+  check(exists('scripts/test-photo-vault.cjs'),
+    '存在解密/灯箱行为测试（jsdom + Node Web Crypto，30 项）');
 }
 
 // ---------- 20g. 公告栏版本号必须等于「上一次提交」 ----------

@@ -235,6 +235,7 @@
         border-radius: 12px;
         border: 1px solid #e5e7eb;
         background: #f1f5f9;
+        cursor: zoom-in; /* 提示可以点击放大（灯箱逻辑在 photo-vault.js） */
       }
       .photo-cell figcaption {
         margin-top: 8px;
@@ -242,6 +243,94 @@
         color: #94a3b8;
         text-align: center;
       }
+      .photo-zoom-hint {
+        display: block;
+        margin-top: 2px;
+        font-size: 11px;
+        color: #cbd5e1;
+      }
+      /* 解密状态位（photo-vault.js 写：「正在解密」/ 失败原因）。
+         [hidden] 兜底与 photo-grid 同款——有了 display 规则就会盖掉
+         hidden 属性的 UA display:none（2026-10-24 无头截图实测的坑）。 */
+      .photo-status {
+        margin: 0 0 12px;
+        font-size: 12.5px;
+        line-height: 1.6;
+        color: #0f766e;
+      }
+      .photo-status--err { color: #be1239; }
+      .photo-status[hidden] { display: none; }
+      /* 照片灯箱：点击照片放大查看（交互在 photo-vault.js） */
+      .photo-lightbox {
+        position: fixed;
+        inset: 0;
+        z-index: 80;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      /* display:flex 会盖掉 hidden 的 UA display:none——兜底必须写，
+         否则锁定/未放大时整个遮罩会浮在页面上（photo-grid 同款坑）。 */
+      .photo-lightbox[hidden] { display: none; }
+      .photo-lightbox__mask {
+        position: absolute;
+        inset: 0;
+        background: rgba(15, 23, 42, .82);
+      }
+      .photo-lightbox__panel {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: min(92vw, 880px);
+        padding: 14px 14px 12px;
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 24px 60px rgba(2, 6, 23, .45);
+      }
+      .photo-lightbox__img {
+        display: block;
+        width: 100%;
+        max-height: 76vh;
+        object-fit: contain;
+        border-radius: 8px;
+        background: #f1f5f9;
+      }
+      .photo-lightbox__cap {
+        margin: 10px 2px 6px;
+        font-size: 13px;
+        color: #475569;
+        text-align: center;
+      }
+      /* 放大后的固定提示（站长 2026-10-25 要求）：
+         图片来源于网络，勿恶意传播，法律纠纷与本站无关。 */
+      .photo-lightbox__disclaimer {
+        margin: 0 2px;
+        padding: 8px 12px;
+        border: 1px solid #fde68a;
+        border-radius: 8px;
+        background: #fffbeb;
+        font-size: 12px;
+        line-height: 1.7;
+        color: #b45309;
+        text-align: center;
+      }
+      .photo-lightbox__x {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 2;
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 50%;
+        background: rgba(15, 23, 42, .75);
+        color: #fff;
+        font-size: 18px;
+        line-height: 1;
+        cursor: pointer;
+      }
+      .photo-lightbox__x:hover { background: rgba(15, 23, 42, .9); }
       @media (max-width: 560px) {
         .photo-grid { grid-template-columns: 1fr; }
         .photo-cell img { height: 360px; }
@@ -364,23 +453,40 @@
           <p class="gate-note">
             真校验，不是「点一下就说已 Star」：本站会拉取你填名的 GitHub 公开 Star 列表，
             确认里面真有本站仓库才放行——没 Star 过不了，取消 Star 后再来会重新上锁。
-            每次访问都重新验证，不依赖浏览器缓存；无痕窗口或清理过缓存后刷新，需要再输一次用户名
-            （浏览器通常会帮你恢复输入框内容，届时会自动验证）。
+            每次刷新、或关闭浏览器再访问，都会重新验证一次；验证通过后，只要不清理
+            浏览器本地数据（Cookie / 本地存储），之后会自动用这个用户名重新验证；
+            改填别的用户名就按新名字验，没 Star 照样锁着。
+            照片以加密形式存放在仓库里，验证通过后在浏览器本地解密展示。
             本站只核对「你输入的这个人有没有 Star」，不展示、也拿不到给本站 Star 的完整名单。
           </p>
         </div>
         <p class="gate-unlocked-note" id="sxg-gate-unlocked-note" hidden>
           已解锁：请勿取消 Star，不定期更新更多福利。取消后再次访问会重新上锁。
         </p>
+        <p class="photo-status" id="sxg-photo-status" hidden></p>
         <div class="photo-grid" id="sxg-photo-grid" hidden>
           <figure class="photo-cell">
-            <img data-src="./photo-kuromi.jpg" alt="库洛米玩偶围成爱心，人躺在中间，手举一只库洛米" />
+            <img data-enc="./photo-kuromi.jpg.enc" alt="库洛米玩偶围成爱心，人躺在中间，手举一只库洛米" />
             <figcaption>库洛米 · 爱心局</figcaption>
+            <!-- 「点击放大」提示必须放在 figcaption 外面：灯箱标题取的是
+                 figcaption 的纯文本（photo-vault.js），混进去会一起显示 -->
+            <span class="photo-zoom-hint">点击放大</span>
           </figure>
           <figure class="photo-cell">
-            <img data-src="./photo-melody.jpg" alt="美乐蒂玩偶围成爱心，人躺在中间，怀里抱一只美乐蒂" />
+            <img data-enc="./photo-melody.jpg.enc" alt="美乐蒂玩偶围成爱心，人躺在中间，怀里抱一只美乐蒂" />
             <figcaption>美乐蒂 · 爱心局</figcaption>
+            <span class="photo-zoom-hint">点击放大</span>
           </figure>
+        </div>
+        <!-- 照片灯箱：点击放大查看，附来源免责提示（交互在 photo-vault.js） -->
+        <div class="photo-lightbox" id="sxg-photo-lightbox" hidden>
+          <div class="photo-lightbox__mask" data-close="1"></div>
+          <div class="photo-lightbox__panel" role="dialog" aria-modal="true" aria-label="照片放大查看">
+            <button class="photo-lightbox__x" type="button" data-close="1" aria-label="关闭">&times;</button>
+            <img class="photo-lightbox__img" id="sxg-photo-lightbox-img" alt="" />
+            <p class="photo-lightbox__cap" id="sxg-photo-lightbox-cap"></p>
+            <p class="photo-lightbox__disclaimer">图片来源于网络，请不要恶意传播，否则隐私权等法律纠纷一律与本站无关</p>
+          </div>
         </div>
       </section>
 
@@ -390,6 +496,8 @@
     </article>
 
     <!-- 照片 Star 门禁（真校验版，逻辑在 photo-gate.js） -->
-    <script src="./photo-gate.js?v=2"></script>
+    <script src="./photo-gate.js?v=3"></script>
+    <!-- 照片解密 + 点击放大灯箱：仓库里只有 .enc 密文，验证通过后浏览器本地解密 -->
+    <script src="./photo-vault.js?v=1"></script>
   </body>
 </html>

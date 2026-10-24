@@ -11,7 +11,7 @@
  * （填谁的昵称就查谁的 star 列表）——UI 上已明示。
  *
  * 「取消 Star 会重新上锁」：每次访问都重新拉列表验，不信本地 flag，
- *   localStorage 只记「上次验证通过的用户名」，不记「已解锁」。
+ *   Cookie / localStorage 只记「上次验证通过的用户名」，不记「已解锁」。
  *
  * 交互（2026-10-24 深夜站长实测反馈后补）：
  *   - 输入用户名停顿一下即自动验证，不必非点按钮；
@@ -23,6 +23,16 @@
  *   - 网络抖一下：自动重试 2 次再报错；
  *   - 验证失败（限流/断网）时自动验证也要出提示，不能无声锁着；
  *   - 解锁后给出「别取消 Star、不定期更新更多福利」的常驻提示。
+ *
+ * 访问节奏（2026-10-25 站长定稿）：每次刷新/关闭浏览器再访问都会重新验证一次；
+ *   验证通过后，只要不清理浏览器本地数据（Cookie / localStorage），之后自动
+ *   用记忆的用户名重新验证；用户改填别的用户名就按新名字验，没 Star 照样锁着。
+ *   静态站没有服务端，Cookie 只在本地面板里存/读，不发请求也不上传。
+ *
+ * 照片解密不在本文件：2026-10-25 起照片在仓库里是 .enc 密文，验证通过后
+ *   调用 SXGPhotoVault.reveal(grid, status, { fetch }) 由 photo-vault.js
+ *   取密文→Web Crypto 解密→Blob URL 显示。vault 没加载上时出红字明说，
+ *   不允许「解锁了却是一排空框」的静默失败。
  *
  * 形态：UMD——浏览器里挂在 window.SXGPhotoGate 并自动 mount；
  *   Node 里 module.exports 供 test-photo-gate.cjs 用桩 fetch 测试。
@@ -49,6 +59,37 @@
   var RATE_RETRY_CAP = 2; // 一次访问里最多自动重试几次（防刷）
   var RATE_WAIT_CAP_MS = 2 * 60 * 60 * 1000; // 重置时刻太远（>2 小时）就不自动重试
   var USERNAME_RE = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/;
+  var COOKIE_MAX_AGE = 31536000; // 记忆用户名保留一年（秒）
+  var COOKIE_RE = new RegExp('(?:^|;\\s*)' + USER_KEY + '=([^;]*)');
+
+  /**
+   * Cookie 记忆（站长口径：「不清理 Cookie 就自动用这个用户名验证」）。
+   * 与 localStorage 双写：读的时候 Cookie 优先，localStorage 兜底
+   * （有的浏览器/隐私模式会禁其中一种，两种都写才保险）。
+   * 静态站没有服务端读 Cookie，它只在本地面板里存/读，不发请求也不上传。
+   */
+  function cookieJar(doc) {
+    return {
+      read: function () {
+        try {
+          var m = COOKIE_RE.exec(String(doc.cookie || ''));
+          return m ? decodeURIComponent(m[1]) : null;
+        } catch (e) { return null; }
+      },
+      write: function (u) {
+        try {
+          doc.cookie = USER_KEY + '=' + encodeURIComponent(u)
+            + '; path=/; max-age=' + COOKIE_MAX_AGE + '; SameSite=Lax';
+        } catch (e) {}
+      },
+      clear: function () {
+        // ⚠️ 必须带「=」：RFC 6265 规定 set-cookie 串里没有 '=' 就整个忽略，
+        //    少个等号 clear() 就是空操作（cookie 永远清不掉）——2026-10-25
+        //    行为测试实测抓到这个bug，隔离实验里手写串是带 = 的所以没暴露。
+        try { doc.cookie = USER_KEY + '=; path=/; max-age=0'; } catch (e) {}
+      }
+    };
+  }
 
   var MSG = {
     checking: '正在拉取你的 GitHub Star 列表…',
@@ -150,8 +191,8 @@
   }
 
   /**
-   * mount(opts)：接线 DOM。opts 可注入 document / localStorage / fetch /
-   *   debounceMs / retryDelays / rateBufferMs（测试用）。
+   * mount(opts)：接线 DOM。opts 可注入 document / localStorage / cookie /
+   *   fetch / vault / debounceMs / retryDelays / rateBufferMs（测试用）。
    * 返回 { verify, unlock, say } 或 null（页面没有门禁元素时）。
    */
   function mount(opts) {
@@ -167,10 +208,12 @@
     var btn = doc.getElementById('sxg-gate-verify');
     var msg = doc.getElementById('sxg-gate-msg');
     var note = doc.getElementById('sxg-gate-unlocked-note');
+    var status = doc.getElementById('sxg-photo-status'); // 可选：解密状态位（photo-vault 用）
     if (!box || !grid || !form || !input || !btn || !msg) return null;
     var debounceMs = opts.debounceMs == null ? DEBOUNCE_MS : opts.debounceMs;
     var retryDelays = opts.retryDelays || RETRY_DELAYS;
     var rateBufferMs = opts.rateBufferMs == null ? RATE_BUFFER_MS : opts.rateBufferMs;
+    var cookie = opts.cookie || cookieJar(doc);
 
     function say(text, kind) {
       msg.textContent = text || '';
@@ -181,11 +224,30 @@
     function unlock() {
       box.hidden = true;
       if (note) note.hidden = false;
-      grid.hidden = false;
-      var imgs = grid.querySelectorAll('img[data-src]');
-      for (var i = 0; i < imgs.length; i++) {
-        imgs[i].src = imgs[i].getAttribute('data-src');
+      revealPhotos();
+    }
+
+    /**
+     * 把照片交给 photo-vault 解密显示（仓库里只有 .enc 密文）。
+     * vault 没加载上/调不通：状态位出红字、网格保持隐藏——
+     * 不允许「解锁了却是一排空框」的静默失败。
+     */
+    function revealPhotos() {
+      var vault = opts.vault || root.SXGPhotoVault || null;
+      if (vault && typeof vault.reveal === 'function') {
+        try {
+          vault.reveal(grid, status, { fetch: fetchImpl });
+          return;
+        } catch (e) { /* 当作 vault 不可用，落到下面的明示分支 */ }
       }
+      if (status) {
+        status.textContent = '照片解密组件没有加载成功，刷新页面试试。';
+        status.hidden = false;
+        status.className = 'photo-status photo-status--err';
+      }
+      // 显式收回网格：解锁流程本身不显示网格（显示是 vault 的职责），
+      // 但万一将来有人在 unlock 里提前 unhide，这里至少兜回隐藏态。
+      grid.hidden = true;
     }
 
     var inflight = null; // 正在验证的用户名（同一用户不重复打 API）
@@ -243,7 +305,10 @@
         btn.disabled = false;
         if (found) {
           rateRetries = 0;
-          try { store && store.setItem(USER_KEY, u); } catch (e) {}
+          try {
+            store && store.setItem(USER_KEY, u);
+            cookie && cookie.write(u);
+          } catch (e) {}
           say('', '');
           unlock();
           return;
@@ -261,6 +326,7 @@
         // 用户名本身不对时清掉记忆，避免每次访问都拿错名字去问 GitHub
         if (code === 'nouser' || code === 'badname' || code === 'empty') {
           try { store && store.removeItem(USER_KEY); } catch (e) {}
+          try { cookie && cookie.clear(); } catch (e) {}
         }
       }, { retryDelays: retryDelays });
     }
@@ -282,12 +348,13 @@
       verify(input.value, false);
     });
 
-    // 返回访问：记忆里有用户名就自动重新校验。
+    // 返回访问：Cookie / localStorage 记忆里有用户名就自动重新校验。
     // 真校验不信本地 flag——取消 Star 的人再回来会重新看到门禁。
+    // Cookie 优先读（站长口径「不清理 Cookie 就自动验证」），localStorage 兜底。
     var saved = null;
-    try { saved = store && store.getItem(USER_KEY); } catch (e) {}
+    try { saved = (cookie && cookie.read()) || (store && store.getItem(USER_KEY)); } catch (e) {}
     if (saved) {
-      input.value = saved;
+      input.value = normalize(saved);
       verify(saved, true, true);
     } else {
       // 无痕窗口/清过缓存：浏览器刷新时会恢复输入框内容，但不发 input 事件，

@@ -12,11 +12,11 @@
 //   7. 空用户名 / 非法用户名 → 直接拒，且不打 API（省限流）
 //   8. 超过 10 页还没找到 → toomany，且 API 调用恰好 10 次
 //   mount 层（jsdom 真 DOM）：
-//   9.  验证通过 → 门禁卡隐藏、照片网格显示、img.src 被写上、用户名入 localStorage
+//   9.  验证通过 → 门禁卡隐藏、提示条显示、照片网格显示、用户名入 Cookie+localStorage
 //   10. 没 Star → 门禁不消失、出提示、照片不加载
 //   11. 记忆用户名 + 仍 Star → 进页面自动解锁（返回访问）
 //   12. 记忆用户名 + 已取消 Star → 保持锁定并提示（取消 Star 会重新上锁）
-//   13. 未解锁前 img 没有 src（不预载照片）
+//   13. 未解锁前 img 没有 src（不预载照片；照片是 data-enc 密文节点）
 //   14. 表单 submit 触发校验（不是只有点按钮才行）
 //   15. 输入停顿即自动验证（站长：「每次输入用户名都会自动验证」）
 //   16. 非法/空输入不触发自动验证（省限流）
@@ -29,6 +29,12 @@
 //   22. 解锁后出现「别取消 Star / 更多福利」提示条；解锁前是藏的
 //   23. 同一用户并发验证只打一次 API（防刷限流）
 //   24. 用户名带 @ 前缀也按裸名存储、也能解锁
+//   25. Cookie 记忆（localStorage 空）→ 再次访问自动验证解锁
+//       （站长 2026-10-25：「不清理浏览器 Cookie，则触发自动验证」）
+//   26. 验证成功 → Cookie + localStorage 双写；用户名不存在 → 两个都清
+//   27. 解密组件（photo-vault）没加载上 → 状态位红字明说、网格保持隐藏
+//       （2026-10-25 起照片是 .enc 密文，解锁委托 vault.reveal；vault 缺失时
+//         不允许「解锁了却是一排空框」的静默失败）
 const path = require('path');
 const { JSDOM } = require('jsdom');
 
@@ -220,7 +226,8 @@ console.log('photo-gate.js · mount 行为（jsdom 真 DOM）');
 console.log('============================================================');
 
 // ⚠️ 测试 DOM 必须照抄线上 why-shuangxiugou.html 的真实嵌套层级
-//    （PITFALLS：少一层容器 = 少一类 bug）——解锁提示条也在里面。
+//    （PITFALLS：少一层容器 = 少一类 bug）——解锁提示条、解密状态位都在里面。
+//    2026-10-25 起照片是 data-enc 密文节点，解锁动作委托 photo-vault（桩替身）。
 const GATE_HTML = `
 <!DOCTYPE html><html><body>
   <div class="gate-box" id="sxg-gate-box">
@@ -231,14 +238,20 @@ const GATE_HTML = `
     <p class="gate-msg" id="sxg-gate-msg" hidden></p>
   </div>
   <p class="gate-unlocked-note" id="sxg-gate-unlocked-note" hidden>已解锁：请勿取消 Star，不定期更新更多福利。取消后再次访问会重新上锁。</p>
+  <p class="photo-status" id="sxg-photo-status" hidden></p>
   <div class="photo-grid" id="sxg-photo-grid" hidden>
-    <img data-src="./photo-kuromi.jpg" alt="a" />
-    <img data-src="./photo-melody.jpg" alt="b" />
+    <img data-enc="./photo-kuromi.jpg.enc" alt="a" />
+    <img data-enc="./photo-melody.jpg.enc" alt="b" />
   </div>
 </body></html>`;
 
-function mkEnv(savedUser) {
-  const dom = new JSDOM(GATE_HTML, { runScripts: 'outside-only', pretendToBeVisual: true });
+function mkEnv(savedUser, opts) {
+  opts = opts || {};
+  const dom = new JSDOM(GATE_HTML, {
+    runScripts: 'outside-only',
+    pretendToBeVisual: true,
+    url: opts.url, // 传 http(s) URL 才能用真 document.cookie
+  });
   const data = {};
   const store = {
     getItem: (k) => (k in data ? data[k] : null),
@@ -248,6 +261,42 @@ function mkEnv(savedUser) {
   if (savedUser) data[gate.USER_KEY] = savedUser;
   const doc = dom.window.document;
   return { dom, doc, store, data };
+}
+
+/**
+ * photo-vault 桩替身：记录 reveal(grid, status, { fetch }) 的调用，
+ * 并模仿真 vault 的解锁后动作（写 blob src + 显网格 + 打 done 标记）。
+ * 门禁测试只关心「有没有把照片交给 vault、交对了参数」；
+ * 真解密行为由 test-photo-vault.cjs 覆盖。
+ */
+function mkVaultStub() {
+  const calls = [];
+  const stub = {
+    reveal: function (grid, status, revealOpts) {
+      calls.push({ grid: grid, status: status, opts: revealOpts });
+      const imgs = grid.querySelectorAll('img[data-enc]');
+      for (let i = 0; i < imgs.length; i++) {
+        imgs[i].setAttribute('src', 'blob:stub-' + i);
+      }
+      grid.hidden = false;
+      grid.setAttribute('data-vault-done', '1');
+    },
+  };
+  stub.calls = calls;
+  return stub;
+}
+
+/** 带 vault 桩的 mount（默认注入，除非测试专门要「没有 vault」） */
+function mountGate(env, fetchImpl, extraOpts) {
+  const vaultStub = mkVaultStub();
+  const opts = Object.assign({
+    document: env.doc,
+    localStorage: env.store,
+    fetch: fetchImpl,
+    vault: vaultStub,
+  }, extraOpts || {});
+  const api = gate.mount(opts);
+  return { api: api, vaultStub: vaultStub };
 }
 
 function el(env, id) { return env.doc.getElementById(id); }
@@ -263,10 +312,10 @@ function type(env, value) {
 }
 
 (function () {
-  // 9. 验证通过 → 全套解锁动作
+  // 9. 验证通过 → 全套解锁动作（含委托 vault + Cookie/localStorage 双写）
   const env = mkEnv();
   const f = mkFetchByPages([[REPO]]);
-  const api = gate.mount({ document: env.doc, localStorage: env.store, fetch: f });
+  const { api, vaultStub } = mountGate(env, f);
   check('mount 返回 API（元素齐全）', !!api);
   el(env, 'sxg-gate-user').value = 'starfan';
   submit(env);
@@ -274,9 +323,16 @@ function type(env, value) {
     check('验证通过 → 门禁卡隐藏', el(env, 'sxg-gate-box').hidden === true);
     check('验证通过 → 照片网格显示', el(env, 'sxg-photo-grid').hidden === false);
     const imgs = env.doc.querySelectorAll('#sxg-photo-grid img');
-    check('验证通过 → 两张照片 src 都被写上',
-      imgs[0].getAttribute('src') === './photo-kuromi.jpg' && imgs[1].getAttribute('src') === './photo-melody.jpg');
+    check('验证通过 → 两张照片 src 都被 vault 写上',
+      imgs[0].getAttribute('src') === 'blob:stub-0' && imgs[1].getAttribute('src') === 'blob:stub-1');
     check('验证通过 → 用户名写入 localStorage', env.data[gate.USER_KEY] === 'starfan', env.data);
+    // 解锁动作必须委托给 photo-vault（仓库里只有 .enc 密文，门禁自己不解密）
+    check('解锁委托 vault.reveal，且参数是（网格, 状态位, { fetch }）',
+      vaultStub.calls.length === 1
+      && vaultStub.calls[0].grid === el(env, 'sxg-photo-grid')
+      && vaultStub.calls[0].status === el(env, 'sxg-photo-status')
+      && vaultStub.calls[0].opts && vaultStub.calls[0].opts.fetch === f,
+      { calls: vaultStub.calls.length });
   });
 })();
 
@@ -300,7 +356,7 @@ function type(env, value) {
   // 11. 返回访问：记忆用户名 + 仍 Star → 自动解锁
   const env = mkEnv('starfan');
   const f = mkFetchByPages([[REPO]]);
-  gate.mount({ document: env.doc, localStorage: env.store, fetch: f });
+  mountGate(env, f);
   return wait(40).then(() => {
     check('返回访问（仍 Star）→ 自动解锁', el(env, 'sxg-photo-grid').hidden === false);
     check('返回访问 → 用户名回填输入框', el(env, 'sxg-gate-user').value === 'starfan');
@@ -327,11 +383,15 @@ function type(env, value) {
   gate.mount({ document: env.doc, localStorage: env.store, fetch: f });
   const imgs = env.doc.querySelectorAll('#sxg-photo-grid img');
   check('未解锁前 img 没有 src（不预载照片）', !imgs[0].getAttribute('src') && !imgs[1].getAttribute('src'));
+  check('照片节点是 data-enc 密文引用（不是明文 jpg）',
+    imgs[0].getAttribute('data-enc') === './photo-kuromi.jpg.enc'
+    && imgs[1].getAttribute('data-enc') === './photo-melody.jpg.enc',
+    [imgs[0].getAttribute('data-enc'), imgs[1].getAttribute('data-enc')]);
 
   // 14. submit 事件触发校验
   const f2 = mkFetchByPages([[REPO]]);
   const env2 = mkEnv();
-  gate.mount({ document: env2.doc, localStorage: env2.store, fetch: f2 });
+  mountGate(env2, f2);
   el(env2, 'sxg-gate-user').value = 'formfan';
   submit(env2);
   return wait(40).then(() => {
@@ -344,7 +404,7 @@ function type(env, value) {
   // 15. 输入停顿即自动验证（不用点按钮）
   const env = mkEnv();
   const f = mkFetchByPages([[REPO]]);
-  gate.mount({ document: env.doc, localStorage: env.store, fetch: f, debounceMs: 0 });
+  mountGate(env, f, { debounceMs: 0 });
   type(env, 'typefan');
   return until(() => f.calls.length === 1, 500).then((ok) => {
     check('输入即自动验证（打了 API）', ok, f.calls.length);
@@ -373,7 +433,7 @@ function type(env, value) {
   const env = mkEnv();
   el(env, 'sxg-gate-user').value = 'dujeongil-galaxy'; // 模拟浏览器恢复的输入值
   const f = mkFetchByPages([[REPO]]);
-  gate.mount({ document: env.doc, localStorage: env.store, fetch: f });
+  mountGate(env, f);
   return wait(40).then(() => {
     check('刷新恢复的输入值 → mount 时自动补验', f.calls.length === 1, f.calls.length);
     check('补验通过 → 直接解锁', el(env, 'sxg-photo-grid').hidden === false);
@@ -396,9 +456,13 @@ function type(env, value) {
 
 (function () {
   // 19. 限流 → 提示带重置时刻 → 到点自动重试 → 解锁
+  //     ⚠️ resetInMs 用 1600 而不是 1050：X-RateLimit-Reset 是秒级时间戳，
+  //     「重置时刻 - 当前时刻」会被秒取整截掉最多 999ms（实测可缩到 50ms），
+  //     等距比 until(150) 窗口还短时，「提示文案存在过」这条断言会漏。
+  //     1600ms 取整后等距稳定落在 (1400, 1600]，既远大于窗口、又小于 2500 的解锁窗口。
   const env = mkEnv();
-  const f = mkFetchRateThenStar(1050);
-  const api = gate.mount({ document: env.doc, localStorage: env.store, fetch: f, rateBufferMs: 0 });
+  const f = mkFetchRateThenStar(1600);
+  const { api } = mountGate(env, f, { rateBufferMs: 0 });
   api.verify('starfan', false);
   return until(() => /自动重试/.test(el(env, 'sxg-gate-msg').textContent), 150).then((ok) => {
     const text = el(env, 'sxg-gate-msg').textContent;
@@ -442,7 +506,7 @@ function type(env, value) {
   // 22. 解锁提示条：解锁前藏、解锁后显示
   const env = mkEnv();
   const f = mkFetchByPages([[REPO]]);
-  const api = gate.mount({ document: env.doc, localStorage: env.store, fetch: f });
+  const { api } = mountGate(env, f);
   check('解锁前提示条是藏的', el(env, 'sxg-gate-unlocked-note').hidden === true);
   api.verify('starfan', false);
   return wait(40).then(() => {
@@ -457,7 +521,7 @@ function type(env, value) {
   // 23. 同一用户并发验证只打一次 API
   const env = mkEnv();
   const f = mkFetchByPages([[REPO]]);
-  const api = gate.mount({ document: env.doc, localStorage: env.store, fetch: f });
+  const { api } = mountGate(env, f);
   api.verify('starfan', false);
   api.verify('starfan', false); // 同一个正在验 → 不再打 API
   return wait(40).then(() => {
@@ -470,12 +534,78 @@ function type(env, value) {
   // 24. 用户名带 @ 前缀：按裸名存储、也能解锁
   const env = mkEnv();
   const f = mkFetchByPages([[REPO]]);
-  gate.mount({ document: env.doc, localStorage: env.store, fetch: f });
+  mountGate(env, f);
   el(env, 'sxg-gate-user').value = '@starfan';
   submit(env);
   return wait(40).then(() => {
     check('带 @ 也按裸名存储', env.data[gate.USER_KEY] === 'starfan', env.data);
     check('带 @ 也能解锁', el(env, 'sxg-photo-grid').hidden === false);
+  });
+})();
+
+(function () {
+  // 25. Cookie 记忆：localStorage 是空的，只靠 Cookie 也要能记起用户名
+  //     （站长 2026-10-25：「若不清理浏览器 Cookie，则触发自动验证」）
+  const env = mkEnv(null, { url: 'http://localhost/' });
+  env.doc.cookie = 'sxg-photo-star-user=cookiefan'; // 模拟上次访问写下的 Cookie
+  const f = mkFetchByPages([[REPO]]);
+  mountGate(env, f);
+  return wait(40).then(() => {
+    check('Cookie 记忆（无 localStorage）→ 自动验证并解锁',
+      el(env, 'sxg-photo-grid').hidden === false);
+    check('Cookie 记忆 → 用户名回填输入框',
+      el(env, 'sxg-gate-user').value === 'cookiefan',
+      el(env, 'sxg-gate-user').value);
+  });
+})();
+
+(function () {
+  // 26. 验证成功 → Cookie + localStorage 双写；用户名不存在 → 两个都清
+  const env = mkEnv(null, { url: 'http://localhost/' });
+  const f = mkFetchByPages([[REPO]]);
+  mountGate(env, f);
+  el(env, 'sxg-gate-user').value = 'starfan';
+  submit(env);
+  return wait(40).then(() => {
+    check('验证成功 → Cookie 写入（真实 document.cookie）',
+      /(?:^|;\s*)sxg-photo-star-user=starfan(?:;|$)/.test(env.doc.cookie), env.doc.cookie);
+    check('验证成功 → localStorage 也写（两种存储双写兜底）',
+      env.data[gate.USER_KEY] === 'starfan', env.data);
+
+    // 用户名不存在 → 清干净，避免每次访问都拿错名字去问 GitHub
+    const env2 = mkEnv(null, { url: 'http://localhost/' });
+    env2.doc.cookie = 'sxg-photo-star-user=ghost';
+    const f2 = mkFetchByPages([], { status: { 1: 404 } });
+    gate.mount({ document: env2.doc, localStorage: env2.store, fetch: f2 });
+    el(env2, 'sxg-gate-user').value = 'ghost';
+    submit(env2);
+    return wait(40).then(() => {
+      check('用户名不存在 → Cookie 清除', !/sxg-photo-star-user=/.test(env2.doc.cookie),
+        env2.doc.cookie);
+      check('用户名不存在 → localStorage 清除', !(gate.USER_KEY in env2.data), env2.data);
+    });
+  });
+})();
+
+(function () {
+  // 27. 解密组件（photo-vault）没加载上 → 红字明说、网格保持隐藏
+  //     （2026-10-25 起照片是 .enc 密文，解锁委托 vault.reveal；
+  //       vault 缺失时不允许「解锁了却是一排空框」的静默失败）
+  const env = mkEnv();
+  const f = mkFetchByPages([[REPO]]);
+  gate.mount({ document: env.doc, localStorage: env.store, fetch: f }); // 不注入 vault
+  el(env, 'sxg-gate-user').value = 'starfan';
+  submit(env);
+  return wait(40).then(() => {
+    check('vault 缺失 → 门禁卡照样隐藏、提示条显示',
+      el(env, 'sxg-gate-box').hidden === true
+      && el(env, 'sxg-gate-unlocked-note').hidden === false);
+    const status = el(env, 'sxg-photo-status');
+    check('vault 缺失 → 状态位红字明说组件没加载',
+      status.hidden === false && /解密组件没有加载成功/.test(status.textContent),
+      status.textContent);
+    check('vault 缺失 → 网格保持隐藏（不是一排空框）',
+      el(env, 'sxg-photo-grid').hidden === true);
   });
 })();
 

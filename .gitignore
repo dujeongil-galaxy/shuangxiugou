@@ -52,6 +52,11 @@ docs-SEO外链与收录操作清单.md
 notes-plaintext.md
 notes-plaintext*.html
 
+# ===== 照片彩蛋：仓库里只有 .enc 密文，明文只留本机 =====
+# （scripts/encrypt-photos.mjs 加密；2026-10-25 起 git rm --cached 移出跟踪）
+photo-kuromi.jpg
+photo-melody.jpg
+
 # WorkBuddy 本地记忆目录，不入库
 .workbuddy/
 scripts/edgeprof*/
