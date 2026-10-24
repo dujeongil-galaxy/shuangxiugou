@@ -3630,36 +3630,56 @@ section('20i. 星巴克公告框注入闸门（与苹果同构）');
     '隐藏判据用 inline display:none（不依赖布局引擎）');
 }
 
-// ---------- 20j. 随笔页照片 Star 门禁（荣誉制） ----------
-// 背景：2026-10-23 站长要求两张玩偶照片「必须 Star on GitHub 才能查看」。
-//   静态站做不了真校验（公开仓库 + 无后端），落地为荣誉门禁：
-//   引导去 Star → 解锁 → localStorage 记住。页面明示这是荣誉制。
-// 判据：门禁三件套齐全、解锁前不得预载图片、data-src 目标文件真实存在、
-//   解锁逻辑（写 src + 记忆）与诚实声明都在。
+// ---------- 20j. 随笔页照片 Star 门禁（真校验版） ----------
+// 背景：2026-10-23 站长要求两张玩偶照「必须 Star on GitHub 才能查看」；
+//   2026-10-24 站长追加「Star on GitHub 必须验证，不是用户说 Star」——
+//   荣誉门禁（点按钮就放行）作废，改为拉 GitHub 公开 star 列表真校验。
+//   实现：photo-gate.js（UMD，逻辑外链；行为测试 test-photo-gate.cjs 31 项）。
+// 判据：门禁表单齐全、校验打的是 GitHub starred API、按 full_name 认本站仓库、
+//   满页翻页、解锁前不预载照片、data-src 目标文件存在、解锁才写 src、
+//   不信本地 flag（取消 Star 重新上锁）、[hidden] 兜底、页面明示真校验。
 {
   const why = read('why-shuangxiugou.html');
-  section('20j. 随笔页照片 Star 门禁');
-  check(/id="sxg-gate-box"/.test(why) && /id="sxg-gate-unlock"/.test(why) && /id="sxg-gate-star"/.test(why),
-    '门禁三件套齐全（gate-box / 去 Star 链接 / 解锁按钮）');
+  const pg = read('photo-gate.js');
+  section('20j. 随笔页照片 Star 门禁（真校验）');
+  check(/id="sxg-gate-box"/.test(why) && /id="sxg-gate-form"/.test(why)
+    && /id="sxg-gate-user"/.test(why) && /id="sxg-gate-verify"/.test(why) && /id="sxg-gate-msg"/.test(why),
+    '门禁表单齐全（gate-box / 表单 / 用户名输入 / 验证按钮 / 消息位）');
   check(/href="https:\/\/github\.com\/dujeongil-galaxy\/shuangxiugou"/.test(why),
     '去 Star 链接指向本站仓库（不是上游站）');
-  // 注意：/src="/ 会把 data-src=" 当子串一起匹配（子串包含），必须用负向后顾排除，
-  //   否则「解锁前不预载图片」这条断言永远判红、形同虚设。
-  const srcAttrs = (why.match(/(?<!data-)src="/g) || []).length;
-  const dataSrcAttrs = (why.match(/data-src="/g) || []).length;
-  check(srcAttrs === 0 && dataSrcAttrs === 2,
-    `照片只用 data-src 懒加载（真实 src= 属性 ${srcAttrs} 个，应为 0；data-src ${dataSrcAttrs} 个，应为 2）`);
+  check(exists('photo-gate.js') && /<script src="\.\/photo-gate\.js\?v=1"><\/script>/.test(why),
+    '门禁逻辑外链 photo-gate.js（可单测，不塞内联）');
+  check(/api\.github\.com\/users\//.test(pg) && /starred\?per_page=100&page=/.test(pg),
+    '校验打的是 GitHub 公开 starred 列表 API');
+  check(/full_name === REPO/.test(pg),
+    '按仓库 full_name 认本站（dujeongil-galaxy/shuangxiugou）');
+  check(/list\.length === 100[\s\S]{0,120}page\+\+/.test(pg),
+    '满 100 才翻页（star 多的账号也能查到）');
+  check(/MAX_PAGES = 10/.test(pg),
+    '翻页有上限（防极端账号把未登录限流刷爆）');
+  // 注意：/src="/ 会把 data-src=" 当子串一起匹配（子串包含），必须用负向后顾排除；
+  //   且只数 <img> 标签——script 的 src="./photo-gate.js" 是合法引用，不能连坐。
+  const imgTags = (why.match(/<img\b[^>]*>/g) || []);
+  const imgsWithRealSrc = imgTags.filter((t) => /(?<!data-)src="/.test(t)).length;
+  const imgsWithDataSrc = imgTags.filter((t) => /data-src="/.test(t)).length;
+  check(imgsWithRealSrc === 0 && imgsWithDataSrc === 2,
+    `照片 img 只用 data-src 懒加载（带真实 src= 的 img ${imgsWithRealSrc} 个，应为 0；data-src ${imgsWithDataSrc} 个，应为 2）`);
   const photoRefs = [...why.matchAll(/data-src="([^"]+)"/g)].map((m) => m[1]);
   check(photoRefs.length === 2 && photoRefs.every((r) => localExists(r)),
     'data-src 指向的照片文件真实存在',
     photoRefs.map((r) => `${r} → ${localExists(r) ? '存在' : '缺失'}`).join('；'));
-  check(/localStorage\.setItem\(KEY/.test(why) && /imgs\[i\]\.src = imgs\[i\]\.getAttribute\('data-src'\)/.test(why),
-    '解锁逻辑完整（localStorage 记忆 + 解锁后才写 img.src）');
+  check(/imgs\[i\]\.src = imgs\[i\]\.getAttribute\('data-src'\)/.test(pg),
+    '解锁逻辑完整（验证通过后才写 img.src）');
+  check(/setItem\(USER_KEY/.test(pg) && !/unlocked/i.test(pg),
+    'localStorage 只记用户名、不记「已解锁」flag（取消 Star 重新上锁）',
+    '真校验不信本地 flag：每次访问都重新拉 star 列表');
   check(/\.photo-grid\[hidden\]\s*\{\s*display:\s*none/.test(why),
     '照片网格有 [hidden] 显示兜底（否则 display:grid 会盖掉 hidden 属性，锁定态占位框外露）',
     '无头浏览器实测过的坑：.photo-grid{display:grid} 会覆盖 hidden 属性的 UA display:none');
-  check(/荣誉门禁/.test(why),
-    '页面明示这是荣誉门禁（不冒充真校验）');
+  check(/真校验/.test(why),
+    '页面明示这是真校验（拉 GitHub star 列表，不是点一下就说已 Star）');
+  check(exists('scripts/test-photo-gate.cjs'),
+    '存在门禁行为测试（jsdom + 桩 fetch，31 项）');
 }
 
 // ---------- 20g. 公告栏版本号必须等于「上一次提交」 ----------

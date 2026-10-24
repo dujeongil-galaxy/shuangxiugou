@@ -175,6 +175,35 @@
         line-height: 1.7;
         color: #94a3b8;
       }
+      .gate-form {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .gate-input {
+        flex: 1;
+        min-width: 0;
+        padding: 9px 12px;
+        border: 1px solid #99f6e4;
+        border-radius: 10px;
+        background: #fff;
+        font-size: 13px;
+        font-family: inherit;
+        color: #0f172a;
+        outline: none;
+        transition: border-color .15s ease;
+      }
+      .gate-input:focus { border-color: #0f766e; }
+      .gate-input::placeholder { color: #94a3b8; }
+      .gate-msg {
+        margin: 10px 0 0;
+        font-size: 12.5px;
+        line-height: 1.6;
+      }
+      .gate-msg--err { color: #be123c; }
+      .gate-msg--warn { color: #b45309; }
+      .gate-msg--check { color: #0f766e; }
+      .gate-unlock:disabled { opacity: .6; cursor: default; }
       .photo-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -295,19 +324,33 @@
           </span>
           <p class="gate-title">这两张照片设置了 Star 门禁</p>
           <p class="gate-desc">
-            先去 GitHub 给「双休购」点个 Star，回来就能看。<br />
-            不注册、不填表单，点一下的事。
+            先去 GitHub 给「双休购」点个 Star，<br />
+            回来填上你的 GitHub 用户名，验证通过就能看。
           </p>
           <div class="gate-actions">
             <a class="gate-btn gate-star" id="sxg-gate-star" href="https://github.com/dujeongil-galaxy/shuangxiugou" target="_blank" rel="noopener">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
               去 GitHub Star
             </a>
-            <button class="gate-btn gate-unlock" id="sxg-gate-unlock" type="button">已 Star，解锁查看</button>
           </div>
+          <form class="gate-form" id="sxg-gate-form" autocomplete="off">
+            <input
+              class="gate-input"
+              id="sxg-gate-user"
+              type="text"
+              placeholder="你的 GitHub 用户名"
+              aria-label="GitHub 用户名"
+              spellcheck="false"
+              autocapitalize="none"
+              autocomplete="off"
+            />
+            <button class="gate-btn gate-unlock" id="sxg-gate-verify" type="submit">验证并解锁</button>
+          </form>
+          <p class="gate-msg" id="sxg-gate-msg" hidden></p>
           <p class="gate-note">
-            荣誉门禁，不校验 GitHub 账号：取消 Star 不会重新上锁，懂技术的人也绕得过。
-            照片文件本身就在公开仓库里，这个门禁挡的是「顺手看」，挡不住「铁了心下载」。
+            真校验，不是「点一下就说已 Star」：本站会拉取你填名的 GitHub 公开 Star 列表，
+            确认里面真有本站仓库才放行——没 Star 过不了，取消 Star 后再来会重新上锁。
+            它验的是「这个用户名 Star 了没有」，不验你是不是本人（要验身份得上 GitHub 登录，两张玩偶照还不值当）。
           </p>
         </div>
         <div class="photo-grid" id="sxg-photo-grid" hidden>
@@ -327,40 +370,7 @@
       <a class="back" href="./">返回首页查双休</a>
     </article>
 
-    <script>
-      // 照片 Star 门禁（荣誉制）：解锁状态只记在访问者自己的浏览器里。
-      (function () {
-        var KEY = 'sxg-photo-star-unlocked';
-        var box = document.getElementById('sxg-gate-box');
-        var grid = document.getElementById('sxg-photo-grid');
-        var btn = document.getElementById('sxg-gate-unlock');
-        var star = document.getElementById('sxg-gate-star');
-        if (!box || !grid || !btn) return;
-
-        function unlock() {
-          try { localStorage.setItem(KEY, '1'); } catch (e) {}
-          box.hidden = true;
-          grid.hidden = false;
-          var imgs = grid.querySelectorAll('img[data-src]');
-          for (var i = 0; i < imgs.length; i++) {
-            imgs[i].src = imgs[i].getAttribute('data-src');
-          }
-        }
-
-        btn.addEventListener('click', unlock);
-
-        // 点过「去 GitHub Star」后，给解锁按钮一点存在感
-        if (star) {
-          star.addEventListener('click', function () {
-            btn.textContent = 'Star 完了？点我解锁';
-            btn.classList.add('pulse');
-          });
-        }
-
-        try {
-          if (localStorage.getItem(KEY) === '1') unlock();
-        } catch (e) {}
-      })();
-    </script>
+    <!-- 照片 Star 门禁（真校验版，逻辑在 photo-gate.js） -->
+    <script src="./photo-gate.js?v=1"></script>
   </body>
 </html>
