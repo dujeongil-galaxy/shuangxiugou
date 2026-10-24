@@ -3723,6 +3723,63 @@ section('20i. 星巴克公告框注入闸门（与苹果同构）');
     '存在门禁行为测试（jsdom + 桩 fetch，55 项）');
 }
 
+// ---------- 20k. 搜索口径修正：summary 命中不得串品牌 ----------
+// 背景：2026-10-24 站长截图：搜「瑞幸咖啡」，结果里同时出现库迪咖啡。
+//   根因：bundle 主过滤器共 7 路匹配（name/companyName/category/
+//   searchKeywords/keyProducts/summary/id），其中 summary 是叙述性
+//   长文本，库迪的 summary 写着「由瑞幸咖啡创始团队于 2022 年创立」，
+//   「瑞幸咖啡」四字整串命中 → 串味。与 20f 处理的「输 1 出宁德时代」
+//   同病根（summary 里的年份/百分比/别家品牌名参与检索）。
+//   修法：search-scope-fix.js 在 React 过滤后按强口径重算。
+// 判据：补丁挂载、提取用括号配平（非正则）、强字段六路、summary 兜底、
+//   class+!important（与 stat-filter 共存）、黑榜排除、降级源、行为测试。
+{
+  const ssf = read('search-scope-fix.js');
+  const idxHtml = read('index.html');
+  section('20k. 搜索口径修正（summary 命中降级为兜底）');
+  check(exists('search-scope-fix.js')
+    && /<script src="\.\/search-scope-fix\.js\?v=\d+"><\/script>/.test(idxHtml),
+    '口径修正补丁存在且在 index.html 挂载');
+  // 提取必须括号配平 + 跳过模板字符串：词条间距不固定，正则前瞻会跨对象
+  // 误匹配（gen-pinyin-index.py 踩过：patagonia 被安上别家关键词）；
+  // 模板字符串里也可能含 {}（summary 常见），不跳过配平立刻错乱。
+  // 外层 if (ch === BT) 才是「进入跳过模式」的开关，只盯内层循环条件的话，
+  // 把外层判断改死（跳过逻辑整体失效）断言照样绿——2026-10-24 实测。
+  check(/brands:\[/.test(ssf) && /depth \+= 1/.test(ssf) && /depth === 0/.test(ssf)
+    && /if \(ch === BT\)/.test(ssf),
+    'bundle 提取用括号配平并跳过模板字符串（不用正则）');
+  // 每路都要「取出且真的进 fields」：只匹配 field(obj,'companyName') 的话，
+  // 把 push 那行删掉（字段取了却不参与判定）断言照样绿——2026-10-24
+  // 故障注入实测过这个漏洞。
+  check(/field\(obj, 'name'\)/.test(ssf) && /fields\.push\(name\)/.test(ssf)
+    && /field\(obj, 'companyName'\)/.test(ssf) && /fields\.push\(companyName\)/.test(ssf)
+    && /arrField\(obj, 'searchKeywords'\)/.test(ssf) && /arrField\(obj, 'keyProducts'\)/.test(ssf)
+    && /field\(obj, 'id'\)/.test(ssf) && /fields\.push\(id\)/.test(ssf),
+    '强字段五路齐全且都进 fields（name/companyName/searchKeywords/keyProducts/id）');
+  check(!/field\(obj, 'summary'\)/.test(ssf) && !/arrField\(obj, 'summary'\)/.test(ssf),
+    'summary 不进强字段（修正的核心：summary 是叙述文本，不是检索字段）');
+  // 兜底：强字段零命中（如搜「六休一」）必须放开展示，不能一律隐藏成空结果
+  check(/strongCount > 0 && !v\.strong/.test(ssf) && /else v\.card\.classList\.remove/.test(ssf),
+    '强字段零命中 → summary 兜底全显示（搜「六休一」不空结果）');
+  check(/HIDE_CLASS = 'sxg-scope-hidden'/.test(ssf)
+    && /display:none !important/.test(ssf) && /classList\.add\(HIDE_CLASS\)/.test(ssf),
+    '隐藏用 class + !important（stat-filter 的 inline display 盖不掉）');
+  // 黑榜排除必须盯逻辑行：文件头注释里也提「虚拟对比黑榜」，
+  // 只匹配字面量会被注释救绿（2026-10-24 故障注入实测）。
+  check(/text\.indexOf\('虚拟对比黑榜'\) !== -1/.test(ssf),
+    '虚拟对比黑榜卡不计入（与 stat-filter 口径一致）');
+  // 同理，降级源要盯「真的去读了 window 上的索引」，注释提一句不算
+  check(/var INDEX = window\.__PINYIN_INDEX__/.test(ssf),
+    'fetch 失败有降级源（拼音索引），不是直接放弃修正');
+  check(/requestAnimationFrame/.test(ssf) && /MutationObserver/.test(ssf) && /, 300\)/.test(ssf),
+    '触发链齐全（input 事件 + MutationObserver 防抖重算 + load）');
+  // 只定义了处理器不算数，必须真的绑到 input 上
+  check(/input\.addEventListener\('input'/.test(ssf),
+    'input 事件真的绑了（不是只定义了处理器函数）');
+  check(exists('scripts/test-search-scope-fix.cjs'),
+    '存在口径修正行为测试（jsdom + 桩 fetch，30 项）');
+}
+
 // ---------- 20g. 公告栏版本号必须等于「上一次提交」 ----------
 // 背景：2026-10-19 站长指出首页「当前版本号 2db67d9」与近期提交对不上。
 //   根因是它写死在 index.html 里，多轮发版都没同步。规则本身 AGENTS.md 早有记载

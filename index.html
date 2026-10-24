@@ -1529,6 +1529,17 @@
   <script src="./employee-report-to-issue.js?v=1"></script>
 <script src="./top-button.js?v=2"></script>
 <script src="./stat-filter.js?v=5"></script>
+  <!-- 搜索口径修正：summary 命中降级为兜底。2026-10-24 站长截图：搜「瑞幸咖啡」
+       结果里同时出现库迪咖啡。根因：bundle 主过滤器的 7 路匹配里有 summary，
+       而库迪 summary 写着「由瑞幸咖啡创始团队于 2022 年创立」——叙述性长文本
+       参与检索导致跨品牌串味（与 block-numeric-search 处理的「输 1 出宁德时代」
+       同病根：summary 里的年份/百分比/别家品牌名）。
+       修法：React 过滤后在注入层按强口径（name/companyName/searchKeywords/
+       keyProducts/id）重算——强字段有命中时收起仅 summary 命中的卡；强字段
+       零命中时（如搜「六休一」）summary 兜底展示，不空结果。
+       必须在 stat-filter.js 之后：两补丁操作同一批卡片，本补丁的隐藏用
+       class + !important，晚加载保证层级语义上「口径修正在档位筛选之上」。 -->
+  <script src="./search-scope-fix.js?v=1"></script>
   </body>
 </html>
 
