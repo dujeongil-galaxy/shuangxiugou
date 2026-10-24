@@ -73,7 +73,7 @@
         '<ul class="dyp__points"></ul>' +
         '<div class="dyp__acts">' +
           '<a class="dyp__go" target="_blank" rel="noopener noreferrer"></a>' +
-          '<a class="dyp__later" href="./notes.html">解锁菜单</a>' +
+          '<a class="dyp__later" href="./notes.html">解锁彩蛋</a>' +
         '</div>' +
         '<p class="dyp__tip">希望无论劳动者还是企业，都可以走到良性发展的道路上，让我们一起推动这件事，在此广纳贤言并期待听到你的声音；对，别回头，说的就是你！</p>' +
       '</div>';
@@ -87,8 +87,8 @@
       .join('');
 
     // 关闭方式：遮罩、✕、Esc
-    // 「解锁菜单」直接跳 notes.html（该页保留密码锁，robots noindex）
-    // 2026-10-24 站长要求：按钮文字由「站长随笔」改为「解锁菜单」，跳转目标不变
+    // 「解锁彩蛋」直接跳 notes.html（该页保留密码锁，robots noindex）
+    // 2026-10-24 站长要求：按钮文字由「站长随笔」→「解锁菜单」→「解锁彩蛋」，跳转目标不变
     box.querySelector('.dyp__mask').onclick = close;
     box.querySelector('.dyp__x').onclick = close;
     document.addEventListener('keydown', function (e) {
