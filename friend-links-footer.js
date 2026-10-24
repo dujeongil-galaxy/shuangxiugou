@@ -184,26 +184,26 @@
     footer.appendChild(pollCard);
 
     /* ----------------------------------------------------------------
-       照片彩蛋入口（2026-10-21 作为「站长随笔」入口新增，同日移到 Bing 教程之前；
-       2026-10-24 站长要求改名为「解锁彩蛋」——该页文末新增了 Star 门禁照片区，
-       入口卡从此主打彩蛋，随笔正文仍在页内）
+       站长随笔入口（2026-10-21 新增，同日按站长要求移到 Bing 教程之前）
+       一篇关于「为什么支持双休购」的随笔，正文较长，
+       单独做成 why-shuangxiugou.html 阅读页，这里只放入口卡片。
        卡片改浅青底+青边框：站长反馈页脚卡片全是同款白框「很眼睛难受」，
        用底色把它和其余白卡区分开。
        ---------------------------------------------------------------- */
     var essayCard = makeCard('#f0fdfa', '#5eead4'); // 浅青底 + 青边框
     var essayHeading = document.createElement('div');
     essayHeading.setAttribute('style', 'font-weight:600;color:#0F766E;margin:0 0 4px;font-size:14px');
-    essayHeading.textContent = '解锁彩蛋';
+    essayHeading.textContent = '我为什么支持双休购';
     essayCard.appendChild(essayHeading);
 
     var essayDesc = document.createElement('div');
     essayDesc.setAttribute('style', 'margin:0 0 8px;color:#64748b');
-    essayDesc.textContent = '去 GitHub 点个 Star，解锁站长私藏的两张玩偶爱心照。';
+    essayDesc.textContent = '买东西前多问一句「你们公司双休吗」，用钱包替嘴说话。';
     essayCard.appendChild(essayDesc);
 
     var essayLink = document.createElement('a');
     essayLink.href = './why-shuangxiugou.html';
-    essayLink.textContent = '去解锁 →';
+    essayLink.textContent = '读全文（AI 生成随笔）→';
     essayLink.setAttribute('style',
       'display:inline-block;color:#0F766E;font-weight:700;text-decoration:underline');
     essayCard.appendChild(essayLink);
