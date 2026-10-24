@@ -102,6 +102,107 @@
         transition: background .15s ease;
       }
       .back:hover { background: #115e59; }
+
+      /* 照片彩蛋 · Star 门禁（荣誉制，见 gate-note） */
+      .photo-gate { margin: 26px 0 0; }
+      .gate-box {
+        padding: 24px 20px 18px;
+        border: 1.5px dashed #5eead4;
+        border-radius: 14px;
+        background: #f0fdfa;
+        text-align: center;
+      }
+      .gate-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: #fff;
+        border: 1px solid #99f6e4;
+        color: #0f766e;
+      }
+      .gate-title {
+        margin: 12px 0 6px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #0f766e;
+        line-height: 1.4;
+      }
+      .gate-desc { margin: 0 0 16px; font-size: 13.5px; color: #374151; }
+      .gate-actions {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .gate-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 13.5px;
+        font-weight: 600;
+        font-family: inherit;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background .15s ease, transform .15s ease;
+      }
+      .gate-btn svg { flex: none; }
+      .gate-star {
+        background: #0f766e;
+        color: #fff;
+        box-shadow: 0 6px 18px rgba(15, 118, 110, .22);
+      }
+      .gate-star:hover { background: #115e59; }
+      .gate-unlock {
+        border: 1px solid #99f6e4;
+        background: #fff;
+        color: #0f766e;
+      }
+      .gate-unlock:hover { background: #ccfbf1; }
+      .gate-unlock.pulse { animation: gatePulse 1.2s ease-in-out 2; }
+      @keyframes gatePulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.06); box-shadow: 0 0 0 4px rgba(94, 234, 212, .35); }
+      }
+      .gate-note {
+        margin: 16px auto 0;
+        max-width: 460px;
+        font-size: 12px;
+        line-height: 1.7;
+        color: #94a3b8;
+      }
+      .photo-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      /* hidden 属性靠 UA 的 display:none 生效，会被上面的 display:grid 覆盖。
+         无头浏览器截图实测：不加这条，锁定状态下两个灰色占位框会露出来。 */
+      .photo-grid[hidden] { display: none; }
+      .photo-cell { margin: 0; }
+      .photo-cell img {
+        display: block;
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        background: #f1f5f9;
+      }
+      .photo-cell figcaption {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #94a3b8;
+        text-align: center;
+      }
+      @media (max-width: 560px) {
+        .photo-grid { grid-template-columns: 1fr; }
+        .photo-cell img { height: 360px; }
+      }
     </style>
   </head>
   <body>
@@ -186,9 +287,80 @@
         先问一句，再下单。这就够了。谢谢大家。
       </p>
 
+      <h2>照片彩蛋</h2>
+      <section class="photo-gate" id="sxg-photo-gate">
+        <div class="gate-box" id="sxg-gate-box">
+          <span class="gate-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </span>
+          <p class="gate-title">这两张照片设置了 Star 门禁</p>
+          <p class="gate-desc">
+            先去 GitHub 给「双休购」点个 Star，回来就能看。<br />
+            不注册、不填表单，点一下的事。
+          </p>
+          <div class="gate-actions">
+            <a class="gate-btn gate-star" id="sxg-gate-star" href="https://github.com/dujeongil-galaxy/shuangxiugou" target="_blank" rel="noopener">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+              去 GitHub Star
+            </a>
+            <button class="gate-btn gate-unlock" id="sxg-gate-unlock" type="button">已 Star，解锁查看</button>
+          </div>
+          <p class="gate-note">
+            荣誉门禁，不校验 GitHub 账号：取消 Star 不会重新上锁，懂技术的人也绕得过。
+            照片文件本身就在公开仓库里，这个门禁挡的是「顺手看」，挡不住「铁了心下载」。
+          </p>
+        </div>
+        <div class="photo-grid" id="sxg-photo-grid" hidden>
+          <figure class="photo-cell">
+            <img data-src="./photo-kuromi.jpg" alt="库洛米玩偶围成爱心，人躺在中间，手举一只库洛米" />
+            <figcaption>库洛米 · 爱心局</figcaption>
+          </figure>
+          <figure class="photo-cell">
+            <img data-src="./photo-melody.jpg" alt="美乐蒂玩偶围成爱心，人躺在中间，怀里抱一只美乐蒂" />
+            <figcaption>美乐蒂 · 爱心局</figcaption>
+          </figure>
+        </div>
+      </section>
+
       <p class="disclaimer">本文由 AI 生成，作为站长随笔贴在页脚入口，供读者参考。</p>
 
       <a class="back" href="./">返回首页查双休</a>
     </article>
+
+    <script>
+      // 照片 Star 门禁（荣誉制）：解锁状态只记在访问者自己的浏览器里。
+      (function () {
+        var KEY = 'sxg-photo-star-unlocked';
+        var box = document.getElementById('sxg-gate-box');
+        var grid = document.getElementById('sxg-photo-grid');
+        var btn = document.getElementById('sxg-gate-unlock');
+        var star = document.getElementById('sxg-gate-star');
+        if (!box || !grid || !btn) return;
+
+        function unlock() {
+          try { localStorage.setItem(KEY, '1'); } catch (e) {}
+          box.hidden = true;
+          grid.hidden = false;
+          var imgs = grid.querySelectorAll('img[data-src]');
+          for (var i = 0; i < imgs.length; i++) {
+            imgs[i].src = imgs[i].getAttribute('data-src');
+          }
+        }
+
+        btn.addEventListener('click', unlock);
+
+        // 点过「去 GitHub Star」后，给解锁按钮一点存在感
+        if (star) {
+          star.addEventListener('click', function () {
+            btn.textContent = 'Star 完了？点我解锁';
+            btn.classList.add('pulse');
+          });
+        }
+
+        try {
+          if (localStorage.getItem(KEY) === '1') unlock();
+        } catch (e) {}
+      })();
+    </script>
   </body>
 </html>
