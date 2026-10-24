@@ -31,6 +31,28 @@
 
 ---
 ---
+### 抖音弹窗按钮文字「解锁菜单」→「解锁彩蛋」，站长最终定名（2026-10-24 19:45 · 提交 `2b680b5`）
+
+站长：「是解锁彩蛋」——上一轮（`d43c892`）把按钮文字改成「解锁菜单」并非最终名，本轮定稿为「**解锁彩蛋**」。
+
+- **只改文字，不改跳转**：`douyin-prompt.js` 弹窗底部按钮（`.dyp__later`）文字「解锁菜单」→「解锁彩蛋」，`href="./notes.html"` 不变（该页保留密码锁、robots noindex）；`index.html` 的 `douyin-prompt.js` `?v=7→8`。
+- **verify.mjs 三条弹窗断言同步**：入口文案 / 跳转 notes.html / 「以后再说」并存检查，全部改为匹配「解锁彩蛋」；旧文案「解锁菜单」「站长随笔」只允许活在注释里（剥注释后匹配，注释提及不算并存——PITFALLS 3.1 的坑）。
+- **故障注入**：把按钮文字改回「解锁菜单」→「弹窗底部有『解锁彩蛋』入口」判红、退出码 1；恢复后全绿。
+- **验收**：无头 Edge 真渲染，弹窗三按钮为「在抖音中观看 / 事实核查 / 解锁彩蛋」，截图存档。
+
+### 照片 Star 门禁升级为真校验：拉 GitHub 公开 star 列表逐页核对，荣誉制作废（2026-10-24 19:24 · 提交 `96cb553`）
+
+站长：「Star on GitHub 必须验证，不是用户说 Star」——当天早些时候（`ada20a0`）上线的荣誉门禁（点一下「已 Star，解锁查看」即放行）当场作废，升级为真校验。
+
+- **真校验方案（零注册、零后端、零 secret）**：未登录的 GitHub API 即可查任意用户的**公开** star 列表（`GET /users/{用户名}/starred?per_page=100`），逐页翻找 `dujeongil-galaxy/shuangxiugou` 的 `full_name`，命中才解锁。不需要 OAuth App、不需要后端；代价是**不验账号归属**（输入谁的 username 就查谁的列表），页面已明示这点，不冒充。
+- **新增 `photo-gate.js`**（UMD 双形态：浏览器 `window.SXGPhotoGate` 自动 mount，Node `module.exports` 供测试）：用户名校验（空名 / 非法字符直接拦，不打 API）→ 分页拉取（每页 100、上限 10 页防打满）→ 命中写 `img.src` 解锁；错误码 `empty/badname/nouser(404)/ratelimit(403·429)/network/toomany/nostar/unstarred` 各有中文提示。**每次访问都重拉**（取消 Star 会重新上锁），`localStorage` 只记用户名（`sxg-photo-star-user`）、不记 unlocked 标志。
+- **`why-shuangxiugou.html` 门禁卡改写**：荣誉制的「已 Star，解锁查看」自报按钮 → GitHub 用户名输入框 + 「去 GitHub Star」链接 + 真校验口径说明（明示不验账号归属、取消 Star 会重新上锁）；解锁前照片不加载（`data-src`）不变。
+- **新增 `scripts/test-photo-gate.cjs` 31 项**（jsdom 真 DOM + 桩 fetch）：首屏命中 / 翻页命中 / 没 Star / 404 / 403 / 429 / 断网 / 空名 / 非法名 / 超 10 页 / 解锁三动作 / 不预载照片 / 返回访问自动重验 / **取消 Star 重新上锁** / submit 触发，全过。
+- **verify.mjs 20j 节 7 → 10 项断言**：门禁表单齐全 / Star 链接指本站 / 逻辑外链 photo-gate.js / API 是 GitHub starred / `full_name === REPO` / 满 100 翻页 / MAX_PAGES=10 / img 只用 data-src / data-src 文件存在 / 解锁才写 src / localStorage 只记用户名 / `[hidden]` 兜底 / 页面明示真校验 / 测试文件存在。
+- **过程中修掉一个只有真渲染才发现的坑（UMD 作用域）**：工厂函数写在 IIFE 的**参数列表**里，词法作用域在顶层，拿不到包装器的 `root` 参数——浏览器自动 mount 直接抛 `root is not defined`，页面整个挂掉。Node 单测却全绿：因为 opts 全注入、`opts.localStorage || (root.localStorage||null)` **短路求值跳过了 root 分支**。修法：`factory(root)` 把 root 作入参传进工厂。**教训：外链模块必须在真浏览器里自动挂载一遍；依赖注入的短路求值会让未注入分支的 bug 在单测里永久隐形。**
+- **故障注入 11 次全部判红**（含上述 UMD 坑的旧版形态）。
+- **验收**：无头 Edge 真渲染三场景（已 Star 解锁 / 没 Star 拦住 / 刷新自动重验）+ 桌面 / 手机（390px）双视口；16 组 `test-*.cjs` 全过、`NOTES_KEY` 全量 verify 516 项全绿。
+
 ### 按站长纠正还原页脚卡；抖音弹窗「站长随笔」按钮文字改为「解锁菜单」（2026-10-24 18:23 · 提交 `d43c892`）
 
 站长指出上一轮改错了对象：「不，你在想什么，先还原。我说的是站长随笔，这个按钮的文字，改成解锁菜单，不是让你在底部改变」。
@@ -51,6 +73,8 @@
 - 验收：无头 Edge 真渲染确认卡片文案/链接/浅青配色/位置（Bing 教程卡之前）正常。
 
 ### 随笔页新增「照片彩蛋」+ Star 门禁（荣誉制），并修 hidden 被 display 覆盖导致占位框外露（2026-10-24 17:28 · 提交 `ada20a0`）
+
+> ⚠️ 当天 19:24 已按站长要求升级为**真校验**（拉 GitHub 公开 star 列表逐页核对），荣誉制作废，最终版见上方 `96cb553` 条目。
 
 站长提供两张玩偶爱心照（库洛米局 / 美乐蒂局），要求「必须 Star on GitHub 才能查看」，并问放网站哪个位置。方案对比后站长选定 **A·荣誉门禁**（静态站无后端、公开仓库，做不了真校验；B·OAuth+后端工程量与两张玩偶照不匹配）。
 
