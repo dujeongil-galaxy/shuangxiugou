@@ -3634,10 +3634,15 @@ section('20i. 星巴克公告框注入闸门（与苹果同构）');
 // 背景：2026-10-23 站长要求两张玩偶照「必须 Star on GitHub 才能查看」；
 //   2026-10-24 站长追加「Star on GitHub 必须验证，不是用户说 Star」——
 //   荣誉门禁（点按钮就放行）作废，改为拉 GitHub 公开 star 列表真校验。
-//   实现：photo-gate.js（UMD，逻辑外链；行为测试 test-photo-gate.cjs 31 项）。
+//   同日深夜站长实测反馈：①「每次输入用户名都会自动验证」（输入即验）；
+//   ②「刷新一下连我自己也锁了」——无痕/清缓存后浏览器恢复输入框内容但不发
+//   input 事件，mount 必须补验；③限流要给出重置时刻并到点自动重试；
+//   ④解锁后给「别取消 Star / 更多福利」提示。
+//   实现：photo-gate.js（UMD，逻辑外链；行为测试 test-photo-gate.cjs 55 项）。
 // 判据：门禁表单齐全、校验打的是 GitHub starred API、按 full_name 认本站仓库、
 //   满页翻页、解锁前不预载照片、data-src 目标文件存在、解锁才写 src、
-//   不信本地 flag（取消 Star 重新上锁）、[hidden] 兜底、页面明示真校验。
+//   不信本地 flag（取消 Star 重新上锁）、[hidden] 兜底、页面明示真校验、
+//   输入即验、恢复值补验、限流重置重试、解锁提示条。
 {
   const why = read('why-shuangxiugou.html');
   const pg = read('photo-gate.js');
@@ -3647,7 +3652,7 @@ section('20i. 星巴克公告框注入闸门（与苹果同构）');
     '门禁表单齐全（gate-box / 表单 / 用户名输入 / 验证按钮 / 消息位）');
   check(/href="https:\/\/github\.com\/dujeongil-galaxy\/shuangxiugou"/.test(why),
     '去 Star 链接指向本站仓库（不是上游站）');
-  check(exists('photo-gate.js') && /<script src="\.\/photo-gate\.js\?v=1"><\/script>/.test(why),
+  check(exists('photo-gate.js') && /<script src="\.\/photo-gate\.js\?v=2"><\/script>/.test(why),
     '门禁逻辑外链 photo-gate.js（可单测，不塞内联）');
   check(/api\.github\.com\/users\//.test(pg) && /starred\?per_page=100&page=/.test(pg),
     '校验打的是 GitHub 公开 starred 列表 API');
@@ -3670,16 +3675,52 @@ section('20i. 星巴克公告框注入闸门（与苹果同构）');
     photoRefs.map((r) => `${r} → ${localExists(r) ? '存在' : '缺失'}`).join('；'));
   check(/imgs\[i\]\.src = imgs\[i\]\.getAttribute\('data-src'\)/.test(pg),
     '解锁逻辑完整（验证通过后才写 img.src）');
-  check(/setItem\(USER_KEY/.test(pg) && !/unlocked/i.test(pg),
+  // 语义是「localStorage 只记用户名，不记已解锁 flag」。早先用 !/unlocked/i 子串匹配，
+  //   结果元素 id sxg-gate-unlocked-note 里的 unlocked 误判——改成枚举所有 setItem 的键，
+  //   必须全部是 USER_KEY（字符串键也要抓，防止 store.setItem('sxg-unlocked', 1) 漏网）。
+  const setItemKeys = [...pg.matchAll(/\.setItem\(\s*(?:'([^']*)'|"([^"]*)"|([A-Za-z_$][\w$]*))\s*,/g)]
+    .map((m) => m[1] || m[2] || m[3]);
+  check(setItemKeys.length >= 1 && setItemKeys.every((k) => k === 'USER_KEY'),
     'localStorage 只记用户名、不记「已解锁」flag（取消 Star 重新上锁）',
-    '真校验不信本地 flag：每次访问都重新拉 star 列表');
+    `setItem 的键：[${setItemKeys.join(', ') || '无'}]，应全部为 USER_KEY`);
   check(/\.photo-grid\[hidden\]\s*\{\s*display:\s*none/.test(why),
     '照片网格有 [hidden] 显示兜底（否则 display:grid 会盖掉 hidden 属性，锁定态占位框外露）',
     '无头浏览器实测过的坑：.photo-grid{display:grid} 会覆盖 hidden 属性的 UA display:none');
   check(/真校验/.test(why),
     '页面明示这是真校验（拉 GitHub star 列表，不是点一下就说已 Star）');
+  // ---- 2026-10-24 深夜站长实测反馈后的新增断言 ----
+  check(/addEventListener\('input'/.test(pg) && /setTimeout\(/.test(pg) && /DEBOUNCE_MS/.test(pg),
+    '输入停顿即自动验证（不用非点按钮；防抖省 API 调用）',
+    '站长原话：「每次输入用户名都会自动验证」');
+  // 注意：只匹配 normalize(input.value)…USERNAME_RE.test 会误中 input 监听器里
+  //   同款代码（距离 <200 字符）——必须锚定恢复值分支独有的变量名 restored。
+  check(/var restored = normalize\(input\.value\)/.test(pg) && /verify\(restored/.test(pg),
+    'mount 时对「浏览器恢复的输入值」补一次自动验证',
+    '无痕/清缓存刷新不发 input 事件，不补验就是「用户名在框里却还锁着」');
+  // 不能只匹配字符串——注释里也提这件事。要盯住 readReset 函数本体里真的在读这个头，
+  //   以及 onRes 里真的调用了 readReset。
+  check(/function readReset\(/.test(pg) && /readReset\(res\)/.test(pg)
+    && /function readReset[\s\S]{0,600}X-RateLimit-Reset/.test(pg) && /resetAt/.test(pg),
+    '限流按 X-RateLimit-Reset 解析重置时刻（提示写明几点几分自动重试）');
+  // 不能只匹配「自动重试」四个字（提示文案里也有）——要盯住真的调用和真的定时器。
+  //   scheduleRateRetry(u, info) 是调用点，区别于函数定义 scheduleRateRetry(user, info)。
+  check(/scheduleRateRetry\(u, info\)/.test(pg) && /rateTimer = setTimeout/.test(pg)
+    && /hhmmss/.test(pg) && /自动重试/.test(pg),
+    '限流提示带重置时刻 + 到点自动重试（一次访问最多 2 次）');
+  // 同理：netTry 光有变量名不算，要盯住 catch 里真的 setTimeout(next, …)
+  check(/netTry/.test(pg) && /setTimeout\(next, delay\)/.test(pg),
+    '网络抖一下自动重试（重试耗尽才报 network）');
+  // 去重判断本身要在，光有 inflight 变量名不算
+  check(/inflight === u\) return/.test(pg),
+    '同一用户名并发验证去重（不重复打 API 刷限流）');
+  check(/id="sxg-gate-unlocked-note"/.test(why)
+    && /\.gate-unlocked-note\[hidden\]\s*\{\s*display:\s*none/.test(why),
+    '解锁提示条存在且有 [hidden] 显示兜底',
+    '提示条目前没有 display 规则，但兜底先写上，防哪天加了 display 盖掉 hidden');
+  check(/note\.hidden = false/.test(pg) && /请勿取消 Star/.test(why) && /更多福利/.test(why),
+    '解锁后显示「别取消 Star / 不定期更新更多福利」提示');
   check(exists('scripts/test-photo-gate.cjs'),
-    '存在门禁行为测试（jsdom + 桩 fetch，31 项）');
+    '存在门禁行为测试（jsdom + 桩 fetch，55 项）');
 }
 
 // ---------- 20g. 公告栏版本号必须等于「上一次提交」 ----------

@@ -2,21 +2,33 @@
 // 跑法：node scripts/test-photo-gate.cjs（需要 jsdom，与其它 test-*.cjs 一致）
 //
 // 测的是真实上线的 photo-gate.js（UMD，Node 侧直接 require）：
-//   1. checkStar：第 1 页就 Star 了 → 放行
-//   2. checkStar：Star 在第 2 页（翻页）→ 放行
-//   3. checkStar：翻完都没 Star → 不放行（nostar）
-//   4. checkStar：用户名不存在（404）→ nouser
-//   5. checkStar：限流（403/429）→ ratelimit
-//   6. checkStar：网络断 → network
-//   7. checkStar：空用户名 / 非法用户名 → 直接拒，且不打 API（省限流）
-//   8. checkStar：超过 10 页还没找到 → toomany，且 API 调用恰好 10 次
-//   9. mount：验证通过 → 门禁卡隐藏、照片网格显示、img.src 被写上、用户名入 localStorage
-//  10. mount：没 Star → 门禁不消失、出提示、照片不加载
-//  11. mount：记忆用户名 + 仍 Star → 进页面自动解锁（返回访问）
-//  12. mount：记忆用户名 + 已取消 Star → 保持锁定并提示（取消 Star 会重新上锁）
-//  13. mount：未解锁前 img 没有 src（不预载照片）
-//  14. mount：表单 submit 触发校验（不是只有点按钮才行）
-const fs = require('fs');
+//   checkStar 层：
+//   1. 第 1 页就 Star 了 → 放行
+//   2. Star 在第 2 页（翻页）→ 放行
+//   3. 翻完都没 Star → 不放行（nostar）
+//   4. 用户名不存在（404）→ nouser
+//   5. 限流（403/429）→ ratelimit；带 X-RateLimit-Reset → 解析出重置时刻
+//   6. 网络断 → 自动重试 2 次后才报 network
+//   7. 空用户名 / 非法用户名 → 直接拒，且不打 API（省限流）
+//   8. 超过 10 页还没找到 → toomany，且 API 调用恰好 10 次
+//   mount 层（jsdom 真 DOM）：
+//   9.  验证通过 → 门禁卡隐藏、照片网格显示、img.src 被写上、用户名入 localStorage
+//   10. 没 Star → 门禁不消失、出提示、照片不加载
+//   11. 记忆用户名 + 仍 Star → 进页面自动解锁（返回访问）
+//   12. 记忆用户名 + 已取消 Star → 保持锁定并提示（取消 Star 会重新上锁）
+//   13. 未解锁前 img 没有 src（不预载照片）
+//   14. 表单 submit 触发校验（不是只有点按钮才行）
+//   15. 输入停顿即自动验证（站长：「每次输入用户名都会自动验证」）
+//   16. 非法/空输入不触发自动验证（省限流）
+//   17. 无痕/清缓存刷新：输入框被浏览器恢复但 localStorage 空 → mount 补验并解锁
+//       （修站长实测的「刷新一下连我自己也锁了」——恢复值不发 input 事件）
+//   18. 恢复值没 Star → 保持锁定且出提示（不无声锁着）
+//   19. 限流 → 提示带重置时刻 → 到点自动重试 → 解锁
+//   20. 限流但读不到重置时刻 → 普通提示，不挂自动重试
+//   21. mount 层网络断 → 自动重试 2 次才报错
+//   22. 解锁后出现「别取消 Star / 更多福利」提示条；解锁前是藏的
+//   23. 同一用户并发验证只打一次 API（防刷限流）
+//   24. 用户名带 @ 前缀也按裸名存储、也能解锁
 const path = require('path');
 const { JSDOM } = require('jsdom');
 
@@ -34,10 +46,47 @@ function check(label, cond, extra) {
   }
 }
 
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// 轮询等条件成立。为什么不能只用固定 wait(N)：后续测试块的同步代码
+// （构造 JSDOM）会把事件循环拖住，N 毫秒的到期时间可能早于防抖定时器
+// 的执行——2026-10-24 实测 wait(40) 里数出来永远是 0 次调用，而定时器
+// 其实早就跑完了。轮询等到为止，最多等到 timeoutMs。
+function until(condFn, timeoutMs) {
+  const start = Date.now();
+  return new Promise((resolve) => {
+    (function poll() {
+      let ok = false;
+      try { ok = condFn(); } catch (e) { ok = false; }
+      if (ok) return resolve(true);
+      if (Date.now() - start >= timeoutMs) return resolve(false);
+      setTimeout(poll, 5);
+    })();
+  });
+}
+
 // ---------- 桩 fetch ----------
 function mkRepo(name) { return { full_name: name }; }
 // 满页要正好 100 个（checkStar 的翻页判据是 list.length === 100）
 const OTHER = Array.from({ length: 100 }, (_, i) => mkRepo('someone/other-' + i));
+
+/**
+ * 造一个响应桩。resetUnixSec 有值时就带上 X-RateLimit-Reset 响应头
+ * （限流提示的「几点几分自动重试」靠它）。
+ */
+function mkRes(status, list, resetUnixSec) {
+  const res = {
+    ok: status >= 200 && status < 300,
+    status,
+    json: () => Promise.resolve(list || []),
+  };
+  if (resetUnixSec) {
+    res.headers = {
+      get: (name) => (String(name).toLowerCase() === 'x-ratelimit-reset' ? String(resetUnixSec) : null),
+    };
+  }
+  return res;
+}
 
 // 按页表生成桩：pages 是数组，每页是仓库 full_name 数组
 // ⚠️ 页码必须锚 ? / & 解析：URL 里 per_page=100 也含 "page=" 字样，
@@ -51,20 +100,13 @@ function mkFetchByPages(pages, opts) {
     const m = /[?&]page=(\d+)/.exec(url);
     const page = m ? parseInt(m[1], 10) : 1;
     if (opts.status && opts.status[page]) {
-      return Promise.resolve({ ok: false, status: opts.status[page], json: () => Promise.resolve({}) });
+      const st = opts.status[page];
+      const reset = (st === 403 || st === 429) && opts.resetAt
+        ? Math.floor(opts.resetAt / 1000) : null;
+      return Promise.resolve(mkRes(st, {}, reset));
     }
     const list = (pages[page - 1] || []).map(mkRepo);
-    return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(list) });
-  };
-  impl.calls = calls;
-  return impl;
-}
-
-function mkFetchOnce(status, list) {
-  const calls = [];
-  const impl = () => {
-    calls.push(1);
-    return Promise.resolve({ ok: status === 200, status, json: () => Promise.resolve(list || []) });
+    return Promise.resolve(mkRes(200, list));
   };
   impl.calls = calls;
   return impl;
@@ -73,6 +115,22 @@ function mkFetchOnce(status, list) {
 function mkFetchReject() {
   const calls = [];
   const impl = () => { calls.push(1); return Promise.reject(new Error('offline')); };
+  impl.calls = calls;
+  return impl;
+}
+
+/** 第 1 次限流（带重置时刻），之后正常返回「已 Star」——测到点自动重试 */
+function mkFetchRateThenStar(resetInMs) {
+  const calls = [];
+  let n = 0;
+  const impl = () => {
+    calls.push(1);
+    n++;
+    if (n === 1) {
+      return Promise.resolve(mkRes(403, {}, Math.floor((Date.now() + resetInMs) / 1000)));
+    }
+    return Promise.resolve(mkRes(200, [mkRepo(REPO)]));
+  };
   impl.calls = calls;
   return impl;
 }
@@ -119,12 +177,20 @@ console.log('============================================================');
   gate.checkStar('limited2', f5b, (found, code) => {
     check('429 → ratelimit', found === false && code === 'ratelimit', { found, code });
   });
+  // 5c. 限流带头 → 解析出重置时刻（提示「几点几分自动重试」靠它）
+  const f5c = mkFetchByPages([], { status: { 1: 403 }, resetAt: Date.now() + 300000 });
+  gate.checkStar('limited3', f5c, (found, code, info) => {
+    check('403 带 X-RateLimit-Reset → 解析出重置时刻',
+      found === false && code === 'ratelimit' && !!info && info.resetAt > Date.now(),
+      { code, info });
+  });
 
-  // 6. 网络断
+  // 6. 网络断：自动重试 2 次才报错
   const f6 = mkFetchReject();
   gate.checkStar('offline', f6, (found, code) => {
-    check('网络断 → network', found === false && code === 'network', { found, code });
-  });
+    check('网络断 → 自动重试后才报 network', found === false && code === 'network', { found, code });
+    check('网络重试次数 = 2（共 3 次请求）', f6.calls.length === 3, f6.calls.length);
+  }, { retryDelays: [10, 20] });
 
   // 7. 空 / 非法用户名：不打 API
   const f7 = mkFetchByPages([[REPO]]);
@@ -153,6 +219,8 @@ console.log('============================================================');
 console.log('photo-gate.js · mount 行为（jsdom 真 DOM）');
 console.log('============================================================');
 
+// ⚠️ 测试 DOM 必须照抄线上 why-shuangxiugou.html 的真实嵌套层级
+//    （PITFALLS：少一层容器 = 少一类 bug）——解锁提示条也在里面。
 const GATE_HTML = `
 <!DOCTYPE html><html><body>
   <div class="gate-box" id="sxg-gate-box">
@@ -162,6 +230,7 @@ const GATE_HTML = `
     </form>
     <p class="gate-msg" id="sxg-gate-msg" hidden></p>
   </div>
+  <p class="gate-unlocked-note" id="sxg-gate-unlocked-note" hidden>已解锁：请勿取消 Star，不定期更新更多福利。取消后再次访问会重新上锁。</p>
   <div class="photo-grid" id="sxg-photo-grid" hidden>
     <img data-src="./photo-kuromi.jpg" alt="a" />
     <img data-src="./photo-melody.jpg" alt="b" />
@@ -181,19 +250,29 @@ function mkEnv(savedUser) {
   return { dom, doc, store, data };
 }
 
+function el(env, id) { return env.doc.getElementById(id); }
+function submit(env) {
+  el(env, 'sxg-gate-form').dispatchEvent(
+    new env.dom.window.Event('submit', { bubbles: true, cancelable: true })
+  );
+}
+function type(env, value) {
+  const input = el(env, 'sxg-gate-user');
+  input.value = value;
+  input.dispatchEvent(new env.dom.window.Event('input', { bubbles: true }));
+}
+
 (function () {
   // 9. 验证通过 → 全套解锁动作
   const env = mkEnv();
   const f = mkFetchByPages([[REPO]]);
   const api = gate.mount({ document: env.doc, localStorage: env.store, fetch: f });
   check('mount 返回 API（元素齐全）', !!api);
-  env.doc.getElementById('sxg-gate-user').value = 'starfan';
-  env.doc.getElementById('sxg-gate-form').dispatchEvent(
-    new env.dom.window.Event('submit', { bubbles: true, cancelable: true })
-  );
-  return Promise.resolve().then(() => new Promise((r) => setTimeout(r, 20))).then(() => {
-    check('验证通过 → 门禁卡隐藏', env.doc.getElementById('sxg-gate-box').hidden === true);
-    check('验证通过 → 照片网格显示', env.doc.getElementById('sxg-photo-grid').hidden === false);
+  el(env, 'sxg-gate-user').value = 'starfan';
+  submit(env);
+  return wait(40).then(() => {
+    check('验证通过 → 门禁卡隐藏', el(env, 'sxg-gate-box').hidden === true);
+    check('验证通过 → 照片网格显示', el(env, 'sxg-photo-grid').hidden === false);
     const imgs = env.doc.querySelectorAll('#sxg-photo-grid img');
     check('验证通过 → 两张照片 src 都被写上',
       imgs[0].getAttribute('src') === './photo-kuromi.jpg' && imgs[1].getAttribute('src') === './photo-melody.jpg');
@@ -206,11 +285,11 @@ function mkEnv(savedUser) {
   const env = mkEnv();
   const f = mkFetchByPages([['a/b']]);
   const api = gate.mount({ document: env.doc, localStorage: env.store, fetch: f });
-  env.doc.getElementById('sxg-gate-user').value = 'lurker';
+  el(env, 'sxg-gate-user').value = 'lurker';
   api.verify('lurker', false);
-  return Promise.resolve().then(() => new Promise((r) => setTimeout(r, 20))).then(() => {
-    check('没 Star → 门禁卡不隐藏', env.doc.getElementById('sxg-gate-box').hidden === false);
-    check('没 Star → 出提示文案', /还没有 Star 本站/.test(env.doc.getElementById('sxg-gate-msg').textContent));
+  return wait(40).then(() => {
+    check('没 Star → 门禁卡不隐藏', el(env, 'sxg-gate-box').hidden === false);
+    check('没 Star → 出提示文案', /还没有 Star 本站/.test(el(env, 'sxg-gate-msg').textContent));
     const imgs = env.doc.querySelectorAll('#sxg-photo-grid img');
     check('没 Star → 照片不加载（src 不写）', !imgs[0].getAttribute('src') && !imgs[1].getAttribute('src'));
     check('没 Star → 不写 localStorage 解锁记忆', !(gate.USER_KEY in env.data));
@@ -222,9 +301,9 @@ function mkEnv(savedUser) {
   const env = mkEnv('starfan');
   const f = mkFetchByPages([[REPO]]);
   gate.mount({ document: env.doc, localStorage: env.store, fetch: f });
-  return Promise.resolve().then(() => new Promise((r) => setTimeout(r, 20))).then(() => {
-    check('返回访问（仍 Star）→ 自动解锁', env.doc.getElementById('sxg-photo-grid').hidden === false);
-    check('返回访问 → 用户名回填输入框', env.doc.getElementById('sxg-gate-user').value === 'starfan');
+  return wait(40).then(() => {
+    check('返回访问（仍 Star）→ 自动解锁', el(env, 'sxg-photo-grid').hidden === false);
+    check('返回访问 → 用户名回填输入框', el(env, 'sxg-gate-user').value === 'starfan');
   });
 })();
 
@@ -233,11 +312,11 @@ function mkEnv(savedUser) {
   const env = mkEnv('quitter');
   const f = mkFetchByPages([['a/b']]);
   gate.mount({ document: env.doc, localStorage: env.store, fetch: f });
-  return Promise.resolve().then(() => new Promise((r) => setTimeout(r, 20))).then(() => {
-    check('取消 Star 再回来 → 保持锁定', env.doc.getElementById('sxg-photo-grid').hidden === true);
+  return wait(40).then(() => {
+    check('取消 Star 再回来 → 保持锁定', el(env, 'sxg-photo-grid').hidden === true);
     check('取消 Star 再回来 → 提示重新锁上',
-      /取消 Star/.test(env.doc.getElementById('sxg-gate-msg').textContent),
-      env.doc.getElementById('sxg-goto-msg') || env.doc.getElementById('sxg-gate-msg').textContent);
+      /取消 Star/.test(el(env, 'sxg-gate-msg').textContent),
+      el(env, 'sxg-gate-msg').textContent);
   });
 })();
 
@@ -252,14 +331,151 @@ function mkEnv(savedUser) {
   // 14. submit 事件触发校验
   const f2 = mkFetchByPages([[REPO]]);
   const env2 = mkEnv();
-  const api2 = gate.mount({ document: env2.doc, localStorage: env2.store, fetch: f2 });
-  env2.doc.getElementById('sxg-gate-user').value = 'formfan';
-  env2.doc.getElementById('sxg-gate-form').dispatchEvent(
-    new env2.dom.window.Event('submit', { bubbles: true, cancelable: true })
-  );
-  return Promise.resolve().then(() => new Promise((r) => setTimeout(r, 20))).then(() => {
+  gate.mount({ document: env2.doc, localStorage: env2.store, fetch: f2 });
+  el(env2, 'sxg-gate-user').value = 'formfan';
+  submit(env2);
+  return wait(40).then(() => {
     check('表单 submit 即触发校验（无需单独绑按钮）', f2.calls.length === 1, f2.calls.length);
-    check('submit 校验通过 → 解锁', env2.doc.getElementById('sxg-photo-grid').hidden === false);
+    check('submit 校验通过 → 解锁', el(env2, 'sxg-photo-grid').hidden === false);
+  });
+})();
+
+(function () {
+  // 15. 输入停顿即自动验证（不用点按钮）
+  const env = mkEnv();
+  const f = mkFetchByPages([[REPO]]);
+  gate.mount({ document: env.doc, localStorage: env.store, fetch: f, debounceMs: 0 });
+  type(env, 'typefan');
+  return until(() => f.calls.length === 1, 500).then((ok) => {
+    check('输入即自动验证（打了 API）', ok, f.calls.length);
+    return until(() => el(env, 'sxg-photo-grid').hidden === false, 500);
+  }).then((ok) => {
+    check('自动验证通过 → 解锁', ok);
+  });
+})();
+
+(function () {
+  // 16. 非法/空输入不触发自动验证
+  const env = mkEnv();
+  const f = mkFetchByPages([[REPO]]);
+  gate.mount({ document: env.doc, localStorage: env.store, fetch: f, debounceMs: 0 });
+  type(env, '坏 名字!');
+  type(env, '');
+  return wait(40).then(() => {
+    check('非法/空输入不触发自动验证（省限流）', f.calls.length === 0, f.calls.length);
+  });
+})();
+
+(function () {
+  // 17. 无痕/清缓存刷新：输入框被浏览器恢复，但 localStorage 是空的。
+  //     浏览器恢复值不发 input 事件——mount 时必须补一次自动验证，
+  //     否则就是站长实测的「用户名在框里、门还锁着」（连我自己也锁了）。
+  const env = mkEnv();
+  el(env, 'sxg-gate-user').value = 'dujeongil-galaxy'; // 模拟浏览器恢复的输入值
+  const f = mkFetchByPages([[REPO]]);
+  gate.mount({ document: env.doc, localStorage: env.store, fetch: f });
+  return wait(40).then(() => {
+    check('刷新恢复的输入值 → mount 时自动补验', f.calls.length === 1, f.calls.length);
+    check('补验通过 → 直接解锁', el(env, 'sxg-photo-grid').hidden === false);
+  });
+})();
+
+(function () {
+  // 18. 恢复值没 Star → 保持锁定且出提示（不能无声锁着）
+  const env = mkEnv();
+  el(env, 'sxg-gate-user').value = 'lurker';
+  const f = mkFetchByPages([['a/b']]);
+  gate.mount({ document: env.doc, localStorage: env.store, fetch: f });
+  return wait(40).then(() => {
+    check('恢复值没 Star → 保持锁定', el(env, 'sxg-photo-grid').hidden === true);
+    check('恢复值没 Star → 出提示（不无声锁着）',
+      /还没有 Star 本站/.test(el(env, 'sxg-gate-msg').textContent),
+      el(env, 'sxg-gate-msg').textContent);
+  });
+})();
+
+(function () {
+  // 19. 限流 → 提示带重置时刻 → 到点自动重试 → 解锁
+  const env = mkEnv();
+  const f = mkFetchRateThenStar(1050);
+  const api = gate.mount({ document: env.doc, localStorage: env.store, fetch: f, rateBufferMs: 0 });
+  api.verify('starfan', false);
+  return until(() => /自动重试/.test(el(env, 'sxg-gate-msg').textContent), 150).then((ok) => {
+    const text = el(env, 'sxg-gate-msg').textContent;
+    check('限流提示写明重置时刻和自动重试', ok && /\d{2}:\d{2}:\d{2}/.test(text), text);
+    check('限流时门禁保持锁定', el(env, 'sxg-photo-grid').hidden === true);
+    return until(() => el(env, 'sxg-photo-grid').hidden === false, 2500);
+  }).then((ok) => {
+    check('到点自动重试 → 解锁', ok);
+    check('自动重试真的打了第二次 API', f.calls.length >= 2, f.calls.length);
+  });
+})();
+
+(function () {
+  // 20. 限流但读不到重置时刻 → 普通提示，不挂自动重试
+  const env = mkEnv();
+  const f = mkFetchByPages([], { status: { 1: 403 } });
+  const api = gate.mount({ document: env.doc, localStorage: env.store, fetch: f });
+  api.verify('starfan', false);
+  return wait(60).then(() => {
+    check('限流（无重置时刻）→ 普通限流提示',
+      /稍后再试/.test(el(env, 'sxg-gate-msg').textContent),
+      el(env, 'sxg-gate-msg').textContent);
+    check('没有重置时刻就不挂自动重试', f.calls.length === 1, f.calls.length);
+  });
+})();
+
+(function () {
+  // 21. mount 层网络断 → 自动重试 2 次才报错
+  const env = mkEnv();
+  const f = mkFetchReject();
+  const api = gate.mount({ document: env.doc, localStorage: env.store, fetch: f, retryDelays: [10, 20] });
+  api.verify('starfan', false);
+  return wait(150).then(() => {
+    check('网络断 → 自动重试 2 次后才报错', f.calls.length === 3, f.calls.length);
+    check('重试耗尽 → 网络提示', /网络不通/.test(el(env, 'sxg-gate-msg').textContent));
+    check('网络断 → 门禁不解锁', el(env, 'sxg-photo-grid').hidden === true);
+  });
+})();
+
+(function () {
+  // 22. 解锁提示条：解锁前藏、解锁后显示
+  const env = mkEnv();
+  const f = mkFetchByPages([[REPO]]);
+  const api = gate.mount({ document: env.doc, localStorage: env.store, fetch: f });
+  check('解锁前提示条是藏的', el(env, 'sxg-gate-unlocked-note').hidden === true);
+  api.verify('starfan', false);
+  return wait(40).then(() => {
+    const note = el(env, 'sxg-gate-unlocked-note');
+    check('解锁后提示条显示（别取消 Star / 更多福利）',
+      note.hidden === false && /请勿取消 Star/.test(note.textContent) && /更多福利/.test(note.textContent),
+      note.textContent);
+  });
+})();
+
+(function () {
+  // 23. 同一用户并发验证只打一次 API
+  const env = mkEnv();
+  const f = mkFetchByPages([[REPO]]);
+  const api = gate.mount({ document: env.doc, localStorage: env.store, fetch: f });
+  api.verify('starfan', false);
+  api.verify('starfan', false); // 同一个正在验 → 不再打 API
+  return wait(40).then(() => {
+    check('同一用户并发验证只打一次 API（防刷限流）', f.calls.length === 1, f.calls.length);
+    check('去重后照样解锁', el(env, 'sxg-photo-grid').hidden === false);
+  });
+})();
+
+(function () {
+  // 24. 用户名带 @ 前缀：按裸名存储、也能解锁
+  const env = mkEnv();
+  const f = mkFetchByPages([[REPO]]);
+  gate.mount({ document: env.doc, localStorage: env.store, fetch: f });
+  el(env, 'sxg-gate-user').value = '@starfan';
+  submit(env);
+  return wait(40).then(() => {
+    check('带 @ 也按裸名存储', env.data[gate.USER_KEY] === 'starfan', env.data);
+    check('带 @ 也能解锁', el(env, 'sxg-photo-grid').hidden === false);
   });
 })();
 
@@ -274,4 +490,4 @@ setTimeout(() => {
     failures.forEach((f) => console.log('  -', f));
     process.exit(1);
   }
-}, 300);
+}, 2600);

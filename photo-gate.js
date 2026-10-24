@@ -13,6 +13,17 @@
  * 「取消 Star 会重新上锁」：每次访问都重新拉列表验，不信本地 flag，
  *   localStorage 只记「上次验证通过的用户名」，不记「已解锁」。
  *
+ * 交互（2026-10-24 深夜站长实测反馈后补）：
+ *   - 输入用户名停顿一下即自动验证，不必非点按钮；
+ *   - 无痕窗口/清过缓存刷新时，浏览器会恢复输入框内容但不发 input 事件，
+ *     mount 时发现框里有合法用户名就补一次自动验证——否则会出现
+ *     「用户名明明在框里、门却还锁着」的假故障（站长原话：连我自己也锁了）；
+ *   - 未登录 API 每小时 60 次限流：按 X-RateLimit-Reset 算出重置时刻，
+ *     提示写明几点几分自动重试，到点自己再验（一次访问最多自动重试 2 次）；
+ *   - 网络抖一下：自动重试 2 次再报错；
+ *   - 验证失败（限流/断网）时自动验证也要出提示，不能无声锁着；
+ *   - 解锁后给出「别取消 Star、不定期更新更多福利」的常驻提示。
+ *
  * 形态：UMD——浏览器里挂在 window.SXGPhotoGate 并自动 mount；
  *   Node 里 module.exports 供 test-photo-gate.cjs 用桩 fetch 测试。
  *
@@ -32,6 +43,12 @@
   var REPO = 'dujeongil-galaxy/shuangxiugou';
   var USER_KEY = 'sxg-photo-star-user';
   var MAX_PAGES = 10; // 最多翻 10 页（1000 个 star），防极端账号把限流刷爆
+  var DEBOUNCE_MS = 700; // 输入停顿这么久才自动验证（省 API 调用）
+  var RETRY_DELAYS = [1200, 2400]; // 网络错误自动重试的间隔（毫秒）
+  var RATE_BUFFER_MS = 2000; // 限流重置时刻的缓冲（GitHub 时钟与本机可能有偏差）
+  var RATE_RETRY_CAP = 2; // 一次访问里最多自动重试几次（防刷）
+  var RATE_WAIT_CAP_MS = 2 * 60 * 60 * 1000; // 重置时刻太远（>2 小时）就不自动重试
+  var USERNAME_RE = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/;
 
   var MSG = {
     checking: '正在拉取你的 GitHub Star 列表…',
@@ -45,52 +62,96 @@
     unstarred: '这个用户名取消 Star 了，门禁重新锁上。'
   };
 
+  function normalize(user) {
+    return String(user == null ? '' : user).trim().replace(/^@/, '');
+  }
+
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+  /** 毫秒时间戳 → 本地 HH:MM:SS（限流提示里给用户看重置时刻） */
+  function hhmmss(ms) {
+    var d = new Date(ms);
+    return pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+  }
+
+  /** 从响应头读 X-RateLimit-Reset（unix 秒）→ 毫秒时间戳；读不到返回 0 */
+  function readReset(res) {
+    try {
+      var getter = res.headers && res.headers.get;
+      var raw = getter ? getter.call(res.headers, 'X-RateLimit-Reset') : null;
+      var n = parseInt(raw, 10);
+      if (n > 0) return n * 1000;
+    } catch (e) { /* 拿不到就算了，退回普通限流提示 */ }
+    return 0;
+  }
+
   /**
-   * checkStar(user, fetchImpl, cb)
+   * checkStar(user, fetchImpl, cb, opts)
    * @param fetchImpl 可注入的 fetch（测试用桩）；返回 Promise<Response>
-   * @param cb(found:boolean, errCode:string|undefined)
+   * @param cb(found:boolean, errCode:string|undefined, info:{resetAt?:number}|undefined)
+   * @param opts.retryDelays 网络错误重试间隔数组（测试注入小值）
    */
-  function checkStar(user, fetchImpl, cb) {
-    user = String(user || '').trim().replace(/^@/, '');
+  function checkStar(user, fetchImpl, cb, opts) {
+    opts = opts || {};
+    var retryDelays = opts.retryDelays || RETRY_DELAYS;
+    user = normalize(user);
     if (!user) return cb(false, 'empty');
-    if (!/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/.test(user)) return cb(false, 'badname');
+    if (!USERNAME_RE.test(user)) return cb(false, 'badname');
 
     var page = 1;
     var pages = 0;
     var done = false;
+    var netTry = 0;
 
-    function finish(found, code) {
-      if (!done) { done = true; cb(found, code); }
+    function finish(found, code, info) {
+      if (!done) { done = true; cb(found, code, info); }
     }
 
     function next() {
       if (done) return;
       fetchImpl('https://api.github.com/users/' + encodeURIComponent(user)
         + '/starred?per_page=100&page=' + page)
-        .then(function (res) {
-          if (res.status === 404) return finish(false, 'nouser');
-          if (res.status === 403 || res.status === 429) return finish(false, 'ratelimit');
-          if (!res.ok) return finish(false, 'http' + res.status);
-          return res.json().then(function (list) {
-            pages++;
-            for (var i = 0; i < list.length; i++) {
-              if (list[i] && list[i].full_name === REPO) return finish(true);
-            }
-            if (list.length === 100) {
-              if (pages < MAX_PAGES) { page++; return next(); }
-              return finish(false, 'toomany');
-            }
-            return finish(false, 'nostar');
-          });
-        })
-        .catch(function () { finish(false, 'network'); });
+        .then(onRes)
+        .catch(function () {
+          if (done) return;
+          // 网络抖一下：自动重试，重试耗尽才报 network
+          if (netTry < retryDelays.length) {
+            var delay = retryDelays[netTry++];
+            setTimeout(next, delay);
+          } else {
+            finish(false, 'network');
+          }
+        });
+    }
+
+    function onRes(res) {
+      if (done) return;
+      if (res.status === 404) return finish(false, 'nouser');
+      if (res.status === 403 || res.status === 429) {
+        var resetAt = readReset(res);
+        return finish(false, 'ratelimit', resetAt ? { resetAt: resetAt } : undefined);
+      }
+      if (!res.ok) return finish(false, 'http' + res.status);
+      return res.json().then(function (list) {
+        if (done) return;
+        pages++;
+        for (var i = 0; i < list.length; i++) {
+          if (list[i] && list[i].full_name === REPO) return finish(true);
+        }
+        if (list.length === 100) {
+          if (pages < MAX_PAGES) { page++; return next(); }
+          return finish(false, 'toomany');
+        }
+        return finish(false, 'nostar');
+      }).catch(function () { finish(false, 'network'); });
     }
 
     next();
   }
 
   /**
-   * mount(opts)：接线 DOM。opts 可注入 document / localStorage / fetch（测试用）。
+   * mount(opts)：接线 DOM。opts 可注入 document / localStorage / fetch /
+   *   debounceMs / retryDelays / rateBufferMs（测试用）。
    * 返回 { verify, unlock, say } 或 null（页面没有门禁元素时）。
    */
   function mount(opts) {
@@ -105,7 +166,11 @@
     var input = doc.getElementById('sxg-gate-user');
     var btn = doc.getElementById('sxg-gate-verify');
     var msg = doc.getElementById('sxg-gate-msg');
+    var note = doc.getElementById('sxg-gate-unlocked-note');
     if (!box || !grid || !form || !input || !btn || !msg) return null;
+    var debounceMs = opts.debounceMs == null ? DEBOUNCE_MS : opts.debounceMs;
+    var retryDelays = opts.retryDelays || RETRY_DELAYS;
+    var rateBufferMs = opts.rateBufferMs == null ? RATE_BUFFER_MS : opts.rateBufferMs;
 
     function say(text, kind) {
       msg.textContent = text || '';
@@ -115,6 +180,7 @@
 
     function unlock() {
       box.hidden = true;
+      if (note) note.hidden = false;
       grid.hidden = false;
       var imgs = grid.querySelectorAll('img[data-src]');
       for (var i = 0; i < imgs.length; i++) {
@@ -122,32 +188,97 @@
       }
     }
 
-    function verify(user, silent) {
+    var inflight = null; // 正在验证的用户名（同一用户不重复打 API）
+    var debounceTimer = null;
+    var rateTimer = null;
+    var rateRetries = 0;
+
+    function clearDebounce() {
+      if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; }
+    }
+
+    function clearRateTimer() {
+      if (rateTimer) { clearTimeout(rateTimer); rateTimer = null; }
+    }
+
+    function rateLimitText(info) {
+      if (info && info.resetAt) {
+        return 'GitHub 接口限流了（未登录每小时 60 次），将在 '
+          + hhmmss(info.resetAt) + ' 自动重试，稍等一下。';
+      }
+      return MSG.ratelimit;
+    }
+
+    /** 限流不是用户的错：按重置时刻挂一个到点自动重试 */
+    function scheduleRateRetry(user, info) {
+      clearRateTimer();
+      if (!info || !info.resetAt) return;
+      if (rateRetries >= RATE_RETRY_CAP) return;
+      var wait = info.resetAt - Date.now() + rateBufferMs;
+      if (wait <= 0) wait = rateBufferMs;
+      if (wait > RATE_WAIT_CAP_MS) return;
+      rateRetries++;
+      rateTimer = setTimeout(function () {
+        rateTimer = null;
+        verify(user, false);
+      }, wait);
+    }
+
+    /**
+     * verify(user, silent, known)
+     * @param silent 自动验证（mount 时）：不刷「正在拉取」，但失败要出提示
+     * @param known  这个用户名是本站记忆的（取消过 Star 的人）——false 时
+     *               nostar 用「还没 Star」口径，不用「取消 Star」口径
+     */
+    function verify(user, silent, known) {
+      var u = normalize(user);
       if (!fetchImpl) { say(MSG.network, 'err'); return; }
+      if (inflight === u) return; // 同一用户正在验，不重复打 API
+      clearRateTimer();
+      inflight = u;
       btn.disabled = true;
       if (!silent) say(MSG.checking, 'check');
-      checkStar(user, fetchImpl, function (found, code) {
+      checkStar(u, fetchImpl, function (found, code, info) {
+        if (inflight === u) inflight = null;
         btn.disabled = false;
         if (found) {
-          try { store && store.setItem(USER_KEY, user); } catch (e) {}
+          rateRetries = 0;
+          try { store && store.setItem(USER_KEY, u); } catch (e) {}
           say('', '');
           unlock();
           return;
         }
+        if (note) note.hidden = true;
         if (code === 'nostar') {
-          say(input.value.trim() && !silent ? MSG.nostar : MSG.unstarred, 'err');
-        } else if (!silent) {
+          if (!silent) say(MSG.nostar, 'err');
+          else say(known ? MSG.unstarred : MSG.nostar, 'err');
+        } else if (code === 'ratelimit') {
+          say(rateLimitText(info), 'err');
+          scheduleRateRetry(u, info);
+        } else {
           say(MSG[code] || MSG.network, 'err');
         }
         // 用户名本身不对时清掉记忆，避免每次访问都拿错名字去问 GitHub
         if (code === 'nouser' || code === 'badname' || code === 'empty') {
           try { store && store.removeItem(USER_KEY); } catch (e) {}
         }
-      });
+      }, { retryDelays: retryDelays });
     }
+
+    // 输入停顿即自动验证（站长：「每次输入用户名都会自动验证」）
+    input.addEventListener('input', function () {
+      clearDebounce();
+      var v = normalize(input.value);
+      if (!v || !USERNAME_RE.test(v)) return; // 空/非法：等用户继续输，不插旗
+      debounceTimer = setTimeout(function () {
+        debounceTimer = null;
+        verify(v, false);
+      }, debounceMs);
+    });
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+      clearDebounce();
       verify(input.value, false);
     });
 
@@ -157,7 +288,12 @@
     try { saved = store && store.getItem(USER_KEY); } catch (e) {}
     if (saved) {
       input.value = saved;
-      verify(saved, true);
+      verify(saved, true, true);
+    } else {
+      // 无痕窗口/清过缓存：浏览器刷新时会恢复输入框内容，但不发 input 事件，
+      // 页面不知道该验——「用户名在框里却还锁着」就是这么来的。补一次自动验证。
+      var restored = normalize(input.value);
+      if (restored && USERNAME_RE.test(restored)) verify(restored, true, false);
     }
 
     return { verify: verify, unlock: unlock, say: say };

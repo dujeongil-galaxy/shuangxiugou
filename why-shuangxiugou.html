@@ -204,6 +204,20 @@
       .gate-msg--warn { color: #b45309; }
       .gate-msg--check { color: #0f766e; }
       .gate-unlock:disabled { opacity: .6; cursor: default; }
+      /* 解锁后的常驻提示（别取消 Star / 不定期更新福利）。
+         这个类目前没有 display 规则，hidden 靠 UA 生效；但哪天加了 display
+         就会盖掉它（photo-grid 同款坑）——兜底先写上，verify 有断言盯着。 */
+      .gate-unlocked-note {
+        margin: 0 0 14px;
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: #0f766e;
+        background: #f0fdfa;
+        border: 1px solid #99f6e4;
+        border-radius: 10px;
+        padding: 10px 14px;
+      }
+      .gate-unlocked-note[hidden] { display: none; }
       .photo-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -325,7 +339,7 @@
           <p class="gate-title">这两张照片设置了 Star 门禁</p>
           <p class="gate-desc">
             先去 GitHub 给「双休购」点个 Star，<br />
-            回来填上你的 GitHub 用户名，验证通过就能看。
+            回来填上你的 GitHub 用户名——填完停一下会自动验证，通过就能看。
           </p>
           <div class="gate-actions">
             <a class="gate-btn gate-star" id="sxg-gate-star" href="https://github.com/dujeongil-galaxy/shuangxiugou" target="_blank" rel="noopener">
@@ -350,9 +364,14 @@
           <p class="gate-note">
             真校验，不是「点一下就说已 Star」：本站会拉取你填名的 GitHub 公开 Star 列表，
             确认里面真有本站仓库才放行——没 Star 过不了，取消 Star 后再来会重新上锁。
-            它验的是「这个用户名 Star 了没有」，不验你是不是本人（要验身份得上 GitHub 登录，两张玩偶照还不值当）。
+            每次访问都重新验证，不依赖浏览器缓存；无痕窗口或清理过缓存后刷新，需要再输一次用户名
+            （浏览器通常会帮你恢复输入框内容，届时会自动验证）。
+            本站只核对「你输入的这个人有没有 Star」，不展示、也拿不到给本站 Star 的完整名单。
           </p>
         </div>
+        <p class="gate-unlocked-note" id="sxg-gate-unlocked-note" hidden>
+          已解锁：请勿取消 Star，不定期更新更多福利。取消后再次访问会重新上锁。
+        </p>
         <div class="photo-grid" id="sxg-photo-grid" hidden>
           <figure class="photo-cell">
             <img data-src="./photo-kuromi.jpg" alt="库洛米玩偶围成爱心，人躺在中间，手举一只库洛米" />
@@ -371,6 +390,6 @@
     </article>
 
     <!-- 照片 Star 门禁（真校验版，逻辑在 photo-gate.js） -->
-    <script src="./photo-gate.js?v=1"></script>
+    <script src="./photo-gate.js?v=2"></script>
   </body>
 </html>
