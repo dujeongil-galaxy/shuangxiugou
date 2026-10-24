@@ -283,9 +283,19 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 ~~**双休透镜 Chrome/Edge 浏览器扩展：**~~（本仓库属于 fork 之后的二次开发，不存在 Chrome 插件）
 ~~在逛京东、淘宝、拼多多时，自动识别商品所属企业工时状况，弹出悬浮避雷与平替提示。~~
 
-## 🆕 最近更新（2026-10-17 ~ 10-24）
+## 🆕 最近更新（2026-10-17 ~ 10-25）
 
 > 完整改动记录（每条附**改动时间 + 真实提交哈希**）见 [CHANGELOG.md](CHANGELOG.md)。本轮要点：
+>
+> ### 2026-10-25 凌晨（修「搜瑞幸咖啡出库迪咖啡」：新增搜索口径修正补丁）
+>
+> 站长报 bug：搜索「瑞幸咖啡」，结果里同时出现库迪咖啡。**根因**：bundle 主过滤器共 7 路匹配（name/companyName/category/searchKeywords/keyProducts/**summary**/id），summary 是叙述性长文本——库迪的 summary 写着「由瑞幸咖啡创始团队于 2022 年创立」，「瑞幸咖啡」四字整串命中。与 `block-numeric-search.js` 修的「输 1 出宁德时代」同病根：summary 参与检索。
+>
+> - **修法**（新增 `search-scope-fix.js`，不动 bundle）：React 过滤后在注入层按「强口径」（name/companyName/searchKeywords/keyProducts/id）重算——强字段有命中时收起仅 summary/category 命中的卡（搜「瑞幸咖啡」只剩瑞幸）；强字段零命中时 summary 兜底全显示（搜「六休一」不空结果）
+> - **判定数据来自 bundle 自身**：启动时 fetch bundle 文本，用与 `gen-pinyin-index.py` 相同的「括号配平 + 跳过模板字符串」法提取（正则前瞻会跨对象误匹配；模板字符串里的 `{}` 会炸配平）；fetch 失败降级拼音索引
+> - **隐藏用 class + `!important`**：`stat-filter.js` 用 inline display 控制同一批卡片，不用 !important 会被它重设时冲掉；黑榜卡不计入（与 stat-filter 口径一致）
+> - **测试与断言**：`scripts/test-search-scope-fix.cjs` 30 项（jsdom + 桩 fetch）；verify.mjs 20k 节 11 项断言；**10 次故障注入全部判红**（其中 4 次先暴露断言漏洞再加固：变量声明行救绿、文件头注释救绿、外层开关救绿、函数体救绿——**故障注入的「错误」必须是真错误**）
+> - **真渲染验收**：无头 Edge 10 项全过（搜「瑞幸咖啡」只剩瑞幸 / 搜「咖啡」四家全显示 / 搜「现磨咖啡」库迪显示 / 搜「六休一」兜底 / 清空恢复），截图 3 张
 >
 > ### 2026-10-24（随笔页新增「照片彩蛋」+ Star 门禁，当天升级为真校验，深夜按站长实测反馈再加固）
 >

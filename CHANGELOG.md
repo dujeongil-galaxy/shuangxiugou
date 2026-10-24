@@ -31,6 +31,30 @@
 
 ---
 ---
+### 修「搜瑞幸咖啡出库迪咖啡」：新增搜索口径修正补丁，summary 命中降级为兜底（2026-10-25 01:26 · 提交 `1434067`）
+
+站长报新 bug：搜索「瑞幸咖啡」，结果里同时出现库迪咖啡——「本来不应该存在这个错误」。
+
+**根因**：bundle 主过滤器共 7 路匹配（name/companyName/category/searchKeywords/keyProducts/**summary**/id），任一含查询词即命中。summary 是叙述性长文本，库迪的 summary 写着「由瑞幸咖啡创始团队于 2022 年创立」——「瑞幸咖啡」四字在 summary 里整串命中，库迪被筛了出来。与 `block-numeric-search.js` 处理的「输 1 出宁德时代」（年份在 summary 里）同病根：**summary 参与检索**。
+
+**修法**（新增 `search-scope-fix.js`，不动 bundle）：React 过滤完后，在注入层按「强口径」重算一遍——强字段 = name/companyName/searchKeywords/keyProducts/id（bundle 里除 summary/category 外的命中路）：
+
+- 强字段有命中 → 仅靠 summary/category 命中的卡片收起（搜「瑞幸咖啡」→ 只剩瑞幸）
+- 强字段零命中 → 全部显示，summary 兜底（搜「六休一」没有品牌名对得上，若一律收起会直接空结果）
+
+**关键实现细节**：
+
+- **判定数据来自 bundle 自身**：启动时 fetch bundle 文本，用与 `scripts/gen-pinyin-index.py` 完全相同的「括号配平 + 跳过模板字符串」法提取 brands 数组（正则前瞻会跨对象误匹配，py 侧踩过坑；模板字符串里的 `{}` 也会炸配平）。fetch 失败降级用 `window.__PINYIN_INDEX__`（拼音索引，覆盖 50/53）。
+- **隐藏用 class + `!important`**：`stat-filter.js`（顶部四格档位筛选）用 inline display 控制同一批卡片，不用 !important 会被它重设时冲掉。
+- **虚拟对比黑榜卡不计入**（与 stat-filter 口径一致）；识别不了品牌的容器不动，避免误伤布局。
+- **触发链**：input 事件（rAF + 50ms 等 React 重筛完）+ MutationObserver 防抖 300ms 重算（切 tab/品类筛选/档位筛选后跟着新节点走）+ load。
+
+**测试与断言**：`scripts/test-search-scope-fix.cjs` 30 项全过（提取器含模板字符串带 `{}` 的坑、核心 bug、强命中不误伤、summary 兜底、空搜索恢复、黑榜不动、最长名匹配、降级路径、input 自动触发、幂等）；verify.mjs 新增 20k 节 11 项断言；**10 次故障注入全部判红**——其中 4 次先暴露了断言自身的漏洞再加固（只匹配 `field(obj,'companyName')` 会被变量声明行救绿 → 改盯 `fields.push(companyName)`；「虚拟对比黑榜」字面量被文件头注释救绿 → 改盯逻辑行；只盯内层 `src[j] === BT` 会被改死的外层开关救绿 → 改盯 `if (ch === BT)`；`requestAnimationFrame` 在函数体里，删 input 绑定不判红 → 补一条盯实际绑定）。**故障注入的「错误」必须是真错误，注入完要确认断言真的红了，而不是以为会红。**
+
+**真渲染验收**：无头 Edge 10 项全过（搜「瑞幸咖啡」只剩瑞幸 / 搜「咖啡」四家全显示 / 搜「现磨咖啡」库迪显示 / 搜「六休一」兜底有结果 / 清空恢复），桌面视口截图 3 张。踩坑：本地 http 验收服务的路径守卫写成 `file.startsWith(ROOT)`，Windows 下 `path.join` 产出反斜杠与正斜杠 ROOT 永远不相等，全部请求 404、页面空白——`path.resolve` 归一后才通。
+
+---
+---
 ### 照片门禁按站长实测反馈全面加固：输入即验、无痕补验、限流自动重试、解锁提示条（2026-10-24 23:15 · 提交 `f0e9e47`）
 
 站长深夜实测（截图四连）后的修复轮。起因是三个真实体感问题：① 输入用户名后还要点按钮；② 无痕/清缓存刷新后「用户名明明在框里、门却还锁着」（站长原话：连我自己也锁了）；③ 未登录 API 每小时 60 次限流直接把验证堵死。另按站长要求补了「GitHub 登录设备流程」的评估——**试做后按站长「直接做一个输入框」的意见整体回退**，保留用户名真校验路线。
