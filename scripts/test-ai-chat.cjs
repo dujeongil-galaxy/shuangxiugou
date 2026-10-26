@@ -5,7 +5,7 @@
 
    覆盖路径：
      ① 降级：endpoint 为空 → 挂件完全不渲染（按钮/面板/样式都不注入）
-     ② 配置 endpoint → 按钮 + 面板渲染，面板默认隐藏
+     ② 配置 endpoint → 按钮 + 面板渲染，面板默认展开
      ③ 点按钮 → 面板开关切换；hidden 属性语义正确
      ④ 欢迎语在日志区（本地生成，不 fetch）
      ⑤ 提交问题 → fetch 打到 endpoint、POST、JSON 体含 question + history
@@ -62,14 +62,14 @@ async function main() {
     check('fetch 零调用（stub 不发请求）', dom.window.fetchCalls.length === 0);
   }
 
-  console.log('== ② 配置 endpoint：渲染 + 默认隐藏 ==');
+  console.log('== ② 配置 endpoint：渲染 + 默认展开 ==');
   {
     const dom = makeDom('window.SXG_AI_CONFIG={endpoint:"https://ai.example.workers.dev"}');
     const doc = dom.window.document;
     await new Promise(r => setTimeout(r, 30));
     check('按钮渲染', !!doc.getElementById('sxg-ai-fab'));
     check('面板渲染', !!doc.getElementById('sxg-ai-panel'));
-    check('面板默认隐藏', doc.getElementById('sxg-ai-panel').hidden === true);
+    check('面板默认展开', doc.getElementById('sxg-ai-panel').hidden === false);
     check('样式注入', !!doc.getElementById('sxg-ai-style'));
     check('欢迎语存在（本地生成）', doc.querySelector('.sxg-ai-log .sxg-ai-msg.bot') !== null
       && /劳动法小助手/.test(doc.querySelector('.sxg-ai-log .sxg-ai-msg.bot').textContent));
@@ -77,9 +77,9 @@ async function main() {
 
     // ③ 面板开关
     doc.getElementById('sxg-ai-fab').dispatchEvent(new dom.window.Event('click', { bubbles: true }));
-    check('点按钮面板开', doc.getElementById('sxg-ai-panel').hidden === false);
+    check('点按钮面板关', doc.getElementById('sxg-ai-panel').hidden === true);
     doc.getElementById('sxg-ai-fab').dispatchEvent(new dom.window.Event('click', { bubbles: true }));
-    check('再点面板关', doc.getElementById('sxg-ai-panel').hidden === true);
+    check('再点面板开', doc.getElementById('sxg-ai-panel').hidden === false);
 
     // ⑩ 幂等
     dom.window.eval('document.dispatchEvent(new Event("DOMContentLoaded"))');

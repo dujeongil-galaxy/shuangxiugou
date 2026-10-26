@@ -1,7 +1,7 @@
 // AI 挂件真渲染验收：无头 Edge + CDP（照 shot-vcr.cjs 纪律）
-// 场景：① 品牌页默认（endpoint 空）→ 挂件不渲染；
-//       ② 模拟已配置（页面注入 endpoint）→ 按钮在、面板开合正常；
-//       ③ 截图两张（未配置 / 已配置面板展开）。
+// 场景：① 品牌页默认（endpoint 空）→ stub 模式，按钮+面板渲染，面板默认展开；
+//       ② 模拟已配置（页面注入 endpoint）→ 按钮在、面板默认展开；
+//       ③ 截图两张（stub / 已配置面板展开）。
 // 跑法：node scripts/shot-ai-chat.cjs（需 ws；输出到 ../Star门禁验收截图/）
 const http = require('http');
 const fs = require('fs');
@@ -77,6 +77,7 @@ const server = http.createServer((req, res) => {
   await shot('ai-chat-off.png');
 
   // ---- 场景②：模拟已配置（页面注入 endpoint 后重载 chat 脚本）----
+  // 面板现在默认展开，不需要点击即可验收
   const s2raw = await ev(`(async () => {
     window.SXG_AI_CONFIG = { endpoint: 'https://ai.example.workers.dev' };
     const src = await (await fetch('/ai-chat.js')).text();
@@ -85,8 +86,6 @@ const server = http.createServer((req, res) => {
     const fab = document.getElementById('sxg-ai-fab');
     const panel = document.getElementById('sxg-ai-panel');
     if (!fab || !panel) return { ok: false, fab: !!fab, panel: !!panel };
-    fab.click();
-    await new Promise(r => setTimeout(r, 100));
     return {
       ok: true,
       fabVisible: fab.getBoundingClientRect().width > 0,
@@ -103,7 +102,7 @@ const server = http.createServer((req, res) => {
   await shot('ai-chat-open.png');
 
   const ok1 = JSON.parse(s1);
-  const pass = !ok1.fab && !ok1.panel && ok1.bodyIntact && ok2.ok && ok2.panelOpen && ok2.welcomeShown && ok2.singleFab && ok2.bodyIntact;
+  const pass = ok1.fab && ok1.panel && ok1.bodyIntact && ok2.ok && ok2.panelOpen && ok2.welcomeShown && ok2.singleFab && ok2.bodyIntact;
   console.log('验收状态:', pass ? 'PASS' : 'FAIL');
   ws.close(); edge.kill(); server.close();
   // Edge 进程 kill 后瞬时仍锁 profile 目录，删失败不影响验收结果

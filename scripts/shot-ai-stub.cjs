@@ -67,7 +67,7 @@ const server = http.createServer((req, res) => {
     if (!fab) return { ok: false };
     const r = fab.getBoundingClientRect();
     document.querySelectorAll('.dyp').forEach(n => n.remove());
-    fab.click();
+    // 面板现在默认展开，不需要点击
     const input = document.querySelector('.sxg-ai-in');
     const send = document.querySelector('.sxg-ai-send');
     const hello = document.querySelector('.sxg-ai-log .sxg-ai-msg.bot');
