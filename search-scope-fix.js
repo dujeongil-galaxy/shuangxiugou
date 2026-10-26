@@ -179,6 +179,19 @@
   }
 
   /* ---------------------------------------------------------- 判定 */
+  // 搜索容器自身也长着 CARD_SEL 的 class（bg-white p-4 rounded-2xl border），
+  // 但它装的是搜索框/品类筛选按钮，不是任何品牌的卡。它 textContent 含
+  // 联想框残留的品牌名（如「BYD (比亚迪)」），findBrandFor 会把它误判成
+  // 该品牌的卡；IME 组合中间态（如输「啊」时的拼音 'a'）一旦出现字母强
+  // 命中其他品牌，strongCount>0，容器就被判「弱命中」加上 HIDE_CLASS ——
+  // 整个搜索框连着筛选按钮一起消失（2026-10-25 站长截图 bug，无头 Edge +
+  // CDP 完整重放复现：搜「比亚迪」→删光→输「啊」→退格，容器 display:none）。
+  // 防护栏：含搜索输入框的容器一律跳过。品牌卡内不会有搜索框，
+  // 这是结构事实，不依赖时序与内容。
+  function isSearchContainer(node) {
+    return !!(node && node.querySelector && node.querySelector(INPUT_SEL));
+  }
+
   function findBrandFor(cardText, fields) {
     // 卡片文本含 brand.name 即视为该品牌的卡；取最长匹配，
     // 避免「库迪」抢先匹配「库迪咖啡 (COTTI COFFEE)」的卡。
@@ -219,6 +232,8 @@
     var strongCount = 0;
     for (i = 0; i < cards.length; i++) {
       card = cards[i];
+      // 搜索容器防护栏：它不是品牌卡，永远不参与口径判定
+      if (isSearchContainer(card)) { verdicts.push(null); continue; }
       text = card.textContent || '';
       if (text.indexOf('虚拟对比黑榜') !== -1) { verdicts.push(null); continue; }
       var brand = findBrandFor(text, fieldsCache);
@@ -310,6 +325,7 @@
     fieldsFromPinyinIndex: fieldsFromPinyinIndex,
     findBrandFor: findBrandFor,
     isStrongHit: isStrongHit,
+    isSearchContainer: isSearchContainer,
     applyScope: applyScope,
     ensureFields: ensureFields,
     HIDE_CLASS: HIDE_CLASS

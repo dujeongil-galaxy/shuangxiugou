@@ -3816,6 +3816,25 @@ section('20i. 星巴克公告框注入闸门（与苹果同构）');
     'input 事件真的绑了（不是只定义了处理器函数）');
   check(exists('scripts/test-search-scope-fix.cjs'),
     '存在口径修正行为测试（jsdom + 桩 fetch，30 项）');
+
+  // 20m：搜索容器防护栏（2026-10-25 站长 bug：输「啊」退格后输入框消失）。
+  // 根因：搜索容器 div.bg-white.p-4.rounded-2xl.border 也命中 CARD_SEL，
+  // 联想框残留品牌名（BYD）使其被 findBrandFor 认成品牌卡；IME 组合中间态
+  // （拼音 'a'）字母命中其他品牌时容器被判弱命中加 HIDE_CLASS。
+  // 修法：isSearchContainer 防护栏——含 #site-search-input 的容器不参与判定。
+  // 断言盯「取出且真的用」：applyScope 循环里必须先调 isSearchContainer 再
+  // continue（只定义不调用的断言形态已被 2026-10-25 注入实测排除）。
+  section('20m. 搜索容器防护栏（输入框所在容器永不被口径判定隐藏）');
+  check(/function isSearchContainer\(/.test(ssf)
+    && /node\.querySelector\(INPUT_SEL\)/.test(ssf),
+    'isSearchContainer 定义存在且以 INPUT_SEL 探测');
+  check(/if \(isSearchContainer\(card\)\) \{ verdicts\.push\(null\); continue; \}/.test(ssf),
+    'applyScope 真的调用防护栏跳过搜索容器（不是只定义）');
+  check(/isSearchContainer: isSearchContainer/.test(ssf),
+    '自测导出含 isSearchContainer（测试可直达）');
+  const tssf = read('scripts/test-search-scope-fix.cjs');
+  check(/搜索容器防护栏/.test(tssf) && /BYD_BUNDLE/.test(tssf),
+    '行为测试覆盖防护栏场景且 BYD 在测试 bundle（防数据缺失救绿）');
 }
 
 // ---------- 20l. 照片仓库内加密 + 解密渲染 + 点击放大灯箱 ----------
@@ -4039,6 +4058,55 @@ section('21c. 首页滑到底部按钮');
   check(/addEventListener\('scroll'/.test(bb) && /sxg-at-bottom/.test(bb),
     'bottom-button.js 有近底部自动隐藏逻辑（scroll 监提 + class 切换）');
 }
+
+// ---------- 21d. 申诉入口政策确认弹窗 ----------
+// 背景（2026-10-25 站长要求）：申诉入口点击直接跳 GitHub issue，
+// 用户没读政策就进去，产生无效申诉。改为先弹政策层：
+// 「同意并跳转」开原链接、「拒绝并关闭」留在本页。
+// 文案用站长定稿的简洁版（AI 自动计算 / 受理范围 / 不予受理 /
+// 人工核验 / 脱敏五句）。
+{
+  const ap = read('appeal-policy.js');
+  const idxHtml = read('index.html');
+  section('21d. 申诉入口政策确认弹窗');
+  check(exists('appeal-policy.js')
+    && /<script src="\.\/appeal-policy\.js\?v=\d+"><\/script>/.test(idxHtml),
+    '申诉政策弹窗脚本存在且在 index.html 挂载');
+  // 判定逻辑：issues 链接才拦，普通链接放过（盯逻辑行，注释救绿已防）
+  check(/github\\.com\\\/\[\^\/\]\+\\\/\[\^\/\]\+\\\/issues/.test(ap),
+    'isAppealLink 只拦 issues 链接（正则逻辑行）');
+  // 弹层文案五句逐字（站长定稿）
+  check(ap.indexOf('本项目评级由AI依据GitHub仓库公示的判定规则自动计算得出') !== -1,
+    '政策文案：AI 依据仓库规则自动计算（逐字）');
+  check(ap.indexOf('申诉仅受理证据过时、信息不实、个案误判、规则发生变更类复核申请') !== -1,
+    '政策文案：受理范围（逐字）');
+  check(ap.indexOf('仅对评级结果不满意、无有效佐证材料的申诉不予受理') !== -1,
+    '政策文案：不予受理（逐字）');
+  check(ap.indexOf('请提交客观佐证材料，我们将人工核验材料后重新运行评级流程') !== -1,
+    '政策文案：人工核验重跑（逐字）');
+  check(ap.indexOf('所有申诉线索严格脱敏保护，不会泄露提交者隐私') !== -1,
+    '政策文案：脱敏承诺（逐字）');
+  // 两个按钮都要真的存在且语义相反
+  check(/'同意并跳转'/.test(ap) && /'拒绝并关闭'/.test(ap),
+    '双按钮：同意并跳转 / 拒绝并关闭');
+  // 同意必须真的 window.open（不是只关弹层）
+  check(/window\.open\(url, '_blank', 'noopener'\)/.test(ap),
+    '同意按钮真的调 window.open（新标签）');
+  // 点击接管：preventDefault 挡原生跳转
+  check(/ev\.preventDefault\(\)/.test(ap) && /openModal\(a\.href\)/.test(ap),
+    '点击申诉链接先弹层（preventDefault + openModal(a.href)）');
+  // 幂等标记
+  check(/dataset\[MARK\] === '1'/.test(ap) || /dataset\.sxgAppealBound === '1'/.test(ap),
+    '链接绑定幂等（dataset 标记）');
+  check(exists('scripts/test-appeal-policy.cjs'),
+    '存在弹窗行为测试（jsdom，28 项）');
+  // CI 接线：测试文件存在但没挂进 CI = 形同虚设（photo-gate.js 教训同源）。
+  if (exists('.github/workflows/verify.yml')) {
+    check(read('.github/workflows/verify.yml').includes('test-appeal-policy.cjs'),
+      'CI 里已接入申诉政策弹窗测试');
+  }
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {

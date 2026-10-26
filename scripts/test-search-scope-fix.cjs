@@ -224,6 +224,77 @@ console.log('\n⑧ fetch 失败 → 降级拼音索引，不崩且仍修正');
   check('降级后搜「咖啡」不误伤', HIDDEN(w, 'card-cotti') === false);
 })();
 
+/* ================================================================ ⑨ 搜索容器防护栏（2026-10-25 bug） */
+console.log('\n⑨ 搜索容器防护栏：含输入框的容器永远不被口径判定隐藏');
+(async function () {
+  // 复刻线上 DOM 结构（无头 Edge 复现的真实拓扑）：
+  // 搜索容器 div.bg-white.p-4.rounded-2xl.border 内含 #site-search-input、
+  // 残留联想框（内容「BYD (比亚迪)」）、品类/评级筛选按钮。
+  // IME 组合中间态 q='a' 时：容器 text 含「比亚迪」→ findBrandFor 命中
+  // BYD → BYD 强字段全无字母 a → 判弱命中；其他卡（如 Starbucks）强命中
+  // → strongCount>0 → 容器被加 HIDE_CLASS，搜索框整片消失。
+  //
+  // ⚠️ BYD 必须在 bundle 数据里：它是 findBrandFor 在容器上命中的前提，
+  //    缺了它容器会被当成「识别不了的卡」跳过，注入防护栏删除
+  //    也照样绿——救绿形态：断言被「数据里根本没有该品牌」救活
+  //    （2026-10-25 注入实测抓到）。
+  const BYD_BUNDLE = FAKE_BUNDLE.slice(0, -1) + ','
+    + '{id:' + q('byd') + ',name:' + q('BYD (比亚迪)')
+    + ',companyName:' + q('比亚迪股份有限公司')
+    + ',summary:' + q('新能源车龙头。')
+    + ',keyProducts:[' + q('电动车') + ']'
+    + ',searchKeywords:[' + q('比亚迪') + ',' + q('BYD') + ']}'
+    + ']';
+  const html = '<!DOCTYPE html><html><head></head><body><div id="root">'
+    // 品牌卡（对照组：必须照常参与判定）
+    + '<div class="bg-white rounded-2xl border" id="card-luckin">'
+    + '瑞幸咖啡 (Luckin Coffee) 瑞幸咖啡（中国）有限公司 生椰拿铁</div>'
+    + '<div class="bg-white rounded-2xl border" id="card-sbux">'
+    + 'Starbucks (星巴克中国) 上海星巴克咖啡经营有限公司 美式</div>'
+    // 搜索容器（与线上同 class 签名：bg-white p-4 rounded-2xl border）
+    + '<div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-4" id="search-cont">'
+    + '<div class="relative">'
+    + '<input id="site-search-input" type="text" value="" />'
+    + '<div id="pinyin-suggest" style="display:none">'
+    + '拼音联想 · 点选或按 Enter 回填BYD (比亚迪)「比亚迪股份有限公司」名称匹配</div>'
+    + '</div>'
+    + '<div class="flex flex-wrap"><button>全部</button><button>数码外设</button></div>'
+    + '<div class="flex flex-wrap"><button>全部评级</button><button>S 级</button></div>'
+    + '</div>'
+    + '</div>'
+    // bundleUrl() 靠 script[src*=index-YthXZ9eP] 定位 bundle；
+    // 缺了它 ensureFields 拿不到 URL，fieldsCache 空、口径判定全跳过
+    + '<script src="./assets/index-YthXZ9eP.js"></script>'
+    + '</body></html>';
+  const dom = new JSDOM(html, { runScripts: 'outside-only', url: 'http://localhost/shuangxiugou/' });
+  const w = dom.window;
+  w.fetch = () => Promise.resolve({ ok: true, text: () => Promise.resolve(BYD_BUNDLE) });
+  w.eval(PATCH_SRC);
+  await w.__SXGSearchScopeFix.ensureFields();
+
+  const cont = w.document.getElementById('search-cont');
+  check('isSearchContainer 认得搜索容器', w.__SXGSearchScopeFix.isSearchContainer(cont) === true);
+  check('isSearchContainer 不认错品牌卡', w.__SXGSearchScopeFix.isSearchContainer(w.document.getElementById('card-luckin')) === false);
+
+  // bug 场景：q='a'（IME 组合中间态）——Starbucks 强命中（名字含 a），
+  // 搜索容器含「比亚迪」被误判弱命中
+  w.__SXGSearchScopeFix.applyScope('a');
+  check('q=a：搜索容器不被隐藏（bug 修复点）', cont.classList.contains('sxg-scope-hidden') === false,
+    cont.className);
+  check('q=a：强字段无 a 的瑞幸卡照常收起（口径修正仍工作）',
+    w.document.getElementById('card-luckin').classList.contains('sxg-scope-hidden') === true);
+  check('q=a：强字段含 a 的星巴克卡照常显示（口径修正仍工作）',
+    w.document.getElementById('card-sbux').classList.contains('sxg-scope-hidden') === false);
+
+  // 常规查询也必须不误伤容器
+  w.__SXGSearchScopeFix.applyScope('瑞幸咖啡');
+  check('q=瑞幸咖啡：搜索容器不被隐藏', cont.classList.contains('sxg-scope-hidden') === false);
+
+  // 空搜索恢复
+  w.__SXGSearchScopeFix.applyScope('');
+  check('空搜索：容器无隐藏 class（全清）', cont.classList.contains('sxg-scope-hidden') === false);
+})();
+
 /* ---------------------------------------------------------------- 汇总 */
 setTimeout(function () {
   console.log('\n========== 结果：' + passed + ' 项通过，' + failed + ' 项失败 ==========');

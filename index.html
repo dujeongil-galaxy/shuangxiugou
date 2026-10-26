@@ -1540,7 +1540,11 @@
        零命中时（如搜「六休一」）summary 兜底展示，不空结果。
        必须在 stat-filter.js 之后：两补丁操作同一批卡片，本补丁的隐藏用
        class + !important，晚加载保证层级语义上「口径修正在档位筛选之上」。 -->
-  <script src="./search-scope-fix.js?v=1"></script>
+  <script src="./search-scope-fix.js?v=2"></script>
+  <!-- 申诉政策确认弹窗（2026-10-25 站长要求）：申诉入口点击先弹政策，
+       同意并跳转 / 拒绝并关闭。目标链接从页面既有 a[href] 现场读取，
+       本文件不维护第二份 issueUrl。 -->
+  <script src="./appeal-policy.js?v=1"></script>
   </body>
 </html>
 

@@ -146,9 +146,15 @@ jobs:
       - name: 照片解密与灯箱测试
         run: node scripts/test-photo-vault.cjs
 
-      # 搜索口径修正：summary 命中不得串品牌（「搜瑞幸咖啡出库迪咖啡」）。
+      # 搜索口径修正：summary 命中不得串品牌（「搜瑞幸咖啡出库迪咖啡」）；
+      # 2026-10-25 起含搜索容器防护栏场景（输入框消失 bug 的回归）。
       - name: 搜索口径修正测试
         run: node scripts/test-search-scope-fix.cjs
+
+      # 申诉入口政策确认弹窗：拦截 issues 链接先弹政策层
+      # （同意并跳转 / 拒绝并关闭，文案逐字断言）。
+      - name: 申诉政策弹窗测试
+        run: node scripts/test-appeal-policy.cjs
 
       # notes.html 锁屏的「我同意/我不同意」门禁行为。
       - name: 笔记锁屏同意门测试
