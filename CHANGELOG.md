@@ -31,7 +31,7 @@
 
 ---
 ---
-### AI 挂件 stub 模式修正：图标永远可见；零基础部署教程（2026-10-26 20:49 · 提交 `e5454e3`）
+### AI 挂件 stub 模式修正：图标永远可见；零基础部署教程（2026-10-26 20:49 · 提交 `6fe6f75`）
 
 站长实测反馈两件事：①线上看不见 AI 图标；②不知道怎么部署。①的根因不是 bug 而是设计错了预期——初版降级设计「endpoint 空 = 挂件整体隐身」，在 Worker 未部署时让整个挂件从页面上消失，看起来像功能坏了。**修正**：去掉隐身守卫改 `STUB` 模式标记——按钮照常渲染（含卡通头像，手机/桌面都可见），点开面板显示「AI 服务正在开通中，暂时还不能回答问题」，输入框与发送按钮禁用（placeholder「AI 开通中，暂不可提问」），`ask()` 加 stub 守卫双保险不发请求；部署 Worker 填 endpoint 后自动切回正常模式。`ai-chat.js?v=3`（首页与 62 张品牌页统一版本号）。**②的交付**：新增 `ai-worker/DEPLOY-教程.md` 零基础五步教程（注册 Cloudflare → 装 Node → `npx wrangler login` → `npx wrangler deploy` → 填 endpoint 推送），每步「点哪里输什么」，附常见报错速查表与 FAQ（花钱吗/key 泄露吗/被刷吗/换形象/下线），`ai-worker/README.md` 顶部加指引横幅。test-ai-chat 35 项（stub 场景重写 7 断言）；verify §21g 更新（STUB 标记/ask 守卫/提示文案/禁用逻辑/教程存在）；故障注入 2 处判红；无头 Edge 390×844 stub 验收 PASS（截图 `ai-stub-mobile.png`）。
 
