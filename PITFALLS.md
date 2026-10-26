@@ -1727,3 +1727,23 @@ about:blank，必须走 CDP `Page.navigate`。两坑连在一起排查了很久�
 绿——「注入」了个寂寞。收紧为锚 `'{display:none !important}'`
 带花括号（代码里样式体必有花括号，注释里的散文没有）才生效。
 **注入前先 grep 全部露面位置再选锚点，与第十五章「限流」教训同根。**
+
+## 第十九章：AI 挂件与验收脚本一轮踩的坑（2026-10-26 补记 · 提交 `8c6bd4f`）
+
+### 19.1 jsdom 的 DOMContentLoaded 比构造晚一拍
+
+jsdom 构造完 `document.readyState` 停在 `'loading'`，DOMContentLoaded
+在事件循环的后续微任务才发。脚本走「loading 则挂 DOMContentLoaded」
+启动链时，**同步查 DOM 会误判「没渲染」**——测试里 `await 30ms` 后查
+全都过，我的快速实验同步查全红，白白排查半小时。判定渲染问题前
+先确认查询时机。
+
+### 19.2 桩 fetch 必须「导航前」注入——capture 型引用不吃后替换
+
+photo-gate 在 UMD mount（脚本加载时）就执行
+`opts.fetch || root.fetch.bind(root)`——把 fetch **引用**存住了。
+页面加载完再替换 `window.fetch`，验证走的仍是旧引用（真 API）。
+CDP 验收的正确姿势：`Page.addScriptToEvaluateOnNewDocument` 在
+**导航前**注入桩。教训泛化：**任何「构造时 capture 依赖」的模块，
+桩都必须活在 capture 之前**。同理 CDP `Runtime.evaluate` 评估
+async IIFE 必须 `awaitPromise: true`，否则 Promise 被序列化成空对象。

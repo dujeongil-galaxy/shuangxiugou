@@ -31,6 +31,24 @@
 
 ---
 ---
+### 照片彩蛋门禁提示：开启 VPN 可能导致验证失败（2026-10-26 19:47 · 提交 `dc5bca1`）
+
+站长指令：照片彩蛋页面（why-shuangxiugou.html 的 Star 门禁）告知用户「开启 VPN 可能导致验证失败」。根因：门禁验证打 GitHub 公开 API 拉用户 star 列表，挂代理时出口 IP 与代理用户共享，GitHub 风控容易判异常——正是「一直转圈 / 网络不通 / 限流」三类验证失败的常见源头。**两层提示**：事前预防（门禁框 desc 下方黄底警示卡 `gate-vpn-tip`——⚠️ 验证前请先关闭 VPN / 代理……可能直接导致验证失败或限流）；事后补救（`photo-gate.js` 三条失败文案全部拼 `VPN_HINT`：ratelimit 静态串 / network 串 / rateLimitText 带重置时刻的动态串——用户已撞上失败时消息位当场提示）。`photo-gate.js?v=3→4` 防缓存。verify.mjs §20j 新增 4 项断言（三个失败出口全覆盖）；故障注入 3 处判红；test-photo-gate 66 项 + test-photo-vault 30 项零回归。无头 Edge 验收 PASS——顺带修了验收脚本自身一个坑：**桩 fetch 必须用 `Page.addScriptToEvaluateOnNewDocument` 在导航前注入**——photo-gate 在 UMD mount 时就 capture 了 `root.fetch.bind(root)` 的引用，页面加载后替换 `window.fetch` 不生效（2026-10-26 实测：后注入时验证走真 GitHub API，结果不可控）。
+
+---
+---
+### 劳动法小助手：Worker 代理 + 品牌页/首页聊天挂件 + 卡通形象 + 手机端适配（2026-10-26 19:19 · 提交 `8c6bd4f`）
+
+站长指令链：先「AI 那件事按你说的去做」（Cloudflare Worker 代理方案）→「完成之后全部线上推送 并保证手机端可看见 AI」→「再给 AI 设置一个卡通形象，不用问我，不满意稍后再换」。
+
+**架构（先解死结再谈功能）**：静态站不能藏 API key——写进前端代码 = 写进公开仓库 = Network 面板一抄就刷爆。方案是 **Cloudflare Worker 代理**（`ai-worker/`）：Workers AI 的 `env.AI` binding 把模型调用绑定在 Worker 环境里，key 永不出现在仓库/页面/请求头；模型 `@cf/zai-org/glm-4.7-flash`（131K 上下文），免费层每日 1 万 neurons ≈ 340 次标准问答。**防刷六道全在 Worker 层**（前端不可信）：CORS 白名单只放行本站域名 + 本地验收端口（非白名单 Origin 连 POST 都不处理，不耗 neurons）；question 1~500 字、history 截 8 条每条 200 字、role 白名单（防 prompt 注入）；每 IP 滑窗 20 次/小时；max_tokens 600（输出单价是输入的 6.6 倍）；系统提示词锁角色（劳动法条文口径 44h/36h/150%-200%-300% + 本站评级口径 + 非法律意见声明 + 12333 转介）。
+
+**前端挂件**（`ai-chat.js` + `ai-config.js`）：**62 张品牌页 + 首页**挂载（照 bottom-button 纪律挂 body——React 只管 #root，外部节点不碰它的地盘）；endpoint 空 = 挂件完全不渲染（`ai-config.js` 默认空串，先推前端不出半截 UI，部署 Worker 后填一行即上线）。**手机端可见**（站长追加指令）：z-index 9000/9001 与浮钮家族平级（广告条 9990 之下）；按钮 bottom 210px 与 TOP（96）/⤓（154）三钮竖排避让；640px 媒体查询——面板两侧贴合撑满、输入 16px 防 iOS 聚焦自动缩放、按钮加大 56px、`env(safe-area-inset-bottom)` 刘海屏安全区。**卡通形象**（站长追加指令）：teal 机器人小助手（站点主题色，圆头方脑、亮色眼睛、腮红、胸前小天平——劳动法意象），手写 SVG 存 `assets/ai-avatar.svg`（换形象单一权威来源），base64 data URI 内联进 `ai-chat.js` 常量 `AVATAR`——零额外请求零外部依赖；按钮 34px + 面板头 30px 双露出，emoji 已替换。
+
+**测试与断言**：`test-ai-chat.cjs` 31 项（降级/渲染/开合/幂等/请求体/history/三类错误文案/形象 4 项）；`test-ai-worker.cjs` 27 项（桩 env.AI 不联网：CORS/校验/限流/提示词/model ID/max_tokens/429 两型）；verify.mjs 新增 §21g 28 项（含首页挂载、手机端适配、形象断言）；CI 挂两测试；故障注入 4 处判红。无头 Edge 三轮真渲染验收 PASS（桌面默认不渲染 + 注入 endpoint 全要素；390x844 手机视口首页三钮不叠位、品牌页面板贴合）。调试中修两个坑：CDP `Runtime.evaluate` 评估 async IIFE 必须 `awaitPromise: true`（否则 Promise 序列化成空对象）；jsdom 的 DOMContentLoaded 比构造晚一拍（同步查 DOM 会误判「没渲染」）。
+
+---
+---
 ### 首页 FAQ 的 GitHub 入口补「关 VPN 防验证限流」提示（2026-10-26 17:01 · 提交 `cbe3537`）
 
 站长指令：首页常见问题区「数据准不准？发现错了怎么办？」答案里的 GitHub Issues 入口处，提示用户关闭 VPN，否则可能触发 GitHub 验证接口限流。改动 `index.html` 两处：noscript SEO 视图 FAQ 答案下方新增灰底小字提示段（可见文案，⚠️ 前缀 + 加粗「关闭 VPN / 代理」+ 后果说明）；JSON-LD FAQPage 结构化数据同步（搜索直达答案也读到）。与 10-25 傍晚已在赞助页 / USDT 教程页落地的同类提示（交易所认证场景）互为补充，本条针对 GitHub 人机验证与登录接口场景（验证码无限循环、无法登录、页面空白）。verify.mjs 新增 §21f 4 项断言（可见段 / 后果语义 / 故障形态 / JSON-LD 镜像），三次故障注入全判红（删可见段 1 红 / 删 JSON-LD 句 1 红 / 篡改后果句 2 红）。
