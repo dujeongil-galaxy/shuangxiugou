@@ -31,13 +31,13 @@
 
 ---
 ---
-### 照片彩蛋门禁提示：开启 VPN 可能导致验证失败（2026-10-26 19:47 · 提交 `dc5bca1`）
+### 照片彩蛋门禁提示：开启 VPN 可能导致验证失败（2026-10-26 19:47 · 提交 `70cd766`）
 
 站长指令：照片彩蛋页面（why-shuangxiugou.html 的 Star 门禁）告知用户「开启 VPN 可能导致验证失败」。根因：门禁验证打 GitHub 公开 API 拉用户 star 列表，挂代理时出口 IP 与代理用户共享，GitHub 风控容易判异常——正是「一直转圈 / 网络不通 / 限流」三类验证失败的常见源头。**两层提示**：事前预防（门禁框 desc 下方黄底警示卡 `gate-vpn-tip`——⚠️ 验证前请先关闭 VPN / 代理……可能直接导致验证失败或限流）；事后补救（`photo-gate.js` 三条失败文案全部拼 `VPN_HINT`：ratelimit 静态串 / network 串 / rateLimitText 带重置时刻的动态串——用户已撞上失败时消息位当场提示）。`photo-gate.js?v=3→4` 防缓存。verify.mjs §20j 新增 4 项断言（三个失败出口全覆盖）；故障注入 3 处判红；test-photo-gate 66 项 + test-photo-vault 30 项零回归。无头 Edge 验收 PASS——顺带修了验收脚本自身一个坑：**桩 fetch 必须用 `Page.addScriptToEvaluateOnNewDocument` 在导航前注入**——photo-gate 在 UMD mount 时就 capture 了 `root.fetch.bind(root)` 的引用，页面加载后替换 `window.fetch` 不生效（2026-10-26 实测：后注入时验证走真 GitHub API，结果不可控）。
 
 ---
 ---
-### 劳动法小助手：Worker 代理 + 品牌页/首页聊天挂件 + 卡通形象 + 手机端适配（2026-10-26 19:19 · 提交 `8c6bd4f`）
+### 劳动法小助手：Worker 代理 + 品牌页/首页聊天挂件 + 卡通形象 + 手机端适配（2026-10-26 19:19 · 提交 `51aa4eb`）
 
 站长指令链：先「AI 那件事按你说的去做」（Cloudflare Worker 代理方案）→「完成之后全部线上推送 并保证手机端可看见 AI」→「再给 AI 设置一个卡通形象，不用问我，不满意稍后再换」。
 
