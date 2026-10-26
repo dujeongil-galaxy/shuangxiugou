@@ -287,6 +287,9 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 > 完整改动记录（每条附**改动时间 + 真实提交哈希**）见 [CHANGELOG.md](CHANGELOG.md)。本轮要点：
 >
+> ### 2026-10-26 下午（首页 FAQ 的 GitHub 入口补「关 VPN 防验证限流」提示）
+>
+> - **补充提示（`index.html`）**：站长指令「我说了，这里提示用户，关闭VPN，否则可能触发GitHub验证接口限流」——指认对象为首页常见问题区「数据准不准？发现错了怎么办？」答案里的 **GitHub Issues 入口**。该 FAQ 现于 noscript SEO 兜底视图 + JSON-LD FAQPage 结构化数据两处：各补一句「提交前请先关闭 VPN / 代理：GitHub 的人机验证与登录接口对代理 IP 触发限流时，会出现验证码无限循环、无法登录或页面空白，届时只能换网络重试」。与 10-25 傍晚已在赞助页 / USDT 教程页落地的同类提示（交易所认证场景）互为补充，本条针对的是 GitHub 验证接口场景。
 > ### 2026-10-26（虚拟对比黑榜卡下线）
 >
 > - **虚拟卡「删了，不再保留」（`virtual-card-remove.js` 新增）**：站长指令下线「某代工烘焙食品 (虚拟对比黑榜)」卡——此前它作为上游模板的匿名对比工具一直显示在首页（不计入统计口径但卡片可见、可被搜索命中）。**实现**：bundle 不能动（技术红线），页面层 `class` 隐藏（`sxg-vcard-gone`，display:none !important）+ `MutationObserver` 兜底 React 重渲染（搜索/筛选/切标签会把卡挂回来）+ `noscript` 静态清单行同步删除（SEO 降级视图不留）。**第一版踩坑（PITFALLS 第十八章）**：最初用 `removeChild` 真删节点 → React 协调崩溃（无头 Edge 实测：搜「瑞幸」时虚拟卡离开过滤结果，React 对已被外部删除的节点执行 removeChild → 整个 tab 崩掉、搜索框消失；摘挂载对照 13 张卡正常）。教训：**外部脚本绝不能 removeChild React 管理的节点，下线只能走视觉层**。**测试**：`test-virtual-card-remove.cjs` 新增 17 项（初始隐藏/重渲染兜底/不误伤/幂等/双故障注入判红——MARK 字面改错、样式体掏空，注入须锚定代码行防注释救绿）；`test-stat-filter.cjs` 预期数字同步（badge 卡 63 张在 DOM、可见 62 张）；verify.mjs 新增 21e 节 11 项断言（含「防线不拆」：stat-filter / search-scope-fix 的虚拟卡排除逻辑保留——bundle 数据未动，防口径回退）；CI 挂载新测试；无头 Edge 全页验收（虚拟卡 DOM 保留 1 张、隐藏 1 张、视觉 0 张、搜索框健在）。

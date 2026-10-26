@@ -4163,6 +4163,28 @@ section('21c. 首页滑到底部按钮');
     '统计/搜索口径的虚拟卡排除防栏保留（bundle 未动，防口径回退）');
 }
 
+// ---------- 21f. 首页 FAQ 的 GitHub 入口 VPN 提示（2026-10-26 站长指令） ----------
+// 背景：站长指认首页常见问题「数据准不准？发现错了怎么办？」答案里的
+// GitHub Issues 入口——「这里提示用户，关闭VPN，否则可能触发GitHub
+// 验证接口限流」。提示要落在两处：noscript SEO 兜底视图（可见 <p>）+
+// JSON-LD FAQPage 结构化数据（搜索结果直达答案，同样要读到）。
+// 断言锚定整句短语（防注释/多露面救绿，sponsor.html §21b 同款纪律）。
+{
+  section('21f. 首页 FAQ 的 GitHub 入口 VPN 提示');
+  // 可见文案：noscript 视图里的提示段（真实 <p> 节点 + b 强调）
+  check(/<p style="margin:0 0 12px;color:#6b7280;font-size:13px">\s*⚠️ 提交前请先<b>关闭 VPN \/ 代理<\/b>/.test(html),
+    'FAQ 答案下方有可见的「关闭 VPN / 代理」提示段（noscript 视图）');
+  // 语义完整：后果说明必须是「GitHub 验证接口限流」场景（与赞助页的交易所场景区分）
+  check(/GitHub 的人机验证与登录接口\s*对代理 IP 触发限流/.test(html),
+    '提示含 GitHub 验证接口限流的具体后果说明');
+  check(/验证码无限循环、无法登录或页面空白/.test(html),
+    '提示含「验证码无限循环、无法登录或页面空白」故障形态');
+  // JSON-LD 镜像同步：FAQPage 结构化数据里的同款句子（搜索直达也读到）
+  const faqJson = html.match(/"@type":\s*"FAQPage"([\s\S]*?)"mainEntity"([\s\S]*?)\]\s*}/);
+  check(!!faqJson && faqJson[0].includes('提交前请先关闭 VPN / 代理'),
+    'JSON-LD FAQPage 答案同步含 VPN 提示（结构化数据不漏）');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {
