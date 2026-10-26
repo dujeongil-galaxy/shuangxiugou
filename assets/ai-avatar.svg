@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="双休购劳动法小助手">
+  <!-- 头：圆角方，teal 主色 -->
+  <rect x="12" y="16" width="40" height="34" rx="10" fill="#0F766E"/>
+  <!-- 耳侧天线 -->
+  <line x1="32" y1="16" x2="32" y2="8" stroke="#0F766E" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="32" cy="7" r="3.5" fill="#5EEAD4"/>
+  <!-- 面板：浅色内脸 -->
+  <rect x="17" y="22" width="30" height="22" rx="7" fill="#134E4A"/>
+  <!-- 眼睛：teal 亮色圆点 -->
+  <circle cx="25" cy="31" r="3.6" fill="#5EEAD4"/>
+  <circle cx="39" cy="31" r="3.6" fill="#5EEAD4"/>
+  <!-- 眼高光 -->
+  <circle cx="26.2" cy="29.8" r="1.1" fill="#fff"/>
+  <circle cx="40.2" cy="29.8" r="1.1" fill="#fff"/>
+  <!-- 微笑嘴：圆弧 -->
+  <path d="M26 38 Q32 43 38 38" stroke="#5EEAD4" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  <!-- 腮红：友好感 -->
+  <circle cx="21.5" cy="36" r="2.2" fill="#F9A8D4" opacity=".7"/>
+  <circle cx="42.5" cy="36" r="2.2" fill="#F9A8D4" opacity=".7"/>
+  <!-- 侧耳 -->
+  <rect x="7" y="28" width="5" height="10" rx="2.5" fill="#0F766E"/>
+  <rect x="52" y="28" width="5" height="10" rx="2.5" fill="#0F766E"/>
+  <!-- 身体：小一点，向下 -->
+  <rect x="20" y="50" width="24" height="10" rx="5" fill="#0F766E"/>
+  <!-- 法徽点缀：胸前小天平（劳动法意象） -->
+  <circle cx="32" cy="55" r="4" fill="#5EEAD4"/>
+  <path d="M29.6 55h4.8M32 53.2v3.6" stroke="#134E4A" stroke-width="1" stroke-linecap="round"/>
+</svg>

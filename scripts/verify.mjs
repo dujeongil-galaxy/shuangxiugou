@@ -4185,6 +4185,118 @@ section('21c. 首页滑到底部按钮');
     'JSON-LD FAQPage 答案同步含 VPN 提示（结构化数据不漏）');
 }
 
+// ---------- 21g. 劳动法小助手（Worker 代理 + 品牌页挂件，2026-10-26 站长指令） ----------
+// 架构：静态站不能藏 API key → Cloudflare Worker（env.AI binding 零 key，
+// ai-worker/）做代理；品牌页右侧挂 ai-chat.js 聊天气泡；ai-config.js
+// 是唯一开关（endpoint 空 = 挂件不渲染，先推前端不出半截 UI）。
+// 断言分三组：挂件挂载、降级开关、Worker 安全层。
+{
+  const aiChat = exists('ai-chat.js') ? read('ai-chat.js') : '';
+  const aiCfg = exists('ai-config.js') ? read('ai-config.js') : '';
+  const worker = exists('ai-worker/src/worker.js') ? read('ai-worker/src/worker.js') : '';
+  section('21g. 劳动法小助手（Worker 代理 + 品牌页挂件）');
+
+  // ---- 前端挂件与品牌页挂载 ----
+  check(exists('ai-chat.js') && exists('ai-config.js'),
+    '挂件与配置脚本存在（ai-chat.js / ai-config.js）');
+  // 品牌页全量挂载：数 brand/*.html 里引用 ai-chat.js 的页数 == 品牌页总数
+  const brandDir = join(ROOT, 'brand');
+  let brandPages = 0, mounted = 0;
+  if (exists('brand')) {
+    for (const f of readdirSync(brandDir)) {
+      if (!f.endsWith('.html')) continue;
+      brandPages++;
+      if (readFileSync(join(brandDir, f), 'utf8').includes('ai-chat.js?v=')) mounted++;
+    }
+  }
+  check(brandPages > 0 && mounted === brandPages,
+    `62 张品牌页全部挂载挂件（实际 ${mounted}/${brandPages}）`);
+  // 挂载顺序：config 在 chat 前（chat 读 window.SXG_AI_CONFIG，顺序反了首帧读不到）
+  {
+    const acer = readFileSync(join(ROOT, 'brand/acer.html'), 'utf8');
+    const cfgPos = acer.indexOf('ai-config.js?v=');
+    const chatPos = acer.indexOf('ai-chat.js?v=');
+    check(cfgPos !== -1 && chatPos !== -1 && cfgPos < chatPos,
+      '挂载顺序：ai-config.js 在 ai-chat.js 之前');
+  }
+  // ---- 首页也挂（2026-10-26 站长指令：保证手机端可见——手机用户主要逛首页） ----
+  check(/<script src="\.\/ai-config\.js\?v=\d+"><\/script>/.test(html)
+    && /<script src="\.\/ai-chat\.js\?v=\d+"><\/script>/.test(html),
+    '首页 index.html 也挂载了挂件（手机端主入口）');
+  {
+    const cfgPos = html.indexOf('ai-config.js?v=');
+    const chatPos = html.indexOf('ai-chat.js?v=');
+    check(cfgPos !== -1 && chatPos !== -1 && cfgPos < chatPos,
+      '首页挂载顺序：ai-config.js 在 ai-chat.js 之前');
+  }
+  // 卡通形象（2026-10-26 站长指令）：按钮与面板头都是 SVG data URI（不用 emoji）
+  check(/var AVATAR = 'data:image\/svg\+xml;base64,/.test(aiChat),
+    '卡通形象内联为 SVG data URI（常量 AVATAR）');
+  check(/avatarImg\.src = AVATAR/.test(aiChat) && /headAvatar\.src = AVATAR/.test(aiChat),
+    '按钮与面板头部都用卡通形象（emoji 已替换）');
+  check(exists('assets/ai-avatar.svg'),
+    '形象源文件 assets/ai-avatar.svg 在仓库（换形象的单一权威来源）');
+  // 手机端适配（2026-10-26 站长指令：保证手机端可用）
+  check(/@media \(max-width:640px\)/.test(aiChat) && /font-size:16px/.test(aiChat),
+    '手机端媒体查询在位（输入 16px 防 iOS 聚焦缩放）');
+  check(/env\(safe-area-inset-bottom, 0px\)/.test(aiChat),
+    '按钮/面板底距带 safe-area 安全区（刘海屏不贴边）');
+  check(/z-index:9000/.test(aiChat) && /z-index:9001/.test(aiChat),
+    'z-index 9000/9001 与浮钮家族平级（广告条 9990 之下，不盖广告）');
+
+  // ---- 降级开关（endpoint 空 = 完全不渲染）----
+  check(/if \(!ENDPOINT \|\| !\/\^https\?:\\\/\\\/\/\.test\(ENDPOINT\)\) return;/.test(aiChat),
+    'endpoint 为空时挂件整体不渲染（降级纪律的代码行）');
+  check(/endpoint: ''/.test(aiCfg),
+    'ai-config.js 默认 endpoint 为空串（未部署 Worker 时功能关闭）');
+  check(/window\.SXG_AI_CONFIG/.test(aiCfg) && /window\.SXG_AI_CONFIG \|\| \{\}/.test(aiChat),
+    '配置读取走 window.SXG_AI_CONFIG（两侧同源）');
+
+  // ---- 挂件行为要点 ----
+  check(/maxLength = 500/.test(aiChat) && /MAX_HISTORY = 8/.test(aiChat),
+    '输入 500 字上限 + 历史 8 条上限（前端第一道，Worker 有二道）');
+  check(/daily-quota-exhausted/.test(aiChat) && /额度已用完/.test(aiChat),
+    '配额耗尽有中文文案（用户能看懂为什么答不了）');
+  check(/不构成法律意见/.test(aiChat),
+    '挂件内声明「不构成法律意见」（合规口径与 Worker 提示词一致）');
+
+  // ---- Worker 安全层（防的是「endpoint 公开」带来的滥用面）----
+  check(exists('ai-worker/src/worker.js') && exists('ai-worker/wrangler.json'),
+    'Worker 源码与 wrangler 配置存在');
+  check(/"ai"\s*:\s*\{\s*"binding"\s*:\s*"AI"/.test(read('ai-worker/wrangler.json')),
+    'wrangler 配了 ai binding（env.AI，零 key 架构的地基）');
+  // CORS 白名单：真逻辑行（不是注释）
+  check(/ALLOWED_ORIGINS\.includes\(origin\)/.test(worker)
+    && /dujeongil-galaxy\.github\.io/.test(worker),
+    'CORS 白名单只放行本站域名（逻辑行）');
+  // 输入校验
+  check(/question\.length > 500/.test(worker),
+    'question 超 500 字拒绝（400）');
+  // 限流
+  check(/recent\.length >= 20/.test(worker),
+    '每 IP 每小时 20 次限流（429）');
+  // 输出上限
+  check(/max_tokens: 600/.test(worker),
+    'max_tokens 600（输出是 neuron 大头）');
+  // 模型
+  check(/@cf\/zai-org\/glm-4\.7-flash/.test(worker),
+    '模型 ID = @cf/zai-org/glm-4.7-flash（Workers AI 免费层）');
+  // 系统提示词的合规口径
+  check(/不构成对企业的法律定性/.test(worker) && /12333/.test(worker),
+    '系统提示词含站点口径与 12333 转介（合规两件套）');
+
+  // ---- 测试与 CI ----
+  check(exists('scripts/test-ai-chat.cjs') && exists('scripts/test-ai-worker.cjs'),
+    '存在挂件行为测试 + Worker 逻辑测试');
+  if (exists('.github/workflows/verify.yml')) {
+    const ci = read('.github/workflows/verify.yml');
+    check(ci.includes('test-ai-chat.cjs') && ci.includes('test-ai-worker.cjs'),
+      'CI 里已接入两个 AI 测试');
+  }
+  check(exists('ai-worker/README.md') && /wrangler deploy/.test(read('ai-worker/README.md')),
+    'Worker 有部署指南（站长两分钟可部署）');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {

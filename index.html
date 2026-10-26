@@ -1553,7 +1553,12 @@
        DOM 层移除该卡 + noscript 清单同步删行 + MutationObserver
        兜底 React 重渲染（搜索/筛选/切标签会把卡挂回来）。 -->
   <script src="./virtual-card-remove.js?v=1"></script>
-  
+  <!-- 劳动法小助手（2026-10-26 站长指令）：挂 body（React 只管 #root，
+       照 bottom-button 纪律不碰它管的地盘）；endpoint 配在 ai-config.js
+       （未配置时挂件自动不显示）。按钮避让 TOP/⤓ 浮钮，手机端 56px 可点。 -->
+  <script src="./ai-config.js?v=1"></script>
+  <script src="./ai-chat.js?v=2"></script>
+
   </body>
 </html>
 

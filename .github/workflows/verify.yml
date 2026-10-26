@@ -161,6 +161,13 @@ jobs:
       - name: 虚拟卡下线测试
         run: node scripts/test-virtual-card-remove.cjs
 
+      # 劳动法小助手（2026-10-26）：前端挂件行为（降级/渲染/问答/错误文案）
+      # + Worker 后端逻辑（CORS/校验/限流/提示词，桩 env.AI 不联网）。
+      - name: AI 挂件行为测试
+        run: node scripts/test-ai-chat.cjs
+      - name: AI Worker 逻辑测试
+        run: node scripts/test-ai-worker.cjs
+
       # notes.html 锁屏的「我同意/我不同意」门禁行为。
       - name: 笔记锁屏同意门测试
         run: node scripts/test-notes-agree.cjs
