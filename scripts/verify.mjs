@@ -3663,8 +3663,8 @@ section('20i. 星巴克公告框注入闸门（与苹果同构）');
     '门禁表单齐全（gate-box / 表单 / 用户名输入 / 验证按钮 / 消息位）');
   check(/href="https:\/\/github\.com\/dujeongil-galaxy\/shuangxiugou"/.test(why),
     '去 Star 链接指向本站仓库（不是上游站）');
-  check(exists('photo-gate.js') && /<script src="\.\/photo-gate\.js\?v=3"><\/script>/.test(why),
-    '门禁逻辑外链 photo-gate.js（可单测，不塞内联）');
+  check(exists('photo-gate.js') && /<script src="\.\/photo-gate\.js\?v=4"><\/script>/.test(why),
+    '门禁逻辑外链 photo-gate.js（可单测，不塞内联；v=4 含 VPN 提示文案）');
   check(/api\.github\.com\/users\//.test(pg) && /starred\?per_page=100&page=/.test(pg),
     '校验打的是 GitHub 公开 starred 列表 API');
   check(/full_name === REPO/.test(pg),
@@ -3759,6 +3759,21 @@ section('20i. 星巴克公告框注入闸门（与苹果同构）');
     '解锁后显示「别取消 Star / 不定期更新更多福利」提示');
   check(exists('scripts/test-photo-gate.cjs'),
     '存在门禁行为测试（jsdom + 桩 fetch，66 项）');
+  // ---- 2026-10-26 站长指令：验证失败与 VPN 的关系要提示 ----
+  // 门禁验证打 GitHub 公开 API，代理 IP 出口共享易判异常——
+  // 提示分两层：门禁框里事前可见（gate-vpn-tip 真实 DOM 节点）+
+  // 限流/网络两条错误文案里事后补充（VPN_HINT 拼接，失败当口看得到）。
+  check(/class="gate-vpn-tip"/.test(why) && /关闭 VPN \/ 代理/.test(why)
+    && /验证失败或限流/.test(why),
+    '门禁框里有可见的「关闭 VPN / 代理」提示段（事前预防）');
+  check(/\.gate-vpn-tip\s*\{/.test(why),
+    'gate-vpn-tip 有样式定义（黄底警示卡，与 sponsor pre-tip 同视觉语义）');
+  check(/var VPN_HINT = /.test(pg)
+    && /ratelimit: [\s\S]{0,200}VPN_HINT/.test(pg)
+    && /network: [\s\S]{0,120}VPN_HINT/.test(pg),
+    '限流与网络错误文案拼接 VPN_HINT（失败当口提示，两处都要）');
+  check(/rateLimitText[\s\S]{0,400}VPN_HINT/.test(pg),
+    '带重置时刻的限流提示同样拼 VPN_HINT（三个限流出口全覆盖）');
 }
 
 // ---------- 20k. 搜索口径修正：summary 命中不得串品牌 ----------

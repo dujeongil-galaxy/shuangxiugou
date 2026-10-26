@@ -91,13 +91,17 @@
     };
   }
 
+  // VPN 提示（2026-10-26 站长指令）：挂在代理 IP 上时出口与代理用户共享，
+  // GitHub 风控容易判异常——限流/网络失败多半与 VPN 有关，失败当口要提示。
+  var VPN_HINT = '若你开着 VPN / 代理，请先关掉再验证（代理 IP 容易被 GitHub 判定异常）。';
+
   var MSG = {
     checking: '正在拉取你的 GitHub Star 列表…',
     empty: '先填上你的 GitHub 用户名。',
     badname: '这不像 GitHub 用户名（字母/数字/连字符，不超过 39 位）。',
     nouser: 'GitHub 上没有这个用户名，检查下拼写？',
-    ratelimit: 'GitHub 接口限流了（未登录每小时 60 次），稍后再试。',
-    network: '网络不通，没拉到 GitHub 数据，稍后再试。',
+    ratelimit: 'GitHub 接口限流了（未登录每小时 60 次），稍后再试。' + VPN_HINT,
+    network: '网络不通，没拉到 GitHub 数据，稍后再试。' + VPN_HINT,
     toomany: '你的 Star 列表太长了（前 1000 个里没有本站），先 Star 再来验证。',
     nostar: '这个用户名还没有 Star 本站——先去点 Star，回来再验证。',
     unstarred: '这个用户名取消 Star 了，门禁重新锁上。'
@@ -266,7 +270,7 @@
     function rateLimitText(info) {
       if (info && info.resetAt) {
         return 'GitHub 接口限流了（未登录每小时 60 次），将在 '
-          + hhmmss(info.resetAt) + ' 自动重试，稍等一下。';
+          + hhmmss(info.resetAt) + ' 自动重试，稍等一下。' + VPN_HINT;
       }
       return MSG.ratelimit;
     }

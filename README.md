@@ -287,6 +287,10 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 > 完整改动记录（每条附**改动时间 + 真实提交哈希**）见 [CHANGELOG.md](CHANGELOG.md)。本轮要点：
 >
+> ### 2026-10-26 晚（照片彩蛋门禁补「开 VPN 可能导致验证失败」提示）
+>
+> - **两层提示（`why-shuangxiugou.html` + `photo-gate.js`）**：站长指令——照片彩蛋页面的门禁要告知用户「开启 VPN 可能导致验证失败」。根因：门禁验证打 GitHub 公开 API（拉用户 star 列表），挂代理时出口 IP 与代理用户共享，GitHub 风控容易判异常，正是「一直转圈 / 网络不通 / 限流」三类验证失败的常见源头。**事前预防层**：门禁框 desc 下方新增黄底警示卡 `gate-vpn-tip`（⚠️ 验证前请先关闭 VPN / 代理……可能直接导致验证失败或限流，视觉语义与赞助页 pre-tip 一致）；**事后补救层**：`photo-gate.js` 的三条失败文案全部拼接 `VPN_HINT`（ratelimit 静态串 / network 串 / rateLimitText 带重置时刻的动态串）——用户已经撞上失败时，消息位当场告诉他多半是 VPN 的锅。`photo-gate.js?v=3→4`（内容变了防缓存）。
+> - **测试与断言**：verify.mjs §20j 新增 4 项断言（可见提示段真实 DOM + 样式定义 + 两条错误文案拼 VPN_HINT + 动态限流串也拼——三个失败出口全覆盖）；故障注入 3 处判红（删可见段 / network 串漏拼 / 动态串漏拼——第三处锚点第一版没中，改用正则定位实际字节才对）；test-photo-gate 66 项 + test-photo-vault 30 项复跑全过（既有断言零回归）；无头 Edge 真渲染验收 PASS（锁定态提示卡可见含黄底样式 + 桩 403 后消息文案含「限流」与「VPN」、门禁保持锁定，截图 1 张 `photo-vpn-tip.png`）。
 > ### 2026-10-26 傍晚（劳动法小助手：Worker 代理 + 品牌页右侧聊天挂件）
 >
 > - **架构（先解死结再谈功能）**：静态站不能藏 API key——写进前端代码 = 写进公开仓库 = Network 面板一抄就刷爆。方案是 **Cloudflare Worker 代理**（`ai-worker/`）：Workers AI 的 `env.AI` binding 把模型调用绑定在 Worker 环境里，key 永不出现在仓库/页面/请求头；模型 `@cf/zai-org/glm-4.7-flash`（131K 上下文），免费层每日 1 万 neurons ≈ 340 次标准问答，超出当日额度接口明确返回 `daily-quota-exhausted`（UTC 00:00 重置）。**防刷全在 Worker 层**（前端不可信）：CORS 白名单只放行本站域名 + 本地验收端口（非白名单 Origin 连 POST 都不处理，不耗 neurons）；question 1~500 字、history 截 8 条每条 200 字、role 白名单（防 prompt 注入）；每 IP 滑窗 20 次/小时；max_tokens 600（输出单价是输入的 6.6 倍，掐输出省额度）。系统提示词锁定角色：劳动法条文口径（44 小时周工时/36 小时月加班上限/150%-200%-300% 加班费倍率）+ 本站评级口径 + 声明非法律意见 + 12333 转介。
