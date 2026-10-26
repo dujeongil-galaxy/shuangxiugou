@@ -31,6 +31,20 @@
 
 ---
 ---
+### 首页 FAQ 的 GitHub 入口补「关 VPN 防验证限流」提示（2026-10-26 17:01 · 提交 `cbe3537`）
+
+站长指令：首页常见问题区「数据准不准？发现错了怎么办？」答案里的 GitHub Issues 入口处，提示用户关闭 VPN，否则可能触发 GitHub 验证接口限流。改动 `index.html` 两处：noscript SEO 视图 FAQ 答案下方新增灰底小字提示段（可见文案，⚠️ 前缀 + 加粗「关闭 VPN / 代理」+ 后果说明）；JSON-LD FAQPage 结构化数据同步（搜索直达答案也读到）。与 10-25 傍晚已在赞助页 / USDT 教程页落地的同类提示（交易所认证场景）互为补充，本条针对 GitHub 人机验证与登录接口场景（验证码无限循环、无法登录、页面空白）。verify.mjs 新增 §21f 4 项断言（可见段 / 后果语义 / 故障形态 / JSON-LD 镜像），三次故障注入全判红（删可见段 1 红 / 删 JSON-LD 句 1 红 / 篡改后果句 2 红）。
+
+---
+---
+### 下线虚拟对比黑榜卡：DOM 层 class 隐藏 + noscript 删行 + MutationObserver 兜底（2026-10-26 16:58 · 提交 `c22dfc4`）
+
+站长指令「虚拟的，删了，不再保留」——指首页「某代工烘焙食品 (虚拟对比黑榜)」演示卡（上游模板的匿名对比工具，此前显示但不计入统计口径）。bundle 不能动（技术红线），新增 `virtual-card-remove.js` 页面层处理：按 textContent 命中「虚拟对比黑榜」判定 → `classList.add('sxg-vcard-gone')`（display:none !important，**不 removeChild**——第一版真删节点导致 React 协调崩溃：无头 Edge 实测搜「瑞幸」时 React 对外部已删节点 removeChild 抛 NotFoundError，整个组件树崩掉、搜索框消失；摘挂载对照 13 张卡正常才锁定是补丁的锅，教训入 PITFALLS 第十八章）；MutationObserver 监听 root 子树兜底搜索/筛选/切标签的重渲染；noscript 静态清单行同步删除（SEO 降级视图不留）；幂等标记防重复执行。
+
+**测试与断言**：`scripts/test-virtual-card-remove.cjs` 新增 17 项（初始隐藏 / noscript 行删净 / MutationObserver 兜底 / 普通卡不误伤 / 幂等 / 双故障注入判红——MARK 字面改错、样式体掏空，后者的注入锚点须带花括号 `'{display:none !important}'`，裸锚会命中文件头注释里的同词）；`scripts/test-stat-filter.cjs` 预期数字同步（badge 卡 63 张在 DOM、62 张可见，`snapshot()` 补 class 隐藏判定——只看内联 style 看不到 class 隐藏）；verify.mjs 新增 §21e 11 项断言（含「防线不拆」：stat-filter / search-scope-fix 的虚拟卡排除逻辑保留——bundle 数据未动，防口径回退）；CI `verify.yml` 挂载新测试。**真渲染验收**：无头 Edge 全页（虚拟卡 DOM 保留 1 张、class 隐藏 1 张、视觉 0 张、搜索框健在）；搜「瑞幸」13 张卡正常（React 不再崩）。
+
+---
+---
 ### 修「输啊再退格输入框消失」：搜索容器防护栏；申诉入口先弹政策确认层（2026-10-26 10:55 · 提交 `708e86c`）
 
 站长深夜连报两事：一是 bug——搜索「比亚迪」删光后输入「啊」再按退格，**搜索输入框整个消失**；二是功能——申诉入口点击直接跳 GitHub issue，用户没读政策就进去，先弹政策确认层，用户「同意并跳转」或「拒绝并关闭」。

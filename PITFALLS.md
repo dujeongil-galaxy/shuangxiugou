@@ -1695,3 +1695,35 @@ removeItem。**是 JSDOM 里真 `document.cookie` 的行为测试判红的**—�
 根因涉及哪个品牌，哪个品牌就得进桩。** 此前六种救绿形态都是
 「断言写得太松」，这一种是「测试数据缺了根因」——断言再紧，
 数据里没有触发条件，场景就永远不会走到那条代码路径。
+
+## 第十八章：虚拟卡下线一轮踩的坑——React 协调红线、本地验收环境（2026-10-26 补记 · 提交 `c22dfc4`）
+
+### 18.1 外部脚本绝不 removeChild React 管理的节点
+
+虚拟对比黑榜卡下线第一版用 `removeChild` 真删节点。jsdom 单测全绿，
+无头 Edge 真渲染直接翻车：搜「瑞幸」时 React 重算过滤结果，虚拟卡
+离开结果集，React 对已被外部删除的节点执行 `removeChild` →
+`NotFoundError` → 整个组件树崩溃，搜索框一起消失。摘挂载对照
+（脚本不挂载时搜「瑞幸」13 张卡正常）才锁定是补丁的锅。
+
+**通用教训：bundle 是 React 的地盘，外部脚本下线卡片只能走视觉层
+（class + display:none !important），DOM 结构一个字都不动。**
+stat-filter / search-scope-fix 用 display 方案跑了几年没事，
+不是巧合——它们从第一天就没碰节点结构。
+
+### 18.2 本地验收服务的两个环境坑会伪装成「补丁搞挂页面」
+
+① **MIME 必须写对**：静态服务器返回 octet-stream 时，Edge 把 HTML
+当下载处理（ERR_ABORTED），页面停在 about:blank——症状极像
+「补丁把页面搞挂了」，实际是服务器 MIME 没配 text/html; charset=utf-8。
+② **Edge 在此环境忽略命令行 URL 参数**：spawn 传 URL 仍渲染
+about:blank，必须走 CDP `Page.navigate`。两坑连在一起排查了很久，
+差点把好补丁当成坏补丁回滚。**先验环境，再疑代码。**
+
+### 18.3 故障注入的锚点要带花括号（同词注释救绿的新变体）
+
+给「样式体掏空」注入时，锚 `display:none !important` 命中了文件头
+注释里的同词（注释在前，replace 改的是注释不是代码），verify 照样
+绿——「注入」了个寂寞。收紧为锚 `'{display:none !important}'`
+带花括号（代码里样式体必有花括号，注释里的散文没有）才生效。
+**注入前先 grep 全部露面位置再选锚点，与第十五章「限流」教训同根。**
