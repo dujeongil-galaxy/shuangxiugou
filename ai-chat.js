@@ -35,8 +35,11 @@
   var CFG = window.SXG_AI_CONFIG || {};
   var ENDPOINT = typeof CFG.endpoint === 'string' ? CFG.endpoint.trim() : '';
 
-  // ---------- 降级：未配置 endpoint 就完全不渲染 ----------
-  if (!ENDPOINT || !/^https?:\/\//.test(ENDPOINT)) return;
+  // ---------- 未配置 endpoint：按钮照常显示（stub 模式） ----------
+  // 2026-10-26 站长实测反馈：endpoint 空 = 整个隐身的设计错了——用户以为
+  // 功能坏了。改为按钮永远显示；stub 模式下点开面板提示「AI 开通中」，
+  // 引导部署（部署教程在 ai-worker/README.md）。
+  var STUB = !ENDPOINT || !/^https?:\/\//.test(ENDPOINT);
 
   var BTN_ID = 'sxg-ai-fab';
   var PANEL_ID = 'sxg-ai-panel';
@@ -164,8 +167,18 @@
     // 首次打开的欢迎语（本地生成，不耗 neurons）
     var hello = document.createElement('div');
     hello.className = 'sxg-ai-msg bot';
-    hello.textContent = '你好，我是双休购的劳动法小助手。可以问我劳动法相关问题（工时、加班费、年休假、试用期、解除补偿），也可以问本站双休评级的口径。具体企业的最新数据请以站内搜索为准。';
+    if (STUB) {
+      // stub 模式：AI 服务未接入——明说 + 引导，不发请求不装死
+      hello.textContent = '你好，我是双休购的劳动法小助手。AI 服务正在开通中，暂时还不能回答问题——开通后会在这里为你解答劳动法（工时、加班费、年休假、试用期、解除补偿）与本站双休评级口径相关问题。';
+    } else {
+      hello.textContent = '你好，我是双休购的劳动法小助手。可以问我劳动法相关问题（工时、加班费、年休假、试用期、解除补偿），也可以问本站双休评级的口径。具体企业的最新数据请以站内搜索为准。';
+    }
     log.appendChild(hello);
+    if (STUB) {
+      input.disabled = true;
+      input.placeholder = 'AI 开通中，暂不可提问';
+      send.disabled = true;
+    }
 
     document.body.appendChild(panel);
     document.body.appendChild(btn);
@@ -197,6 +210,7 @@
   }
 
   function ask(q, log, send) {
+    if (STUB) return; // 未接入：不 fetch（表单已禁用，这是双保险）
     busy = true;
     send.disabled = true;
     addMsg(log, 'user', q);

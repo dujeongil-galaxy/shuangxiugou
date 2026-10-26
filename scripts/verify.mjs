@@ -4259,11 +4259,19 @@ section('21c. 首页滑到底部按钮');
   check(/z-index:9000/.test(aiChat) && /z-index:9001/.test(aiChat),
     'z-index 9000/9001 与浮钮家族平级（广告条 9990 之下，不盖广告）');
 
-  // ---- 降级开关（endpoint 空 = 完全不渲染）----
-  check(/if \(!ENDPOINT \|\| !\/\^https\?:\\\/\\\/\/\.test\(ENDPOINT\)\) return;/.test(aiChat),
-    'endpoint 为空时挂件整体不渲染（降级纪律的代码行）');
+  // ---- stub 模式（endpoint 空 = 按钮照常显示 + 面板提示开通中）----
+  // 2026-10-26 站长实测反馈：旧设计「endpoint 空 = 整体隐身」让站长以为
+  // 图标坏了。改为永远显示；stub 提示「开通中」+ 表单禁用 + ask() 双保险。
+  check(/var STUB = !ENDPOINT \|\| !\/\^https\?:\\\/\\\/\/\.test\(ENDPOINT\);/.test(aiChat),
+    'stub 模式标记（未配置 endpoint 时按钮仍渲染）');
+  check(/if \(STUB\) return; \/\/ 未接入：不 fetch/.test(aiChat),
+    'ask() 的 stub 守卫（不 fetch，双保险）');
+  check(/AI 服务正在开通中/.test(aiChat) && /AI 开通中，暂不可提问/.test(aiChat),
+    'stub 面板有「开通中」提示文案（欢迎语 + 占位符）');
+  check(/input\.disabled = true/.test(aiChat) && /send\.disabled = true/.test(aiChat),
+    'stub 模式输入框与发送按钮禁用');
   check(/endpoint: ''/.test(aiCfg),
-    'ai-config.js 默认 endpoint 为空串（未部署 Worker 时功能关闭）');
+    'ai-config.js 默认 endpoint 为空串（部署 Worker 后填入即激活）');
   check(/window\.SXG_AI_CONFIG/.test(aiCfg) && /window\.SXG_AI_CONFIG \|\| \{\}/.test(aiChat),
     '配置读取走 window.SXG_AI_CONFIG（两侧同源）');
 
@@ -4310,6 +4318,8 @@ section('21c. 首页滑到底部按钮');
   }
   check(exists('ai-worker/README.md') && /wrangler deploy/.test(read('ai-worker/README.md')),
     'Worker 有部署指南（站长两分钟可部署）');
+  check(exists('ai-worker/DEPLOY-教程.md') && /dash\.cloudflare\.com\/sign-up/.test(read('ai-worker/DEPLOY-教程.md')),
+    '存在零基础部署教程（注册→部署五步，2026-10-26 站长要教程）');
 }
 
 // ---------- 汇总 ----------

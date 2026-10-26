@@ -48,15 +48,18 @@ function makeDom(configScript) {
 }
 
 async function main() {
-  console.log('== ① 未配置 endpoint：整体降级 ==');
+  console.log('== ① 未配置 endpoint：stub 模式（按钮显示 + 开通提示 + 禁用表单）==');
   {
     const dom = makeDom(null);
     const doc = dom.window.document;
     await new Promise(r => setTimeout(r, 30));
-    check('按钮不渲染', !doc.getElementById('sxg-ai-fab'));
-    check('面板不渲染', !doc.getElementById('sxg-ai-panel'));
-    check('样式不注入', !doc.getElementById('sxg-ai-style'));
-    check('fetch 零调用', dom.window.fetchCalls.length === 0);
+    check('按钮渲染（不再隐身）', !!doc.getElementById('sxg-ai-fab'));
+    check('面板渲染', !!doc.getElementById('sxg-ai-panel'));
+    check('样式注入', !!doc.getElementById('sxg-ai-style'));
+    check('欢迎语是「开通中」提示', /开通中/.test(doc.querySelector('.sxg-ai-log .sxg-ai-msg.bot').textContent));
+    check('输入框禁用', doc.querySelector('.sxg-ai-in').disabled === true);
+    check('发送按钮禁用', doc.querySelector('.sxg-ai-send').disabled === true);
+    check('fetch 零调用（stub 不发请求）', dom.window.fetchCalls.length === 0);
   }
 
   console.log('== ② 配置 endpoint：渲染 + 默认隐藏 ==');
@@ -157,15 +160,17 @@ async function main() {
     check('maxLength=500', doc.querySelector('.sxg-ai-in').maxLength === 500);
   }
 
-  console.log('== ⑪ ai-config.js 原样（空 endpoint）不炸 ==');
+  console.log('== ⑪ ai-config.js 原样（空 endpoint）= stub 模式不炸 ==');
   {
     const dom = new JSDOM(BRAND_PAGE, { url: 'https://dujeongil-galaxy.github.io/shuangxiugou/brand/acer.html', runScripts: 'outside-only' });
     const w = dom.window;
-    w.fetch = function () { throw new Error('should not fetch'); };
+    let fetched = false;
+    w.fetch = function () { fetched = true; return Promise.resolve({ ok: true, json: () => Promise.resolve({}) }); };
     w.eval(CONFIG_SRC);
     w.eval(CHAT_SRC);
     await new Promise(r => setTimeout(r, 30));
-    check('原样配置（空 endpoint）→ 不渲染不 fetch', !w.document.getElementById('sxg-ai-fab'));
+    check('原样配置（空 endpoint）→ stub 渲染按钮', !!w.document.getElementById('sxg-ai-fab'));
+    check('原样配置 → 零 fetch', fetched === false);
   }
 
   console.log('== ⑫ 卡通形象（SVG data URI，非 emoji）==');

@@ -1,5 +1,9 @@
 # ai-worker —— 双休购「劳动法小助手」Cloudflare Worker
 
+> **零基础部署看这里**：[`DEPLOY-教程.md`](./DEPLOY-教程.md)——从注册
+> Cloudflare 到推上线的保姆级五步教程（含常见报错速查）。
+> 本文件是技术视角的说明，部署只需要看教程那份。
+
 品牌页右侧聊天挂件（`../ai-chat.js`）的后端。**这一层存在的唯一理由：
 静态站不能藏 API key**——Workers AI 的 `env.AI` binding 把模型调用绑定
 在 Worker 环境里，key 永不出现在仓库、页面、请求头（详见
