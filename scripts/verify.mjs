@@ -3969,6 +3969,76 @@ section('20g. 公告栏版本号');
   }
 }
 
+// ---------- 21. USDT 教程页（usdt-guide.html） ----------
+section('21. USDT 教程页');
+{
+  const guidePath = join(ROOT, 'usdt-guide.html');
+  const guide = existsSync(guidePath) ? readFileSync(guidePath, 'utf8') : '';
+
+  check(guide.includes('USDT 充值教程'), '教程页标题在位');
+  // 金句必须逐字：站长的硬性要求，改一个字都算违约。
+  check(guide.includes('「所谓的幸运，就是当你准备好了的时候，机会来了。」'),
+    '指定金句逐字出现在教程页',
+    '站长原话：文案一定要有这句话。逐字比对，标点也要一致。');
+  // 书名/作者锚定到唯一位置：金句署名行 + 推荐卡标题。
+  // 教训（2026-10-25 注入实测）：裸 includes('《把时间当作朋友》') 在书名出现
+  // 多处时会被「删一处留一处」救绿——同族值救绿的又一形态。锚定组合串后
+  // 删掉署名行或推荐卡各自独立判红。
+  check(guide.includes('——《把时间当作朋友》，李笑来'),
+    '金句出处署名行在位（——《把时间当作朋友》，李笑来）');
+  check(/《把时间当作朋友》—— 李笑来/.test(guide),
+    '书籍推荐卡在位（《把时间当作朋友》—— 李笑来）');
+  // 维基百科链接：作者介绍必须可溯源。URL 编码的 %E6%9D%8E%E7%AC%91%E6%9D%A5 = 李笑来
+  check(guide.includes('https://zh.wikipedia.org/wiki/%E6%9D%8E%E7%AC%91%E6%9D%A5'),
+    '教程页含维基百科「李笑来」词条链接');
+  check(/维基百科「李笑来」词条/.test(guide) && /1972年7月12日/.test(guide),
+    '作者介绍标注引自维基百科且含出生日期');
+  // 提币步骤的核心口径：网络必须 TRC20，否则资产丢失
+  check(/<b>网络必须选 TRC20（Tron）<\/b>/.test(guide), '提币步骤明确 TRC20 网络口径');
+  // 不硬编码收款地址：地址唯一权威来源是 sponsor.html，教程页只负责指路
+  check(!/TRyy3C668REPBGo2dDU1yiREdCyegFqjRN/.test(guide),
+    '教程页不硬编码 TRC-20 收款地址（指向赞助页复制，地址单一权威来源）');
+  // VPN 提示在教程页同样要有一份（KYC 步骤前置阅读）
+  check(/关闭 VPN \/ 代理/.test(guide), '教程页含「关闭 VPN / 代理」提示');
+  check(/sponsor\.html/.test(guide), '教程页链接回赞助页');
+}
+
+// ---------- 21b. 赞助页 VPN 提示与教程入口 ----------
+section('21b. 赞助页 VPN 提示与教程入口');
+{
+  const sp = readFileSync(join(ROOT, 'sponsor.html'), 'utf8');
+  // 盯「取出且真的用」：样式定义 + 真实 DOM 节点都要在
+  check(/\.pre-tip\s*\{/.test(sp), 'sponsor.html 定义了 .pre-tip 样式');
+  check(/<p class="pre-tip">/.test(sp), 'sponsor.html 有真实 pre-tip DOM 节点（非仅样式声明）');
+  // 提示语义：锚定到提示正文整句（「触发风控限流」只出现在可见文案里）。
+  // 教训（2026-10-25 注入实测）：裸 /限流/ 会被 CSS 注释里的「限流」救绿
+  // ——文件头注释救绿的又一形态。删掉正文整句才判红。
+  check(/关闭 VPN \/ 代理/.test(sp) && /触发风控限流/.test(sp),
+    '赞助页提示含「关闭 VPN / 代理」与「触发风控限流」后果说明');
+  // 教程入口：链接到 usdt-guide.html 且文案可见
+  check(/href="\.\/usdt-guide\.html"/.test(sp) && /USDT 充值教程/.test(sp),
+    '赞助页有指向 usdt-guide.html 的「USDT 充值教程」入口链接');
+}
+
+// ---------- 21c. 首页滑到底部按钮 ----------
+section('21c. 首页滑到底部按钮');
+{
+  const idx = readFileSync(join(ROOT, 'index.html'), 'utf8');
+  // 脚本引用在位：盯着 <script src> 标签，不是文件存在性
+  // （文件存在但没挂进页面 = 白做，2026-10-24 photo-gate.js 的教训）
+  check(/<script src="\.\/bottom-button\.js\?v=\d+"><\/script>/.test(idx),
+    'index.html 挂载了 bottom-button.js 脚本标签');
+  // 底部按钮文件本体：幂等保护 + 点击绑定 scrollTo，缺一即判红
+  const bbPath = join(ROOT, 'bottom-button.js');
+  const bb = existsSync(bbPath) ? readFileSync(bbPath, 'utf8') : '';
+  check(/getElementById\(BTN_ID\)\) return/.test(bb),
+    'bottom-button.js 有幂等保护（已存在即返回）');
+  check(/window\.scrollTo\(\{\s*top:\s*target,\s*behavior:/.test(bb),
+    'bottom-button.js 点击时真的调用了 scrollTo（绑定在监听器内）');
+  // 近底部隐藏逻辑：监听 scroll + 切换 class，删掉即判红
+  check(/addEventListener\('scroll'/.test(bb) && /sxg-at-bottom/.test(bb),
+    'bottom-button.js 有近底部自动隐藏逻辑（scroll 监提 + class 切换）');
+}
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {

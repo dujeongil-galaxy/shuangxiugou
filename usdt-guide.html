@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>USDT 充值教程｜双休购 ShuangxiuGo</title>
+    <meta
+      name="description"
+      content="USDT 加密货币打赏的完整新手教程：交易所注册实名、C2C 用微信/支付宝买 USDT、TRC20 提币到本站收款地址，以及为什么我们不接受微信/支付宝直付。"
+    />
+    <meta name="robots" content="noindex, follow" />
+    <meta name="theme-color" content="#0F766E" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        min-height: 100vh;
+        padding: 40px 20px 56px;
+        background: #f8fafc;
+        color: #1f2937;
+        font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        line-height: 1.85;
+      }
+      .wrap {
+        max-width: 780px;
+        margin: 0 auto;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border: 1px solid #99f6e4;
+        border-radius: 999px;
+        background: #f0fdfa;
+        color: #0f766e;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      h1 {
+        margin: 14px 0 6px;
+        font-size: clamp(22px, 5vw, 30px);
+        font-weight: 700;
+        color: #111827;
+      }
+      .lede {
+        margin: 0 0 18px;
+        font-size: 15px;
+        color: #4b5563;
+      }
+      .lede b { color: #0f766e; }
+
+      h2 {
+        margin: 30px 0 10px;
+        font-size: 19px;
+        font-weight: 700;
+        color: #0f766e;
+      }
+      h2 .step {
+        display: inline-block;
+        margin-right: 8px;
+        padding: 1px 10px;
+        border-radius: 8px;
+        background: #0f766e;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        vertical-align: 2px;
+      }
+      p { margin: 0 0 10px; font-size: 15px; }
+      ol, ul { margin: 0 0 10px; padding-left: 24px; }
+      li { margin: 5px 0; font-size: 15px; }
+      li b { color: #374151; }
+      a { color: #0f766e; }
+
+      .tip {
+        margin: 14px 0;
+        padding: 12px 16px;
+        border: 1px solid #fde68a;
+        border-radius: 12px;
+        background: #fffbeb;
+        color: #92400e;
+        font-size: 13.5px;
+        line-height: 1.8;
+      }
+      .tip b { color: #78350f; }
+
+      table {
+        width: 100%;
+        margin: 12px 0 18px;
+        border-collapse: collapse;
+        font-size: 13.5px;
+      }
+      th, td {
+        padding: 9px 12px;
+        border: 1px solid #e5e7eb;
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        background: #f0fdfa;
+        color: #0f766e;
+        font-weight: 700;
+      }
+      td { background: #fff; color: #374151; }
+      td b { color: #b91c1c; }
+
+      .quote {
+        margin: 18px 0;
+        padding: 18px 22px;
+        border-left: 4px solid #0f766e;
+        border-radius: 0 12px 12px 0;
+        background: #fff;
+        box-shadow: 0 4px 16px rgba(15, 118, 110, .07);
+      }
+      .quote p {
+        margin: 0 0 8px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #0f766e;
+        line-height: 1.9;
+      }
+      .quote .from { font-size: 13px; color: #6b7280; font-weight: 400; }
+
+      .book {
+        margin: 14px 0 0;
+        padding: 16px 20px;
+        border: 1px solid #99f6e4;
+        border-radius: 14px;
+        background: #f0fdfa;
+      }
+      .book h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #0f766e;
+      }
+      .book p { margin: 0 0 8px; font-size: 14px; color: #134e4a; }
+      .book p:last-child { margin-bottom: 0; }
+      .book .intro {
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: #fff;
+        font-size: 13.5px;
+        color: #374151;
+      }
+
+      .law {
+        margin: 14px 0 0;
+        padding: 14px 18px;
+        border-radius: 12px;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #7f1d1d;
+        font-size: 13.5px;
+        line-height: 1.9;
+      }
+      .law b { color: #991b1b; }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 30px 0 0;
+        justify-content: center;
+      }
+      .btn {
+        display: inline-block;
+        padding: 11px 24px;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: transform .15s ease, background .15s ease;
+      }
+      .btn-primary {
+        background: #0f766e;
+        color: #fff;
+        box-shadow: 0 6px 18px rgba(15, 118, 110, .22);
+      }
+      .btn-primary:hover { background: #115e59; transform: translateY(-1px); }
+      .btn-ghost {
+        background: #fff;
+        color: #0f766e;
+        border: 1px solid #99f6e4;
+      }
+      .btn-ghost:hover { background: #f0fdfa; transform: translateY(-1px); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <span class="badge">● 双休购 · ShuangxiuGo</span>
+      <h1>USDT 充值教程</h1>
+      <p class="lede">
+        本站赞助页支持加密货币打赏。如果你没用过 USDT，按下面四步走，全程约 10–15 分钟：
+        <b>在交易所用人民币买 USDT → 提币到本站收款地址</b>。本站不参与任何交易环节，也接触不到你的资金。
+      </p>
+
+      <div class="tip">
+        <b>⚠️ 开始前先关闭 VPN / 代理。</b>
+        挂着代理访问交易所或做实名认证，登录 / 认证端口可能把代理 IP 触发风控限流，
+        出现验证码无限循环、人脸认证超时等故障，届时只能换网络重试。
+      </div>
+
+      <h2><span class="step">第一步</span>注册交易所并实名</h2>
+      <ol>
+        <li>选一家主流交易所（如币安 Binance、欧易 OKX）。</li>
+        <li>注册账号，完成实名认证（KYC）：证件照 + 人脸。没有实名就无法进行 C2C 交易。</li>
+        <li>建议顺手开启两步验证（2FA）。</li>
+      </ol>
+
+      <h2><span class="step">第二步</span>用微信 / 支付宝买 USDT（C2C）</h2>
+      <ol>
+        <li>在交易所 App 里进入「买币」/「C2C」→「买 USDT」。</li>
+        <li>付款方式勾选微信支付或支付宝——<b>这一步用微信/支付宝完全安全</b>：钱付给交易所实名认证的商家，由平台担保放币，和私人转账不是一回事。</li>
+        <li>选一个在线商家，按报价下单 → 扫商家给的码付款 → 点击「我已付款」→ 商家放币，USDT 到你的交易所账户。</li>
+      </ol>
+      <p>注意：C2C 报价含 1%–3% 汇率溢价，小额打赏可以攒着一次买。</p>
+
+      <h2><span class="step">第三步</span>提币到本站收款地址</h2>
+      <ol>
+        <li>回到<a href="./sponsor.html">赞助页</a>，选择 USDT 后复制页面上显示的收款地址（或扫码）。</li>
+        <li>交易所「提币/转账」→ 币种选 USDT → <b>网络必须选 TRC20（Tron）</b>：手续费约 1 USDT，几分钟到账。</li>
+        <li>粘贴地址，核对首尾各 4 位字符 → 输入金额（任意金额，无需整数）→ 提币。</li>
+        <li>建议：<b>第一笔先小额试路（比如 5 USDT）</b>，确认到账后再转正式金额。</li>
+      </ol>
+
+      <h2><span class="step">第四步</span>常见坑（血泪汇总）</h2>
+      <table>
+        <thead>
+          <tr><th>坑</th><th>后果</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>提币网络选成 ERC20 / EVM</td><td><b>资产直接丢失，无法找回</b></td></tr>
+          <tr><td>地址复制不完整（首尾缺字符）</td><td><b>转到不存在的地址，无法找回</b></td></tr>
+          <tr><td>低于交易所最小提币额（一般 10 USDT 左右）</td><td>无法发起提币</td></tr>
+          <tr><td>C2C 转账后不点「我已付款」</td><td>商家超时取消订单，钱要申诉才能退</td></tr>
+        </tbody>
+      </table>
+
+      <h2>为什么我们不接受微信、支付宝直付？</h2>
+      <ol>
+        <li><b>个人收款码不是商户通道。</b> 网站接入微信/支付宝官方商户收款必须有营业执照；个人静态码挂在公开网站上收打赏，会被支付平台风控识别为「异常经营流水」，轻则限制收款，重则冻结账户。</li>
+        <li><b>公开传播的码，收不到资金来源的保证。</b> 挂在公开网络上的收款码，什么钱都可能进来。一旦有涉案资金（诈骗赃款、跑分）流入，账户会被连带冻结，你要自己向支付平台和警方举证清白，周期以月计。第三方代收平台能隔离这个风险，但费率 6%–13%，还要实名入驻。</li>
+        <li><b>双向隐私。</b> 微信/支付宝转账，双方会互相看到部分实名信息。USDT 转账只暴露一串钱包地址，打赏者和站长互相都不用亮身份。</li>
+        <li><b>无中间商、无国界。</b> USDT 链上转账点对点到账，没有平台抽成，全球任何地区的访客都能参与。</li>
+      </ol>
+
+      <h2>合规与风险提示（必读）</h2>
+      <div class="law">
+        <b>中国大陆监管口径（2021 年十部门通知）：</b>虚拟货币相关业务活动属于非法金融活动；个人持有、买卖虚拟货币不被法律禁止，但相关民事行为不受法律保护，风险自担。<br />
+        打赏纯属自愿，请量力而行；未成年读者请不要参与任何虚拟货币操作。<br />
+        各步骤以交易所官方页面实际提示为准，本教程仅作通用指引。
+      </div>
+
+      <h2>延伸阅读</h2>
+      <div class="quote">
+        <p>「所谓的幸运，就是当你准备好了的时候，机会来了。」</p>
+        <p class="from">——《把时间当作朋友》，李笑来</p>
+      </div>
+      <div class="book">
+        <h3>《把时间当作朋友》—— 李笑来</h3>
+        <p>
+          想在等待到账的几分钟里读点东西，或者刚开始接触「给自己积累资产」这件事，
+          推荐这本：它讲的不只是时间管理，而是<b>心智的开启与自我积累</b>——
+          一切都靠积累，速成绝无可能。
+        </p>
+        <p class="intro">
+          <b>关于作者（引自维基百科「李笑来」词条）：</b>
+          李笑来（1972年7月12日—），中国朝鲜族人士，天使投资人，Bitcoin Foundation 会员，
+          INBlockchain 硬币资本创始人，成功投资了 EOS、ZCash、Sia、steemit 等著名区块链项目，
+          曾在央视采访中自曝拥有六位数比特币；2001 年至 2008 年任职新东方教育集团国外部高级教师。
+          详见
+          <a href="https://zh.wikipedia.org/wiki/%E6%9D%8E%E7%AC%91%E6%9D%A5" target="_blank" rel="noopener noreferrer">维基百科：李笑来</a>。
+        </p>
+      </div>
+
+      <div class="actions">
+        <a class="btn btn-primary" href="./sponsor.html">返回赞助页</a>
+        <a class="btn btn-ghost" href="./">返回首页查双休</a>
+      </div>
+    </div>
+  </body>
+</html>
