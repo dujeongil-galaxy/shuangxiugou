@@ -31,6 +31,12 @@
 
 ---
 ---
+### AI 挂件 stub 模式修正：图标永远可见；零基础部署教程（2026-10-26 20:49 · 提交 `e5454e3`）
+
+站长实测反馈两件事：①线上看不见 AI 图标；②不知道怎么部署。①的根因不是 bug 而是设计错了预期——初版降级设计「endpoint 空 = 挂件整体隐身」，在 Worker 未部署时让整个挂件从页面上消失，看起来像功能坏了。**修正**：去掉隐身守卫改 `STUB` 模式标记——按钮照常渲染（含卡通头像，手机/桌面都可见），点开面板显示「AI 服务正在开通中，暂时还不能回答问题」，输入框与发送按钮禁用（placeholder「AI 开通中，暂不可提问」），`ask()` 加 stub 守卫双保险不发请求；部署 Worker 填 endpoint 后自动切回正常模式。`ai-chat.js?v=3`（首页与 62 张品牌页统一版本号）。**②的交付**：新增 `ai-worker/DEPLOY-教程.md` 零基础五步教程（注册 Cloudflare → 装 Node → `npx wrangler login` → `npx wrangler deploy` → 填 endpoint 推送），每步「点哪里输什么」，附常见报错速查表与 FAQ（花钱吗/key 泄露吗/被刷吗/换形象/下线），`ai-worker/README.md` 顶部加指引横幅。test-ai-chat 35 项（stub 场景重写 7 断言）；verify §21g 更新（STUB 标记/ask 守卫/提示文案/禁用逻辑/教程存在）；故障注入 2 处判红；无头 Edge 390×844 stub 验收 PASS（截图 `ai-stub-mobile.png`）。
+
+---
+---
 ### 照片彩蛋门禁提示：开启 VPN 可能导致验证失败（2026-10-26 19:47 · 提交 `70cd766`）
 
 站长指令：照片彩蛋页面（why-shuangxiugou.html 的 Star 门禁）告知用户「开启 VPN 可能导致验证失败」。根因：门禁验证打 GitHub 公开 API 拉用户 star 列表，挂代理时出口 IP 与代理用户共享，GitHub 风控容易判异常——正是「一直转圈 / 网络不通 / 限流」三类验证失败的常见源头。**两层提示**：事前预防（门禁框 desc 下方黄底警示卡 `gate-vpn-tip`——⚠️ 验证前请先关闭 VPN / 代理……可能直接导致验证失败或限流）；事后补救（`photo-gate.js` 三条失败文案全部拼 `VPN_HINT`：ratelimit 静态串 / network 串 / rateLimitText 带重置时刻的动态串——用户已撞上失败时消息位当场提示）。`photo-gate.js?v=3→4` 防缓存。verify.mjs §20j 新增 4 项断言（三个失败出口全覆盖）；故障注入 3 处判红；test-photo-gate 66 项 + test-photo-vault 30 项零回归。无头 Edge 验收 PASS——顺带修了验收脚本自身一个坑：**桩 fetch 必须用 `Page.addScriptToEvaluateOnNewDocument` 在导航前注入**——photo-gate 在 UMD mount 时就 capture 了 `root.fetch.bind(root)` 的引用，页面加载后替换 `window.fetch` 不生效（2026-10-26 实测：后注入时验证走真 GitHub API，结果不可控）。
