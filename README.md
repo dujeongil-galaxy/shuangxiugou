@@ -287,6 +287,9 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 > 完整改动记录（每条附**改动时间 + 真实提交哈希**）见 [CHANGELOG.md](CHANGELOG.md)。本轮要点：
 >
+> ### 2026-10-26（虚拟对比黑榜卡下线）
+>
+> - **虚拟卡「删了，不再保留」（`virtual-card-remove.js` 新增）**：站长指令下线「某代工烘焙食品 (虚拟对比黑榜)」卡——此前它作为上游模板的匿名对比工具一直显示在首页（不计入统计口径但卡片可见、可被搜索命中）。**实现**：bundle 不能动（技术红线），页面层 `class` 隐藏（`sxg-vcard-gone`，display:none !important）+ `MutationObserver` 兜底 React 重渲染（搜索/筛选/切标签会把卡挂回来）+ `noscript` 静态清单行同步删除（SEO 降级视图不留）。**第一版踩坑（PITFALLS 第十八章）**：最初用 `removeChild` 真删节点 → React 协调崩溃（无头 Edge 实测：搜「瑞幸」时虚拟卡离开过滤结果，React 对已被外部删除的节点执行 removeChild → 整个 tab 崩掉、搜索框消失；摘挂载对照 13 张卡正常）。教训：**外部脚本绝不能 removeChild React 管理的节点，下线只能走视觉层**。**测试**：`test-virtual-card-remove.cjs` 新增 17 项（初始隐藏/重渲染兜底/不误伤/幂等/双故障注入判红——MARK 字面改错、样式体掏空，注入须锚定代码行防注释救绿）；`test-stat-filter.cjs` 预期数字同步（badge 卡 63 张在 DOM、可见 62 张）；verify.mjs 新增 21e 节 11 项断言（含「防线不拆」：stat-filter / search-scope-fix 的虚拟卡排除逻辑保留——bundle 数据未动，防口径回退）；CI 挂载新测试；无头 Edge 全页验收（虚拟卡 DOM 保留 1 张、隐藏 1 张、视觉 0 张、搜索框健在）。
 > ### 2026-10-25 晚（输入框消失 bug 修复 + 申诉政策确认弹窗）
 >
 > - **搜索框消失 bug（`search-scope-fix.js`）**：站长报「删掉搜索词后输入『啊』再退格，输入框整个没了」。**根因**：搜索容器 `div.bg-white.p-4.rounded-2xl.border` 本身也命中卡片选择器 `CARD_SEL`；其 textContent 含联想框残留的品牌名（「BYD (比亚迪)」），被 `findBrandFor` 误认成该品牌的卡；输入法组合中间态（拼音字母）一旦强命中其他品牌，`strongCount>0`，容器被判「弱命中」加上 `sxg-scope-hidden`（display:none !important）——搜索框、品类/评级筛选按钮整片消失。**修法**：`isSearchContainer()` 防护栏——含 `#site-search-input` 的容器一律跳过口径判定（品牌卡内不会有搜索框，结构事实，不依赖时序与内容）。**复现方式**：无头 Edge + CDP `Input.imeSetComposition` 完整重放站长操作序列（搜「比亚迪」→逐字删光→组合 a→上屏「啊」→退格），修复前容器 `display:none`、修复后全程可见；jsdom 单测首次未复现——`.type()` 模拟不了 IME 组合态，`isStrongHit` 的字母比对才是判定路径。**测试**：`test-search-scope-fix.cjs` 30→37 项（新增防护栏场景：BYD 必须在测试 bundle 里——缺了它容器会被当「识别不了的卡」跳过，注入防护栏删除也照样绿，救绿形态实测抓到）；verify.mjs 新增 20m 节 4 项断言；两轮故障注入判红验证（删防护栏调用 3 项红 / 换 `if(false)` verify 1 项红）。附带澄清：修复前 CDP IME 在容器被隐藏后会上屏失败（focus 丢失），这正是站长遇到的完整体验链。

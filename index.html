@@ -160,7 +160,6 @@
           <li><strong><a href="./brand/xingyu.html">常州星宇股份 (车灯及汽车消费品)</a></strong>：C 级 · 真实双休率 12% · 平均下班 20:00</li> <a href="./brand/xingyu.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/philips-automotive.html">Philips Automotive (飞利浦汽车生活)</a></strong>：A 级 · 真实双休率 90% · 平均下班 18:20</li> <a href="./brand/philips-automotive.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/pepsi.html">百事食品 (乐事 Lay's / 桂格燕麦)</a></strong>：A 级 · 真实双休率 88% · 平均下班 18:00</li> <a href="./brand/pepsi.html" style="color:#0F766E">详细→</a>
-          <li><strong>某代工烘焙食品 (虚拟对比黑榜)</strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li>
           <li><strong><a href="./brand/ikea.html">IKEA (宜家)</a></strong>：S 级 · 真实双休率 98% · 平均下班 17:45</li> <a href="./brand/ikea.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/pdl.html">胖东来</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/pdl.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/the-north-face.html">The North Face (北面)</a></strong>：A 级 · 真实双休率 88% · 平均下班 21:00</li> <a href="./brand/the-north-face.html" style="color:#0F766E">详细→</a>
@@ -1545,6 +1544,11 @@
        同意并跳转 / 拒绝并关闭。目标链接从页面既有 a[href] 现场读取，
        本文件不维护第二份 issueUrl。 -->
   <script src="./appeal-policy.js?v=1"></script>
+  <!-- 虚拟对比黑榜卡下线（2026-10-26 站长指令）：bundle 不能动，
+       DOM 层移除该卡 + noscript 清单同步删行 + MutationObserver
+       兜底 React 重渲染（搜索/筛选/切标签会把卡挂回来）。 -->
+  <script src="./virtual-card-remove.js?v=1"></script>
+  
   </body>
 </html>
 

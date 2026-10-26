@@ -156,6 +156,11 @@ jobs:
       - name: 申诉政策弹窗测试
         run: node scripts/test-appeal-policy.cjs
 
+      # 虚拟对比黑榜卡 DOM 层下线（2026-10-26）：初始移除 + noscript
+      # 清单删行 + 重渲染兜底 + 不误伤品牌卡。
+      - name: 虚拟卡下线测试
+        run: node scripts/test-virtual-card-remove.cjs
+
       # notes.html 锁屏的「我同意/我不同意」门禁行为。
       - name: 笔记锁屏同意门测试
         run: node scripts/test-notes-agree.cjs

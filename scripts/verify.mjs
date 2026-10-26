@@ -4107,6 +4107,62 @@ section('21c. 首页滑到底部按钮');
   }
 }
 
+// ---------- 21e. 虚拟对比黑榜卡下线（2026-10-26 站长指令） ----------
+// 背景：该卡是上游模板的匿名对比工具，此前「显示但不计入口径」。
+// 站长指令「删了，不再保留」——bundle 不能动，视觉层隐藏（class
+// display:none !important，不 removeChild——React 协调层不许可外部
+// 删它管理的节点，第一版 removeChild 实测搜「瑞幸」整个 tab 崩掉）+
+// noscript 清单同步删行（noscript 非 React 管，removeChild 安全）+
+// MutationObserver 兜底重渲染。
+// stat-filter / search-scope-fix 里的「虚拟对比黑榜不计入统计」防栏
+// 保留（bundle 数据还在，防口径回退）。
+{
+  const vcr = exists('virtual-card-remove.js') ? read('virtual-card-remove.js') : '';
+  section('21e. 虚拟对比黑榜卡下线');
+  check(exists('virtual-card-remove.js')
+    && /<script src="\.\/virtual-card-remove\.js\?v=\d+"><\/script>/.test(html),
+    '下线脚本存在且在 index.html 挂载');
+  // 判定逻辑盯真效果：MARK 字面 + textContent 命中
+  check(/var MARK = '虚拟对比黑榜'/.test(vcr)
+    && /textContent \|\| ''\)\.indexOf\(MARK\) !== -1/.test(vcr),
+    '按 textContent 命中「虚拟对比黑榜」判定虚拟卡（与统计口径同字面）');
+  // 隐藏机制：class + !important（不是 removeChild——React 协调安全）
+  check(/var HIDE_CLASS = 'sxg-vcard-gone'/.test(vcr)
+    && /\{display:none !important\}/.test(vcr)
+    && /classList\.add\(HIDE_CLASS\)/.test(vcr),
+    '隐藏用 class + display:none!important（React 协调安全，removeChild 会崩）');
+  // 样式必须真的注入了
+  check(/STYLE_ID = 'sxg-vcard-style'/.test(vcr)
+    && /document\.getElementById\(STYLE_ID\)/.test(vcr),
+    '隐藏样式由脚本注入（sxg-vcard-style）');
+  // noscript 清理：SEO 降级视图也不留
+  check(/function cleanNoscript/.test(vcr)
+    && /querySelectorAll\('noscript li'\)/.test(vcr)
+    && /p\.removeChild\(nodes\[i\]\)/.test(vcr),
+    'noscript 静态清单行同步删除（SEO 兜底视图不留虚拟卡）');
+  // 兜底：React 重渲染会把卡挂回来，必须有 MutationObserver
+  check(/new MutationObserver/.test(vcr)
+    && /mo\.observe\(root, \{ childList: true, subtree: true \}\)/.test(vcr),
+    'MutationObserver 兜底重渲染（搜索/筛选/切标签会把卡挂回）');
+  // 幂等
+  check(/data-sxg-virtual-removed/.test(vcr),
+    '幂等标记（documentElement data 属性）');
+  // 静态侧：index.html noscript 里不再有虚拟卡行（此前有一行 <li>）
+  const nsNow = html.match(/<noscript>([\s\S]*?)<\/noscript>/);
+  check(!!nsNow && !nsNow[1].includes('虚拟对比黑榜'),
+    'index.html noscript 清单已无虚拟卡行');
+  // 行为测试存在且挂进 CI
+  check(exists('scripts/test-virtual-card-remove.cjs'),
+    '存在下线行为测试（jsdom，17 项）');
+  if (exists('.github/workflows/verify.yml')) {
+    check(read('.github/workflows/verify.yml').includes('test-virtual-card-remove.cjs'),
+      'CI 里已接入虚拟卡下线测试');
+  }
+  // 防线不拆：统计口径的虚拟卡排除逻辑仍在（bundle 数据未动）
+  check(/text\.indexOf\('虚拟对比黑榜'\) !== -1/.test(read('search-scope-fix.js')),
+    '统计/搜索口径的虚拟卡排除防栏保留（bundle 未动，防口径回退）');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {

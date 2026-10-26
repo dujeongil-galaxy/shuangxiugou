@@ -1,10 +1,11 @@
 // stat-filter 端到端 DOM 测试：真渲染整页 → 真点四格 → 断言筛选结果
 // 跑法：node scripts/test-stat-filter.cjs（需 jsdom，同 CI 其他测试）
 //
-// 预期数字（2026-10-21 更新）：jsdom 整页渲染后自定义卡（5C+1B+3U）也会插入，
-// badge 卡共 63 张（53 内置含 1 虚拟 + 10 自定义）。筛选结果与顶部五格显示一致：
-// 红榜(S/A)=19、观察(B)=14、避雷(C，不含虚拟卡)=23、待核实(U)=6；
-// 19+14+23+6 = 62 = 收录总数；「全部」=63（含虚拟卡，虚拟卡不进任何分档）。
+// 预期数字（2026-10-26 更新）：虚拟对比黑榜卡已 DOM 层下线
+// （virtual-card-remove.js，站长指令「删了，不再保留」），
+// badge 卡共 62 张（53 内置 - 1 虚拟 + 10 自定义）。筛选结果与顶部五格显示一致：
+// 红榜(S/A)=19、观察(B)=14、避雷(C)=23、待核实(U)=6；
+// 19+14+23+6 = 62 = 收录总数；「全部」=62（虚拟卡不再存在）。
 // 末尾另有苹果「富士康补充说明」框回归（PITFALLS 1.10 第二变体）：
 // 搜索「啊」→ 摘除；清空 → 插回；节点被复用为华为卡 → 不残留；隐藏子树 → 摘除。
 const fs = require('fs');
@@ -47,11 +48,18 @@ function tierOf(card) {
   }
   return null;
 }
+function isHidden(card) {
+  // 可见性两层：内联 display（stat-filter 的隐藏方式）
+  // + sxg-vcard-gone class（virtual-card-remove 的隐藏方式）。
+  // 2026-10-26 起虚拟卡不再 removeChild（React 协调会崩），
+  // 改 class 隐藏——snapshot 必须把 class 隐藏也算进去。
+  return card.style.display === 'none' || card.classList.contains('sxg-vcard-gone');
+}
 function snapshot() {
   const doc = window.document;
   const cards = [...doc.querySelectorAll('div.bg-white.rounded-2xl.border')];
   const badgeCards = cards.filter((c) => tierOf(c) !== null);
-  const visible = badgeCards.filter((c) => c.style.display !== 'none');
+  const visible = badgeCards.filter((c) => !isHidden(c));
   return { total: badgeCards.length, visible, hidden: badgeCards.length - visible.length };
 }
 function boxOf(label) {
@@ -85,7 +93,8 @@ setTimeout(() => {
     u.children[0].textContent === '6', u.children[0].textContent);
 
   const base = snapshot();
-  check('初始全部可见（badge 卡 ' + base.total + ' 张）', base.visible.length === base.total && base.total === 63,
+  check('初始可见 62 张（badge 卡 63 张，虚拟卡被 class 隐藏）',
+    base.visible.length === 62 && base.total === 63,
     { total: base.total, visible: base.visible.length });
 
   // —— 双休红榜：只显示 S/A ——
@@ -102,8 +111,8 @@ setTimeout(() => {
   check('C 级的宁德时代在红榜下被隐藏', catlCard === undefined);
   const virtHidden = [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
     .filter((c) => (c.textContent || '').includes('虚拟对比黑榜'))
-    .every((c) => c.style.display === 'none');
-  check('虚拟对比黑榜卡不进任何分档（被隐藏）', virtHidden);
+    .every((c) => c.classList.contains('sxg-vcard-gone'));
+  check('虚拟对比黑榜卡被 class 隐藏（virtual-card-remove.js，节点保留 React 协调安全）', virtHidden);
 
   // —— 大小周观察：只显示 B ——
   click(zhou);
@@ -130,7 +139,7 @@ setTimeout(() => {
   // —— 收录品牌：清除筛选 ——
   click(all);
   s = snapshot();
-  check('点「收录品牌」→ 清除筛选恢复全部', s.visible.length === s.total,
+  check('点「收录品牌」→ 清除筛选恢复可见 62 张（虚拟卡仍隐藏）', s.visible.length === 62,
     { visible: s.visible.length, total: s.total });
   check('清除后无激活态', ['双休红榜', '大小周观察', '避雷预警', '待核实'].every((lbl) => {
     const b = boxOf(lbl);
@@ -141,7 +150,7 @@ setTimeout(() => {
   click(red);
   click(red);
   s = snapshot();
-  check('再点一次「双休红榜」= 取消筛选', s.visible.length === s.total,
+  check('再点一次「双休红榜」= 取消筛选（可见 62 张）', s.visible.length === 62,
     { visible: s.visible.length, total: s.total });
 
   // —— 评级过滤行补「待核实」入口（2026-10-18 站长：上面有待核实，下面到 C 级就没了）——
@@ -161,17 +170,17 @@ setTimeout(() => {
       rowU.className.includes('bg-slate-900'), rowU.className);
     click(rowU);
     s = snapshot();
-    check('再点行内「待核实」→ 恢复全部', s.visible.length === s.total,
+    check('再点行内「待核实」→ 恢复可见 62 张', s.visible.length === 62,
       { visible: s.visible.length, total: s.total });
     // 互斥：点 React 评级按钮应清掉五格筛选（否则 observer 把旧 display 套回去出空面板）
     click(red);
     s = snapshot();
-    check('互斥前置：点红榜后隐藏 ' + (s.total - s.visible.length) + ' 张', s.hidden === 44, s.hidden);
+    check('互斥前置：点红榜后隐藏 ' + (s.total - s.visible.length) + ' 张（含 class 隐藏的虚拟卡）', s.hidden === 44, s.hidden);
     const allBtn = rowBtn('全部评级');
     if (allBtn) click(allBtn);
     s = snapshot();
-    check('再点 React「全部评级」→ 五格筛选被清空（无残留 display:none）',
-      s.hidden === 0, s.hidden);
+    check('再点 React「全部评级」→ 五格筛选被清空（仅剩虚拟卡的 class 隐藏）',
+      s.hidden === 1, s.hidden);
   }
 
   // —— 回归（2026-10-18）：搜索过滤会卸载 U 卡，第五格不得清零/变粉 ——
