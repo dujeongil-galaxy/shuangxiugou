@@ -50,6 +50,19 @@
 ---
 ---
 
+### 修复手机版严重 bug：头像切换弹层缺 className 致样式失效、头像按 512px 原始尺寸撑爆面板；全站 ?v=11→?v=12（2026-10-27 17:30 · 提交 `9df7f43b`）
+
+站长反馈手机版存在严重 bug。经无头浏览器（iPhone 12 / 390px 视口）截图复现：点击「切换形象」后，弹层被渲染成约 3126px 高的通栏巨框，6 个头像按原图尺寸堆叠，手机面板直接爆版。
+
+**根因**：`buildAvatarPopover` 创建弹层时只写了 `pop.id='sxg-ai-avatar-pop'`，**漏设 `className`**；而弹层所有样式（`position:absolute` / `width:160px` / 3 列网格 / 缩略图 34×34）都用 `.sxg-ai-avatar-pop` **类选择器**，因此一条都没生效。又因头像 SVG 自带 `width=512 height=512`，`<img>` 无尺寸约束即按原图渲染，6 张堆叠把面板撑爆。该缺陷自上一版（v10 点头像切换）即存在，此前只做了 DOM 断言、未验证渲染尺寸，故漏检。
+
+**改了哪些文件**：`ai-chat.js`（弹层补 `className='sxg-ai-avatar-pop'`；缩略图加内联 `width/height:34px` 兜底；`.sxg-ai-swap` 加 `white-space:nowrap;flex:none` 防换行；缓存戳 `?v=11→?v=12`）；全站 70 个 HTML 的 `ai-chat.js?v=11 → ?v=12`。
+
+**怎么验证的**：Playwright + iPhone 12 预设实测——弹层 178×112、6 个缩略图各 34×34、面板通栏 362px、`document.scrollWidth=390` 无横向溢出；桌面 1280px 同样 178×112；截图确认 3×2 网格与 A 款选中态正常。
+
+---
+---
+
 
 ### AI 挂件头像换为 B 款（粉发双马尾）：替换 assets/ai-avatar.svg + ai-chat.js 内联 AVATAR；全站 ?v=8→?v=9（2026-10-27 16:09 · 提交 `0cedbe8`）
 
