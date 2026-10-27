@@ -105,7 +105,12 @@
     /* 近底部隐藏判定：视口底边进入页面末尾 160px 范围内即视为「到底了」。
        监听 scroll + resize；rAF 节流避免滚动时高频触发。 */
     var ticking = false;
+    // 监听 body 变化：首页品牌卡片是 JS 动态插入的，插入后页面变高，
+    // 需要重新评估「是否到底」以免按钮被误藏。
+    var mo = ('MutationObserver' in window) ? new MutationObserver(onScroll) : null;
     function update() {
+      // 评估期间断开自身观察，避免按钮 class 变化触发回环
+      if (mo) mo.disconnect();
       ticking = false;
       var remain = document.documentElement.scrollHeight -
         (window.scrollY + window.innerHeight);
@@ -114,6 +119,10 @@
       } else {
         btn.classList.remove('sxg-at-bottom');
       }
+      // 下一帧重新观察
+      window.requestAnimationFrame(function () {
+        if (mo) mo.observe(document.body, { childList: true, subtree: true });
+      });
     }
     function onScroll() {
       if (!ticking) {
@@ -123,7 +132,11 @@
     }
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
-    update();
+    window.addEventListener('load', onScroll);
+    /* 关键修复：首屏长内容 / 动态卡片可能尚未撑开，若此刻同步判定会误把
+       按钮当成「已在底部」而隐藏，且之后没有 scroll/resize 事件来纠正。
+       改在首帧绘制后、load 完成后再评估，并监听 body 变化兜底。 */
+    window.requestAnimationFrame(update);
   }
 
   if (document.readyState === 'loading') {
