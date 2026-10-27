@@ -45,9 +45,52 @@
   var PANEL_ID = 'sxg-ai-panel';
   var STYLE_ID = 'sxg-ai-style';
   var MAX_HISTORY = 8; // 发给 Worker 的历史条数上限（Worker 侧还有二道截断）
-  // 卡通形象（B 款·粉发双马尾，2026-10-27 选定）：二次元 Q 版少女小助手（粉发双马尾+大眼高光+腮红+天平发饰/胸章），SVG 内联 data URI——
-  // 零额外请求、零外部依赖，与 assets/ai-avatar.svg 同源（想换形象改那一份再重编码）。
-  var AVATAR = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJhdmF0YXIiPgo8ZGVmcz4KPHJhZGlhbEdyYWRpZW50IGlkPSJiZyIgY3g9IjUwJSIgY3k9IjM2JSIgcj0iNjglIj4KPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2VlZjBmMyIvPgo8L3JhZGlhbEdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9ImhhaXIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj4KPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0ZGQjNEMSIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI0U4NEE4QSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+CjxjaXJjbGUgY3g9IjMyIiBjeT0iMzIiIHI9IjMxIiBmaWxsPSJ1cmwoI2JnKSIvPgo8cGF0aCBkPSJNMTYgMzMgQzE0IDE2IDIyIDExIDMyIDExIEM0MiAxMSA1MCAxNiA0OCAzMyBDNDggNDcgNDUgNTMgNDEgNTYgTDIzIDU2IEMxOSA1MyAxNiA0NyAxNiAzMyBaIiBmaWxsPSJ1cmwoI2hhaXIpIi8+CjxyZWN0IHg9IjI4IiB5PSI0NiIgd2lkdGg9IjgiIGhlaWdodD0iOCIgcng9IjMiIGZpbGw9IiNGMEMzQTgiLz4KPHBhdGggZD0iTTIxIDY0IEMyMSA1NiAyNiA1MyAzMiA1MyBDMzggNTMgNDMgNTYgNDMgNjQgWiIgZmlsbD0iI2ZmZmZmZiIvPgo8cGF0aCBkPSJNMzIgNTMgTDI4IDU5IEwzMiA2NCBMMzYgNTkgWiIgZmlsbD0iI0U4NEE4QSIvPgo8ZWxsaXBzZSBjeD0iMzIiIGN5PSIzMyIgcng9IjEzLjUiIHJ5PSIxNC41IiBmaWxsPSIjRkZFM0QyIi8+CjxwYXRoIGQ9Ik0xOCAyNyBDMTUgNDAgMTggNTEgMjQgNTMgQzIwIDQzIDIwIDMzIDIxIDI3IFoiIGZpbGw9InVybCgjaGFpcikiLz48cGF0aCBkPSJNMTMgMzAgQzYgMzEgNCA0MCA5IDQ3IEMxMyA1MiAxOCA0OSAyMCA0MyBDMTYgMzggMTcgMzMgMTkgMzAgWiIgZmlsbD0idXJsKCNoYWlyKSIvPgo8cGF0aCBkPSJNNDYgMjcgQzQ5IDQwIDQ2IDUxIDQwIDUzIEM0NCA0MyA0NCAzMyA0MyAyNyBaIiBmaWxsPSJ1cmwoI2hhaXIpIi8+PHBhdGggZD0iTTUxIDMwIEM1OCAzMSA2MCA0MCA1NSA0NyBDNTEgNTIgNDYgNDkgNDQgNDMgQzQ4IDM4IDQ3IDMzIDQ1IDMwIFoiIGZpbGw9InVybCgjaGFpcikiLz4KPHBhdGggZD0iTTE2IDMxIEMxNiAxNiAyNCAxMiAzMyAxMiBDNDIgMTIgNDkgMTYgNDggMzEgQzQ0IDI3IDM4IDI2IDMzIDI3IEMyOCAyNiAyMiAyNyAxNiAzMSBaIiBmaWxsPSJ1cmwoI2hhaXIpIi8+CjxwYXRoIGQ9Ik0yMSAyMSBDMjUgMTUgMzEgMTMgMzYgMTQgQzMxIDE1IDI2IDE4IDIzIDIzIFoiIGZpbGw9IiNGRkQ2RTYiIG9wYWNpdHk9IjAuNTUiLz4KPHBhdGggZD0iTTIyIDI4IFEyNS41IDI2IDI5IDI4IiBzdHJva2U9IiNCMjNBNkIiIHN0cm9rZS13aWR0aD0iMS4xIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPHBhdGggZD0iTTM1IDI4IFEzOC41IDI2IDQyIDI4IiBzdHJva2U9IiNCMjNBNkIiIHN0cm9rZS13aWR0aD0iMS4xIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGVsbGlwc2UgY3g9IjI1LjUiIGN5PSIzNCIgcng9IjMuOCIgcnk9IjQuOCIgZmlsbD0iIzJCMkIzQSIvPgo8ZWxsaXBzZSBjeD0iMzguNSIgY3k9IjM0IiByeD0iMy44IiByeT0iNC44IiBmaWxsPSIjMkIyQjNBIi8+CjxjaXJjbGUgY3g9IjI0LjEiIGN5PSIzMiIgcj0iMS42IiBmaWxsPSIjZmZmIi8+CjxjaXJjbGUgY3g9IjM3LjEiIGN5PSIzMiIgcj0iMS42IiBmaWxsPSIjZmZmIi8+CjxjaXJjbGUgY3g9IjI2LjYiIGN5PSIzNi4yIiByPSIwLjkiIGZpbGw9IiNmZmYiIG9wYWNpdHk9IjAuODUiLz4KPGNpcmNsZSBjeD0iMzkuNiIgY3k9IjM2LjIiIHI9IjAuOSIgZmlsbD0iI2ZmZiIgb3BhY2l0eT0iMC44NSIvPgo8cGF0aCBkPSJNMjEuNCAzMS4yIFEyNS41IDI4LjYgMjkuNiAzMS4yIiBzdHJva2U9IiMxNTE1MWYiIHN0cm9rZS13aWR0aD0iMS4yIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPHBhdGggZD0iTTM1LjQgMzEuMiBRMzkuNSAyOC42IDQzLjYgMzEuMiIgc3Ryb2tlPSIjMTUxNTFmIiBzdHJva2Utd2lkdGg9IjEuMiIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxlbGxpcHNlIGN4PSIyMSIgY3k9IjQwIiByeD0iMi40IiByeT0iMS41IiBmaWxsPSIjRkY5RUI1IiBvcGFjaXR5PSIwLjU1Ii8+CjxlbGxpcHNlIGN4PSI0MyIgY3k9IjQwIiByeD0iMi40IiByeT0iMS41IiBmaWxsPSIjRkY5RUI1IiBvcGFjaXR5PSIwLjU1Ii8+CjxwYXRoIGQ9Ik0yOS41IDQxIFEzMiA0My42IDM0LjUgNDEiIHN0cm9rZT0iI0M3NkI3QSIgc3Ryb2tlLXdpZHRoPSIxLjEiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgoKPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDUsMTgpIj4KPGNpcmNsZSByPSIzLjQiIGZpbGw9IiNGRkU5QTgiIHN0cm9rZT0iI0U4NEE4QSIgc3Ryb2tlLXdpZHRoPSIwLjkiLz4KPHBhdGggZD0iTS0yLjQgMCBIMi40IE0tMi40IDAgTC0zLjMgLTEuOCBNMi40IDAgTDMuMyAtMS44IE0wIC0xLjggVjEuNiIgc3Ryb2tlPSIjRTg0QThBIiBzdHJva2Utd2lkdGg9IjAuNyIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxjaXJjbGUgY3g9IjAiIGN5PSIxLjkiIHI9IjAuNyIgZmlsbD0iI0U4NEE4QSIvPgo8L2c+CjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDMyLDU5KSI+CjxjaXJjbGUgcj0iMy40IiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiNFODRBOEEiIHN0cm9rZS13aWR0aD0iMC45Ii8+CjxwYXRoIGQ9Ik0tMi40IDAgSDIuNCBNLTIuNCAwIEwtMy4zIC0xLjggTTIuNCAwIEwzLjMgLTEuOCBNMCAtMS44IFYxLjYiIHN0cm9rZT0iI0U4NEE4QSIgc3Ryb2tlLXdpZHRoPSIwLjciIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSIwIiBjeT0iMS45IiByPSIwLjciIGZpbGw9IiNFODRBOEEiLz4KPC9nPgo8L3N2Zz4=';
+  // ---------- 卡通形象：6 套二次元头像，可自由切换，cookie 记忆 ----------
+  // 2026-10-27 站长指令：此前临时上线的 B 款（粉发双马尾）「并不适用于这种图标」，
+  // 改回二次元头像、默认 A 款（青绿双马尾）；其余 5 套一并上传，共 6 套可选。
+  // 面板头部头像可点击，弹出 6 个缩略图自由切换，选择写入浏览器 Cookie（1 年），刷新/换页不丢。
+  // 头像文件置于仓库根 assets/ai-avatars/{A..F}.svg，由脚本自身 URL 推导绝对路径，
+  // 避免品牌页（../ai-chat.js）等不同页面深度下 404；SVG 矢量，任意尺寸清晰。
+  var SCRIPT_SRC = '';
+  try {
+    if (document.currentScript && document.currentScript.src) SCRIPT_SRC = document.currentScript.src;
+    else { var _s = document.querySelector('script[src*="ai-chat.js"]'); if (_s) SCRIPT_SRC = _s.src; }
+  } catch (e) {}
+  function avatarBase() {
+    if (!SCRIPT_SRC) return 'assets/ai-avatars/';
+    try { return new URL('assets/ai-avatars/', SCRIPT_SRC).href; } catch (e) { return 'assets/ai-avatars/'; }
+  }
+  var AVATAR_BASE = avatarBase();
+  var AVATAR_VER = '10'; // 与 ai-chat.js?v= 同步，便于强制刷新头像缓存
+  var AVATARS = [
+    { id: 'A', name: '青绿双马尾' },
+    { id: 'B', name: '粉发双马尾' },
+    { id: 'C', name: '梦幻紫' },
+    { id: 'D', name: '暖金黄' },
+    { id: 'E', name: '天空蓝' },
+    { id: 'F', name: '蜜糖棕' }
+  ];
+  var AVATAR_COOKIE = 'sxg_ai_avatar';
+  var AVATAR_DEFAULT = 'A';
+  function avatarSrc(id) { return AVATAR_BASE + id + '.svg?v=' + AVATAR_VER; }
+  function getCookie(n) {
+    try {
+      var m = document.cookie.match(new RegExp('(?:^|; )' + n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '=([^;]*)'));
+      return m ? decodeURIComponent(m[1]) : '';
+    } catch (e) { return ''; }
+  }
+  function setCookie(n, v, days) {
+    try {
+      var t = new Date();
+      t.setTime(t.getTime() + days * 864e5);
+      document.cookie = n + '=' + encodeURIComponent(v) + '; expires=' + t.toUTCString() + '; path=/; SameSite=Lax';
+    } catch (e) {}
+  }
+  function currentAvatarId() {
+    var c = getCookie(AVATAR_COOKIE);
+    for (var i = 0; i < AVATARS.length; i++) if (AVATARS[i].id === c) return c;
+    return AVATAR_DEFAULT;
+  }
   var busy = false;
   var history = []; // [{role, content}] 仅当前会话内存
   var autoCloseTimer = null; // 加载后自动收起面板的定时器
@@ -95,6 +138,13 @@
       '.sxg-ai-log{background:#111827}',
       '.sxg-ai-msg.bot{background:#1f2937;border-color:#374151;color:#e5e7eb}',
       '.sxg-ai-in{background:#111827;border-color:#374151;color:#e5e7eb}}',
+      '.sxg-ai-avatar-pop{position:absolute;top:48px;left:10px;z-index:9002;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:8px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:160px}',
+      '.sxg-ai-avatar-pop[hidden]{display:none}',
+      '.sxg-ai-avatar-pop button{padding:0;border:2px solid transparent;border-radius:8px;background:#f3f4f6;cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center;transition:border-color .12s,transform .12s}',
+      '.sxg-ai-avatar-pop button:hover{border-color:#94a3b8;transform:scale(1.05)}',
+      '.sxg-ai-avatar-pop button.sel{border-color:#0F766E;background:#ecfdf5}',
+      '.sxg-ai-avatar-pop img{width:34px;height:34px;display:block}',
+      '@media (prefers-color-scheme:dark){.sxg-ai-avatar-pop{background:#1f2937;border-color:#374151}.sxg-ai-avatar-pop button{background:#374151}.sxg-ai-avatar-pop button.sel{background:#064e3b}}',
     ].join('');
     document.head.appendChild(s);
   }
@@ -122,14 +172,29 @@
     head.className = 'sxg-ai-head';
     head.setAttribute('style', 'display:flex;align-items:center;gap:10px');
     var headAvatar = document.createElement('img');
-    headAvatar.src = AVATAR;
+    headAvatar.id = 'sxg-ai-head-avatar';
+    headAvatar.src = avatarSrc(currentAvatarId());
     headAvatar.alt = '';
     headAvatar.setAttribute('aria-hidden', 'true');
-    headAvatar.setAttribute('style', 'width:30px;height:30px;flex:none');
+    headAvatar.setAttribute('style', 'width:30px;height:30px;flex:none;cursor:pointer');
+    headAvatar.title = '点击更换头像（当前：' + currentAvatarId() + '）';
+    headAvatar.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      var pop = document.getElementById('sxg-ai-avatar-pop');
+      if (pop) pop.hidden = !pop.hidden;
+    });
+    headAvatar.onerror = function () { headAvatar.style.visibility = 'hidden'; };
     var headText = document.createElement('div');
     headText.innerHTML = '劳动法小助手<small style=\"display:block;font-weight:400;font-size:11px;opacity:.85;margin-top:2px\">劳动法与双休咨询 · 回答仅供参考，不构成法律意见</small>';
     head.appendChild(headAvatar);
     head.appendChild(headText);
+
+    // 头像切换弹层（点击面板头部头像弹出，6 个缩略图自由切换）
+    buildAvatarPopover(panel);
+    document.addEventListener('click', function () {
+      var p = document.getElementById('sxg-ai-avatar-pop');
+      if (p) p.hidden = true;
+    });
 
     var log = document.createElement('div');
     log.className = 'sxg-ai-log';
@@ -183,6 +248,56 @@
     // 用户一旦在面板内交互（点击/输入）即取消自动收起
     panel.addEventListener('pointerdown', clearAutoClose);
     startAutoClose();
+  }
+
+  // ---------- 头像切换（cookie 记忆） ----------
+  function buildAvatarPopover(panel) {
+    var pop = document.createElement('div');
+    pop.id = 'sxg-ai-avatar-pop';
+    pop.hidden = true;
+    pop.setAttribute('role', 'menu');
+    pop.setAttribute('aria-label', '选择头像');
+    AVATARS.forEach(function (a) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('data-id', a.id);
+      b.setAttribute('role', 'menuitem');
+      b.title = a.name + '（' + a.id + '）';
+      if (a.id === currentAvatarId()) b.classList.add('sel');
+      var im = document.createElement('img');
+      im.src = avatarSrc(a.id);
+      im.alt = '';
+      im.setAttribute('aria-hidden', 'true');
+      im.onerror = function () { this.style.visibility = 'hidden'; };
+      b.appendChild(im);
+      b.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        selectAvatar(a.id);
+      });
+      pop.appendChild(b);
+    });
+    panel.appendChild(pop);
+  }
+
+  function selectAvatar(id) {
+    var valid = false;
+    for (var i = 0; i < AVATARS.length; i++) if (AVATARS[i].id === id) valid = true;
+    if (!valid) return;
+    var img = document.getElementById('sxg-ai-head-avatar');
+    if (img) {
+      img.src = avatarSrc(id);
+      img.title = '点击更换头像（当前：' + id + '）';
+      img.style.visibility = '';
+    }
+    setCookie(AVATAR_COOKIE, id, 365);
+    var pop = document.getElementById('sxg-ai-avatar-pop');
+    if (pop) {
+      var btns = pop.querySelectorAll('button');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].classList.toggle('sel', btns[j].getAttribute('data-id') === id);
+      }
+      pop.hidden = true;
+    }
   }
 
   // 取消「加载后自动收起」计时（用户一旦主动交互就不再强收）
