@@ -50,6 +50,7 @@
   var AVATAR = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSLlj4zkvJHotK3lirPliqjms5XlsI/liqnmiYsiPgogIDwhLS0g5LqM5qyh5YWD5Y2h6YCa6aOO5qC877ya5aSn55y844CB5ZGG5q+b44CB6IWu57qi44CB54yr6ICzIC0tPgogIDwhLS0g6IS477ya5ZyG5b2i77yM6IKk6ImyIC0tPgogIDxjaXJjbGUgY3g9IjMyIiBjeT0iMzQiIHI9IjIyIiBmaWxsPSIjRkZFNEM0Ii8+CiAgPCEtLSDnjKvogLPvvJrlt6blj7PlkITkuIAgLS0+CiAgPHBhdGggZD0iTTE0IDIwIEwxOCA4IEwyNCAxOCBaIiBmaWxsPSIjRkZFNEM0IiBzdHJva2U9IiNFOEM5QTgiIHN0cm9rZS13aWR0aD0iMSIvPgogIDxwYXRoIGQ9Ik01MCAyMCBMNDYgOCBMNDAgMTggWiIgZmlsbD0iI0ZGRTRDNCIgc3Ryb2tlPSIjRThDOUE4IiBzdHJva2Utd2lkdGg9IjEiLz4KICA8cGF0aCBkPSJNMTYgMTggTDE5IDExIEwyMiAxNyIgZmlsbD0iI0ZGQjZDMSIgb3BhY2l0eT0iMC42Ii8+CiAgPHBhdGggZD0iTTQ4IDE4IEw0NSAxMSBMNDIgMTciIGZpbGw9IiNGRkI2QzEiIG9wYWNpdHk9IjAuNiIvPgogIDwhLS0g5aS05Y+R77yadGVhbCDkuLvoibLvvIzliJjmtbcgLS0+CiAgPHBhdGggZD0iTTEyIDMyIFExMiAxNCAzMiAxMiBRNTIgMTQgNTIgMzIgTDUwIDI4IFE0OCAxOCAzMiAxNiBRMTYgMTggMTQgMjggWiIgZmlsbD0iIzBGNzY2RSIvPgogIDwhLS0g5ZGG5q+b77ya5aS06aG257+Y6LW3IC0tPgogIDxwYXRoIGQ9Ik0zMiAxMiBRMzAgNiAzNCA0IFEzNiA4IDMyIDEyIiBmaWxsPSIjMEY3NjZFIi8+CiAgPCEtLSDnnLznnZvvvJrkuozmrKHlhYPlpKfnnLwgLS0+CiAgPGVsbGlwc2UgY3g9IjI0IiBjeT0iMzQiIHJ4PSI1IiByeT0iNiIgZmlsbD0iI2ZmZiIvPgogIDxlbGxpcHNlIGN4PSI0MCIgY3k9IjM0IiByeD0iNSIgcnk9IjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iMjQiIGN5PSIzNSIgcng9IjQiIHJ5PSI1IiBmaWxsPSIjMTM0RTRBIi8+CiAgPGVsbGlwc2UgY3g9IjQwIiBjeT0iMzUiIHJ4PSI0IiByeT0iNSIgZmlsbD0iIzEzNEU0QSIvPgogIDwhLS0g55y8552b6auY5YWJIC0tPgogIDxjaXJjbGUgY3g9IjI1LjUiIGN5PSIzMyIgcj0iMS44IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iNDEuNSIgY3k9IjMzIiByPSIxLjgiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSIyMyIgY3k9IjM2IiByPSIxIiBmaWxsPSIjNUVFQUQ0IiBvcGFjaXR5PSIwLjgiLz4KICA8Y2lyY2xlIGN4PSIzOSIgY3k9IjM2IiByPSIxIiBmaWxsPSIjNUVFQUQ0IiBvcGFjaXR5PSIwLjgiLz4KICA8IS0tIOiFrue6ou+8mueyieiJsuWchiAtLT4KICA8ZWxsaXBzZSBjeD0iMTgiIGN5PSI0MCIgcng9IjMiIHJ5PSIyLjUiIGZpbGw9IiNGRkI2QzEiIG9wYWNpdHk9IjAuNSIvPgogIDxlbGxpcHNlIGN4PSI0NiIgY3k9IjQwIiByeD0iMyIgcnk9IjIuNSIgZmlsbD0iI0ZGQjZDMSIgb3BhY2l0eT0iMC41Ii8+CiAgPCEtLSDlmLTvvJrlvq7nrJHlvKfnur8gLS0+CiAgPHBhdGggZD0iTTI4IDQ0IFEzMiA0NyAzNiA0NCIgc3Ryb2tlPSIjRDk3NzA2IiBzdHJva2Utd2lkdGg9IjEuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPCEtLSDouqvkvZPvvJrlsI/poobnu5MgLS0+CiAgPHBhdGggZD0iTTI4IDU0IEwzMiA1NiBMMzYgNTQgTDMyIDUyIFoiIGZpbGw9IiM1RUVBRDQiLz4KICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjU0IiByPSIxLjUiIGZpbGw9IiMwRjc2NkUiLz4KPC9zdmc+Cg==';
   var busy = false;
   var history = []; // [{role, content}] 仅当前会话内存
+  var autoCloseTimer = null; // 加载后自动收起面板的定时器
 
   // ---------- 样式注入（一次） ----------
   function injectStyle() {
@@ -182,12 +183,42 @@
 
     document.body.appendChild(panel);
     document.body.appendChild(btn);
+
+    // 加载即展开面板（展示欢迎语），8 秒后自动收起，避免一直遮挡页面；
+    // 用户一旦在面板内交互（点击/输入）即取消自动收起
+    panel.addEventListener('pointerdown', clearAutoClose);
+    startAutoClose();
+  }
+
+  // 取消「加载后自动收起」计时（用户一旦主动交互就不再强收）
+  function clearAutoClose() {
+    if (autoCloseTimer) {
+      clearTimeout(autoCloseTimer);
+      autoCloseTimer = null;
+    }
+  }
+
+  // 加载后 8 秒自动收起面板，避免一直遮挡页面；只收起仍处于展开态的面板
+  function startAutoClose() {
+    clearAutoClose();
+    autoCloseTimer = setTimeout(function () {
+      var p = document.getElementById(PANEL_ID);
+      if (p && !p.hidden) p.hidden = true;
+      autoCloseTimer = null;
+    }, 8000);
   }
 
   function toggle() {
     var panel = document.getElementById(PANEL_ID);
     if (!panel) return;
-    panel.hidden = !panel.hidden;
+    if (panel.hidden) {
+      // 用户手动点开：保持展开，不触发自动收起
+      panel.hidden = false;
+      clearAutoClose();
+    } else {
+      panel.hidden = true;
+      clearAutoClose();
+    }
   }
 
   // ---------- 对话 ----------
