@@ -106,15 +106,10 @@
     var btn = document.createElement('button');
     btn.id = BTN_ID;
     btn.type = 'button';
-    btn.setAttribute('aria-label', '劳动法小助手');
-    btn.title = '劳动法小助手';
-    // 卡通形象（SVG data URI，见常量区 AVATAR 注释）
-    var avatarImg = document.createElement('img');
-    avatarImg.src = AVATAR;
-    avatarImg.alt = '';
-    avatarImg.setAttribute('aria-hidden', 'true');
-    avatarImg.setAttribute('style', 'width:34px;height:34px;display:block;pointer-events:none');
-    btn.appendChild(avatarImg);
+    btn.setAttribute('aria-label', 'AI 小助手');
+    btn.title = 'AI 小助手';
+    // 浮动按钮直接显示纯文字「AI」（2026-10-27 站长指令：去掉卡通形象，改纯文字）
+    btn.textContent = 'AI';
     btn.addEventListener('click', function () { toggle(); });
 
     var panel = document.createElement('div');
