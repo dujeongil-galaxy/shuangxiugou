@@ -1,32 +1,74 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="双休购劳动法小助手">
-  <!-- 二次元卡通风格：大眼、呆毛、腮红、猫耳 -->
-  <!-- 脸：圆形，肤色 -->
-  <circle cx="32" cy="34" r="22" fill="#FFE4C4"/>
-  <!-- 猫耳：左右各一 -->
-  <path d="M14 20 L18 8 L24 18 Z" fill="#FFE4C4" stroke="#E8C9A8" stroke-width="1"/>
-  <path d="M50 20 L46 8 L40 18 Z" fill="#FFE4C4" stroke="#E8C9A8" stroke-width="1"/>
-  <path d="M16 18 L19 11 L22 17" fill="#FFB6C1" opacity="0.6"/>
-  <path d="M48 18 L45 11 L42 17" fill="#FFB6C1" opacity="0.6"/>
-  <!-- 头发：teal 主色，刘海 -->
-  <path d="M12 32 Q12 14 32 12 Q52 14 52 32 L50 28 Q48 18 32 16 Q16 18 14 28 Z" fill="#0F766E"/>
-  <!-- 呆毛：头顶翘起 -->
-  <path d="M32 12 Q30 6 34 4 Q36 8 32 12" fill="#0F766E"/>
-  <!-- 眼睛：二次元大眼 -->
-  <ellipse cx="24" cy="34" rx="5" ry="6" fill="#fff"/>
-  <ellipse cx="40" cy="34" rx="5" ry="6" fill="#fff"/>
-  <ellipse cx="24" cy="35" rx="4" ry="5" fill="#134E4A"/>
-  <ellipse cx="40" cy="35" rx="4" ry="5" fill="#134E4A"/>
-  <!-- 眼睛高光 -->
-  <circle cx="25.5" cy="33" r="1.8" fill="#fff"/>
-  <circle cx="41.5" cy="33" r="1.8" fill="#fff"/>
-  <circle cx="23" cy="36" r="1" fill="#5EEAD4" opacity="0.8"/>
-  <circle cx="39" cy="36" r="1" fill="#5EEAD4" opacity="0.8"/>
-  <!-- 腮红：粉色圆 -->
-  <ellipse cx="18" cy="40" rx="3" ry="2.5" fill="#FFB6C1" opacity="0.5"/>
-  <ellipse cx="46" cy="40" rx="3" ry="2.5" fill="#FFB6C1" opacity="0.5"/>
-  <!-- 嘴：微笑弧线 -->
-  <path d="M28 44 Q32 47 36 44" stroke="#D97706" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-  <!-- 身体：小领结 -->
-  <path d="M28 54 L32 56 L36 54 L32 52 Z" fill="#5EEAD4"/>
-  <circle cx="32" cy="54" r="1.5" fill="#0F766E"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="劳动法小助手">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="36%" r="68%">
+      <stop offset="0%" stop-color="#EAFBF6"/>
+      <stop offset="100%" stop-color="#BFEDE3"/>
+    </radialGradient>
+    <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#34D8C2"/>
+      <stop offset="100%" stop-color="#0F766E"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 背景圆 -->
+  <circle cx="32" cy="32" r="31" fill="url(#bg)"/>
+
+  <!-- 后发 -->
+  <path d="M16 33 C14 16 22 11 32 11 C42 11 50 16 48 33 C48 47 45 53 41 56 L23 56 C19 53 16 47 16 33 Z" fill="url(#hair)"/>
+
+  <!-- 脖子 -->
+  <rect x="28" y="46" width="8" height="8" rx="3" fill="#F0C3A8"/>
+
+  <!-- 衣领 -->
+  <path d="M21 64 C21 56 26 53 32 53 C38 53 43 56 43 64 Z" fill="#ffffff"/>
+  <path d="M32 53 L28 59 L32 64 L36 59 Z" fill="#0F766E"/>
+
+  <!-- 脸 -->
+  <ellipse cx="32" cy="33" rx="13.5" ry="14.5" fill="#FFE3D2"/>
+
+  <!-- 侧发（框脸）-->
+  <path d="M19 28 C16 40 19 51 24 53 C21 43 21 33 22 28 Z" fill="url(#hair)"/>
+  <path d="M45 28 C48 40 45 51 40 53 C43 43 43 33 42 28 Z" fill="url(#hair)"/>
+
+  <!-- 刘海 -->
+  <path d="M17 31 C17 17 24 12 33 12 C42 12 48 17 47 31 C43 27 38 26 33 27 C28 26 22 27 17 31 Z" fill="url(#hair)"/>
+  <!-- 头发高光 -->
+  <path d="M21 21 C25 15 31 13 36 14 C31 15 26 18 23 23 Z" fill="#8CF2E2" opacity="0.55"/>
+
+  <!-- 眉 -->
+  <path d="M22 28 Q25.5 26 29 28" stroke="#1F6F66" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+  <path d="M35 28 Q38.5 26 42 28" stroke="#1F6F66" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+
+  <!-- 眼睛 -->
+  <g>
+    <ellipse cx="25.5" cy="34" rx="3.8" ry="4.8" fill="#2B2B3A"/>
+    <ellipse cx="38.5" cy="34" rx="3.8" ry="4.8" fill="#2B2B3A"/>
+    <circle cx="24.1" cy="32" r="1.6" fill="#ffffff"/>
+    <circle cx="37.1" cy="32" r="1.6" fill="#ffffff"/>
+    <circle cx="26.6" cy="36.2" r="0.9" fill="#ffffff" opacity="0.85"/>
+    <circle cx="39.6" cy="36.2" r="0.9" fill="#ffffff" opacity="0.85"/>
+    <path d="M21.4 31.2 Q25.5 28.6 29.6 31.2" stroke="#15151f" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    <path d="M35.4 31.2 Q39.5 28.6 43.6 31.2" stroke="#15151f" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- 腮红 -->
+  <ellipse cx="21" cy="40" rx="2.4" ry="1.5" fill="#FF9EB5" opacity="0.55"/>
+  <ellipse cx="43" cy="40" rx="2.4" ry="1.5" fill="#FF9EB5" opacity="0.55"/>
+
+  <!-- 嘴 -->
+  <path d="M29.5 41 Q32 43.6 34.5 41" stroke="#C76B7A" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+
+  <!-- 发饰：小天平（劳动法意象）-->
+  <g transform="translate(45,18)">
+    <circle r="3.4" fill="#FFE9A8" stroke="#0F766E" stroke-width="0.9"/>
+    <path d="M-2.4 0 H2.4 M-2.4 0 L-3.3 -1.8 M2.4 0 L3.3 -1.8 M0 -1.8 V1.6" stroke="#0F766E" stroke-width="0.7" fill="none" stroke-linecap="round"/>
+    <circle cx="0" cy="1.9" r="0.7" fill="#0F766E"/>
+  </g>
+
+  <!-- 胸前小天平徽章 -->
+  <g transform="translate(32,59)">
+    <circle r="3.4" fill="#ffffff" stroke="#0F766E" stroke-width="0.9"/>
+    <path d="M-2.4 0 H2.4 M-2.4 0 L-3.3 -1.8 M2.4 0 L3.3 -1.8 M0 -1.8 V1.6" stroke="#0F766E" stroke-width="0.7" fill="none" stroke-linecap="round"/>
+    <circle cx="0" cy="1.9" r="0.7" fill="#0F766E"/>
+  </g>
 </svg>
