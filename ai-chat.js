@@ -61,7 +61,7 @@
     try { return new URL('assets/ai-avatars/', SCRIPT_SRC).href; } catch (e) { return 'assets/ai-avatars/'; }
   }
   var AVATAR_BASE = avatarBase();
-  var AVATAR_VER = '10'; // 与 ai-chat.js?v= 同步，便于强制刷新头像缓存
+  var AVATAR_VER = '11'; // 与 ai-chat.js?v= 同步，便于强制刷新头像缓存
   var AVATARS = [
     { id: 'A', name: '青绿双马尾' },
     { id: 'B', name: '粉发双马尾' },
@@ -121,7 +121,7 @@
       '}',
       '#' + PANEL_ID + '[hidden]{display:none}',
       '.sxg-ai-head{background:#0F766E;color:#fff;padding:10px 14px;font-size:14px;font-weight:600}',
-      '.sxg-ai-head small{display:block;font-weight:400;font-size:11px;opacity:.85;margin-top:2px}',
+      '.sxg-ai-head small{display:block;font-weight:400;font-size:11px;opacity:.85;margin-top:2px}','#sxg-ai-head-avatar{transition:box-shadow .12s,transform .12s;border-radius:50%}','#sxg-ai-head-avatar:hover{box-shadow:0 0 0 2px rgba(255,255,255,.8)}','.sxg-ai-swap{margin-left:auto;display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:8px;padding:4px 9px;font-size:12px;font-weight:500;cursor:pointer;line-height:1.2;font-family:inherit}','.sxg-ai-swap:hover{background:rgba(255,255,255,.3)}',
       '.sxg-ai-log{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:#f9fafb}',
       '.sxg-ai-msg{max-width:86%;padding:8px 11px;border-radius:10px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word}',
       '.sxg-ai-msg.user{align-self:flex-end;background:#0F766E;color:#fff;border-bottom-right-radius:3px}',
@@ -180,14 +180,25 @@
     headAvatar.title = '点击更换头像（当前：' + currentAvatarId() + '）';
     headAvatar.addEventListener('click', function (ev) {
       ev.stopPropagation();
-      var pop = document.getElementById('sxg-ai-avatar-pop');
-      if (pop) pop.hidden = !pop.hidden;
+      toggleAvatarPop();
     });
     headAvatar.onerror = function () { headAvatar.style.visibility = 'hidden'; };
     var headText = document.createElement('div');
     headText.innerHTML = '劳动法小助手<small style=\"display:block;font-weight:400;font-size:11px;opacity:.85;margin-top:2px\">劳动法与双休咨询 · 回答仅供参考，不构成法律意见</small>';
     head.appendChild(headAvatar);
     head.appendChild(headText);
+
+    // 可见的「切换形象」入口：标题栏右侧带文字按钮，点开同一弹层（解决“找不到在哪换”）
+    var swapBtn = document.createElement('button');
+    swapBtn.type = 'button';
+    swapBtn.className = 'sxg-ai-swap';
+    swapBtn.textContent = '切换形象';
+    swapBtn.setAttribute('aria-label', '切换 AI 形象');
+    swapBtn.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      toggleAvatarPop();
+    });
+    head.appendChild(swapBtn);
 
     // 头像切换弹层（点击面板头部头像弹出，6 个缩略图自由切换）
     buildAvatarPopover(panel);
@@ -248,6 +259,12 @@
     // 用户一旦在面板内交互（点击/输入）即取消自动收起
     panel.addEventListener('pointerdown', clearAutoClose);
     startAutoClose();
+  }
+
+  // 切换头像弹层显隐（头像与「切换形象」按钮共用）
+  function toggleAvatarPop() {
+    var pop = document.getElementById('sxg-ai-avatar-pop');
+    if (pop) pop.hidden = !pop.hidden;
   }
 
   // ---------- 头像切换（cookie 记忆） ----------
