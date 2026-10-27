@@ -61,7 +61,7 @@
     try { return new URL('assets/ai-avatars/', SCRIPT_SRC).href; } catch (e) { return 'assets/ai-avatars/'; }
   }
   var AVATAR_BASE = avatarBase();
-  var AVATAR_VER = '11'; // 与 ai-chat.js?v= 同步，便于强制刷新头像缓存
+  var AVATAR_VER = '12'; // 与 ai-chat.js?v= 同步，便于强制刷新头像缓存
   var AVATARS = [
     { id: 'A', name: '青绿双马尾' },
     { id: 'B', name: '粉发双马尾' },
@@ -121,7 +121,7 @@
       '}',
       '#' + PANEL_ID + '[hidden]{display:none}',
       '.sxg-ai-head{background:#0F766E;color:#fff;padding:10px 14px;font-size:14px;font-weight:600}',
-      '.sxg-ai-head small{display:block;font-weight:400;font-size:11px;opacity:.85;margin-top:2px}','#sxg-ai-head-avatar{transition:box-shadow .12s,transform .12s;border-radius:50%}','#sxg-ai-head-avatar:hover{box-shadow:0 0 0 2px rgba(255,255,255,.8)}','.sxg-ai-swap{margin-left:auto;display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:8px;padding:4px 9px;font-size:12px;font-weight:500;cursor:pointer;line-height:1.2;font-family:inherit}','.sxg-ai-swap:hover{background:rgba(255,255,255,.3)}',
+      '.sxg-ai-head small{display:block;font-weight:400;font-size:11px;opacity:.85;margin-top:2px}','#sxg-ai-head-avatar{transition:box-shadow .12s,transform .12s;border-radius:50%}','#sxg-ai-head-avatar:hover{box-shadow:0 0 0 2px rgba(255,255,255,.8)}','.sxg-ai-swap{margin-left:auto;display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:8px;padding:4px 9px;font-size:12px;font-weight:500;cursor:pointer;line-height:1.2;font-family:inherit;white-space:nowrap;flex:none}','.sxg-ai-swap:hover{background:rgba(255,255,255,.3)}',
       '.sxg-ai-log{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:#f9fafb}',
       '.sxg-ai-msg{max-width:86%;padding:8px 11px;border-radius:10px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word}',
       '.sxg-ai-msg.user{align-self:flex-end;background:#0F766E;color:#fff;border-bottom-right-radius:3px}',
@@ -271,6 +271,7 @@
   function buildAvatarPopover(panel) {
     var pop = document.createElement('div');
     pop.id = 'sxg-ai-avatar-pop';
+    pop.className = 'sxg-ai-avatar-pop'; // 关键：CSS 用 .sxg-ai-avatar-pop 类选择器，缺这行会导致样式全失效、头像按 512px 原始尺寸撑爆面板
     pop.hidden = true;
     pop.setAttribute('role', 'menu');
     pop.setAttribute('aria-label', '选择头像');
@@ -285,6 +286,7 @@
       im.src = avatarSrc(a.id);
       im.alt = '';
       im.setAttribute('aria-hidden', 'true');
+      im.setAttribute('style', 'width:34px;height:34px;display:block');
       im.onerror = function () { this.style.visibility = 'hidden'; };
       b.appendChild(im);
       b.addEventListener('click', function (ev) {
