@@ -237,7 +237,7 @@ const GATE_HTML = `
     </form>
     <p class="gate-msg" id="sxg-gate-msg" hidden></p>
   </div>
-  <p class="gate-unlocked-note" id="sxg-gate-unlocked-note" hidden>已解锁：请勿取消 Star，不定期更新更多福利。取消后再次访问会重新上锁。</p>
+  <p class="gate-unlocked-note" id="sxg-gate-unlocked-note" hidden>已解锁：请勿取消 Star，不定期更新更多福利。取消后再次访问会重新上锁。<br><a href="https://pan.quark.cn/s/b998efeb7659" target="_blank" rel="noopener noreferrer">https://pan.quark.cn/s/b998efeb7659</a></p>
   <p class="photo-status" id="sxg-photo-status" hidden></p>
   <div class="photo-grid" id="sxg-photo-grid" hidden>
     <img data-enc="./photo-kuromi.jpg.enc" alt="a" />
