@@ -785,7 +785,7 @@ if (exists('CHANGELOG.md')) {
 
   const noStamp = [];
   entries.forEach((title) => {
-    const m = title.match(/（(\d{4}-\d{2}-\d{2} \d{2}:\d{2})\s*·\s*提交\s*`[0-9a-f]{7}`(?:[^）]*)）\s*$/);
+    const m = title.match(/（(\d{4}-\d{2}-\d{2} \d{2}:\d{2})\s*·\s*提交\s*`[0-9a-f]{7,9}`(?:[^）]*)）\s*$/);
     if (!m) noStamp.push(title.slice(0, 50));
   });
   check(noStamp.length === 0,
@@ -4244,11 +4244,11 @@ section('21c. 首页滑到底部按钮');
     check(cfgPos !== -1 && chatPos !== -1 && cfgPos < chatPos,
       '首页挂载顺序：ai-config.js 在 ai-chat.js 之前');
   }
-  // 卡通形象（2026-10-26 站长指令）：按钮与面板头都是 SVG data URI（不用 emoji）
-  check(/var AVATAR = 'data:image\/svg\+xml;base64,/.test(aiChat),
-    '卡通形象内联为 SVG data URI（常量 AVATAR）');
-  check(/avatarImg\.src = AVATAR/.test(aiChat) && /headAvatar\.src = AVATAR/.test(aiChat),
-    '按钮与面板头部都用卡通形象（emoji 已替换）');
+  // 卡通形象（2026-10-26 站长指令）：多头像文件架构（AVATARS 数组 + avatarSrc 从 .svg 加载），不用 emoji
+  check(/var AVATARS = \[/.test(aiChat) && /function avatarSrc\(id\)/.test(aiChat) && /AVATAR_BASE/.test(aiChat),
+    '卡通形象为多头像文件架构（AVATARS 数组 + avatarSrc 加载 .svg，非单内联 base64）');
+  check(/headAvatar\.src = avatarSrc\(/.test(aiChat) && /im\.src = avatarSrc\(a\.id\)/.test(aiChat),
+    '按钮与面板头部都用卡通形象（emoji 已替换，按头像 id 加载 .svg）');
   check(exists('assets/ai-avatar.svg'),
     '形象源文件 assets/ai-avatar.svg 在仓库（换形象的单一权威来源）');
   // 手机端适配（2026-10-26 站长指令：保证手机端可用）
