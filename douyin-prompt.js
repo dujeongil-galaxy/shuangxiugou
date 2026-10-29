@@ -76,6 +76,11 @@
           '<a class="dyp__later" href="./notes.html">站长随笔</a>' +
         '</div>' +
         '<p class="dyp__tip">希望无论劳动者还是企业，都可以走到良性发展的道路上，让我们一起推动这件事，在此广纳贤言并期待听到你的声音；对，别回头，说的就是你！</p>' +
+        '<div class="dyp__count" aria-live="polite">' +
+          '<span class="dyp__count__num">8</span>' +
+          '<span class="dyp__count__label">秒后可关闭</span>' +
+          '<span class="dyp__count__bar"><i></i></span>' +
+        '</div>' +
       '</div>';
 
     box.querySelector('.dyp__title').textContent = CONFIG.title;
@@ -104,10 +109,54 @@
     if (!box) build();
     markShown();          // 打开即计时：即便用户马上刷新，也不会再次自动弹
     box.classList.add('is-open');
+    startCountdown();     // 8 秒倒计时：未到则关闭按钮/遮罩/Esc 不生效
   }
 
+  // 关闭锁定：弹出后 8 秒内，点击关闭（× / 遮罩 / Esc）不生效
+  var unlockAt = 0;
+  var countTimer = null;
   function close() {
+    if (Date.now() < unlockAt) {
+      // 未到 8 秒：点击关闭不生效，给一个轻提示（抖动）
+      if (box) {
+        var c = box.querySelector('.dyp__count');
+        if (c) {
+          c.classList.remove('dyp__count--shake');
+          void c.offsetWidth; // 触发重排以重启动画
+          c.classList.add('dyp__count--shake');
+        }
+      }
+      return;
+    }
     if (box) box.classList.remove('is-open');
+  }
+
+  // 8 秒滚动倒计时：数字递减 + 进度条收缩；到点后放行关闭
+  function startCountdown() {
+    unlockAt = Date.now() + 8000;
+    var numEl = box.querySelector('.dyp__count__num');
+    var barEl = box.querySelector('.dyp__count__bar > i');
+    var labelEl = box.querySelector('.dyp__count__label');
+    if (countTimer) clearInterval(countTimer);
+    function tick() {
+      var left = unlockAt - Date.now();
+      if (left <= 0) {
+        clearInterval(countTimer);
+        countTimer = null;
+        if (numEl) numEl.textContent = '0';
+        if (labelEl) labelEl.textContent = '现在可以关闭了';
+        if (barEl) barEl.style.width = '0%';
+        if (box) {
+          var rd = box.querySelector('.dyp__count');
+          if (rd) rd.classList.add('dyp__count--ready');
+        }
+        return;
+      }
+      if (numEl) numEl.textContent = String(Math.ceil(left / 1000));
+      if (barEl) barEl.style.width = (left / 8000 * 100) + '%';
+    }
+    tick();
+    countTimer = setInterval(tick, 100);
   }
 
   function init() {

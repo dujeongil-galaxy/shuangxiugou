@@ -265,6 +265,68 @@
   text-align: center;
 }
 
+/* 关闭倒计时（2026-10-29 站长要求）：弹出后 8 秒内关闭不生效，
+   倒计时数字递减 + 进度条收缩，到点后放行关闭。 */
+.dyp__count {
+  margin: 14px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #9b8f80;
+}
+
+.dyp__count__num {
+  font-weight: 800;
+  font-size: 16px;
+  color: #3dad8a;
+  min-width: 1.1em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.dyp__count__label {
+  white-space: nowrap;
+}
+
+.dyp__count__bar {
+  position: relative;
+  flex: 1 1 auto;
+  height: 4px;
+  border-radius: 2px;
+  background: #ece4d8;
+  overflow: hidden;
+}
+
+.dyp__count__bar > i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(90deg, #3dad8a, #2e8b6f);
+  transition: width 0.1s linear;
+}
+
+.dyp__count--ready .dyp__count__num {
+  color: #2e8b6f;
+}
+
+.dyp__count--ready .dyp__count__label {
+  color: #3dad8a;
+  font-weight: 600;
+}
+
+.dyp__count--shake {
+  animation: dyp-count-shake 0.3s ease;
+}
+
+@keyframes dyp-count-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
 /* 窄屏：面板贴底，拇指更容易够到按钮 */
 @media (max-width: 520px) {
   .dyp__panel {
