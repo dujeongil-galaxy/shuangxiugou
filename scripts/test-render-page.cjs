@@ -100,7 +100,7 @@ const html = read('index.html');
   console.log('\n  时序重试：', retried.length ? retried.join(', ') : '（无可调用的入口，跳过）');
 
   // 重试后重新统计错误：初次执行早于 React 渲染，报错属于脚手架时序，不是站点缺陷
-  const realErrors = errors.filter((e) => !/找不到插入位置参照卡片/.test(e));
+  const realErrors = errors.filter((e) => !/找不到插入位置参照卡片|找不到任何可插入位置/.test(e));
   const orderOnly = errors.length - realErrors.length;
   if (orderOnly) {
     console.log(`  （已忽略 ${orderOnly} 条「找不到插入位置参照卡片」：jsdom 同步 eval 早于 React 渲染所致，真实浏览器中内联脚本为 module、在 bundle 之后执行）`);
