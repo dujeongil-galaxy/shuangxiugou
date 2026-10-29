@@ -3,9 +3,9 @@
 //
 // 预期数字（2026-10-26 更新）：虚拟对比黑榜卡已 DOM 层下线
 // （virtual-card-remove.js，站长指令「删了，不再保留」），
-// badge 卡共 62 张（53 内置 - 1 虚拟 + 10 自定义）。筛选结果与顶部五格显示一致：
-// 红榜(S/A)=19、观察(B)=14、避雷(C)=23、待核实(U)=6；
-// 19+14+23+6 = 62 = 收录总数；「全部」=62（虚拟卡不再存在）。
+// badge 卡共 63 张（54 内置 - 1 虚拟 + 10 自定义，2026-10-28 美宜佳 U 级卡上线后口径）。筛选结果与顶部五格显示一致：
+// 红榜(S/A)=19、观察(B)=14、避雷(C)=23、待核实(U)=7；
+// 19+14+23+7 = 63 = 收录总数；「全部」=63（虚拟卡不再存在）。
 // 末尾另有苹果「富士康补充说明」框回归（PITFALLS 1.10 第二变体）：
 // 搜索「啊」→ 摘除；清空 → 插回；节点被复用为华为卡 → 不残留；隐藏子树 → 摘除。
 const fs = require('fs');
@@ -89,12 +89,12 @@ setTimeout(() => {
     && lei.getAttribute('data-sxg-stat') === 'lei'
     && all.getAttribute('data-sxg-stat') === 'all'
     && u.getAttribute('data-sxg-stat') === 'u');
-  check('第五格「待核实」数字 = 6（与 U 级卡数一致）',
-    u.children[0].textContent === '6', u.children[0].textContent);
+  check('第五格「待核实」数字 = 7（与 U 级卡数一致）',
+    u.children[0].textContent === '7', u.children[0].textContent);
 
   const base = snapshot();
-  check('初始可见 62 张（badge 卡 63 张，虚拟卡被 class 隐藏）',
-    base.visible.length === 62 && base.total === 63,
+  check('初始可见 63 张（badge 卡 64 张，虚拟卡被 class 隐藏）',
+    base.visible.length === 63 && base.total === 64,
     { total: base.total, visible: base.visible.length });
 
   // —— 双休红榜：只显示 S/A ——
@@ -131,15 +131,15 @@ setTimeout(() => {
   // —— 待核实：只显示 U ——
   click(u);
   s = snapshot();
-  check('点「待核实」→ 仅 U 级可见（6 张；19+14+23+6=62 对账）',
-    s.visible.length === 6 && s.visible.every((c) => tierOf(c) === 'U'),
+  check('点「待核实」→ 仅 U 级可见（7 张；19+14+23+7=63 对账）',
+    s.visible.length === 7 && s.visible.every((c) => tierOf(c) === 'U'),
     { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
   check('待核实激活态写上 data-sxg-active', u.getAttribute('data-sxg-active') === '1');
 
   // —— 收录品牌：清除筛选 ——
   click(all);
   s = snapshot();
-  check('点「收录品牌」→ 清除筛选恢复可见 62 张（虚拟卡仍隐藏）', s.visible.length === 62,
+  check('点「收录品牌」→ 清除筛选恢复可见 63 张（虚拟卡仍隐藏）', s.visible.length === 63,
     { visible: s.visible.length, total: s.total });
   check('清除后无激活态', ['双休红榜', '大小周观察', '避雷预警', '待核实'].every((lbl) => {
     const b = boxOf(lbl);
@@ -150,7 +150,7 @@ setTimeout(() => {
   click(red);
   click(red);
   s = snapshot();
-  check('再点一次「双休红榜」= 取消筛选（可见 62 张）', s.visible.length === 62,
+  check('再点一次「双休红榜」= 取消筛选（可见 63 张）', s.visible.length === 63,
     { visible: s.visible.length, total: s.total });
 
   // —— 评级过滤行补「待核实」入口（2026-10-18 站长：上面有待核实，下面到 C 级就没了）——
@@ -163,19 +163,19 @@ setTimeout(() => {
   if (rowU) {
     click(rowU);
     s = snapshot();
-    check('点评级行「待核实」→ 仅 6 张 U 级卡可见',
-      s.visible.length === 6 && s.visible.every((c) => tierOf(c) === 'U'),
+    check('点评级行「待核实」→ 仅 7 张 U 级卡可见',
+      s.visible.length === 7 && s.visible.every((c) => tierOf(c) === 'U'),
       { visible: s.visible.length });
     check('行内「待核实」按钮激活态（bg-slate-900）',
       rowU.className.includes('bg-slate-900'), rowU.className);
     click(rowU);
     s = snapshot();
-    check('再点行内「待核实」→ 恢复可见 62 张', s.visible.length === 62,
+    check('再点行内「待核实」→ 恢复可见 63 张', s.visible.length === 63,
       { visible: s.visible.length, total: s.total });
     // 互斥：点 React 评级按钮应清掉五格筛选（否则 observer 把旧 display 套回去出空面板）
     click(red);
     s = snapshot();
-    check('互斥前置：点红榜后隐藏 ' + (s.total - s.visible.length) + ' 张（含 class 隐藏的虚拟卡）', s.hidden === 44, s.hidden);
+    check('互斥前置：点红榜后隐藏 ' + (s.total - s.visible.length) + ' 张（含 class 隐藏的虚拟卡）', s.hidden === 45, s.hidden);
     const allBtn = rowBtn('全部评级');
     if (allBtn) click(allBtn);
     s = snapshot();
@@ -187,23 +187,38 @@ setTimeout(() => {
   (async () => {
     const uCards = [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
       .filter((c) => tierOf(c) === 'U');
-    check('前置：DOM 中 U 级卡 6 张', uCards.length === 6, uCards.length);
+    check('前置：DOM 中 U 级卡 7 张（63 家含 4 张 U 级自定义卡）', uCards.length === 7, uCards.length);
     const removed = uCards.map((c) => {
       const p = c.parentNode; const nx = c.nextSibling;
       p.removeChild(c); return { c, p, nx };
     });
     await new Promise((r) => setTimeout(r, 450));
     const u2 = boxOf('待核实');
-    check('搜索过滤（U 卡被卸载）后待核实数字仍为 6（不清零）',
-      u2 && u2.children[0].textContent === '6', u2 && u2.children[0].textContent);
+    check('搜索过滤（U 卡被卸载）后待核实数字仍为 7（不清零）',
+      u2 && u2.children[0].textContent === '7', u2 && u2.children[0].textContent);
+    // ⚠️ 恢复前先清掉「MO 自愈在卸载窗口期重建的同 id 新卡」：
+    // removeChild 后 MutationObserver 会触发 insertAllCustomCards 重建自定义卡
+    //（降级插列表末）。若直接把旧节点插回原位，DOM 里会出现同 id 两张卡，
+    // getElementById/findCardByH3 每轮取到的「第一张」在新旧卡间摇摆，
+    // insertMeiyijiaNote 每轮摘了重插 → MO 无限重入 → 微任务风暴饿死全部
+    // 定时器 → 测试挂起（2026-10-30 实测：CI 卡 25 分钟+、本地 40s 不退）。
+    // 真实浏览器语义：React 卸载后重挂载的是**新节点**，旧节点已被丢弃——
+    // 这里模拟「重挂载完成」：保留自愈重建的新卡，放弃旧节点（只用于移除阶段）。
+    removed.forEach(({ c }) => {
+      if (c.id && c.parentNode) { /* 旧节点仍在 DOM 外，直接放弃 */ }
+      const dup = c.id && window.document.getElementById(c.id);
+      if (dup && dup !== c) { /* 同 id 新卡已由自愈注入，无需恢复旧节点 */ }
+    });
+    // 非自定义卡（React 原生 U 卡）没有自愈逻辑，必须恢复
     removed.forEach(({ c, p, nx }) => {
+      if (c.id) return; // 自定义卡已被自愈重建，恢复旧节点会造成双卡
       try { nx ? p.insertBefore(c, nx) : p.appendChild(c); }
       catch (e) { try { p.appendChild(c); } catch (e2) { /* 容器已被替换则放弃恢复 */ } }
     });
     await new Promise((r) => setTimeout(r, 450));
     const u3 = boxOf('待核实');
-    check('恢复全部卡片后待核实数字仍为 6',
-      u3 && u3.children[0].textContent === '6', u3 && u3.children[0].textContent);
+    check('恢复全部卡片后待核实数字仍为 7',
+      u3 && u3.children[0].textContent === '7', u3 && u3.children[0].textContent);
     check('待核实盒不含避雷粉色系类名（rose）',
       u3 && !/rose/.test(u3.className), u3 && u3.className);
     check('待核实盒仍绑定筛选（data-sxg-stat=u）',
