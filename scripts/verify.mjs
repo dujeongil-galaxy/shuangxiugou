@@ -3495,6 +3495,39 @@ if (exists(ADC) && exists(ADJ)) {
   }
 }
 
+// ---------- 20g. 良配广告必须延迟淡入（不得加载即弹） ----------
+// 起因（用户截图 + 真机复现）：liangpei-ad.js 的 init() 在 DOMContentLoaded 后
+// 无条件 build()，旧实现用 requestAnimationFrame 立刻移除 is-hidden，导致广告在
+// 首页加载瞬间就浮层弹出，盖在品牌卡片上（用户误以为是点品牌卡触发的侵入式弹窗）。
+// 2026-10-29 改为：延迟 CONFIG.showAfter 毫秒后再移除 is-hidden（配合 CSS opacity
+// 淡入），先让用户看清首页内容。本段守住「不得加载即弹」这个回归点。
+section('20g. 良配广告延迟淡入');
+const ADJS = 'liangpei-ad.js';
+const ADCSS = 'liangpei-ad.css';
+if (exists(ADJS) && exists(ADCSS)) {
+  const adj = read(ADJS);
+  const adc = read(ADCSS);
+  // 1) reveal 必须是延迟的（setTimeout 包裹 is-hidden 移除），不允许加载即 rAF 立即移除
+  check(/setTimeout\([\s\S]*?classList\.remove\('is-hidden'\)/.test(adj),
+    '广告 reveal 由 setTimeout 延迟触发（非加载即弹）',
+    '旧实现用 requestAnimationFrame 立即移除 is-hidden，首页一打开就弹出广告');
+  check(!/requestAnimationFrame\(\s*function[\s\S]*?classList\.remove\('is-hidden'\)/.test(adj),
+    '广告 reveal 不再用 requestAnimationFrame 立即移除 is-hidden',
+    'rAF 立即移除 is-hidden = 加载即弹，正是 2026-10-29 修掉的 bug');
+  check(/showAfter\s*:/.test(adj),
+    'CONFIG 里存在 showAfter 延迟配置（可调）');
+  // 2) is-hidden 必须用 opacity/visibility 实现淡入，不能再用 display:none（否则无过渡）
+  const ihM = adc.match(/\.lp-ad\.is-hidden\s*\{([\s\S]*?)\}/);
+  check(!!ihM, 'CSS 中存在 .lp-ad.is-hidden 规则');
+  if (ihM) {
+    check(!/display\s*:\s*none/.test(ihM[1]),
+      '.lp-ad.is-hidden 不再用 display:none（改用 opacity/visibility 以淡入）',
+      'display:none 无法做淡入过渡，且会让「加载即弹」回潮');
+  }
+} else {
+  err('liangpei-ad.js / liangpei-ad.css 缺失', '广告位文件被删会导致首页推广位彻底失效');
+}
+
 // ---------- 20e. 校验脚本自检 ----------
 // 今天在同一天内两次把 check(cond, msg, detail) 写成 check(msg, cond)，
 // 症状是输出里出现「✓ true」—— 标签被当成条件打印，

@@ -34,9 +34,12 @@
   box-sizing: border-box;
 }
 
-/* 初始隐藏，JS 挂载完成后移除 is-hidden，避免样式表加载前闪现 */
+/* 初始隐藏：用 opacity + visibility 而非 display:none，便于移除 is-hidden 时淡入。
+   2026-10-29 修复：配合 JS 的延迟 reveal，广告加载后延迟淡入，不再瞬间弹出。 */
 .lp-ad.is-hidden {
-  display: none !important;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* ---------- 通用零件 ---------- */
@@ -229,7 +232,7 @@
     background: var(--lp-surface);
     box-shadow: 0 10px 30px rgba(61, 173, 138, 0.14);
     text-align: center;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.25s ease, box-shadow 0.25s ease;
   }
 
   .lp-ad:hover {
@@ -321,6 +324,7 @@
     border-top: 1px solid var(--lp-border);
     background: var(--lp-surface);
     box-shadow: 0 -6px 22px rgba(42, 38, 32, 0.1);
+    transition: opacity 0.35s ease, visibility 0.35s ease;
   }
 
   /* 2026-10-16：原先这里放 .lp-ad__badge 的 absolute 定位规则，

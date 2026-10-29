@@ -33,7 +33,10 @@
     scheme: '#小程序://良配/B1ZcfI0N4ii3skj',
     storageKey: 'lp_ad_dismissed_at',
     // 关闭后多久再展示（毫秒），7 天
-    reappearAfter: 7 * 24 * 60 * 60 * 1000
+    reappearAfter: 7 * 24 * 60 * 60 * 1000,
+    // 2026-10-29 修复：广告不再在页面加载瞬间弹出（用户误以为是点品牌卡触发的
+    // 侵入式弹窗）。改为加载后延迟 showAfter 毫秒再淡入，先让用户看清首页内容。
+    showAfter: 6000
   };
 
   var LOGO_TEXT = '良配';
@@ -230,10 +233,12 @@
       wideQuery.addListener(syncBreaks);
     }
 
-    // 先让浏览器完成一次布局，再显示，避免位置闪跳
-    requestAnimationFrame(function () {
+    // 2026-10-29 修复（非侵入式）：不在加载瞬间弹出，延迟 showAfter 毫秒后
+    // 再移除 is-hidden，配合 CSS 淡入。这样广告不会在首页一打开/一点击品牌卡时
+    // 立刻盖上来，用户先看清内容；is-hidden 用 opacity 过渡实现淡入而非 display:none。
+    setTimeout(function () {
       aside.classList.remove('is-hidden');
-    });
+    }, CONFIG.showAfter);
   }
 
   function init() {
