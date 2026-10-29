@@ -180,6 +180,14 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 > **近期改动入口**：最近一次改动 —— 提醒弹窗页脚改中立共建文案 + 汽车品牌弹窗（`.dyp`）加 8 秒关闭倒计时（2026-10-29 12:20 · 提交 `f9b3334`）—— 明细见 **[CHANGELOG.md](./CHANGELOG.md)**（按时间倒序置顶）。
 
+### 近期 bug 根因：良配广告「首页加载即弹」
+
+**现象**：首页一打开（用户误以为「点美宜佳等品牌卡时」）就自动浮出「良配」推广浮层，盖在品牌卡片上，像侵入式弹窗。
+
+**为什么会出现此 bug**：`liangpei-ad.js` 的 `init()` 在 `DOMContentLoaded` 后无条件调用 `build()`，旧实现用 `requestAnimationFrame` 立刻把 `.lp-ad` 的 `is-hidden` 去掉 → **广告在首页加载瞬间就显示，与任何点击无关**。无头 Edge 真机复现确认：加载 1.5s 时广告已可见，点击美宜佳前后可见状态不变。用户点品牌卡时正好看到它，才误判成点击触发。
+
+**修法（2026-10-29，提交 `d439ba3`）**：reveal 改为延迟 `CONFIG.showAfter`（6 秒）后再移除 `is-hidden`，CSS 的 `is-hidden` 从 `display:none` 改为 `opacity/visibility` 实现淡入；`index.html` 的 `liangpei-ad.js?v=8→?v=9`、`liangpei-ad.css?v=10→?v=11`。真机复现已确认加载 1.5s/4s 广告隐藏、点美宜佳不触发、6s 后淡入。`verify.mjs` 新增 §20g 守住「不得加载即弹」回归点。完整改动明细见 [CHANGELOG.md](./CHANGELOG.md)。
+
 ### 每次改完，按顺序做这四件事
 
 | 步骤 | 写到哪里 | 写什么 |

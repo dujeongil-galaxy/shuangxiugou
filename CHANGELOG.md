@@ -39,6 +39,21 @@
 > **商业广告位（`liangpei-ad.*`）的纯文案/版式改动不在本文件收录范围内**，
 > 那属于站点运营内容而非 fork 者需要参考的技术改动（除非附带 verify 断言等可复用的防回归机制）。
 
+### 良配广告改为延迟 6 秒淡入，不再首页加载即弹（2026-10-29 18:17 · 提交 `d439ba3`）
+
+站长反馈：点美宜佳等品牌卡时，右上角会自动浮出「良配」推广浮层，像侵入式弹窗盖在品牌卡片上。
+
+**根因**：`liangpei-ad.js` 的 `init()` 在 `DOMContentLoaded` 后无条件调用 `build()`，旧实现用 `requestAnimationFrame` 立刻把 `.lp-ad` 的 `is-hidden` 去掉 → **广告在首页加载瞬间就显示**，与任何点击无关。无头 Edge 真机复现确认：页面加载 1.5s 时广告已 `VISIBLE`，点击美宜佳前后可见状态不变。用户点品牌卡时正好看到它，误判成点击触发。
+
+**改了哪些文件**：
+- `liangpei-ad.js`（`build()` 的 reveal 由 `requestAnimationFrame` 立即移除 `is-hidden` 改为 `setTimeout(…, CONFIG.showAfter)` 延迟 6 秒移除；CONFIG 新增 `showAfter: 6000`；`index.html` 的 `liangpei-ad.js?v=8`→`?v=9`）
+- `liangpei-ad.css`（`.lp-ad.is-hidden` 由 `display:none` 改为 `opacity:0;visibility:hidden` 配合淡入；两个断点的 `.lp-ad` 补 `opacity/visibility` 过渡；`index.html` 的 `liangpei-ad.css?v=10`→`?v=11`）
+- `scripts/verify.mjs`（新增 §20g：断言 reveal 由 setTimeout 延迟触发、不再用 rAF 立即移除、CONFIG 有 `showAfter`、`.lp-ad.is-hidden` 不再用 `display:none`；已做故障注入确认能抓到回退）
+
+**怎么验证的**：`node scripts/verify.mjs` 全绿（639 项）；无头 Edge + CDP 真机复现确认——加载 1.5s/4s 广告 `HID`（opacity 0）、点击美宜佳后仍 `HID`（不触发）、6s 后淡入 `VIS`（opacity 1）；截图确认淡入后文案/LOGO/按钮完整。
+
+---
+
 ### 提醒弹窗页脚改中立共建文案 + 汽车品牌弹窗加 8 秒关闭倒计时（2026-10-29 12:20 · 提交 `f9b3334`）
 
 站长要求：① 把「提醒」悬浮按钮弹层页脚那句「双休Go（本站全新Logo）—— 用订单（消费力），反向考核企业。」改为中立共建文案（希望无论劳动者还是企业，都可以走到良性发展的道路上，让我们一起推动这件事，在此广纳贤言并期待听到你的声音；对，别回头，说的就是你！）；② 首页那个汽车品牌弹窗（`.dyp`，延迟 2.5s 自动弹出）的关闭入口下方加一个**滚动倒计时栏**，8 秒后可关闭，**未到 8 秒点击关闭按钮不生效**。
