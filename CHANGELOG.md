@@ -4,6 +4,20 @@
 
 ---
 
+### 修复 verify.mjs §20g 节号撞车（良配广告撞公告栏版本号），CI 节号唯一性判红（2026-10-30 03:05）
+
+**根因**：`d439ba3`（10-29 良配广告延迟淡入）给 verify.mjs 新增节时**复用了 10-19 就存在的 §20g（公告栏版本号）**，两节同号并存。当轮推送带 `[skip ci]` CI 没跑，本轮 CI 真正跑起来被 `test-verify-self.cjs`「节号无重复」断言抓包。**这不是本轮引入的回归，是历史遗留地雷被引爆。**
+
+**修复**：良配广告节改用空闲节号 **§20n**（20 系当时已占用到 20m）；README/CHANGELOG 里的旧引用同步修正（AGENTS.md 的「§20g」全部是公告栏版本号语境，无需改）。
+
+**改了哪些文件**：
+- `scripts/verify.mjs`：`section('20g. 良配广告延迟淡入')` → `section('20n. 良配广告延迟淡入')`
+- `README.md`、`CHANGELOG.md`：良配语境的「§20g」→「§20n」（各 1 处）
+
+**验证**：`test-verify-self.cjs` 6/6 全绿（「节号无重复」通过）；全量 `verify.mjs` 判绿（见本轮推送 CI）。
+
+---
+
 ### 修复 CI 站点一致性校验两项红：CHANGELOG 游离哈希 + 整页渲染测试时序误报（2026-10-30 02:45 · 提交 `81de1bc`）
 
 推送 7c65eb5 后远端 CI 判红两项，本地全绿——本地对象库有游离对象、CI 干净克隆里没有。两个问题：
@@ -111,7 +125,7 @@
 **改了哪些文件**：
 - `liangpei-ad.js`（`build()` 的 reveal 由 `requestAnimationFrame` 立即移除 `is-hidden` 改为 `setTimeout(…, CONFIG.showAfter)` 延迟 6 秒移除；CONFIG 新增 `showAfter: 6000`；`index.html` 的 `liangpei-ad.js?v=8`→`?v=9`）
 - `liangpei-ad.css`（`.lp-ad.is-hidden` 由 `display:none` 改为 `opacity:0;visibility:hidden` 配合淡入；两个断点的 `.lp-ad` 补 `opacity/visibility` 过渡；`index.html` 的 `liangpei-ad.css?v=10`→`?v=11`）
-- `scripts/verify.mjs`（新增 §20g：断言 reveal 由 setTimeout 延迟触发、不再用 rAF 立即移除、CONFIG 有 `showAfter`、`.lp-ad.is-hidden` 不再用 `display:none`；已做故障注入确认能抓到回退）
+- `scripts/verify.mjs`（新增 §20n（原误用 §20g 与公告栏版本号撞号，2026-10-30 修正）：断言 reveal 由 setTimeout 延迟触发、不再用 rAF 立即移除、CONFIG 有 `showAfter`、`.lp-ad.is-hidden` 不再用 `display:none`；已做故障注入确认能抓到回退）
 
 **怎么验证的**：`node scripts/verify.mjs` 全绿（639 项）；无头 Edge + CDP 真机复现确认——加载 1.5s/4s 广告 `HID`（opacity 0）、点击美宜佳后仍 `HID`（不触发）、6s 后淡入 `VIS`（opacity 1）；截图确认淡入后文案/LOGO/按钮完整。
 

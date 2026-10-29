@@ -3501,7 +3501,7 @@ if (exists(ADC) && exists(ADJ)) {
 // 首页加载瞬间就浮层弹出，盖在品牌卡片上（用户误以为是点品牌卡触发的侵入式弹窗）。
 // 2026-10-29 改为：延迟 CONFIG.showAfter 毫秒后再移除 is-hidden（配合 CSS opacity
 // 淡入），先让用户看清首页内容。本段守住「不得加载即弹」这个回归点。
-section('20g. 良配广告延迟淡入');
+section('20n. 良配广告延迟淡入');
 const ADJS = 'liangpei-ad.js';
 const ADCSS = 'liangpei-ad.css';
 if (exists(ADJS) && exists(ADCSS)) {
