@@ -4,7 +4,7 @@
 
 ---
 
-### 修复 test-ai-chat 三项过时断言：头像架构改为 6 套 SVG 文件后断言未跟进（2026-10-30 05:10 · 提交 `2e21507`）
+### 修复 test-ai-chat 三项过时断言：头像架构改为 6 套 SVG 文件后断言未跟进（2026-10-30 05:10 · 提交 `eafe776`）
 
 **现象**：`test-ai-chat.cjs` 场景⑫ 三项红：「按钮内是 img 且 src 为 SVG data URI」「面板头部有头像 img」「AVATAR 常量来自 assets/ai-avatar.svg 同源内容」。基线 `ba8c669` 上同样红（既有问题非本轮回归）。
 
