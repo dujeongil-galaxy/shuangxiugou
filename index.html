@@ -109,7 +109,7 @@
   ]
 }
     </script>
-    <script type="module" crossorigin src="./assets/index-YthXZ9eP.js?v=44"></script>
+    <script type="module" crossorigin src="./assets/index-YthXZ9eP.js?v=45"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-BgVofs0W.css">
     <!-- 良配 · 限时推广广告位（独立文件，改文案/样式不必动主页面；改完请把 ?v=N 的 N +1 防缓存） -->
     <link rel="stylesheet" href="./liangpei-ad.css?v=11">
@@ -840,29 +840,33 @@
         customCardsConfig.forEach(function(config) {
           // 找插入位置的参考卡片
           var refCard = findCardByH3(config.insertAfter);
-          // ⚠️ 2026-10-29 修复「不可逆消失」bug：
-          // 参照卡（如 中国银行）可能被搜索过滤从 DOM 移除，此时旧逻辑直接 return
-          // 放弃注入 → 自定义卡「点一次就再也不出现」。降级用稳定锚点（列表末尾
-          // 最后一张公司卡）兜底插入，保证自定义卡永不消失；参照卡恢复后由下方
-          // existing 分支在下一轮 init() 自动归位到正确位置。
+          var existing = document.getElementById(config.id);
+          if (existing) {
+            // ⚠️ 2026-10-30 修复追逐死循环：归位只允许发生在参照卡在场时。
+            // 参照卡缺席时已存在的卡必须保持原位不动——若此时仍按「列表末卡」
+            // 兜底锚点归位，多张自定义卡会互相追逐末位（A 插到 C 后、B 又追 A……），
+            // 每轮 MO 都有 DOM 变动 → init() 无限重入 → 主线程卡死。
+            if (refCard) {
+              if (existing.previousElementSibling !== refCard) {
+                refCard.parentNode.insertBefore(existing, refCard.nextSibling);
+              }
+            }
+            return;
+          }
+          // 新插入：参照卡在场则紧跟其后；缺席（被搜索过滤等）则降级插到
+          // 列表末尾，保证卡片不消失。插入只发生一次（上方 existing 分支
+          // 已保证缺席态不动），不会形成循环；参照卡恢复后由归位逻辑纠正。
           var anchorCard = refCard;
           if (!anchorCard) {
             var allCards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
             anchorCard = allCards.length ? allCards[allCards.length - 1] : null;
-            // 仍保留告警（不再让卡片消失）：说明 insertAfter 参照卡当前被过滤掉
-            diagWarn('自定义卡「' + config.name + '」的参照卡「' + config.insertAfter + '」当前不在 DOM（可能被搜索过滤），已降级插入到列表末尾，待参照卡恢复后再归位');
+            if (anchorCard) {
+              diagWarn('自定义卡「' + config.name + '」的参照卡「' + config.insertAfter + '」当前不在 DOM（可能被搜索过滤），已降级插入到列表末尾，待参照卡恢复后再归位');
+            }
           }
           // 连兜底锚点都没有（极端：列表里一张公司卡都没有）才真正放弃
           if (!anchorCard) {
             diagError('自定义卡「' + config.name + '」找不到任何可插入位置（参照卡与兜底锚点均缺失）');
-            return;
-          }
-          var existing = document.getElementById(config.id);
-          if (existing) {
-            // 卡片已存在：若位置漂移（React 重渲染可能导致），纠正到锚点卡片后面
-            if (existing.previousElementSibling !== anchorCard) {
-              anchorCard.parentNode.insertBefore(existing, anchorCard.nextSibling);
-            }
             return;
           }
           // 找对应评级的模板卡片
