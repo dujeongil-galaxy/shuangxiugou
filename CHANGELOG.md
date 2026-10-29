@@ -4,17 +4,18 @@
 
 ---
 
-### 修复 verify.mjs §20g 节号撞车（良配广告撞公告栏版本号），CI 节号唯一性判红（2026-10-30 03:05 · 提交 `f905204`）
+### 修复 test-ai-chat 三项过时断言：头像架构改为 6 套 SVG 文件后断言未跟进（2026-10-30 05:10）
 
-**根因**：`d439ba3`（10-29 良配广告延迟淡入）给 verify.mjs 新增节时**复用了 10-19 就存在的 §20g（公告栏版本号）**，两节同号并存。当轮推送带 `[skip ci]` CI 没跑，本轮 CI 真正跑起来被 `test-verify-self.cjs`「节号无重复」断言抓包。**这不是本轮引入的回归，是历史遗留地雷被引爆。**
+**现象**：`test-ai-chat.cjs` 场景⑫ 三项红：「按钮内是 img 且 src 为 SVG data URI」「面板头部有头像 img」「AVATAR 常量来自 assets/ai-avatar.svg 同源内容」。基线 `ba8c669` 上同样红（既有问题非本轮回归）。
 
-**修复**：良配广告节改用空闲节号 **§20n**（20 系当时已占用到 20m）；README/CHANGELOG 里的旧引用同步修正（AGENTS.md 的「§20g」全部是公告栏版本号语境，无需改）。
+**根因**：2026-10-27 两轮改动未同步测试——① 站长指令「浮动按钮改纯文字『AI』去掉卡通形象」后 fab 按钮内**不再有 img**；② 头像重构为 6 套 SVG 文件（`assets/ai-avatars/A-F.svg` + `avatarSrc()` 文件引用 + cookie 记忆），**不再内联 base64 data URI**。断言还停在旧架构上，必然判红。当轮推送未跑 CI，红项掩盖至今。
+
+**修复**：断言对齐多头像架构——fab 断言改「纯文字『AI』且无 img」；面板头部断言改「img src 匹配 `ai-avatars/[A-F].svg`」；源码断言改「`AVATARS` 六套数组 + `avatarSrc()` 文件引用 + A/F 两套文件存在」。
+
+**验证**：`test-ai-chat.cjs` 35/35 全绿；全量 `verify.mjs` 640 项通过。
 
 **改了哪些文件**：
-- `scripts/verify.mjs`：`section('20g. 良配广告延迟淡入')` → `section('20n. 良配广告延迟淡入')`
-- `README.md`、`CHANGELOG.md`：良配语境的「§20g」→「§20n」（各 1 处）
-
-**验证**：`test-verify-self.cjs` 6/6 全绿（「节号无重复」通过）；全量 `verify.mjs` 判绿（见本轮推送 CI）。
+- `scripts/test-ai-chat.cjs`：场景⑫ 三项断言重写对齐多头像架构
 
 ---
 
@@ -34,6 +35,20 @@
 
 **改了哪些文件**：
 - `scripts/test-stat-filter.cjs`：口径 62→63 系 + 恢复逻辑去双卡
+
+---
+
+### 修复 verify.mjs §20g 节号撞车（良配广告撞公告栏版本号），CI 节号唯一性判红（2026-10-30 03:05 · 提交 `f905204`）
+
+**根因**：`d439ba3`（10-29 良配广告延迟淡入）给 verify.mjs 新增节时**复用了 10-19 就存在的 §20g（公告栏版本号）**，两节同号并存。当轮推送带 `[skip ci]` CI 没跑，本轮 CI 真正跑起来被 `test-verify-self.cjs`「节号无重复」断言抓包。**这不是本轮引入的回归，是历史遗留地雷被引爆。**
+
+**修复**：良配广告节改用空闲节号 **§20n**（20 系当时已占用到 20m）；README/CHANGELOG 里的旧引用同步修正（AGENTS.md 的「§20g」全部是公告栏版本号语境，无需改）。
+
+**改了哪些文件**：
+- `scripts/verify.mjs`：`section('20g. 良配广告延迟淡入')` → `section('20n. 良配广告延迟淡入')`
+- `README.md`、`CHANGELOG.md`：良配语境的「§20g」→「§20n」（各 1 处）
+
+**验证**：`test-verify-self.cjs` 6/6 全绿（「节号无重复」通过）；全量 `verify.mjs` 判绿（见本轮推送 CI）。
 
 ---
 

@@ -173,22 +173,26 @@ async function main() {
     check('原样配置 → 零 fetch', fetched === false);
   }
 
-  console.log('== ⑫ 卡通形象（SVG data URI，非 emoji）==');
+  console.log('== ⑫ 卡通形象（多头像架构：6 套 SVG 文件 + cookie 记忆）==');
   {
     const dom = makeDom('window.SXG_AI_CONFIG={endpoint:"https://ai.example.workers.dev"}');
     const doc = dom.window.document;
     await new Promise(r => setTimeout(r, 30));
     const fab = doc.getElementById('sxg-ai-fab');
-    check('按钮内是 img 且 src 为 SVG data URI', !!fab && fab.querySelector('img') !== null
-      && /^data:image\/svg\+xml;base64,/.test(fab.querySelector('img').src));
+    // 2026-10-27 站长指令：浮动按钮改纯文字「AI」，去掉卡通形象
+    check('按钮是纯文字「AI」（无卡通 img，站长 2026-10-27 指令）',
+      !!fab && fab.textContent.trim() === 'AI' && fab.querySelector('img') === null);
     fab.dispatchEvent(new dom.window.Event('click', { bubbles: true }));
     const head = doc.querySelector('.sxg-ai-head');
-    check('面板头部有头像 img', !!head && head.querySelector('img') !== null
-      && /^data:image\/svg\+xml;base64,/.test(head.querySelector('img').src));
+    check('面板头部有头像 img（assets/ai-avatars/ 架构）', !!head && head.querySelector('img') !== null
+      && /ai-avatars\/[A-F]\.svg/.test(head.querySelector('img').src || ''));
     check('按钮不再是 emoji 文本', !fab.textContent.includes('🤖'));
-    const cfg = fs.readFileSync(path.join(ROOT, 'ai-config.js'), 'utf8');
-    check('AVATAR 常量来自 assets/ai-avatar.svg 同源内容', /var AVATAR = 'data:image\/svg\+xml;base64,/.test(fs.readFileSync(path.join(ROOT, 'ai-chat.js'), 'utf8'))
-      && fs.existsSync(path.join(ROOT, 'assets/ai-avatar.svg')));
+    const chatSrc = fs.readFileSync(path.join(ROOT, 'ai-chat.js'), 'utf8');
+    check('多头像架构：AVATARS 六套 + avatarSrc 文件引用（2026-10-27 重构后，不再内联 base64）',
+      /var AVATARS = \[/.test(chatSrc)
+        && /function avatarSrc\(id\)\s*\{\s*return AVATAR_BASE \+ id \+ '\.svg/.test(chatSrc)
+        && fs.existsSync(path.join(ROOT, 'assets/ai-avatars', 'A.svg'))
+        && fs.existsSync(path.join(ROOT, 'assets/ai-avatars', 'F.svg')));
   }
 
   console.log('\n========== 结果：' + passed + ' 项通过，' + failed + ' 项失败 ==========');
