@@ -140,7 +140,10 @@ def parse_custom_configs(html):
             'category': category, 'tier': tier, 'kw': merged, 'products': [],
             # 2026-10-22：自定义卡重新进入联想，但候选点击走「定位」而非
             # 「回填搜索词」—— 详见 pinyin-search.js 的 locateCard。
+            # 2026-10-30：定位链路改为「回填品牌词再滚动」（不再清空搜索），
+            # fill_kw = keywords[0]（核心品牌名，必命中自身 keywords）。
             'custom': True,
+            'fill_kw': kw_items[0] if kw_items else '',
         })
     return out
 
@@ -229,6 +232,9 @@ def build_index(brands):
             'cat': b['category'], 'tier': b['tier'], 'terms': terms,
             # 自定义卡标记：pinyin-search.js 据此把候选点击切成「定位」语义
             'custom': bool(b.get('custom')),
+            # 定位链路的回填词（仅自定义卡有）：keywords[0]，核心品牌名，
+            # 必命中该卡 keywords → filterCustomCards 保持卡片显示
+            'fill_kw': b.get('fill_kw') or '',
         })
     return index
 
@@ -297,6 +303,7 @@ HEADER = """// ============================================================
 // 生成：scripts/gen-pinyin-index.py（依赖 pypinyin）
 // 字段 t = [原文, 全拼, 首字母, 重要度]
 // 重要度：0 主名 / 1 英文名 / 2 公司全称 / 3 关键词 / 4 产品名
+// 字段 kw：自定义卡的定位回填词（keywords[0]），内置卡为空串
 //
 // ⚠️ 本文件只做「输入联想」，不改 React 原生搜索逻辑。
 //    改动后必须重跑 scripts/gen-pinyin-index.py。
@@ -351,9 +358,12 @@ if __name__ == '__main__':
     #    空态的根因不是「自定义卡不该被搜到」，而是「回填链路用错了」：
     #    自定义卡不在 bundle 的 brands 数组里，回填中文名给 React 必然 0 结果，
     #    而 React 的 0 结果会把整片内容替换成空态、把注入的卡片一起销毁。
-    #    正确解法是换链路：自定义卡候选点击后走「定位」—— 清空搜索让
-    #    React 恢复全量列表，等 insertAllCustomCards 把卡片插回来，
-    #    再滚动过去并高亮（见 pinyin-search.js 的 locateCard）。
+    #    正确解法是换链路：自定义卡候选点击后走「定位」——（2026-10-30 起）
+    #    把 keywords[0] 品牌词填进搜索框（页面进入与手动输入该词相同的
+    #    稳定态：卡片显示、空态块隐藏），再滚动过去并高亮（见
+    #    pinyin-search.js 的 locateCard）。旧版「清空搜索恢复全量再定位」
+    #    会把用户眼前的搜索态打回 65 张全量——站长实测「点击美宜佳后
+    #    自动回退」——已废弃。
     #    因此自定义卡**不经过**下面的 native_keys 回查过滤（那个过滤是
     #    为「回填链路」设计的），直接并入索引并打 custom 标记。
     index_custom = build_index(customs)
@@ -362,6 +372,7 @@ if __name__ == '__main__':
     slim = [{
         'id': e['id'], 'name': e['name'], 'cn': e['cn'],
         'custom': 1 if e['custom'] else 0,
+        'kw': e['fill_kw'] if e['custom'] else '',
         't': [[x['t'], x['f'], x['i'], x['w']] for x in e['terms']],
     } for e in index_all]
 

@@ -16,17 +16,21 @@
 // 回填中文名，之后的过滤完全交给 React 原生搜索。
 // 渲染路径没变，零风险；回填的词保证是 bundle 能原生命中的名字。
 //
-// 两条链路（2026-10-22 起，自定义卡重新入联想）
+// 两条链路（2026-10-22 起，自定义卡重新入联想；2026-10-30 改定位语义）
 // ------------------------------------------
 // ① 回填（内置卡）：applyFill —— 把主名填进搜索框，交给 React 过滤。
-// ② 定位（自定义卡）：locateCard —— 清空搜索让 React 恢复全量列表，
-//    滚动到目标卡并高亮。**不能**走回填：自定义卡不在 bundle 的
-//    brands 数组里，回填后 React 必然 0 结果，而 0 结果会把整片内容
-//    替换成「未找到匹配的品牌信息」，注入的卡片随父节点一起销毁
+// ② 定位（自定义卡）：locateCard —— 把「必命中自定义卡 keywords 的品牌词」
+//    填进搜索框（entry.kw，由 gen-pinyin-index.py 从 customCardsConfig 的
+//    keywords[0] 生成），让页面进入与手动输入该词完全相同的稳定态
+//    （自定义卡显示、空态块由 index.html 注入层隐藏），再滚动到目标卡
+//    并高亮。**不能**直接回填主名 cn：自定义卡不在 bundle 的 brands
+//    数组里，且复合名（如「赵一鸣/零食很忙」）的 cn「赵一鸣零食很忙」
+//    不是任何 keyword 的子串，filterCustomCards 会把卡隐藏。
 //    （2026-10-19 的错误解法是把自定义卡全部踢出联想，导致输「ls」
-//    永远搜不出零食品牌 —— 站长：「关于零食这个分类，修复过无数次」）。
-//    点候选的意图是「我要看这家」，不是「我要用这个词搜索」，
-//    所以定位才是对的语义。
+//    永远搜不出零食品牌 —— 站长：「关于零食这个分类，修复过无数次」。
+//    2026-10-22~29 的过渡方案是「清空搜索让 React 恢复全量再定位」，
+//    但清空会把用户眼前的搜索态打回 65 张全量 —— 站长实测「点击美宜佳
+//    后自动回退」—— 所幸改为回填品牌词，搜索态保持不变。）
 //
 // 排序规则
 // --------
@@ -157,7 +161,13 @@
   //    正确做法：一律回填 entry.cn（主名里的中文字），它必然命中 name。
   //    这条规则由 gen-pinyin-index.py 保证：生成时回查 bundle，
   //    主名不是原生可搜字面串的品牌直接不入索引（2026-10-19 修复）。
+  //
+  //    自定义卡（2026-10-30）：不回填主名 cn（理由见文件头），而回填
+  //    entry.kw —— 生成器从 customCardsConfig 的 keywords[0] 原样带出
+  //    （核心品牌名），它必然是自身 keywords 的子串，filterCustomCards
+  //    的 k.includes(keyword) 必命中，卡片保持显示。
   function fillTerm(entry) {
+    if (entry.custom) return entry.kw || entry.cn || entry.name || '';
     return entry.cn || entry.name || '';
   }
 
@@ -250,7 +260,8 @@
         row.addEventListener('mousedown', function (ev) {
           ev.preventDefault();
           if (row.getAttribute('data-custom') === '1') {
-            locateCard(input, box, row.getAttribute('data-entry-id'));
+            locateCard(input, box, row.getAttribute('data-entry-id'),
+                       row.getAttribute('data-fill'));
           } else {
             applyFill(input, box, row.getAttribute('data-fill'));
           }
@@ -275,22 +286,31 @@
     input.focus();
   }
 
-  // ---------- 定位（自定义卡专用，2026-10-22）----------
-  // 见文件头「两条链路」：自定义卡不能走 applyFill 回填 ——
-  // 它们不在 bundle 的 brands 数组里，回填后 React 0 结果，
-  // 而 React 的 0 结果会把整片内容替换成空态、把注入的卡片一起销毁
-  // （2026-10-19 站长截图 bug；当时的错误解法是把自定义卡踢出联想）。
+  // ---------- 定位（自定义卡专用，2026-10-22；2026-10-30 改为回填定位）----------
+  // 见文件头「两条链路」。2026-10-22~29 的旧实现是「清空搜索让 React
+  // 恢复全量列表再滚动」——但清空把用户眼前的搜索态打回 65 张全量，
+  // 站长实测「点击美宜佳后自动回退」，观感是 bug。
   //
-  // 定位语义：清空搜索 → React 恢复全量列表 → 注入层把卡片插回来
-  // → 滚动到该卡并高亮一闪。轮询等待卡片出现（React 重渲染与
-  // insertAllCustomCards 都是异步的，不可能同步拿到）。
-  function locateCard(input, box, entryId) {
+  // 现在的定位语义：把 entry.kw（必命中该卡 keywords 的品牌词）填进
+  // 搜索框，页面进入与「手动输入该词」完全相同的稳定态（自定义卡
+  // 显示、空态块由注入层隐藏——见 index.html filterCustomCards 的
+  // 空态同步段），然后滚动到该卡并高亮一闪。
+  //
+  // fillText 缺失（索引未带 kw 的极端场景）时不动输入框、只滚动，
+  // 绝不退回「清空」——清空本身就是那个 bug。
+  function locateCard(input, box, entryId, fillText) {
     hide(box);
-    var setter = Object.getOwnPropertyDescriptor(
-      window.HTMLInputElement.prototype, 'value');
-    if (setter && setter.set) setter.set.call(input, '');
-    else input.value = '';
-    input.dispatchEvent(new Event('input', { bubbles: true }));
+    if (fillText) {
+      var setter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype, 'value');
+      if (setter && setter.set) setter.set.call(input, fillText);
+      else input.value = fillText;
+      // React 受控输入：原生 setter + input 事件，过滤才会真正生效
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      // dispatch 会触发本脚本自己的 input 监听、把联想框重新弹出来，
+      // 必须在 dispatch 之后再收一次（与 applyFill 同序）
+      hide(box);
+    }
     input.focus();
 
     function scrollTo(card) {
@@ -308,8 +328,8 @@
     }
     (function poll() {
       var card = entryId ? document.getElementById(entryId) : null;
-      // 卡片必须在「当前可见列表」里：filterCustomCards 可能还处于
-      // 上一轮搜索的过滤态，此时滚动到一个隐藏的卡是白滚
+      // 卡片必须在「当前可见列表」里：搜索词回填后 filterCustomCards
+      // 需要一轮 input 事件才把卡片显示出来，React 重渲染也是异步的
       var visible = !!card && !subtreeHidden(card);
       if (visible) {
         scrollTo(card);
@@ -317,11 +337,11 @@
         card.style.transition = 'box-shadow .3s';
         card.style.boxShadow = '0 0 0 3px #fbbf24';
         setTimeout(function () { card.style.boxShadow = oldShadow; }, 1200);
-        // ⚠️ 只滚一次不够（2026-10-22 实测）：点击候选时页面往往还停在
-        // 「上一轮搜索的过滤态」，清空搜索后 React 会把被过滤掉的内置卡
-        // 逐个插回列表，目标卡被挤到下方几千像素 —— 我们滚到的位置
-        // 立刻就失效。所以滚动后再盯一小段窗口：目标跑出视口就再滚，
-        // 最多补 5 次。这不是防御性编程，是页面真实时序。
+        // ⚠️ 只滚一次不够（2026-10-22 实测）：定位时页面可能仍在
+        // 上一轮过滤态，React 会把被过滤掉的内置卡逐个插回列表，
+        // 目标卡被挤到下方几千像素 —— 我们滚到的位置立刻失效。
+        // 所以滚动后再盯一小段窗口：目标跑出视口就再滚，最多补 5 次。
+        // 这不是防御性编程，是页面真实时序。
         var guard = 0;
         (function watch() {
           if (guard++ >= 5) return;
@@ -375,7 +395,8 @@
       ev.preventDefault();
       // 第一条是自定义卡 → 走定位链路（Enter 与点击必须同语义）
       if (first.getAttribute('data-custom') === '1') {
-        locateCard(input, box, first.getAttribute('data-entry-id'));
+        locateCard(input, box, first.getAttribute('data-entry-id'),
+                   first.getAttribute('data-fill'));
         return;
       }
       applyFill(input, box, first.getAttribute('data-fill'));

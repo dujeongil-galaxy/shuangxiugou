@@ -1,17 +1,19 @@
-// 茉莉奶白 U 级卡 + 提醒按钮《双休购》文案 回归测试（2026-10-30）
+// 茉莉奶白 C 级卡 + 提醒按钮《双休购》文案 回归测试（2026-10-30）
 //
-// 任务一：新增「茉莉奶白」第 12 张自定义卡（U 级·待核实不评级）。
-//   站长口径：线下核实到「月休 4 天」但仅一家门店样本，不能视为证据，
-//   卡片备注必须写明「仅一家门店」；联名水杯易爆裂新闻必须带可查证链接。
+// 任务一：「茉莉奶白」第 12 张自定义卡（2026-10-30 下午 U→C 升级）。
+//   站长提出复核后定级：线下核实「月休 4 天」（单休形态），
+//   按站内口径「单休归为 C 级」定 C 级（此前 U 级「单店样本不足」
+//   与茶百道/兵立王匿名反馈即定 C 的标准不一致，属漏判）。
+//   联名水杯易爆裂新闻必须带可查证链接。
 //   断言：
-//     1. customCardsConfig 含 molina-card 配置（grade U级 / doubleRestRate null / insertAfter 美宜佳）
-//     2. desc 与 recommendText 写明「仅此一家门店样本」（站长口径红线）
+//     1. customCardsConfig 含 molina-card 配置（grade C级 / doubleRestRate null / insertAfter 美宜佳）
+//     2. desc 与 recommendText 写明 C 级口径与定级依据
 //     3. insertMolinaNote 存在且挂在 init/input/click 三个触发点（漏挂 = 静默失效）
 //     4. 说明框 HTML 含新闻链接（南方+ / 腾讯新闻，target=_blank）
 //     5. noscript 两处清单 + sitemap + projects.html 均含 molina（爬虫可见）
 //     6. bundle 统计常数 64 + tab 角标 64（改回 63 = 判红）
 //     7. pinyin-index 含 molina-card 条目（拼音搜索可达）
-//     8. brand/molina.html 存在、canonical 正确、含新闻链接与「仅一家门店」口径
+//     8. brand/molina.html 存在、canonical 正确、含新闻链接与 C 级评级口径
 //
 // 任务二：提醒按钮模态文案替换为站长亲笔《双休购》长文。
 //   断言：
@@ -21,7 +23,7 @@
 //    12. index.html 引用 ?v=3（缓存刷新）
 //
 // 故障注入红线（独立验证过）：删 insertMolinaNote 函数体 / 删说明框链接 /
-// 把「仅此一家门店」改成「多家门店」→ 对应断言必须判红。
+// 把 grade 改回 U级 → 对应断言必须判红。
 const fs = require('fs');
 const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
@@ -40,25 +42,24 @@ const html = read('index.html');
 const remindSrc = read('remind-button.js');
 
 (async () => {
-  console.log('=== 茉莉奶白 U 级卡 + 提醒按钮《双休购》文案 ===\n');
+  console.log('=== 茉莉奶白 C 级卡 + 提醒按钮《双休购》文案 ===\n');
 
   // ── 任务一：卡片配置 ──
   const cfgStart = html.indexOf("id: 'molina-card'");
   check('customCardsConfig 含 molina-card 配置', cfgStart !== -1);
   const cfgChunk = html.slice(cfgStart, cfgStart + 1600);
-  check('茉莉奶白卡为 U 级（不评级）', /grade:\s*'U级'/.test(cfgChunk));
-  check('茉莉奶白卡双休率 null（U 级不是逃逸档位）', /doubleRestRate:\s*null/.test(cfgChunk));
+  check('★ 茉莉奶白卡为 C 级（2026-10-30 U→C 升级）', /grade:\s*'C级'/.test(cfgChunk));
+  check('茉莉奶白卡双休率 null（C 级不留数值）', /doubleRestRate:\s*null/.test(cfgChunk));
   check('茉莉奶白卡下班时间 null', /offWorkTime:\s*null/.test(cfgChunk));
   check('insertAfter 美宜佳（紧跟其后）', /insertAfter:\s*'美宜佳'/.test(cfgChunk));
   check('logo 路径有效（assets/molina.svg 存在）',
     /logo:\s*'\.\/assets\/molina\.svg'/.test(cfgChunk) && fs.existsSync(path.join(ROOT, 'assets/molina.svg')));
 
-  // 站长口径红线：仅一家门店样本，不能视为证据
-  check('★ desc 写明「仅此一家门店样本」（站长口径红线）',
-    /仅此一家门店样本/.test(cfgChunk));
-  check('★ desc 写明「不能视为品牌整体用工制度的证据」', /不能视为品牌整体用工制度的证据/.test(cfgChunk));
-  check('desc 含线下核实「月休 4 天」事实', /月休 4 天/.test(cfgChunk));
-  check('recommendText 写明「仅一家门店线下核实」', /仅一家门店线下核实/.test(cfgChunk));
+  // 定级依据：站长线下核实「月休 4 天」（单休形态）
+  check('★ desc 写明线下核实「月休 4 天」（单休形态）', /月休 4 天/.test(cfgChunk) && /单休形态/.test(cfgChunk));
+  check('★ desc 写明「单休归为 C 级」定级口径', /单休归为 C 级/.test(cfgChunk));
+  check('recommendText 写明 C 级警示（红框）', /C 级 · 线下核实月休 4 天/.test(cfgChunk));
+  check('recommendColor 为 red（升 C 后警示色）', /recommendColor:\s*'red'/.test(cfgChunk));
 
   // ── 说明框 ──
   const fnStart = html.indexOf('function insertMolinaNote()');
@@ -69,8 +70,8 @@ const remindSrc = read('remind-button.js');
   check('★ 说明框含腾讯新闻链接', /https:\/\/news\.qq\.com\/rain\/a\/20261030A05B0C00/.test(fnBody));
   check('新闻链接均新窗口打开（target=_blank）',
     (fnBody.match(/target="_blank"/g) || []).length >= 2);
-  check('说明框含「仅此一家门店样本，不视为品牌整体证据」口径',
-    /仅此一家门店样本，不视为品牌整体证据/.test(fnBody));
+  check('说明框含「单休归为 C 级」定级口径',
+    /单休归为 C 级/.test(fnBody));
   check('说明框 id 为 molina-note', /note\.id = 'molina-note'/.test(fnBody));
 
   // 三个触发点全挂（漏挂 = 静默失效，PITFALLS 教训）
@@ -93,7 +94,7 @@ const remindSrc = read('remind-button.js');
   const bundle = read('assets/index-YthXZ9eP.js');
   check('★ bundle「收录品牌」常数 = 64', /text-base`,children:64\}/.test(bundle));
   check('★ bundle tab 角标常数 = 64', /rounded-full`,children:64\}/.test(bundle));
-  check('bundle 引用已 bump（?v=46）', /index-YthXZ9eP\.js\?v=46/.test(html));
+  check('bundle 引用已 bump（?v=47，2026-10-30 避雷常数 23→25）', /index-YthXZ9eP\.js\?v=47/.test(html));
 
   // ── 拼音索引 ──
   const pi = read('pinyin-index.js');
@@ -104,10 +105,11 @@ const remindSrc = read('remind-button.js');
   // ── 详情页 ──
   const detail = read('brand/molina.html');
   check('详情页存在且 canonical 指向自身', /rel="canonical" href="[^"]*\/brand\/molina\.html"/.test(detail));
-  check('★ 详情页含「仅核实了这一家门店」口径', /仅核实了这一家门店/.test(detail));
+  check('★ 详情页为 C 级评级（徽章红底）', /badge" style="background:#DC2626">C 级评级/.test(detail));
+  check('详情页含定级口径「单休归为 C 级」', /单休归为 C 级/.test(detail));
   check('详情页含新闻链接（南方+ / 腾讯）',
     /nfnews\.com\/content\/5yppgW0nyp\.html/.test(detail) && /news\.qq\.com\/rain\/a\/20261030A05B0C00/.test(detail));
-  check('详情页链向其他品牌页（非孤儿页）', /href="\.\/(icbc|meiyijia)\.html"/.test(detail));
+  check('详情页链向其他品牌页（非孤儿页）', /href="\.\/(chabaidao|meiyijia)\.html"/.test(detail));
 
   // ── 任务二：提醒按钮《双休购》文案 ──
   check('模态标题为「双休购」', /sxg-rm-title">双休购</.test(remindSrc));
@@ -173,7 +175,8 @@ const remindSrc = read('remind-button.js');
   if (mlCard) {
     const title = (mlCard.querySelector('h2') || mlCard.querySelector('h3') || {}).textContent || '';
     check('卡标题为「茉莉奶白」', title.trim() === '茉莉奶白', title);
-    check('卡徽章为待核实（U 级）', /待核实/.test(mlCard.textContent));
+    check('卡徽章为 C 级（避雷预警红徽章）', /C级 · 避雷预警|C 级/.test(mlCard.textContent));
+    check('★ 卡内不再有待核实徽章文案（升 C 后）', !/待核实 · 无证据不作评级/.test(mlCard.textContent));
     check('★ 卡内说明框已注入（molina-note）', !!doc.getElementById('molina-note'));
     const note = doc.getElementById('molina-note');
     if (note) {

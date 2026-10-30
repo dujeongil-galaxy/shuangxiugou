@@ -3106,8 +3106,11 @@ if (!exists(PINYIN_IDX)) {
   //   10-22 站长截图：踢出后输 ls 还是搜不出零食品牌
   //                  「关于零食这个分类，修复过无数次」。本次正解：
   //      自定义卡入联想 + 打 custom 标记 + 候选点击走「定位」而非「回填」
-  //      （pinyin-search.js 的 locateCard：清空搜索 → React 恢复全量 →
-  //      滚动到目标卡并高亮）。**空态的根因是链路用错，不是「不该被搜到」。**
+  //      （pinyin-search.js 的 locateCard：2026-10-30 起回填品牌词 keywords[0]
+  //      → 页面进入与手动输入相同的稳定态 → 滚动到目标卡并高亮。
+  //      旧版「清空搜索恢复全量再定位」会把搜索态打回 65 张全量——
+  //      站长实测「点击美宜佳后自动回退」——已废弃）。
+  //      **空态的根因是链路用错，不是「不该被搜到」。**
   //
   // 于是约束拆成两条，各自只管各自的链路：
   //   ① custom=1：主名不要求可回填（不走回填链路），但 id 必须真实在
@@ -3168,8 +3171,33 @@ if (!exists(PINYIN_IDX)) {
     '缺定位链路 → 自定义卡候选点击后会变「未找到匹配」空态');
   check(/!entry\.custom && !fillTerm\(entry\)/.test(libSrc),
     '自定义卡条目不被「无可回填主名」规则过滤（否则又搜不出零食品牌）');
-  check(/locateCard\(input, box, first\.getAttribute\('data-entry-id'\)\)/.test(libSrc),
-    'Enter 键对自定义卡候选同样走定位链路（与点击同语义）');
+  check(/locateCard\(input, box, first\.getAttribute\('data-entry-id'\),\s*\n?\s*first\.getAttribute\('data-fill'\)\)/.test(libSrc),
+    'Enter 键对自定义卡候选同样走定位链路（与点击同语义，且传回填词）');
+
+  // 2026-10-30 防回退红线：定位链路必须回填品牌词、绝不清空搜索框。
+  // 「清空」正是站长实测「点击美宜佳后自动回退」的根因。
+  check(!/set\.call\(input, ''\)/.test(libSrc) && !/input\.value = ''/.test(libSrc),
+    'pinyin-search.js 不再清空搜索框（清空 = 列表回退 bug）',
+    '定位链路改为回填 entry.kw（keywords[0]），见 locateCard');
+  // 自定义卡索引条目必须带 kw（回填词），且必命中该卡 keywords
+  // （否则回填后 filterCustomCards 把卡隐藏，点击候选=卡片消失）
+  const idxCustomKw = [...idxSrc.matchAll(/"id":"([a-z0-9-]+)","name":"[^"]*","cn":"[^"]*","custom":1,"kw":"([^"]*)"/g)]
+    .map((m) => ({ id: m[1], kw: m[2] }));
+  check(idxCustomKw.length === customIds.size,
+    `拼音索引 ${customIds.size} 张自定义卡全部带 kw 回填词（定位链路依赖）`,
+    `缺失：${[...customIds].filter((i) => !idxCustomKw.some((e) => e.id === i)).join(', ') || '无'}。
+     修复：python scripts/gen-pinyin-index.py`);
+  // kw 必须是 customCardsConfig 里对应卡 keywords 的子串（必命中过滤）
+  const kwMismatch = idxCustomKw.filter((e) => {
+    const cfgStart = read(INDEX_HTML).indexOf("id: '" + e.id + "'");
+    const chunk = read(INDEX_HTML).slice(cfgStart, cfgStart + 1600);
+    const kwArr = /keywords:\s*\[([^\]]*)\]/.exec(chunk);
+    if (!kwArr) return true;
+    return !kwArr[1].includes("'" + e.kw + "'");
+  });
+  check(kwMismatch.length === 0,
+    '自定义卡 kw 回填词必命中自身 keywords（否则点击候选卡片消失）',
+    kwMismatch.map((e) => e.id + '(' + e.kw + ')').join(', '));
 
   // 索引里的 id 必须真实存在于 bundle 或 customCardsConfig，否则是陈旧残留
   const ghosts = [...idxIds].filter(
@@ -4364,12 +4392,25 @@ section('21c. 首页滑到底部按钮');
       'CI 里已接入空态块同步测试');
   }
 
-  // ---- 茉莉奶白 U 级卡 + 提醒按钮《双休购》文案（2026-10-30）----
-  // 站长口径红线：仅一家门店样本不视为证据；联名水杯新闻必须带链接。
+  // ---- 茉莉奶白 C 级卡 + 提醒按钮《双休购》文案（2026-10-30 下午 U→C）----
+  // 站长提出复核后定级：线下核实「月休 4 天」（单休形态），
+  // 按站内口径「单休归为 C 级」；联名水杯新闻必须带链接。
   check(exists('scripts/test-molina-card.cjs'),
     '存在茉莉奶白卡+提醒文案回归测试');
-  check(/仅此一家门店样本/.test(html),
-    '茉莉奶白 desc 写明「仅此一家门店样本」（站长口径红线）');
+  {
+    const cfgStart2 = html.indexOf("id: 'molina-card'");
+    const molinaChunk = html.slice(cfgStart2, cfgStart2 + 1600);
+    check(/grade:\s*'C级'/.test(molinaChunk),
+      '茉莉奶白卡为 C 级（2026-10-30 U→C 升级）');
+    check(/单休归为 C 级/.test(molinaChunk),
+      '茉莉奶白 desc 写明定级口径「单休归为 C 级」');
+    const mjStart = html.indexOf("id: 'meiyijia-card'");
+    const mjChunk = html.slice(mjStart, mjStart + 1600);
+    check(/grade:\s*'C级'/.test(mjChunk),
+      '美宜佳卡为 C 级（2026-10-30 U→C 升级）');
+    check(/单休归为 C 级/.test(mjChunk),
+      '美宜佳 desc 写明定级口径「单休归为 C 级」');
+  }
   check(/nfnews\.com\/content\/5yppgW0nyp\.html/.test(html) && /news\.qq\.com\/rain\/a\/20261030A05B0C00/.test(html),
     '茉莉奶白说明框含两条新闻链接（南方+ / 腾讯新闻）');
   check(/sxg-rm-title">双休购</.test(read('remind-button.js')) && !/消费也是投票/.test(read('remind-button.js')),

@@ -240,25 +240,30 @@ setTimeout(async () => {
             .every(r => nativeSearch(r.getAttribute('data-fill') || '').length > 0),
           rows().map(r => [r.textContent.trim().slice(0, 20), r.getAttribute('data-fill')]));
   }
-  // 定位链路行为：点自定义卡候选 → 搜索框清空（React 恢复全量）、联想框隐藏
+  // 定位链路行为（2026-10-30 改语义）：点自定义卡候选 → 搜索框回填该卡的
+  // 品牌词（data-fill = keywords[0]，必命中 filterCustomCards）、联想框隐藏。
+  // 旧语义「清空搜索」是站长实测的「点击美宜佳后自动回退」bug 根因。
   {
     fire('Ls');
     const customRow = rows().find(r => r.getAttribute('data-custom') === '1');
     check('Ls 候选里存在自定义卡行（供定位链路测试）', !!customRow);
     if (customRow) {
+      const fillBefore = customRow.getAttribute('data-fill') || '';
+      check('自定义卡候选的 data-fill 是品牌词（回填定位用）',
+            fillBefore.length > 0, fillBefore);
       customRow.dispatchEvent(new window.MouseEvent('mousedown',
         { bubbles: true, cancelable: true }));
       const inp = window.document.getElementById('site-search-input');
-      check('点击自定义卡候选后搜索框被清空（让 React 恢复全量列表）',
-            inp.value === '', inp.value);
+      check('★ 点击自定义卡候选后搜索框回填品牌词（不再清空=不再回退）',
+            inp.value === fillBefore && fillBefore !== '', inp.value);
       check('点击后联想框隐藏',
             window.document.getElementById('pinyin-suggest').style.display === 'none');
     }
   }
   // 定位链路「最终真的滚到卡」：2026-10-22 实测 bug —— 只滚一次不够。
-  // 点击候选时页面常停在上一轮搜索的过滤态，清空搜索后 React 把被过滤
-  // 掉的内置卡逐个插回列表，目标卡被挤到下方几千像素，之前滚到的位置
-  // 立刻失效（无头 Edge 实测：scrollIntoView 后 top=-22，200ms 后 top=3765）。
+  // 定位时页面可能仍在上一轮过滤态，React 把被过滤掉的内置卡逐个插回
+  // 列表，目标卡被挤到下方几千像素，之前滚到的位置立刻失效
+  // （无头 Edge 实测：scrollIntoView 后 top=-22，200ms 后 top=3765）。
   // 所以 locateCard 必须在滚动后盯一小段窗口，目标跑出视口就补滚。
   {
     // ⚠️ 先耗尽上一个块遗留的 locateCard poll：它找不到卡会每 100ms
