@@ -4422,6 +4422,46 @@ section('21c. 首页滑到底部按钮');
   }
 }
 
+// ---------- 美团骑手休息口径说明框（2026-10-30 站长亲历） ----------
+// 站长曾任美团骑手：实际月休 4 天（周休一天），与网传「月休 2 天算好的」
+// 严重不符；休满 4 天被组长嘲讽「公务员」——月休 4 天在骑手里是异类。
+// 美团是 bundle 内置卡（评论区 cm-mt-1 不可改），DOM 补丁注入层实现。
+{
+  section('美团骑手休息口径说明框');
+  check(exists('scripts/test-meituan-note.cjs'),
+    '存在美团骑手口径回归测试');
+  check(/function insertMeituanNote\(\)/.test(html),
+    'insertMeituanNote 函数已定义');
+  check(/getElementById\('meituan-note'\)/.test(html),
+    '说明框 id 为 meituan-note');
+  check(/title\.indexOf\('Meituan'\) === 0/.test(html),
+    '标题匹配用 Meituan 前缀（不误伤他卡）');
+  check(/实际月休 4 天/.test(html) && /你真是公务员/.test(html),
+    '文案含站长亲历口径（月休 4 天 + 公务员嘲讽原话）');
+  check(/严重不符/.test(html) && /异类/.test(html) && /并非行业常态/.test(html),
+    '文案写明与网传不符、月休 4 天是异类非常态');
+  // 三触发点：init 同步 + input/click 异步（三个位置都不得缺）
+  const mtInitCount = (html.match(/insertMeituanNote\(\);/g) || []).length;
+  check(mtInitCount >= 3,
+    'insertMeituanNote 挂载三触发点（init/input/click）', { mtInitCount });
+  const mtTryCount = (html.match(/try \{ insertMeituanNote\(\); \}/g) || []).length;
+  check(mtTryCount === 2,
+    'input 与 click 异步触发点均带异常捕获（共 2 处）', { mtTryCount });
+  // 详情页三处：休息制度 kv + 工时情况段 + 评级理由
+  if (exists('brand/meituan.html')) {
+    const mt = read('brand/meituan.html');
+    check(/骑手月休 4 天·周休一天/.test(mt) && /站长亲历补记/.test(mt) && /你真是公务员/.test(mt),
+      '美团详情页含站长亲历口径（kv/工时段/嘲讽原话）');
+    check(/站长亲历（2026-10-30 补记）/.test(mt),
+      '美团详情页评级理由新增亲历条目');
+  }
+  if (exists('.github/workflows/verify.yml')) {
+    const ci = read('.github/workflows/verify.yml');
+    check(ci.includes('test-meituan-note.cjs'),
+      'CI 里已接入美团骑手口径测试');
+  }
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {

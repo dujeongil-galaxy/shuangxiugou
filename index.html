@@ -1475,6 +1475,89 @@
         tagsRow.parentNode.insertBefore(note, tagsRow.nextSibling);
       }
 
+      // 美团「骑手休息口径」说明框（2026-10-30 站长要求）：
+      // 站长曾任美团骑手，亲历口径为月休 4 天（周休一天），与网传
+      // 「月休 2 天算好的」严重不符；且休满 4 天会被组长嘲讽「公务员」
+      // ——说明月休 4 天在骑手里是异类，不是常态。站长一手亲历强于
+      // 卡片评论区 cm-mt-1 的网传口径（bundle 按铁律不可改，DOM 层补丁）。
+      // 与 insertMolinaNote **平行实现**：标题匹配（Meituan 前缀）→ 无卡摘除 →
+      // 子树隐藏摘除 → 已在正确位置什么都不做（幂等）→ 位置不对先摘后插。
+      function insertMeituanNote() {
+        var note = document.getElementById('meituan-note');
+
+        var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
+        var mtCard = null;
+        for (var i = 0; i < cards.length; i++) {
+          var titleEl = cards[i].querySelector('h2,h3');
+          var title = titleEl ? titleEl.textContent.trim() : '';
+          if (title.indexOf('Meituan') === 0) {
+            mtCard = cards[i];
+          }
+        }
+
+        function sxgHiddenSubtree5(el) {
+          var n = el;
+          while (n && n !== document.body) {
+            if (n.style && n.style.display === 'none') return true;
+            n = n.parentNode;
+          }
+          return false;
+        }
+        var mtHidden = mtCard && sxgHiddenSubtree5(mtCard);
+
+        if (!mtCard) {
+          if (note && note.parentNode) note.parentNode.removeChild(note);
+          return;
+        }
+        if (mtHidden) {
+          if (note && note.parentNode) note.parentNode.removeChild(note);
+          return;
+        }
+
+        var tagsRow = mtCard.querySelector('.flex-wrap');
+        if (!tagsRow) {
+          diagWarn('insertMeituanNote 找不到美团卡的产品标签行（.flex-wrap），未插入说明框');
+          return;
+        }
+
+        // 已在正确位置 → 什么都不做（保持幂等，避免 MutationObserver 自激循环）
+        var noteInsideMt = false;
+        if (note) {
+          if (mtCard.contains && mtCard.contains(note)) {
+            noteInsideMt = true;
+          } else {
+            var anc = note.parentNode;
+            while (anc) {
+              if (anc === mtCard) { noteInsideMt = true; break; }
+              anc = anc.parentNode;
+            }
+          }
+        }
+        if (note && noteInsideMt
+                 && note.parentNode === tagsRow.parentNode
+                 && note.previousSibling === tagsRow) {
+          return;
+        }
+
+        // 位置不对才纠正：先摘掉可能挂在别的卡上的旧节点
+        if (note && note.parentNode) note.parentNode.removeChild(note);
+        if (!note) {
+          note = document.createElement('div');
+          note.id = 'meituan-note';
+          note.style.cssText = 'margin-top:12px;padding:10px 14px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;color:#475569;font-size:13px;line-height:1.7;';
+          note.innerHTML = '<strong>骑手休息口径（站长亲历）：</strong>站长（双休Go）曾任美团骑手，实际月休 4 天（每周固定休一天），与网传「月休 2 天算好的」严重不符；'
+            + '但组长多次嘲讽「你真是公务员，每周一定要固定休息一天」——月休 4 天在骑手群体里是被当作异类看待的，并非行业常态。'
+            + '<details style="margin-top:6px">'
+            + '<summary style="cursor:pointer;color:#0F766E;font-weight:700">点击查看口径说明 ▾</summary>'
+            + '<div style="margin-top:8px">'
+            + '站长亲历口径（2026-10-30 补记）：实际月休 4 天 = 每周休一天（单休形态），优于网传的「月休 2 天」，但仍属单休，不构成双休达标。'
+            + '「公务员」嘲讽反映的是骑手群体的休息生态：能固定周休一天已属少数，多数骑手月休不足 4 天。'
+            + '本卡评论区「一个月休两天算好的」为网传口径，与本站站长亲历不符，仅供参考。'
+            + '</div></details>';
+        }
+        tagsRow.parentNode.insertBefore(note, tagsRow.nextSibling);
+      }
+
       // 星巴克「真实双休率」显示覆盖（2026-10-22 站长指示：显示为 98%，A 级评级不变）。
       // 该值源自冻结 bundle 的 realDoubleWeekendRate:85，bundle 按铁律不可改，
       // 故在 DOM 层覆盖显示值。与 insertStarbucksNote **平行实现**：找标题以 Starbucks
@@ -1632,6 +1715,7 @@
         insertStarbucksNote();
         insertMeiyijiaNote();
         insertMolinaNote();
+        insertMeituanNote();
         patchStarbucksRate();
         filterCustomCards();
         scheduleHeadingFix();
@@ -1702,6 +1786,7 @@
             try { insertStarbucksNote(); } catch (err) { diagError('insertStarbucksNote 抛异常', err); }
             try { insertMeiyijiaNote(); } catch (err) { diagError('insertMeiyijiaNote 抛异常', err); }
             try { insertMolinaNote(); } catch (err) { diagError('insertMolinaNote 抛异常', err); }
+            try { insertMeituanNote(); } catch (err) { diagError('insertMeituanNote 抛异常', err); }
             try { patchStarbucksRate(); } catch (err) { diagError('patchStarbucksRate 抛异常', err); }
           });
         }
@@ -1716,6 +1801,7 @@
             try { insertStarbucksNote(); } catch (err) { diagError('insertStarbucksNote 抛异常', err); }
             try { insertMeiyijiaNote(); } catch (err) { diagError('insertMeiyijiaNote 抛异常', err); }
             try { insertMolinaNote(); } catch (err) { diagError('insertMolinaNote 抛异常', err); }
+            try { insertMeituanNote(); } catch (err) { diagError('insertMeituanNote 抛异常', err); }
             try { patchStarbucksRate(); } catch (err) { diagError('patchStarbucksRate 抛异常', err); }
           }, 100);
         }
