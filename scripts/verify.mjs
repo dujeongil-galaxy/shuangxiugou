@@ -4353,6 +4353,16 @@ section('21c. 首页滑到底部按钮');
     'Worker 有部署指南（站长两分钟可部署）');
   check(exists('ai-worker/DEPLOY-教程.md') && /dash\.cloudflare\.com\/sign-up/.test(read('ai-worker/DEPLOY-教程.md')),
     '存在零基础部署教程（注册→部署五步，2026-10-26 站长要教程）');
+
+  // ---- 空态块同步（2026-10-30 修复「搜美宜佳出现不相关内容」）----
+  // 测试文件必须存在且挂进 CI，否则删了同步逻辑没人发现。
+  check(exists('scripts/test-empty-state-sync.cjs'),
+    '存在空态块同步回归测试');
+  if (exists('.github/workflows/verify.yml')) {
+    const ci = read('.github/workflows/verify.yml');
+    check(ci.includes('test-empty-state-sync.cjs'),
+      'CI 里已接入空态块同步测试');
+  }
 }
 
 // ---------- 汇总 ----------

@@ -123,6 +123,13 @@ jobs:
       - name: 四格筛选测试
         run: node scripts/test-stat-filter.cjs
 
+      # 空态块同步（2026-10-30 修复）：搜自定义卡（美宜佳等不在 bundle brands
+      # 数组）时 React 渲染「未找到匹配」空态块与注入卡同屏——观感是「搜索
+      # 出不相关内容」。断言同步逻辑在 filterCustomCards 体内、搜美宜佳空态
+      # 隐藏、搜乱码恢复、清空不误显。
+      - name: 空态块同步测试
+        run: node scripts/test-empty-state-sync.cjs
+
       # 「富士康补充说明」注入位置（PITFALLS 1.10 的bug ①③④）：
       # 搜中苹果卡要保留、苹果卡被过滤/隐藏要摘除、不得泄漏进华为卡。
       # bug ④ 是「修 bug ③ 时加了道过防御的闸，把说明框当成只属浏览态」。

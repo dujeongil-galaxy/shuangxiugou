@@ -1467,6 +1467,32 @@
           // 显示或隐藏
           card.style.display = shouldShow ? '' : 'none';
         });
+
+        // ---- 空态块同步（2026-10-30 修复「搜美宜佳出现不相关内容」）----
+        // 根因：美宜佳是注入层自定义卡，bundle 原生搜索 0 命中 → React 渲染
+        // 「未找到匹配的品牌信息」空态块；而 5cd6fa4 修复又把自定义卡降级插回
+        // 列表 → 卡片与空态块同时可见，观感是「搜出了不相关的东西」。
+        // 修法：有自定义卡在当前过滤态下命中显示时，隐藏空态块；一张都不
+        // 命中（或未在搜索态）时恢复。与自定义卡同款 style.display 方式，
+        // 幂等可逆；跟 filterCustomCards 同一层触发（input/click/MO），时机一致。
+        var anyCustomVisible = false;
+        Object.keys(customCardsMeta).forEach(function(cardId) {
+          var c = document.getElementById(cardId);
+          if (!c) return;
+          if (c.style.display !== 'none') anyCustomVisible = true;
+        });
+        var empties = document.querySelectorAll('div.border-dashed');
+        for (var ei = 0; ei < empties.length; ei++) {
+          var empty = empties[ei];
+          // 只处理「未找到匹配」空态块：border-dashed 还可能出现在别的装饰上，
+          // 必须校验文本，避免误伤
+          if ((empty.textContent || '').indexOf('未找到匹配') === -1) continue;
+          if (anyCustomVisible) {
+            empty.style.display = 'none';
+          } else if (empty.style.display === 'none') {
+            empty.style.display = '';
+          }
+        }
       }
       
       // 立刻试一次，不行就监听页面变化
