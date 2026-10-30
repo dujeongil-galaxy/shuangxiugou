@@ -6,6 +6,28 @@
 
 ---
 
+---
+
+### 双任务：新增茉莉奶白 U 级卡 + 提醒按钮《双休购》长文（2026-10-30 13:30 · 提交 `43bd7f3`）
+
+**任务一**：新增第 12 张自定义卡「茉莉奶白」（U 级·待核实不评级）。站长线下核实「月休 4 天」但仅一家门店样本，不视为评级证据（卡片备注/详情页/说明框三处写明）；联名水杯易爆裂新闻带两条链接（南方+ / 腾讯新闻）。全链路：卡片配置 + insertMolinaNote 说明框（三触发点）+ noscript 两处 + sitemap + projects + pinyin-index + molina.svg + brand/molina.html + bundle 统计常数 63→64（?v=45→46）+ 六份文档口径（53+12=65、共 64 家）。
+
+**任务二**：提醒按钮模态文案整体替换为站长亲笔《双休购》八段长文（逐字保留），标题改「双休购」，正文区 max-height 滚动，?v=2→3。
+
+**验证**：真机无头 Edge 21/21；新测试 test-molina-card.cjs 59 项；四种故障注入全部判红（删链接/改口径/删末段/常数回滚）；verify.mjs 新增 6 条断言（含 CI 接线，注入验证过）；全量 verify 652 项 + 19 组测试全绿。
+
+**改了哪些文件**：
+- `index.html`：卡片配置 + insertMolinaNote + 三触发点挂载 + noscript 两处 + 页脚口径 + bundle 引用 ?v=46 + remind 注释
+- `remind-button.js`：《双休购》八段长文 + max-height 滚动 + aria 标签
+- `assets/index-YthXZ9eP.js`：两处统计字面量 63→64
+- `assets/molina.svg` / `brand/molina.html`（新建）：logo 与详情页
+- `pinyin-index.js`：molina-card 条目（mlnb/mlb 缩写）
+- `scripts/test-molina-card.cjs`（新建）：59 项回归测试
+- `scripts/verify.mjs`：12 张口径 + 6 条新断言
+- `scripts/test-stat-filter.cjs`：64 家 / U 8 张口径（14 处）
+- `.github/workflows/verify.yml`：新测试挂进 CI
+- `sitemap.xml` / `projects.html` / `README.md` / `FORK_GUIDE.md` / `MAINTAINING.md` / `PITFALLS.md` / `员工实测数据核实修改清单.md` / `brand/meiyijia.html`：口径同步
+
 ### 修复搜索「美宜佳」出现不相关内容：空态块与自定义卡同屏矛盾（2026-10-30 11:30 · 提交 `e578a06`）
 
 **现象**：站长报障——美宜佳修复上线后，搜「美宜佳」仍出现不相关内容。
