@@ -3,7 +3,9 @@
    --------------------------------------------------------------------------
    需求（2026-10-28 站长）：首页右侧新增一个按钮，logo 用纯文字「提醒」，
         其余悬浮按钮（TOP / 滑到底部 / AI 对话）行为不变，该弹出还是弹出。
-        本按钮点击后弹出一个「劳工友好提醒」模态层（中性、不站立场）。
+   2026-10-30 站长指令：模态层原「劳工友好提醒」三条内容整体删除，
+        替换为站长亲笔长文《双休购》（八段，逐字保留，含引号风格）；
+        正文区加 max-height 滚动（长文不撑爆小屏）。
 
    实现约束（照抄 top-button.js / bottom-button.js 的既有纪律，见 AGENTS.md / PITFALLS.md）：
    - 不用 Tailwind 类，样式自带 <style>，选择器用 sxg- 前缀避免冲突；
@@ -25,16 +27,17 @@
   var REMIND_HTML =
     '<div class="sxg-rm-card">' +
       '<button type="button" class="sxg-rm-close" aria-label="关闭提醒">×</button>' +
-      '<h3 class="sxg-rm-title">劳工友好提醒</h3>' +
-      '<ul class="sxg-rm-list">' +
-        '<li>消费也是投票：你花的每一笔钱，都在间接为这家企业的用工制度背书。' +
-          '下单前，不妨先看看它的「真实双休率」与「平均下班时间」。</li>' +
-        '<li>劳动者权益是法定底线：双休、加班费、社保受法律保护，不是企业的恩赐。' +
-          '遇到单休、大小周、无偿加班，可留存证据并向劳动监察部门投诉或申请劳动仲裁。</li>' +
-        '<li>本站数据仅供参考：用工情况随时间变化，且部分来自招聘口径与员工反馈，' +
-          '不构成对任何企业的法律定性。请以最新公开信息为准；有疑义可在 GitHub Issues 提交可查证来源。</li>' +
-      '</ul>' +
-      '<p class="sxg-rm-foot">希望无论劳动者还是企业，都可以走到良性发展的道路上，让我们一起推动这件事，在此广纳贤言并期待听到你的声音；对，别回头，说的就是你！</p>' +
+      '<h3 class="sxg-rm-title">双休购</h3>' +
+      '<div class="sxg-rm-body">' +
+        '<p>当“996”从互联网圈的调侃变成无数打工人的日常，当“自愿加班”的签字笔在深夜的办公室里划过纸面，我们似乎早已习惯了将“休息”视为一种奢侈。然而，就在这样的惯性中，一个名为“双休购”的倡议悄然出现——它不只是一次消费行为的呼吁，更是一封写给时代的公开信：让劳动者拥有完整的周末，让企业在良性轨道上奔跑，而此刻，那个被点名的人，就是你。</p>' +
+        '<p>“双休购”的核心朴素得近乎天真：在双休日消费、为双休日消费、因双休日而消费。它呼吁企业将生产节奏锚定在法定的五天工作制，呼吁劳动者在周末走出写字楼、走进商场、走进山野，用真实的休息激活真实的消费，用真实的消费反哺企业的活力。这并非一个简单的经济闭环，而是一次对“人”的重新发现。</p>' +
+        '<p>我们习惯了用“奋斗”来美化透支。凌晨一点的写字楼灯火通明，周末的会议室里咖啡杯堆叠成山，朋友圈里晒出的不是风景而是加班打卡——这些画面被包装成“敬业”，却掩盖了一个残酷的真相：当劳动者的休息权被系统性侵蚀，企业的创新力也会被系统性掏空。一个长期睡眠不足、没有时间陪伴家人、连周末都要随时响应工作消息的人，很难在周一的早晨迸发出真正的创造力。而一个依靠员工透支来维持运转的企业，其增长注定是脆弱的、不可持续的。</p>' +
+        '<p>“双休购”的深层逻辑，正在于此。它试图用市场的力量倒逼制度的回归：当消费者只在双休日集中消费，那些试图在周末也开门迎客的商家就会发现，强行延长营业时间并不划算；当劳动者的休息日真正得到保障，他们才有精力和意愿去消费、去体验、去创造——而这，恰恰是内需最本真的动力。这不是道德绑架，而是一次理性的利益重构：劳动者的休息权与企业的长远发展，从来不是零和博弈。</p>' +
+        '<p>但改变不会自动发生。它需要每一个“你”的参与。如果你是劳动者，请理直气壮地守护自己的双休日，去消费、去休息、去生活——你的每一次周末消费，都是在为“休息权”投票；如果你是企业主，请重新计算那笔账：让员工多休一天，看似少了八小时产能，却可能换来一周的高效与忠诚；如果你是政策制定者，请让法律长出牙齿，让“双休”从纸面走进现实。</p>' +
+        '<p>别回头，说的就是你。你或许觉得个体的声音微不足道，但“双休购”的本质，正是一场由无数个体发起的集体觉醒。当我们不再将“连轴转”视为荣耀，当我们在周末关掉工作群、走进一家小店、买一束花、陪孩子放一次风筝，我们就在用最柔软也最坚定的方式告诉这个世界：人，不是工具；生活，不该只有工作。</p>' +
+        '<p>这条路不会平坦。习惯了透支的体系不会轻易转向，习惯了加班的惯性不会瞬间消失。但正如那句被反复引用的话：“不要问篝火该不该燃烧，先问寒冷是否存在；不要问子弹该不该上膛，先问压迫是否存在。”双休购不是一颗子弹，而是一粒火种——它点燃的，是对另一种可能的想象：一个劳动者有尊严、企业有活力、社会有温度的未来。</p>' +
+        '<p>此刻，你手握这粒火种。别回头，向前走，去消费，去休息，去生活。因为推动这件事的人，正是你。</p>' +
+      '</div>' +
       '<button type="button" class="sxg-rm-ok">我知道了</button>' +
     '</div>';
 
@@ -94,14 +97,12 @@
       '.sxg-rm-title{' +
         'margin:0 0 12px;font-size:18px;font-weight:800;color:#0F766E;' +
       '}' +
-      '.sxg-rm-list{margin:0 0 14px;padding-left:20px;font-size:14px;color:#374151;' +
-        'display:flex;flex-direction:column;gap:10px;' +
+      '.sxg-rm-body{' +
+        'max-height:52vh;overflow-y:auto;margin:0 0 16px;padding-right:6px;' +
+        'font-size:14px;color:#374151;-webkit-overflow-scrolling:touch;' +
       '}' +
-      '.sxg-rm-list li{margin:0}' +
-      '.sxg-rm-foot{' +
-        'margin:0 0 16px;font-size:12.5px;color:#64748b;' +
-        'border-left:3px solid #0F766E;padding-left:10px;' +
-      '}' +
+      '.sxg-rm-body p{margin:0 0 12px;text-indent:2em}' +
+      '.sxg-rm-body p:last-child{margin-bottom:0}' +
       '.sxg-rm-ok{' +
         'display:block;width:100%;padding:11px 0;border:none;border-radius:10px;' +
         'background:linear-gradient(135deg,#0F766E,#0d9488);color:#fff;' +
@@ -111,7 +112,7 @@
       '.sxg-rm-ok:hover{filter:brightness(1.05)}' +
       '@media (prefers-color-scheme:dark){' +
         '.sxg-rm-card{background:#1e2429;color:#e2e8f0}' +
-        '.sxg-rm-list{color:#cbd5e1}.sxg-rm-foot{color:#94a3b8}' +
+        '.sxg-rm-body{color:#cbd5e1}' +
       '}';
     document.head.appendChild(s);
   }
@@ -139,8 +140,8 @@
       var btn = document.createElement('button');
       btn.id = BTN_ID;
       btn.type = 'button';
-      btn.setAttribute('aria-label', '劳工友好提醒');
-      btn.title = '劳工友好提醒';
+      btn.setAttribute('aria-label', '双休购');
+      btn.title = '双休购·倡议';
       btn.textContent = '提醒';
       btn.addEventListener('click', openModal);
       document.body.appendChild(btn);
@@ -152,7 +153,7 @@
       modal.hidden = true;
       modal.setAttribute('role', 'dialog');
       modal.setAttribute('aria-modal', 'true');
-      modal.setAttribute('aria-label', '劳工友好提醒');
+      modal.setAttribute('aria-label', '双休购');
       modal.innerHTML = REMIND_HTML;
       // 点遮罩关闭（点卡片内部不关闭）
       modal.addEventListener('click', function (e) {

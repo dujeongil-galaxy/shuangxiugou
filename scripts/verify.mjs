@@ -464,7 +464,7 @@ const headerStat = (label, cls) => {
   return m ? Number(m[1]) : null;
 };
 check(virtual2e === 1, '虚拟对比卡恰 1 张（口径排除依据，id 变更需同步本节）', '实际 ' + virtual2e);
-check(customPairs2e.length === 11, '能解析全部自定义卡（11 张）', '实际 ' + customPairs2e.length);
+check(customPairs2e.length === 12, '能解析全部自定义卡（12 张）', '实际 ' + customPairs2e.length);
 check(headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') === statTotal,
   '顶部「收录品牌」= 实名企业卡总数', '页面 ' + headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') + ' / 计算 ' + statTotal + '（改 bundle 顶部统计常数）');
 check(headerStat('双休红榜', 'text-emerald-700/70 text-\\[11px\\]') === statHong,
@@ -520,7 +520,7 @@ if (cfgBlock) {
   }
 }
 const CUSTOM_COUNT = customCards.length;
-check(CUSTOM_COUNT === 11, `自定义卡 ${CUSTOM_COUNT} 张（期望 11）`);
+check(CUSTOM_COUNT === 12, `自定义卡 ${CUSTOM_COUNT} 张（期望 12）`);
 
 // null 规则：双休率 / 下班时间不得为占位 0，也不得是字符串 '未知'
 customCards.forEach((c) => {
@@ -4362,6 +4362,22 @@ section('21c. 首页滑到底部按钮');
     const ci = read('.github/workflows/verify.yml');
     check(ci.includes('test-empty-state-sync.cjs'),
       'CI 里已接入空态块同步测试');
+  }
+
+  // ---- 茉莉奶白 U 级卡 + 提醒按钮《双休购》文案（2026-10-30）----
+  // 站长口径红线：仅一家门店样本不视为证据；联名水杯新闻必须带链接。
+  check(exists('scripts/test-molina-card.cjs'),
+    '存在茉莉奶白卡+提醒文案回归测试');
+  check(/仅此一家门店样本/.test(html),
+    '茉莉奶白 desc 写明「仅此一家门店样本」（站长口径红线）');
+  check(/nfnews\.com\/content\/5yppgW0nyp\.html/.test(html) && /news\.qq\.com\/rain\/a\/20261030A05B0C00/.test(html),
+    '茉莉奶白说明框含两条新闻链接（南方+ / 腾讯新闻）');
+  check(/sxg-rm-title">双休购</.test(read('remind-button.js')) && !/消费也是投票/.test(read('remind-button.js')),
+    '提醒按钮模态已换成《双休购》长文（旧三条文案删除）');
+  if (exists('.github/workflows/verify.yml')) {
+    const ci = read('.github/workflows/verify.yml');
+    check(ci.includes('test-molina-card.cjs'),
+      'CI 里已接入茉莉奶白卡与提醒文案测试');
   }
 }
 
