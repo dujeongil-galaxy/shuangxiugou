@@ -8,6 +8,27 @@
 
 ---
 
+### 三合一：拼音候选点击回退修复 + 美宜佳/茉莉奶白评级 U级→C级 + 茉莉奶白备注合并（2026-10-30 19:30 · 提交 `d393f6c`）
+
+**任务一·点击候选回退修复**（站长报障续）：拼音联想框里点击/回车选中美宜佳后，搜索框被清空、列表回退到全量 65 张。根因：`locateCard` 点击候选后清空搜索框 → React input 事件触发全量列表恢复。修复：候选点击/回车改**回填品牌词**（`entry.kw` = keywords[0]，必命中 `filterCustomCards` 子串匹配），进入与手动输入同词完全相同的稳定态再滚动定位高亮；`hide(box)` 在 dispatch 后再收一次。`gen-pinyin-index.py` 为自定义卡条目新增 `kw` 字段并透传，`pinyin-index.js` 重新生成。**不能回填主名 cn**：「赵一鸣零食很忙」不是任何 keyword 的子串，回填后卡会被过滤隐藏。
+
+**任务二·评级漏判修正**（站长复核指令「新增卡一律 U 级是漏判」）：美宜佳、茉莉奶白从「U级·待核实」升为「C级·避雷预警」。依据：站内明文口径「单休归为 C 级」；美宜佳招聘口径月休 2-4 天 + 站长两地线下核实；茉莉奶白站长线下核实月休 4 天（单休形态），证据形态均强于茶百道/兵立王的匿名反馈 C 级卡。全链路同步：卡片配置/列表行/noscript/说明框/两品牌详情页（meta×6 + JSON-LD + 徽章 + 评级理由 + 同级清单互链）/茶百道与兵立王同级清单补入/bundle 统计常数避雷 23→25、待核实 8→6。
+
+**任务三·茉莉奶白备注合并**（站长指令「不要写 2 条备注」）：desc 末尾水杯句与卡片下方说明框内容重复，desc 删水杯句（对齐美宜佳 desc 只写定级口径的写法），说明框保留为唯一一条备注（带两条新闻链接）。
+
+**验证**：全量 verify 675 项 + 23 组 CI 测试全绿；三轮故障注入（回填改回清空→verify 判红 / molina 卡名改错→test-molina 判红 / kw 改不命中词→verify 判红）全部判红；无头 Edge + CDP 三场景实测（输入「美宜佳」回车后搜索框保持、可见 2 张、卡片高亮滚入视口；输 myj 点候选回填「美宜佳」+ 定位；C 级徽章 DOM 实测「C级 · 避雷预警」+ border-rose-500）；备注合并 DOM 断言（desc 重复句已删 -1、说明框唯一 1 个）。版本号：bundle `?v=46→47`、pinyin-index `?v=6→7`、pinyin-search `?v=3→4`。
+
+**改了哪些文件**：
+- `pinyin-search.js`：fillTerm 优先 entry.kw + locateCard 第四参数回填 + hide 时序 + 头注释（?v=3→4）
+- `scripts/gen-pinyin-index.py`：自定义卡 kw 字段生成与透传
+- `pinyin-index.js`：重新生成（自定义卡条目含 kw）（?v=6→7）
+- `index.html`：两卡 grade/recommendText/recommendColor/desc、列表行×2、noscript×2、说明框口径、版本号 bump
+- `brand/meiyijia.html` / `brand/molina.html`：meta×6 + JSON-LD + 徽章 + 评级理由 + 同级清单
+- `brand/chabaidao.html` / `brand/bingliw.html`：同为 C 级清单补入两链接
+- `assets/index-YthXZ9eP.js`：统计常数等长替换（?v=46→47）
+- `scripts/verify.mjs`：断言同步 + 三道新防线（不再清空搜索框/custom 卡必带 kw/kw 必命中 keywords）
+- `scripts/test-molina-card.cjs` / `test-stat-filter.cjs` / `test-pinyin-e2e.cjs`：断言口径同步
+
 ### 双任务：新增茉莉奶白 U 级卡 + 提醒按钮《双休购》长文（2026-10-30 13:30 · 提交 `43bd7f3`）
 
 **任务一**：新增第 12 张自定义卡「茉莉奶白」（U 级·待核实不评级）。站长线下核实「月休 4 天」但仅一家门店样本，不视为评级证据（卡片备注/详情页/说明框三处写明）；联名水杯易爆裂新闻带两条链接（南方+ / 腾讯新闻）。全链路：卡片配置 + insertMolinaNote 说明框（三触发点）+ noscript 两处 + sitemap + projects + pinyin-index + molina.svg + brand/molina.html + bundle 统计常数 63→64（?v=45→46）+ 六份文档口径（53+12=65、共 64 家）。
