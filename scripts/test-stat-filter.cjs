@@ -1,11 +1,12 @@
 // stat-filter 端到端 DOM 测试：真渲染整页 → 真点四格 → 断言筛选结果
 // 跑法：node scripts/test-stat-filter.cjs（需 jsdom，同 CI 其他测试）
 //
-// 预期数字（2026-10-30 更新）：虚拟对比黑榜卡已 DOM 层下线
-// （virtual-card-remove.js，站长指令「删了，不再保留」），
-// badge 卡共 64 张（54 内置 - 1 虚拟 + 11 自定义，2026-10-30 茉莉奶白 U 级卡上线后口径）。
-// 2026-10-30 下午：美宜佳/茉莉奶白 U→C（站内口径「单休归为 C 级」），
-// 避雷(C) 23→25、待核实(U) 8→6；19+14+25+6 = 64 = 收录总数；「全部」=64（虚拟卡不再存在）。
+// 预期数字（2026-10-31 U 级废除后口径）：
+//   U 级（待核实·不评级）已废除：原 3 家内置 U（宏碁/三星/霸王茶姬）+ 5 张银行
+//   自定义卡全部改判 C 级；新增淘宝闪购 C 级卡。badge 卡共 68 张
+//   （54 内置 - 1 虚拟 + 15 自定义），可见 67 张（虚拟卡 class 隐藏）。
+//   红榜(S/A) 19 + 大小周(B) 14 + 避雷(C) 34 = 67；四格无第五格「待核实」；
+//   评级行无「待核实」按钮。
 // 末尾另有苹果「富士康补充说明」框回归（PITFALLS 1.10 第二变体）：
 // 搜索「啊」→ 摘除；清空 → 插回；节点被复用为华为卡 → 不残留；隐藏子树 → 摘除。
 const fs = require('fs');
@@ -44,15 +45,12 @@ function tierOf(card) {
     const s = (n.textContent || '').trim();
     const m = /^(S|A|B|C)\s*级/.exec(s);
     if (m) return m[1];
-    if (s.indexOf('待核实') === 0) return 'U';
   }
   return null;
 }
 function isHidden(card) {
   // 可见性两层：内联 display（stat-filter 的隐藏方式）
   // + sxg-vcard-gone class（virtual-card-remove 的隐藏方式）。
-  // 2026-10-26 起虚拟卡不再 removeChild（React 协调会崩），
-  // 改 class 隐藏——snapshot 必须把 class 隐藏也算进去。
   return card.style.display === 'none' || card.classList.contains('sxg-vcard-gone');
 }
 function snapshot() {
@@ -75,26 +73,33 @@ function click(box) {
 }
 
 setTimeout(() => {
-  console.log('=== stat-filter：四格点击筛选 ===\n');
+  console.log('=== stat-filter：四格点击筛选（U 级废除后口径）===\n');
 
   const red = boxOf('双休红榜');
   const zhou = boxOf('大小周观察');
   const lei = boxOf('避雷预警');
   const all = boxOf('收录品牌');
-  const u = boxOf('待核实');
-  check('五个统计盒都已绑定筛选（data-sxg-stat，含新增「待核实」）',
-    !!red && !!zhou && !!lei && !!all && !!u
+  check('四个统计盒都已绑定筛选（data-sxg-stat）',
+    !!red && !!zhou && !!lei && !!all
     && red.getAttribute('data-sxg-stat') === 'red'
     && zhou.getAttribute('data-sxg-stat') === 'zhou'
     && lei.getAttribute('data-sxg-stat') === 'lei'
-    && all.getAttribute('data-sxg-stat') === 'all'
-    && u.getAttribute('data-sxg-stat') === 'u');
-  check('第五格「待核实」数字 = 6（与 U 级卡数一致；美宜佳/茉莉奶白 2026-10-30 升 C 后）',
-    u.children[0].textContent === '6', u.children[0].textContent);
+    && all.getAttribute('data-sxg-stat') === 'all');
+  // ── U 级废除断言：第五格与 U 按钮必须不复存在 ──
+  check('★ U 级废除：无第五格「待核实」统计盒',
+    boxOf('待核实') === null,
+    boxOf('待核实') ? '仍然存在，stat-filter 未清理干净' : '已移除');
+  check('★ U 级废除：评级行无「待核实」按钮',
+    [...window.document.querySelectorAll('button')]
+      .every((b) => (b.textContent || '').trim() !== '待核实'),
+    '仍存在 data-sxg-row-u 按钮或残留按钮文本');
+  check('★ U 级废除：卡内无「待核实」徽章（tierOf 不再返回 U）',
+    [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
+      .every((c) => (c.textContent || '').indexOf('待核实 · 无证据不作评级') === -1));
 
   const base = snapshot();
-  check('初始可见 64 张（badge 卡 65 张，虚拟卡被 class 隐藏）',
-    base.visible.length === 64 && base.total === 65,
+  check('初始可见 67 张（badge 卡 68 张，虚拟卡被 class 隐藏）',
+    base.visible.length === 67 && base.total === 68,
     { total: base.total, visible: base.visible.length });
 
   // —— 双休红榜：只显示 S/A ——
@@ -124,24 +129,24 @@ setTimeout(() => {
   // —— 避雷预警：只显示 C（虚拟卡除外）——
   click(lei);
   s = snapshot();
-  check('点「避雷预警」→ 仅 C 级可见（25 张，与四格「避雷预警 25」一致，虚拟卡除外）',
-    s.visible.length === 25 && s.visible.every((c) => tierOf(c) === 'C'),
+  check('点「避雷预警」→ 仅 C 级可见（34 张，含改判的银行/宏碁/三星/霸王茶姬/淘宝闪购；19+14+34=67 对账）',
+    s.visible.length === 34 && s.visible.every((c) => tierOf(c) === 'C'),
     { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
-
-  // —— 待核实：只显示 U ——
-  click(u);
-  s = snapshot();
-  check('点「待核实」→ 仅 U 级可见（6 张；19+14+25+6=64 对账）',
-    s.visible.length === 6 && s.visible.every((c) => tierOf(c) === 'U'),
-    { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
-  check('待核实激活态写上 data-sxg-active', u.getAttribute('data-sxg-active') === '1');
+  const bankInLei = s.visible.filter((c) =>
+    ['工商银行', '建设银行', '中国银行', '农业银行', '成都银行', '淘宝闪购'].some((k) => (c.textContent || '').includes(k)));
+  check('★ 改判卡在避雷档可见（5 银行 + 淘宝闪购 = 6 张）', bankInLei.length === 6,
+    { found: bankInLei.length });
+  const builtinInLei = s.visible.filter((c) =>
+    ['宏碁', '三星', '霸王茶姬'].some((k) => (c.textContent || '').includes(k)));
+  check('★ 改判内置卡在避雷档可见（宏碁/三星/霸王茶姬 = 3 张）', builtinInLei.length === 3,
+    { found: builtinInLei.length });
 
   // —— 收录品牌：清除筛选 ——
   click(all);
   s = snapshot();
-  check('点「收录品牌」→ 清除筛选恢复可见 64 张（虚拟卡仍隐藏）', s.visible.length === 64,
+  check('点「收录品牌」→ 清除筛选恢复可见 67 张（虚拟卡仍隐藏）', s.visible.length === 67,
     { visible: s.visible.length, total: s.total });
-  check('清除后无激活态', ['双休红榜', '大小周观察', '避雷预警', '待核实'].every((lbl) => {
+  check('清除后无激活态', ['双休红榜', '大小周观察', '避雷预警'].every((lbl) => {
     const b = boxOf(lbl);
     return b && !b.hasAttribute('data-sxg-active');
   }));
@@ -150,58 +155,41 @@ setTimeout(() => {
   click(red);
   click(red);
   s = snapshot();
-  check('再点一次「双休红榜」= 取消筛选（可见 64 张）', s.visible.length === 64,
+  check('再点一次「双休红榜」= 取消筛选（可见 67 张）', s.visible.length === 67,
     { visible: s.visible.length, total: s.total });
 
-  // —— 评级过滤行补「待核实」入口（2026-10-18 站长：上面有待核实，下面到 C 级就没了）——
+  // —— 评级过滤行（U 级废除后不再注入按钮）——
   const rowBtn = (txt) => [...window.document.querySelectorAll('button')]
     .find((b) => (b.textContent || '').trim() === txt);
-  const rowU = rowBtn('待核实');
-  check('评级过滤行末尾注入了「待核实」按钮（data-sxg-row-u）',
-    !!rowU && rowU.getAttribute('data-sxg-row-u') === '1',
-    !!rowU ? rowU.outerHTML.slice(0, 120) : '未找到按钮');
-  if (rowU) {
-    click(rowU);
-    s = snapshot();
-    check('点评级行「待核实」→ 仅 6 张 U 级卡可见',
-      s.visible.length === 6 && s.visible.every((c) => tierOf(c) === 'U'),
-      { visible: s.visible.length });
-    check('行内「待核实」按钮激活态（bg-slate-900）',
-      rowU.className.includes('bg-slate-900'), rowU.className);
-    click(rowU);
-    s = snapshot();
-    check('再点行内「待核实」→ 恢复可见 64 张', s.visible.length === 64,
-      { visible: s.visible.length, total: s.total });
-    // 互斥：点 React 评级按钮应清掉五格筛选（否则 observer 把旧 display 套回去出空面板）
-    click(red);
-    s = snapshot();
-    check('互斥前置：点红榜后隐藏 ' + (s.total - s.visible.length) + ' 张（含 class 隐藏的虚拟卡）', s.hidden === 46, s.hidden);
-    const allBtn = rowBtn('全部评级');
-    if (allBtn) click(allBtn);
-    s = snapshot();
-    check('再点 React「全部评级」→ 五格筛选被清空（仅剩虚拟卡的 class 隐藏）',
-      s.hidden === 1, s.hidden);
-  }
+  check('评级过滤行原生按钮在（全部评级/S/A/B/C 五个）',
+    ['全部评级', 'S 级', 'A 级', 'B 级', 'C 级'].every((t) => !!rowBtn(t)));
+  // 互斥：点 React 评级按钮应清掉四格筛选（否则 observer 把旧 display 套回去出空面板）
+  click(red);
+  s = snapshot();
+  check('互斥前置：点红榜后隐藏 ' + (s.total - s.visible.length) + ' 张（含 class 隐藏的虚拟卡）', s.hidden === 48, s.hidden);
+  const allBtn = rowBtn('全部评级');
+  if (allBtn) click(allBtn);
+  s = snapshot();
+  check('再点 React「全部评级」→ 四格筛选被清空（仅剩虚拟卡的 class 隐藏）',
+    s.hidden === 1, s.hidden);
 
-  // —— 回归（2026-10-18）：搜索过滤会卸载 U 卡，第五格不得清零/变粉 ——
+  // —— 回归（2026-10-18）：搜索过滤会卸载卡，四格数字是手写常数不受影响 ——
   (async () => {
-    const uCards = [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
-      .filter((c) => tierOf(c) === 'U');
-    check('前置：DOM 中 U 级卡 6 张（64 家，美宜佳/茉莉奶白 2026-10-30 升 C 后）', uCards.length === 6, uCards.length);
-    const removed = uCards.map((c) => {
+    const cCards = [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
+      .filter((c) => tierOf(c) === 'C');
+    check('前置：DOM 中 C 级卡 34 张（U 废除改判后）', cCards.length === 34, cCards.length);
+    const removed = cCards.map((c) => {
       const p = c.parentNode; const nx = c.nextSibling;
       p.removeChild(c); return { c, p, nx };
     });
     await new Promise((r) => setTimeout(r, 450));
-    const u2 = boxOf('待核实');
-    check('搜索过滤（U 卡被卸载）后待核实数字仍为 6（不清零）',
-      u2 && u2.children[0].textContent === '6', u2 && u2.children[0].textContent);
+    const lei2 = boxOf('避雷预警');
+    // 四格避雷数字是 bundle 手写常数（34），搜索卸载卡不改变盒子数字
+    check('搜索过滤（C 卡被卸载）后避雷盒仍是手写常数 34',
+      lei2 && lei2.children[0].textContent === '34', lei2 && lei2.children[0].textContent);
     // ⚠️ 恢复前先清掉「MO 自愈在卸载窗口期重建的同 id 新卡」：
     // removeChild 后 MutationObserver 会触发 insertAllCustomCards 重建自定义卡
-    //（降级插列表末）。若直接把旧节点插回原位，DOM 里会出现同 id 两张卡，
-    // getElementById/findCardByH3 每轮取到的「第一张」在新旧卡间摇摆，
-    // insertMeiyijiaNote 每轮摘了重插 → MO 无限重入 → 微任务风暴饿死全部
-    // 定时器 → 测试挂起（2026-10-30 实测：CI 卡 25 分钟+、本地 40s 不退）。
+    //（降级插列表末）。若直接把旧节点插回原位，DOM 里会出现同 id 两张卡。
     // 真实浏览器语义：React 卸载后重挂载的是**新节点**，旧节点已被丢弃——
     // 这里模拟「重挂载完成」：保留自愈重建的新卡，放弃旧节点（只用于移除阶段）。
     removed.forEach(({ c }) => {
@@ -209,27 +197,22 @@ setTimeout(() => {
       const dup = c.id && window.document.getElementById(c.id);
       if (dup && dup !== c) { /* 同 id 新卡已由自愈注入，无需恢复旧节点 */ }
     });
-    // 非自定义卡（React 原生 U 卡）没有自愈逻辑，必须恢复
+    // 非自定义卡（React 原生卡）没有自愈逻辑，必须恢复
     removed.forEach(({ c, p, nx }) => {
       if (c.id) return; // 自定义卡已被自愈重建，恢复旧节点会造成双卡
       try { nx ? p.insertBefore(c, nx) : p.appendChild(c); }
       catch (e) { try { p.appendChild(c); } catch (e2) { /* 容器已被替换则放弃恢复 */ } }
     });
     await new Promise((r) => setTimeout(r, 450));
-    const u3 = boxOf('待核实');
-    check('恢复全部卡片后待核实数字仍为 6',
-      u3 && u3.children[0].textContent === '6', u3 && u3.children[0].textContent);
-    check('待核实盒不含避雷粉色系类名（rose）',
-      u3 && !/rose/.test(u3.className), u3 && u3.className);
-    check('待核实盒仍绑定筛选（data-sxg-stat=u）',
-      u3 && u3.getAttribute('data-sxg-stat') === 'u');
+    const s2 = snapshot();
+    check('恢复全部卡片后可见回到 67 张（无卡丢失、无同 id 双卡）',
+      s2.visible.length === 67, { visible: s2.visible.length, total: s2.total });
+    const ids = [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
+      .filter((c) => c.id).map((c) => c.id);
+    check('自定义卡 id 无重复（自愈重建未造成双卡）',
+      new Set(ids).size === ids.length, { ids });
 
     // —— 回归（2026-10-18）：搜索过滤时「富士康补充说明」框残留（PITFALLS 1.10 第二变体）——
-    // 真实故障：搜索「啊」无匹配 → 所有卡消失，但 #apple-note 黄框孤零零留在搜索面板；
-    // 或搜索后 React 按位置复用节点，note 泄漏进华为卡。
-    // 修复：①搜索框有输入即摘除（捕获阶段同步）；②Apple 卡不在 DOM /
-    // 整棵子树隐藏即摘除；③按卡片标题匹配品牌（华为卡替代推荐区也含
-    // "Apple (苹果中国)"，全文子串匹配会误插进华为卡）。
     const note = () => window.document.getElementById('apple-note');
     const appleTextCards = () => [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
       .filter((c) => (c.textContent || '').includes('Apple (苹果中国)'));
@@ -251,12 +234,6 @@ setTimeout(() => {
     };
     await new Promise((r) => setTimeout(r, 300)); // 等 React 挂载稳定
     check('前置：note 存在且在 Apple 卡内', !!note() && noteInApple());
-    // 2026-10-22（bug ④ 修复）：原断言是「搜索『啊』后 note 不在 DOM」，
-    // 它依赖已被删除的「搜索框一有输入就无条件摘除 note」那道闸。
-    // 新判据是「苹果卡在不在当前可见列表」—— 而 jsdom 里 bundle 的搜索
-    // 并不真的卸载卡片，Apple 卡仍在 DOM，所以 note 保留是**正确**行为。
-    // 这里显式模拟 React 卸载该卡节点（= 搜索把它过滤掉的真实效果），
-    // 断言的是「目标卡片消失 → note 必须跟着消失」这条真正的约定。
     type('啊'); // 无匹配：真实浏览器里 React 会卸载全部卡
     await new Promise((r) => setTimeout(r, 500));
     {
@@ -266,9 +243,6 @@ setTimeout(() => {
     await new Promise((r) => setTimeout(r, 500));
     check('苹果卡被搜索过滤掉（模拟卸载）后 note 不在 DOM', !note());
     // 复原一张 Apple 卡（模拟清空搜索后 React 重新挂载），note 应重新插回。
-    // 这里刻意造一张结构完整的卡（h2 + .flex-wrap 标签行），insertAppleNote
-    // 需要 .flex-wrap 作为插入锚点，缺了只会打警告不插入。
-    // ⚠️ 本段在 async 作用域里跑，只能用 window.document（裸 document 不在作用域）。
     {
       const re = window.document.createElement('div');
       re.className = 'bg-white rounded-2xl border';
@@ -280,7 +254,6 @@ setTimeout(() => {
     check('清空搜索后 note 重新插回 Apple 卡', noteInApple(),
       { hasNote: !!note() });
     // React 按位置复用节点（原 bug①）：把持有 note 的 Apple 卡标题改成华为
-    //（只改标题文本，保留卡内其他子节点——与 React 文本更新复用节点的行为一致）
     const host = ancestorCardOf(note());
     const hostTitle = host.querySelector('h2,h3');
     hostTitle.textContent = hostTitle.textContent.replace('Apple (苹果中国)', '华为 (HUAWEI)');

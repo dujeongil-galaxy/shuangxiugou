@@ -384,26 +384,34 @@ if (curCheck === 'ok') {
 }
 
 // ---------- 自定义卡解析 ----------
-// ---------- 2d. U 级（待核实）纪律 ----------
-// 背景：2026-10-17 宁德时代改档 U（tier:`U`）。U 是「不评级」，不是更差的 C：
-// 该档位必须数值全 null、两项口径 unknown，防止 U 变成绕过证据纪律的逃逸档位。
-// 灰色渲染层（徽章「待核实 · 无证据不作评级」）自 c9b2753 起已内置，本节盯数据层。
-section('2d. U 级（待核实）纪律');
+// ---------- 2d. U 级废除纪律（2026-10-31 站长拍板） ----------
+// 背景：2026-10-17 曾引入 U 级（待核实·不评级）；2026-10-31 站长拍板废除——
+// 「该怎么判怎么判」：查不到直雇统一双休证据即按无双休判 C；官方拒不披露
+// 双休口径同样按无双休判 C。原 3 家 U 级（宏碁/三星/霸王茶姬）已改 tier:`C`。
+// 本节盯防回退：bundle 与自定义卡都不允许再出现 U 档。
+section('2d. U 级废除（不得再有 U 档）');
 const uCards = [];
-const badU = [];
 brandCards.forEach((c, i) => {
   const end = i + 1 < brandCards.length ? brandCards[i + 1].pos : bundle.length;
   const chunk = bundle.slice(c.pos, end);
-  if (!chunk.includes('tier:`U`')) return;
-  uCards.push(c.name || c.id);
-  const problems = [];
-  if (!chunk.includes('realDoubleWeekendRate:null')) problems.push('真实双休率不是 null');
-  if (!chunk.includes('weekendPolicy:`unknown`')) problems.push('休息制度口径不是 unknown');
-  if (!chunk.includes('overtimeComp:`unknown`')) problems.push('加班费口径不是 unknown');
-  if (problems.length) badU.push((c.name || c.id) + '：' + problems.join('、'));
+  if (chunk.includes('tier:`U`')) uCards.push(c.name || c.id);
 });
-check(uCards.length >= 1, '存在 U 级卡（宏碁/三星/霸王茶姬应为 U）', uCards.join(', ') || '无');
-check(badU.length === 0, 'U 级卡数值全 null 且两项口径均 unknown（U 不是逃逸档位）', badU.join(', '));
+check(uCards.length === 0,
+  'bundle 内置卡无 U 档（原宏碁/三星/霸王茶姬已改 C 级）',
+  uCards.length ? '仍有 U 档：' + uCards.join(', ') : '已全数改判');
+const cfgUD = html.match(/var customCardsConfig = \[([\s\S]*?)\n      \];/);
+const customUD = cfgUD
+  ? [...cfgUD[1].matchAll(/id:\s*'([^']+)'[\s\S]*?grade:\s*'([^']+)'/g)].map((m) => ({ id: m[1], grade: m[2] }))
+  : [];
+const customUDBad = customUD.filter((c) => c.grade === 'U级');
+check(customUDBad.length === 0,
+  '自定义卡无 U 级（原 5 张银行卡已改 C 级）',
+  customUDBad.length ? customUDBad.map((c) => c.id).join(', ') : '已全数改判');
+check(!/grade:\s*'U级'/.test(html) && !/tier:`U`/.test(bundle),
+  '全站（html+bundle）无 U 档字面量残留');
+// 徽章文案防线：U 级时代的渲染分支已删，页面不得再出现「待核实 · 无证据不作评级」
+check(!html.includes('待核实 · 无证据不作评级'),
+  'index.html 无「待核实 · 无证据不作评级」徽章文案（U 分支已删）');
 
 // 2026-10-20 长城/名创改档 C 级 0%（口径换算）。这是站长拍板的数据结论，
 // 加防回退断言：若有人把这两张卡改回 U 或删掉 derived 标注，verify 必须判红。
@@ -436,7 +444,7 @@ section('2e. 统计计数一致性（顶部四格 + 页脚清单）');
 // 口径（2026-10-17 审计确定，改动前 36/16/8/12 与任何口径都对不上）：
 //   收录品牌 = 实名企业卡 =（内置卡 - 虚拟对比卡）+ 自定义卡
 //   双休红榜 = S/A 级卡数；大小周观察 = B 级卡数；避雷预警 = C 级卡数（内置 + 自定义）
-//   U（待核实）不参与三个分桶，只计入收录总数。
+//   （2026-10-31 起 U 级废除：原 U 级卡全部计入避雷预警 C 档。）
 //   「某代工烘焙食品 (虚拟对比黑榜)」是上游设计的匿名对比工具，无详情页，不计入任何统计。
 const tier2e = { S: 0, A: 0, B: 0, C: 0, U: 0 };
 let builtin2e = 0;
@@ -464,7 +472,7 @@ const headerStat = (label, cls) => {
   return m ? Number(m[1]) : null;
 };
 check(virtual2e === 1, '虚拟对比卡恰 1 张（口径排除依据，id 变更需同步本节）', '实际 ' + virtual2e);
-check(customPairs2e.length === 12, '能解析全部自定义卡（12 张）', '实际 ' + customPairs2e.length);
+check(customPairs2e.length === 15, '能解析全部自定义卡（15 张，含 2026-10-31 淘宝闪购）', '实际 ' + customPairs2e.length);
 check(headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') === statTotal,
   '顶部「收录品牌」= 实名企业卡总数', '页面 ' + headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') + ' / 计算 ' + statTotal + '（改 bundle 顶部统计常数）');
 check(headerStat('双休红榜', 'text-emerald-700/70 text-\\[11px\\]') === statHong,
@@ -482,16 +490,33 @@ check(brandPages2e === statTotal, 'brand/ 详情页数量 = 收录总数（虚�
 const tabBadge2e = (bundle.match(/children:`企业真假双休档案`\}\),\(0,A\.jsx\)\(`span`,\{className:`text-\[10px\] font-mono bg-emerald-200\/60 text-emerald-900 px-1\.5 py-0\.5 rounded-full`,children:(\d+)\}\)/) || [])[1];
 check(tabBadge2e !== undefined && Number(tabBadge2e) === statTotal,
   '「企业真假双休档案」tab 角标 = 收录总数', '页面 ' + tabBadge2e + ' / 计算 ' + statTotal);
-const badCustomU2e = customPairs2e.filter((c) => {
-  if (c.grade !== 'U级') return false;
-  const seg = cfg2e[1].slice(cfg2e[1].indexOf("id: '" + c.id + "'"));
-  const nxt = seg.indexOf("id: '", 10);
-  const body = nxt === -1 ? seg : seg.slice(0, nxt);
-  return !/doubleRestRate:\s*null/.test(body) || !/offWorkTime:\s*null/.test(body);
+// 2026-10-31 U 级废除改判锁定（站长拍板「该怎么判怎么判」）。
+// 5 张银行卡 U→C（轮休制/休息日非固定周末=无双休证据）；新增淘宝闪购
+// （客服拒不披露=无双休）。加防回退断言：改回 U级 或删卡必须判红。
+const relockedU2e = customPairs2e.filter((c) => {
+  const bank = ['icbc-card', 'ccb-card', 'boc-card', 'abc-card', 'chengdubank-card', 'taobao-shanguang-card'];
+  return bank.includes(c.id) && c.grade !== 'C级';
 });
-check(badCustomU2e.length === 0,
-  '自定义 U 级卡数值全 null（U 不是逃逸档位）',
-  badCustomU2e.length ? badCustomU2e.map((c) => c.id).join(', ') : '合规 ' + byGrade2e('U级') + ' 张');
+check(relockedU2e.length === 0,
+  '原 5 张银行卡 + 淘宝闪购均为 C 级（2026-10-31 改判锁定，不得回退 U 级）',
+  relockedU2e.length ? relockedU2e.map((c) => c.id + '=' + c.grade).join(', ') : '锁定生效');
+check(byGrade2e('C级') === 14,
+  '自定义卡 C 级共 14 张（原 8 张 C 级 + 5 银行改判 + 淘宝闪购新增）',
+  '实际 ' + byGrade2e('C级'));
+check(byGrade2e('U级') === 0, '自定义卡 U 级 0 张（档位已废除）', '实际 ' + byGrade2e('U级'));
+// bundle 侧改判锁定：宏碁/三星/霸王茶姬 tier C
+const bundleULock = ['acer', 'samsung', 'chagee'];
+const badBundleLock = [];
+for (const bid of bundleULock) {
+  const idx = brandCards.findIndex((c) => c.id === bid);
+  if (idx === -1) { badBundleLock.push(bid + '：卡不存在'); continue; }
+  const end = idx + 1 < brandCards.length ? brandCards[idx + 1].pos : bundle.length;
+  const chunk = bundle.slice(brandCards[idx].pos, end);
+  if (!chunk.includes('tier:`C`')) badBundleLock.push(bid + '：不是 C 档');
+}
+check(badBundleLock.length === 0,
+  '宏碁/三星/霸王茶姬维持 C 档（2026-10-31 改判锁定）',
+  badBundleLock.join(', ') || '锁定生效');
 
 section('3. 自定义卡（index.html 的 customCardsConfig）');
 
@@ -520,7 +545,7 @@ if (cfgBlock) {
   }
 }
 const CUSTOM_COUNT = customCards.length;
-check(CUSTOM_COUNT === 12, `自定义卡 ${CUSTOM_COUNT} 张（期望 12）`);
+check(CUSTOM_COUNT === 15, `自定义卡 ${CUSTOM_COUNT} 张（期望 15，2026-10-31 增淘宝闪购）`);
 
 // null 规则：双休率 / 下班时间不得为占位 0，也不得是字符串 '未知'
 customCards.forEach((c) => {

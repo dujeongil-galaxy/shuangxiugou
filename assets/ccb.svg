@@ -1,4 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
-  <rect width="40" height="40" rx="8" fill="#003d7d"/>
-  <text x="20" y="27" font-size="18" font-family="system-ui,sans-serif" font-weight="700" fill="#fff" text-anchor="middle">建</text>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 23.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 172.1 170.7" style="enable-background:new 0 0 172.1 170.7;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#ED1C24;}
+</style>
+<g id="图层_1">
+</g>
+<g id="图层_2">
+	<path class="st0" d="M85,48.3c-20.3,0-37,15.3-39.4,34.9h-3.5l-3.5,8.5h20.3l3.5-8.5h-6.8c2.3-14.2,14.6-25,29.4-25
+		c13.3,0,24.6,8.7,28.4,20.8h10.3C119.6,61.4,103.8,48.3,85,48.3z"/>
+	<path class="st0" d="M85,127.7c20.3,0,37-15.3,39.4-34.9h3.5l3.5-8.5h-20.3l-3.5,8.5h6.8c-2.3,14.2-14.6,25-29.4,25
+		c-13.3,0-24.6-8.7-28.4-20.8H46.4C50.4,114.6,66.2,127.7,85,127.7z"/>
+	<path class="st0" d="M85,22.8C49,22.8,19.8,52,19.8,88S49,153.2,85,153.2S150.2,124,150.2,88S121,22.8,85,22.8z M85,146.1
+		c-32.1,0-58.1-26-58.1-58.1c0-32.1,26-58.1,58.1-58.1s58.1,26,58.1,58.1C143.1,120.1,117.1,146.1,85,146.1z"/>
+	<g>
+		<path class="st0" d="M97.6,74v28.9h-7.7V91H79.5v11.9h-7.7V74h7.7v11.3h10.4V74H97.6z"/>
+	</g>
+</g>
 </svg>
