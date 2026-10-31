@@ -114,14 +114,14 @@
     <!-- 良配 · 限时推广广告位（独立文件，改文案/样式不必动主页面；改完请把 ?v=N 的 N +1 防缓存） -->
     <link rel="stylesheet" href="./liangpei-ad.css?v=11">
     <!-- 首页视频推荐弹窗（改完请把 ?v=N 的 N +1 防缓存） -->
-    <link rel="stylesheet" href="./douyin-prompt.css?v=8">
+    <link rel="stylesheet" href="./douyin-prompt.css?v=9">
     <!-- 移动端排版修复（须在主 CSS 之后：靠覆盖生效；改完请把 ?v=N 的 N +1） -->
     <link rel="stylesheet" href="./mobile-fixes.css?v=6">
   </head>
   <body>
     <!-- 顶部公告栏：本站数据证据链说明（白底红字，可随页面滚动） -->
     <div id="site-notice" style="background:#ffffff;color:#dc2626;text-align:center;font-size:12px;line-height:1.5;padding:6px 12px;border-bottom:1px solid #fee2e2;font-weight:600;position:relative;z-index:999;">
-      <span id="evidence-notice">本站全部数据均附公开证据链：<a href="#evidence-board" style="color:#0f766e;text-decoration:underline">67 家企业 174 条证据已在本页完整公示</a>（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 6 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span>
+      <span id="evidence-notice">本站全部数据均附公开证据链：<a href="#evidence-board" style="color:#0f766e;text-decoration:underline">68 家企业 178 条证据已在本页完整公示</a>（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 6 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span>
       ｜<a href="./projects.html" style="color:#0f766e;text-decoration:underline">同类项目导航</a>
       ｜<!-- 页脚版本号：每次发版后手动更新为当次功能提交的短哈希（CHANGELOG 有记录） --><span style="color:#000;font-weight:700">当前版本号 8f76158</span>
     </div>
@@ -135,7 +135,7 @@
      本区块由 scripts/gen-evidence-board.py 自动生成，请勿手改。
      改证据请改 brand/*.html 详情页，然后重跑：python scripts/gen-evidence-board.py
      单一真相源在 brand/ 页；scripts/verify.mjs 有防漂移断言逐条比对。
-     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：67 家企业 / 174 条证据 / 134 条带原始链接 / 6 家证据薄弱。 -->
+     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：68 家企业 / 178 条证据 / 135 条带原始链接 / 6 家证据薄弱。 -->
 <style>#evidence-board{max-width:960px;margin:0 auto;padding:28px 16px 40px;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.75;color:#1f2937;font-size:14px}
 #evidence-board h2{font-size:20px;font-weight:700;margin:0 0 6px;color:#0f172a;line-height:1.4}
 #evidence-board a{color:#0f766e}
@@ -184,14 +184,14 @@
 #evidence-board .ev-more{margin-top:10px;font-size:12px}
 #evidence-board .ev-foot{margin:16px 0 0;font-size:12.5px;color:#64748b}
 @media(max-width:640px){#evidence-board{padding:20px 12px 32px}#evidence-board .ev-stat{flex:1 1 44%}#evidence-board .ct{margin-left:0;width:100%}}</style>
-<section id="evidence-board" data-ev-brands="67" data-ev-total="174" data-ev-linked="134" data-ev-weak="6">
-  <h2>全站证据链公示（67 家企业 · 174 条证据）</h2>
+<section id="evidence-board" data-ev-brands="68" data-ev-total="178" data-ev-linked="135" data-ev-weak="6">
+  <h2>全站证据链公示（68 家企业 · 178 条证据）</h2>
   <p class="ev-lead">站长要求「证据链必须首页完整公示，口说无凭」——以下是站内每一条评级的取证清单，含证据类型、取证日期、文书编号与可点击的原始来源链接。数据由各品牌详情页（<code>brand/*.html</code>）自动汇总生成，两处不一致会被 <code>scripts/verify.mjs</code> 判红。</p>
   <div class="ev-stats">
-    <div class="ev-stat"><b style="color:#0f766e">174</b><i>证据总条数</i></div>
-    <div class="ev-stat"><b style="color:#1d4ed8">134</b><i>带原始链接</i></div>
-    <div class="ev-stat"><b style="color:#b45309">40</b><i>无可点链接</i></div>
-    <div class="ev-stat"><b style="color:#475569">6/17/14/30</b><i>S/A/B/C 家数</i></div>
+    <div class="ev-stat"><b style="color:#0f766e">178</b><i>证据总条数</i></div>
+    <div class="ev-stat"><b style="color:#1d4ed8">135</b><i>带原始链接</i></div>
+    <div class="ev-stat"><b style="color:#b45309">43</b><i>无可点链接</i></div>
+    <div class="ev-stat"><b style="color:#475569">6/17/14/31</b><i>S/A/B/C 家数</i></div>
     <div class="ev-stat"><b style="color:#be123c">6 家</b><i>证据薄弱企业</i></div>
   </div>
   <div class="ev-legend">
@@ -200,13 +200,14 @@
       <span class="ev-pill" style="border-color:#7c3aed;color:#7c3aed">司法裁判 <b>7</b></span>
       <span class="ev-pill" style="border-color:#be123c;color:#be123c">官方处罚/通报 <b>5</b></span>
       <span class="ev-pill" style="border-color:#0f766e;color:#0f766e">官方公示/备案 <b>21</b></span>
-      <span class="ev-pill" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述 <b>8</b></span>
+      <span class="ev-pill" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述 <b>9</b></span>
       <span class="ev-pill" style="border-color:#0369a1;color:#0369a1">ESG/审计报告 <b>9</b></span>
       <span class="ev-pill" style="border-color:#b45309;color:#b45309">媒体报道/调查 <b>29</b></span>
       <span class="ev-pill" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径 <b>17</b></span>
-      <span class="ev-pill" style="border-color:#c2410c;color:#c2410c">站长一手实测 <b>1</b></span>
+      <span class="ev-pill" style="border-color:#c2410c;color:#c2410c">站长一手实测 <b>3</b></span>
       <span class="ev-pill" style="border-color:#57534e;color:#57534e">员工/社群反馈 <b>58</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">旁证/二手汇总 <b>19</b></span>
+      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（third_party） <b>1</b></span>
     </div>
     <div class="ev-note">司法裁判文书与劳动监察通报为最高强度证据；招聘平台自述属「招聘方口径」，只证明企业怎么说、不证明实际怎么排班；社群匿名反馈与旁证汇总强度最低，本站不用它们单独定档。</div>
   </div>
@@ -241,7 +242,7 @@
     </ul>
   </div>
   <div class="ev-list">
-    <div class="ev-listhead">按档位排列 · 点击企业名展开该企业的全部证据条目（共 67 家）</div>
+    <div class="ev-listhead">按档位排列 · 点击企业名展开该企业的全部证据条目（共 68 家）</div>
     <details id="ev-apple" data-b="apple" data-g="S" data-n="1" data-l="0">
       <summary><span class="g" style="background:#7c3aed">S</span><span class="bn">Apple (苹果中国)</span><span class="co">苹果电脑贸易（上海）有限公司</span><span class="ct">1 条证据</span></summary>
       <div class="ev-body">
@@ -1424,6 +1425,38 @@
         <div class="ev-more"><a href="./brand/gwm.html">查看 长城汽车 (GWM) 完整详情页 →</a></div>
       </div>
     </details>
+    <details id="ev-bosszhipin" data-b="bosszhipin" data-g="C" data-n="4" data-l="1">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">BOSS直聘 (招聘平台)</span><span class="co">北京华品博睿网络技术有限公司</span><span class="ct">4 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">运营主体：北京华品博睿网络技术有限公司</div>
+            <div class="m"><span class="k" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述</span> <span class="raw">原标注：company_site</span> <span class="d">平台官网公示</span></div>
+            <div class="s">BOSS直聘（zhipin.com）官网登录页公示的运营主体，即本卡定级责任主体；企业服务热线 400 065 5799。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">站长一手亲历：2017 年成都求职被电销轰炸、HR 言语打压、回嘴后封号（换号因设备关联秒封）</div>
+            <div class="m"><span class="k" style="border-color:#c2410c;color:#c2410c">站长一手实测</span> <span class="raw">原标注：first_hand</span> <span class="d">2017</span></div>
+            <div class="s">站长本人经历，见上方「站长备注」全文。该经历用于说明平台规则的双标性，不用于推导双休口径。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">平台虚假招聘 / 诈骗岗位投诉密集（站长长期观察 + 平台类投诉公开讨论）</div>
+            <div class="m"><span class="k" style="border-color:#c2410c;color:#c2410c">站长一手实测</span> <span class="raw">原标注：first_hand</span> <span class="d">长期观察</span></div>
+            <div class="s">「高薪低门槛」「培训贷」「刷单」「传销式招聘」等套路在平台反复出现。本条定性为站长主观判断，附类比为「PDD 假货多」，。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">相关视频：BOSS直聘等招聘网站的骗局套路大全（抖音）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（third_party）</span> <span class="raw">原标注：third_party</span> <span class="d">2026-10-31</span></div>
+            <div class="s">—— 该视频罗列的招聘平台套路，站长当年基本都碰到过；首页视频卡可点击播放（站内播放受平台限制时，可跳转抖音观看）。</div>
+            <div class="u"><a href="https://v.douyin.com/uEMZRkt73Jg/" rel="nofollow noopener" target="_blank">v.douyin.com/uEMZRkt73Jg/</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/bosszhipin.html">查看 BOSS直聘 (招聘平台) 完整详情页 →</a></div>
+      </div>
+    </details>
     <details id="ev-abc" data-b="abc" data-g="C" data-n="4" data-l="4">
       <summary><span class="g" style="background:#be123c">C</span><span class="bn">农业银行 (ABC)</span><span class="co">中国农业银行股份有限公司</span><span class="ct">4 条证据</span></summary>
       <div class="ev-body">
@@ -2073,6 +2106,7 @@
           <li><a href="./brand/chengdubank.html">成都银行 (BOCD)</a> —— A 级 · 双休率 未核实 · 平均下班 —</li>
           <li><a href="./brand/meiyijia.html">美宜佳</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
           <li><a href="./brand/molina.html">茉莉奶白</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
+          <li><a href="./brand/bosszhipin.html">BOSS直聘</a> —— C 级 · 双休率 不适用（平台类目） · 平均下班 —</li>
         </ul>
 
 <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">同类项目导航</h2>
@@ -2605,6 +2639,28 @@
           recommendColor: 'red',
           insertAfter: 'Meituan (美团)',
           keywords: ['淘宝闪购', '饿了么', 'Eleme', 'eleme', '即时零售', '外卖', '配送', '骑手', '拉扎斯', '闪购'],
+          category: '互联网平台',
+          grade: 'C级'
+        },
+        {
+          id: 'bosszhipin-card',
+          name: 'BOSS直聘',
+          company: '北京华品博睿网络技术有限公司',
+          logo: './assets/bosszhipin.svg',
+          logoAlt: 'BOSS直聘',
+          workPolicy: '不适用（招聘平台类目，非用工单位）',
+          overtime: '—',
+          doubleRestRate: null,
+          offWorkTime: null,
+          voteCount: '0',
+          desc: '"招聘平台，不套用双休口径，站长人为干涉直接判 C 级：① 平台虚假招聘、诈骗岗位、培训贷等套路长期泛滥，密度如同 PDD 上假货多；② 规则双标——HR 对求职者冷嘲热讽无人管，求职者回嘴即封号、换号因设备关联秒封（站长 2017 年成都求职亲历）。本卡为主观定级，理由与个人经历已在详情页如实交代"',
+          tags: ['招聘平台', 'BOSS直聘', '虚假招聘', '求职骗局'],
+          likeCount: '0',
+          dislikeCount: '0',
+          recommendText: '⚠️ C 级 · 站长主观定级（假岗位泛滥 + 平台双标）',
+          recommendColor: 'red',
+          insertAfter: '拼多多',
+          keywords: ['BOSS直聘', 'BOSS', '直聘', 'zhipin', '招聘平台', '找工作', '求职', '虚假招聘', '招聘骗局', 'BOSSZhipin', 'bosszhipin'],
           category: '互联网平台',
           grade: 'C级'
         }
@@ -3637,7 +3693,7 @@
   <!-- 良配 · 限时推广广告位：注入 DOM + 倒计时 + 微信小程序 scheme 分环境处理 -->
   <script src="./liangpei-ad.js?v=9"></script>
   <!-- 首页视频推荐弹窗：延迟自动弹出，冷却期内不重复弹（localStorage） -->
-  <script src="./douyin-prompt.js?v=10"></script>
+  <script src="./douyin-prompt.js?v=11"></script>
   <!-- 全站证据链公示区折叠：h2 作把手，其下内容默认收起、点击展开（不改动生成内容，verify 防漂移不受影响）。2026-10-31 站长反馈「太乱」 -->
   <script src="./evidence-collapse.js?v=1"></script>
   <!-- 首页常驻抖音视频卡（专科双非怎么混进钱多事少的红利公司）：封面+播放按钮，点击尽力内嵌播放器，失败降级跳抖音。2026-10-31 站长要求「视频加这里，嵌入式点击可播放」 -->

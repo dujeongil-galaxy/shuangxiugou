@@ -526,7 +526,7 @@ const headerStat = (label, cls) => {
   return m ? Number(m[1]) : null;
 };
 check(virtual2e === 1, '虚拟对比卡恰 1 张（口径排除依据，id 变更需同步本节）', '实际 ' + virtual2e);
-check(customPairs2e.length === 15, '能解析全部自定义卡（15 张，含 2026-10-31 淘宝闪购）', '实际 ' + customPairs2e.length);
+check(customPairs2e.length === 16, '能解析全部自定义卡（16 张，含 2026-10-31 BOSS直聘）', '实际 ' + customPairs2e.length);
 check(headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') === statTotal,
   '顶部「收录品牌」= 实名企业卡总数', '页面 ' + headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') + ' / 计算 ' + statTotal + '（改 bundle 顶部统计常数）');
 check(headerStat('双休红榜', 'text-emerald-700/70 text-\\[11px\\]') === statHong,
@@ -566,8 +566,8 @@ check(locked2e.length === 6,
 check(byGrade2e('A级') === 4,
   '自定义卡 A 级共 4 张（工/建/中/成都银行，2026-10-31 月休口径改判）',
   '实际 ' + byGrade2e('A级'));
-check(byGrade2e('C级') === 10,
-  '自定义卡 C 级共 10 张（原 14 张 - 4 家银行改判 A）',
+check(byGrade2e('C级') === 11,
+  '自定义卡 C 级共 11 张（原 14 张 - 4 家银行改判 A + 2026-10-31 增 BOSS直聘）',
   '实际 ' + byGrade2e('C级'));
 // 规则③：U 级单独列示、不并入四格统计（红榜/观察/避雷只含 S/A/B/C）
 const fourSum2e = statHong + statZhou + statLei;
@@ -897,7 +897,7 @@ if (cfgBlock) {
   }
 }
 const CUSTOM_COUNT = customCards.length;
-check(CUSTOM_COUNT === 15, `自定义卡 ${CUSTOM_COUNT} 张（期望 15，2026-10-31 增淘宝闪购）`);
+check(CUSTOM_COUNT === 16, `自定义卡 ${CUSTOM_COUNT} 张（期望 16，2026-10-31 增 BOSS直聘）`);
 
 // null 规则：双休率 / 下班时间不得为占位 0，也不得是字符串 '未知'
 customCards.forEach((c) => {
