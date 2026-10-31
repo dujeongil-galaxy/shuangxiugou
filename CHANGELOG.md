@@ -4,6 +4,18 @@
 
 ---
 
+### 修复：锚点冲突致 MutationObserver 无限振荡——jsdom 冻结/主线程卡死真根因（2026-10-31 14:20 · 提交 `9d86911`）
+
+- **根因**：美宜佳卡与农行卡 `insertAfter` 同为「中国银行」，两卡每轮 init 互相挤位 → childList 持续变动 → MutationObserver 无限自激（jsdom 事件循环被饿死 = 4 组测试「冻结」；真浏览器同样会主线程卡死）。10-30 深夜新增农行卡时引入，此前被误判为「jsdom 环境问题」。
+- **定位**：探针 MO 打印每轮 mutation 明细，10 秒锁定「abc-card/chengdubank-card 每轮被 remove+insert」（此前 90 分钟「猜不幂等点」全部无效——回退变量清单里没有 insertAfter）。
+- **修复**：美宜佳锚点改「成都银行」，锚点链恢复唯一。故障注入验证：锚点改回「中国银行」10s 内冻结复现（判红）。
+- **连带修复①**：`getGradeTemplateCard` 跳过虚拟对比黑榜卡——搜索过滤态下克隆源会命中虚拟卡，克隆体残留「虚拟对比黑榜」字样，被 virtual-card-remove 的 MO 兜底误隐藏（重建的 14 张自定义卡全被 `sxg-vcard-gone` 隐藏）。
+- **连带修复②**：bundle acer/samsung 的 `alternatives` 含 `huawei-consumer`（同为 C 级，违反「C 级不得推荐 C 级当良心替代」口径，宁德时代→比亚迪同款风险形态），换成 `logitech`；`?v=47→48`。
+- **测试脚手架**：test-stat-filter 补 `scrollIntoView` 桩（jsdom 未实现，此前被冻结掩盖；click 回调抛 TypeError）；hidden 期望 48→49（含虚拟卡对账修正）；test-molina bundle 版本断言同步 48。
+- **验证**：verify 688 全绿；7 组测试全绿（**此前冻结的 4 组全部恢复**——molina 61、pinyin-e2e 67、render-page 13、block-numeric-search 39、employee-report 28、alternatives 13、stat-filter 30）；Edge 渲染验收 107 请求零 404、关键资源全 GET。
+
+---
+
 ### 三批合并：U 级废除 + 淘宝闪购/农行/成都银行新卡 + 真 logo 批（2026-10-31 11:45 · 提交 `4ef34c4`）
 
 **批次一 · LOGO 补全（2026-10-30 就绪）**：7 个「色块+单字」占位 SVG 换成真 logo——molina（Molly Tea 官方花形）、icbc（zh wiki 横版提取红圆标）、ccb（经典红古钱双C）、boc（酒红古钱）、xiaomi（官方 512 方块 MI）、kfc（2026 版官方桶标三 path 合成红底）、meiyijia（官网 logo.png 裁图标，因位图内容改 `.png` 后缀）。index.html 七处 `?v=2` 缓存刷新。验收：verify 669 项 + 25 套测试 + CDP 实测 7 卡真渲染无 fallback。
