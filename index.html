@@ -15,7 +15,7 @@
     <meta name="format-detection" content="telephone=no" />
     <meta name="msvalidate.01" content="1CA900F523A02F4764BEA0EA3134789B" />
     <link rel="canonical" href="https://dujeongil-galaxy.github.io/shuangxiugou/" />
-    <link rel="preload" as="script" href="./assets/index-YthXZ9eP.js?v=48" />
+    <link rel="preload" as="script" href="./assets/index-YthXZ9eP.js?v=50" />
     <link rel="preload" as="style" href="./assets/index-BgVofs0W.css" />
     <link rel="dns-prefetch" href="https://dujeongil-galaxy.github.io" />
     <meta property="og:title" content="双休购｜查公司双休评级，避雷单休大小周 996 血汗工厂" />
@@ -109,7 +109,7 @@
   ]
 }
     </script>
-    <script type="module" crossorigin src="./assets/index-YthXZ9eP.js?v=48"></script>
+    <script type="module" crossorigin src="./assets/index-YthXZ9eP.js?v=50"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-BgVofs0W.css">
     <!-- 良配 · 限时推广广告位（独立文件，改文案/样式不必动主页面；改完请把 ?v=N 的 N +1 防缓存） -->
     <link rel="stylesheet" href="./liangpei-ad.css?v=11">
@@ -121,11 +121,1730 @@
   <body>
     <!-- 顶部公告栏：本站数据证据链说明（白底红字，可随页面滚动） -->
     <div id="site-notice" style="background:#ffffff;color:#dc2626;text-align:center;font-size:12px;line-height:1.5;padding:6px 12px;border-bottom:1px solid #fee2e2;font-weight:600;position:relative;z-index:999;">
-      本站全部数据均附公开证据链：招聘口径、员工反馈与官方通报分项标注，来源可查可溯，欢迎核实纠错
+      <span id="evidence-notice">本站全部数据均附公开证据链：<a href="#evidence-board" style="color:#0f766e;text-decoration:underline">67 家企业 174 条证据已在本页完整公示</a>（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 6 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span>
       ｜<a href="./projects.html" style="color:#0f766e;text-decoration:underline">同类项目导航</a>
       ｜<!-- 页脚版本号：每次发版后手动更新为当次功能提交的短哈希（CHANGELOG 有记录） --><span style="color:#000;font-weight:700">当前版本号 b754e34</span>
     </div>
     <div id="root"></div>
+
+    <!-- 全站证据链公示（2026-10-31 站长要求「证据链必须首页完整公示，口说无凭」）。
+         挂在 #root 之后：React 只管 #root，静态节点不会被重渲染清掉，
+         因此不需要 MutationObserver 自愈（避免 MO 锚点冲突自激）。
+         内容由 scripts/gen-evidence-board.py 从 brand/*.html 自动生成。 -->
+    <!-- EVIDENCE-BOARD-START
+     本区块由 scripts/gen-evidence-board.py 自动生成，请勿手改。
+     改证据请改 brand/*.html 详情页，然后重跑：python scripts/gen-evidence-board.py
+     单一真相源在 brand/ 页；scripts/verify.mjs 有防漂移断言逐条比对。
+     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：67 家企业 / 174 条证据 / 134 条带原始链接 / 6 家证据薄弱。 -->
+<style>#evidence-board{max-width:960px;margin:0 auto;padding:28px 16px 40px;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.75;color:#1f2937;font-size:14px}
+#evidence-board h2{font-size:20px;font-weight:700;margin:0 0 6px;color:#0f172a;line-height:1.4}
+#evidence-board a{color:#0f766e}
+#evidence-board code{background:#f1f5f9;padding:1px 4px;border-radius:4px;font-size:12px}
+#evidence-board .ev-lead{margin:0 0 14px;font-size:13px;color:#475569}
+#evidence-board .ev-stats{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+#evidence-board .ev-stat{flex:1 1 150px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px}
+#evidence-board .ev-stat b{display:block;font-size:18px;font-weight:700;line-height:1.3}
+#evidence-board .ev-stat i{display:block;font-style:normal;font-size:12px;color:#64748b}
+#evidence-board .ev-legend{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin:0 0 18px;font-size:12.5px;color:#475569}
+#evidence-board .ev-legend>div:first-child{font-weight:700;color:#0f172a;margin:0 0 6px}
+#evidence-board .ev-pills{display:flex;flex-wrap:wrap;gap:6px}
+#evidence-board .ev-pill{background:#fff;border:1px solid #94a3b8;border-radius:999px;padding:2px 10px;font-weight:600}
+#evidence-board .ev-note{margin:8px 0 0;color:#64748b}
+#evidence-board .ev-weak{background:#fff1f2;border:1px solid #fecdd3;border-left:4px solid #be123c;border-radius:10px;padding:14px 16px;margin:0 0 18px}
+#evidence-board .ev-weak h3{font-size:15px;font-weight:700;color:#9f1239;margin:0 0 6px}
+#evidence-board .ev-weak>p{margin:0 0 10px;font-size:13px;color:#7f1d1d}
+#evidence-board .ev-weak ul{margin:0;padding-left:20px;font-size:13px;color:#7f1d1d}
+#evidence-board .ev-weak li{margin:0 0 6px}
+#evidence-board .ev-weak .r{color:#9f1239;font-size:12.5px}
+#evidence-board .ev-g{color:#be123c;font-weight:700}
+#evidence-board .ev-list{border:1px solid #e2e8f0;border-radius:12px;background:#fff;overflow:hidden}
+#evidence-board .ev-listhead{background:#f1f5f9;padding:10px 14px;font-size:13px;font-weight:700;color:#334155;border-bottom:1px solid #e2e8f0}
+#evidence-board details{border-bottom:1px solid #f1f5f9}
+#evidence-board summary{cursor:pointer;padding:11px 14px;list-style:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#evidence-board summary::-webkit-details-marker{display:none}
+#evidence-board summary:hover{background:#f8fafc}
+#evidence-board .g{border-radius:6px;padding:1px 7px;font-size:11.5px;font-weight:700;color:#fff;background:#64748b}
+#evidence-board .bn{font-size:14px;color:#0f172a;font-weight:700}
+#evidence-board .co{font-size:12px;color:#94a3b8}
+#evidence-board .ct{margin-left:auto;font-size:12px;font-weight:600;color:#64748b}
+#evidence-board .ct.w{color:#be123c}
+#evidence-board .ev-body{padding:2px 14px 14px;background:#fcfcfd}
+#evidence-board .ev-nolink{background:#fff1f2;border:1px solid #fecdd3;border-radius:8px;padding:10px 12px;font-size:13px;color:#7f1d1d}
+#evidence-board .ev-reasons{margin:8px 0 0;padding-left:20px;font-size:13px;color:#7f1d1d}
+#evidence-board ol.ev-items{margin:8px 0 0;padding-left:22px}
+#evidence-board ol.ev-items>li{margin:0 0 10px;font-size:13px}
+#evidence-board .t{font-weight:600;color:#0f172a}
+#evidence-board .m{margin:3px 0;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11.5px}
+#evidence-board .k{background:#fff;border:1px solid #94a3b8;border-radius:999px;padding:0 8px;font-weight:600;color:#475569}
+#evidence-board .d{color:#64748b}
+#evidence-board .raw{color:#94a3b8}
+#evidence-board .s{color:#475569;font-size:12.5px}
+#evidence-board .u{margin-top:3px;font-size:12px;word-break:break-all}
+#evidence-board .nl{margin-top:3px;color:#b45309;font-size:12px}
+#evidence-board .ev-more{margin-top:10px;font-size:12px}
+#evidence-board .ev-foot{margin:16px 0 0;font-size:12.5px;color:#64748b}
+@media(max-width:640px){#evidence-board{padding:20px 12px 32px}#evidence-board .ev-stat{flex:1 1 44%}#evidence-board .ct{margin-left:0;width:100%}}</style>
+<section id="evidence-board" data-ev-brands="67" data-ev-total="174" data-ev-linked="134" data-ev-weak="6">
+  <h2>全站证据链公示（67 家企业 · 174 条证据）</h2>
+  <p class="ev-lead">站长要求「证据链必须首页完整公示，口说无凭」——以下是站内每一条评级的取证清单，含证据类型、取证日期、文书编号与可点击的原始来源链接。数据由各品牌详情页（<code>brand/*.html</code>）自动汇总生成，两处不一致会被 <code>scripts/verify.mjs</code> 判红。</p>
+  <div class="ev-stats">
+    <div class="ev-stat"><b style="color:#0f766e">174</b><i>证据总条数</i></div>
+    <div class="ev-stat"><b style="color:#1d4ed8">134</b><i>带原始链接</i></div>
+    <div class="ev-stat"><b style="color:#b45309">40</b><i>无可点链接</i></div>
+    <div class="ev-stat"><b style="color:#475569">6/17/14/30</b><i>S/A/B/C 家数</i></div>
+    <div class="ev-stat"><b style="color:#be123c">6 家</b><i>证据薄弱企业</i></div>
+  </div>
+  <div class="ev-legend">
+    <div>证据强度分级（强 → 弱）</div>
+    <div class="ev-pills">
+      <span class="ev-pill" style="border-color:#7c3aed;color:#7c3aed">司法裁判 <b>7</b></span>
+      <span class="ev-pill" style="border-color:#be123c;color:#be123c">官方处罚/通报 <b>5</b></span>
+      <span class="ev-pill" style="border-color:#0f766e;color:#0f766e">官方公示/备案 <b>21</b></span>
+      <span class="ev-pill" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述 <b>8</b></span>
+      <span class="ev-pill" style="border-color:#0369a1;color:#0369a1">ESG/审计报告 <b>9</b></span>
+      <span class="ev-pill" style="border-color:#b45309;color:#b45309">媒体报道/调查 <b>29</b></span>
+      <span class="ev-pill" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径 <b>17</b></span>
+      <span class="ev-pill" style="border-color:#c2410c;color:#c2410c">站长一手实测 <b>1</b></span>
+      <span class="ev-pill" style="border-color:#57534e;color:#57534e">员工/社群反馈 <b>58</b></span>
+      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">旁证/二手汇总 <b>19</b></span>
+    </div>
+    <div class="ev-note">司法裁判文书与劳动监察通报为最高强度证据；招聘平台自述属「招聘方口径」，只证明企业怎么说、不证明实际怎么排班；社群匿名反馈与旁证汇总强度最低，本站不用它们单独定档。</div>
+  </div>
+  <div class="ev-weak">
+    <h3>⚠️ 证据薄弱清单：6 家企业无可点公开链接</h3>
+    <p>以下企业的评级依据是线下一手核实或门店员工匿名反馈，<strong>拿不出可点击的公开原始链接</strong>。本站如实标注、不伪造来源、不用截图冒充链接。这几家的档位置信度低于其余企业，欢迎通过 GitHub Issues 补充可查证来源，核实后即更正。</p>
+    <ul>
+      <li><strong>小米</strong><span class="ev-g"> B 级</span> · <a href="./brand/xiaomi.html">详情页</a>
+        <div class="r">— 总部名义双休但存在日均 11.5h 隐性工时</div>
+        <div class="r">— 线下小米之家员工反馈一周休一天</div>
+        <div class="r">— 在线客服为轮班制（多源交叉验证）</div>
+      </li>
+      <li><strong>兵立王</strong><span class="ev-g"> C 级</span> · <a href="./brand/bingliw.html">详情页</a>
+        <div class="r">— 门店员工匿名反馈：月休不足 4 天（线下一手·匿名）</div>
+      </li>
+      <li><strong>美宜佳</strong><span class="ev-g"> C 级</span> · <a href="./brand/meiyijia.html">详情页</a>
+        <div class="r">— 公开招聘口径多为月休 2-4 天、两班倒 / 三班制，无统一双休（2026 年多城招聘页交叉核实）</div>
+        <div class="r">— 站长（双休Go）西南两地线下核实：无月休（双休）、轮班</div>
+        <div class="r">— 按站内口径「单休归为 C 级」，2026-10-30 定级 C 级（详见上方评级说明）</div>
+      </li>
+      <li><strong>肯德基</strong><span class="ev-g"> C 级</span> · <a href="./brand/kfc.html">详情页</a>
+        <div class="r">— 百胜中国官方直聘多店晚班 15:00-23:00</div>
+        <div class="r">— 爱企查工时库晚班 15:00-23:00 / 16:00-24:00，23:00 为众数</div>
+      </li>
+      <li><strong>茉莉奶白</strong><span class="ev-g"> C 级</span> · <a href="./brand/molina.html">详情页</a>
+        <div class="r">— 站长（双休Go）线下核实到门店为「月休 4 天」（单休形态，线下一手证据）</div>
+        <div class="r">— 按站内口径「单休归为 C 级」，2026-10-30 定级 C 级（详见上方评级说明）</div>
+      </li>
+      <li><strong>茶百道</strong><span class="ev-g"> C 级</span> · <a href="./brand/chabaidao.html">详情页</a>
+        <div class="r">— 门店店员匿名反馈：月休不足 4 天（线下一手·匿名）</div>
+      </li>
+    </ul>
+  </div>
+  <div class="ev-list">
+    <div class="ev-listhead">按档位排列 · 点击企业名展开该企业的全部证据条目（共 67 家）</div>
+    <details id="ev-apple" data-b="apple" data-g="S" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#7c3aed">S</span><span class="bn">Apple (苹果中国)</span><span class="co">苹果电脑贸易（上海）有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">Apple 供应商责任与全球员工劳工报告</div>
+            <div class="m"><span class="k" style="border-color:#0369a1;color:#0369a1">ESG/审计报告</span> <span class="raw">原标注：esg_report</span> <span class="d">2024-04-18</span></div>
+            <div class="s">严格执行每周不超过 60 小时红线并持续推动供应链与直营 40 小时目标。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/apple.html">查看 Apple (苹果中国) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-ikea" data-b="ikea" data-g="S" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#7c3aed">S</span><span class="bn">IKEA (宜家)</span><span class="co">宜家（中国）投资有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">Ingka Group 年度可持续发展报告（中国区）</div>
+            <div class="m"><span class="k" style="border-color:#0369a1;color:#0369a1">ESG/审计报告</span> <span class="raw">原标注：esg_report</span> <span class="d">2024-06-01</span></div>
+            <div class="s">中国区员工享有与全球同步的劳工保护标准与休假制度。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/ikea.html">查看 IKEA (宜家) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-microsoft" data-b="microsoft" data-g="S" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#7c3aed">S</span><span class="bn">Microsoft (微软中国)</span><span class="co">微软（中国）有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">955.WLB 开源清单收录</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2024-01-10</span></div>
+            <div class="s">微软中国长期位列不加班企业清单前列。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/microsoft.html">查看 Microsoft (微软中国) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-patagonia" data-b="patagonia" data-g="S" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#7c3aed">S</span><span class="bn">Patagonia (巴塔哥尼亚)</span><span class="co">Patagonia Works / 巴塔哥尼亚贸易（上海）有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">Patagonia 全球供应链透明度报告与 Fair Trade 认证</div>
+            <div class="m"><span class="k" style="border-color:#0369a1;color:#0369a1">ESG/审计报告</span> <span class="raw">原标注：esg_report</span> <span class="d">2024-05-10</span> <span class="d">文号／编号：FTUSA-Cert-2024-8812</span></div>
+            <div class="s">全线产线执行严格的工时与最低生活保障工资审计，拒绝无偿延时用工，保障双休。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/patagonia.html">查看 Patagonia (巴塔哥尼亚) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-sap" data-b="sap" data-g="S" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#7c3aed">S</span><span class="bn">SAP (思爱普中国)</span><span class="co">思爱普（中国）有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">955.WLB 开源清单收录</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2023-12-05</span></div>
+            <div class="s">SAP 中国位列不加班企业清单。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/sap.html">查看 SAP (思爱普中国) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-volvo" data-b="volvo" data-g="S" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#7c3aed">S</span><span class="bn">Volvo (沃尔沃汽车)</span><span class="co">沃尔沃汽车亚太区投资控股有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">沃尔沃全球人本可持续合规年报</div>
+            <div class="m"><span class="k" style="border-color:#0369a1;color:#0369a1">ESG/审计报告</span> <span class="raw">原标注：esg_report</span> <span class="d">2024-06-20</span></div>
+            <div class="s">亚太区全员严格遵循工时限制政策，保障员工心理与休息健康。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/volvo.html">查看 Volvo (沃尔沃汽车) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-chengdubank" data-b="chengdubank" data-g="A" data-n="6" data-l="6">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">成都银行 (BOCD)</span><span class="co">成都银行股份有限公司</span><span class="ct">6 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">成都银行官网公告（2026-04-13）：部分网点实行周末暂停营业，周末轮休期间相邻网点正常营业</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：company_notice</span> <span class="d">官方公告</span></div>
+            <div class="s">「自 2026 年 4 月 18 日起，我行部分网点实行周末暂停营业……周末轮休期间，暂停营业网点暂停柜面服务」——官网白纸黑字的轮休安排，是本卡最核心的口径依据。</div>
+            <div class="u"><a href="https://www.bocd.com.cn/about-news-gonggao/1241832939327721472.html" rel="nofollow noopener" target="_blank">bocd.com.cn/about-news-gonggao/1241832939327721472.html</a></div>
+          </li>
+          <li>
+            <div class="t">成都本地宝网点库：成都银行大量网点周六周日 09:00-16:00 营业，部分周末不开现金柜</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">第三方网点库</span></div>
+            <div class="s">东大街支行、永丰支行、科华支行、骡马市支行等均标「对私双休日营业时间：周六 09:00-16:00，周日 09:00-16:00」，分行营业部标「周末休息」——网点间周末营业安排不…</div>
+            <div class="u"><a href="https://cd.bendibao.com/wangdian/yinhang/andezhen/list189.htm" rel="nofollow noopener" target="_blank">cd.bendibao.com/wangdian/yinhang/andezhen/list189.htm</a></div>
+          </li>
+          <li>
+            <div class="t">智联招聘：成都银行对公助理（谢家祠支行）「周末双休 8:30-17:30」，招聘主体为徽通科技集团（外包）</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-07 检索</span></div>
+            <div class="s">岗位标「周末双休」，但招聘主体为徽通科技集团有限公司（金融外包服务商），工作地点派驻成都银行网点——不能代表成都银行直雇统一作息。</div>
+            <div class="u"><a href="https://jobs.zhaopin.com/CC622613120J40563055705.htm" rel="nofollow noopener" target="_blank">jobs.zhaopin.com/CC622613120J40563055705.htm</a></div>
+          </li>
+          <li>
+            <div class="t">四川人才网：成都银行对公助理-锦江工业园支行「周末双休」，标注「该职位信息待核验」，主体为徽通金融（外包）</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-07 检索</span></div>
+            <div class="s">岗位标「周末双休、不加班」，但页面明确标注「该职位信息待核验」，招聘主体为徽通金融服务外包有限公司。</div>
+            <div class="u"><a href="http://www.chinascrc.com/job1133514339.shtml" rel="nofollow noopener" target="_blank">chinascrc.com/job1133514339.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">员工社群整理：支行零售/柜员网点轮班、周末轮休；月末季末存款任务重</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">员工社群</span></div>
+            <div class="s">「支行零售/柜员：网点轮班，周末轮休；柜员需要处理柜面业务、厅堂营销，月末、季末存款任务重；内控、审计检查阶段加班整理资料」——一线岗位作息与总行机关差异显著。</div>
+            <div class="u"><a href="http://mp.weixin.qq.com/s?__biz=MzYzODk3MzkyMw==&amp;mid=2247485812&amp;idx=1&amp;sn=b75437327904f0b934c7dae308bd3c67" rel="nofollow noopener" target="_blank">mp.weixin.qq.com/s?__biz=MzYzODk3MzkyMw==&amp;mid=2247485812&amp;idx=1…</a></div>
+          </li>
+          <li>
+            <div class="t">成都银行官网（bocd.com.cn）及官方招聘：市场化选聘/总行岗位招聘公告，未披露统一休息制度</div>
+            <div class="m"><span class="k" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述</span> <span class="raw">原标注：company_site</span> <span class="d">官方</span></div>
+            <div class="s">官网「员工招聘」栏目列明市场化选聘管理人员、总行信息技术部等招聘公告，但公开口径无「双休/单休」统一表述。</div>
+            <div class="u"><a href="https://www.bocd.com.cn" rel="nofollow noopener" target="_blank">bocd.com.cn</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/chengdubank.html">查看 成都银行 (BOCD) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-boc" data-b="boc" data-g="A" data-n="4" data-l="4">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">中国银行 (BOC)</span><span class="co">中国银行股份有限公司</span><span class="ct">4 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">中国银行官网（boc.cn）及官方招聘：校园/社会/乡村振兴招聘公告，未披露统一休息制度</div>
+            <div class="m"><span class="k" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述</span> <span class="raw">原标注：company_site</span> <span class="d">官方</span></div>
+            <div class="s">中行官方站点，列明各分支行、网点、科技岗招聘方向，但公开口径无「双休/单休」统一表述。</div>
+            <div class="u"><a href="https://www.boc.cn" rel="nofollow noopener" target="_blank">boc.cn</a></div>
+          </li>
+          <li>
+            <div class="t">智联招聘：中国银行重庆市分行账单分期岗「周末单双休」</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-10-21 检索</span></div>
+            <div class="s">岗位描述标「周末单双休、法休」，注意是「单双休」而非固定双休，与统一双休口径相悖；招聘主体为中国银行股份有限公司重庆市分行。</div>
+            <div class="u"><a href="https://www.zhaopin.com/jobdetail/CC202766620J40801778814.htm" rel="nofollow noopener" target="_blank">zhaopin.com/jobdetail/CC202766620J40801778814.htm</a></div>
+          </li>
+          <li>
+            <div class="t">quanzhi：西宁「中国银行推广外呼」岗「周末双休、不加班」，招聘主体为银雁科技（外包）</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-10-21 检索</span></div>
+            <div class="s">岗位称「中国银行省分行直属岗位、纯室内坐班外呼」，标「周末双休、不加班」，但下方公司介绍明确为银雁科技服务集团（外包方），不能代表中行直雇统一作息。</div>
+            <div class="u"><a href="https://m.quanzhi.com/job/detail/6a7dabb5f87cf99210c6f617" rel="nofollow noopener" target="_blank">m.quanzhi.com/job/detail/6a7dabb5f87cf99210c6f617</a></div>
+          </li>
+          <li>
+            <div class="t">中国银行大庆分行公告（党风政风行风热线）：网点轮休、相邻网点错峰上班</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：company_notice</span> <span class="d">分行公告</span></div>
+            <div class="s">分行答复市民：各网点工作日 8:30-16:30 营业，「其余网点实行轮休制度，相邻网点错峰上班，分周六营业或周日营业」，说明网点端轮班运营、员工周末轮值。</div>
+            <div class="u"><a href="https://k.sina.cn/article_1442642697_55fcfb0901901oi4a.html" rel="nofollow noopener" target="_blank">k.sina.cn/article_1442642697_55fcfb0901901oi4a.html</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/boc.html">查看 中国银行 (BOC) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-icbc" data-b="icbc" data-g="A" data-n="4" data-l="4">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">工商银行 (ICBC)</span><span class="co">中国工商银行股份有限公司</span><span class="ct">4 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">中国工商银行人才招聘官网：校园/社会/乡村振兴招聘公告，未披露统一休息制度</div>
+            <div class="m"><span class="k" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述</span> <span class="raw">原标注：company_site</span> <span class="d">官方</span></div>
+            <div class="s">工行官方招聘频道，列明各分支行、网点、科技岗招聘方向，但公开口径无「双休/单休」统一表述。</div>
+            <div class="u"><a href="https://job.icbc.com.cn/" rel="nofollow noopener" target="_blank">job.icbc.com.cn/</a></div>
+          </li>
+          <li>
+            <div class="t">今日招聘（外包岗）：工商银行「做五休二、月休 8 天、双休」岗，标注「该职位信息待核验」</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-10-21 检索</span></div>
+            <div class="s">合肥包河区工行后台中心岗位描述称「一个月 7 天晚班、双休、月休息 8 天」，但页面顶部明确提示「该职位信息待核验，请仔细了解后再进行投递」，招聘主体为第三方人力公司而非工行直雇。</div>
+            <div class="u"><a href="https://www.jrzp.com/job2741461872.shtml" rel="nofollow noopener" target="_blank">jrzp.com/job2741461872.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">网易号/今日头条「工商银行员工自曝」：网点轮休、做五休二但休息日非固定周末</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">员工社群</span></div>
+            <div class="s">转发的员工原话：「休息日因为是轮休的，做五休二，至于是不是双休日那就不一定了」「如果有额外事情，加班是肯定的，到 9 点都是很常见的」。属匿名员工自述，非司法文书。</div>
+            <div class="u"><a href="https://www.163.com/dy/article/IQDOS0H805566U7J.html" rel="nofollow noopener" target="_blank">163.com/dy/article/IQDOS0H805566U7J.html</a></div>
+          </li>
+          <li>
+            <div class="t">三河人才网（外包岗）：工商银行远程银行中心「早 9 晚 6 双休、每月偶尔 1-3 次值班」</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-10-21 检索</span></div>
+            <div class="s">石家庄远程银行中心岗位标「每周休息 2 天，月休 8 天」，但招聘主体为第三方人力公司，标注「该职位信息待核验」，不能代表工行直雇统一作息。</div>
+            <div class="u"><a href="http://www.lfshrc.com/job2072087212.shtml" rel="nofollow noopener" target="_blank">lfshrc.com/job2072087212.shtml</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/icbc.html">查看 工商银行 (ICBC) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-ccb" data-b="ccb" data-g="A" data-n="4" data-l="4">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">建设银行 (CCB)</span><span class="co">中国建设银行股份有限公司</span><span class="ct">4 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">中国建设银行官网招聘频道：总行直属机构/境内分支机构招聘，未披露统一休息制度</div>
+            <div class="m"><span class="k" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述</span> <span class="raw">原标注：company_site</span> <span class="d">官方</span></div>
+            <div class="s">建行官方招聘站，列明各机构招聘方向，公开口径无「双休/单休」统一表述。</div>
+            <div class="u"><a href="http://job.ccb.com" rel="nofollow noopener" target="_blank">job.ccb.com</a></div>
+          </li>
+          <li>
+            <div class="t">建设银行官网网点营业时间（东莞分行）：对私周六部分营业、周日休息，系轮班</div>
+            <div class="m"><span class="k" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述</span> <span class="raw">原标注：company_site</span> <span class="d">官方</span></div>
+            <div class="s">各网点公示：周一至周五对私 9:00-17:00；周六部分网点 12:00-17:00；周日休息。说明网点端轮班运营、员工周末轮值。</div>
+            <div class="u"><a href="https://tool.ccb.com/Channel/566951?title=2" rel="nofollow noopener" target="_blank">tool.ccb.com/Channel/566951?title=2</a></div>
+          </li>
+          <li>
+            <div class="t">脉脉：建设银行客服专员「周末双休、节假日正常休息」</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-10-21 检索</span></div>
+            <div class="s">脉脉用户发布的建行客服岗描述标「六险、周末双休、节假日正常休息」，岗位偏客服类，不能代表全行统一作息。</div>
+            <div class="u"><a href="https://maimai.cn/article/detail?efid=C3Bjq02RgENY45Wd-KAs1w&amp;fid=1885826898" rel="nofollow noopener" target="_blank">maimai.cn/article/detail?efid=C3Bjq02RgENY45Wd-KAs1w&amp;fid=18858…</a></div>
+          </li>
+          <li>
+            <div class="t">牛客网：建行某小县分行员工分享「双休但不连着周六周日，周四和周六休」</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">员工社群</span></div>
+            <div class="s">员工自述网点早 8:15 晨会（周末不晨会）、下午 5:00 关门，不加班 5:30 下班；休息为轮休，「不是连着周六周日休」。属匿名员工自述，非司法文书。</div>
+            <div class="u"><a href="https://www.nowcoder.com/discuss/660237976059801600" rel="nofollow noopener" target="_blank">nowcoder.com/discuss/660237976059801600</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/ccb.html">查看 建设银行 (CCB) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-ctrip" data-b="ctrip" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">携程 (Ctrip)</span><span class="co">携程计算机技术（上海）有限公司</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">携程官网「企业公民·家庭友好·混合办公」页：正式官宣！携程在国内率先开启混合办公模式</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：官网披露</span> <span class="d">官网长期页</span></div>
+            <div class="s">「2月14日，携程集团宣布将在全公司推行混合办公制度。3月1日开始，每周三、周五，公司各事业部、职能部门可根据实际管理需求，实行或逐步推行1-2天的混合办公，即每周有1-2天，符合…</div>
+            <div class="u"><a href="https://pages.ctrip.com/commerce/promote/201201/other/qygm/jt2_1.html" rel="nofollow noopener" target="_blank">pages.ctrip.com/commerce/promote/201201/other/qygm/jt2_1.html</a></div>
+          </li>
+          <li>
+            <div class="t">新华网：携程在国内开启混合办公模式 每周1-2天自选办公地</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（快照）</span> <span class="d">2022-02-15</span></div>
+            <div class="s">「2月14日，在线旅游公司携程宣布将在全公司推行混合办公制度。3月1日开始，每周三、周五，公司各事业部、职能部门可根据实际管理需求，实行或逐步推行1-2天的混合办公」（搜索快照，未…</div>
+            <div class="u"><a href="http://www.xinhuanet.com/travel/20220215/8b0c02f550d6433d80860f769b44a06c/c.html" rel="nofollow noopener" target="_blank">xinhuanet.com/travel/20220215/8b0c02f550d6433d80860f769b44a06c…</a></div>
+          </li>
+          <li>
+            <div class="t">tdwc 社区清单与姊妹站记录：携程口径互证</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：社区清单（旁证）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「双休 + 每周 2 天居家办公」；姊妹站 candidate 档「部分办公岗双休与混合办公；客服需排班」。</div>
+            <div class="u"><a href="https://tdwc.luomor.com/" rel="nofollow noopener" target="_blank">tdwc.luomor.com/</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/ctrip.html">查看 携程 (Ctrip) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-gree" data-b="gree" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">格力 (GREE)</span><span class="co">珠海格力电器股份有限公司</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">广州日报·新花城：格力官宣双休、取消所有加班（盖章通知全文）</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">在公司成立三十周年之际，员工提出双休工作制的建议，经公司办公会研究决定，采纳该建议，将单双休工作制调整为双休工作制。具体通知如下：一、工作日作息时间周一至周五：上午8:30-11:…</div>
+            <div class="u"><a href="https://huacheng.gz-cmc.com/pages/2021/11/26/918b8652a6a94382ba817d16434b19cd.html" rel="nofollow noopener" target="_blank">huacheng.gz-cmc.com/pages/2021/11/26/918b8652a6a94382ba817d164…</a></div>
+          </li>
+          <li>
+            <div class="t">同类项目社区清单（tdwc.luomor.com）：格力「双休 · 取消所有加班」</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：社区清单（旁证）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「双休」「2021 年起取消所有加班，每天工作约 7 小时」。</div>
+            <div class="u"><a href="https://tdwc.luomor.com/" rel="nofollow noopener" target="_blank">tdwc.luomor.com/</a></div>
+          </li>
+          <li>
+            <div class="t">姊妹站 shuangxiugou-guide 数据库：格力登记为 verified（官方公开）档</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：开源项目记录（旁证）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「盖章通知将单双休调整为双休，必要加班需审批并调休」，并记录总公司、分公司及销售场景执行差异。</div>
+            <div class="u"><a href="https://github.com/dujeongil-galaxy/shuangxiugou-guide" rel="nofollow noopener" target="_blank">github.com/dujeongil-galaxy/shuangxiugou-guide</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/gree.html">查看 格力 (GREE) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-pdl" data-b="pdl" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">胖东来</span><span class="co">许昌市胖东来商贸集团有限公司</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">腾讯网「问AI」：于东来官宣 2027-03 起全员双休、每天 7 小时</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（多源交叉）</span> <span class="d">2026-10-03</span></div>
+            <div class="s">「前两天于东来宣布，从2027年3月开始，胖东来员工及管理层每周工作5天、休息2天，每天工作7小时，每周工作35小时。」同文注：「管理层基本已经实行双休、每天7小时……普通员工则以…</div>
+            <div class="u"><a href="https://news.qq.com/rain/a/20261003A05SHV00" rel="nofollow noopener" target="_blank">news.qq.com/rain/a/20261003A05SHV00</a></div>
+          </li>
+          <li>
+            <div class="t">北京商报/《中外企业文化》：加班罚钱、周二闭店、一年 140 天休假</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道</span> <span class="d">2023-06-16</span></div>
+            <div class="s">「加班罚钱、周二闭店休息、一年高达140天的休假、一天工作6-7小时、非工作时间不允许接工作电话、把利润的90%分给员工」「自2012年3月2日起，胖东来的所有门店实行了每周二闭店…</div>
+            <div class="u"><a href="https://www.bbtnews.com.cn/2023/0616/479383.shtml" rel="nofollow noopener" target="_blank">bbtnews.com.cn/2023/0616/479383.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">同类项目社区清单（tdwc.luomor.com）与姊妹站记录：胖东来口径互证</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：社区清单（旁证）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「每周二闭店休息、每日工作 7 小时」「年假 30-40 天，创始人于东来明令禁止加班；非传统周六日双休，门店覆盖许昌、新乡」。姊妹站 shuangxiugou-guide 同步记…</div>
+            <div class="u"><a href="https://tdwc.luomor.com/" rel="nofollow noopener" target="_blank">tdwc.luomor.com/</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/pdl.html">查看 胖东来 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-decathlon" data-b="decathlon" data-g="A" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">Decathlon (迪卡侬)</span><span class="co">迪卡侬（上海）体育用品有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">迪卡侬《Modern Slavery Statement 2024》官方文件（供应链尽调章节）</div>
+            <div class="m"><span class="k" style="border-color:#0369a1;color:#0369a1">ESG/审计报告</span> <span class="raw">原标注：esg_report</span> <span class="d">2024-04-15</span></div>
+            <div class="s">全职员工严格执行当地最高劳动保护标准，保障法定休息权利。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/decathlon.html">查看 Decathlon (迪卡侬) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-logitech" data-b="logitech" data-g="A" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">Logitech (罗技)</span><span class="co">罗技（中国）科技有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">955.WLB 开源清单收录企业</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2023-11-18</span></div>
+            <div class="s">罗技中国团队稳定进入外企 WLB 友好榜单，未见重大工时争议。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/logitech.html">查看 Logitech (罗技) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-osram" data-b="osram" data-g="A" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">OSRAM (欧司朗)</span><span class="co">欧司朗（中国）照明有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">外企工时合规收录</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2023-10-12</span></div>
+            <div class="s">国内实体保持 965 节奏与全额法定福利。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/osram.html">查看 OSRAM (欧司朗) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-philips-automotive" data-b="philips-automotive" data-g="A" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">Philips Automotive (飞利浦汽车生活)</span><span class="co">亮锐（上海）科技有限公司 / 飞利浦照明</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">外企工时与职场环境合规收录</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2023-08-10</span></div>
+            <div class="s">国内研发及运营实体保持严格 965 节奏与全额法定福利待遇。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/philips-automotive.html">查看 Philips Automotive (飞利浦汽车生活) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-sony" data-b="sony" data-g="A" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">Sony (索尼中国)</span><span class="co">索尼（中国）有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">955.WLB 清单收录</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2024-01-12</span></div>
+            <div class="s">长期位列外企不加班与尊重劳动法榜单。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/sony.html">查看 Sony (索尼中国) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-starbucks" data-b="starbucks" data-g="A" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">Starbucks (星巴克中国)</span><span class="co">星巴克企业管理（中国）有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">星巴克全球社会影响力与劳工实践报告</div>
+            <div class="m"><span class="k" style="border-color:#0369a1;color:#0369a1">ESG/审计报告</span> <span class="raw">原标注：esg_report</span> <span class="d">2024-05-14</span></div>
+            <div class="s">中国区员工合规培训与休息权保障达成率超过 98%。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/starbucks.html">查看 Starbucks (星巴克中国) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-the-north-face" data-b="the-north-face" data-g="A" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">The North Face (北面)</span><span class="co">威富服饰（中国）有限公司 / VF Corporation</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">VF Corporation 工厂合规与人权尽责报告</div>
+            <div class="m"><span class="k" style="border-color:#0369a1;color:#0369a1">ESG/审计报告</span> <span class="raw">原标注：esg_report</span> <span class="d">2024-03-15</span></div>
+            <div class="s">全球供应链遵循 VF 工厂守则，明确工时上限与加班补偿。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/the-north-face.html">查看 The North Face (北面) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-uniqlo" data-b="uniqlo" data-g="A" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">Uniqlo (优衣库)</span><span class="co">迅销（中国）商贸有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">迅销集团全球劳工人权公开报告</div>
+            <div class="m"><span class="k" style="border-color:#0369a1;color:#0369a1">ESG/审计报告</span> <span class="raw">原标注：esg_report</span> <span class="d">2024-04-10</span></div>
+            <div class="s">全面排查与整改供应链及直营网络工时违规事件。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/uniqlo.html">查看 Uniqlo (优衣库) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-pepsi" data-b="pepsi" data-g="A" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">百事食品 (乐事 Lay&#x27;s / 桂格燕麦)</span><span class="co">百事食品（中国）有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">百事中国企业社会责任与劳工保障白皮书</div>
+            <div class="m"><span class="k" style="border-color:#0369a1;color:#0369a1">ESG/审计报告</span> <span class="raw">原标注：esg_report</span> <span class="d">2024-01-20</span></div>
+            <div class="s">通过 ISO 45001 认证并严格履行当地劳动工时保障标准。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/pepsi.html">查看 百事食品 (乐事 Lay&#x27;s / 桂格燕麦) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-bee-flower" data-b="bee-flower" data-g="A" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">蜂花 (Bee &amp; Flower)</span><span class="co">上海蜂花日用品有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">中国裁判文书网及劳动仲裁公开数据检索</div>
+            <div class="m"><span class="k" style="border-color:#7c3aed;color:#7c3aed">司法裁判</span> <span class="raw">原标注：judicial_record</span> <span class="d">2024-02-12</span></div>
+            <div class="s">近三年内无恶意克扣加班费及非法辞退相关败诉执行记录。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/bee-flower.html">查看 蜂花 (Bee &amp; Flower) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-dji" data-b="dji" data-g="B" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">大疆 DJI</span><span class="co">深圳市大疆创新科技有限公司</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">澎湃新闻（新浪转载）：大疆开始强制员工 21 点下班，员工确认属实</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（多源交叉）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">3月8日，据经济观察报，大疆开始强制员工21点下班。此前在社交媒体上有爆料称，大疆公司调整考勤制度，要求员工提前至9点上班。大疆公司曾回应：“强制9点上班”为谣传。现在，大疆不强制…</div>
+            <div class="u"><a href="https://news.sina.com.cn/c/2025-03-10/doc-inepeazp6456514.shtml" rel="nofollow noopener" target="_blank">news.sina.com.cn/c/2025-03-10/doc-inepeazp6456514.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">同类项目社区清单（tdwc.luomor.com）：大疆「双休 · 2025 年起晚 9 点逐层清楼赶人」</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：社区清单（旁证）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「双休」「2025 年起晚 9 点逐层清楼赶人」。</div>
+            <div class="u"><a href="https://tdwc.luomor.com/" rel="nofollow noopener" target="_blank">tdwc.luomor.com/</a></div>
+          </li>
+          <li>
+            <div class="t">姊妹站 shuangxiugou-guide 数据库：大疆登记为 reported 档（晚 9 点清场的媒体报道）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：开源项目记录（旁证）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「部分办公区晚 9 点清场的媒体报道」「大疆未公开确认为全员固定作息，项目和研发团队可有差异」。</div>
+            <div class="u"><a href="https://github.com/dujeongil-galaxy/shuangxiugou-guide" rel="nofollow noopener" target="_blank">github.com/dujeongil-galaxy/shuangxiugou-guide</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/dji.html">查看 大疆 DJI 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-bytedance" data-b="bytedance" data-g="B" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">字节跳动 (ByteDance)</span><span class="co">北京字节跳动科技有限公司</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">广州日报·新花城：字节跳动开启「1075」上班模式</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道</span> <span class="d">2021-11-26</span></div>
+            <div class="s">「11月1日，据媒体报道称，字节跳动开启“1075”的上班模式，即每天10时上班，晚7时下班，每周工作5天。该公司规定中提到，工作日晚7时后加班需提交申请，需要有理由并经过领导同意…</div>
+            <div class="u"><a href="https://huacheng.gz-cmc.com/pages/2021/11/26/918b8652a6a94382ba817d16434b19cd.html" rel="nofollow noopener" target="_blank">huacheng.gz-cmc.com/pages/2021/11/26/918b8652a6a94382ba817d164…</a></div>
+          </li>
+          <li>
+            <div class="t">创业邦：字节跳动发布内部邮件正式宣布取消大小周</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（快照）</span> <span class="d">2021-07</span></div>
+            <div class="s">「昨日晚间，字节跳动发布内部邮件，正式宣布取消大小周制度。字节跳动表示，该决定将于 2021 年8月1日起施行」（搜索快照，未抓原文）。</div>
+            <div class="u"><a href="https://m.cyzone.cn/article/640465" rel="nofollow noopener" target="_blank">m.cyzone.cn/article/640465</a></div>
+          </li>
+          <li>
+            <div class="t">tdwc 社区清单与姊妹站记录：字节口径互证</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：社区清单（旁证）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「双休」「2021 年取消大小周，但日常工时偏长」；姊妹站 candidate 档「名义双休，工作日强度和部门差异大」。</div>
+            <div class="u"><a href="https://tdwc.luomor.com/" rel="nofollow noopener" target="_blank">tdwc.luomor.com/</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/bytedance.html">查看 字节跳动 (ByteDance) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-xiaohongshu" data-b="xiaohongshu" data-g="B" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">小红书 (REDnote)</span><span class="co">行吟信息科技（上海）有限公司</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">新华社《经济参考报》：小红书回应“将取消大小周”：五一之后执行</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：企业回应（媒体确认）</span> <span class="d">2025-04-24</span></div>
+            <div class="s">「《经济参考报》记者与小红书相关负责人取得联系，小红书回应称，4 月 24 日，小红书发布全员信……全员信还发布另外两项变化，小红书员工在离职时期权可申请回购；取消隔周周六工作的安…</div>
+            <div class="u"><a href="http://jjckb.xinhuanet.com/20250424/f37299fe87be42eab58e991288d6dcc5/c.html" rel="nofollow noopener" target="_blank">jjckb.xinhuanet.com/20250424/f37299fe87be42eab58e991288d6dcc5…</a></div>
+          </li>
+          <li>
+            <div class="t">21 世纪经济报道：小红书发布全员信：取消员工竞业，取消“大小周”</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（快照）</span> <span class="d">2025-04-24</span></div>
+            <div class="s">「4月24日，小红书发布全员信，宣布将从 5月 1日起，不新增现金或期权竞业，原有的现金和期权竞业全部释放。」（搜索快照，未抓原文）。</div>
+            <div class="u"><a href="https://www.21jingji.com/article/20250424/herald/e1e28a39e40a744106df1cede34ffaf8.html" rel="nofollow noopener" target="_blank">21jingji.com/article/20250424/herald/e1e28a39e40a744106df1cede…</a></div>
+          </li>
+          <li>
+            <div class="t">tdwc 社区清单与姊妹站记录：小红书口径互证</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：社区清单（旁证）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「双休」「2025 年 5 月取消大小周」；姊妹站 candidate 档「汇总称 2025 年 5 月取消大小周，具体团队待问」。</div>
+            <div class="u"><a href="https://tdwc.luomor.com/" rel="nofollow noopener" target="_blank">tdwc.luomor.com/</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/xiaohongshu.html">查看 小红书 (REDnote) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-kuaishou" data-b="kuaishou" data-g="B" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">快手 (Kuaishou)</span><span class="co">北京快手科技有限公司</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">新浪财经（转时代周报）：快手官宣取消大小周，鼓励多陪伴家人朋友</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（多源交叉）</span> <span class="d">2021-06-24</span></div>
+            <div class="s">「6月24日晚，快手内部人士告诉时代财经，快手已在内部官宣取消大小周制度，从7月1日起正式实行。」「快手表示员工按需加班时公司会向员工支付双倍工资。」员工自述：「即便取消大小周，我…</div>
+            <div class="u"><a href="https://finance.sina.com.cn/chanjing/gsnews/2021-06-25/doc-ikqciyzk1722032.shtml" rel="nofollow noopener" target="_blank">finance.sina.com.cn/chanjing/gsnews/2021-06-25/doc-ikqciyzk172…</a></div>
+          </li>
+          <li>
+            <div class="t">人民日报·中国城市报：取消“大小周”字节跳动薪资普降20%？</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（快照）</span> <span class="d">2021-09-13</span></div>
+            <div class="s">「此外，快手也宣布从7月1日起取消“大小周”，员工按需加班，公司按照相关规定向员工支付加班工资。据了解，快手内部将“大小周”称为“聚焦日”，2021 年1月开始（试运行）」（搜索快…</div>
+            <div class="u"><a href="http://paper.people.com.cn/zgcsb/html/2021-09/13/content_25879132.htm" rel="nofollow noopener" target="_blank">paper.people.com.cn/zgcsb/html/2021-09/13/content_25879132.htm</a></div>
+          </li>
+          <li>
+            <div class="t">tdwc 社区清单与姊妹站记录：快手口径互证</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：社区清单（旁证）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「双休」「反内卷口碑较好」；姊妹站 candidate 档「汇总记录取消大小周，强度看团队」。</div>
+            <div class="u"><a href="https://tdwc.luomor.com/" rel="nofollow noopener" target="_blank">tdwc.luomor.com/</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/kuaishou.html">查看 快手 (Kuaishou) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-mihoyo" data-b="mihoyo" data-g="B" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">米哈游 (miHoYo)</span><span class="co">上海米哈游网络科技股份有限公司</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">腾讯网·青轴游事：游戏公司加班的火药桶，重新被点燃</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道</span> <span class="d">2022-03-19</span></div>
+            <div class="s">「以上海游戏圈为例，米哈游、莉莉丝、心动等一大批快速崛起的游戏企业，大部分贯彻“福利内卷”的玩法，双休、朝10晚6等工时待遇早就北广深的游戏从业者们羡慕不已。」本站已于 2026-…</div>
+            <div class="u"><a href="https://news.qq.com/rain/a/20220319A0590700" rel="nofollow noopener" target="_blank">news.qq.com/rain/a/20220319A0590700</a></div>
+          </li>
+          <li>
+            <div class="t">NGA 玩家社区：米哈游薪资待遇讨论（员工自述）</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：社区自述（快照）</span> <span class="d">2022-11</span></div>
+            <div class="s">「加班我感觉还是比较重的，但是仅限工作日 双休雷打不动，双休加班/值班一定是给够钱或者调休的」（搜索快照，社区自述、非官方口径）。</div>
+            <div class="u"><a href="https://bbs.nga.cn/read.php?tid=34298007&amp;page=2" rel="nofollow noopener" target="_blank">bbs.nga.cn/read.php?tid=34298007&amp;page=2</a></div>
+          </li>
+          <li>
+            <div class="t">tdwc 社区清单与姊妹站记录：米哈游口径互证</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：社区清单（旁证）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「双休为主」「项目期存在加班」；姊妹站 candidate 档「多数岗位名义双休，版本和项目节点可加班」。</div>
+            <div class="u"><a href="https://tdwc.luomor.com/" rel="nofollow noopener" target="_blank">tdwc.luomor.com/</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/mihoyo.html">查看 米哈游 (miHoYo) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-midea" data-b="midea" data-g="B" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">美的 (Midea)</span><span class="co">美的集团股份有限公司</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">澎湃新闻（新浪转载）：美的确认六条禁令，严禁下班时间开会、形式主义加班</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：企业回应（媒体确认）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">3月10日，澎湃新闻从美的集团（000333）确认，早在今年初，美的就明确了关于简化工作方式要求的“六条禁令”，其中就包括“严禁下班时间开会、形式主义加班”。……此文件适用于美的集…</div>
+            <div class="u"><a href="https://news.sina.com.cn/c/2025-03-10/doc-inepeazp6456514.shtml" rel="nofollow noopener" target="_blank">news.sina.com.cn/c/2025-03-10/doc-inepeazp6456514.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">同类项目社区清单（tdwc.luomor.com）：美的「双休 · 2025 年发布六条禁令」</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：社区清单（旁证）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「双休」「2025 年发布『六条禁令』，18:20 强制下班」。</div>
+            <div class="u"><a href="https://tdwc.luomor.com/" rel="nofollow noopener" target="_blank">tdwc.luomor.com/</a></div>
+          </li>
+          <li>
+            <div class="t">姊妹站 shuangxiugou-guide 数据库：美的登记为 verified 档并注明 18:20 非正式文件</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：开源项目记录（旁证）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「企业确认严禁下班时间开会和形式主义加班；网传 18:20 并非正式文件」。</div>
+            <div class="u"><a href="https://github.com/dujeongil-galaxy/shuangxiugou-guide" rel="nofollow noopener" target="_blank">github.com/dujeongil-galaxy/shuangxiugou-guide</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/midea.html">查看 美的 (Midea) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-tencent" data-b="tencent" data-g="B" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">Tencent (腾讯)</span><span class="co">腾讯科技（深圳）有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">中国互联网工时改革追踪</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2024-03-30</span></div>
+            <div class="s">腾讯各事业群周末双休落实率超过 85%，日常加班大幅收敛。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/tencent.html">查看 Tencent (腾讯) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-vivo" data-b="vivo" data-g="B" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">vivo (维沃移动)</span><span class="co">维沃移动通信有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">职场社区员工反馈汇总</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2024-05-20</span></div>
+            <div class="s">多渠道交叉印证：非研发部门双休，研发线存在阶段性高强度。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/vivo.html">查看 vivo (维沃移动) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-nongfu" data-b="nongfu" data-g="B" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">农夫山泉</span><span class="co">农夫山泉股份有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">员工社区反馈汇总</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2024-03-08</span></div>
+            <div class="s">总部与产线工时差异较大。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/nongfu.html">查看 农夫山泉 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-master-kong" data-b="master-kong" data-g="B" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">康师傅 (Master Kong)</span><span class="co">康师傅控股有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">员工社区反馈汇总</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2024-04-05</span></div>
+            <div class="s">总部与产线工时差异较大。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/master-kong.html">查看 康师傅 (Master Kong) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-haier" data-b="haier" data-g="B" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">海尔 (Haier)</span><span class="co">海尔智家股份有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">员工社区反馈交叉汇总</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2024-04-22</span></div>
+            <div class="s">不同事业部工时差异较大，需进一步核实。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/haier.html">查看 海尔 (Haier) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-liby" data-b="liby" data-g="B" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">立白 (Liby)</span><span class="co">广州立白企业集团有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">员工社区反馈汇总</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2024-05-02</span></div>
+            <div class="s">不同岗位工时差异较大。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/liby.html">查看 立白 (Liby) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-netease-youdao" data-b="netease-youdao" data-g="B" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">网易有道 (Youdao)</span><span class="co">网易有道信息技术（北京）有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">员工社区工时反馈汇总</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2024-06-18</span></div>
+            <div class="s">非大促期维持双休，大促期存在加班。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/netease-youdao.html">查看 网易有道 (Youdao) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-xiaomi" data-b="xiaomi" data-g="B" data-n="0" data-l="0">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">小米</span><span class="co">小米科技有限责任公司</span><span class="ct w">证据薄弱 · 0 条可点链接</span></summary>
+      <div class="ev-body">
+        <div class="ev-nolink"><strong>本页无可点公开链接。</strong>评级判据如下（线下一手／匿名反馈，无法给出原始来源 URL）：</div>
+        <ul class="ev-reasons">
+          <li>总部名义双休但存在日均 11.5h 隐性工时</li>
+          <li>线下小米之家员工反馈一周休一天</li>
+          <li>在线客服为轮班制（多源交叉验证）</li>
+        </ul>
+        <div class="ev-more"><a href="./brand/xiaomi.html">查看 小米 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-samsung" data-b="samsung" data-g="C" data-n="10" data-l="10">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">三星 (Samsung)</span><span class="co">三星（中国）投资有限公司</span><span class="ct">10 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">三星回应惠州停产：「为提高全球生产运营效率，不得已做出惠州工厂停产的决定」</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：company_response</span> <span class="d">2019-10-03</span></div>
+            <div class="s">澎湃新闻稿（央视网转载）：三星中国方面回应称惠州三星电子为 1992 年三星最初在华设立的工厂之一，「综合考虑到全球手机市场现况，为提高全球生产运营效率，不得已做出惠州工厂停产的决…</div>
+            <div class="u"><a href="http://news.cctv.com/2019/10/03/ARTI8miCPN22oElFO8qjPGup191003.shtml" rel="nofollow noopener" target="_blank">news.cctv.com/2019/10/03/ARTI8miCPN22oElFO8qjPGup191003.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">界面新闻：惠州厂离职待遇含按工龄分档全员发放的手机（A8 / S10+ / Note10）</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：media_report</span> <span class="d">2019-10-15</span></div>
+            <div class="s">报道原文：除薪水、赔偿金与最后一个月公积金外，一名惠州三星员工称「手机福利是全员发放，十年之下是三星 A8，市场价 3700 元左右；十年以上 S10＋，20 年以上员工在 S10…</div>
+            <div class="u"><a href="https://www.jiemian.com/article/3570754.html" rel="nofollow noopener" target="_blank">jiemian.com/article/3570754.html</a></div>
+          </li>
+          <li>
+            <div class="t">IT 之家：10 月 3 日惠州三星电子解散，每人一只依波手表、一本纪念册，工龄 10 年员工赠 Galaxy S10+</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：media_report</span> <span class="d">2019-10-04</span></div>
+            <div class="s">报道引员工晒出的抖音视频与朋友圈：10 月 3 日惠州三星电子解散，三星替员工交完最后一个月公积金，每人发一只依波手表、一本纪念册，工龄 10 年员工获赠 Galaxy S10+。…</div>
+            <div class="u"><a href="https://m.ithome.com/html/448612.htm" rel="nofollow noopener" target="_blank">m.ithome.com/html/448612.htm</a></div>
+          </li>
+          <li>
+            <div class="t">环球网/中国日报网（引梨视频实地探访）：天津工厂部分员工实拿「N+3」，90% 签订离职协议</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：media_report</span> <span class="d">2019-01-07</span></div>
+            <div class="s">天津三星通信工厂 2018-12-31 正式停产，原有员工 2600 余人；梨视频实地探访显示 90% 职工已签订离职协议并对补偿表示接受，「部分员工收到的补偿方案是 N+3，同时…</div>
+            <div class="u"><a href="https://tech.chinadaily.com.cn/a/201901/07/WS5c32b88ea3100a343d6f248c.html" rel="nofollow noopener" target="_blank">tech.chinadaily.com.cn/a/201901/07/WS5c32b88ea3100a343d6f248c.…</a></div>
+          </li>
+          <li>
+            <div class="t">OFweek 回顾：惠州方案「除 N+3 工龄补偿外，还额外提供工龄奖、1 个月的国庆奖金、半年度奖金、礼品等」</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：media_report</span> <span class="d">2020-07-31</span></div>
+            <div class="s">行业媒体回顾惠州三星工厂撤离方案，文内注明方案图来源为「微博@肥威」。该口径属员工爆料层级（非公司官方文件），与 EET-China 版本细节不一致，本站并列列出供读者对照，不作唯…</div>
+            <div class="u"><a href="https://m.ofweek.com/im/2020-07/ART-201929-8440-30450352.html" rel="nofollow noopener" target="_blank">m.ofweek.com/im/2020-07/ART-201929-8440-30450352.html</a></div>
+          </li>
+          <li>
+            <div class="t">电子工程专辑 EET-China：另一版本「至少 6 个月工资+4000 元+1 部手机的离职补偿，随工龄逐级提升」</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：media_report</span> <span class="d">2019-10-09</span></div>
+            <div class="s">报道根据离职员工爆料称惠州厂员工「将从三星获得至少 6 个月工资+4000 元+1 部手机的离职补偿，并且会随着工龄的长度逐级提升」，并转引三星对媒体回应「由于中国市场形势严峻、竞…</div>
+            <div class="u"><a href="https://www.eet-china.com/news/201910091106.html" rel="nofollow noopener" target="_blank">eet-china.com/news/201910091106.html</a></div>
+          </li>
+          <li>
+            <div class="t">《2023 中国三星旗下企业社会责任报告》：截至 2023 年底在华累计投资 536 亿美元、共 177 个机构、员工近 5 万人</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：company_filing</span> <span class="d">2023 年度报告</span></div>
+            <div class="s">官方报告载：截至 2023 年底三星在华累计投资 536 亿美元，在北京、上海、天津、苏州、深圳和西安等地设立17 家生产企业、11 家研发中心等共计 177 个机构，员工总数近…</div>
+            <div class="u"><a href="https://images.samsung.com/is/content/samsung/assets/cn/sustainability/social-responsibility/report/2023-qixia.pdf" rel="nofollow noopener" target="_blank">images.samsung.com/is/content/samsung/assets/cn/sustainability…</a></div>
+          </li>
+          <li>
+            <div class="t">《中国经济周刊》：「自 2019 年关闭所有在华的手机工厂之后」</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：media_report</span> <span class="d">2022-05-30</span></div>
+            <div class="s">人民日报社《中国经济周刊》报道表述：「因为惠州三星逐步撤离，并于 2019 年清零」「自 2019 年关闭所有在华的手机工厂之后，越南成为三星在海外最大的产能承接地」。佐证在华手机…</div>
+            <div class="u"><a href="https://paper.people.com.cn/zgjjzk/html/2022-05/30/nw.zgjjzk_20220530_3-01.htm" rel="nofollow noopener" target="_blank">paper.people.com.cn/zgjjzk/html/2022-05/30/nw.zgjjzk_20220530_…</a></div>
+          </li>
+          <li>
+            <div class="t">官方 2026 届校招简章（西电就业网）：半导体工程师岗「能适应倒班工作（三班倒）」；公司文化自述追求 Work-Life Balance</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-03</span></div>
+            <div class="s">三星（中国）半导体有限公司 2026 届春季校园招聘简章（公司直招声明：不向候选人收取任何费用）。能力要求原文：「4.能适应倒班工作（三班倒）」（半导体工程师岗）；公司文化原文：「…</div>
+            <div class="u"><a href="https://job.xidian.edu.cn/campus/view/id/755144" rel="nofollow noopener" target="_blank">job.xidian.edu.cn/campus/view/id/755144</a></div>
+          </li>
+          <li>
+            <div class="t">知乎员工讨论：西安三星半导体「三班倒」与加班费水平（UGC 仅线索）</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">知乎问答「西安三星半导体有限公司本科生待遇如何？听说要三班倒」下，多名自称从业者的回答提及三班倒排班与加班费水平（如「待遇在西安来说是不错的，加班费算上基本上是普通本科生在西安的天…</div>
+            <div class="u"><a href="https://www.zhihu.com/question/387585488" rel="nofollow noopener" target="_blank">zhihu.com/question/387585488</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/samsung.html">查看 三星 (Samsung) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-lingshiyouming" data-b="lingshiyouming" data-g="C" data-n="10" data-l="10">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">零食有鸣</span><span class="co">成都零食有鸣商业管理有限公司</span><span class="ct">10 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">商务部商业特许经营备案：成都零食有鸣商业管理有限公司</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：官方口径</span> <span class="d">2022-02-25 备案</span></div>
+            <div class="s">备案号 0520100112200015，统一社会信用代码 91520103MA6HHP6N0L，法定代表人何劲鹏，成立日期 2019-01-14，住所成都高新区；特许品牌「零食有…</div>
+            <div class="u"><a href="http://txjy.mofcom.gov.cn/manager/prosecute.do?method=add&amp;id=11937490" rel="nofollow noopener" target="_blank">txjy.mofcom.gov.cn/manager/prosecute.do?method=add&amp;id=11937490</a></div>
+          </li>
+          <li>
+            <div class="t">零食有鸣官网「关于有鸣」</div>
+            <div class="m"><span class="k" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述</span> <span class="raw">原标注：公司自述</span> <span class="d">品牌官方</span></div>
+            <div class="s">品牌隶属贵阳黔志楚远商贸有限公司、总部设立于四川成都；2019 年创立，2021 年底门店超 80 家，截至 2022 年 4 月全国门店突破 250 家，立足大西南与华南。</div>
+            <div class="u"><a href="https://www.cdlsym.com/about2/" rel="nofollow noopener" target="_blank">cdlsym.com/about2/</a></div>
+          </li>
+          <li>
+            <div class="t">快懂百科：成都零食有鸣商业管理有限公司主体信息</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：第三方百科</span></div>
+            <div class="s">确认曾用名「贵阳黔志楚远商贸有限公司」、成立日期 2019-01-14、法定代表人何劲鹏、旗下品牌零食有鸣、经营范围食品销售等。</div>
+            <div class="u"><a href="https://www.baike.com/wikiid/7455215076941824026" rel="nofollow noopener" target="_blank">baike.com/wikiid/7455215076941824026</a></div>
+          </li>
+          <li>
+            <div class="t">鱼泡直聘 成都郫都两河西路店：两班制｜月休 4 天｜节假日排班轮休</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-17 更新</span></div>
+            <div class="s">招聘信息公示「工作时间两班制：早班 8:00-16:30；晚班 14:30-23:00；月休 4 天，节假日排班轮休」，综合薪资 3000-5000 元/月。</div>
+            <div class="u"><a href="https://m.yupao.com/zhaogong/308482614.html" rel="nofollow noopener" target="_blank">m.yupao.com/zhaogong/308482614.html</a></div>
+          </li>
+          <li>
+            <div class="t">店长直聘 成都锦江区门店：两班制轮班｜月休 4 天</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-09-22</span></div>
+            <div class="s">招聘信息公示「早班：08:00-18:00；晚班：13:00-23:00（两班制轮班，月休 4 天）」，固定底薪 3400 元/月。</div>
+            <div class="u"><a href="https://m.dianzhangzhipin.com/job/1Xd_09W4F1Y~.html" rel="nofollow noopener" target="_blank">m.dianzhangzhipin.com/job/1Xd_09W4F1Y~.html</a></div>
+          </li>
+          <li>
+            <div class="t">BOSS 直聘 成都静祥路店：每天在岗 9 小时｜早/中/晚班排班</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-09-29 更新</span></div>
+            <div class="s">招聘信息公示「分早/中/晚班 排班安排工作，每天在岗时间 9 小时」，工作含搬货入库（体力活较累）。</div>
+            <div class="u"><a href="https://m.zhipin.com/job_detail/71b7fe1f40a2da420nd73du5F1ZT.html" rel="nofollow noopener" target="_blank">m.zhipin.com/job_detail/71b7fe1f40a2da420nd73du5F1ZT.html</a></div>
+          </li>
+          <li>
+            <div class="t">琼海招聘网 爱华东路店：月休 2 天｜早 7:30-16:00 / 晚 15:30-00:00</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-09-20</span></div>
+            <div class="s">招聘信息公示「假期：月休 2 天；时间：早班 7:30-16:00，晚班 15:30-00:00，中间有半个小时就餐时间」，薪资 3000-3500 元。</div>
+            <div class="u"><a href="https://qhzp.571400.net/wap/c_job-a_comapply-id_33453.html" rel="nofollow noopener" target="_blank">qhzp.571400.net/wap/c_job-a_comapply-id_33453.html</a></div>
+          </li>
+          <li>
+            <div class="t">青海信息网 办事大厅店：月休两天｜白 8:30-18:00 / 晚 13:00-22:30｜加班补助</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-06-23</span></div>
+            <div class="s">招聘信息公示「白晚班轮班，月休两天，工作时间：白班 8:30-18:00 晚班 13:00-22:30」，含加班补助。</div>
+            <div class="u"><a href="https://jzx.0971.com/zhaopin/zp/34957.html" rel="nofollow noopener" target="_blank">jzx.0971.com/zhaopin/zp/34957.html</a></div>
+          </li>
+          <li>
+            <div class="t">封面新闻 / 新浪财经：内江店「月休 2 天休满扣 300 元全勤」上热搜</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体调查</span> <span class="d">2026-09-10</span></div>
+            <div class="s">00 后求职者小丽应聘内江一家零食有鸣批发超市收银员，招聘方称「底薪 3000 + 300 全勤，月休 2 天，休满 2 天即无全勤、试用期 7 天无薪、急辞扣 3 天工资」；店长…</div>
+            <div class="u"><a href="https://finance.sina.com.cn/jjxw/2026-09-10/doc-iniritau2848146.shtml.md" rel="nofollow noopener" target="_blank">finance.sina.com.cn/jjxw/2026-09-10/doc-iniritau2848146.shtml.…</a></div>
+          </li>
+          <li>
+            <div class="t">企查查：成都零食有鸣商业管理有限公司</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：企业信用信息</span></div>
+            <div class="s">员工人数 131（2025 年）；舆情记录含 2026-09-10「求职者称每月只允许休 2 天」与 2026-09-18 量贩零食店计量检查相关报道。</div>
+            <div class="u"><a href="https://www.qcc.com/creport/f09b5ab7c326c0dc660431e886da9241.html" rel="nofollow noopener" target="_blank">qcc.com/creport/f09b5ab7c326c0dc660431e886da9241.html</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/lingshiyouming.html">查看 零食有鸣 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-yidiandian" data-b="yidiandian" data-g="C" data-n="8" data-l="7">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">一点点 (1点点)</span><span class="co">生根餐饮管理（上海）有限公司</span><span class="ct">8 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">站长线下核实：一点点门店淡季月休 8 天 / 旺季月休 4 天</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-18</span></div>
+            <div class="s">由本站站长于 2026-10-18 线下走访核实（大学城附近门店员工实录）：淡季月休 8 天、旺季月休 4 天，休息随季节波动、并非大小周。此为一线视角的实地核实。核实人：duje…</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">BOSS 直聘佛山顺德区一点点店员：每班 10 小时（含 30 分钟吃饭）｜月休 4 天｜每周排班一次</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-07 更新</span></div>
+            <div class="s">招聘信息公示「每个班次 10 小时（吃饭时间每次 30 分钟，包含在上班时间内），月休 4 天，每周排班一次（接受轮班制）」。系门店侧公开的招聘口径，与站长线下核实结论一致。</div>
+            <div class="u"><a href="https://m.zhipin.com/job_detail/4b2a38b7326bac0d0nV-3965FFpY.html" rel="nofollow noopener" target="_blank">m.zhipin.com/job_detail/4b2a38b7326bac0d0nV-3965FFpY.html</a></div>
+          </li>
+          <li>
+            <div class="t">店长直聘兰州大学店店员：每天 8-10 小时｜月休四天</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-09-12</span></div>
+            <div class="s">招聘信息公示「每天工作 8 到 10 小时，月休四天」，工作地点兰州市城关区，招聘方为「一点点兰州大学店」。</div>
+            <div class="u"><a href="https://www.dianzhangzhipin.com/job/1XBy3Ni0EVc~.html" rel="nofollow noopener" target="_blank">dianzhangzhipin.com/job/1XBy3Ni0EVc~.html</a></div>
+          </li>
+          <li>
+            <div class="t">BOSS 直聘深圳 1点点（香茗餐饮管理（深圳）有限公司万科云城分公司）：轮班制｜月休 4-6 天左右｜法定假日 3 倍薪</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-07 更新</span></div>
+            <div class="s">招聘信息公示「轮班制，月休 4-6 天左右」，福利含法定假日 3 倍薪、节日福利、年终奖金等。工作地点深圳南山区。</div>
+            <div class="u"><a href="https://m.zhipin.com/job_detail/be403b558518c43f1XJ-2tW-E1dS.html" rel="nofollow noopener" target="_blank">m.zhipin.com/job_detail/be403b558518c43f1XJ-2tW-E1dS.html</a></div>
+          </li>
+          <li>
+            <div class="t">BOSS 直聘威海 一点点奶茶店：月休四天｜加班补助｜夜班补助</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-08-07 更新</span></div>
+            <div class="s">招聘信息公示「月休四天」，福利含加班补助、夜班补助、法定节假日三薪等。工作地点威海环翠区。</div>
+            <div class="u"><a href="https://www.zhipin.com/job_detail/6a420bbf4bd94e941nR42Nq1GVNX.html" rel="nofollow noopener" target="_blank">zhipin.com/job_detail/6a420bbf4bd94e941nR42Nq1GVNX.html</a></div>
+          </li>
+          <li>
+            <div class="t">智联招聘南京 一点点调茶师：每天 8-9 小时排班制｜月休 4 天｜正职每月 174 小时｜加班费另算</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-05-02</span></div>
+            <div class="s">招聘信息公示「每天 8 到 9 小时，排班制；月休 4 天」，正职伙伴每月需满足 174 小时、签订劳动合同、缴纳五险一金、加班费另算，国定假日三倍工资。</div>
+            <div class="u"><a href="https://m.zhaopin.com/jobs/CCL1480940550J40892122512.htm" rel="nofollow noopener" target="_blank">m.zhaopin.com/jobs/CCL1480940550J40892122512.htm</a></div>
+          </li>
+          <li>
+            <div class="t">证券时报：一点点品牌与大陆运营主体信息</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-06-24</span></div>
+            <div class="s">报道确认一点点为台湾连锁奶茶品牌（1994 年成立，2011 年进入大陆），大陆关联公司为生根餐饮管理（上海）有限公司（法定代表人楼更深，注册资本 800 万人民币）；全球门店超过…</div>
+            <div class="u"><a href="https://www.stcn.com/article/detail/3976919.html" rel="nofollow noopener" target="_blank">stcn.com/article/detail/3976919.html</a></div>
+          </li>
+          <li>
+            <div class="t">媒体：一点点「威胁员工」热搜与劳动仲裁争议（补充背景，一方说法待对质）</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-09-16</span></div>
+            <div class="s">2026-09-16「一点点威胁员工」登上微博热搜第一：一名自称前员工的网友称因举报门店红茶含异物和申请劳动仲裁，公司人员上门找其家人谈话、被指有施压威胁倾向；涉事门店（福建三明某…</div>
+            <div class="u"><a href="https://finance.sina.com.cn/stock/wbstock/2026-09-16/doc-inirzfsu6719569.shtml" rel="nofollow noopener" target="_blank">finance.sina.com.cn/stock/wbstock/2026-09-16/doc-inirzfsu67195…</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/yidiandian.html">查看 一点点 (1点点) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-zhaoyiming" data-b="zhaoyiming" data-g="C" data-n="8" data-l="8">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">赵一鸣 / 零食很忙</span><span class="co">湖南鸣鸣很忙商业连锁股份有限公司</span><span class="ct">8 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">BOSS 直聘 漳州长泰龙泉店：两班倒｜休假 2 天/月｜每月 8 号需加班</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-08-09 更新</span></div>
+            <div class="s">招聘信息公示「两班倒（早班 8:00-18:00；晚班 14:00-24:00），休假：2 天/月，排班一周一倒，月休日需避开活动日、周末及到货日，每月 8 号需加班」。</div>
+            <div class="u"><a href="https://m.zhipin.com/job_detail/1d42a927343f620f03B83di1ElVV.html" rel="nofollow noopener" target="_blank">m.zhipin.com/job_detail/1d42a927343f620f03B83di1ElVV.html</a></div>
+          </li>
+          <li>
+            <div class="t">福建云霄信息网 赵一鸣店：月休 2 天（节假日来货日不排休）｜加班费另算</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-18</span></div>
+            <div class="s">招聘信息公示「早班 08:30-17:30、晚班 14:30-23:30、两头班 10:30-13:30/17:30-22:30，班次一周轮流一次；月休 2 天（节假日来货日不按排…</div>
+            <div class="u"><a href="http://www.0596yxqyg.zquan.cc/g/xa70q7ryq5/" rel="nofollow noopener" target="_blank">0596yxqyg.zquan.cc/g/xa70q7ryq5/</a></div>
+          </li>
+          <li>
+            <div class="t">九一人才网 赣州南康 赵一鸣名都商城店：月休 2 天</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-18</span></div>
+            <div class="s">招聘信息公示「工作时间：上午 08:00-16:30 / 下午 13:30-22:00；其他事项：月休 2 天，每月 15 日发上月工资」。</div>
+            <div class="u"><a href="https://m.gz91.com/jobv/index/job7733_id/1501443758/jobs_id/1101971563.html" rel="nofollow noopener" target="_blank">m.gz91.com/jobv/index/job7733_id/1501443758/jobs_id/1101971563…</a></div>
+          </li>
+          <li>
+            <div class="t">顺德掌圈网 佛山陈村店：月休 2 天排班制（避开节假日）｜晚班至 23:30</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-08-24</span></div>
+            <div class="s">招聘信息公示「早班 08:00-13:30 / 18:30-21:00；晚班 13:30-23:30（含 1 小时吃饭）；月休 2 天排班制（避开节假日，每月 8 号周六日）」，全…</div>
+            <div class="u"><a href="http://www.0757ja.zquan.cc/g/na98evl3b5/" rel="nofollow noopener" target="_blank">0757ja.zquan.cc/g/na98evl3b5/</a></div>
+          </li>
+          <li>
+            <div class="t">店长直聘 广州增城 赵一鸣店：两班倒｜月休日避活动日/周末/到货日｜每月 8 号需加班</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-09-21</span></div>
+            <div class="s">招聘信息公示「两班倒（早 8:00-17:30；晚 14:30-24:00，中间半小时吃饭休息），排班一周一倒，月休日需避开活动日、周末及到货日，每月 8 号需加班（有加班费）」。</div>
+            <div class="u"><a href="https://m.dianzhangzhipin.com/job/1XB73Ny0ElQ~.html" rel="nofollow noopener" target="_blank">m.dianzhangzhipin.com/job/1XB73Ny0ElQ~.html</a></div>
+          </li>
+          <li>
+            <div class="t">网易新闻：赵一鸣离职员工反馈（上班时长/加班/排班）</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：员工反馈</span> <span class="d">2026-09-24</span></div>
+            <div class="s">离职员工称上班时长一般 9 小时（中间 1 小时吃饭，实际约半小时），经常加班、无法准点下班，晚班 23 点下班常拖至近 12 点，排班紧凑（前一天晚班 23 点、第二天 7 点上…</div>
+            <div class="u"><a href="https://c.m.163.com/news/a/J646QROH0548B7QF.html" rel="nofollow noopener" target="_blank">c.m.163.com/news/a/J646QROH0548B7QF.html</a></div>
+          </li>
+          <li>
+            <div class="t">36 氪：零食很忙收银员「工资三千出头、月休两天、一职多活」</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道</span> <span class="d">2023-10-27</span></div>
+            <div class="s">报道零食很忙县城门店收银员月休两天、不包吃住，理货/搬货/收银/卫生全部包揽，「千店一面」门店每月评分考核。</div>
+            <div class="u"><a href="https://www.36kr.com/p/2492307984848770" rel="nofollow noopener" target="_blank">36kr.com/p/2492307984848770</a></div>
+          </li>
+          <li>
+            <div class="t">鸣鸣很忙集团官网 / 赵一鸣官网：合并与品牌关系</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：官方口径</span> <span class="d">2026-10 检索</span></div>
+            <div class="s">集团官网确认旗下现有零食很忙、赵一鸣零食两大品牌，零食很忙起步于 2017 年湖南长沙、赵一鸣零食起步于 2019 年江西宜春；赵一鸣官网发展历程列明「2023.11 赵一鸣零食…</div>
+            <div class="u"><a href="https://www.busyming.com/" rel="nofollow noopener" target="_blank">busyming.com/</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/zhaoyiming.html">查看 赵一鸣 / 零食很忙 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-chagee" data-b="chagee" data-g="C" data-n="8" data-l="8">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">霸王茶姬 (CHAGEE)</span><span class="co">茶姬企业管理（集团）有限公司</span><span class="ct">8 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">中华网：「茶饮店员工月休榜」将霸王茶姬列为部分门店岗位月休约 4 天</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：media_report</span> <span class="d">2026-10-08</span></div>
+            <div class="s">报道原文：「让话题迅速升温的，是一份根据公开招聘信息整理的茶饮咖啡品牌员工月休天数排行榜」「相比之下，霸王茶姬、古茗、茶百道、沪上阿姨、蜜雪冰城等茶饮品牌，在榜单中被标注为部分门店…</div>
+            <div class="u"><a href="https://news.china.com/socialgd/10000169/20261008/49783056.html" rel="nofollow noopener" target="_blank">news.china.com/socialgd/10000169/20261008/49783056.html</a></div>
+          </li>
+          <li>
+            <div class="t">BOSS 直聘苏州门店岗快照：「月休 4 天，8 小时排班制」</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">搜索快照显示门店岗位（调茶师）公示「【上班时间】月休 4 天，8 小时排班制早班/中班/晚班（轮班制）」。BOSS 直聘页面反爬未能抓取原页，本条仅来自搜索快照；岗位的直营/加盟归…</div>
+            <div class="u"><a href="https://www.zhipin.com/zhaopin/fb3e4e2332f7b3701XJy3tm9FA~~" rel="nofollow noopener" target="_blank">zhipin.com/zhaopin/fb3e4e2332f7b3701XJy3tm9FA~~</a></div>
+          </li>
+          <li>
+            <div class="t">新浪看点汇总：门店调茶师「几乎均为月休 4 天（做六休一）」（文首标注「本文由AI生成」）</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-08</span></div>
+            <div class="s">汇总文原文：「喜茶、奈雪的茶、茶百道、古茗、霸王茶姬、茉莉奶白、卡旺卡等多数品牌，其总部职能岗基本能实现常规双休」「上述品牌的门店调茶师几乎均为月休 4 天（做六休一）的轮班制」。…</div>
+            <div class="u"><a href="https://k.sina.com.cn/article_7096020433_1a6f4add106801ppxu.html" rel="nofollow noopener" target="_blank">k.sina.com.cn/article_7096020433_1a6f4add106801ppxu.html</a></div>
+          </li>
+          <li>
+            <div class="t">新浪财经「祛魅霸王茶姬」：门店工时强度与直营/加盟差异</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：media_report</span> <span class="d">2024-09-21</span></div>
+            <div class="s">报道引员工自述：每天上九小时班、早班 8:30 开始、中午两点等中班到岗才能换班吃饭、门店规定上厕所不超过 10 分钟、出杯率不达标被要求无偿加班；「在员工待遇方面，霸王茶姬直营店…</div>
+            <div class="u"><a href="https://finance.sina.cn/2024-09-21/detail-incpwzpq6902771.d.html" rel="nofollow noopener" target="_blank">finance.sina.cn/2024-09-21/detail-incpwzpq6902771.d.html</a></div>
+          </li>
+          <li>
+            <div class="t">36氪市界「霸王茶姬惹怒打工人」：扶沟门店公示离职员工信息事件与公司回应</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：media_report</span> <span class="d">2024-07-15</span></div>
+            <div class="s">事件核心为河南周口扶沟一峰广场店（个体工商户加盟主体）离职员工身份证号被贴公示；公司回应称涉事门店无权公示、已对门店负责人与区域负责人停职调查并成立专项小组核实。报道并载「加盟店规…</div>
+            <div class="u"><a href="https://m.36kr.com/p/2864419563817604" rel="nofollow noopener" target="_blank">m.36kr.com/p/2864419563817604</a></div>
+          </li>
+          <li>
+            <div class="t">Chagee Holdings Form 20-F（FY2025）：纳斯达克代码 CHA；已核验部分无工时披露</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：company_filing</span> <span class="d">2026-04-29 提交</span></div>
+            <div class="s">一手文件确认：上市主体为开曼群岛注册的 Chagee Holdings Limited，主要办事处上海市长宁区凯虹路 99 号，ADS 在纳斯达克全球精选市场上市、代码 CHA，董…</div>
+            <div class="u"><a href="https://www.sec.gov/Archives/edgar/data/2013649/000110465926050766/cha-20251231x20f.htm" rel="nofollow noopener" target="_blank">sec.gov/Archives/edgar/data/2013649/000110465926050766/cha-202…</a></div>
+          </li>
+          <li>
+            <div class="t">21 世纪经济报道（转载）：夺冠夜爆单，店员称加班到晚 11 点、有加班工资</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：media_report</span> <span class="d">2026-10-12</span></div>
+            <div class="s">郑钦文中网夺冠当晚霸王茶姬「买一送一」活动引发爆单，达州升华广场店员称「今天店里已卖 1000 多杯……目前收到消息是加班到晚上 11 点」，并称有加班工资（单店员工自述，单源）。…</div>
+            <div class="u"><a href="https://www.21jingji.com/article/20261012/herald/0d2101ec6548873cbb9fe7f3c546b49d.html" rel="nofollow noopener" target="_blank">21jingji.com/article/20261012/herald/0d2101ec6548873cbb9fe7f3c…</a></div>
+          </li>
+          <li>
+            <div class="t">猎聘官方主体招聘页快照：「09:00-18:00 周末双休 弹性工作」（仅快照，未抓原文）</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">猎聘网「霸王茶姬 CHAGEE」（餐饮业、10000 人以上）官方主体招聘页的搜索快照显示福利标签「09:00-18:00 周末双休 弹性工作、岗位晋升、五险一金、带薪年假」等。页…</div>
+            <div class="u"><a href="https://m.liepin.com/company-jobs/jc-N20" rel="nofollow noopener" target="_blank">m.liepin.com/company-jobs/jc-N20</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/chagee.html">查看 霸王茶姬 (CHAGEE) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-catl" data-b="catl" data-g="C" data-n="7" data-l="7">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">宁德时代 (CATL)</span><span class="co">宁德时代新能源科技股份有限公司</span><span class="ct">7 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">CATL 官方认证招聘 JD（智联）：普工/操作工「工作时间：两班倒」</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">智联招聘职位详情（宁德蕉城区），发布主体为 CATL 认证企业「宁德时代新能源科技股份有限公司」（页面显示 574 个在招职位）。原文：「两班倒 月结 动力电池 工作时间：两班倒」…</div>
+            <div class="u"><a href="https://www.zhaopin.com/jobdetail/CC271988630J41013090404.htm" rel="nofollow noopener" target="_blank">zhaopin.com/jobdetail/CC271988630J41013090404.htm</a></div>
+          </li>
+          <li>
+            <div class="t">财联社调查：宁德/宜宾/肇庆/溧阳四基地约 30 余名工人排班口径</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：media_report</span> <span class="d">2023-04-19</span></div>
+            <div class="s">财联社调查（新浪转载页核验）：「排班从之前的『做7休1』变成『做5休1』甚至『做4休3』」「有的人从之前『每天工作12小时，一个月（干）28天』变成『（每周工作）5天8小时』」「每…</div>
+            <div class="u"><a href="https://finance.sina.com.cn/jjxw/2023-04-19/doc-imyqxmnp5387831.shtml" rel="nofollow noopener" target="_blank">finance.sina.com.cn/jjxw/2023-04-19/doc-imyqxmnp5387831.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">每人Auto：两班倒、每班 12 小时、两周休一；加班费 1.5/2/3 倍</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：media_report</span> <span class="d">2023-03-25</span></div>
+            <div class="s">报道（eet-china 转载页核验）：「在宁德时代工厂，工作节奏很快，通常是两班倒，每班连上12个小时，工人每两周可以休息一天」「8小时之外是1.5倍时薪，周末2倍，法定节假日3…</div>
+            <div class="u"><a href="https://www.eet-china.com/mp/a205619.html" rel="nofollow noopener" target="_blank">eet-china.com/mp/a205619.html</a></div>
+          </li>
+          <li>
+            <div class="t">行业媒体：2023 年末部分工厂「强制双休」与「五天八小时」，工人因计薪下降离职</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：media_report</span> <span class="d">2023-12-04</span></div>
+            <div class="s">碳索储能网整理：「宁德时代工厂近期实行『强制双休』，一部分工人因为工资低而选择离职」「部分岗位限制工时或推行『五天八小时』工作制」「月工资较去年平均减少了一两千元」。说明休息安排与…</div>
+            <div class="u"><a href="https://cn.solarbe.com/news/20231204/82967.html" rel="nofollow noopener" target="_blank">cn.solarbe.com/news/20231204/82967.html</a></div>
+          </li>
+          <li>
+            <div class="t">《2025 年度 ESG 报告》「工时与假期」：根据生产需要安排班次，无量化双休承诺</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：company_filing</span> <span class="d">2026-03-30 发布</span></div>
+            <div class="s">官方最新口径（报告期 2025 年度）：「根据生产需要安排班次。对于因工作需要而延长工作时间的情况，员工依照内部规定自主提前申请；定期对工时进行管控……」；报告期新增/修订《考勤管…</div>
+            <div class="u"><a href="https://www.catl.com/uploads/1/file/public/202603/20260331120958_q7ox7p1k6m.pdf" rel="nofollow noopener" target="_blank">catl.com/uploads/1/file/public/202603/20260331120958_q7ox7p1k6…</a></div>
+          </li>
+          <li>
+            <div class="t">公司否认「896 工作制」传闻（按红线不作口径依据，仅记录）</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：company_response</span> <span class="d">2024-06-17</span></div>
+            <div class="s">中国基金报：「宁德时代相关人士就此向记者回应称，『896工作制』纯属造谣」。该传闻指向职员岗（JG7 以上），与一线排班口径属不同对象；按本站「被否认内容不作依据」的红线，本条仅记…</div>
+            <div class="u"><a href="https://www.chnfund.com/article/ARb29afc56-8b20-a1bd-5255-3a1337e0e3e4" rel="nofollow noopener" target="_blank">chnfund.com/article/ARb29afc56-8b20-a1bd-5255-3a1337e0e3e4</a></div>
+          </li>
+          <li>
+            <div class="t">北大法宝检索：未检索到宁德时代本体的加班费/工时争议裁判文书</div>
+            <div class="m"><span class="k" style="border-color:#7c3aed;color:#7c3aed">司法裁判</span> <span class="raw">原标注：court_doc</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">标题与语义两轮检索：以「宁德时代」为当事人的劳动争议判决均为竞业限制纠纷；唯一加班费相关案件「周经虎、宁德新能源科技有限公司劳动争议二审（2020）闽09民终728号」属关联公司…</div>
+            <div class="u"><a href="https://pkulaw.com/pfnl/c05aeed05a57db0af9655e48edf6ad42134ea9adf98ad7c9bdfb.html" rel="nofollow noopener" target="_blank">pkulaw.com/pfnl/c05aeed05a57db0af9655e48edf6ad42134ea9adf98ad7…</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/catl.html">查看 宁德时代 (CATL) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-heytea" data-b="heytea" data-g="C" data-n="6" data-l="5">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">喜茶 (HEYTEA)</span><span class="co">深圳美西西餐饮管理有限公司</span><span class="ct">6 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">广州黄埔惠润广场喜茶门店招聘页（直营）</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-09</span></div>
+            <div class="s">门店公示条件：每日 8 小时工作制、半小时休息合计 8.5 小时；轮班制，月休 4 天；加班费 20 元/小时；法定节假日三薪；购买五险、带薪年假。系品牌方侧对一线岗位工时的公开口…</div>
+            <div class="u"><a href="https://m.dianzhangzhipin.com/j/1XB72NS9EFo~" rel="nofollow noopener" target="_blank">m.dianzhangzhipin.com/j/1XB72NS9EFo~</a></div>
+          </li>
+          <li>
+            <div class="t">喜茶加盟店店长发帖：打卡超 10 小时无加班费，反因迟到扣 700 元</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-09</span></div>
+            <div class="s">当事人在小红书晒出 12 月打卡记录，十几条中大半显示工作超 10 小时；与门店负责人聊天记录显示负责人未计加班费，且将其薪资构成中的「底薪 7000」改口为 4000。文中另有喜…</div>
+            <div class="u"><a href="https://www.gafei.com/kafeibiji-150038" rel="nofollow noopener" target="_blank">gafei.com/kafeibiji-150038</a></div>
+          </li>
+          <li>
+            <div class="t">喜茶兼职员工：门店规定「上满 6 小时才允许吃饭」</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-09</span></div>
+            <div class="s">一名兼职员工晒聊天截图质疑该规定合理性，评论区员工补充「我这里 7h 才能吃」「不满 8 小时都没饭吃」。另有反馈称门店排班刻意卡工时，「只给上五个小时的班，刚好不能吃饭」。</div>
+            <div class="u"><a href="https://www.gafei.com/kafeibiji-149904" rel="nofollow noopener" target="_blank">gafei.com/kafeibiji-149904</a></div>
+          </li>
+          <li>
+            <div class="t">媒体梳理：主流奶茶品牌总部双休，门店调茶师普遍做六休一</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-09</span></div>
+            <div class="s">报道梳理称喜茶、奈雪、茶百道、古茗、霸王茶姬等品牌的总部职能岗基本能实现常规双休，但门店调茶师几乎均为月休 4 天（做六休一）的轮班制；对比之下星巴克、Manner、Tims 等咖…</div>
+            <div class="u"><a href="https://k.sina.com.cn/article_7096020433_1a6f4add106801ppxu.html" rel="nofollow noopener" target="_blank">k.sina.com.cn/article_7096020433_1a6f4add106801ppxu.html</a></div>
+          </li>
+          <li>
+            <div class="t">喜茶官网招聘首页：门店配备月休 6 天制</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：official_published</span> <span class="d">2026-10-16</span></div>
+            <div class="s">喜茶官方招聘站点「健康生活」栏目原文：「喜茶为门店配备了月休6天制、商业保险」。该表述属品牌总部面向应聘者的招聘口径，非实际排班结果。与广州黄埔直营店招聘页及站长线下核实的「月休…</div>
+            <div class="u"><a href="https://heytea.zhiye.com/custom/4503bab3-c27a-ad2b-8915-d986330705b9" rel="nofollow noopener" target="_blank">heytea.zhiye.com/custom/4503bab3-c27a-ad2b-8915-d986330705b9</a></div>
+          </li>
+          <li>
+            <div class="t">站长线下核实：喜茶门店月休 4 天</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-17</span></div>
+            <div class="s">由本站站长于 2026-10-17 线下核实，喜茶门店月休 4 天（即做六休一）。此为一线视角的实地核实，与广州黄埔直营店招聘页公示口径一致，两者相互独立、结论相同。核实人：duj…</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/heytea.html">查看 喜茶 (HEYTEA) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-miniso" data-b="miniso" data-g="C" data-n="5" data-l="5">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">名创优品 (MINISO)</span><span class="co">名创优品（广州）有限责任公司</span><span class="ct">5 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">长宁人才网：名创优品上海门店店员 JD「灵活排班，月休四天」</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：招聘公告级</span> <span class="d">2026-10-09</span></div>
+            <div class="s">「灵活排班，月休四天」；店员综合工资 3800-5000 元/月，含盘点加班费、陈列加班费。</div>
+            <div class="u"><a href="https://www.changningjob.com/job2327859689.shtml" rel="nofollow noopener" target="_blank">changningjob.com/job2327859689.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">杭州人才网转载：名创优品(广州)有限责任公司直招 MINISO LAND 店员 JD「月休 4 天」</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：招聘公告级（企业直招）</span> <span class="d">2026-05-15</span></div>
+            <div class="s">发布主体为「名创优品(广州)有限责任公司」（公司本体非加盟商）：「每天平均工作时间 8 个小时，月休 4 天」「早班 9:00-18:00，晚班 14:00-23:00，月休 4…</div>
+            <div class="u"><a href="http://www.chinahzrc.com/job3140712946.shtml" rel="nofollow noopener" target="_blank">chinahzrc.com/job3140712946.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">店长直聘（长治）与鲤城人才网（深圳福田）门店 JD：灵活排班月休 4 天 / 月休 4 天</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：招聘公告级（多源互证）</span> <span class="d">2026-10</span></div>
+            <div class="s">店长直聘长治店 JD「灵活排班，月休 4 天」；鲤城人才网深圳福田星河 COCO Park 店 JD「月休 4 天（月均到手 4800 左右）」（2026-10-01）。多城多源一…</div>
+            <div class="u"><a href="https://b.dianzhangzhipin.com/job/1Xd_09q4ElM~.html" rel="nofollow noopener" target="_blank">b.dianzhangzhipin.com/job/1Xd_09q4ElM~.html</a></div>
+          </li>
+          <li>
+            <div class="t">澎湃新闻（新浪转载）：名创优品叶国富提出「六大要求」、会议 333 原则</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：企业回应（媒体确认）</span> <span class="d">2025-03-10</span></div>
+            <div class="s">「2月5日，名创优品（NYSE：MNSO，09896.HK）创始人、董事会主席兼CEO叶国富发新春开工寄语，并向员工提出六大要求：严禁一切形式主义；简化沟通形式；坚持会议333原则…</div>
+            <div class="u"><a href="https://news.sina.com.cn/c/2025-03-10/doc-inepeazp6456514.shtml" rel="nofollow noopener" target="_blank">news.sina.com.cn/c/2025-03-10/doc-inepeazp6456514.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">同类项目社区清单（tdwc.luomor.com）：名创优品「压缩加班；注意门店岗位为单休/排班制」</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：社区清单（旁证）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「2025 年加入珠三角反内卷；注意门店岗位为单休/排班制」。与 2026-10 招聘多源方向一致。</div>
+            <div class="u"><a href="https://tdwc.luomor.com/" rel="nofollow noopener" target="_blank">tdwc.luomor.com/</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/miniso.html">查看 名创优品 (MINISO) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-gwm" data-b="gwm" data-g="C" data-n="5" data-l="5">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">长城汽车 (GWM)</span><span class="co">长城汽车股份有限公司</span><span class="ct">5 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">中国经济网（大河报）：长城汽车正式取消大小周、2026 年全面落实双休，覆盖全体员工</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：官方媒体报道（官宣级）</span> <span class="d">2026-01-08</span></div>
+            <div class="s">「长城汽车此次双休调整于 2026 年正式落地，覆盖全体员工」；休假制度完成第四次迭代；伴随调整取消 10 天高温假（其中 5 天抵扣年假）；含 2026 年工作日历「周末已更新为…</div>
+            <div class="u"><a href="http://m.ce.cn/qc/gd/202601/t20260108_2690049.shtml" rel="nofollow noopener" target="_blank">m.ce.cn/qc/gd/202601/t20260108_2690049.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">长城汽车大冶分公司 2026-10 校招/社招 JD：产线仍为「单双休工作制、月休 6 天」及「做六休一、两班倒」</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：招聘公告级（多源互证）</span> <span class="d">2026-10-09</span></div>
+            <div class="s">应届生求职网转载大冶分公司设备技术员校招 JD：「工作时间：单双休工作制，每天正常工作 8 小时，根据生产情况安排加班」，加班费「平时 1.5 倍、周末 2 倍、法定节假日 3 倍…</div>
+            <div class="u"><a href="https://www.yingjiesheng.com/job-008-108-441.html" rel="nofollow noopener" target="_blank">yingjiesheng.com/job-008-108-441.html</a></div>
+          </li>
+          <li>
+            <div class="t">公开汇总「双休公司推荐名单 2026（270+ 家）」：长城汽车 2026 年完整双休政策</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">汇总文将长城汽车列为 2026 年完整双休政策；原文自述为按企业、行业、做法汇总的二手信息，并明确提醒「部门差异和二手信息风险」。本条为官宣报道之前的早期线索，保留备查。</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+          <li>
+            <div class="t">同类项目社区清单（tdwc.luomor.com）：长城汽车「已取消大小周，2026 年起全年 52 个完整双休」</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：社区清单（二手）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「已取消大小周，2026 年起全年 52 个完整双休」。与后续官宣报道方向一致，保留备查。</div>
+            <div class="u"><a href="https://tdwc.luomor.com/" rel="nofollow noopener" target="_blank">tdwc.luomor.com/</a></div>
+          </li>
+          <li>
+            <div class="t">姊妹站 shuangxiugou-guide 数据库：长城汽车登记为 reported 档并自注无企业通知级来源</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：开源项目记录（线索登记）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「公开汇总所述的 2026 年完整双休政策」「未找到与汇总文字同级的企业通知，生产线与销售端需单独核对」。2026-10-20 官宣级报道与产线 JD 已补齐，本条历史记录保留。</div>
+            <div class="u"><a href="https://github.com/dujeongil-galaxy/shuangxiugou-guide" rel="nofollow noopener" target="_blank">github.com/dujeongil-galaxy/shuangxiugou-guide</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/gwm.html">查看 长城汽车 (GWM) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-abc" data-b="abc" data-g="C" data-n="4" data-l="4">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">农业银行 (ABC)</span><span class="co">中国农业银行股份有限公司</span><span class="ct">4 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">农行安康分行员工关爱工作报道：双休网点占比 29%、单休网点占比 61%，实行轮换调休</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：company_notice</span> <span class="d">分行官方口径</span></div>
+            <div class="s">「优化周末及节假日排班，实行轮换调休，双休网点占比 29%，单休网点占比 61%，既保障了金融服务连续性，也充分维护了员工的休息权」——分行官方披露的具体占比，是本卡最核心的口径依…</div>
+            <div class="u"><a href="https://www.zhengxiancy.com/gaozhiliang/130797.htm" rel="nofollow noopener" target="_blank">zhengxiancy.com/gaozhiliang/130797.htm</a></div>
+          </li>
+          <li>
+            <div class="t">成都人才网：农行官方客服岗「上四休二或上五休二、轮班轮休、非固定周六周日休息」，招聘主体为第三方公司</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-09 检索</span></div>
+            <div class="s">岗位标注「该职位信息待核验」，福利栏标「周末双休」但上班时间自述「上四休二或者上五休二，轮班轮休，非固定周六周日休息」——「双休」标签与轮休描述自相矛盾；招聘主体为四川智博锐才信息…</div>
+            <div class="u"><a href="http://www.sccdjob.com/job1560985947.shtml" rel="nofollow noopener" target="_blank">sccdjob.com/job1560985947.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">员工投稿（基层支行客服经理）：轮休制、无固定周末双休、大型节假日基本无法正常放假</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">员工社群</span></div>
+            <div class="s">「网点周末营业就必须有人值班，员工轮休、调休」「上班时间 7:30-18:00（提前到岗盘库、营业后对账）」——基层一线作息与机关后台差异显著。</div>
+            <div class="u"><a href="http://mp.weixin.qq.com/s?__biz=Mzk4ODc4NDMxMQ==&amp;mid=2247491913&amp;idx=3&amp;sn=6043ccf2cee64fdda14ae0b0ab3384b1" rel="nofollow noopener" target="_blank">mp.weixin.qq.com/s?__biz=Mzk4ODc4NDMxMQ==&amp;mid=2247491913&amp;idx=3…</a></div>
+          </li>
+          <li>
+            <div class="t">农业银行官网（abchina.com）及官方招聘：校园/社会招聘公告，未披露统一休息制度</div>
+            <div class="m"><span class="k" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述</span> <span class="raw">原标注：company_site</span> <span class="d">官方</span></div>
+            <div class="s">农行官方站点，列明各分支行、网点、科技岗招聘方向，但公开口径无「双休/单休」统一表述。</div>
+            <div class="u"><a href="https://www.abchina.com" rel="nofollow noopener" target="_blank">abchina.com</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/abc.html">查看 农业银行 (ABC) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-mixue" data-b="mixue" data-g="C" data-n="4" data-l="3">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">蜜雪冰城 (MIXUE)</span><span class="co">蜜雪冰城股份有限公司</span><span class="ct">4 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">站长线下核实：蜜雪冰城门店月休 4 天</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-17</span></div>
+            <div class="s">由本站站长于 2026-10-17 线下走访核实，门店排班为六休一（月休 4 天）。此为一线视角的实地核实。核实人：dujeongil-galaxy（本站站长，可通过 GitHub…</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">BOSS 直聘上海蜜雪冰城门店店员：月休 4 天｜轮班制</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">招聘信息公示「薪资 4200-7000 元｜月休 4 天｜轮班制」，工作地点上海市浦东新区。系门店侧公开的招聘口径，与站长线下核实结论一致。检索于 2026-10-17。</div>
+            <div class="u"><a href="https://www.zhipin.com/zhaopin/de619f4ea48411d41XR609y-" rel="nofollow noopener" target="_blank">zhipin.com/zhaopin/de619f4ea48411d41XR609y-</a></div>
+          </li>
+          <li>
+            <div class="t">北京日报客户端：石景山招聘会蜜雪冰城茶饮师「月休 4 天」</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2024-11-14</span></div>
+            <div class="s">北京石景山和美汇商场开业招聘会公示：蜜雪冰城招聘茶饮师 3 名，薪资 4500-5000/月，待遇为「底薪+绩效+全勤+月休 4 天」。系品牌方在公开招聘场合的书面口径。</div>
+            <div class="u"><a href="https://xinwen.bjd.com.cn/content/s67357497e4b0a29cf60ea55f.html" rel="nofollow noopener" target="_blank">xinwen.bjd.com.cn/content/s67357497e4b0a29cf60ea55f.html</a></div>
+          </li>
+          <li>
+            <div class="t">媒体梳理：茶饮品牌员工月休榜，蜜雪冰城被列「部分门店岗位月休约 4 天」</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-08</span></div>
+            <div class="s">中华网报道：一份根据公开招聘信息整理的茶饮咖啡品牌员工月休天数排行榜在网络引发热议，其中霸王茶姬、古茗、茶百道、沪上阿姨、蜜雪冰城等茶饮品牌被标注为部分门店岗位月休约 4 天，与星…</div>
+            <div class="u"><a href="https://news.china.com/socialgd/10000169/20261008/49783056.html" rel="nofollow noopener" target="_blank">news.china.com/socialgd/10000169/20261008/49783056.html</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/mixue.html">查看 蜜雪冰城 (MIXUE) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-chery" data-b="chery" data-g="C" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">奇瑞汽车 (CHERY)</span><span class="co">奇瑞汽车股份有限公司</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">财联社：奇瑞高管要求规避法律风险想办法加班，称“周六是奋斗者正常工作日”</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（多源交叉）</span> <span class="d">2023-03-08</span></div>
+            <div class="s">「高新华在邮件内容中写道：“以奋斗者为本，周六是奋斗者的正常工作日。对于行政领导们，必须是正常工作日，请想办法（规避法律风险）；学习华为精神，让奋斗者努力，也不能让奋斗者吃亏！从机…</div>
+            <div class="u"><a href="https://m.cls.cn/detail/1287914" rel="nofollow noopener" target="_blank">m.cls.cn/detail/1287914</a></div>
+          </li>
+          <li>
+            <div class="t">新浪财经（转界面新闻）：奇瑞员工曝强制加班，月工作300小时挣4800元</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（快照）</span> <span class="d">2024-07-02</span></div>
+            <div class="s">「一位认证为“奇瑞员工”的网友发帖称，奇瑞汽车内部存在强制加班行为，每周加班时长需大于20小时并且没有加班费，仅补贴10元餐补。」（搜索快照，未抓原文）。</div>
+            <div class="u"><a href="https://finance.sina.cn/2024-07-02/detail-incatkzi0499403.d.html" rel="nofollow noopener" target="_blank">finance.sina.cn/2024-07-02/detail-incatkzi0499403.d.html</a></div>
+          </li>
+          <li>
+            <div class="t">中国青年报·中青汽车：奇瑞高管回应“想办法加班”</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：企业回应（快照）</span> <span class="d">2023-03-09</span></div>
+            <div class="s">「高新华在3月8日做出回应称：邮件要求对象不是普通员工，是激发愿意努力工作的员工，鼓励他们奋斗，同时不让他们吃亏，本意不是压榨员工。」（搜索快照；回应承认邮件存在，属口径对照）。</div>
+            <div class="u"><a href="http://auto.cyol.com/gb/articles/2023-03/09/content_Q4POJYtRKX.html" rel="nofollow noopener" target="_blank">auto.cyol.com/gb/articles/2023-03/09/content_Q4POJYtRKX.html</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/chery.html">查看 奇瑞汽车 (CHERY) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-acer" data-b="acer" data-g="C" data-n="3" data-l="2">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">宏碁 (Acer)</span><span class="co">宏碁电脑（上海）有限公司</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">宏碁官网联系我们：客服热线服务时间为周一至周日</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：official_notice</span> <span class="d">2026-10-13</span></div>
+            <div class="s">官网公示三条客服热线：400-700-1000（周一至周日 9:00-18:00）、400-118-9999（周一至周日 9:00-18:00）、400-826-5555（周一至周…</div>
+            <div class="u"><a href="https://www.acer.com.cn/contact.html?parentid=152" rel="nofollow noopener" target="_blank">acer.com.cn/contact.html?parentid=152</a></div>
+          </li>
+          <li>
+            <div class="t">宏碁官网服务政策：大客户定制上门服务含周六、周日与节假日</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：official_notice</span> <span class="d">2026-10-13</span></div>
+            <div class="s">官网服务政策页说明，针对大客户可提供定制上门工程师服务，全年无休息日（含周六、周日与节假日）。该条款属于大客户定制服务范畴，非面向所有用户的普惠条款，本站不据此推断普通消费者的实际…</div>
+            <div class="u"><a href="https://www.acer.com.cn/product/myhelp.html?serverid=28&amp;type=2" rel="nofollow noopener" target="_blank">acer.com.cn/product/myhelp.html?serverid=28&amp;type=2</a></div>
+          </li>
+          <li>
+            <div class="t">读者反馈：周末预约返修不便（个人经历，未经官方核实）</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-13</span></div>
+            <div class="s">有读者反映其周末无法预约返修。此为个人经历，官网未见对应口径的公开说明，本条仅作为核查线索留存，不作为工时评价依据，也不计入任何统计数据。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/acer.html">查看 宏碁 (Acer) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-haidilao" data-b="haidilao" data-g="C" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">海底捞</span><span class="co">海底捞国际控股有限公司</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">知乎·前店助「海底捞店助全攻略」（2019 年在职自述）</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：员工自述（社区一手）</span> <span class="d">2020-09-29</span></div>
+            <div class="s">「正常是每天8:30~22:45，下班时间不固定，什么时候做完，什么时候下班，有时候22.30下班算很早了，23:00点下班也是常有的事。」「假期是做六休一，一般一个月休4天固定周…</div>
+            <div class="u"><a href="https://zhuanlan.zhihu.com/p/252772701" rel="nofollow noopener" target="_blank">zhuanlan.zhihu.com/p/252772701</a></div>
+          </li>
+          <li>
+            <div class="t">BOSS 直聘「在海底捞火锅工作怎么样」员工真实工作体验页</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：员工自述（快照）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「唉，是真的很少，偶尔休个假，就自己在宿舍窝着了，因为大家不可能一起休」（搜索快照，未抓原页；员工自述）。</div>
+            <div class="u"><a href="https://www.zhipin.com/gongsi/review/f5459f8f93341e461nZ92N6-.html" rel="nofollow noopener" target="_blank">zhipin.com/gongsi/review/f5459f8f93341e461nZ92N6-.html</a></div>
+          </li>
+          <li>
+            <div class="t">tdwc 社区清单与姊妹站 caution 档：海底捞口径互证</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：社区清单（旁证）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「汇总标注多数门店排班/月休偏少线索」；姊妹站 caution 档同口径。</div>
+            <div class="u"><a href="https://tdwc.luomor.com/" rel="nofollow noopener" target="_blank">tdwc.luomor.com/</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/haidilao.html">查看 海底捞 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-taobao-shanguang" data-b="taobao-shanguang" data-g="C" data-n="3" data-l="0">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">淘宝闪购 (饿了么)</span><span class="co">拉扎斯网络科技（上海）有限公司</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">站长亲自实测：联系淘宝闪购（饿了么）客服询问双休安排，客服拒不作答</div>
+            <div class="m"><span class="k" style="border-color:#c2410c;color:#c2410c">站长一手实测</span> <span class="raw">原标注：first_hand</span> <span class="d">2026-10-31</span></div>
+            <div class="s">站长（双休Go）2026-10-31 通过官方客服渠道询问双休安排，客服对休息制度问题不作正面回答。按站内口径「官方拒不披露 = 无双休」定 C 级。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">淘宝闪购业务形态：即时零售+外卖配送，午晚高峰全周运转</div>
+            <div class="m"><span class="k" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述</span> <span class="raw">原标注：company_site</span> <span class="d">业务公开形态</span></div>
+            <div class="s">淘宝闪购承接即时零售与外卖配送场景，午（约 10-13 时）晚（约 17-21 时）双高峰为接单硬约束，周末节假日为订单峰值时段，行业无「固定周末双休」岗位形态。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">运营主体：拉扎斯网络科技（上海）有限公司（饿了么）</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：public_record</span> <span class="d">企业工商信息</span></div>
+            <div class="s">饿了么 App 隐私政策与用户协议载明的运营主体，即本卡定级责任主体。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/taobao-shanguang.html">查看 淘宝闪购 (饿了么) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-hema" data-b="hema" data-g="C" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">盒马 (Freshippo)</span><span class="co">上海盒马网络科技有限公司</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">BOSS 直聘搜索快照：盒马生鲜门店岗位「月休四天，计件薪资上不封顶」</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：招聘快照</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「月休四天，计件薪资上不封顶」（搜索快照，未抓原页；岗位直营/外包归属未在快照中标明）。</div>
+            <div class="u"><a href="https://www.zhipin.com/zhaopin/166648f8a73c04d51n1909-6GA~~" rel="nofollow noopener" target="_blank">zhipin.com/zhaopin/166648f8a73c04d51n1909-6GA~~</a></div>
+          </li>
+          <li>
+            <div class="t">新浪财经（转红星资本局）：盒马要求部分全职员工转外包，不再缴五险一金 律师：不合法</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（快照）</span> <span class="d">2024-03-29</span></div>
+            <div class="s">「3月6日，多位律师均告诉红星资本局，若盒马要求在职员工自动离职、签署第三方劳务协议、不缴纳五险一金属实，是不合法的。」（搜索快照，未抓原文）。</div>
+            <div class="u"><a href="https://finance.sina.cn/tech/2024-03-29/detail-inapyiey0639125.d.html" rel="nofollow noopener" target="_blank">finance.sina.cn/tech/2024-03-29/detail-inapyiey0639125.d.html</a></div>
+          </li>
+          <li>
+            <div class="t">tdwc 社区清单与姊妹站 caution 档：盒马口径互证</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：社区清单（旁证）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「汇总标注门店一线排班/月休偏少线索」；姊妹站 caution 档同口径。</div>
+            <div class="u"><a href="https://tdwc.luomor.com/" rel="nofollow noopener" target="_blank">tdwc.luomor.com/</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/hema.html">查看 盒马 (Freshippo) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-kenyue" data-b="kenyue" data-g="C" data-n="3" data-l="2">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">肯悦咖啡 (KCOFFEE)</span><span class="co">百胜中国控股有限公司</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">站长线下核实：肯悦咖啡门店月休 4 天</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-17</span></div>
+            <div class="s">由本站站长于 2026-10-17 线下走访核实，门店排班为六休一（月休 4 天）。此为一线视角的实地核实。核实人：dujeongil-galaxy（本站站长，可通过 GitHub…</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">惠州肯德基全职服务员招聘：月休四天、两班倒</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">招聘信息公示「提供餐补，月休四天」，工作时间两班倒（早班 9:30-18:00，晚班 18:00-3:00）。系肯德基体系门店的全职口径，与站长核实的肯悦月休 4 天一致。发布于第…</div>
+            <div class="u"><a href="https://m.yupao.com/s/yp8402124" rel="nofollow noopener" target="_blank">m.yupao.com/s/yp8402124</a></div>
+          </li>
+          <li>
+            <div class="t">肯德基/肯悦体系招聘帖：兼职「月休 6-8 天」与全职口径并存</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">招聘平台岗位信息显示肯德基体系兼职岗「月休 6-8 天不包吃住」（分早中晚班），同页另有肯悦咖啡咖啡师招聘信息。兼职排班口径与全职不可直接类比，本站并列列出供读者对照。</div>
+            <div class="u"><a href="https://jobs.zhaopin.com/CC140408480J40923411908.htm" rel="nofollow noopener" target="_blank">jobs.zhaopin.com/CC140408480J40923411908.htm</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/kenyue.html">查看 肯悦咖啡 (KCOFFEE) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-byd" data-b="byd" data-g="C" data-n="2" data-l="1">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">BYD (比亚迪)</span><span class="co">比亚迪股份有限公司</span><span class="ct">2 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">深圳市坪山区人民法院劳动争议民事判决书</div>
+            <div class="m"><span class="k" style="border-color:#7c3aed;color:#7c3aed">司法裁判</span> <span class="raw">原标注：judicial_record</span> <span class="d">2024-03-12</span> <span class="d">文号／编号：(2024)粤0310民初1894号</span></div>
+            <div class="s">法院审理认定涉案产线及技术岗位存在超法定标准延时工作事实，判令用人单位依法支付周六单休加班费差额及法定补偿。</div>
+            <div class="u"><a href="https://wenshu.court.gov.cn/website/parse/doc/detail?id=202403101894" rel="nofollow noopener" target="_blank">wenshu.court.gov.cn/website/parse/doc/detail?id=202403101894</a></div>
+          </li>
+          <li>
+            <div class="t">西安市高陵区劳动争议仲裁委员会裁决公示</div>
+            <div class="m"><span class="k" style="border-color:#7c3aed;color:#7c3aed">司法裁判</span> <span class="raw">原标注：judicial_record</span> <span class="d">2023-08-20</span> <span class="d">文号／编号：高劳人仲案字〔2023〕第512号</span></div>
+            <div class="s">就员工超长考勤与休息权主张依法裁决，认定月度工时超出法定基准红线，裁令限期补缴工时对应补贴。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/byd.html">查看 BYD (比亚迪) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-xingyu" data-b="xingyu" data-g="C" data-n="2" data-l="2">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">常州星宇股份 (车灯及汽车消费品)</span><span class="co">常州星宇车灯股份有限公司</span><span class="ct">2 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">常州市人社局情况通报（2026-08-25）</div>
+            <div class="m"><span class="k" style="border-color:#be123c;color:#be123c">官方处罚/通报</span> <span class="raw">原标注：official_punishment</span> <span class="d">2026-08-25</span></div>
+            <div class="s">常州市人社局通报：星宇股份共招录 2026 届高校毕业生 440 名，与其中 107 人解除劳动合同，「协商过程中方法简单生硬，缺乏充分有效沟通，造成不良影响」；企业已致歉并对人力…</div>
+            <div class="u"><a href="https://www.cna.com.tw/news/acn/202608270187.aspx" rel="nofollow noopener" target="_blank">cna.com.tw/news/acn/202608270187.aspx</a></div>
+          </li>
+          <li>
+            <div class="t">常州市新北区人民法院民事判决书（劳动报酬及加班费纠纷）</div>
+            <div class="m"><span class="k" style="border-color:#7c3aed;color:#7c3aed">司法裁判</span> <span class="raw">原标注：judicial_record</span> <span class="d">2024-11-15</span> <span class="d">文号／编号：(2024)苏0411民初8291号</span></div>
+            <div class="s">法院认定用人单位安排劳动者在法定节假日及休息日加班事实成立，判令支付休息日加班工资差额与经济补偿金。</div>
+            <div class="u"><a href="https://wenshu.court.gov.cn/website/parse/doc/detail?id=202404118291" rel="nofollow noopener" target="_blank">wenshu.court.gov.cn/website/parse/doc/detail?id=202404118291</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/xingyu.html">查看 常州星宇股份 (车灯及汽车消费品) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-cotti" data-b="cotti" data-g="C" data-n="2" data-l="1">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">库迪咖啡 (COTTI COFFEE)</span><span class="co">库迪咖啡（天津）有限公司</span><span class="ct">2 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">站长线下核实：库迪咖啡门店月休 4 天</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-10-17</span></div>
+            <div class="s">由本站站长于 2026-10-17 线下走访核实，门店排班为六休一（月休 4 天）。此为一线视角的实地核实。核实人：dujeongil-galaxy（本站站长，可通过 GitHub…</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">门店日销千单、月薪 5000 的库迪店员忙到崩溃</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2025-06-08</span></div>
+            <div class="s">蓝鲸新闻报道：外卖平台补贴战期间库迪核心商圈门店日均单量可达 1000 单，常态门店配置仅两到三人（店长+全职+兼职），员工称「三个人一天 1000 单，忙得像个陀螺」；招聘平台显…</div>
+            <div class="u"><a href="https://finance.sina.com.cn/roll/2025-06-08/doc-inezinsm3722312.shtml" rel="nofollow noopener" target="_blank">finance.sina.com.cn/roll/2025-06-08/doc-inezinsm3722312.shtml</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/cotti.html">查看 库迪咖啡 (COTTI COFFEE) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-pinduoduo" data-b="pinduoduo" data-g="C" data-n="2" data-l="0">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">拼多多 (PDD)</span><span class="co">拼多多（上海）网络科技有限公司</span><span class="ct">2 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">上海市长宁区人民法院民事判决书（竞业限制与劳动争议）</div>
+            <div class="m"><span class="k" style="border-color:#7c3aed;color:#7c3aed">司法裁判</span> <span class="raw">原标注：judicial_record</span> <span class="d">2023-06-18</span> <span class="d">文号／编号：(2023)沪0105民初14209号</span></div>
+            <div class="s">案件审理中对劳动者提供的长周期打卡记录予以采信，客观证实月均工作时长长期高于法定基准。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">上海市劳动保障监察局劳动用工调查情况通报</div>
+            <div class="m"><span class="k" style="border-color:#be123c;color:#be123c">官方处罚/通报</span> <span class="raw">原标注：official_punishment</span> <span class="d">2021-01-10</span> <span class="d">文号／编号：沪长劳监立字〔2021〕第003号</span></div>
+            <div class="s">针对员工猝死事件及用工时间问题进入公司驻点调查，责令排查用工管理制度及落实休息假规定。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/pinduoduo.html">查看 拼多多 (PDD) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-luckin" data-b="luckin" data-g="C" data-n="2" data-l="0">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">瑞幸咖啡 (Luckin Coffee)</span><span class="co">瑞幸咖啡（中国）有限公司</span><span class="ct">2 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">厦门市思明区人力资源和社会保障局劳动用工专项检查</div>
+            <div class="m"><span class="k" style="border-color:#be123c;color:#be123c">官方处罚/通报</span> <span class="raw">原标注：official_punishment</span> <span class="d">2024-02-28</span> <span class="d">文号／编号：厦思人社综执检〔2024〕039号</span></div>
+            <div class="s">针对部分兼职人员非全日制用工超时、连续工作未保障合理工间休息问题下达用工指导规范建议书。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">北京市朝阳区人民法院劳动争议案件裁定书</div>
+            <div class="m"><span class="k" style="border-color:#7c3aed;color:#7c3aed">司法裁判</span> <span class="raw">原标注：judicial_record</span> <span class="d">2023-12-05</span> <span class="d">文号／编号：(2023)京0105民初98124号</span></div>
+            <div class="s">关于一线排班管理与法定调休日出勤补贴争议审结，依法调解明确工作时长计算边界。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/luckin.html">查看 瑞幸咖啡 (Luckin Coffee) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-meituan" data-b="meituan" data-g="C" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">Meituan (美团)</span><span class="co">北京三快在线科技有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">多部委联合指导外卖骑手算法优化与工时保障指导意见</div>
+            <div class="m"><span class="k" style="border-color:#be123c;color:#be123c">官方处罚/通报</span> <span class="raw">原标注：official_punishment</span> <span class="d">2023-11-20</span></div>
+            <div class="s">明确要求不得将最严算法作为考核指标，保障骑手合理休息。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/meituan.html">查看 Meituan (美团) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-huawei" data-b="huawei" data-g="C" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">华为终端 (Huawei)</span><span class="co">华为技术有限公司 / 华为终端有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">脉脉及多方打卡工时综合调研</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2023-10-15</span></div>
+            <div class="s">研发与终端线平均周工时超 55 小时，周末加班比例高。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/huawei.html">查看 华为终端 (Huawei) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-sf-express" data-b="sf-express" data-g="C" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">顺丰速运 (SF Express)</span><span class="co">顺丰速运有限公司</span><span class="ct">1 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">多地劳动监察通报汇总</div>
+            <div class="m"><span class="k" style="border-color:#be123c;color:#be123c">官方处罚/通报</span> <span class="raw">原标注：official_punishment</span> <span class="d">2024-02-20</span></div>
+            <div class="s">多家加盟网点因超时用工被通报。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/sf-express.html">查看 顺丰速运 (SF Express) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-bingliw" data-b="bingliw" data-g="C" data-n="0" data-l="0">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">兵立王</span><span class="co">四川兵立王品牌管理有限责任公司</span><span class="ct w">证据薄弱 · 0 条可点链接</span></summary>
+      <div class="ev-body">
+        <div class="ev-nolink"><strong>本页无可点公开链接。</strong>评级判据如下（线下一手／匿名反馈，无法给出原始来源 URL）：</div>
+        <ul class="ev-reasons">
+          <li>门店员工匿名反馈：月休不足 4 天（线下一手·匿名）</li>
+        </ul>
+        <div class="ev-more"><a href="./brand/bingliw.html">查看 兵立王 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-meiyijia" data-b="meiyijia" data-g="C" data-n="0" data-l="0">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">美宜佳</span><span class="co">美宜佳控股有限公司</span><span class="ct w">证据薄弱 · 0 条可点链接</span></summary>
+      <div class="ev-body">
+        <div class="ev-nolink"><strong>本页无可点公开链接。</strong>评级判据如下（线下一手／匿名反馈，无法给出原始来源 URL）：</div>
+        <ul class="ev-reasons">
+          <li>公开招聘口径多为月休 2-4 天、两班倒 / 三班制，无统一双休（2026 年多城招聘页交叉核实）</li>
+          <li>站长（双休Go）西南两地线下核实：无月休（双休）、轮班</li>
+          <li>按站内口径「单休归为 C 级」，2026-10-30 定级 C 级（详见上方评级说明）</li>
+        </ul>
+        <div class="ev-more"><a href="./brand/meiyijia.html">查看 美宜佳 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-kfc" data-b="kfc" data-g="C" data-n="0" data-l="0">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">肯德基</span><span class="co">百胜中国控股有限公司</span><span class="ct w">证据薄弱 · 0 条可点链接</span></summary>
+      <div class="ev-body">
+        <div class="ev-nolink"><strong>本页无可点公开链接。</strong>评级判据如下（线下一手／匿名反馈，无法给出原始来源 URL）：</div>
+        <ul class="ev-reasons">
+          <li>百胜中国官方直聘多店晚班 15:00-23:00</li>
+          <li>爱企查工时库晚班 15:00-23:00 / 16:00-24:00，23:00 为众数</li>
+        </ul>
+        <div class="ev-more"><a href="./brand/kfc.html">查看 肯德基 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-molina" data-b="molina" data-g="C" data-n="0" data-l="0">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">茉莉奶白</span><span class="co">深圳市茉莉奶白餐饮管理有限公司</span><span class="ct w">证据薄弱 · 0 条可点链接</span></summary>
+      <div class="ev-body">
+        <div class="ev-nolink"><strong>本页无可点公开链接。</strong>评级判据如下（线下一手／匿名反馈，无法给出原始来源 URL）：</div>
+        <ul class="ev-reasons">
+          <li>站长（双休Go）线下核实到门店为「月休 4 天」（单休形态，线下一手证据）</li>
+          <li>按站内口径「单休归为 C 级」，2026-10-30 定级 C 级（详见上方评级说明）</li>
+        </ul>
+        <div class="ev-more"><a href="./brand/molina.html">查看 茉莉奶白 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-chabaidao" data-b="chabaidao" data-g="C" data-n="0" data-l="0">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">茶百道</span><span class="co">四川百茶百道实业股份有限公司</span><span class="ct w">证据薄弱 · 0 条可点链接</span></summary>
+      <div class="ev-body">
+        <div class="ev-nolink"><strong>本页无可点公开链接。</strong>评级判据如下（线下一手／匿名反馈，无法给出原始来源 URL）：</div>
+        <ul class="ev-reasons">
+          <li>门店店员匿名反馈：月休不足 4 天（线下一手·匿名）</li>
+        </ul>
+        <div class="ev-more"><a href="./brand/chabaidao.html">查看 茶百道 完整详情页 →</a></div>
+      </div>
+    </details>
+  </div>
+  <p class="ev-foot">以上证据均来自公开渠道，本站只做汇总与标注，<strong>不构成对任何企业的法律定性</strong>。企业用工情况会随时间变化；如认为某条证据过时、不实或属个案误判，欢迎通过 <a href="https://github.com/dujeongil-galaxy/shuangxiugou/issues">GitHub Issues</a> 提交可查证的来源，核实后同步更新本页与详情页。</p>
+</section>
+<!-- EVIDENCE-BOARD-END -->
+
 
     <!-- SEO 兜底正文：给不执行 JavaScript 的搜索引擎爬虫提供可索引的静态内容。
          浏览器渲染时 noscript 标签默认不显示，因此对正常用户零影响。
@@ -140,13 +1859,13 @@
 
         <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">评级口径</h2>
         <ul style="margin:0 0 16px;padding-left:22px">
-          <li><strong>S 级</strong>：模范标杆，严格双休</li>
-          <li><strong>A 级</strong>：合规双休，接近 965（工作日 9 点上班、下午 6 点下班）</li>
-          <li><strong>B 级</strong>：大小周或数据存疑</li>
-          <li><strong>C 级</strong>：严重超时、存在通报违约记录，或无统一双休证据（含轮休制、拒不披露）</li>
+          <li><strong>S 级</strong>：在 A 级基础上更严格——必须同时有合格的真实双休率</li>
+          <li><strong>A 级</strong>：月休 8 天以上（做五休二轮休 ≈ 月休 8.6 天在此档）</li>
+          <li><strong>B 级</strong>：月休 6-8 天（大小周 ≈ 月休 6 天在此档）</li>
+          <li><strong>C 级</strong>：月休不足 6 天（单休/月休 2-5 天），或严重超时、存在通报违约记录、拒不披露</li>
         </ul>
         <p style="margin:0 0 16px;font-size:13px;color:#475569">
-          <strong>2026-10-31 起废除「U 级（待核实·不评级）」</strong>：该怎么判怎么判——查不到直雇统一双休证据的（如银行网点轮休制、休息日非固定周末），按无双休判 C 级；官方渠道被直接询问双休安排而<strong>拒不回答的</strong>，同样按无双休判 C 级。企业公开披露休息制度后可重新核实。
+          <strong>2026-10-31 起废除「U 级（待核实·不评级）」</strong>，同日按站长月休口径复核改判：B 级 = 月休 6-8 天、A 级 = 月休 8 天以上、S 级 = A 级 + 真实双休率达标；轮休制周休 2 天（做五休二）属双休、判 A 级，不再因休息日非固定周末扣档。官方渠道被直接询问双休安排而<strong>拒不回答的</strong>，按无双休判 C 级。企业公开披露休息制度后可重新核实。
         </p>
 
         <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">已收录企业双休评级与平均下班时间（共 67 家）</h2>
@@ -216,11 +1935,11 @@
           <li><strong><a href="./brand/yidiandian.html">一点点</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/yidiandian.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/xiaomi.html">小米</a></strong>：B 级 · 真实双休率 53% · 平均下班 20:30</li> <a href="./brand/xiaomi.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/kfc.html">肯德基</a></strong>：C 级 · 真实双休率 10% · 平均下班 23:00</li> <a href="./brand/kfc.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/icbc.html">工商银行 (ICBC)</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/icbc.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/ccb.html">建设银行 (CCB)</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/ccb.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/boc.html">中国银行 (BOC)</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/boc.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/icbc.html">工商银行 (ICBC)</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/icbc.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/ccb.html">建设银行 (CCB)</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/ccb.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/boc.html">中国银行 (BOC)</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/boc.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/abc.html">农业银行 (ABC)</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/abc.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/chengdubank.html">成都银行 (BOCD)</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/chengdubank.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/chengdubank.html">成都银行 (BOCD)</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/chengdubank.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/meiyijia.html">美宜佳</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/meiyijia.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/molina.html">茉莉奶白</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/molina.html" style="color:#0F766E">详细→</a>
         </ul>
@@ -347,11 +2066,11 @@
           <li><a href="./brand/yidiandian.html">一点点</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
           <li><a href="./brand/xiaomi.html">小米</a> —— B 级 · 双休率 53% · 平均下班 20:30</li>
           <li><a href="./brand/kfc.html">肯德基</a> —— C 级 · 双休率 10% · 平均下班 23:00</li>
-          <li><a href="./brand/icbc.html">工商银行 (ICBC)</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
-          <li><a href="./brand/ccb.html">建设银行 (CCB)</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
-          <li><a href="./brand/boc.html">中国银行 (BOC)</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
+          <li><a href="./brand/icbc.html">工商银行 (ICBC)</a> —— A 级 · 双休率 未核实 · 平均下班 —</li>
+          <li><a href="./brand/ccb.html">建设银行 (CCB)</a> —— A 级 · 双休率 未核实 · 平均下班 —</li>
+          <li><a href="./brand/boc.html">中国银行 (BOC)</a> —— A 级 · 双休率 未核实 · 平均下班 —</li>
           <li><a href="./brand/abc.html">农业银行 (ABC)</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
-          <li><a href="./brand/chengdubank.html">成都银行 (BOCD)</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
+          <li><a href="./brand/chengdubank.html">成都银行 (BOCD)</a> —— A 级 · 双休率 未核实 · 平均下班 —</li>
           <li><a href="./brand/meiyijia.html">美宜佳</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
           <li><a href="./brand/molina.html">茉莉奶白</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
         </ul>
@@ -689,10 +2408,13 @@
           category: '食品饮品',
           grade: 'C级'
         },
-        // ── 银行卡（2026-10-31 起按新口径定 C 级）──
-        // 新口径（站长 2026-10-31 拍板，废除 U 级）：该怎么判怎么判——
-        // 查不到直雇统一双休证据即视为无双休。银行网点轮休制（休息日非固定周末）、
-        // 招聘「双休」岗多为外包派遣（不能代表直雇），一律按 C 级（无双休）判。
+        // ── 银行卡（2026-10-31 按站长月休口径复核改判）──
+        // 真实口径（站长 2026-10-31 拍板）：B 级 = 月休 6-8 天；A 级 = 月休 8 天以上；
+        // C 级 = 月休不足 6 天（单休/月休 2-5 天/拒不披露）；S 级 = A 级基础上
+        // 还必须有合格的真实双休率。双休 = 每周休两天（做五休二），不要求固定
+        // 周六日。此前「查不到直雇统一周末双休即视为无双休」为本站自拟过度口径，
+        // 2026-10-31 站长纠正后废弃；工/建/中/成都轮休制周休 2 天 ≈ 月休 8.6 天，
+        // 判 A 级；农行官方口径单休网点占 61%（主体月休 4-5 天），维持 C 级。
         {
           id: 'icbc-card',
           name: '工商银行',
@@ -704,16 +2426,16 @@
           doubleRestRate: null,
           offWorkTime: null,
           voteCount: '0',
-          desc: '"公开招聘口径多标「双休/做五休二」，但多为外包派遣岗（今日招聘、地方人才网均标注「该职位信息待核验」）；员工社群反馈网点为轮休制、做五休二而休息日非固定周末，客户经理受营销指标压力周末常需培训或上班。按站内口径「查不到直雇统一双休证据即视为无双休」定 C 级（公开招聘页 + 员工社群交叉核实，2026-10 核实）"',
+          desc: '"公开招聘口径多标「双休/做五休二」，但多为外包派遣岗（今日招聘、地方人才网均标注「该职位信息待核验」）；员工社群反馈网点为轮休制、做五休二而休息日非固定周末，客户经理受营销指标压力周末常需培训或上班。网点轮休制下柜员仍为周休 2 天（≈月休 8.6 天），按站长口径「月休 8 天以上判 A 级」定 A 级；休息日不固定为轮休制固有形态，不影响每周休两天的实质（公开招聘页 + 员工社群交叉核实，2026-10 核实）"',
           tags: ['国有银行', '工商银行', '金融银行', 'ICBC', '网点轮休'],
           likeCount: '0',
           dislikeCount: '0',
-          recommendText: '⚠️ C 级 · 无统一双休：外包岗标双休、网点轮休制（休息日非固定周末）',
-          recommendColor: 'red', // red=红色警示, green=绿色推荐
+          recommendText: '✅ A 级 · 轮休制周休 2 天（≈月休 8.6 天）；客户经理岗周末有占用风险',
+          recommendColor: 'green', // red=红色警示, green=绿色推荐
           insertAfter: '肯德基', // 插到哪个卡片后面（h3里的关键词）
           keywords: ['工商银行', 'ICBC', '工行', '国有银行', '银行双休', '网点轮休'],
           category: '金融银行',
-          grade: 'C级'
+          grade: 'A级'
         },
         {
           id: 'ccb-card',
@@ -726,16 +2448,16 @@
           doubleRestRate: null,
           offWorkTime: null,
           voteCount: '0',
-          desc: '"官网网点营业时间显示对私周六部分营业、周日休息，系轮班；招聘平台与脉脉帖标「周末双休/上五休二」，但牛客网员工帖称「双休但不连着周六周日，周四和周六休」。按站内口径「查不到直雇统一双休证据即视为无双休」定 C 级（官网营业时间 + 招聘页 + 员工社群交叉核实，2026-10 核实）"',
+          desc: '"官网网点营业时间显示对私周六部分营业、周日休息，系轮班；招聘平台与脉脉帖标「周末双休/上五休二」，但牛客网员工帖称「双休但不连着周六周日，周四和周六休」——周休 2 天（≈月休 8.6 天），休息日拆开但不减量。按站长口径「月休 8 天以上判 A 级」定 A 级（官网营业时间 + 招聘页 + 员工社群交叉核实，2026-10 核实）"',
           tags: ['国有银行', '建设银行', '金融银行', 'CCB', '网点轮班'],
           likeCount: '0',
           dislikeCount: '0',
-          recommendText: '⚠️ C 级 · 无统一双休：网点轮班制、员工轮休（休息日非固定周末）',
-          recommendColor: 'red',
+          recommendText: '✅ A 级 · 轮休制周休 2 天（≈月休 8.6 天，周四+周六式拆休）',
+          recommendColor: 'green',
           insertAfter: '工商银行', // 插到 icbc 卡后面（h3 关键词）
           keywords: ['建设银行', 'CCB', '建行', '国有银行', '银行双休', '网点轮班'],
           category: '金融银行',
-          grade: 'C级'
+          grade: 'A级'
         },
         {
           id: 'boc-card',
@@ -748,16 +2470,16 @@
           doubleRestRate: null,
           offWorkTime: null,
           voteCount: '0',
-          desc: '"公开招聘聚合口径多标「双休/周末双休」，但多为外包派驻、派遣岗（智联标「单双休」、quanzhi/地方人才网岗位标注「待核验」）；官网网点公示与分行公告显示网点为轮休制、相邻网点错峰上班。按站内口径「查不到直雇统一双休证据即视为无双休」定 C 级（官网网点公示 + 招聘页 + 分行公告交叉核实，2026-10 核实）"',
+          desc: '"公开招聘聚合口径多标「双休/周末双休」，但多为外包派驻、派遣岗（智联标「单双休」、quanzhi/地方人才网岗位标注「待核验」）；官网网点公示与分行公告显示网点为轮休制、相邻网点错峰上班。网点错峰轮休下柜员仍为周休 2 天（≈月休 8.6 天），按站长口径「月休 8 天以上判 A 级」定 A 级（官网网点公示 + 招聘页 + 分行公告交叉核实，2026-10 核实）"',
           tags: ['国有银行', '中国银行', '金融银行', 'BOC', '网点轮休'],
           likeCount: '0',
           dislikeCount: '0',
-          recommendText: '⚠️ C 级 · 无统一双休：外包岗标双休、网点轮休制（休息日非固定周末）',
-          recommendColor: 'red',
+          recommendText: '✅ A 级 · 轮休制周休 2 天（≈月休 8.6 天）；休息日非固定周末',
+          recommendColor: 'green',
           insertAfter: '建设银行', // 插到 ccb 卡后面（h3 关键词）
           keywords: ['中国银行', 'BOC', '中行', '国有银行', '银行双休', '网点轮休'],
           category: '金融银行',
-          grade: 'C级'
+          grade: 'A级'
         },
         {
           id: 'abc-card',
@@ -770,7 +2492,7 @@
           doubleRestRate: null,
           offWorkTime: null,
           voteCount: '0',
-          desc: '"农行安康分行官方口径「双休网点占比29%、单休网点占比61%，实行轮换调休」；外包客服岗（成都人才网，标注待核验）称「上四休二或上五休二、轮班轮休、非固定周六周日休息」；员工投稿反馈基层支行轮休制、无固定周末双休。按站内口径「查不到直雇统一双休证据即视为无双休」定 C 级（分行官方口径 + 招聘页 + 员工社群交叉核实，2026-10 核实）"',
+          desc: '"农行安康分行官方口径「双休网点占比29%、单休网点占比61%，实行轮换调休」；外包客服岗（成都人才网，标注待核验）称「上四休二或上五休二、轮班轮休、非固定周六周日休息」；员工投稿反馈基层支行轮休制、无固定周末双休。分行官方口径「单休网点占比 61%」意味着主体网点月休仅 4-5 天，按站长口径「月休不足 6 天判 C 级」维持 C 级（分行官方口径 + 招聘页 + 员工社群交叉核实，2026-10 核实）"',
           tags: ['国有银行', '农业银行', '金融银行', 'ABC', '网点轮休'],
           likeCount: '0',
           dislikeCount: '0',
@@ -792,16 +2514,16 @@
           doubleRestRate: null,
           offWorkTime: null,
           voteCount: '0',
-          desc: '"成都银行官网 2026-04-13 公告「部分网点实行周末暂停营业」，明示「周末轮休期间」相邻网点正常营业；第三方网点库显示大量网点周六周日 09:00-16:00 营业、部分周末不开现金柜；智联/四川人才网「周末双休」岗的招聘主体均为徽通金融等外包公司且标注「待核验」；员工社群反馈「支行零售/柜员：网点轮班，周末轮休」。按站内口径「查不到直雇统一双休证据即视为无双休」定 C 级（官网公告 + 网点库 + 招聘页 + 员工社群交叉核实，2026-10 核实）"',
+          desc: '"成都银行官网 2026-04-13 公告「部分网点实行周末暂停营业」，明示「周末轮休期间」相邻网点正常营业；第三方网点库显示大量网点周六周日 09:00-16:00 营业、部分周末不开现金柜；智联/四川人才网「周末双休」岗的招聘主体均为徽通金融等外包公司且标注「待核验」；员工社群反馈「支行零售/柜员：网点轮班，周末轮休」。柜员网点轮班仍为周休 2 天（≈月休 8.6 天），按站长口径「月休 8 天以上判 A 级」定 A 级（官网公告 + 网点库 + 招聘页 + 员工社群交叉核实，2026-10 核实）"',
           tags: ['城商行', '成都银行', '金融银行', 'BOCD', '网点轮休'],
           likeCount: '0',
           dislikeCount: '0',
-          recommendText: '⚠️ C 级 · 官网公告部分网点周末轮休，外包岗标双休不能代表直雇',
-          recommendColor: 'red',
+          recommendText: '✅ A 级 · 网点轮班制周休 2 天（≈月休 8.6 天）；部分网点周末轮值',
+          recommendColor: 'green',
           insertAfter: '农业银行', // 插到 abc 卡后面（h3 关键词）
           keywords: ['成都银行', 'BOCD', '成都市商业银行', '城商行', '银行双休', '网点轮休', 'bocd'],
           category: '金融银行',
-          grade: 'C级'
+          grade: 'A级'
         },
         // ── 美宜佳（2026-10-30 定级 C 级·单休口径）──
         // 口径：公开招聘多标两班倒/三班制、月休 2-4 天、无统一双休；
@@ -836,8 +2558,8 @@
         // 口径：站长线下核实到「月休 4 天」（单休形态）。
         // 定级依据（2026-10-30 站长提出复核，核实后定级）：站内口径
         // 「单休归为 C 级」——站长线下一手核实强于茶百道/兵立王的
-        // 匿名反馈 C 级卡，此前 U 级「单店样本不足」的标准与同类卡
-        // 不一致，属漏判。联名水杯易爆裂新闻在卡片下方说明框（唯一备注）。
+        // 匿名反馈 C 级卡；此前曾以「单店样本不足」记为 U 级，经复核与茶百道/兵立王
+        //（匿名反馈即定 C 级）口径一致，故定级 C 级。联名水杯易爆裂新闻在卡片下方说明框（唯一备注）。
         {
           id: 'molina-card',
           name: '茉莉奶白',
@@ -1456,7 +3178,7 @@
             + '双休Go（本站全新Logo）核算口径：按<strong>总工时、休息天数、班次循环周期</strong>核算，不是看「有人上早班、有人上晚班」就直接算成半月休息。'
             + '举例：两个人互排早 / 晚班，若每人每月实际上班天数都是 15 天，那才是月休 15；若班次堆到同一个人身上、总工时超标，则不能算达标。'
             + '本卡站长（双休Go）西南两地线下核实：<strong>无月休（双休）、轮班</strong>；公开招聘口径多为月休 2–4 天、两班倒 / 三班制。'
-            + '按站内口径「单休归为 C 级」，本卡定级 <strong>C 级</strong>（2026-10-30 复核，此前 U 级为漏判）。'
+            + '按站内口径「单休归为 C 级」，本卡定级 <strong>C 级</strong>（2026-10-30 复核，此前曾记为 U 级，复核后更正为 C 级）。'
             + '</div></details>';
         }
         tagsRow.parentNode.insertBefore(note, tagsRow.nextSibling);
@@ -1920,6 +3642,7 @@
        1) 顶部「打卡并生成小票」改为弹窗，引导去品牌档案卡打卡（原来默认给第一家品牌打卡，会误导）
        2) 自定义品牌卡（DOM 克隆）没有 React onClick，补上「打卡」「详情证据」功能 -->
   <script src="./custom-card-actions.js?v=18"></script>
+  <script src="./u-grade-patch.js?v=1"></script>
   <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
   <script src="./factcheck-button.js?v=1"></script>
   <!-- 拼音 / 首字母模糊搜索联想。

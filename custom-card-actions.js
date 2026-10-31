@@ -94,6 +94,7 @@
       'font-size:12px;font-weight:900;letter-spacing:.02em;text-transform:uppercase}',
       '.sxg-badge-bad{background:#fef2f2;color:#b91c1c;border:2px solid #f87171}',
       '.sxg-badge-good{background:#ecfdf5;color:#065f46;border:2px solid #10b981}',
+      '.sxg-badge-neutral{background:#f1f5f9;color:#475569;border:2px solid #cbd5e1}',
       '.sxg-chip{background:#f1f5f9;color:#475569;border-radius:6px;padding:2px 8px;font-size:12px}',
       '.sxg-note{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:14px;',
       'font-size:12px;line-height:1.7;color:#78350f}',
@@ -205,7 +206,7 @@
   }
 
   function tierLetter(grade) {
-    var m = /([SABC])/.exec(grade || '');
+    var m = /([SABU])/.exec(grade || '');
     return m ? m[1] : 'C';
   }
 
@@ -827,7 +828,9 @@
     var body = el('div', 'sxg-pad sxg-space');
 
     var tier = tierLetter(cfg.grade);
-    var badgeCls = tier === 'C' ? 'sxg-badge sxg-badge-bad' : 'sxg-badge sxg-badge-good';
+    var badgeCls = tier === 'C' ? 'sxg-badge sxg-badge-bad'
+      : tier === 'U' ? 'sxg-badge sxg-badge-neutral'
+      : 'sxg-badge sxg-badge-good';
     var rateCls = tier === 'C' ? 'color:#34d399' : 'color:#34d399';
 
     body.innerHTML =

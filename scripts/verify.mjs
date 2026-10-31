@@ -384,34 +384,88 @@ if (curCheck === 'ok') {
 }
 
 // ---------- 自定义卡解析 ----------
-// ---------- 2d. U 级废除纪律（2026-10-31 站长拍板） ----------
-// 背景：2026-10-17 曾引入 U 级（待核实·不评级）；2026-10-31 站长拍板废除——
-// 「该怎么判怎么判」：查不到直雇统一双休证据即按无双休判 C；官方拒不披露
-// 双休口径同样按无双休判 C。原 3 家 U 级（宏碁/三星/霸王茶姬）已改 tier:`C`。
-// 本节盯防回退：bundle 与自定义卡都不允许再出现 U 档。
-section('2d. U 级废除（不得再有 U 档）');
-const uCards = [];
+// ---------- 2d. U 级硬规则（允许，但须附证据缺失说明——规则写死，不给 AI 偷懒口子） ----------
+// 背景：2026-10-17 引入 U 级（待核实·不评级）；2026-10-31 上午因 AI 滥用（什么都往 U 塞）
+//   一度废除。同日站长纠正原话：「U 级允许，但规则写死，这不是给 AI 偷懒的理由」。
+//   故恢复 U 为合法档位，但机器强制以下硬规则——任何一条不满足即判红：
+//   ① 标 U 的品牌详情页 MUST 含「证据缺失说明」区块（标记 id="evidence-gap" 或 data-evgap="1"），
+//      写明检索了哪些渠道、为何无任何可采信证据；无说明 = 无效 U = 判红（堵死「懒得查就标 U」）。
+//   ② U 级详情页 MUST NOT 含任何「证据来源」有效条目（有证据就必须用 S/A/B/C）；U 却夹带证据 = 判红。
+//   ③ U 级不计入 S/A/B/C 合格统计，须单独列示（证据不足 N 家），不得混入红榜/避雷（由 §2e 四格不含 U 保证）。
+//   ④ gen-pinyin-index.py 允许 U 映射；但 U 品牌须带 证据缺失说明（verify 兜底，缺则判红）。
+//   ⑤ 禁止以「我不确定 / 没空查 / 懒得找」为由标 U——每次标 U 必须记录检索动作（规则写死）。
+//   旧 U 时代死文案（「待核实（未评级）」「U 级待核实」「参考：其他待核实」「待核实 · 无证据不作评级」）
+//   仍禁用：新 U 用「U 级 + 证据缺失说明」，不沿用旧措辞。
+section('2d. U 级硬规则（允许，但须附证据缺失说明）');
+
+// 解析 brand/*.html：哪些页标了 U 档，是否附证据缺失说明、是否夹带证据
+const brandHtmlPages = readdirSync(join(ROOT, 'brand')).filter((f) => f.endsWith('.html'));
+const uPages = [];
+for (const f of brandHtmlPages) {
+  const ph = readFileSync(join(ROOT, 'brand', f), 'utf8');
+  const isU = /badge[^>]*>U 级<|data-tier=["']U["']/.test(ph);
+  if (!isU) continue;
+  const hasGap = /id="evidence-gap"|data-evgap="1"|证据缺失说明/.test(ph);
+  const hasEvidence = /<h2>证据来源<\/h2>[\s\S]*?<li style="margin:0 0 12px">/.test(ph);
+  uPages.push({ f, hasGap, hasEvidence });
+}
+check(uPages.every((p) => p.hasGap),
+  'U 级详情页 MUST 含「证据缺失说明」（规则①：无说明 = 无效 U，堵死 AI 偷懒）',
+  uPages.filter((p) => !p.hasGap).map((p) => p.f).join(', ') || '全部 U 页均附说明');
+check(uPages.every((p) => !p.hasEvidence),
+  'U 级详情页 MUST NOT 含有效证据条目（有证据就该用 S/A/B/C，规则②）',
+  uPages.filter((p) => p.hasEvidence).map((p) => p.f).join(', ') || '无 U 页夹带证据');
+
+// bundle 内置卡同理：tier:`U` 必须对应详情页附证据缺失说明
+const bundleU = [];
 brandCards.forEach((c, i) => {
   const end = i + 1 < brandCards.length ? brandCards[i + 1].pos : bundle.length;
   const chunk = bundle.slice(c.pos, end);
-  if (chunk.includes('tier:`U`')) uCards.push(c.name || c.id);
+  if (!chunk.includes('tier:`U`')) return;
+  const pageName = c.id + '.html';
+  const ok = brandHtmlPages.includes(pageName) &&
+    /id="evidence-gap"|data-evgap="1"|证据缺失说明/.test(readFileSync(join(ROOT, 'brand', pageName), 'utf8'));
+  if (!ok) bundleU.push(c.id);
 });
-check(uCards.length === 0,
-  'bundle 内置卡无 U 档（原宏碁/三星/霸王茶姬已改 C 级）',
-  uCards.length ? '仍有 U 档：' + uCards.join(', ') : '已全数改判');
+check(bundleU.length === 0,
+  'bundle 内置 U 档卡 MUST 对应详情页附「证据缺失说明」（规则①对内置卡一致适用）',
+  bundleU.join(', ') || '无 U 档内置卡 / 均已附说明');
+
+// 自定义卡同理
 const cfgUD = html.match(/var customCardsConfig = \[([\s\S]*?)\n      \];/);
 const customUD = cfgUD
   ? [...cfgUD[1].matchAll(/id:\s*'([^']+)'[\s\S]*?grade:\s*'([^']+)'/g)].map((m) => ({ id: m[1], grade: m[2] }))
   : [];
-const customUDBad = customUD.filter((c) => c.grade === 'U级');
-check(customUDBad.length === 0,
-  '自定义卡无 U 级（原 5 张银行卡已改 C 级）',
-  customUDBad.length ? customUDBad.map((c) => c.id).join(', ') : '已全数改判');
-check(!/grade:\s*'U级'/.test(html) && !/tier:`U`/.test(bundle),
-  '全站（html+bundle）无 U 档字面量残留');
-// 徽章文案防线：U 级时代的渲染分支已删，页面不得再出现「待核实 · 无证据不作评级」
-check(!html.includes('待核实 · 无证据不作评级'),
-  'index.html 无「待核实 · 无证据不作评级」徽章文案（U 分支已删）');
+const customU = customUD.filter((c) => c.grade === 'U级');
+const customUBad = [];
+for (const c of customU) {
+  const pageName = c.id.replace(/-card$/, '') + '.html';
+  if (!brandHtmlPages.includes(pageName) ||
+    !/id="evidence-gap"|data-evgap="1"|证据缺失说明/.test(readFileSync(join(ROOT, 'brand', pageName), 'utf8')))
+    customUBad.push(c.id);
+}
+check(customUBad.length === 0,
+  'U 级自定义卡同样须附证据缺失说明（规则①对自定义卡一致适用）',
+  customUBad.join(', ') || '无 U 级自定义卡 / 均已附说明');
+
+// 旧 U 时代死文案仍禁用（新 U 不沿用旧措辞）
+const DEAD_U_MARKS = ['待核实（未评级）', 'U 级待核实', '参考：其他待核实', '待核实 · 无证据不作评级'];
+const uDeadHits = [];
+const htmlPages = ['projects.html', ...brandHtmlPages.map((f) => join('brand', f))];
+for (const page of htmlPages) {
+  const ph = readFileSync(join(ROOT, page), 'utf8');
+  for (const mark of DEAD_U_MARKS) {
+    if (ph.includes(mark)) uDeadHits.push(page + '：「' + mark + '」');
+  }
+}
+check(uDeadHits.length === 0,
+  '旧 U 时代死文案仍禁用（新 U 用「U 级 + 证据缺失说明」，不沿用旧措辞）',
+  uDeadHits.length ? uDeadHits.join('；') : '已清零');
+
+// gen-pinyin 允许 U（不再 crash），规则由 verify §2d 兜底
+const genTool = readFileSync(join(ROOT, 'scripts', 'gen-pinyin-index.py'), 'utf8');
+check(genTool.includes("'U级': 'u'") || genTool.includes('"U级": "u"'),
+  'gen-pinyin-index.py 允许 U 级映射（遇 U 不再 crash，规则由 verify §2d 兜底）');
 
 // 2026-10-20 长城/名创改档 C 级 0%（口径换算）。这是站长拍板的数据结论，
 // 加防回退断言：若有人把这两张卡改回 U 或删掉 derived 标注，verify 必须判红。
@@ -444,7 +498,7 @@ section('2e. 统计计数一致性（顶部四格 + 页脚清单）');
 // 口径（2026-10-17 审计确定，改动前 36/16/8/12 与任何口径都对不上）：
 //   收录品牌 = 实名企业卡 =（内置卡 - 虚拟对比卡）+ 自定义卡
 //   双休红榜 = S/A 级卡数；大小周观察 = B 级卡数；避雷预警 = C 级卡数（内置 + 自定义）
-//   （2026-10-31 起 U 级废除：原 U 级卡全部计入避雷预警 C 档。）
+//   （U 级恢复但单独列示、不计入四格统计；原 U 级卡已按证据改判 S/A/B/C。）
 //   「某代工烘焙食品 (虚拟对比黑榜)」是上游设计的匿名对比工具，无详情页，不计入任何统计。
 const tier2e = { S: 0, A: 0, B: 0, C: 0, U: 0 };
 let builtin2e = 0;
@@ -490,20 +544,38 @@ check(brandPages2e === statTotal, 'brand/ 详情页数量 = 收录总数（虚�
 const tabBadge2e = (bundle.match(/children:`企业真假双休档案`\}\),\(0,A\.jsx\)\(`span`,\{className:`text-\[10px\] font-mono bg-emerald-200\/60 text-emerald-900 px-1\.5 py-0\.5 rounded-full`,children:(\d+)\}\)/) || [])[1];
 check(tabBadge2e !== undefined && Number(tabBadge2e) === statTotal,
   '「企业真假双休档案」tab 角标 = 收录总数', '页面 ' + tabBadge2e + ' / 计算 ' + statTotal);
-// 2026-10-31 U 级废除改判锁定（站长拍板「该怎么判怎么判」）。
-// 5 张银行卡 U→C（轮休制/休息日非固定周末=无双休证据）；新增淘宝闪购
-// （客服拒不披露=无双休）。加防回退断言：改回 U级 或删卡必须判红。
-const relockedU2e = customPairs2e.filter((c) => {
-  const bank = ['icbc-card', 'ccb-card', 'boc-card', 'abc-card', 'chengdubank-card', 'taobao-shanguang-card'];
-  return bank.includes(c.id) && c.grade !== 'C级';
-});
+// 2026-10-31 U 级废除 + 月休口径复核改判锁定（站长口径：B=月休 6-8 天、
+// A=月休 8 天以上、S=A+真实双休率达标、C=月休不足 6 天或拒不披露）。据此：
+//   工/建/中/成都 4 家银行网点轮休制、周休 2 天（≈月休 8.6 天）→ A 级；
+//   农行分行官方口径单休网点占 61%（主体月休 4-5 天，不足 B 线）→ 维持 C 级；
+//   淘宝闪购客服被直接询问双休安排而拒答 → C 级。
+// 防回退断言：任一卡改档或删卡都必须判红。
+const EXPECT_GRADE_2E = {
+  'icbc-card': 'A级', 'ccb-card': 'A级', 'boc-card': 'A级', 'chengdubank-card': 'A级',
+  'abc-card': 'C级', 'taobao-shanguang-card': 'C级',
+};
+const locked2e = customPairs2e.filter((c) => EXPECT_GRADE_2E[c.id]);
+const relockedU2e = locked2e
+  .filter((c) => c.grade !== EXPECT_GRADE_2E[c.id])
+  .map((c) => c.id + '=' + c.grade + '（应 ' + EXPECT_GRADE_2E[c.id] + '）');
 check(relockedU2e.length === 0,
-  '原 5 张银行卡 + 淘宝闪购均为 C 级（2026-10-31 改判锁定，不得回退 U 级）',
-  relockedU2e.length ? relockedU2e.map((c) => c.id + '=' + c.grade).join(', ') : '锁定生效');
-check(byGrade2e('C级') === 14,
-  '自定义卡 C 级共 14 张（原 8 张 C 级 + 5 银行改判 + 淘宝闪购新增）',
+  '4 家银行 A 级 + 农行/淘宝闪购 C 级（2026-10-31 月休口径改判锁定，不得回退）',
+  relockedU2e.length ? relockedU2e.join(', ') : '锁定生效');
+check(locked2e.length === 6,
+  '6 张锁定卡全部存在（删卡判红）', '实际 ' + locked2e.length);
+check(byGrade2e('A级') === 4,
+  '自定义卡 A 级共 4 张（工/建/中/成都银行，2026-10-31 月休口径改判）',
+  '实际 ' + byGrade2e('A级'));
+check(byGrade2e('C级') === 10,
+  '自定义卡 C 级共 10 张（原 14 张 - 4 家银行改判 A）',
   '实际 ' + byGrade2e('C级'));
-check(byGrade2e('U级') === 0, '自定义卡 U 级 0 张（档位已废除）', '实际 ' + byGrade2e('U级'));
+// 规则③：U 级单独列示、不并入四格统计（红榜/观察/避雷只含 S/A/B/C）
+const fourSum2e = statHong + statZhou + statLei;
+const totalCards2e = builtin2e + customPairs2e.length;
+const uCards2e = tier2e.U + byGrade2e('U级');
+check(fourSum2e === totalCards2e - uCards2e,
+  'U 级单独列示、不并入四格统计（四格合计 = 总卡数 − U 卡数）',
+  '四格 ' + fourSum2e + ' / 总 ' + totalCards2e + ' − U ' + uCards2e);
 // bundle 侧改判锁定：宏碁/三星/霸王茶姬 tier C
 const bundleULock = ['acer', 'samsung', 'chagee'];
 const badBundleLock = [];
@@ -517,6 +589,286 @@ for (const bid of bundleULock) {
 check(badBundleLock.length === 0,
   '宏碁/三星/霸王茶姬维持 C 档（2026-10-31 改判锁定）',
   badBundleLock.join(', ') || '锁定生效');
+// ---- 2e-2. 月休口径落地断言（2026-10-31 站长口径）----
+// 防两类回退：① 口径区文字被改回「无双休证据即判 C」旧口径；
+// ② 数据层改档但 brand/ 详情页徽章没跟着改（首页 A、详情页 C 的自相矛盾）。
+check(/A 级<\/strong>：月休 8 天以上/.test(html)
+  && /B 级<\/strong>：月休 6-8 天/.test(html)
+  && /C 级<\/strong>：月休不足 6 天/.test(html),
+  'index.html 评级口径区写明月休四档标准（B=6-8 天 / A=8 天以上 / C=不足 6 天）');
+check(html.includes('轮休制周休 2 天（做五休二）属双休、判 A 级'),
+  'index.html 口径区写明「轮休制周休 2 天属双休判 A」（废除 AI 自拟的周末限定口径）');
+check(!html.includes('查不到直雇统一双休证据即视为无双休'),
+  'index.html 已无「查不到直雇统一双休证据即视为无双休」自拟旧口径（活文案）');
+const BANK_PAGE_TIER = { icbc: 'A', ccb: 'A', boc: 'A', chengdubank: 'A', abc: 'C' };
+const badBankPage = [];
+for (const [slug, tier] of Object.entries(BANK_PAGE_TIER)) {
+  const page = join('brand', slug + '.html');
+  const ph = readFileSync(join(ROOT, page), 'utf8');
+  const want = tier === 'A'
+    ? '<span class="badge" style="background:#0F766E">A 级评级</span>'
+    : '<span class="badge" style="background:#BE123C">C 级 · 主体单休</span>';
+  if (!ph.includes(want)) badBankPage.push(page + '：徽章不是 ' + tier + ' 级');
+  if (tier === 'A') {
+    if (ph.includes('为什么判 C 级') || ph.includes('C 级 · 无双休')) badBankPage.push(page + '：仍有 C 级判级文案');
+    if (!ph.includes('为什么判 A 级')) badBankPage.push(page + '：缺「为什么判 A 级」小节');
+  } else {
+    if (ph.includes('即视为无双休')) badBankPage.push(page + '：判据仍是自拟旧口径');
+    if (!ph.includes('单休网点占比 61%') && !ph.includes('单休网点占比61%')) badBankPage.push(page + '：缺单休占比硬证据判据');
+  }
+}
+check(badBankPage.length === 0,
+  'brand/ 5 张银行页徽章与判据跟数据层一致（4 家 A 级 + 农行 C 级硬证据）',
+  badBankPage.join('；') || '一致');
+
+// ---- 2g. 首页证据链完整公示（2026-10-31 站长要求「证据链必须首页完整公示，口说无凭」）----
+// 事故背景：首页顶部公告栏长期写着「本站全部数据均附公开证据链…来源可查可溯」，
+// 但首页可见区一条证据都没有——174 条证据全藏在 brand/*.html 里。口号与实况脱节，
+// 就是站长说的「口说无凭」。现在首页有 #evidence-board 完整公示区。
+//
+// 本节是防漂移断言。关键设计：**用 Node 独立解析 brand/ 页（真相源）**，
+// 再与 index.html 公示区里的 data-* 契约逐项对账。
+// 生成器是 Python、这里是 Node，两份独立实现同一套解析口径——
+// 只要有人改了详情页证据却没重跑生成器，两边数字就会对不上，本节判红。
+// （若只校验公示区自身自洽，那是自己对自己，抓不到漂移。）
+section('2g. 首页证据链完整公示');
+{
+  const EB_START = '<!-- EVIDENCE-BOARD-START';
+  const EB_END = '<!-- EVIDENCE-BOARD-END -->';
+  const NOTICE_ID = 'evidence-notice';
+
+  // ---------- 1. 独立解析 brand/ 真相源 ----------
+  /** 从单个详情页解析：档位 + 证据条数 + 带链接条数。口径须与生成器一致。 */
+  function parseBrandEvidence(pagePath) {
+    const t = read(pagePath);
+    const grade = (t.match(/<span class="badge"[^>]*>\s*([SABC])\s*级/) || [])[1] || '';
+    const evBlock = t.match(/<h2>证据来源<\/h2>\s*<ul>([\s\S]*?)<\/ul>/);
+    const items = evBlock
+      ? [...evBlock[1].matchAll(/<li style="margin:0 0 12px">([\s\S]*?)<\/li>/g)]
+      : [];
+    return {
+      grade,
+      n: items.length,
+      linked: items.filter((m) => m[1].includes('<a href="')).length,
+    };
+  }
+
+  const brandDir = join(ROOT, 'brand');
+  const brandFiles = existsSync(brandDir)
+    ? readdirSync(brandDir).filter((f) => f.endsWith('.html')).sort()
+    : [];
+  const truth = new Map();
+  for (const f of brandFiles) {
+    const slug = f.replace(/\.html$/, '');
+    truth.set(slug, parseBrandEvidence(join('brand', f)));
+  }
+  const truthTotal = [...truth.values()].reduce((s, v) => s + v.n, 0);
+  const truthLinked = [...truth.values()].reduce((s, v) => s + v.linked, 0);
+  const truthWeak = [...truth.entries()].filter(([, v]) => v.n === 0).map(([k]) => k);
+
+  check(brandFiles.length > 0, `能独立解析 brand/ 详情页（${brandFiles.length} 页）`,
+    brandFiles.length ? '' : 'brand/ 目录为空或不存在');
+
+  // ---------- 2. 公示区块必须在位 ----------
+  const ebStart = html.indexOf(EB_START);
+  const ebEnd = html.indexOf(EB_END);
+  check(ebStart >= 0 && ebEnd > ebStart,
+    'index.html 有首页证据公示区块（EVIDENCE-BOARD 锚点）');
+  // 缺区块时不 throw：throw 会让整个 verify 崩掉、丢掉全部 699 项的汇总。
+  // 改成给空串，后续每条断言各自判红，既有红灯又能看到完整报告。
+  const eb = (ebStart >= 0 && ebEnd > ebStart)
+    ? html.slice(ebStart, ebEnd + EB_END.length)
+    : '';
+
+  // ---------- 3. 区块必须是纯静态（无 JS 也能公示）----------
+  // 「公示」不能依赖被公示方的脚本可用性——用户禁用 JS、爬虫抓取，
+  // 看到的必须是同一份证据清单。所以区块内一个 <script> 都不许有。
+  // ⚠️ 必须先确认区块非空再测无 script：区块被整块删掉时 eb 是空串，
+  //    `!/<script/.test('')` 恒为 true → 断言在「区块根本不存在」时判绿，
+  //    这就是 2026-10-31 故障注入②实际抓到的救绿形态（测了个寂寞）。
+  check(eb.length > 0 && !/<script/i.test(eb),
+    '公示区块为纯静态 HTML（区块内无 <script>，禁用 JS 也能完整公示）',
+    eb.length === 0 ? '区块为空（已被删除？）' : '区块里出现了 script 标签');
+  // 折叠必须用原生 <details>，不能靠 JS 切显隐
+  const detailsCount = (eb.match(/<details /g) || []).length;
+  check(detailsCount === truth.size,
+    `公示区用原生 <details> 折叠，逐家一个（${detailsCount} 个 = ${truth.size} 家）`,
+    `实际 ${detailsCount} 个`);
+
+  // ---------- 4. 挂载位置：必须在 #root 之外 ----------
+  // React 只管 #root。挂在里面会被重渲染清掉，就得靠 MutationObserver 自愈——
+  // 2026-10-31 刚踩过 MO 锚点冲突无限自激的坑（主线程卡死）。
+  const rootIdx = html.indexOf('<div id="root"></div>');
+  check(rootIdx >= 0 && ebStart > rootIdx,
+    '公示区块挂在 #root 之后（React 管不到，不需要 MutationObserver 自愈）',
+    rootIdx < 0 ? '找不到 #root 锚点' : '区块在 #root 之前');
+
+  // ---------- 5. 逐家对账（data-b/data-g/data-n/data-l 契约）----------
+  const rows = [...eb.matchAll(
+    /<details id="ev-([^"]+)" data-b="([^"]*)" data-g="([^"]*)" data-n="(\d+)" data-l="(\d+)"/g)]
+    .map((m) => ({ id: m[1], slug: m[2], grade: m[3], n: Number(m[4]), l: Number(m[5]) }));
+
+  check(rows.length === truth.size,
+    `公示区覆盖全部 ${truth.size} 家企业（逐家 data 契约齐全）`,
+    `实际解析到 ${rows.length} 家`);
+
+  const mismatch = [];
+  const seen = new Set();
+  for (const r of rows) {
+    seen.add(r.slug);
+    const t = truth.get(r.slug);
+    if (!t) { mismatch.push(`${r.slug}：brand/ 里没有这个详情页（公示区有幽灵条目）`); continue; }
+    if (r.grade !== t.grade) mismatch.push(`${r.slug}：档位 公示${r.grade} ≠ 详情页${t.grade}`);
+    if (r.n !== t.n) mismatch.push(`${r.slug}：证据条数 公示${r.n} ≠ 详情页${t.n}`);
+    if (r.l !== t.linked) mismatch.push(`${r.slug}：带链接条数 公示${r.l} ≠ 详情页${t.linked}`);
+    // id 与 data-b 必须同指一家，否则锚点跳转会跳错
+    if (r.id !== r.slug) mismatch.push(`${r.slug}：锚点 id(ev-${r.id}) 与 data-b 不一致`);
+  }
+  for (const slug of truth.keys()) {
+    if (!seen.has(slug)) mismatch.push(`${slug}：详情页有，公示区漏了这家`);
+  }
+  check(mismatch.length === 0,
+    '公示区逐家 data 契约与 brand/ 详情页完全一致（档位/条数/链接数/锚点）',
+    mismatch.slice(0, 12).join('；') + (mismatch.length > 12 ? ` …共 ${mismatch.length} 处` : '')
+    || '一致');
+
+  // ---------- 6. 区块级汇总自洽 + 与真相源一致 ----------
+  const head = eb.match(/data-ev-brands="(\d+)" data-ev-total="(\d+)" data-ev-linked="(\d+)" data-ev-weak="(\d+)"/);
+  check(!!head, '公示区块头部有 data-ev-* 汇总契约');
+  if (head) {
+    const [, hb, ht, hl, hw] = head.map(Number);
+    const sumN = rows.reduce((s, r) => s + r.n, 0);
+    const sumL = rows.reduce((s, r) => s + r.l, 0);
+    check(hb === truth.size, `汇总「企业数」= 详情页数（${hb} = ${truth.size}）`, `写的是 ${hb}`);
+    check(ht === truthTotal && ht === sumN,
+      `汇总「证据总条数」= 真相源（${ht} = ${truthTotal}，且等于各行之和 ${sumN}）`,
+      `汇总 ${ht} / 真相 ${truthTotal} / 行和 ${sumN}`);
+    check(hl === truthLinked && hl === sumL,
+      `汇总「带原始链接」= 真相源（${hl} = ${truthLinked}）`, `汇总 ${hl} / 真相 ${truthLinked}`);
+    check(hw === truthWeak.length,
+      `汇总「证据薄弱家数」= 零证据页家数（${hw} = ${truthWeak.length}）`,
+      `汇总 ${hw} / 真相 ${truthWeak.length}`);
+  }
+
+  // ---------- 7. 公示的链接必须真的可点（不是把 URL 当纯文本写出来）----------
+  // 「来源可查可溯」的最低要求：134 条带链接的证据，每条都得是 <a href>。
+  const ebLinks = [...eb.matchAll(/<div class="u"><a href="(https?:\/\/[^"]+)" rel="nofollow noopener"/g)]
+    .map((m) => m[1]);
+  check(ebLinks.length === truthLinked,
+    `公示区可点原始链接数 = 详情页真实链接数（${ebLinks.length} = ${truthLinked}）`,
+    `公示 ${ebLinks.length} / 真相 ${truthLinked}`);
+  // 逐条核对链接内容：公示区里的 URL 集合必须与详情页里的完全相同
+  const truthLinks = [];
+  for (const f of brandFiles) {
+    const t = read(join('brand', f));
+    const blk = t.match(/<h2>证据来源<\/h2>\s*<ul>([\s\S]*?)<\/ul>/);
+    if (!blk) continue;
+    for (const m of blk[1].matchAll(/<li style="margin:0 0 12px">([\s\S]*?)<\/li>/g)) {
+      const a = m[1].match(/<a href="(https?:\/\/[^"]+)"/);
+      if (a) truthLinks.push(a[1].replace(/&amp;/g, '&'));
+    }
+  }
+  const ebLinkSet = ebLinks.map((u) => u.replace(/&amp;/g, '&'));
+  const missingLinks = truthLinks.filter((u) => !ebLinkSet.includes(u));
+  const extraLinks = ebLinkSet.filter((u) => !truthLinks.includes(u));
+  check(missingLinks.length === 0 && extraLinks.length === 0,
+    '公示区的原始链接逐条等于详情页的链接（不多不少不改写）',
+    [...missingLinks.slice(0, 4).map((u) => '公示区缺 ' + u),
+     ...extraLinks.slice(0, 4).map((u) => '公示区多出 ' + u)].join('；') || '一致');
+  // 无链接的条目必须如实标注「无可点原始链接」，不许拿 URL 纯文本冒充可点。
+  // 口径：公示区里「标注了无链接」的条数 = 真相源里「零链接」的条数。
+  const noLinkMarks = (eb.match(/（本条无可点原始链接/g) || []).length;
+  check(noLinkMarks === truthTotal - truthLinked,
+    `无链接条目均如实标注（${noLinkMarks} 条 = ${truthTotal - truthLinked} 条）`,
+    `标注 ${noLinkMarks} 条，真相 ${truthTotal - truthLinked} 条`);
+
+  // ---------- 8. 证据薄弱清单必须如实单列（站长要求，不遮掩）----------
+  const weakBlock = eb.match(/<div class="ev-weak">([\s\S]*?)<\/div>\s*\n\s*<div class="ev-list">/);
+  check(!!weakBlock || truthWeak.length === 0,
+    truthWeak.length ? '公示区有「证据薄弱清单」独立警示块' : '当前无证据薄弱企业（无需警示块）');
+  if (weakBlock) {
+    const wb = weakBlock[1];
+    const notListed = truthWeak.filter((s) => !wb.includes(`./brand/${s}.html`));
+    check(notListed.length === 0,
+      `薄弱清单列全了 ${truthWeak.length} 家零证据企业`,
+      notListed.length ? '漏列：' + notListed.join(', ') : '齐全');
+    check(/拿不出可点击的公开原始链接/.test(wb) && /不伪造来源/.test(wb),
+      '薄弱清单如实写明「无可点公开链接」且不伪造来源');
+    // 零证据的那几家，展开体里必须给出判据（不能只显示一个空壳）
+    const noReason = truthWeak.filter((s) => {
+      const d = eb.match(new RegExp(`<details id="ev-${s}"[\\s\\S]*?<\\/details>`));
+      return !d || !/class="ev-nolink"/.test(d[0]) || !/class="ev-reasons"/.test(d[0]);
+    });
+    check(noReason.length === 0,
+      '零证据企业的展开体给出了评级判据（不是空壳）',
+      noReason.length ? '缺判据：' + noReason.join(', ') : '齐全');
+  }
+
+  // ---------- 9. 公告栏：口号必须变成可点入口 + 真实数字 ----------
+  // 这是本次改动的核心：原来那句「均附公开证据链…来源可查可溯」是纯口号，
+  // 首页却看不到证据。现在必须是带锚点跳转的真实条数，且数字跟真相源一致。
+  const notice = html.match(new RegExp(`<span id="${NOTICE_ID}">([\\s\\S]*?)</span>`));
+  check(!!notice, '公告栏证据链句子有 evidence-notice 标记（生成器托管，不许手写）');
+  if (notice) {
+    const nb = notice[1];
+    check(nb.includes('href="#evidence-board"'),
+      '公告栏那句是可点入口（跳 #evidence-board），不再是纯口号');
+    // ⚠️ 假承诺闸门：公告栏说「已在本页完整公示」，那本页就必须真有公示区块。
+    //    区块被删而口号还在，比根本不公示更坏——它在骗读者。
+    //    2026-10-31 故障注入②实测：区块整块删掉后，公告栏 6 条断言仍全绿，
+    //    页面上挂着「174 条证据已在本页完整公示」而下面什么都没有。
+    if (/已在本页完整公示/.test(nb)) {
+      check(eb.length > 0 && html.includes('id="evidence-board"'),
+        '公告栏宣称「已在本页完整公示」时，本页必须真有公示区块（不许留假承诺）',
+        '公告栏在承诺，但 #evidence-board 不存在');
+    }
+    const m2 = nb.match(/(\d+) 家企业 (\d+) 条证据已在本页完整公示/);
+    check(!!m2, '公告栏写明「N 家企业 M 条证据已在本页完整公示」');
+    if (m2) {
+      check(Number(m2[1]) === truth.size && Number(m2[2]) === truthTotal,
+        `公告栏数字与 brand/ 真相源一致（${m2[1]} 家 / ${m2[2]} 条 = ${truth.size} 家 / ${truthTotal} 条）`,
+        `公告栏写 ${m2[1]} 家 ${m2[2]} 条，真相是 ${truth.size} 家 ${truthTotal} 条`);
+    }
+    check(nb.includes(`${truthWeak.length} 家暂无可点公开链接`),
+      `公告栏如实披露薄弱家数（${truthWeak.length} 家），不只报喜`);
+    // 旧口号原句不许再裸露存在（否则等于两处口径，一处仍是空话）
+    const bareSlogan = html.includes('本站全部数据均附公开证据链：招聘口径、员工反馈与官方通报分项标注，'
+      + '来源可查可溯，欢迎核实纠错');
+    check(!bareSlogan, '公告栏旧口号原句已被托管句替换（不留第二份空话）');
+  }
+
+  // ---------- 10. 证据强度分级图例（不许把弱证据当强证据用）----------
+  check(/证据强度分级（强 → 弱）/.test(eb), '公示区有证据强度分级图例');
+  check(/司法裁判文书与劳动监察通报为最高强度证据/.test(eb),
+    '图例写明司法文书/监察通报为最高强度');
+  check(/招聘平台自述属「招聘方口径」/.test(eb) && /不证明实际怎么排班/.test(eb),
+    '图例写明招聘口径的局限（只证明企业怎么说）');
+  check(/本站不用它们单独定档/.test(eb),
+    '图例写明社群匿名反馈与旁证不单独定档');
+  // 每条证据都要标出归并后的强度大类（原始字面标注也保留，不因归并丢细节）
+  const kindBadges = (eb.match(/<span class="k" /g) || []).length;
+  check(kindBadges === truthTotal,
+    `每条证据都标了强度大类徽章（${kindBadges} 个 = ${truthTotal} 条）`,
+    `实际 ${kindBadges} 个`);
+  check((eb.match(/原标注：/g) || []).length > 0,
+    '归并后仍保留原始字面标注（不因归并篡改证据细节）');
+
+  // ---------- 11. 生成器与托管纪律 ----------
+  check(exists('scripts/gen-evidence-board.py'),
+    '存在公示区生成器 scripts/gen-evidence-board.py');
+  check(/由 scripts\/gen-evidence-board\.py 自动生成，请勿手改/.test(eb),
+    '公示区块头部写明由生成器托管、请勿手改');
+  check(/scripts\/verify\.mjs<\/code> 判红/.test(eb),
+    '公示区向访客说明「两处不一致会被校验判红」（公示自身的可信度声明）');
+  // 生成器必须有 --check 模式，否则 CI/本地无法做漂移检测
+  if (exists('scripts/gen-evidence-board.py')) {
+    const gen = read('scripts/gen-evidence-board.py');
+    check(gen.includes("'--check'"), '生成器有 --check 漂移检测模式');
+    check(gen.includes("'--dump'"), '生成器有 --dump 解析自检模式');
+    check(/'rb'/.test(gen) && /'wb'/.test(gen),
+      '生成器字节级读写（仓库锁 LF，文本模式会引入 CRLF）');
+  }
+}
 
 section('3. 自定义卡（index.html 的 customCardsConfig）');
 

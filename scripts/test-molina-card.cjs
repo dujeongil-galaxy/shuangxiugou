@@ -2,8 +2,8 @@
 //
 // 任务一：「茉莉奶白」第 12 张自定义卡（2026-10-30 下午 U→C 升级）。
 //   站长提出复核后定级：线下核实「月休 4 天」（单休形态），
-//   按站内口径「单休归为 C 级」定 C 级（此前 U 级「单店样本不足」
-//   与茶百道/兵立王匿名反馈即定 C 的标准不一致，属漏判）。
+//   按站内口径「单休归为 C 级」定 C 级（此前曾以「单店样本不足」
+//   记为 U 级，经复核与茶百道/兵立王匿名反馈即定 C 级的口径一致，故更正为 C 级）。
 //   联名水杯易爆裂新闻必须带可查证链接。
 //   断言：
 //     1. customCardsConfig 含 molina-card 配置（grade C级 / doubleRestRate null / insertAfter 美宜佳）
@@ -94,7 +94,7 @@ const remindSrc = read('remind-button.js');
   const bundle = read('assets/index-YthXZ9eP.js');
   check('★ bundle「收录品牌」常数 = 67', /text-base`,children:67\}/.test(bundle));
   check('★ bundle tab 角标常数 = 67', /rounded-full`,children:67\}/.test(bundle));
-  check('bundle 引用已 bump（?v=48，2026-10-31 C→C 推荐清理）', /index-YthXZ9eP\.js\?v=48/.test(html));
+  check('bundle 引用已 bump（?v=50，2026-10-31 U 分支死代码清理 + 银行月休口径改判）', /index-YthXZ9eP\.js\?v=50/.test(html));
 
   // ── 拼音索引 ──
   const pi = read('pinyin-index.js');

@@ -343,7 +343,7 @@ setTimeout(async () => {
   check('原生搜「Acer」= 1 家', nativeSearch('Acer').length === 1, nativeSearch('Acer').map(b=>b.name));
   check('原生搜「acer」小写= 1 家', nativeSearch('acer').length === 1);
   check('原生搜「笔记本」能带出宏碁', nativeSearch('笔记本').some(b=>b.id==='acer'));
-  check('宏碁卡片在 bundle 里，tier 为 C（2026-10-31 废除 U 级：无直雇统一双休证据按 C 级判）', nativeSearch('宏碁')[0] && nativeSearch('宏碁')[0].tier === 'C');
+  check('宏碁卡片在 bundle 里，tier 为 C（无休息制度公开口径，按站内「查不到统一双休证据即视为无双休」判 C 级；档位定义见站长月休口径 B=6-8 天/A=8 天以上/C=不足 6 天）', nativeSearch('宏碁')[0] && nativeSearch('宏碁')[0].tier === 'C');
   // 同上：「客服」「周六」这些只在 summary / reasons 里，React 首页过滤不查。
   check('「客服」在 bundle 正文里（不参与首页过滤，属正常）',
         src.indexOf('客服') !== -1);

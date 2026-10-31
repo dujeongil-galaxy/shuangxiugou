@@ -87,12 +87,16 @@ def extract_brands(src):
         bid = field(o, 'id')
         if not bid:
             continue
+        tier = field(o, 'tier')
+        # 2026-10-31 站长纠正：U 级允许，但规则写死（verify §2d 强制——
+        # 标 U 的品牌 MUST 附「证据缺失说明」且不得夹带有效证据）。本脚本不再拦截 U，
+        # 仅原样纳入索引；合规与否由 verify §2d 兜底判红。
         out.append({
             'id': bid,
             'name': field(o, 'name'),
             'company': field(o, 'companyName'),
             'category': field(o, 'category'),
-            'tier': field(o, 'tier'),
+            'tier': tier,
             'kw': arr(o, 'searchKeywords'),
             'products': arr(o, 'keyProducts'),
         })
@@ -120,8 +124,9 @@ def parse_custom_configs(html):
         company = f('company') or ''
         category = f('category') or ''
         grade = f('grade') or ''
-        tier = {'S级': 's', 'A级': 'a', 'B级': 'b', 'C级': 'c',
-                'U级': 'u', '待核实（未评级）': 'u'}.get(grade, '')
+        tier = {'S级': 's', 'A级': 'a', 'B级': 'b', 'C级': 'c', 'U级': 'u'}.get(grade, '')
+        # 2026-10-31 站长纠正：U 级允许，但规则写死（verify §2d 强制证据缺失说明）。
+        # 映射表恢复 'U级':'u'；本脚本不再拦截 U，合规性由 verify §2d 兜底。
         kw = re.findall(r"keywords:\s*\[([^\]]*)\]", chunk)
         kw_items = []
         if kw:
