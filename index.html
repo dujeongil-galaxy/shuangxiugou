@@ -15,7 +15,7 @@
     <meta name="format-detection" content="telephone=no" />
     <meta name="msvalidate.01" content="1CA900F523A02F4764BEA0EA3134789B" />
     <link rel="canonical" href="https://dujeongil-galaxy.github.io/shuangxiugou/" />
-    <link rel="preload" as="script" href="./assets/index-YthXZ9eP.js?v=47" />
+    <link rel="preload" as="script" href="./assets/index-YthXZ9eP.js?v=48" />
     <link rel="preload" as="style" href="./assets/index-BgVofs0W.css" />
     <link rel="dns-prefetch" href="https://dujeongil-galaxy.github.io" />
     <meta property="og:title" content="双休购｜查公司双休评级，避雷单休大小周 996 血汗工厂" />
@@ -109,7 +109,7 @@
   ]
 }
     </script>
-    <script type="module" crossorigin src="./assets/index-YthXZ9eP.js?v=47"></script>
+    <script type="module" crossorigin src="./assets/index-YthXZ9eP.js?v=48"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-BgVofs0W.css">
     <!-- 良配 · 限时推广广告位（独立文件，改文案/样式不必动主页面；改完请把 ?v=N 的 N +1 防缓存） -->
     <link rel="stylesheet" href="./liangpei-ad.css?v=11">
@@ -827,7 +827,7 @@
           dislikeCount: '0',
           recommendText: '⚠️ C 级 · 无统一双休，轮班制+公开招聘月休 2-4 天（西南两地线下核实）',
           recommendColor: 'red',
-          insertAfter: '中国银行',
+          insertAfter: '成都银行',
           keywords: ['美宜佳', 'Meiyijia', '便利店', '美宜佳控股', '轮班', '两班倒', '月休', 'mys', 'myj'],
           category: '食品饮品',
           grade: 'C级'
@@ -922,6 +922,10 @@
           // h2/h3 都要查：SEO 修复会把 h3 换成 h2
           var title = card.querySelector('h2') || card.querySelector('h3');
           if (!title) continue; // 必须是公司卡片
+          // 虚拟对比黑榜卡（virtual-card-remove.js 隐藏的那张）不能当克隆模板：
+          // 克隆体会残留「虚拟对比黑榜」字样，被 virtual-card-remove 的
+          // MutationObserver 兜底判定成虚拟卡误隐藏（2026-10-31 修复）
+          if ((card.textContent || '').indexOf('虚拟对比黑榜') !== -1) continue;
           if (!fallback) fallback = card;
           if (card.textContent.includes(g + '级') || card.textContent.includes(g + ' 级')) {
             return card;

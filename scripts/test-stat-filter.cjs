@@ -31,6 +31,9 @@ if (!window.requestAnimationFrame) {
   window.requestAnimationFrame = (cb) => window.setTimeout(() => cb(Date.now()), 16);
   window.cancelAnimationFrame = (h) => window.clearTimeout(h);
 }
+// jsdom 未实现 scrollIntoView：stat-filter 的 scrollToArchive() 会调它，
+// 点四格时抛 TypeError 打断 click 回调（此前测试一直冻结跑不到这步）。
+window.HTMLElement.prototype.scrollIntoView = window.HTMLElement.prototype.scrollIntoView || function () {};
 for (const m of html.matchAll(/<script[^>]*\bsrc="([^"]+)"/g)) {
   const clean = m[1].split('?')[0];
   const file = path.join(ROOT, clean);
@@ -166,7 +169,8 @@ setTimeout(() => {
   // 互斥：点 React 评级按钮应清掉四格筛选（否则 observer 把旧 display 套回去出空面板）
   click(red);
   s = snapshot();
-  check('互斥前置：点红榜后隐藏 ' + (s.total - s.visible.length) + ' 张（含 class 隐藏的虚拟卡）', s.hidden === 48, s.hidden);
+  check('互斥前置：点红榜后隐藏 ' + (s.total - s.visible.length) + ' 张（含 class 隐藏的虚拟卡）',
+    s.hidden === 49, s.hidden); // total 68（含虚拟卡）- 可见 19 = 49
   const allBtn = rowBtn('全部评级');
   if (allBtn) click(allBtn);
   s = snapshot();

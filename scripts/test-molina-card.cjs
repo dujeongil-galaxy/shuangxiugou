@@ -94,7 +94,7 @@ const remindSrc = read('remind-button.js');
   const bundle = read('assets/index-YthXZ9eP.js');
   check('★ bundle「收录品牌」常数 = 67', /text-base`,children:67\}/.test(bundle));
   check('★ bundle tab 角标常数 = 67', /rounded-full`,children:67\}/.test(bundle));
-  check('bundle 引用已 bump（?v=47，2026-10-30 避雷常数 23→25）', /index-YthXZ9eP\.js\?v=47/.test(html));
+  check('bundle 引用已 bump（?v=48，2026-10-31 C→C 推荐清理）', /index-YthXZ9eP\.js\?v=48/.test(html));
 
   // ── 拼音索引 ──
   const pi = read('pinyin-index.js');
