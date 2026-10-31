@@ -66,8 +66,9 @@
         '#' + BTN_ID + ':focus-visible{outline:2px solid #0F766E;outline-offset:3px}' +
         /* 近底部隐藏：滑到底后按钮失去意义，淡出 + 禁点，滚回上方再恢复 */
         '#' + BTN_ID + '.sxg-at-bottom{opacity:0;visibility:hidden;pointer-events:none}' +
+        /* 2026-11-01：同 top-button.js，给新增的「视频」钮腾位（88→56）。 */
         '@media (min-width:1440px){' +
-          '#' + BTN_ID + '{right:16px;bottom:88px}' +
+          '#' + BTN_ID + '{right:16px;bottom:56px}' +
         '}' +
         '@media (max-width:1439px) and (min-width:768px){' +
           '#' + BTN_ID + '{right:18px}' +

@@ -52,8 +52,11 @@
         '#' + BTN_ID + ':hover{background:#0F766E;color:#fff;border-color:#0F766E}' +
         '#' + BTN_ID + ':active{transform:translateY(1px)}' +
         '#' + BTN_ID + ':focus-visible{outline:2px solid #0F766E;outline-offset:2px}' +
+        /* 2026-11-01：右侧悬浮组加「视频」钮（featured-douyin.js），
+           桌面端把 TOP / ⤓ 各下移一档腾出位置（28→6），否则新钮会被
+           AI 对话面板（bottom 270px 起）盖住、或与 ⤓ 重叠。 */
         '@media (min-width:1440px){' +
-          '#' + BTN_ID + '{right:16px;bottom:28px}' +
+          '#' + BTN_ID + '{right:16px;bottom:6px}' +
         '}' +
         '@media (max-width:1439px) and (min-width:768px){' +
           '#' + BTN_ID + '{right:18px}' +
