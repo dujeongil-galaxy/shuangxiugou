@@ -27,6 +27,13 @@
     ],
     link: 'https://v.douyin.com/37pbo6qxUbs/',
     linkText: '在抖音中观看',
+    tip:
+      '希望无论劳动者还是企业，都可以走到良性发展的道路上，让我们一起推动这件事，' +
+      '在此广纳贤言并期待听到你的声音；对，别回头，说的就是你！',
+    // 站长新站外链（2026-11-01 站长要求「这里挂一下 url，推我的新网站」）：
+    // 挂在弹窗底部提示小字里，单独一行、同字号，不抢主按钮的视觉重量。
+    siteLink: 'https://dujeongil-galaxy.github.io/dating-data-factcheck/',
+    siteLinkText: '顺便推荐站长的新站「婚恋数据核查台」：给相亲数据做溯源核查 ↗',
     // 冷却时长：15 分钟内不再自动弹（毫秒）
     cooldownMs: 15 * 60 * 1000,
     // 首次访问延迟多少毫秒后自动弹出。
@@ -75,7 +82,7 @@
           '<a class="dyp__go" target="_blank" rel="noopener noreferrer"></a>' +
           '<a class="dyp__later" href="./notes.html">站长随笔</a>' +
         '</div>' +
-        '<p class="dyp__tip">希望无论劳动者还是企业，都可以走到良性发展的道路上，让我们一起推动这件事，在此广纳贤言并期待听到你的声音；对，别回头，说的就是你！</p>' +
+        '<p class="dyp__tip"></p>' +
         '<div class="dyp__count" aria-live="polite">' +
           '<span class="dyp__count__num">8</span>' +
           '<span class="dyp__count__label">秒后可关闭</span>' +
@@ -90,6 +97,19 @@
     box.querySelector('.dyp__points').innerHTML = CONFIG.points
       .map(function (t) { return '<li>' + t + '</li>'; })
       .join('');
+
+    // 底部小字：正文 + 站长新站外链（同一个 <p>，不新增段落元素，字体跟随 .dyp__tip）
+    var tipEl = box.querySelector('.dyp__tip');
+    tipEl.appendChild(document.createTextNode(CONFIG.tip));
+    if (CONFIG.siteLink) {
+      var sl = document.createElement('a');
+      sl.className = 'dyp__sitelink';
+      sl.href = CONFIG.siteLink;
+      sl.target = '_blank';
+      sl.rel = 'noopener noreferrer';
+      sl.textContent = CONFIG.siteLinkText;
+      tipEl.appendChild(sl);
+    }
 
     // 关闭方式：遮罩、✕、Esc
     // 「站长随笔」直接跳 notes.html（该页保留密码锁，robots noindex）

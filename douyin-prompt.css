@@ -265,6 +265,23 @@
   text-align: center;
 }
 
+/* 站长新站外链（2026-11-01）：跟提示小字同一字号、单独一行居中，
+   只做「顺带一提」的分量，不抢三个主按钮的视觉重量。 */
+.dyp__sitelink {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #3dad8a;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.dyp__sitelink:hover {
+  color: #2f9c7a;
+  text-decoration: underline;
+}
+
 /* 关闭倒计时（2026-10-29 站长要求）：弹出后 8 秒内关闭不生效，
    倒计时数字递减 + 进度条收缩，到点后放行关闭。 */
 .dyp__count {
