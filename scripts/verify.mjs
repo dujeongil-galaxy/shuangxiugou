@@ -4839,6 +4839,50 @@ section('21c. 首页滑到底部按钮');
   }
 }
 
+// ---------- 21h. 本地 js/css 的 ?v 缓存号必须随内容变更同步 bump ----------
+// 血泪（2026-11-01 站长实测）：pinyin-index.js 在 4ef34c4 / fb23417 两次提交里
+// 都加了新卡，但 index.html 的 `?v=7` 自 d393f6c 起纹丝不动 —— 浏览器/CDN 拿到的
+// 仍是旧索引，输「直聘」联想框全空，而改的人本地跑起来一切正常，是典型的
+// 「只有真实用户会踩」的静默失效。同批审计还查出 douyin-prompt.js/css、
+// custom-card-actions.js、top/bottom-button.js、stat-filter.js 共 7 处同类问题。
+//
+// 判据：工作区里该文件的内容相对 HEAD 有变化，而 index.html 里它的 ?v 没变 → 判红。
+// 这样在本地提交前跑 verify 就一定会被拦住；CI 里工作树与 HEAD 一致，天然不误报。
+{
+  const htmlIdx = read('index.html');
+  const refs = [...htmlIdx.matchAll(/(?:src|href)="\.\/([A-Za-z0-9_\-\.]+\.(?:js|css))\?v=(\d+)"/g)];
+  const seen = new Set();
+  const stale = [];
+  let changed = 0;
+  const gitShow = (path) => {
+    try {
+      return execSync(`git show HEAD:${path}`, { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] })
+        .toString().replace(/\r\n/g, '\n');
+    } catch { return null; }
+  };
+  const headHtml = gitShow('index.html');
+  for (const m of refs) {
+    const f = m[1];
+    const v = m[2];
+    if (seen.has(f)) continue;
+    seen.add(f);
+    if (!exists(f)) continue;
+    const head = gitShow(f);
+    // HEAD 里没有 = 新增文件（首次发布不存在旧缓存），不参与本判据
+    if (head === null) continue;
+    if (head === read(f)) continue; // 内容没变，无需 bump
+    changed++;
+    if (!headHtml) continue;
+    const hm = headHtml.match(
+      new RegExp('\\./' + f.replace(/[.]/g, '\\.') + '\\?v=(\\d+)'));
+    const oldV = hm ? hm[1] : null;
+    if (oldV !== null && oldV === v) stale.push(`${f}?v=${v}（内容已改，?v 未变）`);
+  }
+  check(stale.length === 0,
+    '本地 js/css 的 ?v 缓存号随内容变更同步 bump（改了文件就必须 +1）',
+    stale.length ? stale.join('； ') : `本次有 ${changed} 个资源内容变更，?v 均已同步`);
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {

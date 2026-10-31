@@ -114,7 +114,7 @@
     <!-- 良配 · 限时推广广告位（独立文件，改文案/样式不必动主页面；改完请把 ?v=N 的 N +1 防缓存） -->
     <link rel="stylesheet" href="./liangpei-ad.css?v=11">
     <!-- 首页视频推荐弹窗（改完请把 ?v=N 的 N +1 防缓存） -->
-    <link rel="stylesheet" href="./douyin-prompt.css?v=9">
+    <link rel="stylesheet" href="./douyin-prompt.css?v=10">
     <!-- 移动端排版修复（须在主 CSS 之后：靠覆盖生效；改完请把 ?v=N 的 N +1） -->
     <link rel="stylesheet" href="./mobile-fixes.css?v=6">
   </head>
@@ -3693,7 +3693,7 @@
   <!-- 良配 · 限时推广广告位：注入 DOM + 倒计时 + 微信小程序 scheme 分环境处理 -->
   <script src="./liangpei-ad.js?v=9"></script>
   <!-- 首页视频推荐弹窗：延迟自动弹出，冷却期内不重复弹（localStorage） -->
-  <script src="./douyin-prompt.js?v=11"></script>
+  <script src="./douyin-prompt.js?v=12"></script>
   <!-- 全站证据链公示区折叠：h2 作把手，其下内容默认收起、点击展开（不改动生成内容，verify 防漂移不受影响）。2026-10-31 站长反馈「太乱」 -->
   <script src="./evidence-collapse.js?v=1"></script>
   <!-- 首页常驻抖音视频卡（专科双非怎么混进钱多事少的红利公司）：封面+播放按钮，点击尽力内嵌播放器，失败降级跳抖音。2026-10-31 站长要求「视频加这里，嵌入式点击可播放」 -->
@@ -3701,7 +3701,7 @@
   <!-- 打卡引导 + 自定义卡片按钮修复：
        1) 顶部「打卡并生成小票」改为弹窗，引导去品牌档案卡打卡（原来默认给第一家品牌打卡，会误导）
        2) 自定义品牌卡（DOM 克隆）没有 React onClick，补上「打卡」「详情证据」功能 -->
-  <script src="./custom-card-actions.js?v=18"></script>
+  <script src="./custom-card-actions.js?v=19"></script>
   <script src="./u-grade-patch.js?v=1"></script>
   <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
   <script src="./factcheck-button.js?v=1"></script>
@@ -3712,7 +3712,7 @@
        所以这里只做「输入联想 + 回填」：给出候选，用户点了回填中文名，
        后续过滤仍走 React 原生搜索路径，渲染逻辑零改动。
        索引数据在 pinyin-index.js，必须先于本脚本加载。 -->
-  <script src="./pinyin-index.js?v=7"></script>
+  <script src="./pinyin-index.js?v=8"></script>
   <script src="./pinyin-search.js?v=4"></script>
 
   <!-- 彻底禁用数字搜索。2026-10-17 用户反馈：输入「1」「2」会搜出一堆无关卡片。
@@ -3741,12 +3741,12 @@
        用户确认后即真正进入仓库 issue 列表。
        不用 fetch 调 GitHub API：token 放前端等于公开，会被滥用刷 issue。 -->
   <script src="./employee-report-to-issue.js?v=1"></script>
-<script src="./top-button.js?v=2"></script>
-<script src="./bottom-button.js?v=3"></script>
+<script src="./top-button.js?v=3"></script>
+<script src="./bottom-button.js?v=4"></script>
 <!-- 右侧纯文字「提醒」悬浮按钮（2026-10-28 站长要求；2026-10-30 文案换成站长亲笔《双休购》长文）：点击弹出「双休购」模态层；
      其余悬浮按钮行为不变。挂 body、不碰 React 的 #root 地盘，避让 TOP/⤓/AI 对话钮。 -->
 <script src="./remind-button.js?v=3"></script>
-<script src="./stat-filter.js?v=5"></script>
+<script src="./stat-filter.js?v=6"></script>
   <!-- 搜索口径修正：summary 命中降级为兜底。2026-10-24 站长截图：搜「瑞幸咖啡」
        结果里同时出现库迪咖啡。根因：bundle 主过滤器的 7 路匹配里有 summary，
        而库迪 summary 写着「由瑞幸咖啡创始团队于 2022 年创立」——叙述性长文本
