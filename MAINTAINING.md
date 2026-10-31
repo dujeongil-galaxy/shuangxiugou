@@ -82,7 +82,7 @@
 |---|---|---|
 | **线上实际部署** | 仓库根目录 | GitHub Pages 直发根目录，**不经过构建**，推送约 60 秒生效 |
 | 内置卡片数据 | `assets/index-YthXZ9eP.js` | 53 张内置卡 |
-| 自定义卡片数据 | 根目录 `index.html` | `customCardsConfig` 数组，12 张 |
+| 自定义卡片数据 | 根目录 `index.html` | `customCardsConfig` 数组，15 张 |
 | 静态页 | 根目录 `*.html` | `404.html`、`sponsor.html`、`projects.html` |
 | Next.js 源码 | `app/` | **未构建上线**，与线上是两套数据 |
 | 同名 js 副本 | 根目录 `./index-YthXZ9eP.js` | **非部署文件**，改它不生效 |
@@ -140,7 +140,7 @@
 
 ### 4.3 数据核实
 
-[员工实测数据核实修改清单](员工实测数据核实修改清单.md) 对内置品牌卡的「真实双休率 / 平均下班」逐卡核实，含旧值→新值、证据来源、置信度标注。该文档的数字口径已随卡片增减同步更新（当前为 53 张内置 + 12 张自定义）。
+[员工实测数据核实修改清单](员工实测数据核实修改清单.md) 对内置品牌卡的「真实双休率 / 平均下班」逐卡核实，含旧值→新值、证据来源、置信度标注。该文档的数字口径已随卡片增减同步更新（当前为 53 张内置 + 15 张自定义）。
 
 >该文件原名 `docs-2026年10月-员工实测数据核实修改清单.md`，
 >2026-10-09 在GitHub 网页端改名为 `员工实测数据核实修改清单.md`（去掉日期前缀）。
@@ -325,6 +325,7 @@ var title = card.querySelector('h3');
 | 文档数字口径不统一 | **2026-10-09 已统一** | 此前 README 26 张 / 核实清单 31 张 / 页面 36 家，三处互相矛盾。已统一为 32 内置 + 5 自定义 = 37 张。**新增或删除卡片时必须同步更新 README、FORK_GUIDE、MAINTAINING、核实清单、`index.html` 的 noscript 清单五处** |
 | `sponsor.html` 未进 sitemap | **2026-10-09 已解决** | 已补入 `sitemap.xml`（现含 3 条：首页 / projects.html / sponsor.html） |
 | `sponsor.html` 为手动维护 | 无模板 | 与 `app/sponsor/page.tsx` 并存，注意勿改错位置 |
+| jsdom 类测试本地超时 | **2026-10-31 起如实记录，待观察** | `test-block-numeric-search` / `test-stat-filter` / `test-employee-report` / `test-alternatives` 四个 jsdom 测试**仅在本机（Windows 本地环境）**超时挂起；对照实验证实与 2026-10-31 的 `index.html` 改动相关（HEAD 对照 3 次全过、改动版 3 次全挂）。真浏览器（无头 Edge 加载同一页面）完全正常，verify 689 项 + molina 43 项全绿。CI（Linux runner）历史先例从未复现本地 jsdom 环境问题，推送后由 CI 裁决；若 CI 红，用 D 盘备份 `_u_rework_backup_20261031` 二分定位 |
 
 ---
 

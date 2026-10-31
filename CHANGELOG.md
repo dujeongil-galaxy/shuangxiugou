@@ -4,6 +4,25 @@
 
 ---
 
+### 三批合并：U 级废除 + 淘宝闪购/农行/成都银行新卡 + 真 logo 批（2026-10-31 11:45 · 提交 `4ef34c4`）
+
+**批次一 · LOGO 补全（2026-10-30 就绪）**：7 个「色块+单字」占位 SVG 换成真 logo——molina（Molly Tea 官方花形）、icbc（zh wiki 横版提取红圆标）、ccb（经典红古钱双C）、boc（酒红古钱）、xiaomi（官方 512 方块 MI）、kfc（2026 版官方桶标三 path 合成红底）、meiyijia（官网 logo.png 裁图标，因位图内容改 `.png` 后缀）。index.html 七处 `?v=2` 缓存刷新。验收：verify 669 项 + 25 套测试 + CDP 实测 7 卡真渲染无 fallback。
+
+**批次二 · 农行 + 成都银行新增（2026-10-30 深夜就绪）**：站长指令「银行至少保证是4大行都有吧？此外新增一个成都银行」→ 四大行补农行 + 成都银行，64→66 家。农行证据链：安康分行官方口径「双休网点占比 29%、单休网点占比 61%、实行轮换调休」（最硬）+ 外包客服岗轮班轮休口径 + 员工投稿基层支行轮休制。成都银行证据链：官网 2026-04-13 公告「部分网点实行周末暂停营业」「周末轮休期间」（最硬）+ 本地宝网点库周六日营业数据 + 招聘岗全为外包主体。新增 `brand/abc.html`、`brand/chengdubank.html` 详情页 + `assets/abc.svg`、`assets/chengdubank.png`。接线：index.html（brandLogos+2、customCardsConfig+2、noscript+2、家数 64→66）、bundle 同长度 64→66 两处、sitemap+2、projects.html+2、五文档 12→14 张、拼音索引重生成（647 词条）。
+
+**批次三 · U 级废除 + 淘宝闪购（2026-10-31，站长拍板）**：
+- **口径**：「该怎么判怎么判」——查不到直雇统一双休证据（网点轮休制）按 C 级判；**官方被直接询问双休而拒不回答的，按无双休判 C 级**（淘宝闪购/饿了么站长 10-31 实测客服拒答）。新口径写入首页评级口径区。
+- **全站 66→67 家**：新增淘宝闪购卡（insertAfter 美团）+ `brand/taobao-shanguang.html` + `assets/taobao-shanguang.svg`（GitHub jrg-team/new-hunger 仓库 e 形 path 重绘，#0091FF 官方蓝）。
+- **5 张银行 U 级卡 + bundle 3 家（宏碁/三星/霸王茶姬）全部改判 C 级**：卡片 grade/desc/recommendText、渲染器 U 徽章分支删除（含 gray 死代码 3 处）、getGradeTemplateCard U 特判删除；stat-filter.js 拆除第五格/U 按钮/5 列 grid（回到纯四格）；8 张品牌页改判重写；全部 67 页页脚家数同步 67（顺带追平 56 页停在 59 家的历史欠账）。
+- **防回退锁定**：verify §2d 反转为「禁止 U 级卡存在」（全站无 `tier:\`U\``/`grade:'U级'`）；§2e 自定义卡 14→15、C 级 14 张、8 家改判锁定断言；CUSTOM_COUNT 15。
+- **验证**：verify 689 项全绿；molina 43 项全绿；故障注入 2 组判红（宏碁 tier 回 U 判红 4 条、工行 grade 回 U级 判红 4 条，恢复后哈希一致）；无头 Edge 渲染验收 8/8（taobao-shanguang.svg 真实 GET = 注入链路真实发生、106 请求零 404）。
+
+**已知遗留（如实记录）**：`test-block-numeric-search` / `test-stat-filter` / `test-employee-report` / `test-alternatives` 四个 jsdom 测试**仅在本机（Windows 本地）**超时挂起。对照实验：HEAD 稳定通过 3 次、改动版稳定挂 3 次——与本轮 `index.html` 改动相关（非既有环境问题，推翻旧「jsdom 25+node 22 冻结」结论）。真浏览器（无头 Edge 同页面）完全正常；探针定位 MutationObserver(init) 300+ 轮不收敛但卡片容器数稳定（69 张渲染成功）。CI（Linux runner）历史先例从未复现本地 jsdom 环境问题，由 CI 裁决；若 CI 红，用 D 盘备份 `_u_rework_backup_20261031` 二分定位。已写入 MAINTAINING.md 第八节。
+
+**改了哪些文件**：`index.html`（卡片配置/渲染器/评级行/noscript/口径区/家数）、`assets/index-YthXZ9eP.js`（同长度替换）、`assets/taobao-shanguang.svg`（新）、`assets/abc.svg`（新）、`assets/chengdubank.png`（新）、`assets/{molina,icbc,ccb,boc,xiaomi,kfc}.svg` + `meiyijia.png`（logo 批）、`brand/`（8 张改判 + abc/chengdubank/taobao-shanguang 3 张新建 + 全部页脚家数同步）、`stat-filter.js`、`sitemap.xml`、`projects.html`、`pinyin-index.js`（重生成 660 词条）、`scripts/verify.mjs`（§2d/§2e 重写）、`scripts/test-stat-filter.cjs`（重写）、`scripts/test-molina-card.cjs`（家数断言）、五文档口径（README/FORK_GUIDE/MAINTAINING/PITFALLS/核实清单）。
+
+---
+
 ### 新增：美团骑手休息口径说明框（站长亲历纠正网传口径）（2026-10-30 21:15 · 提交 `5315927`）
 
 - **背景**：站长曾任美团骑手，亲历口径为实际月休 4 天（每周固定休一天），与网传「月休 2 天算好的」严重不符；但休满 4 天会被组长嘲讽「你真是公务员，每周一定要固定休息一天」——每周休一天在骑手群体里是异类待遇，网传口径是把底线当常态。
