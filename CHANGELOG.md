@@ -4,6 +4,17 @@
 
 ---
 
+### U 级反转：恢复为合法档位 + 规则写死（verify §2d 机器强制）；首页证据链公示；银行判档锁定（2026-10-31 21:00 · 提交 `efeaa58`）
+
+- **U 级反转（站长原话「U 级允许，但规则写死，这不是给 AI 偷懒的理由」）**：U 恢复为合法档位，机器强制 5 条硬规则（verify §2d）：①标 U MUST 附「证据缺失说明」（id="evidence-gap"/data-evgap="1"）；②U 不得夹带有效证据条目；③U 单独列示不并入四格统计；④gen-pinyin 允许 U 映射（verify 兜底）；⑤禁止以「不确定/没空查/懒」为由标 U。新增 u-grade-patch.js 把 U 徽章渲染为中性灰「U级 · 证据不足」（覆盖内置卡/自定义卡/弹窗，幂等不触发 MO 自激）；custom-card-actions.js 补 U 分支徽章样式。
+- **首页证据链公示区**：67 家 / 174 条证据完整公示（招聘口径/员工反馈/官方通报分项标注，来源可查可溯；6 家暂无可点公开链接已如实单列）。
+- **银行判档锁定**：工/建/中/成都 4 家网点轮休制判 A；农行（单休网点占 61%）/淘宝闪购（客服拒答双休）判 C；bundle 同长度替换 acer/samsung/chagee tier U→C；verify §2e/§2f 防回退断言。
+- **全站清理旧措辞**：brand 页、首页卡片/内联 JS、stat-filter/test 注释中的「废除 U 级」「U 级为漏判」改写一致；README 新增「U 级硬规则」小节；旧 U 时代死文案仍禁用。
+- **修复 verify §2e 的 check(true) 假绿回归**：改为「四格合计 = 总卡数 − U 卡数」真实不变量断言（test-verify-self 6/6 通过）。
+- **验证**：verify 735/735 通过；test-verify-self 6/6；test-stat-filter 本地 Windows jsdom 已知环境问题（CI Linux 裁决）。
+
+---
+
 ### 修复：锚点冲突致 MutationObserver 无限振荡——jsdom 冻结/主线程卡死真根因（2026-10-31 14:20 · 提交 `c9ed97a`）
 
 - **根因**：美宜佳卡与农行卡 `insertAfter` 同为「中国银行」，两卡每轮 init 互相挤位 → childList 持续变动 → MutationObserver 无限自激（jsdom 事件循环被饿死 = 4 组测试「冻结」；真浏览器同样会主线程卡死）。10-30 深夜新增农行卡时引入，此前被误判为「jsdom 环境问题」。
