@@ -325,7 +325,7 @@ var title = card.querySelector('h3');
 | 文档数字口径不统一 | **2026-10-09 已统一** | 此前 README 26 张 / 核实清单 31 张 / 页面 36 家，三处互相矛盾。已统一为 32 内置 + 5 自定义 = 37 张。**新增或删除卡片时必须同步更新 README、FORK_GUIDE、MAINTAINING、核实清单、`index.html` 的 noscript 清单五处** |
 | `sponsor.html` 未进 sitemap | **2026-10-09 已解决** | 已补入 `sitemap.xml`（现含 3 条：首页 / projects.html / sponsor.html） |
 | `sponsor.html` 为手动维护 | 无模板 | 与 `app/sponsor/page.tsx` 并存，注意勿改错位置 |
-| jsdom 类测试本地超时 | **2026-10-31 已修复**（提交 `9d86911`） | 根因：农行卡与美宜佳卡 insertAfter 同锚点「中国银行」，两卡每轮 init 互相挤位 → MutationObserver 无限自激（jsdom 事件循环被饿死；真浏览器同样会主线程卡死）。修复：美宜佳锚点改「成都银行」。连带修复 getGradeTemplateCard 克隆源误命中虚拟卡（搜索过滤态下重建的自定义卡全被误隐藏）+ bundle acer/samsung 的 C→C 推荐清理。修复后 7 组测试全绿 |
+| jsdom 类测试本地超时 | **2026-10-31 已修复**（提交 `c9ed97a`） | 根因：农行卡与美宜佳卡 insertAfter 同锚点「中国银行」，两卡每轮 init 互相挤位 → MutationObserver 无限自激（jsdom 事件循环被饿死；真浏览器同样会主线程卡死）。修复：美宜佳锚点改「成都银行」。连带修复 getGradeTemplateCard 克隆源误命中虚拟卡（搜索过滤态下重建的自定义卡全被误隐藏）+ bundle acer/samsung 的 C→C 推荐清理。修复后 7 组测试全绿 |
 
 ---
 

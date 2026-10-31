@@ -4,7 +4,7 @@
 
 ---
 
-### 修复：锚点冲突致 MutationObserver 无限振荡——jsdom 冻结/主线程卡死真根因（2026-10-31 14:20 · 提交 `9d86911`）
+### 修复：锚点冲突致 MutationObserver 无限振荡——jsdom 冻结/主线程卡死真根因（2026-10-31 14:20 · 提交 `c9ed97a`）
 
 - **根因**：美宜佳卡与农行卡 `insertAfter` 同为「中国银行」，两卡每轮 init 互相挤位 → childList 持续变动 → MutationObserver 无限自激（jsdom 事件循环被饿死 = 4 组测试「冻结」；真浏览器同样会主线程卡死）。10-30 深夜新增农行卡时引入，此前被误判为「jsdom 环境问题」。
 - **定位**：探针 MO 打印每轮 mutation 明细，10 秒锁定「abc-card/chengdubank-card 每轮被 remove+insert」（此前 90 分钟「猜不幂等点」全部无效——回退变量清单里没有 insertAfter）。
