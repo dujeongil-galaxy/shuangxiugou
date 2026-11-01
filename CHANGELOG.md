@@ -4,6 +4,12 @@
 
 ---
 
+### 文档：PITFALLS.md 新增 6.9『计数常数一变，测试脚本硬编码字面量须同步』（2026-11-01 13:35 · 提交 `65f0524`）
+
+- 背景：PITFALLS.md 本就是「踩过的坑」归属文档，此前该失效模式只写进 README 硬性要求（`11a9aa6`）与 CHANGELOG，未进 PITFALLS，故补。真实案例为同日 `4c2446e` 修复的 CI 连红事件（加 BOSS直聘 卡时漏改 `test-stat-filter.cjs` / `test-molina-card.cjs` 硬编码计数）。
+- 改动：在「六、流程与工具」下新增 §6.9，详述症状（本地 `verify.mjs` 全绿、push 后 CI `verify.yml` 整轮判红、GitHub 连发失败通知）、本仓库踩过、三层漏因（`verify.mjs` 不跑测试组 / 字面量只被 CI 引用 / 虚假安全感 §3.2）、避免清单（须同步的测试脚本字面量对照表 + 改完补跑两脚本）、判据（计数事实出现几处就该同步几处，同 §6.6）。交叉引用 §3.2 / §6.6 / §6.8.4。
+- 验证：PITFALLS.md 纯文档改动无 `?v` 需 bump；CHANGELOG §9b 记账格式将在推送前 verify 中确认。
+
 ### 文档：README 硬性要求补『计数常数改动须同步测试脚本硬编码』纪律（2026-11-01 13:24 · 提交 `11a9aa6`）
 
 - 背景：同日加 BOSS直聘 卡时漏改 `test-stat-filter.cjs` / `test-molina-card.cjs` 的硬编码品牌计数，导致 CI 站点一致性校验连续失败（GitHub 连发 5 封失败通知，修复见上条 `4c2446e`）。根因是这类字面量只被 CI 测试引用、本地 `verify.mjs` 看不到，漏改只会在 push 后才暴露。
