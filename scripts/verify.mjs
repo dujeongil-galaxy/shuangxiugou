@@ -4806,8 +4806,13 @@ section('21c. 首页滑到底部按钮');
   }
   check(/nfnews\.com\/content\/5yppgW0nyp\.html/.test(html) && /news\.qq\.com\/rain\/a\/20261030A05B0C00/.test(html),
     '茉莉奶白说明框含两条新闻链接（南方+ / 腾讯新闻）');
-  check(/sxg-rm-title">双休购</.test(read('remind-button.js')) && !/消费也是投票/.test(read('remind-button.js')),
-    '提醒按钮模态已换成《双休购》长文（旧三条文案删除）');
+  check(
+    /sxg-rm-title">双休购</.test(read('remind-button.js')) &&
+    /用钱包投票/.test(read('remind-button.js')) &&
+    /消费即立场/.test(read('remind-button.js')) &&
+    !/消费也是投票/.test(read('remind-button.js')),
+    '提醒按钮模态已换成《双休购倡议：用钱包投票》文案（旧三条文案删除，原文存档于 remind-original.html）'
+  );
   if (exists('.github/workflows/verify.yml')) {
     const ci = read('.github/workflows/verify.yml');
     check(ci.includes('test-molina-card.cjs'),
