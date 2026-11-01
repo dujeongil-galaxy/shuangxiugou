@@ -40,7 +40,7 @@
       style.textContent =
         '#' + BTN_ID + '{' +
           'position:fixed;right:14px;' +
-          'bottom:calc(' + bottom + 'px + env(safe-area-inset-bottom, 0px));' +
+          'bottom:calc(var(--sxg-bar-h, 0px) + ' + bottom + 'px + env(safe-area-inset-bottom, 0px));' +
           'width:44px;height:44px;padding:0;border-radius:50%;' +
           'background:#ffffff;color:#0F766E;border:1px solid #d1d5db;' +
           'font:700 12px/42px system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;' +

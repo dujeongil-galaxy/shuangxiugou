@@ -45,7 +45,7 @@
       style.textContent =
         '#' + BTN_ID + '{' +
           'position:fixed;right:14px;' +
-          'bottom:calc(154px + env(safe-area-inset-bottom, 0px));' +
+          'bottom:calc(var(--sxg-bar-h, 0px) + 154px + env(safe-area-inset-bottom, 0px));' +
           'width:46px;height:46px;padding:0;border-radius:50%;' +
           'display:flex;align-items:center;justify-content:center;' +
           'background:#ffffff;color:#0F766E;border:1.5px solid #0F766E;' +

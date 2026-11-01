@@ -160,7 +160,7 @@
 .lp-ad-toast {
   position: fixed;
   left: 50%;
-  bottom: 96px;
+  bottom: calc(var(--sxg-bar-h, 0px) + 96px);
   z-index: 10001;
   max-width: min(88vw, 340px);
   padding: 11px 16px;
@@ -325,6 +325,15 @@
     background: var(--lp-surface);
     box-shadow: 0 -6px 22px rgba(42, 38, 32, 0.1);
     transition: opacity 0.35s ease, visibility 0.35s ease;
+  }
+
+  /* 2026-11-01：内容避让吸底条。
+     条是 fixed 吸底，页面最底部内容会被它盖住。高度随文案折行变化
+     （390px 实测 113px，桌面 76px），写死 px 必然错位，所以由
+     liangpei-ad.js 实测 offsetHeight 后写入 --sxg-bar-h；
+     条被关闭（.is-hidden）时变量归 0，不留空洞。 */
+  body {
+    padding-bottom: var(--sxg-bar-h, 0px);
   }
 
   /* 2026-10-16：原先这里放 .lp-ad__badge 的 absolute 定位规则，

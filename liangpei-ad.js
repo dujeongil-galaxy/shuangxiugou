@@ -203,9 +203,26 @@
     aside.querySelector('.lp-ad__close').addEventListener('click', function () {
       markDismissed();
       aside.classList.add('is-hidden');
+      updateBarVar();
     });
 
     document.body.appendChild(aside);
+
+    // 2026-11-01：把广告条真实高度发布成 CSS 变量 --sxg-bar-h，供右侧悬浮按钮组
+    // （top / bottom / remind / ai-chat / featured-douyin 五个脚本）动态避让。
+    // 移动端广告条会随推广文案折行而变高（390px 下实测 113px，不再是固定的 76px），
+    // 固定偏移会让最下方的视频 / TOP 按钮压到条上。各 FAB 用
+    // calc(var(--sxg-bar-h, 0px) + Npx) 即随条高自动上移，且彼此间距保持不变。
+    function updateBarVar() {
+      var h = aside.classList.contains('is-hidden') ? 0 : aside.offsetHeight;
+      document.documentElement.style.setProperty('--sxg-bar-h', h + 'px');
+    }
+    updateBarVar();
+    var _lpResizeTimer = null;
+    window.addEventListener('resize', function () {
+      clearTimeout(_lpResizeTimer);
+      _lpResizeTimer = setTimeout(updateBarVar, 150);
+    });
 
     // 竖排（≥1440px）靠 <br> 手动断行；窄屏横排时 <br> 会把文案截断，
     // 这里按当前视口宽度移除 <br>，交由 CSS 的 -webkit-line-clamp 控制行数。
@@ -223,6 +240,7 @@
         // 用空格替换掉 <br>，语义不变但可自然折行
         titleEl.innerHTML = titleEl.innerHTML.replace(/<br\s*\/?>/gi, ' ');
       }
+      updateBarVar();
     }
 
     syncBreaks(wideQuery);
@@ -238,6 +256,7 @@
     // 立刻盖上来，用户先看清内容；is-hidden 用 opacity 过渡实现淡入而非 display:none。
     setTimeout(function () {
       aside.classList.remove('is-hidden');
+      updateBarVar();
     }, CONFIG.showAfter);
   }
 

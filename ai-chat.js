@@ -102,14 +102,14 @@
     s.id = STYLE_ID;
     s.textContent = [
       '#' + BTN_ID + '{position:fixed;right:14px;',
-      'bottom:calc(210px + env(safe-area-inset-bottom, 0px));width:52px;height:52px;border-radius:50%;',
+      'bottom:calc(var(--sxg-bar-h, 0px) + 210px + env(safe-area-inset-bottom, 0px));width:52px;height:52px;border-radius:50%;',
       'background:#0F766E;color:#fff;border:none;cursor:pointer;font-size:24px;line-height:1;',
       'box-shadow:0 4px 14px rgba(15,118,110,.35);z-index:9000;',
       'display:flex;align-items:center;justify-content:center;transition:transform .15s ease;',
       '-webkit-tap-highlight-color:transparent}',
       '#' + BTN_ID + ':hover{transform:scale(1.08)}',
       '#' + PANEL_ID + '{position:fixed;right:14px;',
-      'bottom:calc(270px + env(safe-area-inset-bottom, 0px));width:min(340px,calc(100vw - 28px));',
+      'bottom:calc(var(--sxg-bar-h, 0px) + 270px + env(safe-area-inset-bottom, 0px));width:min(340px,calc(100vw - 28px));',
       'max-height:min(520px,calc(100vh - 300px));display:flex;flex-direction:column;',
       'background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.16);',
       'z-index:9001;overflow:hidden;font-family:system-ui,-apple-system,\'PingFang SC\',\'Microsoft YaHei\',sans-serif}',

@@ -72,7 +72,7 @@
     s.textContent =
       '#' + BTN_ID + '{' +
         'position:fixed;right:14px;' +
-        'bottom:calc(272px + env(safe-area-inset-bottom, 0px));' +
+        'bottom:calc(var(--sxg-bar-h, 0px) + 272px + env(safe-area-inset-bottom, 0px));' +
         'height:46px;min-width:46px;padding:0 10px;border-radius:23px;' +
         'display:flex;align-items:center;justify-content:center;' +
         'background:#ffffff;color:#0F766E;border:1.5px solid #0F766E;' +

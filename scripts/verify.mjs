@@ -3000,16 +3000,27 @@ if (exists(BRAND_DIR)) {
 
 // ---------- 13g. 同类项目导航页的自有仓库标记 ----------
 
-// projects.html 里的「本站 / 姊妹站」绿色标签，是把自己和别人的克隆/fork 区分开的唯一线索。
-// 漏标的后果：用户看到 `dujeongil-galaxy/shuangxiugou-guide` 会以为是别人的项目，
-// 而它其实是同一作者的姊妹站 —— 这直接影响「这些项目是不是同一个上游克隆」这条结论。
+// projects.html 里的「本站」绿色标签，是把自己和别人的克隆/fork 区分开的唯一线索。
+// 漏标的后果：用户看到 `dujeongil-galaxy/shuangxiugou` 会以为是别人的项目 ——
+// 这直接影响「这些项目是不是同一个上游克隆」这条结论。
+//
+// 2026-11-01 站长明令「姊妹站，删！」：dujeongil-galaxy/shuangxiugou-guide 的整张卡片
+// 已从导航页移除（「别什么都往上面丢」）。删除类改动只删 HTML 不算完 ——
+// 原来的正向断言（必须有「姊妹站」标签）反向改写为「不许再出现」，
+// 否则谁把它加回来也没人拦。
+// ⚠️ 只约束 projects.html：brand/*.html 里作为**证据来源**出现的「姊妹站」是证据链，
+//    不是导航卡，不在删除范围内（删了等于毁证据）。
 if (exists('projects.html')) {
   const pj = read('projects.html');
 
   const SELF_OWNED = [
     ['dujeongil-galaxy/shuangxiugou', '本站'],
-    ['dujeongil-galaxy/shuangxiugou-guide', '姊妹站'],
   ];
+
+  const SISTER_REPO = 'dujeongil-galaxy/shuangxiugou-guide';
+  check(pj.indexOf(SISTER_REPO) < 0,
+    'projects.html 不再收录姊妹站仓库（2026-11-01 站长要求删除）',
+    `又出现了 ${SISTER_REPO} —— 该卡片已被站长要求从导航页删除`);
   for (const [repo, tag] of SELF_OWNED) {
     // 在该仓库所在的那张卡片里必须能找到对应标签
     const anchor = pj.indexOf(`>${repo}</a>`);
@@ -3030,16 +3041,16 @@ if (exists('projects.html')) {
       '有 self-tag 但没有 is-self → 标签与卡片高亮对不上');
   }
 
-  // 段首说明不能把「绿色标记」写死成「本站」两个字——现在有「本站」和「姊妹站」两种。
+  // 段首说明不能把「绿色标记」写死成某个具体标签名（标签体系随时增减，文案应保持统称）。
   check(!/其中带「本站」标记的/.test(pj),
     'projects.html 段首说明未把标记写死为「本站」',
-    '现在有「本站」和「姊妹站」两种标签，文案应写「绿色标记」之类的统称');
+    '文案应保持统称（如「带绿色标记的是我们自己的项目」）');
 
-  // 「姊妹站」用字全站统一
-  const sisterBad = ['姐妹站', '妹子站', '兄弟站'].filter((w) => pj.includes(w));
+  // 姊妹站卡片 2026-11-01 已整块删除，页面里连字样（含异写）都不该留。
+  const sisterBad = ['姊妹站', '姐妹站', '妹子站', '兄弟站'].filter((w) => pj.includes(w));
   check(sisterBad.length === 0,
-    'projects.html 统一用「姊妹站」',
-    `出现异写：${sisterBad.join('、')} —— 同一概念两种写法会让人以为是两个不同项目`);
+    'projects.html 已无「姊妹站」字样及异写',
+    `仍出现：${sisterBad.join('、')} —— 该卡片已被站长要求删除，字样也应清干净`);
 }
 
 // ---------- 13e. 推广位链接一致性 ----------
