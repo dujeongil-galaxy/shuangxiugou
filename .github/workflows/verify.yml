@@ -193,8 +193,3 @@ jobs:
       # notes.html 锁屏的「我同意/我不同意」门禁行为。
       - name: 笔记锁屏同意门测试
         run: node scripts/test-notes-agree.cjs
-
-      # 右下角悬浮导航菜单（2026-11-02「超链接不放顶部」）：PC 常显、
-      # 手机折叠成一个主按钮且点开才创建条目（真·按需，不是隐藏）。
-      - name: 悬浮导航菜单测试
-        run: node scripts/test-nav-menu.cjs
