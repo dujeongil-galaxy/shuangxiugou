@@ -1169,6 +1169,48 @@ check('页面出现新卡片名', doc.body.textContent.includes('宏碁'));
 想放宽成 `\d+` 更糟 —— 那会让规则恒真、等于没有检查（§3.6）。
 正确做法是**按实际总数动态生成正则**。
 
+### 6.9 计数常数一变，测试脚本里的硬编码字面量必须同步（2026-11-01 · 修复 `4c2446e`）
+
+**症状**：加完新卡、bundle 常数和 `verify.mjs` 断言都改了，本地 `verify.mjs` 全绿，
+一推送 CI `verify.yml`（站点一致性校验）整轮判红，GitHub 连发 5 封失败通知。
+
+**本仓库踩过**：2026-11-01 加 BOSS直聘 卡（C 级、第 68 个收录品牌）。改动时把 bundle 的
+收录品牌常数 67→68、避雷预警 30→31、tab 角标 67→68 都同步了，`verify.mjs` 的断言也更新了，
+但**漏改两个测试脚本里的硬编码字面量**：
+
+- `scripts/test-stat-filter.cjs`：还写着 C 卡 30、避雷盒手写常数 30、初始可见 67、总卡 68……
+- `scripts/test-molina-card.cjs`：还写着「共 67 家」、bundle 收录品牌常数 67、tab 角标 67
+
+真实值早已是 68/31/69/68，于是这两组测试从那次起每次 push 都判红 → CI 整体红。
+
+**为什么会漏**（三层叠加）：
+
+1. `verify.mjs` 是零依赖、能本地跑的校验，但它**只校验仓库数据 / 文档一致性**，
+   根本不跑 `scripts/*.cjs` 测试组。
+2. 那两处字面量是 `verify.yml` 在 CI 里跑的测试组断言来源，本地 `verify.mjs` 看不到。
+3. 于是「本地全绿 → 以为齐了」是一种**虚假安全感**（同 §3.2）。
+
+**怎么避免**：凡是改动以下一类数字口径，除 bundle 常数 + `verify.mjs` 断言外，**必须**同步：
+
+| 数字口径 | 须同步的测试脚本字面量 |
+|---|---|
+| 收录品牌数 / tab 角标 | `test-molina-card.cjs`：`共 N 家`、bundle `children:N`、tab `children:N` |
+| C 级卡数 / 避雷盒手写常数 | `test-stat-filter.cjs`：C 卡数、避雷盒 `textContent`、`23+14+N` 四格对账、互斥 hidden 数 |
+| 初始可见 / 总卡数 | `test-stat-filter.cjs`：`.visible.length`、`s.total` |
+
+改完补跑确认全绿：
+
+```bash
+node scripts/test-stat-filter.cjs
+node scripts/test-molina-card.cjs
+```
+
+能从源数据推导的就别写死（同 §6.8.4）—— 但这些字面量是「手写盒子数字」这类
+**无法从数据直接推导**的渲染常数，只能随改动手动同步。
+
+**判据**：一个计数事实在仓库里出现几处（bundle / index.html / verify.mjs / 测试脚本 / 文档），
+就该有几处同步改动（同 §6.6）。改完任何数字口径后，本地补跑这两个测试脚本是 CI 不红的最后一道闸。
+
 ---
 
 ## 七、改动前的检查清单
