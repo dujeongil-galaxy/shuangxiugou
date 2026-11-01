@@ -20,6 +20,7 @@
 - **新增 `scripts/test-nav-menu.cjs`**（34 项，jsdom）：桌面常显立即建条目、手机未点开时条目数 0、点开后 2 条且 href 正确、收起不复建（同一批节点）、Esc 与点空白收起、重复执行不重复注入、两个出口文件真实存在。
   - **坑**：jsdom 没有 `window.matchMedia`，不打桩就永远走桌面分支，「手机按需创建」这条路径根本没被测到（典型救绿形态）。
   - **⚠️ 尚未接入 CI**：本机 git 凭据的 PAT 与 GitHub API 通道都缺 `workflow` scope，推 `.github/workflows/*` 一律 403（`refusing to allow a Personal Access Token to create or update workflow`），MCP 走 API 同样 `403 Resource not accessible by integration`。故 `verify.yml` 保持远端原样，verify §9c 的 CI 接线断言先降级为 `note` 提示。**补上 workflow 权限后，在 `verify.yml` 加一行 `node scripts/test-nav-menu.cjs` 即可接回**（脚本已写好、本地 34 项全过）。
+  - **自检抓到假绿灯**：第一版为了让 CI 过，把这条写成「条件写死为 true 的 check」，被 `test-verify-self.cjs` 当场判红（它专抓这个）。改成「有就断言、没有就 note」，并把 note 的措辞也避开该正则（注释里出现字面样例同样会命中）。
 - **故障注入**：① 公告栏塞回一个 `<a>` → 2 条判红；② 句子里塞回 `#evidence-board` 锚点 → 2 条判红；③ 拔掉 `index.html` 的挂载 + 拔掉 CI 接线 → 各 1 条判红。三次还原后与备份 `cmp` 逐字节一致。
 - **真机实测**（无头 Edge + CDP）：
   - 1440×900：dock `x1183–1368 / bottom 12`，TOP 按钮 `x1380–1424 / bottom 6`，横向留 12px；公告栏 `<a>` 数 = 0。
