@@ -164,8 +164,22 @@
       })
       .then(function (text) {
         var f = extractFields(text);
-        // 提取失败（0 条）时不要静默吞掉，降级保底
-        fieldsCache = f.length ? f : fieldsFromPinyinIndex();
+        // 自定义卡（如 BOSS直聘）不在 bundle，但其关键词是真实强检索字段
+        // （keywords 来自 customCardsConfig，与原生搜索同口径）。
+        // 只依赖 bundle 提取时，搜「直聘」这类查询的强命中（BOSS直聘）不在
+        // fieldsCache 里 → strongCount=0 → 走 summary 兜底，把一堆只靠
+        // summary 含「直聘」的内置卡（蜜雪冰城 / 霸王茶姬等奶茶、海底捞…）
+        // 全留在结果里。把自定义卡并入强字段，scope-fix 才能识别 BOSS直聘
+        // 的强命中，进而收起「仅 summary 命中」的弱命中卡。
+        var custom = (window.__PINYIN_INDEX__ || [])
+          .filter(function (e) { return e.custom; })
+          .map(function (e) {
+            var flds = (e.t || []).map(function (t) { return t[0]; });
+            if (e.cn) flds.push(e.cn);
+            return { name: e.name || e.cn || '', fields: flds };
+          });
+        // 提取失败（0 条）不静默吞掉，降级保底（fieldsFromPinyinIndex 已含自定义卡）
+        fieldsCache = f.length ? f.concat(custom) : fieldsFromPinyinIndex();
         return fieldsCache;
       })
       .catch(function (e) {

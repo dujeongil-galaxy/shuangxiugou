@@ -292,7 +292,44 @@ console.log('\n⑨ 搜索容器防护栏：含输入框的容器永远不被口�
 
   // 空搜索恢复
   w.__SXGSearchScopeFix.applyScope('');
-  check('空搜索：容器无隐藏 class（全清）', cont.classList.contains('sxg-scope-hidden') === false);
+  check('空搜索：容器无隐藏 class（全清）',     cont.classList.contains('sxg-scope-hidden') === false);
+})();
+
+/* ================================================================ ⑩ 自定义卡强字段纳入：搜「直聘」不串出内置奶茶卡（2026-11-01 回归） */
+console.log('\n⑩ 自定义卡强字段纳入：搜「直聘」不串出 summary 命中的内置奶茶卡');
+(async function () {
+  // 内置奶茶卡：summary 含「直聘」（招聘渠道以 BOSS直聘 为主），强字段不含「直聘」→ 仅弱命中。
+  // 这正是线上 bug 根因：bundle 里 0 个品牌强字段含「直聘」，而强命中的 BOSS直聘
+  // 是自定义卡不在 bundle，scope-fix 视角 strongCount=0 → summary 兜底全显示。
+  const BUNDLE = 'brands:[' + [
+    '{id:' + q('mixue') + ',name:' + q('蜜雪冰城 (MIXUE)')
+    + ',companyName:' + q('蜜雪冰城股份有限公司')
+    + ',summary:' + q('门店月休不足4天，招聘渠道以BOSS直聘为主。')
+    + ',keyProducts:[' + q('冰淇淋') + ']'
+    + ',searchKeywords:[' + q('蜜雪冰城') + ',' + q('奶茶') + ']}'
+  ].join(',') + ']';
+  // 自定义卡 BOSS直聘：keywords 含「直聘」→ 强字段命中
+  const PINYIN = [
+    { id: 'bosszhipin-card', name: 'BOSS直聘', cn: '直聘', custom: 1, kw: 'BOSS直聘',
+      t: [['直聘', 'zhipin', 'zp', 0], ['BOSS直聘', 'bosszhipin', 'bszp', 0], ['招聘平台', 'zhaopinpingtai', 'zppt', 3]] }
+  ];
+  const html = '<!DOCTYPE html><html><head></head><body><div id="root">'
+    + '<div class="bg-white rounded-2xl border" id="card-mixue">蜜雪冰城 (MIXUE) 蜜雪冰城股份有限公司 冰淇淋</div>'
+    + '<div class="bg-white rounded-2xl border" id="card-boss">BOSS直聘 北京华品博睿网络技术有限公司</div>'
+    + '<div class="bg-white p-4 rounded-2xl border" id="search-cont"><input id="site-search-input" type="text" value="" />'
+    + '<div id="pinyin-suggest" style="display:none"></div></div>'
+    + '</div><script src="./assets/index-YthXZ9eP.js"></script></body></html>';
+  const dom = new JSDOM(html, { runScripts: 'outside-only', url: 'http://localhost/shuangxiugou/' });
+  const w = dom.window;
+  w.fetch = () => Promise.resolve({ ok: true, text: () => Promise.resolve(BUNDLE) });
+  w.__PINYIN_INDEX__ = PINYIN;
+  w.eval(PATCH_SRC);
+  await w.__SXGSearchScopeFix.ensureFields();
+  w.__SXGSearchScopeFix.applyScope('直聘');
+  const mixueHidden = w.document.getElementById('card-mixue').classList.contains('sxg-scope-hidden');
+  const bossShown = !w.document.getElementById('card-boss').classList.contains('sxg-scope-hidden');
+  check('搜「直聘」：仅 summary 命中的内置奶茶卡收起', mixueHidden, mixueHidden);
+  check('搜「直聘」：强命中的自定义卡 BOSS直聘 保留', bossShown, bossShown);
 })();
 
 /* ---------------------------------------------------------------- 汇总 */
