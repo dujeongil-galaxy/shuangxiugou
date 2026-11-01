@@ -827,8 +827,12 @@ section('2g. 首页证据链完整公示');
   check(!!notice, '公告栏证据链句子有 evidence-notice 标记（生成器托管，不许手写）');
   if (notice) {
     const nb = notice[1];
-    check(nb.includes('href="#evidence-board"'),
-      '公告栏那句是可点入口（跳 #evidence-board），不再是纯口号');
+    // 2026-11-02 站长：「超链接不放顶部」。公告栏整条只允许纯文字，
+    // 原来那个跳 #evidence-board 的 <a> 已去掉 —— 这条断言方向整体反转。
+    // （旧断言是「必须是可点入口」，留着就会把正确实现判红。）
+    check(!/<a\s/i.test(nb),
+      '公告栏证据链句子是纯文字，不含任何超链接（2026-11-02「超链接不放顶部」）',
+      '句子里仍有 <a>：' + (nb.match(/<a\s[^>]*>/gi) || []).join(' | '));
     // ⚠️ 假承诺闸门：公告栏说「已在本页完整公示」，那本页就必须真有公示区块。
     //    区块被删而口号还在，比根本不公示更坏——它在骗读者。
     //    2026-10-31 故障注入②实测：区块整块删掉后，公告栏 6 条断言仍全绿，
@@ -851,6 +855,43 @@ section('2g. 首页证据链完整公示');
     const bareSlogan = html.includes('本站全部数据均附公开证据链：招聘口径、员工反馈与官方通报分项标注，'
       + '来源可查可溯，欢迎核实纠错');
     check(!bareSlogan, '公告栏旧口号原句已被托管句替换（不留第二份空话）');
+  }
+
+  // ---------- 9b. 顶部公告栏整条不许有超链接（2026-11-02 站长指令）----------
+  // 原话：「不是说了超链接不放顶部吗？」——顶部公告栏此前挂着 3 个可点元素
+  // （#evidence-board 锚点 / 同类项目导航 / 成功案例），导航挤在红字条里既乱
+  // 又不该占首屏。现在整条只留纯文字，导航入口改由右下角悬浮菜单承担。
+  // 只查 <span id="evidence-notice"> 内部不够：那两个导航链接在 span 外面，
+  // 所以必须在**整条 #site-notice**范围内扫。
+  const noticeDiv = html.match(/<div id="site-notice"[\s\S]*?<\/div>/);
+  check(!!noticeDiv, '顶部公告栏容器 #site-notice 在位');
+  if (noticeDiv) {
+    const anchors = noticeDiv[0].match(/<a\s[^>]*>/gi) || [];
+    check(anchors.length === 0,
+      '★ 顶部公告栏整条没有任何超链接（含导航链接与页内锚点）',
+      '仍有 ' + anchors.length + ' 个 <a>：' + anchors.join(' | '));
+    // 版本号必须继续以纯文字留在这里：sync-version.mjs 靠
+    // 「当前版本号 xxxxxxx</span>」这个锚点回写，挪走就会静默失效。
+    check(/当前版本号\s*[0-9a-f]{7}/.test(noticeDiv[0]),
+      '公告栏保留「当前版本号 xxxxxxx」纯文字（sync-version 回写锚点）');
+  }
+
+  // ---------- 9c. 导航出口改由右下角悬浮菜单承担 ----------
+  check(exists('nav-menu.js'), '存在右下角悬浮导航菜单 nav-menu.js');
+  if (exists('nav-menu.js')) {
+    const nm = read('nav-menu.js');
+    check(nm.includes("'./projects.html'") && nm.includes("'./success-stories.html'"),
+      '悬浮菜单含「同类项目导航 / 成功案例」两个出口');
+    check(/<script src="\.\/nav-menu\.js\?v=\d+"><\/script>/.test(html),
+      'index.html 已挂载 nav-menu.js（带 ?v 缓存号）');
+    // PC 常显 / 手机折叠：两个断点都必须写在样式里，否则等同只有一个形态
+    check(/@media \(max-width:640px\)/.test(nm) && /--sxg-bar-h/.test(nm),
+      '悬浮菜单自带手机断点与吸底条避让变量');
+    if (exists('.github/workflows/verify.yml')) {
+      const ci = read('.github/workflows/verify.yml');
+      check(ci.includes('test-nav-menu.cjs'),
+        'CI 里已接入悬浮菜单行为测试');
+    }
   }
 
   // ---------- 10. 证据强度分级图例（不许把弱证据当强证据用）----------
