@@ -88,12 +88,12 @@ const remindSrc = read('remind-button.js');
   check('noscript 两处清单均含 molina（爬虫兜底，每处一行）', nsMolinaLines === 2, nsMolinaLines);
   check('sitemap.xml 含 molina 详情页', /brand\/molina\.html/.test(read('sitemap.xml')));
   check('projects.html 含 molina（互链网）', /brand\/molina\.html/.test(read('projects.html')));
-  check('页脚「共 67 家」口径', /（共 67 家）/.test(html));
+  check('页脚「共 68 家」口径', /（共 68 家）/.test(html));
 
   // ── bundle 统计常数 ──
   const bundle = read('assets/index-YthXZ9eP.js');
-  check('★ bundle「收录品牌」常数 = 67', /text-base`,children:67\}/.test(bundle));
-  check('★ bundle tab 角标常数 = 67', /rounded-full`,children:67\}/.test(bundle));
+  check('★ bundle「收录品牌」常数 = 68', /text-base`,children:68\}/.test(bundle));
+  check('★ bundle tab 角标常数 = 68', /rounded-full`,children:68\}/.test(bundle));
   check('bundle 引用已 bump（?v=50，2026-10-31 U 分支死代码清理 + 银行月休口径改判）', /index-YthXZ9eP\.js\?v=50/.test(html));
 
   // ── 拼音索引 ──
