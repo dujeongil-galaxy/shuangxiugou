@@ -117,9 +117,30 @@
     <link rel="stylesheet" href="./douyin-prompt.css?v=10">
     <!-- 移动端排版修复（须在主 CSS 之后：靠覆盖生效；改完请把 ?v=N 的 N +1） -->
     <link rel="stylesheet" href="./mobile-fixes.css?v=6">
-  <style>.sxg-boot{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:14px;color:#0f766e;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif}.sxg-boot__spinner{width:34px;height:34px;border:3px solid #ccfbf1;border-top-color:#0f766e;border-radius:50%;animation:sxg-spin .8s linear infinite}.sxg-boot__text{margin:0;font-size:14px;font-weight:600;letter-spacing:.04em}@keyframes sxg-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.sxg-boot__spinner{animation-duration:2s}}</style>
+  <style>.sxg-loading{position:fixed;inset:0;z-index:2147483647;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}.sxg-boot{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:14px;color:#0f766e;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif}.sxg-boot__spinner{width:34px;height:34px;border:3px solid #ccfbf1;border-top-color:#0f766e;border-radius:50%;animation:sxg-spin .8s linear infinite}.sxg-boot__text{margin:0;font-size:14px;font-weight:600;letter-spacing:.04em}@keyframes sxg-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.sxg-boot__spinner{animation-duration:2s}}</style>
   </head>
   <body>
+    <!-- 全屏加载遮罩：React 大包解析期间盖住整页（含顶部公告栏与下方证据链区块），
+         杜绝静态 HTML 先画出来造成的闪烁（FOUC）。挂载后由下方内联脚本移除。 -->
+    <div id="sxg-loading" class="sxg-loading" role="status" aria-live="polite" aria-label="页面加载中">
+      <div class="sxg-boot__spinner" aria-hidden="true"></div>
+      <p class="sxg-boot__text">页面加载中…</p>
+    </div>
+    <script>
+      (function () {
+        var overlay = document.getElementById('sxg-loading');
+        if (!overlay) return;
+        var started = Date.now();
+        var timer = setInterval(function () {
+          var root = document.getElementById('root');
+          var booted = !!root && root.querySelector('.sxg-boot') === null && root.children.length > 0;
+          if (booted || Date.now() - started > 10000) {
+            clearInterval(timer);
+            if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+          }
+        }, 50);
+      })();
+    </script>
     <!-- 顶部公告栏：本站数据证据链说明（白底红字，可随页面滚动） -->
     <div id="site-notice" style="background:#ffffff;color:#dc2626;text-align:center;font-size:12px;line-height:1.5;padding:6px 12px;border-bottom:1px solid #fee2e2;font-weight:600;position:relative;z-index:999;">
       <span id="evidence-notice">本站全部数据均附公开证据链：<a href="#evidence-board" style="color:#0f766e;text-decoration:underline">68 家企业 179 条证据已在本页完整公示</a>（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 6 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span>
