@@ -162,9 +162,15 @@
     btn.textContent = 'AI';
     btn.addEventListener('click', function () { toggle(); });
 
+    // 移动端（<1440px）：AI 面板默认收起。
+    // 否则首访全宽展开会盖住右侧悬浮按钮组——尤其「提醒」钮在 bottom:272，
+    // 正好落在面板覆盖区（bottom:270 起）里，导致点不到。桌面端（≥1440px）
+    // 提醒钮在 160（位于面板 270 之下）不受影响，保持原「首访展开 + 8 秒收起」。
+    // 判定用 matchMedia，jsdom（无 matchMedia）会短路为 false → 走桌面逻辑，单测稳定。
+    var isCompact = !!(window.matchMedia && window.matchMedia('(max-width: 1439px)').matches);
     var panel = document.createElement('div');
     panel.id = PANEL_ID;
-    panel.hidden = false;
+    panel.hidden = isCompact;
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-label', '劳动法小助手对话');
 
@@ -256,9 +262,10 @@
     document.body.appendChild(btn);
 
     // 加载即展开面板（展示欢迎语），8 秒后自动收起，避免一直遮挡页面；
-    // 用户一旦在面板内交互（点击/输入）即取消自动收起
+    // 用户一旦在面板内交互（点击/输入）即取消自动收起。
+    // 移动端默认已收起（panel.hidden=isCompact），不再启动自动收起计时。
     panel.addEventListener('pointerdown', clearAutoClose);
-    startAutoClose();
+    if (!isCompact) startAutoClose();
   }
 
   // 切换头像弹层显隐（头像与「切换形象」按钮共用）
