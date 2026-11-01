@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>成功案例 · 较真的人，真的赢了｜双休购 ShuangxiuGo</title>
+    <meta
+      name="description"
+      content="普通人依法维权、推动规则改变的真实案例合集。双休购常被说天真，这些案例想说：一个人，也能掀起点什么。第一条：华东政法大学学生诉上海迪士尼禁带食品案。"
+    />
+    <meta name="theme-color" content="#0F766E" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 18px 56px;
+        background: #f8fafc;
+        color: #1f2937;
+        font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        line-height: 1.85;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border: 1px solid #99f6e4;
+        border-radius: 999px;
+        background: #f0fdfa;
+        color: #0f766e;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .wrap {
+        width: 100%;
+        max-width: 800px;
+        margin-top: 22px;
+        padding: 30px 30px 34px;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+      }
+      h1 {
+        margin: 18px 0 4px;
+        font-size: 24px;
+        font-weight: 800;
+        color: #0f766e;
+        line-height: 1.4;
+      }
+      .lead {
+        margin: 0 0 26px;
+        font-size: 15px;
+        color: #475569;
+      }
+      .lead strong { color: #0f172a; }
+
+      /* —— 单条案例卡 —— */
+      .case {
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 22px 22px 24px;
+        margin: 0 0 20px;
+        background: #fff;
+      }
+      .case-no {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 11px;
+        border-radius: 999px;
+        background: #0f766e;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .03em;
+      }
+      .case h2 {
+        margin: 12px 0 4px;
+        font-size: 19px;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.45;
+      }
+      .case-meta {
+        margin: 0 0 14px;
+        font-size: 12.5px;
+        color: #64748b;
+      }
+      .case-meta b { color: #0f766e; font-weight: 700; }
+      .case p { margin: 0 0 13px; color: #374151; }
+      .case p:last-of-type { margin-bottom: 0; }
+      .case .why {
+        margin: 14px 0 0;
+        padding: 12px 14px;
+        border-left: 3px solid #99f6e4;
+        background: #f0fdfa;
+        border-radius: 0 10px 10px 0;
+        font-size: 13.5px;
+        color: #475569;
+      }
+      .case .why b { color: #0f172a; }
+
+      /* —— 核实纠偏框 —— */
+      .correct {
+        margin: 14px 0 0;
+        padding: 12px 14px;
+        border: 1px solid #fde68a;
+        border-left: 4px solid #f59e0b;
+        background: #fffbeb;
+        border-radius: 0 10px 10px 0;
+        font-size: 13px;
+        color: #92400e;
+      }
+      .correct b { color: #78350f; }
+
+      /* —— 来源列表 —— */
+      .src-title {
+        margin: 16px 0 8px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      ul.src {
+        margin: 0;
+        padding-left: 20px;
+        font-size: 13px;
+        color: #475569;
+      }
+      ul.src li { margin: 0 0 7px; }
+      ul.src a {
+        color: #0f766e;
+        text-decoration: none;
+        border-bottom: 1px solid #99f6e4;
+        word-break: break-all;
+      }
+      ul.src a:hover { color: #0d9488; }
+      ul.src .tag {
+        display: inline-block;
+        margin-left: 4px;
+        padding: 0 7px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        background: #f1f5f9;
+        color: #64748b;
+      }
+      ul.src .tag.douyin { background: #fff1f2; color: #be123c; }
+
+      /* —— 待补充卡 —— */
+      .wip {
+        border: 1px dashed #cbd5e1;
+        border-radius: 14px;
+        padding: 20px 22px;
+        background: #f8fafc;
+        color: #64748b;
+        font-size: 14px;
+      }
+      .wip b { color: #0f766e; }
+
+      .back {
+        display: inline-block;
+        margin-top: 28px;
+        color: #0f766e;
+        font-weight: 600;
+        text-decoration: none;
+        border-bottom: 1px solid #99f6e4;
+        padding-bottom: 2px;
+      }
+      .back:hover { color: #0d9488; }
+
+      @media (prefers-color-scheme: dark) {
+        body { background: #0f172a; color: #e2e8f0; }
+        .wrap { background: #1e2429; border-color: #334155; }
+        .lead { color: #94a3b8; }
+        .lead strong { color: #f1f5f9; }
+        .case { background: #1a2128; border-color: #2b333a; }
+        .case h2 { color: #f1f5f9; }
+        .case p { color: #cbd5e1; }
+        .case .why { background: #16251f; border-left-color: #3aa68c; color: #94a3b8; }
+        .case .why b { color: #e2e8f0; }
+        .correct { background: #2a2410; border-color: #78580f; color: #d6b35e; }
+        .correct b { color: #f0d488; }
+        .src-title { color: #f1f5f9; }
+        ul.src { color: #94a3b8; }
+        .wip { background: #161d24; border-color: #334155; color: #94a3b8; }
+        .wip b { color: #5eead4; }
+        .back { color: #5eead4; border-bottom-color: #3aa68c; }
+      }
+    </style>
+  </head>
+  <body>
+    <span class="badge">● 双休购 · ShuangxiuGo</span>
+    <div class="wrap">
+      <h1>成功案例 · 较真的人，真的赢了</h1>
+      <p class="lead">
+        常有人笑我们天真：「一个人，掀得起什么水浪？」我们想用这个页面回答——
+        你改变不了别人，不妨先活好自己；而「活好自己」的前提，是有人先较真，
+        把不公的规则改掉那么<strong>一点点</strong>。下面收集的不是鸡汤，是真实发生、有案可查的「普通人赢了」。
+        第一则，正是近期一条在抖音热传的迪士尼短视频所讲的旧案。
+      </p>
+
+      <!--
+        ===== 合集脚手架 =====
+        新增一条案例：复制下面整段 <article class="case">…</article>，
+        改 case-no 序号、h2 标题、meta、正文、纠偏框（如有）、来源链接即可。
+        每条必须附公开可查来源；抖音等社媒链接一律标 .tag.douyin 且仅作「传播源」，
+        事实以司法/官媒核实口径为准。
+      -->
+
+      <article class="case">
+        <span class="case-no">案例 #01</span>
+        <h2>一个人 vs 迪士尼：那条「禁带零食」的园规，被改了</h2>
+        <p class="case-meta">
+          领域：<b>消费者权益</b> ｜ 时间：<b>2019</b> ｜ 结果：<b>迪士尼修改入园规则 + 补偿</b>
+        </p>
+        <p>
+          2019 年 1 月 30 日，华东政法大学法学专业学生王洁莹带零食进入上海迪士尼乐园，
+          在安检处被翻包阻拦、被告知「不得携带食品入园」，被迫丢弃食品后才入园。
+        </p>
+        <p>
+          3 月 15 日，她向上海市浦东新区人民法院提起诉讼，请求确认《上海迪士尼乐园游客须知》
+          中「不得携带食品入园」的格式条款无效，并索赔被迫丢弃的食品损失 46.30 元。
+        </p>
+        <p>
+          审理期间，迪士尼主动调整规则；<b>2019 年 9 月 11 日起，游客可携带供本人食用的食品及饮料入园</b>
+          （划定专门野餐区、优化安检流程）。9 月 12 日，经浦东法院调解，双方达成调解协议，迪士尼补偿王洁莹 50 元。
+        </p>
+        <p>
+          2020 年，她获得中国消费者协会首届「啄木鸟奖」。中消协评价：
+          「一个大学生的坚持维权，换来万千游客方便，打破了沉默螺旋。」
+        </p>
+
+        <div class="correct">
+          <b>关于网上流传的这条抖音：</b>视频里的「把她当贼一样告到那边去了 / 转头把他们告上法庭」是演绎。
+          真实因果恰恰相反——是王洁莹主动起诉迪士尼，迪士尼从未把她当贼报案。
+          核实版比演绎版更有力：一个普通人，依法较真，真把世界改了一点点。
+          因此本页事实以公开司法/官媒报道为准，抖音链接仅作为传播源附在文末。
+        </div>
+
+        <p class="why">
+          <b>为什么放进这里：</b>双休购也常被说「天真」。这个案子说的就是同一件事——
+          规则看起来坚不可摧，但只要有人肯依法较真，它就可能松动。
+          今天是被禁带的零食，明天或许就是不被尊重的休息权。
+        </p>
+
+        <p class="src-title">来源（均可公开查证）</p>
+        <ul class="src">
+          <li><a href="https://xiaofei.people.com.cn/BIG5/n1/2020/0113/c425315-31546445.html" target="_blank" rel="noopener noreferrer">人民网·消费频道：迪士尼上榜 2019 消费舆情（含中消协表述）</a></li>
+          <li><a href="https://news.cctv.com/2019/09/12/ARTIM3yS9KK3WDaIUmGpEEtS190912.shtml" target="_blank" rel="noopener noreferrer">央视网 / 中国新闻网：华政学生起诉上海迪士尼后续，双方达成调解</a></li>
+          <li><a href="https://www.chinacourt.cn/chat/chat/id/52651.shtml" target="_blank" rel="noopener noreferrer">中国法院网：大学生起诉迪士尼维权案（普法案例）</a></li>
+          <li><a href="https://consume.people.com.cn/n1/2020/0315/c425315-31632318.html" target="_blank" rel="noopener noreferrer">人民网：起诉上海迪士尼的大学生获 2020 年中消协「啄木鸟奖」</a></li>
+          <li><a href="https://v.douyin.com/pdj_M1-fe7U/" target="_blank" rel="noopener noreferrer">传播源（抖音，叙事含演绎）</a><span class="tag douyin">传播源·非事实出处</span></li>
+        </ul>
+      </article>
+
+      <div class="wip">
+        <b>案例 #02 起整理中</b> —— 如果你有「普通人依法维权 / 推动改变」的真实案例
+        （尤其是劳动、休息权相关），欢迎通过首页反馈渠道告诉我们。
+        每一条都会附公开来源，核实后再上墙。这个页面会越攒越有说服力：
+        所谓「掀不起水浪」，不过是还没人先跳下去。
+      </div>
+
+      <a class="back" href="./">← 返回双休购首页</a>
+    </div>
+  </body>
+</html>
