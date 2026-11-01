@@ -210,6 +210,15 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 - **数字口径改了，五处一起改**：`assets/index-YthXZ9eP.js`（内置卡）、`index.html`（自定义卡）、
   `index.html` 的 `<noscript>` 兜底清单、对应的 `brand/*.html` 详情页、`CHANGELOG.md`。
   校验 §6 会逐条比对 noscript 与详情页，漏一处直接报错。
+- **「计数常数」一变，测试脚本里的硬编码字面量必须同步**（本次 CI 连续红灯的根源）：
+  收录品牌数 / 档位计数 / C 级卡数 / 避雷盒手写常数这类数字改动后，除了 bundle 常数与 `verify.mjs` 断言，
+  还要同步两处测试脚本的硬编码字面量 —— `scripts/test-stat-filter.cjs`（初始可见张数、总卡数、
+  避雷 C 卡数、四格对账 `23+14+31`、互斥隐藏数、避雷盒手写常数）与
+  `scripts/test-molina-card.cjs`（页脚「共 N 家」、bundle 收录品牌常数、tab 角标常数）。
+  这些字面量是 CI 站点一致性校验（`verify.yml`）的断言来源，但**本地 `verify.mjs` 看不到它们**——
+  漏改只会在 push 后 CI 红灯才暴露。2026-11-01 加 BOSS直聘 卡时漏改这两处，导致每次 push 都触发 CI 失败、
+  GitHub 连发 5 封失败通知（修复于提交 `4c2446e`）。改完任何数字口径后，务必本地补跑
+  `node scripts/test-stat-filter.cjs` 与 `node scripts/test-molina-card.cjs` 确认全绿。
 - **`<noscript>` 里不许出现 `null`**：未核实写「未核实」，平均下班写「—」。
   这段文字普通用户看不见、坏了没人举报，但爬虫和搜索结果里全是它。
 - **不记录的内容**：纯机械动作（版本号 `?v=N` 递增、公告栏同步）不单独列条，
