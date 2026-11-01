@@ -117,15 +117,23 @@
     <link rel="stylesheet" href="./douyin-prompt.css?v=10">
     <!-- 移动端排版修复（须在主 CSS 之后：靠覆盖生效；改完请把 ?v=N 的 N +1） -->
     <link rel="stylesheet" href="./mobile-fixes.css?v=6">
+  <style>.sxg-boot{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:14px;color:#0f766e;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif}.sxg-boot__spinner{width:34px;height:34px;border:3px solid #ccfbf1;border-top-color:#0f766e;border-radius:50%;animation:sxg-spin .8s linear infinite}.sxg-boot__text{margin:0;font-size:14px;font-weight:600;letter-spacing:.04em}@keyframes sxg-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.sxg-boot__spinner{animation-duration:2s}}</style>
   </head>
   <body>
     <!-- 顶部公告栏：本站数据证据链说明（白底红字，可随页面滚动） -->
     <div id="site-notice" style="background:#ffffff;color:#dc2626;text-align:center;font-size:12px;line-height:1.5;padding:6px 12px;border-bottom:1px solid #fee2e2;font-weight:600;position:relative;z-index:999;">
-      <span id="evidence-notice">本站全部数据均附公开证据链：<a href="#evidence-board" style="color:#0f766e;text-decoration:underline">68 家企业 178 条证据已在本页完整公示</a>（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 6 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span>
+      <span id="evidence-notice">本站全部数据均附公开证据链：<a href="#evidence-board" style="color:#0f766e;text-decoration:underline">68 家企业 179 条证据已在本页完整公示</a>（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 6 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span>
       ｜<a href="./projects.html" style="color:#0f766e;text-decoration:underline">同类项目导航</a>
       ｜<!-- 页脚版本号：每次发版后手动更新为当次功能提交的短哈希（CHANGELOG 有记录） --><span style="color:#000;font-weight:700">当前版本号 01fcdd7</span>
     </div>
-    <div id="root"></div>
+    <div id="root">
+      <!-- 首屏占位：React 大包解析期间先显示「加载中」，避免 #root 为空把下方证据链区块
+           甩到视口顶部造成白屏闪烁（FOUC）。React 挂载后自动替换本节点。 -->
+      <div class="sxg-boot" role="status" aria-live="polite" aria-label="页面加载中">
+        <div class="sxg-boot__spinner" aria-hidden="true"></div>
+        <p class="sxg-boot__text">页面加载中…</p>
+      </div>
+    </div>
 
     <!-- 全站证据链公示（2026-10-31 站长要求「证据链必须首页完整公示，口说无凭」）。
          挂在 #root 之后：React 只管 #root，静态节点不会被重渲染清掉，
@@ -135,7 +143,7 @@
      本区块由 scripts/gen-evidence-board.py 自动生成，请勿手改。
      改证据请改 brand/*.html 详情页，然后重跑：python scripts/gen-evidence-board.py
      单一真相源在 brand/ 页；scripts/verify.mjs 有防漂移断言逐条比对。
-     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：68 家企业 / 178 条证据 / 135 条带原始链接 / 6 家证据薄弱。 -->
+     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：68 家企业 / 179 条证据 / 135 条带原始链接 / 6 家证据薄弱。 -->
 <style>#evidence-board{max-width:960px;margin:0 auto;padding:28px 16px 40px;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.75;color:#1f2937;font-size:14px}
 #evidence-board h2{font-size:20px;font-weight:700;margin:0 0 6px;color:#0f172a;line-height:1.4}
 #evidence-board a{color:#0f766e}
@@ -184,13 +192,13 @@
 #evidence-board .ev-more{margin-top:10px;font-size:12px}
 #evidence-board .ev-foot{margin:16px 0 0;font-size:12.5px;color:#64748b}
 @media(max-width:640px){#evidence-board{padding:20px 12px 32px}#evidence-board .ev-stat{flex:1 1 44%}#evidence-board .ct{margin-left:0;width:100%}}</style>
-<section id="evidence-board" data-ev-brands="68" data-ev-total="178" data-ev-linked="135" data-ev-weak="6">
-  <h2>全站证据链公示（68 家企业 · 178 条证据）</h2>
+<section id="evidence-board" data-ev-brands="68" data-ev-total="179" data-ev-linked="135" data-ev-weak="6">
+  <h2>全站证据链公示（68 家企业 · 179 条证据）</h2>
   <p class="ev-lead">站长要求「证据链必须首页完整公示，口说无凭」——以下是站内每一条评级的取证清单，含证据类型、取证日期、文书编号与可点击的原始来源链接。数据由各品牌详情页（<code>brand/*.html</code>）自动汇总生成，两处不一致会被 <code>scripts/verify.mjs</code> 判红。</p>
   <div class="ev-stats">
-    <div class="ev-stat"><b style="color:#0f766e">178</b><i>证据总条数</i></div>
+    <div class="ev-stat"><b style="color:#0f766e">179</b><i>证据总条数</i></div>
     <div class="ev-stat"><b style="color:#1d4ed8">135</b><i>带原始链接</i></div>
-    <div class="ev-stat"><b style="color:#b45309">43</b><i>无可点链接</i></div>
+    <div class="ev-stat"><b style="color:#b45309">44</b><i>无可点链接</i></div>
     <div class="ev-stat"><b style="color:#475569">6/17/14/31</b><i>S/A/B/C 家数</i></div>
     <div class="ev-stat"><b style="color:#be123c">6 家</b><i>证据薄弱企业</i></div>
   </div>
@@ -208,6 +216,7 @@
       <span class="ev-pill" style="border-color:#57534e;color:#57534e">员工/社群反馈 <b>58</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">旁证/二手汇总 <b>19</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（third_party） <b>1</b></span>
+      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（站长一手实测） <b>1</b></span>
     </div>
     <div class="ev-note">司法裁判文书与劳动监察通报为最高强度证据；招聘平台自述属「招聘方口径」，只证明企业怎么说、不证明实际怎么排班；社群匿名反馈与旁证汇总强度最低，本站不用它们单独定档。</div>
   </div>
@@ -1349,6 +1358,44 @@
         <div class="ev-more"><a href="./brand/heytea.html">查看 喜茶 (HEYTEA) 完整详情页 →</a></div>
       </div>
     </details>
+    <details id="ev-abc" data-b="abc" data-g="C" data-n="5" data-l="4">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">农业银行 (ABC)</span><span class="co">中国农业银行股份有限公司</span><span class="ct">5 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">农行安康分行员工关爱工作报道：双休网点占比 29%、单休网点占比 61%，实行轮换调休</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：company_notice</span> <span class="d">分行官方口径</span></div>
+            <div class="s">「优化周末及节假日排班，实行轮换调休，双休网点占比 29%，单休网点占比 61%，既保障了金融服务连续性，也充分维护了员工的休息权」——分行官方披露的具体占比，是本卡最核心的口径依…</div>
+            <div class="u"><a href="https://www.zhengxiancy.com/gaozhiliang/130797.htm" rel="nofollow noopener" target="_blank">zhengxiancy.com/gaozhiliang/130797.htm</a></div>
+          </li>
+          <li>
+            <div class="t">成都人才网：农行官方客服岗「上四休二或上五休二、轮班轮休、非固定周六周日休息」，招聘主体为第三方公司</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-09 检索</span></div>
+            <div class="s">岗位标注「该职位信息待核验」，福利栏标「周末双休」但上班时间自述「上四休二或者上五休二，轮班轮休，非固定周六周日休息」——「双休」标签与轮休描述自相矛盾；招聘主体为四川智博锐才信息…</div>
+            <div class="u"><a href="http://www.sccdjob.com/job1560985947.shtml" rel="nofollow noopener" target="_blank">sccdjob.com/job1560985947.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">员工投稿（基层支行客服经理）：轮休制、无固定周末双休、大型节假日基本无法正常放假</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">员工社群</span></div>
+            <div class="s">「网点周末营业就必须有人值班，员工轮休、调休」「上班时间 7:30-18:00（提前到岗盘库、营业后对账）」——基层一线作息与机关后台差异显著。</div>
+            <div class="u"><a href="http://mp.weixin.qq.com/s?__biz=Mzk4ODc4NDMxMQ==&amp;mid=2247491913&amp;idx=3&amp;sn=6043ccf2cee64fdda14ae0b0ab3384b1" rel="nofollow noopener" target="_blank">mp.weixin.qq.com/s?__biz=Mzk4ODc4NDMxMQ==&amp;mid=2247491913&amp;idx=3…</a></div>
+          </li>
+          <li>
+            <div class="t">农业银行官网（abchina.com）及官方招聘：校园/社会招聘公告，未披露统一休息制度</div>
+            <div class="m"><span class="k" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述</span> <span class="raw">原标注：company_site</span> <span class="d">官方</span></div>
+            <div class="s">农行官方站点，列明各分支行、网点、科技岗招聘方向，但公开口径无「双休/单休」统一表述。</div>
+            <div class="u"><a href="https://www.abchina.com" rel="nofollow noopener" target="_blank">abchina.com</a></div>
+          </li>
+          <li>
+            <div class="t">站长线下询问农业银行工作人员「是否双休」，对方明确拒绝回答</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（站长一手实测）</span> <span class="raw">原标注：站长一手实测</span> <span class="d">2026-11-01</span></div>
+            <div class="s">站长于 2026-11-01 在线下向农业银行网点工作人员当面询问该行是否实行双休，对方未予回答、明确拒绝就此问题表态。按本站 2026-10-31 站长拍板的评级口径（官方渠道被…</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/abc.html">查看 农业银行 (ABC) 完整详情页 →</a></div>
+      </div>
+    </details>
     <details id="ev-miniso" data-b="miniso" data-g="C" data-n="5" data-l="5">
       <summary><span class="g" style="background:#be123c">C</span><span class="bn">名创优品 (MINISO)</span><span class="co">名创优品（广州）有限责任公司</span><span class="ct">5 条证据</span></summary>
       <div class="ev-body">
@@ -1426,7 +1473,7 @@
       </div>
     </details>
     <details id="ev-bosszhipin" data-b="bosszhipin" data-g="C" data-n="4" data-l="1">
-      <summary><span class="g" style="background:#be123c">C</span><span class="bn">BOSS直聘 (招聘平台)</span><span class="co">北京华品博睿网络技术有限公司</span><span class="ct">4 条证据</span></summary>
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">BOSS直聘</span><span class="co">北京华品博睿网络技术有限公司</span><span class="ct">4 条证据</span></summary>
       <div class="ev-body">
         <ol class="ev-items">
           <li>
@@ -1454,39 +1501,7 @@
             <div class="u"><a href="https://v.douyin.com/uEMZRkt73Jg/" rel="nofollow noopener" target="_blank">v.douyin.com/uEMZRkt73Jg/</a></div>
           </li>
         </ol>
-        <div class="ev-more"><a href="./brand/bosszhipin.html">查看 BOSS直聘 (招聘平台) 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-abc" data-b="abc" data-g="C" data-n="4" data-l="4">
-      <summary><span class="g" style="background:#be123c">C</span><span class="bn">农业银行 (ABC)</span><span class="co">中国农业银行股份有限公司</span><span class="ct">4 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">农行安康分行员工关爱工作报道：双休网点占比 29%、单休网点占比 61%，实行轮换调休</div>
-            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：company_notice</span> <span class="d">分行官方口径</span></div>
-            <div class="s">「优化周末及节假日排班，实行轮换调休，双休网点占比 29%，单休网点占比 61%，既保障了金融服务连续性，也充分维护了员工的休息权」——分行官方披露的具体占比，是本卡最核心的口径依…</div>
-            <div class="u"><a href="https://www.zhengxiancy.com/gaozhiliang/130797.htm" rel="nofollow noopener" target="_blank">zhengxiancy.com/gaozhiliang/130797.htm</a></div>
-          </li>
-          <li>
-            <div class="t">成都人才网：农行官方客服岗「上四休二或上五休二、轮班轮休、非固定周六周日休息」，招聘主体为第三方公司</div>
-            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-09 检索</span></div>
-            <div class="s">岗位标注「该职位信息待核验」，福利栏标「周末双休」但上班时间自述「上四休二或者上五休二，轮班轮休，非固定周六周日休息」——「双休」标签与轮休描述自相矛盾；招聘主体为四川智博锐才信息…</div>
-            <div class="u"><a href="http://www.sccdjob.com/job1560985947.shtml" rel="nofollow noopener" target="_blank">sccdjob.com/job1560985947.shtml</a></div>
-          </li>
-          <li>
-            <div class="t">员工投稿（基层支行客服经理）：轮休制、无固定周末双休、大型节假日基本无法正常放假</div>
-            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">员工社群</span></div>
-            <div class="s">「网点周末营业就必须有人值班，员工轮休、调休」「上班时间 7:30-18:00（提前到岗盘库、营业后对账）」——基层一线作息与机关后台差异显著。</div>
-            <div class="u"><a href="http://mp.weixin.qq.com/s?__biz=Mzk4ODc4NDMxMQ==&amp;mid=2247491913&amp;idx=3&amp;sn=6043ccf2cee64fdda14ae0b0ab3384b1" rel="nofollow noopener" target="_blank">mp.weixin.qq.com/s?__biz=Mzk4ODc4NDMxMQ==&amp;mid=2247491913&amp;idx=3…</a></div>
-          </li>
-          <li>
-            <div class="t">农业银行官网（abchina.com）及官方招聘：校园/社会招聘公告，未披露统一休息制度</div>
-            <div class="m"><span class="k" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述</span> <span class="raw">原标注：company_site</span> <span class="d">官方</span></div>
-            <div class="s">农行官方站点，列明各分支行、网点、科技岗招聘方向，但公开口径无「双休/单休」统一表述。</div>
-            <div class="u"><a href="https://www.abchina.com" rel="nofollow noopener" target="_blank">abchina.com</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/abc.html">查看 农业银行 (ABC) 完整详情页 →</a></div>
+        <div class="ev-more"><a href="./brand/bosszhipin.html">查看 BOSS直聘 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-mixue" data-b="mixue" data-g="C" data-n="4" data-l="3">

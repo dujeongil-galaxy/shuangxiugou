@@ -698,10 +698,26 @@ section('2g. 首页证据链完整公示');
   // ---------- 4. 挂载位置：必须在 #root 之外 ----------
   // React 只管 #root。挂在里面会被重渲染清掉，就得靠 MutationObserver 自愈——
   // 2026-10-31 刚踩过 MO 锚点冲突无限自激的坑（主线程卡死）。
-  const rootIdx = html.indexOf('<div id="root"></div>');
-  check(rootIdx >= 0 && ebStart > rootIdx,
+  // 注：#root 内部允许放一个「加载中」占位（React 挂载时自动替换），所以不再死磕
+  // 空标签 <div id="root"></div>，改为按开标签定位 + 标签平衡找真正的闭合 </div>，
+  // 要求证据链区块在该闭合标签之后（既能容下占位，又能防住「把证据链塞进 #root」）。
+  const rootOpen = html.indexOf('<div id="root"');
+  function matchCloseTag(s, openPos) {
+    let i = s.indexOf('>', openPos) + 1;
+    let depth = 1;
+    while (i < s.length && depth > 0) {
+      const o = s.indexOf('<div', i);
+      const c = s.indexOf('</div>', i);
+      if (c < 0) return -1;
+      if (o >= 0 && o < c) { depth++; i = o + 4; }
+      else { depth--; i = c + 6; }
+    }
+    return i - 6; // 匹配到的闭合 </div> 起点
+  }
+  const rootClose = rootOpen >= 0 ? matchCloseTag(html, rootOpen) : -1;
+  check(rootOpen >= 0 && rootClose >= 0 && ebStart > rootClose,
     '公示区块挂在 #root 之后（React 管不到，不需要 MutationObserver 自愈）',
-    rootIdx < 0 ? '找不到 #root 锚点' : '区块在 #root 之前');
+    rootOpen < 0 ? '找不到 #root 锚点' : '区块在 #root 之内或之前');
 
   // ---------- 5. 逐家对账（data-b/data-g/data-n/data-l 契约）----------
   const rows = [...eb.matchAll(
