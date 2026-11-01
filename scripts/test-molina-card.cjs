@@ -111,21 +111,32 @@ const remindSrc = read('remind-button.js');
     /nfnews\.com\/content\/5yppgW0nyp\.html/.test(detail) && /news\.qq\.com\/rain\/a\/20261030A05B0C00/.test(detail));
   check('详情页链向其他品牌页（非孤儿页）', /href="\.\/(chabaidao|meiyijia)\.html"/.test(detail));
 
-  // ── 任务二：提醒按钮《双休购》文案 ──
+  // ── 任务二：提醒按钮《双休购倡议》文案 ──
+  // 2026-11-02 更新：文案已于 2026-11-01（eaab67f）由旧八段长文换成《双休购倡议：用钱包投票》，
+  //   但本文件当时没跟着改，8 条断言从那天起一直判红（CI 也跟着红）。
+  //   现按**当前正文**重写：锚点取新文案的首句 / 末句 / 两个小标 / 列表条数 / 存档链接，
+  //   旧文案特征词继续用「必须不存在」锁住，防止回滚。
   check('模态标题为「双休购」', /sxg-rm-title">双休购</.test(remindSrc));
-  check('★ 正文首段逐字命中（当“996”从互联网圈的调侃变成…）',
-    /当“996”从互联网圈的调侃变成无数打工人的日常/.test(remindSrc));
-  check('★ 正文末段逐字命中（此刻，你手握这粒火种…）',
-    /此刻，你手握这粒火种。别回头，向前走，去消费，去休息，去生活。因为推动这件事的人，正是你。/.test(remindSrc));
-  check('正文含「不要问篝火该不该燃烧」引用段',
-    /不要问篝火该不该燃烧，先问寒冷是否存在/.test(remindSrc));
+  check('★ 正文首段逐字命中（每一次下单，都是一次价值观的投票）',
+    /我们每天在消费，却很少意识到——每一次下单，都是一次价值观的投票。/.test(remindSrc));
+  check('★ 正文末段逐字命中（消费即立场）',
+    /<strong>消费即立场。<\/strong>你的钱去哪儿，就是在告诉这个世界你想要什么样的规则。/.test(remindSrc));
+  check('正文含倡议主标题与「为什么这件事值得做？」小标题',
+    /sxg-rm-h">双休购倡议：用钱包投票，拒绝单休企业的商品</.test(remindSrc) &&
+    /sxg-rm-h">为什么这件事值得做？</.test(remindSrc));
+  check('正文含条目：市场反馈 3 条 + 落地步骤 4 条（共 7 个 li）',
+    (remindSrc.match(/<li>/g) || []).length === 7);
+  check('底部有旧文存档链接（remind-original.html）',
+    /class="sxg-rm-archive"[\s\S]{0,120}href="\.\/remind-original\.html"/.test(remindSrc));
+  check('★ 旧版「火种 / 篝火 / 996」文案已删除',
+    !/你手握这粒火种/.test(remindSrc) && !/不要问篝火该不该燃烧/.test(remindSrc) && !/996/.test(remindSrc));
   check('★ 旧文案「消费也是投票」已删除', !/消费也是投票/.test(remindSrc));
   check('★ 旧文案「劳动者权益是法定底线」已删除', !/劳动者权益是法定底线/.test(remindSrc));
   check('★ 旧标题「劳工友好提醒」已从模态移除（仅注释留史）',
     (remindSrc.match(/劳工友好提醒/g) || []).length === 1);
-  check('正文区有滚动（max-height，八段长文不撑爆小屏）',
+  check('正文区有滚动（max-height，长文不撑爆小屏）',
     /sxg-rm-body\{'[^}]*max-height:52vh;overflow-y:auto/.test(remindSrc));
-  check('index.html 引用 remind-button.js?v=3（缓存刷新）', /remind-button\.js\?v=3/.test(html));
+  check('index.html 引用 remind-button.js?v=5（缓存刷新）', /remind-button\.js\?v=5/.test(html));
 
   // ── jsdom 行为断言：卡片真渲染 + 说明框真出现 ──
   const errors = [];
@@ -203,10 +214,12 @@ const remindSrc = read('remind-button.js');
     check('★ 模态标题渲染为「双休购」',
       (modal.querySelector('.sxg-rm-title') || {}).textContent === '双休购');
     const bodyText = (modal.querySelector('.sxg-rm-body') || {}).textContent || '';
-    check('★ 模态正文含首段关键词', bodyText.indexOf('996') !== -1);
-    check('★ 模态正文含末段关键词（正是你）', bodyText.indexOf('正是你') !== -1);
-    check('模态正文为八段（8 个 p）', (modal.querySelectorAll('.sxg-rm-body p') || []).length === 8);
-    check('★ 模态正文不含旧文案', bodyText.indexOf('消费也是投票') === -1);
+    check('★ 模态正文含首句关键词（价值观的投票）', bodyText.indexOf('价值观的投票') !== -1);
+    check('★ 模态正文含末句（消费即立场）', bodyText.indexOf('消费即立场') !== -1);
+    check('模态正文为 11 段（新文案结构：3 引子 + 3 论证 + 3 过渡 + 末 2 段 + 存档 1 段）',
+      (modal.querySelectorAll('.sxg-rm-body p') || []).length === 11);
+    check('★ 模态正文不含旧文案',
+      bodyText.indexOf('消费也是投票') === -1 && bodyText.indexOf('你手握这粒火种') === -1);
     // 关闭
     (modal.querySelector('.sxg-rm-ok') || {}).click && modal.querySelector('.sxg-rm-ok').click();
     await new Promise((r) => setTimeout(r, 100));
