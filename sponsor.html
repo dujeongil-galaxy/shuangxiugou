@@ -75,6 +75,67 @@
       }
       .pre-tip a:hover { color: #78350f; }
 
+      /* ===== 交易所安全事件进展（可折叠） =====
+         2026-11-02：币安 10·29 热钱包事件后提币一度全停，直接影响「从交易所提到本站地址」
+         这条路，所以放在收款面板之前、默认展开——先看到再操作。
+         折叠用原生 <details>，不引 JS：打赏页保持零依赖。 */
+      .incident {
+        width: 100%;
+        max-width: 452px;
+        border: 1px solid #fecaca;
+        border-radius: 12px;
+        background: #fff;
+        text-align: left;
+        font-size: 13px;
+        line-height: 1.85;
+        color: #374151;
+      }
+      .incident > summary {
+        position: relative;
+        padding: 11px 40px 11px 16px;
+        color: #b91c1c;
+        font-weight: 700;
+        cursor: pointer;
+        list-style: none;
+        /* 长标题折行时箭头仍贴着右上角，不压字 */
+        border-radius: 12px;
+      }
+      .incident > summary::-webkit-details-marker { display: none; }
+      .incident > summary::after {
+        content: '▾';
+        position: absolute;
+        top: 10px;
+        right: 16px;
+        color: #b91c1c;
+        transition: transform .15s ease;
+      }
+      .incident[open] > summary::after { transform: rotate(180deg); }
+      .incident__tag {
+        display: inline-block;
+        margin-right: 7px;
+        padding: 1px 7px;
+        border-radius: 6px;
+        background: #fee2e2;
+        color: #b91c1c;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .incident__body {
+        padding: 0 16px 14px;
+        border-top: 1px solid #fee2e2;
+      }
+      .incident__body p { margin: 11px 0 0; }
+      .incident__body ul { margin: 9px 0 0; padding-left: 18px; }
+      .incident__body li { margin: 5px 0; }
+      .incident__body b { color: #111827; }
+      .incident__body .hl-up { color: #047857; }
+      .incident__src {
+        font-size: 12px;
+        line-height: 1.7;
+        color: #6b7280;
+      }
+      .incident__src a { color: #6b7280; }
+
       /* ===== 收款面板 ===== */
       .panel {
         width: 100%;
@@ -325,6 +386,47 @@
       第一次使用加密货币打赏？先看
       <a href="./usdt-guide.html">USDT 充值教程</a>。
     </p>
+
+    <details class="incident" open>
+      <summary><span class="incident__tag">安全事件</span>币安 10·29 热钱包事件：约 63 亿美元被盗，提币已部分恢复</summary>
+      <div class="incident__body">
+        <p>
+          <b>和打赏的关系：</b>受影响的是「从交易所提币」这条通道，本站的收款地址没有变。
+          以下为截至 <b>2026-11-02（北京时间）</b>的进展。
+        </p>
+        <ul>
+          <li>
+            <b>10-29</b>：币安热钱包遭未经授权访问，约 <b>63 亿美元</b>代币资产被转出，
+            为迄今规模最大的加密资产盗窃案；平台随即暂停提币。
+          </li>
+          <li>
+            <b>10-31</b>：受影响资产补足比例由 80% 升至 <b class="hl-up">90%</b>；
+            BTC、ETH、USDT、BNB、SOL、USDC、XRP、USD1、RLUSD、ZEC 十种币已
+            <b class="hl-up">100% 覆盖</b>。剩余 10% 为市值前十之外的代币，流动性较低，
+            继续通过市场与场外（OTC）渠道购入。资金来源为 SAFU 部分调用、部分合约保险基金
+            与币安自有资金，<b>损失由平台承担，不转嫁给用户</b>。
+          </li>
+          <li>
+            <b>10-31 08:00</b>：新一期储备金证明（PoR）快照已上线，完整零知识证明约需
+            40–50 小时生成，预计 <b>11-03</b> 前可自行核验 1:1 储备。
+          </li>
+          <li>
+            <b>11-01</b>：已恢复 <b>ETH 网络（ETH / USDT / USDC）</b>与
+            <b>BNB 智能链 BSC（BNB / USDT / USDC）</b>的提币服务；其余网络以币安官方公告为准。
+          </li>
+        </ul>
+        <p>
+          <b>现在打赏怎么走更稳：</b>优先选已恢复提币的 <b>ERC20（ETH 网络）</b>或
+          <b>BEP20（BSC）</b>网络；BTC 等其它网络请先确认币安已恢复提币再操作。
+          提币失败或延迟时不要反复重试，更不要改用任何人私下发给你的「新地址」——
+          本站收款地址只以本页展示的为准。
+        </p>
+        <p class="incident__src">
+          本站与币安无隶属、无合作关系，以上仅为官方公告与公开报道的同步整理，最终以币安官方公告为准。
+          来源：<a href="https://news.qq.com/rain/a/20261101A0408U00" target="_blank" rel="noopener noreferrer nofollow">币安安全事件更新（补足比例升至 90%，2026-10-31）</a>。
+        </p>
+      </div>
+    </details>
 
     <div class="panel">
       <div class="field">
@@ -1020,6 +1122,6 @@ var selEx = 'gate';
     </script>
   <!-- AI 劳动法小助手（全站挂载） -->
   <script src="./ai-config.js?v=1"></script>
-  <script src="./ai-chat.js?v=13"></script>
+  <script src="./ai-chat.js?v=15"></script>
   </body>
 </html>

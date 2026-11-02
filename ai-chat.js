@@ -119,6 +119,14 @@
       '.sxg-ai-in{font-size:16px}',
       '#' + BTN_ID + '{width:56px;height:56px}',
       '}',
+      /* 2026-11-02：桌面 ≥1440px 时右上角是良配推广卡（right:16、宽 176、top:88），
+         面板原本也贴 right:14 —— 两者在右侧同一列，广告 z-index 9990 直接压住
+         面板右半屏（实测重叠 176×263px，站长截图指出）。
+         这里用 :has() 只在广告**真的显示**时把面板左移一个「卡宽 + 16px 间隙」，
+         广告被关掉（.is-hidden）后条件不再成立，面板自动回到 right:14。 */
+      '@media (min-width:1440px){',
+      'body:has(.lp-ad:not(.is-hidden)) #' + PANEL_ID + '{right:calc(16px + 176px + 16px)}',
+      '}',
       '#' + PANEL_ID + '[hidden]{display:none}',
       '.sxg-ai-head{background:#0F766E;color:#fff;padding:10px 14px;font-size:14px;font-weight:600}',
       '.sxg-ai-head small{display:block;font-weight:400;font-size:11px;opacity:.85;margin-top:2px}','#sxg-ai-head-avatar{transition:box-shadow .12s,transform .12s;border-radius:50%}','#sxg-ai-head-avatar:hover{box-shadow:0 0 0 2px rgba(255,255,255,.8)}','.sxg-ai-swap{margin-left:auto;display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:8px;padding:4px 9px;font-size:12px;font-weight:500;cursor:pointer;line-height:1.2;font-family:inherit;white-space:nowrap;flex:none}','.sxg-ai-swap:hover{background:rgba(255,255,255,.3)}',

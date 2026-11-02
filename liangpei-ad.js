@@ -213,8 +213,15 @@
     // 移动端广告条会随推广文案折行而变高（390px 下实测 113px，不再是固定的 76px），
     // 固定偏移会让最下方的视频 / TOP 按钮压到条上。各 FAB 用
     // calc(var(--sxg-bar-h, 0px) + Npx) 即随条高自动上移，且彼此间距保持不变。
+    //
+    // ⚠️ 2026-11-02 修正：≥1440px 时广告是**右上竖排卡片**（top:88px），根本不在底部，
+    //    却照样把卡片高度（实测 279px）写进了 --sxg-bar-h。后果是整列悬浮按钮 + AI 面板
+    //    被整体抬高 279px 飘到页面中部，面板又被广告卡压住右半屏（站长截图指出）。
+    //    变量语义是「底部吸底条占位」，桌面没有吸底条 → 必须写 0。
+    //    断点切换由下面的 wideQuery change 监听触发重算，窗口 resize 也有兜底。
     function updateBarVar() {
-      var h = aside.classList.contains('is-hidden') ? 0 : aside.offsetHeight;
+      var wide = !!(window.matchMedia && window.matchMedia('(min-width: 1440px)').matches);
+      var h = (wide || aside.classList.contains('is-hidden')) ? 0 : aside.offsetHeight;
       document.documentElement.style.setProperty('--sxg-bar-h', h + 'px');
     }
     updateBarVar();

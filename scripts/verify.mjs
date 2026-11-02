@@ -4187,6 +4187,38 @@ if (exists(ADJS) && exists(ADCSS)) {
   err('liangpei-ad.js / liangpei-ad.css 缺失', '广告位文件被删会导致首页推广位彻底失效');
 }
 
+// ---------- 20o. 桌面悬浮层互不遮挡（广告卡 × AI 面板） ----------
+section('20o. 桌面悬浮层互不遮挡');
+if (exists(ADJS) && exists(ADCSS) && exists('ai-chat.js')) {
+  const adj = read(ADJS);
+  const adc = read(ADCSS);
+  const aic = read('ai-chat.js');
+
+  // 1) --sxg-bar-h 的语义是「底部吸底条占位」。≥1440px 广告是右上竖排卡片，
+  //    根本不在底部，却照样把卡片高度（实测 279px）写进变量 —— 整列 FAB 与 AI 面板
+  //    被抬高一个卡片高度飘到页面中部，面板还被卡片压住右半屏（2026-11-02 站长截图）。
+  check(/matchMedia\('\(min-width: 1440px\)'\)\.matches/.test(adj),
+    '广告脚本按 1440px 断点判断「是否吸底」（读 matchMedia 结果）',
+    '不判断断点 → 桌面把右上卡片的高度也写进 --sxg-bar-h');
+  check(/var h = \(wide \|\| aside\.classList\.contains\('is-hidden'\)\) \? 0 : aside\.offsetHeight;/.test(adj),
+    '≥1440px 或广告隐藏时 --sxg-bar-h 恒为 0（桌面没有吸底条可让位）',
+    '桌面仍写卡片高度 → 悬浮按钮组与 AI 面板被整体抬高 279px');
+
+  // 2) 面板避让：广告真的显示时面板左移，广告关掉（.is-hidden）后条件失效自动复位。
+  const avoid = aic.match(/body:has\(\.lp-ad:not\(\.is-hidden\)\) #' \+ PANEL_ID \+ '\{right:calc\(16px \+ (\d+)px \+ 16px\)\}'/);
+  check(!!avoid, 'AI 面板在广告显示时左移（:has() 条件规则存在）',
+    '面板仍贴 right:14 → 与右上广告卡同列，被 z-index 9990 压住右半屏');
+
+  // 3) 避让量必须等于广告卡真实宽度。改卡宽忘了改这里，重叠会悄悄回潮 ——
+  //    这类「两个文件各写一个数字」的耦合必须机器盯住，不能靠记性。
+  const cardW = (adc.match(/@media \(min-width: 1440px\)[\s\S]*?\.lp-ad \{[\s\S]*?width:\s*(\d+)px/) || [])[1];
+  check(!!cardW && !!avoid && avoid[1] === cardW,
+    `面板避让量与广告卡宽度一致（${cardW}px）`,
+    '面板左移量 ≠ 广告卡宽度 → 面板重新压到卡片下面');
+} else {
+  err('缺少 liangpei-ad.js / liangpei-ad.css / ai-chat.js', '桌面悬浮层避让无法校验');
+}
+
 // ---------- 20e. 校验脚本自检 ----------
 // 今天在同一天内两次把 check(cond, msg, detail) 写成 check(msg, cond)，
 // 症状是输出里出现「✓ true」—— 标签被当成条件打印，
@@ -4747,6 +4779,32 @@ section('21b. 赞助页 VPN 提示与教程入口');
   // 教程入口：链接到 usdt-guide.html 且文案可见
   check(/href="\.\/usdt-guide\.html"/.test(sp) && /USDT 充值教程/.test(sp),
     '赞助页有指向 usdt-guide.html 的「USDT 充值教程」入口链接');
+}
+
+// ---------- 21b-1. 打赏页交易所安全事件带 ----------
+// 为什么强制存在：币安 10·29 热钱包事件后提币一度全停，「从交易所提到本站地址」
+// 这条路直接断掉。打赏页不写这一条，用户会以为自己的操作有问题而反复重试。
+section('21b-1. 打赏页交易所安全事件带');
+{
+  const sp = readFileSync(join(ROOT, 'sponsor.html'), 'utf8');
+  check(/\.incident\s*\{/.test(sp), 'sponsor.html 定义了 .incident 样式');
+  check(/<details class="incident" open>/.test(sp),
+    '安全事件块是默认展开的原生 <details>（零 JS 依赖）',
+    '去掉 open → 「提币通道全停」这条要再点一次才看得到，等于没提示');
+  check(/币安 10·29 热钱包事件/.test(sp) && /63 亿美元/.test(sp),
+    '事件块写明起因与规模（10-29 热钱包、约 63 亿美元）');
+  check(/由 80% 升至/.test(sp) && /100% 覆盖/.test(sp),
+    '事件块含补足进度（80% → 90%、十种币 100% 覆盖）');
+  check(/储备金证明（PoR）/.test(sp) && /11-03/.test(sp),
+    '事件块含储备金证明（PoR）与可核验时间');
+  check(/ETH 网络（ETH \/ USDT \/ USDC）/.test(sp) && /BSC（BNB \/ USDT \/ USDC）/.test(sp),
+    '事件块写明 11-01 已恢复提币的网络（ETH 与 BSC）');
+  check(/收款地址没有变/.test(sp),
+    '事件块明确「收款地址未变」（防盗用事件名目钓鱼换址）');
+  check(/本站与币安无隶属/.test(sp) && /以币安官方公告为准/.test(sp),
+    '事件块含免责口径（无隶属关系、以官方公告为准）');
+  check(/href="https:\/\/news\.qq\.com\/rain\/a\/20261101A0408U00"[^>]*rel="noopener noreferrer nofollow"/.test(sp),
+    '事件块外链来源带 rel=noopener noreferrer nofollow');
 }
 
 // ---------- 21c. 首页滑到底部按钮 ----------
