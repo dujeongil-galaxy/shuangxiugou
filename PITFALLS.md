@@ -2362,7 +2362,7 @@ var h = (wide || aside.classList.contains('is-hidden')) ? 0 : aside.offsetHeight
 
 ---
 
-## 第二十九章：查不到 ≠ 没有（2026-11-02 · 提交 `待回填`）
+## 第二十九章：查不到 ≠ 没有（2026-11-02 · 提交 `2c519aa`）
 
 ### 29.1 一条自拟口径，能把 6 张卡的结论全带偏
 
