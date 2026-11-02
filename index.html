@@ -116,7 +116,7 @@
     <!-- 首页视频推荐弹窗（改完请把 ?v=N 的 N +1 防缓存） -->
     <link rel="stylesheet" href="./douyin-prompt.css?v=10">
     <!-- 移动端排版修复（须在主 CSS 之后：靠覆盖生效；改完请把 ?v=N 的 N +1） -->
-    <link rel="stylesheet" href="./mobile-fixes.css?v=11">
+    <link rel="stylesheet" href="./mobile-fixes.css?v=12">
   <style>.sxg-loading{position:fixed;inset:0;z-index:2147483647;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}.sxg-boot{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:14px;color:#0f766e;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif}.sxg-boot__spinner{width:34px;height:34px;border:3px solid #ccfbf1;border-top-color:#0f766e;border-radius:50%;animation:sxg-spin .8s linear infinite}.sxg-boot__text{margin:0;font-size:14px;font-weight:600;letter-spacing:.04em}@keyframes sxg-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.sxg-boot__spinner{animation-duration:2s}}</style>
   </head>
   <body>
@@ -152,10 +152,15 @@
       <input type="checkbox" id="notice-more" class="notice-more-cb">
       <span id="evidence-notice">本站全部数据均附公开证据链：172 家企业 286 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 6 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice -->
       <label for="notice-more" class="notice-more-lbl"><span class="t-more">展开</span><span class="t-less">收起</span></label>
-      <span class="notice-sep">｜</span>
-      <!-- 页脚版本号：每次发版后手动更新为当次功能提交的短哈希（CHANGELOG 有记录） -->
-      <span class="notice-ver" style="color:#000;font-weight:700">当前版本号 7c9ade6</span>
     </div>
+    <!-- 版本号唯一真相源（2026-11-02 第五轮，站长：「版本号不要写这里了，加入三横菜单吧」）
+         —— 不再出现在公告栏，改由右下角悬浮菜单显示：PC 常显 dock 末尾、手机三横菜单末尾。
+         ⚠️ 这个节点**必须留着且只能有一处**：sync-version.mjs、verify §20g、
+         .github/workflows/sync-version.yml 三处都靠「当前版本号 xxxxxxx</span>」
+         这个锚点回写与校验，删节点等于让每日版本号同步静默失效。
+         用 hidden 而不是删掉：hidden 只影响渲染，textContent 照样可读，
+         nav-menu.js 运行时读它，菜单里不另存哈希（两份数据没有比对源，必然漂）。 -->
+    <span id="site-version" hidden><span class="notice-ver">当前版本号 7c9ade6</span></span>
     <div id="root">
       <!-- 首屏占位：React 大包解析期间先显示「加载中」，避免 #root 为空把下方证据链区块
            甩到视口顶部造成白屏闪烁（FOUC）。React 挂载后自动替换本节点。 -->
@@ -7708,7 +7713,7 @@
   <!-- 右下角悬浮导航菜单（2026-11-02 站长指令）：顶部公告栏不许再挂超链接，
        同类项目导航 / 成功案例 收到这里。PC 常显横向 dock，<640px 折叠成一个
        主按钮，点开才创建条目 DOM。 -->
-  <script src="./nav-menu.js?v=4"></script>
+  <script src="./nav-menu.js?v=5"></script>
 
   </body>
 </html>

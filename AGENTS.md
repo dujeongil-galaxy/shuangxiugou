@@ -86,9 +86,25 @@
 
 ## 三条硬规则
 
-### 一、公告栏版本号：等于上一次推送的哈希
+### 一、版本号：等于上一次推送的哈希
 
-`index.html` 顶部公告栏末尾有「当前版本号 xxxxxxx」。
+`index.html` 里有一个**页面级版本号节点**（2026-11-02 第五轮起不再写在公告栏）：
+
+```html
+<span id="site-version" hidden><span class="notice-ver">当前版本号 xxxxxxx</span></span>
+```
+
+它由右下角悬浮菜单（PC 常显 dock / 手机三横菜单）在运行时读出来显示，
+所以「版本号在哪看得见」是菜单的事，「值是多少」只有这一个节点说了算。
+
+- **节点必须唯一**：`sync-version.mjs`、`verify.mjs` §20g、CI 的 `sync-version.yml`
+  三处都靠「当前版本号 xxxxxxx</span>」这个锚点回写/校验。多一份 = 回写只改第一处，
+  另一份永远停在旧值；删掉 = 每日同步静默失效。
+- **`hidden` 属性 + CSS 兜底（`#site-version{display:none}`）都必须在**：
+  hidden 只是 UA 样式，任何给 span 加 `display` 的样式表都能把它顶出来，
+  而它的位置在公告栏与 `#root` 之间 —— 真露出来就是页面顶部多一行莫名其妙的版本号。
+- 菜单端**只读不存**（`nav-menu.js` 运行时 `querySelector` 取 textContent）：
+  在 JS 里另存一份哈希等于制造第二真相源，sync-version 改不到它。
 
 **该值必须等于「上一次推送」的 short hash，不是当前 HEAD。**
 

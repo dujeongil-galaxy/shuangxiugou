@@ -344,14 +344,17 @@
     outline-offset: 2px;
   }
 
-  /* 版本号：手机上整条隐藏，公告栏只留「正文 1 行 + 展开」收尾
-     （2026-11-02 第二轮：上一版是「正文 1 行 + 版本号 1 行」= 49px，
-     站长看着仍是两行。现在版本号搬进右下角三横菜单，49px → 约 28px）。
-     ⚠️ HTML 里的 .notice-ver 节点必须留着 —— sync-version.mjs 的回写锚点
-     是「当前版本号 xxxxxxx</span>」，删节点等于让每日版本号同步静默失效。
-     菜单侧由 nav-menu.js 运行时读这个节点的文本，不另存一份哈希。 */
-  #site-notice .notice-sep,
-  #site-notice .notice-ver {
-    display: none;
-  }
+  /* 版本号：2026-11-02 第五轮已从公告栏 DOM 里整体移出（站长「版本号不要写这里了，
+     加入三横菜单吧」），所以这里不再需要「手机端隐藏 .notice-ver」那条规则 ——
+     节点已不在 #site-notice 内，留着就是死代码，还容易让人以为公告栏里仍有版本号。
+     版本号的新家是页面级隐藏节点 #site-version（见 index.html 与文末规则），
+     PC 与手机两端都由 nav-menu.js 读它并在悬浮菜单里显示。 */
+}
+
+/* 版本号真相源节点（2026-11-02 第五轮）：HTML 上已带 hidden，这里再兜一条。
+   hidden 只是 UA 样式，任何一份样式表给 span 加 display 声明都能把它顶出来，
+   而它的位置在公告栏与 #root 之间 —— 真被顶出来就是页面顶部多一行莫名其妙的
+   「当前版本号 xxxxxxx」。用 id 选择器，权重足够，不需要 !important。 */
+#site-version {
+  display: none;
 }

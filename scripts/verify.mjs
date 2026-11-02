@@ -892,10 +892,25 @@ section('2g. 首页证据链完整公示');
     check(navBack.length === 0,
       '公告栏里没有回到「同类项目导航 / 成功案例」的链接（导航归悬浮菜单）',
       '又挂回来了：' + navBack.join(' | '));
-    // 版本号必须继续以纯文字留在这里：sync-version.mjs 靠
-    // 「当前版本号 xxxxxxx</span>」这个锚点回写，挪走就会静默失效。
-    check(/当前版本号\s*[0-9a-f]{7}/.test(noticeDiv[0]),
-      '公告栏保留「当前版本号 xxxxxxx」纯文字（sync-version 回写锚点）');
+    // 版本号**不再**出现在公告栏（2026-11-02 第五轮，站长：「版本号不要写这里了，
+    // 加入三横菜单吧，但是 PC 端那边怎么办？」）。
+    // 这条从「必须有」反转成「必须没有」—— 反转而不是删掉，因为「又悄悄把版本号
+    // 加回公告栏」正是下一轮最可能发生的回退，删了断言就等于没人拦。
+    check(!/当前版本号\s*[0-9a-f]{7}/.test(noticeDiv[0])
+      && !/notice-ver/.test(noticeDiv[0]),
+      '公告栏里不再有版本号（改由悬浮菜单承载）',
+      '公告栏又出现版本号：' + ((noticeDiv[0].match(/当前版本号[^<]*/) || [''])[0]));
+    // 但锚点节点必须存在且**唯一**：sync-version.mjs、verify §20g、
+    // .github/workflows/sync-version.yml 三处都靠「当前版本号 xxxxxxx</span>」
+    // 回写，节点丢了就是每日版本号同步静默失效；节点重复则回写只改第一处，
+    // 另一处永远停在旧值。
+    const verAnchors = html.match(/当前版本号\s*[0-9a-f]{7}\s*<\/span>/g) || [];
+    check(verAnchors.length === 1,
+      '版本号真相源节点唯一且带 7 位哈希（sync-version 回写锚点）',
+      `实际 ${verAnchors.length} 处：${verAnchors.join(' | ')}`);
+    check(/<span id="site-version"[^>]*hidden[^>]*>\s*<span class="notice-ver">/.test(html),
+      '版本号召回源是 #site-version（hidden 隐藏，菜单运行时读文本）',
+      '没找到 <span id="site-version" hidden><span class="notice-ver"> 这层结构');
 
       /* 手机端折叠：站长三轮口令的最终形态
          —— 第二轮「仍然占了 3–4 行」→ 第三轮「你确定手机版一行文字就能显示完？
@@ -967,13 +982,14 @@ section('2g. 首页证据链完整公示');
         && /-webkit-box-orient:\s*vertical/.test(noticeBox[1]),
         '两行折叠的前提条件在位（display:-webkit-box + box-orient:vertical）',
         '缺 -webkit-box 布局，clamp 会静默失效');
-      // 第二轮（2026-11-02）：版本号不再占公告栏第二行。
-      // 只断言「藏了」还不够 —— 藏了但菜单没搬，等于手机上版本号彻底没了，
-      // 所以 §9c 那边同时断言菜单真的去读了 .notice-ver。
-      // 选择器是「.notice-sep, .notice-ver{display:none}」这种并列写法，
-      // 所以 .notice-ver 到 { 之间允许夹逗号/换行，不能要求紧跟大括号。
-      check(/#site-notice \.notice-ver[^{}]*\{[^}]*display:\s*none/.test(mfc),
-        '手机端版本号让位（公告栏只留「正文两行 + 展开」）');
+      // 第五轮（2026-11-02）：版本号已整体移出公告栏，不再靠「手机端隐藏它」这条规则。
+      // 现在要的保证反过来了 —— 那个真相源节点在任何端都不可见。
+      // HTML 已带 hidden，但 hidden 只是 UA 样式，任何一份给 span 加 display 的
+      // 样式表都能把它顶出来（它的位置在公告栏与 #root 之间，顶出来就是页面顶部
+      // 多一行莫名其妙的版本号），所以必须有 id 级 CSS 兜底。
+      check(/#site-version\s*\{[^}]*display:\s*none/.test(mfc),
+        '版本号真相源节点有 CSS 隐藏兜底（#site-version{display:none}）',
+        '只靠 HTML 的 hidden 属性，一旦有样式表给 span 加 display 就会露出来');
       // 「展开」原先 padding-left 只有 4px，实测跟省略号贴在一起，
       // 「…已在本页…展开」读起来像连写（2026-11-02 站长看截图指出）。
       // 判据两条：间距抬到 ≥8px + 左边界有一条分隔线。
@@ -991,11 +1007,27 @@ section('2g. 首页证据链完整公示');
     // 公告栏折叠后，不想点「展开」的人得有别的路到证据链 —— 菜单里补一个页内锚点
     check(nm.includes("'#evidence-board'"),
       '悬浮菜单含「证据链公示」页内跳转（公告栏折叠后的补偿入口）');
-    // 公告栏为了收成单行把 .notice-ver 藏了，版本号必须有地方看 → 搬进菜单。
+    // 版本号由菜单承载（2026-11-02 第五轮）：公告栏已经彻底不写它了，
+    // 所以「菜单读得到」这件事从"锦上添花"变成"唯一出口"。
     // 同理断言「读 DOM」而不是「有版本号」：JS 里另写死一份哈希也能过字面检查，
     // 但那份永远不会跟着 sync-version 更新，所以行为测试比对的是桩里的原文。
     check(/notice-ver/.test(nm) && /sxg-nav-ver/.test(nm),
-      '手机菜单承载公告栏版本号（运行时读 .notice-ver，不另存哈希）');
+      '悬浮菜单承载版本号（运行时读 .notice-ver，不另存哈希）');
+    // 第五轮：真相源搬到页面级 #site-version。只留 #site-notice 选择器的话，
+    // 公告栏一撤就整条读不到 —— 菜单静默少一项，页面看不出任何异常。
+    // ⚠️ 不能只断言「文件里出现 #site-version 字样」：noticeVersion() 上方的
+    // 注释里就有这个词，于是把查询代码改回旧选择器也照样绿 ——
+    // 2026-11-02 故障注入实测正是这样（典型「注释救绿」，见 PITFALLS 25.5）。
+    // 必须咬住真正的调用点。
+    check(/querySelector\('#site-version \.notice-ver'\)/.test(nm),
+      '菜单优先读 #site-version（真相源已搬出公告栏，旧选择器只作回退）',
+      'noticeVersion() 里没有对 #site-version 的查询');
+    // PC 端没有三横按钮，版本号挂在常显 dock 串尾。
+    // 判据必须是「没有 display:none」：上一版正是靠它把 PC 端藏起来的，
+    // 只断言"有 .sxg-nav-ver 类"的话，藏着的版本号也照样过。
+    check(!/\.sxg-nav-ver\s*\{[^}]*display:\s*none/.test(nm),
+      'PC 端菜单也显示版本号（.sxg-nav-ver 不再被 display:none 藏起来）',
+      '样式里还有 .sxg-nav-ver{display:none}，桌面端会看不到版本号');
     check(/<script src="\.\/nav-menu\.js\?v=\d+"><\/script>/.test(html),
       'index.html 已挂载 nav-menu.js（带 ?v 缓存号）');
     // PC 常显 / 手机折叠：两个断点都必须写在样式里，否则等同只有一个形态
@@ -4602,7 +4634,10 @@ section('20i. 星巴克公告框注入闸门（与苹果同构）');
     '存在解密/灯箱行为测试（jsdom + Node Web Crypto，30 项）');
 }
 
-// ---------- 20g. 公告栏版本号必须等于「上一次提交」 ----------
+// ---------- 20g. 页面版本号必须等于「上一次提交」 ----------
+// 2026-11-02 第五轮：版本号已从公告栏移到页面级节点 #site-version（菜单显示），
+// 本节的判据只认「当前版本号 xxxxxxx</span>」这个锚点，位置变了不影响；
+// 但文案里的「公告栏」已不准确，统一改成「页面版本号」。
 // 背景：2026-10-19 站长指出首页「当前版本号 2db67d9」与近期提交对不上。
 //   根因是它写死在 index.html 里，多轮发版都没同步。规则本身 AGENTS.md 早有记载
 //  （「两条硬规则 · 一、公告栏版本号：取上一次提交的哈希」），但只写在文档里、
@@ -4617,7 +4652,7 @@ section('20i. 星巴克公告框注入闸门（与苹果同构）');
 //   等于 HEAD~1    → 通过（正确）
 //   等于 HEAD~2    → 容忍，仅提示（CI 同步补提交尚未生成的中间态）
 //   落后 3 拍以上  → 判红（真忘了同步）
-section('20g. 公告栏版本号');
+section('20g. 页面版本号');
 
 {
   // 必须锚定到 </span>：上面这段注释里也出现了「当前版本号」四个字，
@@ -4636,7 +4671,7 @@ section('20g. 公告栏版本号');
   if (!chain[1]) {
     note('仓库不足两个提交，跳过版本号比对');
   } else if (!shown) {
-    err('index.html 公告栏里找不到「当前版本号 xxxxxxx</span>',
+    err('index.html 里找不到「当前版本号 xxxxxxx</span>',
       '版本号是读者核对页面版本的唯一依据，不能删掉或写错格式');
   } else {
     // ⚠️ 不能写 `${shown}^{commit}`：Windows 的 cmd.exe 把 ^ 当转义符，
@@ -4646,18 +4681,18 @@ section('20g. 公告栏版本号');
     try { execSync(`git cat-file -e ${shown}`, { cwd: ROOT, stdio: 'ignore' }); real = true; } catch { real = false; }
 
     if (!real) {
-      err(`公告栏版本号 ${shown} 在本仓库里不存在`,
+      err(`页面版本号 ${shown} 在本仓库里不存在`,
         '不能手写或编造哈希。同步命令：node scripts/sync-version.mjs');
     } else if (shown === chain[0]) {
-      err(`公告栏版本号 ${shown} 写成了当前 HEAD，应为 HEAD~1 的 ${chain[1]}`,
+      err(`页面版本号 ${shown} 写成了当前 HEAD，应为 HEAD~1 的 ${chain[1]}`,
         '哈希由内容算出，写成当前 HEAD 会让它稳定落后两拍。');
     } else if (shown === chain[1]) {
-      ok(`公告栏版本号 ${shown} = HEAD~1，符合「上一个推送」语义`);
+      ok(`页面版本号 ${shown} = HEAD~1，符合「上一个推送」语义`);
     } else if (shown === chain[2]) {
-      note(`公告栏版本号 ${shown} = HEAD~2（CI 同步补提交尚未生成的中间态）`);
+      note(`页面版本号 ${shown} = HEAD~2（CI 同步补提交尚未生成的中间态）`);
     } else {
       const behind = execSync(`git rev-list --count ${shown}..HEAD`, { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
-      err(`公告栏版本号 ${shown} 落后 ${behind} 个提交，远超允许的 2 拍`,
+      err(`页面版本号 ${shown} 落后 ${behind} 个提交，远超允许的 2 拍`,
         '多轮发版忘了同步。运行 node scripts/sync-version.mjs 自动写回。');
     }
   }

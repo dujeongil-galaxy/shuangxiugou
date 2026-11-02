@@ -10,10 +10,14 @@
    设计取舍：
    - 只收导航项（证据链公示 / 同类项目导航 / 成功案例），既有五个悬浮按钮
      （视频 / TOP / ⤓ / AI / 提醒）保持原样，不并进来。
-   - 手机端另挂一条**不可点**的版本号（第二轮，2026-11-02）：公告栏为了压到
-     单行把 .notice-ver 隐藏了，版本号得有地方看，就搬进这里。它不是导航、
-     不是链接，用 <div> + pointer-events:none；文本运行时读 DOM，不另存哈希。
-   - PC 端放在最底部一行的右侧、避开右侧悬浮按钮列（right:72px 让开 16+44 的
+   - 手机端另挂一条**不可点**的版本号：公告栏不再写版本号（2026-11-02 第五轮
+     站长「版本号不要写这里了，加入三横菜单吧，但是 PC 端那边怎么办？」），
+     版本号统一由本菜单承载。它不是导航、不是链接，用 <div> + pointer-events:none；
+     文本运行时读 DOM 里的 #site-version，不另存哈希。
+   - **PC 端没有三横按钮**，所以答案不是"再造一个汉堡"：PC 的菜单本身就是右下角
+     常显的横向 pill 串，版本号挂在串尾当独立徽标（8px 间隙 + 自己一圈圆角），
+     既满足"进菜单"，也不用为一个版本号改变桌面端交互。
+   - PC 端 dock 放在最底部一行的右侧、避开右侧悬浮按钮列（right:72px 让开 16+44 的
      按钮列），横向 pill 常显；<640px 折叠成圆形主按钮。
    - 手机端主按钮放**左下**：右侧从 bottom 48 到 272 已经排满五个按钮，再往那
      一列塞第六个会把按钮阵拉到屏幕中部。左下与右侧「视频」钮对称，视觉不挤。
@@ -78,11 +82,13 @@
       '.sxg-nav-item:hover{background:#0F766E;color:#fff}',
       '.sxg-nav-item:focus-visible{outline:2px solid #0F766E;outline-offset:2px}',
 
-      /* 版本号项（2026-11-02 第二轮）：手机端公告栏把 .notice-ver 隐藏了
-         （那条原来独占公告栏第二行，49px 压不下去），版本号改在这里显示。
-         不是链接，所以用 <div> 且 pointer-events:none —— 顺手把 :hover
-         也一并废掉，不靠再写一条 hover 覆盖去追。 */
-      '.sxg-nav-ver{display:none;pointer-events:none;cursor:default;',
+      /* 版本号项（2026-11-02 第五轮）：公告栏里那一行彻底撤掉，改成两端都挂菜单。
+         PC 端没有三横按钮，它是常显的横向 pill 串 —— 版本号挂在串尾当**独立徽标**：
+         margin-left:8px 断开、自己一圈 19px 圆角。不改 a:last-of-type 的收口圆角，
+         因为"导航串"和"版本徽标"本来就是两块东西，连成一条反而像第四个可点的项。
+         不是链接，所以用 <div> 且 pointer-events:none —— 顺手把 :hover 一并废掉，
+         不靠再写一条 hover 覆盖去追。 */
+      '.sxg-nav-ver{margin-left:8px;border-radius:19px;pointer-events:none;cursor:default;',
       '  background:#f3f4f6;color:#6b7280;font-weight:600;}',
 
       /* 手机：折叠成一个主按钮，面板浮在按钮上方 */
@@ -95,8 +101,9 @@
       '  .sxg-nav-item{border:1px solid #d1d5db;border-radius:14px;padding:11px 14px;',
       '    box-shadow:0 4px 14px rgba(0,0,0,.14);}',
       '  .sxg-nav-item:first-child,.sxg-nav-item:last-child,a.sxg-nav-item:last-of-type{border-radius:14px;border-right:1px solid #d1d5db}',
-      /* 版本号项只在手机断点露出来：桌面公告栏那一行本来就看得到，重复是噪音 */
-      '  #sxg-nav .sxg-nav-ver{display:block}',
+      /* 版本号项在手机上跟其余条目一样是竖排的一块，圆角与间距对齐 14px/8px
+         （基础规则里的 19px 圆角 + margin-left 是为 PC 横向串尾设计的） */
+      '  #sxg-nav .sxg-nav-ver{margin-left:0;border-radius:14px;}',
       '}',
 
       /* 暗色适配：随笔页一类有 prefers-color-scheme: dark 的页面 */
@@ -120,11 +127,15 @@
     return window.matchMedia && window.matchMedia('(max-width:640px)').matches;
   }
 
-  // 版本号：运行时从公告栏节点读，**不在这里另存一份哈希**。
+  // 版本号：运行时从 DOM 里那个唯一真相源节点读，**不在这里另存一份哈希**。
   // 存一份的后果是 sync-version.mjs 只改 index.html，菜单里的会永远停在旧值，
   // 而且没有任何断言会发现（两份数据没有比对源）。
+  // 2026-11-02 第五轮：真相源从 `#site-notice .notice-ver` 搬到页面级隐藏节点
+  // `#site-version`（公告栏不许再写版本号）。旧选择器保留作回退 —— 旧缓存 HTML
+  // 与 notes.html 之类仍可能是老结构，回退总比"读不到就整条不显示"温和。
   function noticeVersion() {
-    var el = document.querySelector('#site-notice .notice-ver');
+    var el = document.querySelector('#site-version .notice-ver')
+      || document.querySelector('#site-notice .notice-ver');
     if (!el) return '';
     return (el.textContent || '').replace(/\s+/g, ' ').trim();
   }
@@ -140,11 +151,11 @@
       a.textContent = it.label;
       panel.appendChild(a);
     });
-    // 版本号（桌面也建、靠 CSS 隐藏）：不能只在手机端建 —— 桌面宽屏加载
+    // 版本号（两端都建、两端都显示）：不能只在手机端建 —— 桌面宽屏加载
     // 时 built 已经置 true，之后把窗口拖窄到 <640px 就不会再补建，
     // 手机上永远少这一条（2026-11-02 首版实测正是这个坑，截图只剩 3 项）。
     // 读不到就干脆不加 —— 别留一个「当前版本号」空壳（notes.html 之类
-    // 没挂公告栏的页面也会加载本脚本）。
+    // 没挂版本号节点的页面也会加载本脚本）。
     var ver = noticeVersion();
     if (ver) {
       var box = document.createElement('div');

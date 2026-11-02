@@ -50,15 +50,19 @@ function until(condFn, timeoutMs) {
 }
 
 /** 造一个页面：onlyMobile=true 时 matchMedia 只对 max-width:640 命中。
- *  withNotice=true 时带上公告栏 + 版本号节点 —— 手机菜单的版本号项是从
- *  这个节点读文本的，桩里不给就等于永远测不到那条路径（救绿形态）。 */
-function mkDom(onlyMobile, withNotice) {
-  const notice = withNotice
-    ? '<div id="site-notice"><span id="evidence-notice">本站全部数据均附公开证据链</span>'
-      + '<span class="notice-sep">｜</span>'
-      + '<span class="notice-ver" style="color:#000;font-weight:700">当前版本号 abc1234</span></div>'
+ *  withVersion=true 时带上**线上真实结构**（2026-11-02 第五轮）：
+ *  公告栏 #site-notice 里只有正文与展开开关，版本号搬到页面级隐藏节点
+ *  #site-version。仍用旧结构做桩的话，测的是「老 HTML 的兼容回退」，
+ *  新路径反而永远测不到（救绿形态）。 */
+function mkDom(onlyMobile, withVersion) {
+  const version = withVersion
+    ? '<span id="site-version" hidden>'
+      + '<span class="notice-ver">当前版本号 abc1234</span></span>'
     : '';
-  const dom = new JSDOM('<!DOCTYPE html><html><head></head><body>' + notice
+  const dom = new JSDOM('<!DOCTYPE html><html><head></head><body>'
+    + '<div id="site-notice"><span id="evidence-notice">本站全部数据均附公开证据链</span>'
+    + '<label for="notice-more" class="notice-more-lbl">展开</label></div>'
+    + version
     + '<div id="root"></div></body></html>',
     { runScripts: 'outside-only', url: 'https://dujeongil-galaxy.github.io/shuangxiugou/' });
   const w = dom.window;
@@ -95,12 +99,18 @@ function mkDom(onlyMobile, withNotice) {
   check('注入 #sxg-nav 容器', !!rootD);
   check('注入主按钮 #sxg-nav-fab', !!fabD);
   check('注入面板 #sxg-nav-panel', !!panelD);
-  // 桌面也要建版本项，视觉交给 CSS 隐藏。只在手机端建是错的：桌面宽屏
+  // 桌面也要建版本项，而且**桌面也要看得见**（2026-11-02 第五轮：公告栏
+  // 彻底不写版本号了，菜单是唯一出口）。只在手机端建是错的：桌面宽屏
   // 首屏加载时 built 已置 true，之后把窗口拖窄到 <640px 不会再补建，
   // 手机上就永远少这一条（2026-11-02 首版实测就是这个坑，截图里只有 3 项）。
-  check('桌面端也建版本号项（跨断点才补得上，视觉由 CSS 隐藏）',
+  check('桌面端也建版本号项（跨断点才补得上）',
     panelD && panelD.querySelectorAll('.sxg-nav-ver').length === 1,
     panelD && panelD.querySelectorAll('.sxg-nav-ver').length);
+  // PC 端没有三横按钮，版本号直接挂在常显 dock 串尾 —— 所以桌面端不只
+  // 「建了节点」，还得真的读到了值。比对桩里写死的 abc1234，不用子串断言。
+  const verD = panelD && panelD.querySelector('.sxg-nav-ver');
+  check('★ PC 端版本号文本来自 #site-version（不是占位空壳）',
+    verD && verD.textContent === '当前版本号 abc1234', verD && verD.textContent);
   check('桌面端条目 4 条（3 导航 + 1 版本号）',
     panelD && panelD.querySelectorAll('.sxg-nav-item').length === 4,
     panelD && panelD.querySelectorAll('.sxg-nav-item').length);
@@ -142,19 +152,22 @@ function mkDom(onlyMobile, withNotice) {
     /#sxg-nav-panel\{display:none/.test(mqBlock) && /\.is-open #sxg-nav-panel\{display:flex\}/.test(mqBlock),
     { panelHide: /#sxg-nav-panel\{display:none/.test(mqBlock) });
   check('底距用 --sxg-bar-h 变量（避让良配吸底条）', /var\(--sxg-bar-h/.test(css));
-  // 版本号项：桌面隐藏、手机露出。写在断点里没写基础规则的话，桌面上
-  // 会跟 dock 并排多出一条灰底 pill；只有基础规则不写断点，手机上则永远看不见。
-  check('★ 版本号项基础规则隐藏、只在手机断点露出',
-    /\.sxg-nav-ver\{display:none/.test(css)
-      && /#sxg-nav \.sxg-nav-ver\{display:block\}/.test(mqBlock),
-    {
-      baseHide: /\.sxg-nav-ver\{display:none/.test(css),
-      mqShow: /#sxg-nav \.sxg-nav-ver\{display:block\}/.test(mqBlock),
-    });
-  // 桌面版本号项以 display:none 留在 DOM 里，它仍然是 :last-child。
-  // 右端圆角若还写 :last-child，会画到那个看不见的节点上，
-  // 第三个导航项变成直角收尾（真渲染截图里一眼可见）。
-  check('★ dock 右端圆角挂在 a:last-of-type（不被隐藏的版本号 div 吃掉）',
+  // 版本号项：**两端都显示**（2026-11-02 第五轮，站长「版本号不要写这里了，
+  // 加入三横菜单吧，但是 PC 端那边怎么办？」）。
+  // 三条判据缺一不可：① 基础规则不再 display:none（否则 PC 端永远看不到，
+  // 上一版正是藏着的）；② PC 端是独立徽标而不是并进导航串；③ 手机断点里
+  // 对齐竖排的 14px 圆角与 0 间隙。
+  check('★ 版本号项两端都显示（基础规则不再 display:none）',
+    !/\.sxg-nav-ver\{[^}]*display:none/.test(css),
+    { base: (/\.sxg-nav-ver\{[^}]{0,90}/.exec(css) || [''])[0] });
+  check('★ PC 端版本号是独立徽标（8px 间隙 + 自己一圈 19px 圆角）',
+    /\.sxg-nav-ver\{margin-left:8px;border-radius:19px/.test(css),
+    { base: (/\.sxg-nav-ver\{[^}]{0,90}/.exec(css) || [''])[0] });
+  check('手机断点里版本号对齐竖排（margin-left:0 + 14px 圆角）',
+    /#sxg-nav \.sxg-nav-ver\{margin-left:0;border-radius:14px;\}/.test(mqBlock));
+  // 版本号项现在是**可见的** div，但它仍然是 :last-child。
+  // 右端圆角若写 :last-child，会画到这个灰底徽标上，第三个导航项变成直角收尾。
+  check('★ dock 右端圆角挂在 a:last-of-type（不被版本号 div 吃掉）',
     /a\.sxg-nav-item:last-of-type\{border-right:1px solid #d1d5db;border-radius:0 19px 19px 0\}/.test(css));
   // 坑（2026-11-02 实测）：≥1440px 良配是右上卡片，但脚本照样把它的高度
   // （实测 279px）写进 --sxg-bar-h，不覆盖的话桌面 dock 会被顶到页面中部。
@@ -196,11 +209,11 @@ function mkDom(onlyMobile, withNotice) {
     itemsM[1] && itemsM[1].textContent === '同类项目导航' && itemsM[1].getAttribute('href') === './projects.html');
   check('点开后的第三条是「成功案例」→ ./success-stories.html',
     itemsM[2] && itemsM[2].textContent === '成功案例' && itemsM[2].getAttribute('href') === './success-stories.html');
-  // 版本号项：文本必须来自公告栏 DOM（比对的是桩里写死的 abc1234，
+  // 版本号项：文本必须来自页面级真相源节点（比对的是桩里写死的 abc1234，
   // 不是「含『当前版本号』」这种子串断言 —— 子串断言在 JS 里另写死一份
   // 同样能过，等于没测到「读 DOM」这个关键行为）
   const verM = panelM.querySelector('.sxg-nav-ver');
-  check('手机菜单第四条是版本号（文本为公告栏 .notice-ver 原文）',
+  check('手机菜单第四条是版本号（文本为页面级 #site-version 原文）',
     verM && verM.textContent === '当前版本号 abc1234', verM && verM.textContent);
   check('版本号项不是链接（<div>、无 href，点了不会跳走）',
     verM && verM.tagName === 'DIV' && !verM.hasAttribute('href'),
@@ -253,7 +266,7 @@ function mkDom(onlyMobile, withNotice) {
   check('重复执行不重复注入 #sxg-nav-style', docM.querySelectorAll('#sxg-nav-style').length === 1);
   check('重复执行后条目数不变（仍是 4）', panelM.querySelectorAll('.sxg-nav-item').length === 4);
 
-  /* ================= ⑤ 没有公告栏的页面：不留空壳 ================= */
+  /* ================= ⑤ 页面没有版本号节点：不留空壳 ================= */
   console.log('\n⑤ 读不到版本号时不建空壳');
   const wm2 = mkDom(true, false);
   const docM2 = wm2.document;
@@ -262,10 +275,10 @@ function mkDom(onlyMobile, withNotice) {
   const fabN2 = docM2.getElementById('sxg-nav-fab');
   fabN2.dispatchEvent(new wm2.MouseEvent('click', { bubbles: true }));
   await wait(30);
-  check('页面没有 .notice-ver 时，手机菜单只建 3 条导航',
+  check('页面没有版本号节点时，菜单只建 3 条导航',
     panelN2.querySelectorAll('.sxg-nav-item').length === 3,
     panelN2.querySelectorAll('.sxg-nav-item').length);
-  check('页面没有 .notice-ver 时也不存在 .sxg-nav-ver 空壳节点',
+  check('页面没有版本号节点时也不存在 .sxg-nav-ver 空壳节点',
     panelN2.querySelectorAll('.sxg-nav-ver').length === 0,
     panelN2.querySelectorAll('.sxg-nav-ver').length);
 
