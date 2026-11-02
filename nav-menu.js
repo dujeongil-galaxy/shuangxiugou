@@ -195,6 +195,19 @@
       setOpen(!isOpen);
     });
 
+    // 点条目后收起（只手机态）：点「证据链公示」会滚到页面深处的区块，
+    // 面板若还浮在左下就正好压在刚滚到的内容上。桌面 dock 常显，无所谓。
+    panel.addEventListener('click', function (e) {
+      var t = e.target;
+      while (t && t !== panel) {
+        if (t.tagName === 'A') {
+          if (isMobile()) setOpen(false);
+          return;
+        }
+        t = t.parentNode;
+      }
+    });
+
     // 点空白处 / 按 Esc 收起（只管手机态的展开）
     document.addEventListener('click', function (e) {
       if (!isOpen) return;

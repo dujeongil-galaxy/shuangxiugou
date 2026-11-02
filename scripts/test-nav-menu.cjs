@@ -208,6 +208,16 @@ function mkDom(onlyMobile, withNotice) {
   check('版本号项排在导航之后（不在第一条，别抢「证据链公示」的位置）',
     itemsM[itemsM.length - 1] === verM);
 
+  // 点条目后收起（手机态）：取消顶部链接后「证据链公示」是唯一入口，
+  // 点完面板若还浮在左下，正好压在刚滚到的区块上。
+  itemsM[0].dispatchEvent(new wm.MouseEvent('click', { bubbles: true }));
+  await wait(20);
+  check('★ 手机端点条目后菜单自动收起（不挡住跳转目标）',
+    !rootM.classList.contains('is-open'));
+  fabM.dispatchEvent(new wm.MouseEvent('click', { bubbles: true }));
+  await wait(20);
+  check('（前置）再点主按钮能重新打开', rootM.classList.contains('is-open'));
+
   // 再点收起，且不复建
   const firstNode = itemsM[0];
   fabM.dispatchEvent(new wm.MouseEvent('click', { bubbles: true }));
