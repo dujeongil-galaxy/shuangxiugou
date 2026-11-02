@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * 把首页公告栏的「当前版本号 xxxxxxx」写回为上一次推送提交的短哈希。
+ * 把首页版本号节点（#site-version，2026-11-02 起不再写在公告栏）的
+ * 「当前版本号 xxxxxxx」写回为上一次推送提交的短哈希。
  *
  * 为什么需要：版本号写死在 index.html 里，靠人记得改必然会漏。
  * 2026-10-19 站长指出它停在 2db67d9，落后了 6 个提交才发现。
@@ -70,14 +71,14 @@ if (!m) {
 const current = m[2];
 
 if (current === target) {
-  console.log(`✓ 公告栏版本号已是最新：${target}（= ${REV}）`);
+  console.log(`✓ 页面版本号已是最新：${target}（= ${REV}）`);
   process.exit(0);
 }
 
 if (CHECK_ONLY) {
-  console.error(`✗ 公告栏版本号 ${current} ≠ ${REV} 的 ${target}`);
+  console.error(`✗ 页面版本号 ${current} ≠ ${REV} 的 ${target}`);
   process.exit(1);
 }
 
 writeFileSync(INDEX_HTML, src.replace(RE, `$1${target}$3`), 'utf8');
-console.log(`✓ 公告栏版本号 ${current} → ${target}（= ${REV}）`);
+console.log(`✓ 页面版本号 ${current} → ${target}（= ${REV}）`);
