@@ -4,6 +4,77 @@
 
 ---
 
+### 收尾补漏：四处清单档位 / 拼音测试写死 C 级（2026-11-02 17:20 · 提交 `待回填`）
+
+上一轮改判 U 级后本地 `verify` 全绿就推送了，**CI 判红**，暴露出两处漏网。记下来是因为
+两处都属于「断言覆盖面不够」这类最贵的错——**本地全绿、线上说谎**。
+
+#### ① CI 红在哪：`test-pinyin-e2e.cjs` 里写死了「宏碁 tier 为 C」
+
+```
+✗ 宏碁卡片在 bundle 里，tier 为 C（无休息制度公开口径，按站内「查不到统一双休证据
+  即视为无双休」判 C 级；档位定义见站长月休口径 …）
+```
+
+这条断言连理由文案都是旧口径的原文。改完 bundle 我跑了 9 组测试（render-page 13、
+stat-filter 34、molina 64、alternatives 13、employee-report 28、empty-state-sync 13、
+nav-menu 50、ad-logo 14、pinyin-search 37）全绿，就写进 CHANGELOG 说验收完成 ——
+**漏了 `test-pinyin-e2e` 这一组，因为我是凭记忆挑的，不是按清单跑的。**
+
+修法：断言改为 `tier === 'U'`，文案同步成「客服热线服务时间属服务可用性，非员工排息」，
+并加一行注释提醒别再写回 C。本地 67/67。
+
+#### ② 更严重的一处：`verify` 的清单断言只比数值，不比档位
+
+`index.html` 的 `<noscript>` 里 **172 条品牌清单是一个 `<ul>`，里面混着两种格式**：
+
+| 来源 | 格式 | 条数 | 谁生成的 |
+|---|---|---|---|
+| 内置品牌 | `宏碁 (Acer)</a> —— C 级 · 双休率 …` | 68 | 手写 |
+| 批量导入 | `<strong>宏碁 (Acer)</a></strong>：C 级 · 真实双休率 …` | 104 | `import-brands.py` |
+
+`projects.html` 里还有第三份（172 条）。原有断言逐条比对的是「双休率 / 平均下班」与
+详情页 kv 值 —— **档位完全没进断言**。所以改判 U 之后，这四处仍写着「C 级」，`verify` 1199 项全绿。
+
+后果和站长截图里那张卡同源：**爬虫与不执行 JS 的用户看到「C 级 · 避雷预警」，详情页正文
+却写着「不作评级」**。线上 JS 渲染是对的，静态兜底是错的——这种错最难被发现，因为
+点开页面的人看不到它。
+
+修法两步：
+
+1. **改数据**：index.html 两处（`——` 与 `：` 各一对）+ projects.html 一处，共 4 行
+   `C 级` → `U 级（证据不足）`。
+2. **补断言**（`verify.mjs` §6，在「noscript N 条品牌数值与详情页一致」之后）：
+   清单每一行的 `(——|：)\s*([SABCU])\s*级` 必须等于 `brand/<slug>.html` 徽标的
+   `class="badge"[^>]*>\s*([SABCU])\s*级`，两份文件一起扫，报错带文件名+slug+双方档位。
+   这样「改一家档位要改五处」变成机器强制：bundle / 详情页 / index 清单 ×2 / projects 清单。
+
+#### ③ 校验
+
+- 全量审 172 条：只有 acer / samsung 两处不一致，其余 170 条与徽标吻合。
+- `verify.mjs` **1199 项全绿**（新增 1 项：清单档位一致性）。
+- 故障注入：把 projects.html 的宏碁改回 `C 级` → 该项判红（`✓` 变 `✗`），还原后逐字节一致（47,178 字节）。
+- 把 CI 里那 25 组测试**全部**跑了一遍，全绿：pinyin-search 37 / pinyin-e2e 67 / ticket-total 52 /
+  builtin-ticket-dom 57 / answer-book 40 / render-page 13 / employee-report 28 / alternatives 13 /
+  ad-logo 14 / verify-self 6 / block-numeric-search 39 / stat-filter 34 / empty-state-sync 13 /
+  molina 64 / apple-note 10 / starbucks-note 10 / meituan-note 30 / photo-gate 66 / photo-vault 30 /
+  search-scope-fix 39 / appeal-policy 28 / virtual-card-remove 17 / ai-chat 35 / ai-worker 27 / notes-agree 17。
+  其中 photo-gate 在批量连跑时偶发 2 项超时，单独复跑 66/66 —— 与 photo-vault 同属高负载下的
+  PBKDF2/定时器抖动，不是回归。
+- **顺带发现（未动，等站长指示）**：`projects.html` 有 21 行写的是
+  `双休率 null% · 平均下班 null`，爬虫会读到裸 `null`。`index.html` 有「无裸 null」断言，
+  `projects.html` 没有。同类问题，另一份文件没人管。
+
+#### ④ 记账教训（已写进 PITFALLS 29.5）
+
+- **改档位/改口径后先全仓 grep 旧值**，不要凭记忆挑测试。`scripts/` 下 20+ 个测试，
+  任何一个都可能断言「某品牌是 C 级」。
+- **只验数值不验语义的断言等于没验**：noscript 那条断言看着很严（逐条比对 kv 值），
+  但它比对的两个字段恰好都不是「评级」本身。断言覆盖面要按**用户能看到的所有字段**枚举，
+  不是按「我之前踩过的坑」枚举。
+
+---
+
 ### 三星/宏碁改判 U 级（证据不足）+ 全站清除「查不到即无双休」倒置口径（2026-11-02 16:35 · 提交 `2c519aa`）
 
 **站长原话**：「你觉得这对吗，6家未核实继续给u级」（截图是三星卡片：徽标写着「C级 · 避雷预警」，正文却写着「月休天数与双休率仍无任何公开数据，**本站不作评级**，数值一律未核实」）

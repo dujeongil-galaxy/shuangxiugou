@@ -1333,6 +1333,37 @@ if (ns) {
   check(mismatch.length === 0,
     `noscript ${nsLines.length} 条品牌数值与详情页一致`,
     mismatch.length ? `${mismatch.length} 条不一致：${mismatch.slice(0, 5).join('；')}` : '');
+
+  /* 档位一致性（2026-11-02 新增）：清单里写的「X 级」必须与 brand/<slug>.html 的徽标一致。
+   *
+   * 上面那条只比「双休率 / 平均下班」——**档位是空白**。三星/宏碁改判 U 级之后，
+   * index.html 的两份清单（`：X 级` 手写区 + `—— X 级` 静态区，共 4 行）与
+   * projects.html（2 行）仍写着「C 级」，verify 照样全绿。
+   * 后果与这一轮要根除的毛病同源：爬虫和不执行 JS 的用户看到「C 级」，
+   * 详情页正文却写着「不作评级」。所以档位也必须咬住。
+   */
+  const badgeGrade = (slug) => {
+    const p = join(ROOT, 'brand', `${slug}.html`);
+    if (!existsSync(p)) return null;
+    const m = readFileSync(p, 'utf8').match(/class="badge"[^>]*>\s*([SABCU])\s*级/);
+    return m ? m[1] : null;
+  };
+  const projectsHtml = existsSync(join(ROOT, 'projects.html'))
+    ? readFileSync(join(ROOT, 'projects.html'), 'utf8') : '';
+  const listGradeBad = [];
+  for (const [label, text] of [['index.html 清单', listSeg], ['projects.html', projectsHtml]]) {
+    for (const line of text.split('\n')) {
+      const sm = line.match(/href="\.\/brand\/([a-z0-9-]+)\.html"/);
+      if (!sm) continue;
+      const gm = line.replace(/<[^>]+>/g, '').match(/(?:——|：)\s*([SABCU])\s*级/);
+      if (!gm) continue;
+      const dg = badgeGrade(sm[1]);
+      if (dg !== gm[1]) listGradeBad.push(`${label} ${sm[1]}「${gm[1]} 级」≠ 详情页「${dg || '无徽标'}」`);
+    }
+  }
+  check(listGradeBad.length === 0,
+    'noscript / projects 清单档位与详情页徽标一致（改档必须四处同改）',
+    listGradeBad.length ? `${listGradeBad.length} 处：${listGradeBad.slice(0, 5).join('；')}` : '');
 }
 
 // ---------- 7. 文档数字口径 ----------
