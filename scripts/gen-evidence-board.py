@@ -91,8 +91,9 @@ KIND_COLOR = {
 }
 
 # 档位 → 徽章色（与 brand/ 页、bundle 一致）
-GRADE_COLOR = {'S': '#7c3aed', 'A': '#0f766e', 'B': '#b45309', 'C': '#be123c', 'U': '#64748b'}
-GRADE_ORDER = {'S': 0, 'A': 1, 'B': 2, 'C': 3, 'U': 4}
+GRADE_COLOR = {'S': '#7c3aed', 'A': '#0f766e', 'B': '#b45309', 'C': '#be123c',
+               'D': '#450a0a', 'U': '#64748b'}
+GRADE_ORDER = {'S': 0, 'A': 1, 'B': 2, 'C': 3, 'D': 4, 'U': 5}
 
 
 def norm_kind(raw):
@@ -131,7 +132,7 @@ def parse_brand(path):
         name = re.sub(r'\s*几点下班与加班情况\s*$', '', name).strip()
 
     grade = ''
-    m = re.search(r'<span class="badge"[^>]*>\s*([SABCU])\s*级', text)
+    m = re.search(r'<span class="badge"[^>]*>\s*([SABCDU])\s*级', text)
     if m:
         grade = m.group(1)
 
@@ -318,20 +319,38 @@ def render_board(rows, generated_note):
       '含证据类型、取证日期、文书编号与可点击的原始来源链接。'
       '数据由各品牌详情页（<code>brand/*.html</code>）自动汇总生成，'
       '两处不一致会被 <code>scripts/verify.mjs</code> 判红。</p>')
+    # 2026-11-02 站长质问「新增的都是 A 级，证据链在哪」：单源二手必须当众说清，
+    # 不能让「A 级」看起来像实测结论。
+    weak_src = [r for r in rows
+                if len(r['items']) == 1
+                and ('二手' in r['items'][0]['kind_raw'] or '未抓原文' in r['items'][0]['kind_raw'])]
+    if weak_src:
+        w('  <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">'
+          '其中 <strong>%d 家</strong>目前仅有一条来源（第三方榜单聚合，2026-07-11，'
+          '二手、未抓原文），属<strong>榜单口径换算</strong>而非实测：'
+          '这些企业的真实双休率未核实，详情页已逐家公示「证据链」——来源、日期、原话、'
+          '以及尚缺哪几类证据。补齐任一类证据后即重新核实改档。</p>' % len(weak_src))
 
     # ---- 统计条
     # 2026-11-02：U 级（证据不足）重新出现后，四档合计不再等于收录总数。
     # 必须单独列一格，否则「S/A/B/C 家数 6/75/31/58」会被读者当成 170 家，
     # 和「172 家」对不上，看着像算错。
     u_count = grades.get('U', 0)
+    d_count = grades.get('D', 0)
     w('  <div class="ev-stats">')
     stat = [
         ('证据总条数', str(total_items), '#0f766e'),
         ('带原始链接', str(linked), '#1d4ed8'),
         ('无可点链接', str(unlinked), '#b45309'),
-        ('S/A/B/C 家数', '%d/%d/%d/%d' % (grades.get('S', 0), grades.get('A', 0),
-                                     grades.get('B', 0), grades.get('C', 0)), '#475569'),
+        # 2026-11-02：D 级（站长人工降级，奇瑞）出现后，档位从四档变五档。
+        # 标签必须跟着加 D，否则「6/75/31/57」看着像漏了一家（实际那家是 D）。
+        ('S/A/B/C/D 家数', '%d/%d/%d/%d/%d' % (grades.get('S', 0), grades.get('A', 0),
+                                              grades.get('B', 0), grades.get('C', 0),
+                                              d_count), '#475569'),
     ]
+    if d_count:
+        stat.append(('D 级（站长强制降级）',
+                     '%d 家' % d_count, '#450a0a'))
     if u_count:
         stat.append(('U 级（证据不足）',
                      '%d 家' % u_count, '#64748b'))
@@ -340,6 +359,11 @@ def render_board(rows, generated_note):
         w('    <div class="ev-stat"><b style="color:%s">%s</b><i>%s</i></div>'
           % (color, esc(val), esc(label)))
     w('  </div>')
+    if d_count:
+        w('  <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">'
+          'D 级（站长强制降级）<strong>计入首页避雷预警格</strong>：判据是管理层指令性规避法律风险加班'
+          '（高管邮件主动要求「想办法规避法律风险」）。<strong>该档位不由 AI 判定</strong>，'
+          '只记录站长的人工介入结论，详情页附「人工干预记录」。</p>')
     if u_count:
         w('  <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">'
           'U 级（证据不足）<strong>不计入 S/A/B/C 四档</strong>：这几家已尽合理检索仍拿不到'

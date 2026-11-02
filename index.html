@@ -150,7 +150,7 @@
            display:none 的那一半不进无障碍树，名字会随状态自己变；
            写死 aria-label 反而一直是「展开」，收起后就读错了。 -->
       <input type="checkbox" id="notice-more" class="notice-more-cb">
-      <span id="evidence-notice">本站全部数据均附公开证据链：172 家企业 286 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 6 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice -->
+      <span id="evidence-notice">本站全部数据均附公开证据链：172 家企业 292 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 6 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice -->
       <label for="notice-more" class="notice-more-lbl"><span class="t-more">展开</span><span class="t-less">收起</span></label>
     </div>
     <!-- 版本号唯一真相源（2026-11-02 第五轮，站长：「版本号不要写这里了，加入三横菜单吧」）
@@ -178,7 +178,7 @@
      本区块由 scripts/gen-evidence-board.py 自动生成，请勿手改。
      改证据请改 brand/*.html 详情页，然后重跑：python scripts/gen-evidence-board.py
      单一真相源在 brand/ 页；scripts/verify.mjs 有防漂移断言逐条比对。
-     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：172 家企业 / 286 条证据 / 243 条带原始链接 / 6 家证据薄弱。 -->
+     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：172 家企业 / 292 条证据 / 249 条带原始链接 / 6 家证据薄弱。 -->
 <style>#evidence-board{max-width:960px;margin:0 auto;padding:28px 16px 40px;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.75;color:#1f2937;font-size:14px}
 #evidence-board h2{font-size:20px;font-weight:700;margin:0 0 6px;color:#0f172a;line-height:1.4}
 #evidence-board a{color:#0f766e}
@@ -227,17 +227,20 @@
 #evidence-board .ev-more{margin-top:10px;font-size:12px}
 #evidence-board .ev-foot{margin:16px 0 0;font-size:12.5px;color:#64748b}
 @media(max-width:640px){#evidence-board{padding:20px 12px 32px}#evidence-board .ev-stat{flex:1 1 44%}#evidence-board .ct{margin-left:0;width:100%}}</style>
-<section id="evidence-board" data-ev-brands="172" data-ev-total="286" data-ev-linked="243" data-ev-weak="6">
-  <h2>全站证据链公示（172 家企业 · 286 条证据）</h2>
+<section id="evidence-board" data-ev-brands="172" data-ev-total="292" data-ev-linked="249" data-ev-weak="6">
+  <h2>全站证据链公示（172 家企业 · 292 条证据）</h2>
   <p class="ev-lead">站长要求「证据链必须首页完整公示，口说无凭」——以下是站内每一条评级的取证清单，含证据类型、取证日期、文书编号与可点击的原始来源链接。数据由各品牌详情页（<code>brand/*.html</code>）自动汇总生成，两处不一致会被 <code>scripts/verify.mjs</code> 判红。</p>
+  <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">其中 <strong>101 家</strong>目前仅有一条来源（第三方榜单聚合，2026-07-11，二手、未抓原文），属<strong>榜单口径换算</strong>而非实测：这些企业的真实双休率未核实，详情页已逐家公示「证据链」——来源、日期、原话、以及尚缺哪几类证据。补齐任一类证据后即重新核实改档。</p>
   <div class="ev-stats">
-    <div class="ev-stat"><b style="color:#0f766e">286</b><i>证据总条数</i></div>
-    <div class="ev-stat"><b style="color:#1d4ed8">243</b><i>带原始链接</i></div>
+    <div class="ev-stat"><b style="color:#0f766e">292</b><i>证据总条数</i></div>
+    <div class="ev-stat"><b style="color:#1d4ed8">249</b><i>带原始链接</i></div>
     <div class="ev-stat"><b style="color:#b45309">43</b><i>无可点链接</i></div>
-    <div class="ev-stat"><b style="color:#475569">6/75/31/58</b><i>S/A/B/C 家数</i></div>
+    <div class="ev-stat"><b style="color:#475569">6/75/31/57/1</b><i>S/A/B/C/D 家数</i></div>
+    <div class="ev-stat"><b style="color:#450a0a">1 家</b><i>D 级（站长强制降级）</i></div>
     <div class="ev-stat"><b style="color:#64748b">2 家</b><i>U 级（证据不足）</i></div>
     <div class="ev-stat"><b style="color:#be123c">6 家</b><i>证据薄弱企业</i></div>
   </div>
+  <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">D 级（站长强制降级）<strong>计入首页避雷预警格</strong>：判据是管理层指令性规避法律风险加班（高管邮件主动要求「想办法规避法律风险」）。<strong>该档位不由 AI 判定</strong>，只记录站长的人工介入结论，详情页附「人工干预记录」。</p>
   <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">U 级（证据不足）<strong>不计入 S/A/B/C 四档</strong>：这几家已尽合理检索仍拿不到可采信的月休天数或双休率，本站不评级、不估算，详情页各附「证据缺失说明」。</p>
   <div class="ev-legend">
     <div>证据强度分级（强 → 弱）</div>
@@ -247,12 +250,15 @@
       <span class="ev-pill" style="border-color:#0f766e;color:#0f766e">官方公示/备案 <b>21</b></span>
       <span class="ev-pill" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述 <b>9</b></span>
       <span class="ev-pill" style="border-color:#0369a1;color:#0369a1">ESG/审计报告 <b>9</b></span>
-      <span class="ev-pill" style="border-color:#b45309;color:#b45309">媒体报道/调查 <b>33</b></span>
+      <span class="ev-pill" style="border-color:#b45309;color:#b45309">媒体报道/调查 <b>36</b></span>
       <span class="ev-pill" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径 <b>17</b></span>
       <span class="ev-pill" style="border-color:#c2410c;color:#c2410c">站长一手实测 <b>3</b></span>
       <span class="ev-pill" style="border-color:#57534e;color:#57534e">员工/社群反馈 <b>57</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">旁证/二手汇总 <b>123</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（third_party） <b>1</b></span>
+      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体报道（含员工爆料，二手）） <b>1</b></span>
+      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体评论（附法条对照）） <b>1</b></span>
+      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体评论） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（暗访） <b>1</b></span>
     </div>
     <div class="ev-note">司法裁判文书与劳动监察通报为最高强度证据；招聘平台自述属「招聘方口径」，只证明企业怎么说、不证明实际怎么排班；社群匿名反馈与旁证汇总强度最低，本站不用它们单独定档。</div>
@@ -2339,6 +2345,56 @@
         <div class="ev-more"><a href="./brand/catl.html">查看 宁德时代 (CATL) 完整详情页 →</a></div>
       </div>
     </details>
+    <details id="ev-cmb" data-b="cmb" data-g="C" data-n="7" data-l="7">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">招商银行</span><span class="co">招商银行</span><span class="ct">7 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">南都湾财社（南方+）：招行高管「加班」言论引误解并发酵</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（多源交叉）</span> <span class="d">2026-03-31</span></div>
+            <div class="s">「招行员工爱岗敬业，我们的同事很少准点下班，很不容易，很辛苦」……「这就是公司凝聚文化的体现，是最大的『护城河』。」同文记载：。</div>
+            <div class="u"><a href="https://www.nfnews.com/content/1y0lvxREyB.html" rel="nofollow noopener" target="_blank">nfnews.com/content/1y0lvxREyB.html</a></div>
+          </li>
+          <li>
+            <div class="t">中国金融网（金融传媒）：四家上市银行卷入财报风波——招行「加班护城河」撞上舆论冰山</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道</span> <span class="d">2026-03</span></div>
+            <div class="s">「下午 5 点后走访招行分支机构，会发现员工很少准点下班，这与其他银行形成了鲜明反差。」「#招商银行董事长称员工很少准时下班#」冲上微博热搜，批评声占据主流。</div>
+            <div class="u"><a href="https://www.financeun.com/newsDetail/63631.shtml" rel="nofollow noopener" target="_blank">financeun.com/newsDetail/63631.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">大众新闻·观澜亭：「很少准点下班」，其实就是不尊重职工劳动权益</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（媒体评论（附法条对照））</span> <span class="raw">原标注：媒体评论（附法条对照）</span> <span class="d">2026-03-31</span></div>
+            <div class="s">「《劳动法》第四十一条……每月不得超过三十六小时。」「那些『很少准时下班』的员工，加班费足额发了没有？」</div>
+            <div class="u"><a href="https://m.dzplus.dzng.com/share/general/0/NEWS3273295TNSVXNNOMXTWB" rel="nofollow noopener" target="_blank">m.dzplus.dzng.com/share/general/0/NEWS3273295TNSVXNNOMXTWB</a></div>
+          </li>
+          <li>
+            <div class="t">济南时报：岂能把「员工很少准点下班」当企业护城河</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（媒体评论）</span> <span class="raw">原标注：媒体评论</span> <span class="d">2026-03</span></div>
+            <div class="s">「在考核压力下，『很少准点下班』到底是不是『自愿』，恐怕只有员工自己心里最清楚。」</div>
+            <div class="u"><a href="https://www.jinantimes.com.cn/news-70-10434395.html" rel="nofollow noopener" target="_blank">jinantimes.com.cn/news-70-10434395.html</a></div>
+          </li>
+          <li>
+            <div class="t">企业观察网：金融业劳动生态的舆情反思与治理路径（引《每日经济新闻》走访）</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（多源交叉）</span> <span class="d">2026-04</span></div>
+            <div class="s">「《每日经济新闻》记者走访数十家银行一线网点后发现，与高层口中的『敬业』叙事截然不同，基层员工的真实体验是疲于应付各种『隐性加班』。」同文载招行人均薪酬由 2024 年 58.1…</div>
+            <div class="u"><a href="https://www.cneo.com.cn/detail101291.html" rel="nofollow noopener" target="_blank">cneo.com.cn/detail101291.html</a></div>
+          </li>
+          <li>
+            <div class="t">新浪新闻：高管点赞加班文化 VS 员工逃离金融围城</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（媒体报道（含员工爆料，二手））</span> <span class="raw">原标注：媒体报道（含员工爆料，二手）</span> <span class="d">2026-06-30</span></div>
+            <div class="s">「脉脉、知乎等平台招行员工爆料，核心业务岗月加班时长超 120 小时，已触碰合规红线。」（平台爆料为二手口径，未经本站独立核实，仅作旁证。）</div>
+            <div class="u"><a href="https://news.sina.cn/bignews/insight/2026-06-30/detail-inifcvuk3489915.d.html" rel="nofollow noopener" target="_blank">news.sina.cn/bignews/insight/2026-06-30/detail-inifcvuk3489915…</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026 · 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">榜单原话：招商银行：加班文化重，2026 董事长称『加班是护城河』『很少准点下班』。（本条为本站导入该品牌时的初始旁证，现已由上方 6 条公开来源取代为定档依据。）</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/cmb.html">查看 招商银行 完整详情页 →</a></div>
+      </div>
+    </details>
     <details id="ev-heytea" data-b="heytea" data-g="C" data-n="6" data-l="5">
       <summary><span class="g" style="background:#be123c">C</span><span class="bn">喜茶 (HEYTEA)</span><span class="co">深圳美西西餐饮管理有限公司</span><span class="ct">6 条证据</span></summary>
       <div class="ev-body">
@@ -2585,32 +2641,6 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/jml.html">查看 今麦郎 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-chery" data-b="chery" data-g="C" data-n="3" data-l="3">
-      <summary><span class="g" style="background:#be123c">C</span><span class="bn">奇瑞汽车 (CHERY)</span><span class="co">奇瑞汽车股份有限公司</span><span class="ct">3 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">财联社：奇瑞高管要求规避法律风险想办法加班，称“周六是奋斗者正常工作日”</div>
-            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（多源交叉）</span> <span class="d">2023-03-08</span></div>
-            <div class="s">「高新华在邮件内容中写道：“以奋斗者为本，周六是奋斗者的正常工作日。对于行政领导们，必须是正常工作日，请想办法（规避法律风险）；学习华为精神，让奋斗者努力，也不能让奋斗者吃亏！从机…</div>
-            <div class="u"><a href="https://m.cls.cn/detail/1287914" rel="nofollow noopener" target="_blank">m.cls.cn/detail/1287914</a></div>
-          </li>
-          <li>
-            <div class="t">新浪财经（转界面新闻）：奇瑞员工曝强制加班，月工作300小时挣4800元</div>
-            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（快照）</span> <span class="d">2024-07-02</span></div>
-            <div class="s">「一位认证为“奇瑞员工”的网友发帖称，奇瑞汽车内部存在强制加班行为，每周加班时长需大于20小时并且没有加班费，仅补贴10元餐补。」（搜索快照，未抓原文）。</div>
-            <div class="u"><a href="https://finance.sina.cn/2024-07-02/detail-incatkzi0499403.d.html" rel="nofollow noopener" target="_blank">finance.sina.cn/2024-07-02/detail-incatkzi0499403.d.html</a></div>
-          </li>
-          <li>
-            <div class="t">中国青年报·中青汽车：奇瑞高管回应“想办法加班”</div>
-            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：企业回应（快照）</span> <span class="d">2023-03-09</span></div>
-            <div class="s">「高新华在3月8日做出回应称：邮件要求对象不是普通员工，是激发愿意努力工作的员工，鼓励他们奋斗，同时不让他们吃亏，本意不是压榨员工。」（搜索快照；回应承认邮件存在，属口径对照）。</div>
-            <div class="u"><a href="http://auto.cyol.com/gb/articles/2023-03/09/content_Q4POJYtRKX.html" rel="nofollow noopener" target="_blank">auto.cyol.com/gb/articles/2023-03/09/content_Q4POJYtRKX.html</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/chery.html">查看 奇瑞汽车 (CHERY) 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-haidilao" data-b="haidilao" data-g="C" data-n="3" data-l="3">
@@ -3041,20 +3071,6 @@
         <div class="ev-more"><a href="./brand/banana.html">查看 巴奴毛肚火锅 完整详情页 →</a></div>
       </div>
     </details>
-    <details id="ev-cmb" data-b="cmb" data-g="C" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#be123c">C</span><span class="bn">招商银行</span><span class="co">招商银行</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">招商银行：加班文化重，2026 董事长称『加班是护城河』『很少准点下班』</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/cmb.html">查看 招商银行 完整详情页 →</a></div>
-      </div>
-    </details>
     <details id="ev-foto" data-b="foto" data-g="C" data-n="1" data-l="1">
       <summary><span class="g" style="background:#be123c">C</span><span class="bn">方太</span><span class="co">方太</span><span class="ct">1 条证据</span></summary>
       <div class="ev-body">
@@ -3305,6 +3321,32 @@
         <div class="ev-more"><a href="./brand/chabaidao.html">查看 茶百道 完整详情页 →</a></div>
       </div>
     </details>
+    <details id="ev-chery" data-b="chery" data-g="D" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#450a0a">D</span><span class="bn">奇瑞汽车 (CHERY)</span><span class="co">奇瑞汽车股份有限公司</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">财联社：奇瑞高管要求规避法律风险想办法加班，称“周六是奋斗者正常工作日”</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（多源交叉）</span> <span class="d">2023-03-08</span></div>
+            <div class="s">「高新华在邮件内容中写道：“以奋斗者为本，周六是奋斗者的正常工作日。对于行政领导们，必须是正常工作日，请想办法（规避法律风险）；学习华为精神，让奋斗者努力，也不能让奋斗者吃亏！从机…</div>
+            <div class="u"><a href="https://m.cls.cn/detail/1287914" rel="nofollow noopener" target="_blank">m.cls.cn/detail/1287914</a></div>
+          </li>
+          <li>
+            <div class="t">新浪财经（转界面新闻）：奇瑞员工曝强制加班，月工作300小时挣4800元</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（快照）</span> <span class="d">2024-07-02</span></div>
+            <div class="s">「一位认证为“奇瑞员工”的网友发帖称，奇瑞汽车内部存在强制加班行为，每周加班时长需大于20小时并且没有加班费，仅补贴10元餐补。」（搜索快照，未抓原文）。</div>
+            <div class="u"><a href="https://finance.sina.cn/2024-07-02/detail-incatkzi0499403.d.html" rel="nofollow noopener" target="_blank">finance.sina.cn/2024-07-02/detail-incatkzi0499403.d.html</a></div>
+          </li>
+          <li>
+            <div class="t">中国青年报·中青汽车：奇瑞高管回应“想办法加班”</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：企业回应（快照）</span> <span class="d">2023-03-09</span></div>
+            <div class="s">「高新华在3月8日做出回应称：邮件要求对象不是普通员工，是激发愿意努力工作的员工，鼓励他们奋斗，同时不让他们吃亏，本意不是压榨员工。」（搜索快照；回应承认邮件存在，属口径对照）。</div>
+            <div class="u"><a href="http://auto.cyol.com/gb/articles/2023-03/09/content_Q4POJYtRKX.html" rel="nofollow noopener" target="_blank">auto.cyol.com/gb/articles/2023-03/09/content_Q4POJYtRKX.html</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/chery.html">查看 奇瑞汽车 (CHERY) 完整详情页 →</a></div>
+      </div>
+    </details>
     <details id="ev-samsung" data-b="samsung" data-g="U" data-n="10" data-l="10">
       <summary><span class="g" style="background:#64748b">U</span><span class="bn">三星 (Samsung)</span><span class="co">三星（中国）投资有限公司</span><span class="ct">10 条证据</span></summary>
       <div class="ev-body">
@@ -3422,9 +3464,14 @@
           <li><strong>A 级</strong>：月休 8 天以上（做五休二轮休 ≈ 月休 8.6 天在此档）</li>
           <li><strong>B 级</strong>：月休 6-8 天（大小周 ≈ 月休 6 天在此档）</li>
           <li><strong>C 级</strong>：月休不足 6 天（单休/月休 2-5 天），或严重超时、存在通报违约记录、拒不披露</li>
+          <li><strong>D 级</strong>：管理层指令性规避法律风险加班——高管邮件／公司文件主动要求「想办法规避法律风险」以安排加班。该档位<strong>不由 AI 判定</strong>，仅由站长人工介入强制降级，并逐条留档</li>
         </ul>
         <p style="margin:0 0 16px;font-size:13px;color:#475569">
           <strong>2026-10-31 起按站长月休口径复核</strong>：B 级 = 月休 6-8 天、A 级 = 月休 8 天以上、S 级 = A 级 + 真实双休率达标；轮休制周休 2 天（做五休二）属双休、判 A 级，不再因休息日非固定周末扣档。官方渠道被直接询问双休安排而<strong>拒不回答的</strong>，按无双休判 C 级——这是「不披露」判 C 的唯一情形，与「查不到」性质不同。
+        </p>
+        <p style="margin:0 0 16px;font-size:13px;color:#475569">
+          <strong>D 级（站长人工介入，2026-11-02 新增）</strong>：判据只看一件事——<strong>管理层是否主动设计规避法律风险</strong>。标本是奇瑞 2023-03 被财联社曝光的内部邮件：「周六是奋斗者的正常工作日……请想办法（规避法律风险）」。D 比 C 更重：C 是「结果差」（月休不足／超时／通报违约／拒不披露），D 是「主观上知道违法、仍在设计怎么绕」。
+          <strong>这一档 AI 不得自行判定</strong>——同一句话里的「三班倒」既可能对应做五休二（A）也可能对应做六休一（C），但「想办法规避法律风险」把性质定死了，这种判断只能由人做。D 级只记录站长的人工结论，卡面标「D级 · 站长强制降级」并附「人工干预记录」；D <strong>计入</strong>避雷预警格（C 的加重版，不是另一类）。目前 1 家（奇瑞汽车）。
         </p>
         <p style="margin:0 0 16px;font-size:13px;color:#475569">
           <strong>U 级（证据不足）</strong>：已尽合理检索仍无可采信证据时使用，卡面标「U级 · 证据不足」。它不评级、不猜测，<strong>不以「查不到」代替「没有」</strong>；单独列示、不并入上方四格统计，且必须附证据缺失说明（该企业查过哪些渠道、缺哪一类证据）。企业公开披露休息制度后即可重新核实改档。
@@ -3472,7 +3519,7 @@
           <li><strong><a href="./brand/master-kong.html">康师傅 (Master Kong)</a></strong>：B 级 · 真实双休率 30% · 平均下班 19:40</li> <a href="./brand/master-kong.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/byd.html">BYD (比亚迪)</a></strong>：C 级 · 真实双休率 15% · 平均下班 20:00</li> <a href="./brand/byd.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/gwm.html">长城汽车 (GWM)</a></strong>：C 级（避雷预警） · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/gwm.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/chery.html">奇瑞汽车 (CHERY)</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/chery.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/chery.html">奇瑞汽车 (CHERY)</a></strong>：D 级（站长强制降级） · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/chery.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/volvo.html">Volvo (沃尔沃汽车)</a></strong>：S 级 · 真实双休率 92% · 平均下班 18:05</li> <a href="./brand/volvo.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/huawei.html">华为终端 (Huawei)</a></strong>：C 级 · 真实双休率 35% · 平均下班 20:30</li> <a href="./brand/huawei.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/apple.html">Apple (苹果中国)</a></strong>：S 级 · 真实双休率 92% · 平均下班 18:00</li> <a href="./brand/apple.html" style="color:#0F766E">详细→</a>
@@ -3603,7 +3650,7 @@
           <li><a href="./brand/master-kong.html">康师傅 (Master Kong)</a> —— B 级 · 双休率 30% · 平均下班 19:40</li>
           <li><a href="./brand/byd.html">BYD (比亚迪)</a> —— C 级 · 双休率 15% · 平均下班 20:00</li>
           <li><a href="./brand/gwm.html">长城汽车 (GWM)</a> —— C 级（避雷预警） · 双休率 0%（口径换算） · 平均下班 —</li>
-          <li><a href="./brand/chery.html">奇瑞汽车 (CHERY)</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 —</li>
+          <li><a href="./brand/chery.html">奇瑞汽车 (CHERY)</a> —— D 级（站长强制降级） · 双休率 0%（口径换算） · 平均下班 —</li>
           <li><a href="./brand/volvo.html">Volvo (沃尔沃汽车)</a> —— S 级 · 双休率 92% · 平均下班 18:05</li>
           <li><a href="./brand/huawei.html">华为终端 (Huawei)</a> —— C 级 · 双休率 35% · 平均下班 20:30</li>
           <li><a href="./brand/apple.html">Apple (苹果中国)</a> —— S 级 · 双休率 92% · 平均下班 18:00</li>
@@ -7646,7 +7693,7 @@
        1) 顶部「打卡并生成小票」改为弹窗，引导去品牌档案卡打卡（原来默认给第一家品牌打卡，会误导）
        2) 自定义品牌卡（DOM 克隆）没有 React onClick，补上「打卡」「详情证据」功能 -->
   <script src="./custom-card-actions.js?v=19"></script>
-  <script src="./u-grade-patch.js?v=2"></script>
+  <script src="./u-grade-patch.js?v=3"></script>
   <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
   <script src="./factcheck-button.js?v=1"></script>
   <!-- 拼音 / 首字母模糊搜索联想。
@@ -7690,7 +7737,7 @@
 <!-- 右侧纯文字「提醒」悬浮按钮（2026-10-28 站长要求；2026-10-30 文案换成站长亲笔《双休购》长文）：点击弹出「双休购」模态层；
      其余悬浮按钮行为不变。挂 body、不碰 React 的 #root 地盘，避让 TOP/⤓/AI 对话钮。 -->
 <script src="./remind-button.js?v=5"></script>
-<script src="./stat-filter.js?v=7"></script>
+<script src="./stat-filter.js?v=8"></script>
   <!-- 搜索口径修正：summary 命中降级为兜底。2026-10-24 站长截图：搜「瑞幸咖啡」
        结果里同时出现库迪咖啡。根因：bundle 主过滤器的 7 路匹配里有 summary，
        而库迪 summary 写着「由瑞幸咖啡创始团队于 2022 年创立」——叙述性长文本

@@ -4,11 +4,14 @@
    需求（2026-10-17 站长）：四格统计做成按钮——
      · 点「双休红榜」→ 只显示 S/A 级（B 级是存疑，不算红榜）
      · 点「大小周观察」→ 只显示 B 级
-     · 点「避雷预警」→ 只显示 C 级
+     · 点「避雷预警」→ 只显示 C / D 级
      · 点「收录品牌」→ 清除筛选、显示全部
      再点一次同一个按钮 = 取消筛选。
   U 级（证据不足）为合法档位，但单独列示、不并入四格统计（硬规则见 verify §2d）；
-  四格统计保持 4 列，卡片按 S/A/B/C/U 识别，U 卡由 u-grade-patch.js 补中性灰徽标。
+  四格统计保持 4 列，卡片按 S/A/B/C/D/U 识别，U/D 卡由 u-grade-patch.js 补徽标
+  （bundle 的 switch 只有 S/A/B/C 四个分支）。
+  D 级（站长人工降级）**计入**避雷预警格：它是 C 的加重版（管理层指令性规避法律风险加班），
+  不是另一类，所以点「避雷预警」必须同时出 C 和 D，否则格子写 58 却只出 57 家。
   U 卡的行为：只在「收录品牌（全部）」视图可见；点 S/A/B/C 任何一格都隐藏它
   （它不是红榜也不是避雷，混进任何一格都是错误归类）。
   坑（2026-11-02）：原来的 tierMatches 先判 `tier === null → false`，而 U 卡识别
@@ -39,7 +42,9 @@
     all: { tiers: null, title: '显示全部收录品牌；点击可清除筛选' },
     red: { tiers: ['S', 'A'], title: '仅显示 S/A 级（模范标杆与合规双休）' },
     zhou: { tiers: ['B'], title: '仅显示 B 级（大小周或数据存疑）' },
-    lei: { tiers: ['C'], title: '仅显示 C 级（避雷预警）' }
+    // 避雷预警含 D：D 级（站长人工降级，管理层指令性规避法律风险加班）是 C 的加重版，
+    // 不是另一类，所以在避雷格里；否则「避雷预警 58」点了只出 57 家。
+    lei: { tiers: ['C', 'D'], title: '仅显示 C/D 级（避雷预警；D 为站长强制降级）' }
   };
 
   var active = null; // null = 全部；'red' | 'zhou' | 'lei'
@@ -67,15 +72,20 @@
   }
 
   /* ---------------------------------------------------------- 档位识别 */
-  // 读卡内第一个档位徽章：S级/A级/B级/C级/U级（兼容空格差异）。
+  // 读卡内第一个档位徽章：S级/A级/B级/C级/D级/U级（兼容空格差异）。
   // 2026-11-02 起 U 级重新合法（三星/宏碁证据不足），必须识别，否则 U 卡在
   // 「全部」视图下被 tierMatches 当成 null 隐藏。
+  // 2026-11-02 起 D 级（站长人工降级，奇瑞）同理：bundle 没有 D 分支，
+  // 徽标由 u-grade-patch.js 异步注入 —— 而本脚本可能在徽标注入之前跑，
+  // 读不到徽标就会把 D 卡当 null 放过。所以优先读补丁打在卡上的 data-sxg-tier。
   function cardTier(card) {
     if ((card.textContent || '').indexOf('虚拟对比黑榜') !== -1) return 'V';
+    var flagged = card.getAttribute('data-sxg-tier');
+    if (flagged) return flagged;
     var nodes = card.querySelectorAll('span,div');
     for (var i = 0; i < nodes.length; i++) {
       var s = (nodes[i].textContent || '').trim();
-      var m = /^(S|A|B|C|U)\s*级/.exec(s);
+      var m = /^(S|A|B|C|D|U)\s*级/.exec(s);
       if (m) return m[1];
     }
     return null;

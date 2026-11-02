@@ -543,7 +543,7 @@ section('2e. 统计计数一致性（顶部四格 + 页脚清单）');
 //   双休红榜 = S/A 级卡数；大小周观察 = B 级卡数；避雷预警 = C 级卡数（内置 + 自定义）
 //   （U 级恢复但单独列示、不计入四格统计；原 U 级卡已按证据改判 S/A/B/C。）
 //   「某代工烘焙食品 (虚拟对比黑榜)」是上游设计的匿名对比工具，无详情页，不计入任何统计。
-const tier2e = { S: 0, A: 0, B: 0, C: 0, U: 0 };
+const tier2e = { S: 0, A: 0, B: 0, C: 0, D: 0, U: 0 };
 let builtin2e = 0;
 let virtual2e = 0;
 brandCards.forEach((c, i) => {
@@ -551,7 +551,7 @@ brandCards.forEach((c, i) => {
   const chunk = bundle.slice(c.pos, end);
   if (chunk.includes('id:`some-overtime-snack`')) { virtual2e += 1; return; }
   builtin2e += 1;
-  const tm = chunk.match(/tier:`([SABCU])`/);
+  const tm = chunk.match(/tier:`([SABCDU])`/);
   if (tm) tier2e[tm[1]] += 1;
 });
 const cfg2e = html.match(/var customCardsConfig = \[([\s\S]*?)\n      \];/);
@@ -562,7 +562,7 @@ const byGrade2e = (g) => customPairs2e.filter((c) => c.grade === g).length;
 const statTotal = builtin2e + customPairs2e.length;
 const statHong = tier2e.S + tier2e.A + byGrade2e('S级') + byGrade2e('A级');
 const statZhou = tier2e.B + byGrade2e('B级');
-const statLei = tier2e.C + byGrade2e('C级');
+const statLei = tier2e.C + tier2e.D + byGrade2e('C级') + byGrade2e('D级');
 const headerStat = (label, cls) => {
   const re = new RegExp('children:(\\d+)\\}\\),\\(0,A\\.jsx\\)\\(`div`,\\{className:`' + cls + '`,children:`' + label + '`');
   const m = bundle.match(re);
@@ -631,7 +631,7 @@ check(fourSum2e === totalCards2e - uCards2e,
 // bundle 侧档位锁定（2026-11-02 站长复核：宏碁/三星拿不到月休天数、正文自己写着
 // 「不作评级」，挂 C 级是自相矛盾 → 改 U；霸王茶姬有 BOSS 直聘门店岗「月休 4 天」
 // 快照（与名创同形态），维持 C。改任何一张都要同步这条断言，防止悄悄回退）
-const BUNDLE_TIER_LOCK = { acer: 'U', samsung: 'U', chagee: 'C' };
+const BUNDLE_TIER_LOCK = { acer: 'U', samsung: 'U', chagee: 'C', chery: 'D' };
 const badBundleLock = [];
 for (const bid of Object.keys(BUNDLE_TIER_LOCK)) {
   const idx = brandCards.findIndex((c) => c.id === bid);
@@ -642,8 +642,92 @@ for (const bid of Object.keys(BUNDLE_TIER_LOCK)) {
   if (!chunk.includes(want)) badBundleLock.push(bid + '：不是 ' + BUNDLE_TIER_LOCK[bid] + ' 档');
 }
 check(badBundleLock.length === 0,
-  '宏碁/三星 = U 档、霸王茶姬 = C 档（2026-11-02 复核锁定）',
+  '宏碁/三星 = U 档、霸王茶姬 = C 档、奇瑞 = D 档（2026-11-02 复核/人工介入锁定）',
   badBundleLock.join(', ') || '锁定生效');
+
+/* ---- 2e-4. D 级（站长人工干预）硬规则 ----
+ *
+ * 站长 2026-11-02：「像这种，高管要求规避法律风险想办法加班，直接D级，
+ * 并备注站长人为干预，强制介入要求Ai降级」。
+ *
+ * D 级是全站唯一一档「人的结论高于数据推演」：判据（管理层指令性规避法律风险加班）
+ * AI 推不出来，所以规则必须反过来咬——AI 不能自己判 D，也不能悄悄把 D 改回去。
+ * 三条机器规则：
+ *   ① bundle 内 tier:`D` 的卡数 = u-grade-patch.js 的 D_BRANDS 条数（漏一条 = 徽标空白）
+ *   ② 每张 D 页必须有「人工干预记录」结构标记（data-manual-override），否则等于只降了档没留账
+ *   ③ 口径区必须写明「D 级不由 AI 判定」，防止日后被当成普通档位滥用
+ */
+const bundleTierD = [];
+brandCards.forEach((c, i) => {
+  const end = i + 1 < brandCards.length ? brandCards[i + 1].pos : bundle.length;
+  if (bundle.slice(c.pos, end).includes('tier:`D`')) bundleTierD.push(c.id);
+});
+const patchSrc0 = readFileSync(join(ROOT, 'u-grade-patch.js'), 'utf8');
+const dListRaw = (patchSrc0.match(/D_BRANDS\s*=\s*\[([^\]]*)\]/) || [])[1] || '';
+const dListCount = (dListRaw.match(/'/g) || []).length / 2;
+check(dListCount === bundleTierD.length,
+  'u-grade-patch.js 的 D_BRANDS 条数 = bundle 内 D 档卡数（漏一条 = 该卡徽标空白）',
+  '清单 ' + dListCount + ' 条 / bundle D 档 ' + bundleTierD.length + ' 张（' + bundleTierD.join(',') + '）');
+check(bundleTierD.length > 0, 'bundle 内存在 D 档卡（空集会让上面那条恒真）', '实际 ' + bundleTierD.length);
+
+const dPages = [];
+const badDPage = [];
+for (const f of readdirSync(join(ROOT, 'brand')).filter((x) => x.endsWith('.html'))) {
+  const ph = readFileSync(join(ROOT, 'brand', f), 'utf8');
+  if (!/class="badge"[^>]*>\s*D\s*级/.test(ph)) continue;
+  dPages.push(f);
+  if (!/data-manual-override="1"/.test(ph)) badDPage.push(f + '：缺「人工干预记录」区块（data-manual-override）');
+  if (!/站长/.test(ph)) badDPage.push(f + '：正文未写明是站长介入');
+}
+check(dPages.length === bundleTierD.length,
+  'brand/ 里标 D 级的页数 = bundle 内 D 档卡数（空集不许冒充通过）',
+  '页面 ' + dPages.length + ' / bundle ' + bundleTierD.length);
+check(dPages.length > 0 && badDPage.length === 0,
+  'D 级详情页必须附「人工干预记录」并写明站长介入（降了档就必须留账）',
+  badDPage.join('；') || dPages.join(', ') + ' 均已留账');
+check(/D 级（站长人工介入，2026-11-02 新增）/.test(html) && /不由 AI 判定|AI 不得自行判定/.test(html),
+  'index.html 评级口径区声明 D 级存在、且明确「不由 AI 判定」');
+
+// ---------------------------------------------------------------------------
+// §2f 证据链：定档判据「只有一条、还是第三方二手」的页面，必须把证据链写在明面上。
+//   背景（2026-11-02 站长质问「新增的都是 A 级，证据链在哪」）：批量导入的 104 家
+//   每家都只有 1 条来源——同一篇第三方榜单聚合（2026-07-11，二手、未抓原文），
+//   凭它换算出 58 个 A 级。来源不是不能第三方，但**来源、日期、原话、缺口**必须公示，
+//   否则读者看到「A 级」无从判断它是实测还是转载。
+//   三条断言：①单源二手页必须有证据链区块 ②集合非空（空集会让 every 恒真）
+//   ③已补齐真实来源的页面不许退回单条第三方（招行为标本）
+// ---------------------------------------------------------------------------
+const weakSrcPages = [];
+const missingChain = [];
+for (const f of readdirSync(join(ROOT, 'brand')).filter((x) => x.endsWith('.html'))) {
+  const ph = readFileSync(join(ROOT, 'brand', f), 'utf8');
+  const m = ph.match(/<h2>证据来源<\/h2>\s*<ul>([\s\S]*?)<\/ul>/);
+  if (!m) continue;
+  const n = (m[1].match(/<li style="margin:0 0 12px">/g) || []).length;
+  // 「单源二手」= 只有 1 条，且该条标注为二手/未抓原文
+  const secondary = /二手|未抓原文/.test(m[1]);
+  if (n === 1 && secondary) {
+    weakSrcPages.push(f);
+    if (!/data-evchain="1"/.test(ph)) missingChain.push(f);
+  }
+}
+check(weakSrcPages.length > 0,
+  '存在「单源二手」详情页（空集会让下面那条 every 恒真，这是本站踩过的坑）',
+  '实际 ' + weakSrcPages.length + ' 页');
+check(missingChain.length === 0,
+  '★ 单源二手（1 条 + 二手未抓原文）的详情页必须附「证据链」区块（data-evchain）',
+  missingChain.length ? missingChain.length + ' 页缺区块：' + missingChain.slice(0, 6).join(', ') : weakSrcPages.length + ' 页均已附');
+check(/待补证据/.test(readFileSync(join(ROOT, 'brand', 'google.html'), 'utf8')),
+  '★ 证据链区块必须写明「待补证据」（只写来源不写缺口 = 半条链）');
+// 招商银行：2026-11-02 已把单条第三方换成 6 条公开来源，不许退回
+const cmb = readFileSync(join(ROOT, 'brand', 'cmb.html'), 'utf8');
+const cmbItems = ((cmb.match(/<h2>证据来源<\/h2>\s*<ul>([\s\S]*?)<\/ul>/) || [])[1] || '')
+  .match(/<li style="margin:0 0 12px">/g) || [];
+check(cmbItems.length >= 6 && /nfnews\.com/.test(cmb) && /financeun\.com/.test(cmb),
+  '★ 招商银行已补齐公开来源证据链（≥6 条且含南都/中国金融网原文链接，不许退回单条第三方）',
+  '条数 ' + cmbItems.length);
+check(/为什么不是 D 级/.test(cmb),
+  '★ 招商银行页必须写明「为什么不是 D 级」（D 判据是主动规避法律风险，公开倡导 ≠ 规避）');
 
 // u-grade-patch.js 的 U 品牌清单必须与 bundle 内 tier:`U` 的卡一一对应。
 // 漏改的后果不是报错，是那张卡**徽标空白**（bundle 的 switch 没有 U 分支）——
@@ -713,7 +797,7 @@ section('2g. 首页证据链完整公示');
     const t = read(pagePath);
     // 2026-11-02：U 级重新出现（三星/宏碁证据不足），这里必须包含 U，
     // 否则 truth.grade 变成空串、与公示区的 data-g="U" 对不上，整条契约断言判红。
-    const grade = (t.match(/<span class="badge"[^>]*>\s*([SABCU])\s*级/) || [])[1] || '';
+    const grade = (t.match(/<span class="badge"[^>]*>\s*([SABCDU])\s*级/) || [])[1] || '';
     const evBlock = t.match(/<h2>证据来源<\/h2>\s*<ul>([\s\S]*?)<\/ul>/);
     const items = evBlock
       ? [...evBlock[1].matchAll(/<li style="margin:0 0 12px">([\s\S]*?)<\/li>/g)]
@@ -1345,7 +1429,7 @@ if (ns) {
   const badgeGrade = (slug) => {
     const p = join(ROOT, 'brand', `${slug}.html`);
     if (!existsSync(p)) return null;
-    const m = readFileSync(p, 'utf8').match(/class="badge"[^>]*>\s*([SABCU])\s*级/);
+    const m = readFileSync(p, 'utf8').match(/class="badge"[^>]*>\s*([SABCDU])\s*级/);
     return m ? m[1] : null;
   };
   const projectsHtml = existsSync(join(ROOT, 'projects.html'))
@@ -1355,7 +1439,7 @@ if (ns) {
     for (const line of text.split('\n')) {
       const sm = line.match(/href="\.\/brand\/([a-z0-9-]+)\.html"/);
       if (!sm) continue;
-      const gm = line.replace(/<[^>]+>/g, '').match(/(?:——|：)\s*([SABCU])\s*级/);
+      const gm = line.replace(/<[^>]+>/g, '').match(/(?:——|：)\s*([SABCDU])\s*级/);
       if (!gm) continue;
       const dg = badgeGrade(sm[1]);
       if (dg !== gm[1]) listGradeBad.push(`${label} ${sm[1]}「${gm[1]} 级」≠ 详情页「${dg || '无徽标'}」`);

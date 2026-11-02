@@ -6,7 +6,8 @@
 //   工/建/中/成都 4 家银行网点轮休制周休 2 天（≈月休 8.6 天）→ A 级；
 //   农行官方口径单休网点占 61%（主体月休 4-5 天）→ 维持 C 级。
 //   badge 卡共 173 张（53 内置 - 1 虚拟 + 120 自定义），可见 172 张（虚拟卡 class 隐藏）。
-//   红榜(S/A) 81 + 大小周(B) 31 + 避雷(C) 58 = 170；另有 2 家 U 级（三星/宏碁，证据不足）
+//   红榜(S/A) 81 + 大小周(B) 31 + 避雷(C 57 + D 1) 58 = 170；另有 2 家 U 级（三星/宏碁，证据不足）
+//   D 级 = 站长人工降级（奇瑞，2026-11-02），计入避雷格；U 级不计入四格。
 //   不计入四格，由 u-grade-patch.js 在四格下方补一行说明；
 //   评级行无「待核实」按钮。
 //   2026-11-02：自定义卡 16 → 120（批量导入榜单 104 张），上列数字同步放大，算式仍闭合。
@@ -49,7 +50,7 @@ function tierOf(card) {
   const nodes = card.querySelectorAll('span,div');
   for (const n of nodes) {
     const s = (n.textContent || '').trim();
-    const m = /^(S|A|B|C|U)\s*级/.exec(s);
+    const m = /^(S|A|B|C|D|U)\s*级/.exec(s);
     if (m) return m[1];
   }
   return null;
@@ -151,12 +152,28 @@ setTimeout(() => {
     s.visible.length === 31 && s.visible.every((c) => tierOf(c) === 'B'),
     { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
 
-  // —— 避雷预警：只显示 C（虚拟卡除外）——
+  // —— 避雷预警：显示 C + D（D 是 C 的加重版，站长人工降级，同属避雷）——
   click(lei);
   s = snapshot();
-  check('点「避雷预警」→ 仅 C 级可见（58 张，含农行/霸王茶姬/淘宝闪购/BOSS直聘；81+31+58=170，另有 2 家 U 不在四格）',
-    s.visible.length === 58 && s.visible.every((c) => tierOf(c) === 'C'),
+  check('点「避雷预警」→ C/D 级可见（58 张 = C 57 + D 1；81+31+58=170，另有 2 家 U 不在四格）',
+    s.visible.length === 58 && s.visible.every((c) => ['C', 'D'].includes(tierOf(c))),
     { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
+  const dInLei = s.visible.filter((c) => tierOf(c) === 'D');
+  check('★ D 级卡（奇瑞，站长强制降级）在避雷档可见',
+    dInLei.length === 1 && (dInLei[0].textContent || '').includes('奇瑞'),
+    { found: dInLei.map((c) => (c.textContent || '').slice(0, 12)) });
+  const dBadge = dInLei[0] && dInLei[0].querySelector('[data-sxg-dbadge]');
+  check('★ D 级徽标文案 =「D级 · 站长强制降级」（bundle 无 D 分支，由补丁注入）',
+    !!dBadge && /^D级\s*·\s*站长强制降级$/.test((dBadge.textContent || '').trim()),
+    { badge: dBadge ? dBadge.textContent.trim() : '(无)' });
+  check('★ D 级卡内有「站长人工干预」备注条（站长明确要求备注）',
+    !!dInLei[0] && !!dInLei[0].querySelector('[data-sxg-dnote]')
+      && /站长人工干预/.test(dInLei[0].textContent || ''));
+  check('★ 四格下方有 D 级出口说明（避雷格含 D，得说清成分）',
+    (() => {
+      const n = window.document.getElementById('sxg-d-note');
+      return !!n && /D 级 · 站长强制降级/.test(n.textContent || '');
+    })());
   const bankInLei = s.visible.filter((c) =>
     ['农业银行', '淘宝闪购'].some((k) => (c.textContent || '').includes(k)));
   check('★ C 级锁定卡在避雷档可见（农行 + 淘宝闪购 = 2 张）', bankInLei.length === 2,
@@ -210,7 +227,7 @@ setTimeout(() => {
   (async () => {
     const cCards = [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
       .filter((c) => tierOf(c) === 'C');
-    check('前置：DOM 中 C 级卡 58 张（2026-11-02 三星/宏碁改判 U 后 −2；含 BOSS直聘 + 批量导入 29 张）', cCards.length === 58, cCards.length);
+    check('前置：DOM 中 C 级卡 57 张（2026-11-02 三星/宏碁改判 U −2、奇瑞人工降 D −1；含 BOSS直聘 + 批量导入 29 张）', cCards.length === 57, cCards.length);
     const removed = cCards.map((c) => {
       const p = c.parentNode; const nx = c.nextSibling;
       p.removeChild(c); return { c, p, nx };
