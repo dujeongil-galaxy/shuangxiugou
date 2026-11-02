@@ -224,11 +224,181 @@
     grid.parentElement.insertBefore(p, uNote ? uNote.nextSibling : grid.nextSibling);
   }
 
+  /* ---------------------------------------------------------- 评级过滤条 D/U 按钮
+   * bundle 的评级过滤按钮数组写死 [`全部`,`S`,`A`,`B`,`C`]，过滤表达式
+   * `c===\`全部\`||e.tier===c` —— U/D 卡在选中任何具体档位时都被 React 在
+   * 内存里滤掉（DOM 上根本没有这张卡）。2026-11-02 站长截图指出：评级过滤
+   * 只有 S/A/B/C 四个按钮，新增 D 级后全站检查发现此漏。
+   * bundle 铁律不许改 → 往过滤条尾部注入「D 级」「U 级」两个按钮，
+   * 点击时做 DOM 层 display 过滤。
+   *
+   * 与 stat-filter 四格筛选的互斥：stat-filter 的 ROW_RATING_TEXTS 已同步加
+   * 'D 级','U 级' —— 它在 document capture 阶段先清五格筛选，然后本模块再
+   * 隐藏，顺序天然正确，不会互刷。
+   *
+   * 恢复只清自己打的标记（data-sxg-gf），绝不动 stat-filter / 自定义卡过滤
+   * 设置的 display 状态。
+   *
+   * 已知限制（如实写在这里）：用户选 React 的「C 级」时，D 卡被 React 内存
+   * 过滤、DOM 上不存在，DOM 补丁无法复活 —— C 视图不含 D 卡，看 D 卡要用
+   * 本补丁的「D 级」按钮。根治只能改 bundle（红线），暂不做。
+   *
+   * 自定义卡跳过：它们的显隐由 index.html filterCustomCards 管（那边已同步
+   * 认得 'D 级','U 级' 按钮），本模块若再插手会两头打架。
+   */
+  var GF_MARK = 'data-sxg-gf';        // 本模块隐藏过的卡的标记（恢复只清这个）
+  var GF_BTN_ATTR = 'data-sxg-gf-btn';
+  var GF_LETTERS = ['D', 'U'];
+  var gfActive = null;                // null | 'D' | 'U'
+  var gfBar = null;                   // 评级过滤按钮容器
+
+  function gfCardTier(card) {
+    if ((card.textContent || '').indexOf('虚拟对比黑榜') !== -1) return 'V';
+    var f = card.getAttribute(TIER_ATTR);           // U/D 卡由 scan() 打标记
+    if (f) return f;
+    var nodes = card.querySelectorAll('span,div');
+    for (var i = 0; i < nodes.length; i++) {
+      var s = (nodes[i].textContent || '').trim();
+      var m = /^(S|A|B|C|D|U)\s*级/.exec(s);        // 与 stat-filter cardTier 同正则
+      if (m) return m[1];
+    }
+    // U/D 徽标可能尚未注入（scan 是异步多拍的）：按品牌名兜底认定
+    var h = card.querySelector('h3, h2');
+    var name = h ? (h.textContent || '') : '';
+    if (nameHit(name, D_BRANDS)) return 'D';
+    if (nameHit(name, U_BRANDS)) return 'U';
+    return null;
+  }
+
+  function gfFindBar() {
+    // bundle: <div class="flex flex-wrap items-center gap-2"><span>评级过滤:</span>…buttons
+    var spans = document.querySelectorAll('span');
+    for (var i = 0; i < spans.length; i++) {
+      if ((spans[i].textContent || '').trim() === '评级过滤:') {
+        var bar = spans[i].parentElement;
+        if (bar && bar.querySelector('button')) return bar;
+      }
+    }
+    return null;
+  }
+
+  function gfSetBtnState(btn, on) {
+    btn.className = 'text-xs px-3 py-1 rounded-md font-mono font-bold transition ' +
+      (on ? 'bg-slate-900 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-600');
+  }
+
+  function gfEnsureButtons() {
+    gfBar = gfFindBar();
+    if (!gfBar) return;
+    var buttons = gfBar.querySelectorAll('button');
+    var mine = [];
+    for (var i = 0; i < buttons.length; i++) {
+      if (buttons[i].hasAttribute(GF_BTN_ATTR)) mine.push(buttons[i]);
+    }
+    if (mine.length === GF_LETTERS.length) return;   // 已在（React 没重建过滤条）
+    // 缺失/部分缺失：React 重建了按钮数组 —— 清掉残缺的重注
+    for (var j = 0; j < mine.length; j++) mine[j].parentNode.removeChild(mine[j]);
+    var last = buttons.length ? buttons[buttons.length - 1] : null;
+    // React 重建后 last 可能又是自己的旧按钮（已删）——重新取
+    var all = gfBar.querySelectorAll('button');
+    last = all.length ? all[all.length - 1] : null;
+    for (var k = 0; k < GF_LETTERS.length; k++) {
+      var b = document.createElement('button');
+      b.setAttribute(GF_BTN_ATTR, '1');
+      b.setAttribute('data-sxg-gf-letter', GF_LETTERS[k]);
+      b.type = 'button';
+      b.textContent = GF_LETTERS[k] + ' 级';
+      b.title = GF_LETTERS[k] === 'D'
+        ? 'D 级 · 站长强制降级（管理层指令性规避法律风险加班，不由 AI 判定）'
+        : 'U 级 · 证据不足（已尽合理检索仍无可采信证据，不评级）';
+      gfSetBtnState(b, gfActive === GF_LETTERS[k]);
+      if (last && last.parentNode === gfBar) last.parentNode.insertBefore(b, last.nextSibling);
+      else gfBar.appendChild(b);
+      last = b;
+    }
+    if (!gfBar.getAttribute('data-sxg-gf-bound')) {
+      gfBar.setAttribute('data-sxg-gf-bound', '1');
+      gfBar.addEventListener('click', gfOnClick);
+    }
+  }
+
+  function gfOnClick(e) {
+    var btn = e.target && e.target.closest ? e.target.closest('button') : null;
+    if (!btn || !gfBar.contains(btn)) return;
+    if (btn.hasAttribute(GF_BTN_ATTR)) {
+      var letter = btn.getAttribute('data-sxg-gf-letter');
+      // 再点同一个 = 取消（回到全部评级；React state 未动过，列表仍是全量）
+      gfActive = (gfActive === letter) ? null : letter;
+      gfSyncAndApply();
+    } else if (gfActive) {
+      gfActive = null;                 // 点了 React 按钮 → 交还 React
+      gfClear();
+      gfSyncStyles();
+    }
+  }
+
+  function gfSyncStyles() {
+    if (!gfBar) return;
+    var mine = gfBar.querySelectorAll('[' + GF_BTN_ATTR + ']');
+    for (var i = 0; i < mine.length; i++) {
+      gfSetBtnState(mine[i], gfActive === mine[i].getAttribute('data-sxg-gf-letter'));
+    }
+    // 我们激活时压掉 React 按钮的选中态（React state 没变，不会自己改回来）
+    if (gfActive) {
+      var theirs = gfBar.querySelectorAll('button:not([' + GF_BTN_ATTR + '])');
+      for (var j = 0; j < theirs.length; j++) {
+        var cn = theirs[j].className || '';
+        if (cn.indexOf('bg-slate-900') !== -1) {
+          theirs[j].className = cn
+            .replace('bg-slate-900', 'bg-slate-100')
+            .replace('text-white', 'text-slate-600');
+        }
+      }
+    }
+  }
+
+  function gfApply() {
+    var cards = document.querySelectorAll(CARD_SEL);
+    for (var i = 0; i < cards.length; i++) {
+      var card = cards[i];
+      // 自定义卡（id 形如 xxx-card）由 index.html filterCustomCards 管，跳过
+      if (card.id && /-card$/.test(card.id)) continue;
+      var tier = gfCardTier(card);
+      if (gfActive && tier !== gfActive) {
+        card.style.display = 'none';
+        card.setAttribute(GF_MARK, '1');
+      } else if (card.getAttribute(GF_MARK)) {
+        card.style.display = '';
+        card.removeAttribute(GF_MARK);
+      }
+    }
+  }
+
+  function gfClear() {
+    var marked = document.querySelectorAll('[' + GF_MARK + ']');
+    for (var i = 0; i < marked.length; i++) {
+      marked[i].style.display = '';
+      marked[i].removeAttribute(GF_MARK);
+    }
+  }
+
+  function gfSyncAndApply() {
+    gfSyncStyles();
+    gfApply();
+  }
+
+  function gfEnsure() {
+    gfEnsureButtons();
+    // React 重渲染（搜索/品类/点赞）会重建卡片与过滤条：重放当前过滤态
+    if (gfActive) gfSyncAndApply();
+  }
+
   function scan() {
     try { injectD(); } catch (e) { warn(e); }
     try { injectU(); } catch (e) { warn(e); }
     try { injectStatNote(); } catch (e) { warn(e); }
     try { injectDStatNote(); } catch (e) { warn(e); }
+    try { gfEnsure(); } catch (e) { warn(e); }
   }
   function warn(e) {
     if (typeof console !== 'undefined' && console.warn) {

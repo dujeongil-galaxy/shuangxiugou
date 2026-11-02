@@ -7471,11 +7471,13 @@
         // 获取当前选中的评级
         // ⚠️ 选中态类名是 bg-slate-900（bundle 渲染），早先只查 bg-black/bg-gray-900
         // → 永远匹配不上，自定义卡的评级筛选静默失效（2026-10-18 修复）。
-        // 2026-10-31 起「待核实」U 按钮已随 U 级废除一并移除。
+        // 2026-11-02：「D 级」「U 级」按钮由 u-grade-patch.js 注入到评级过滤条
+        //（bundle 数组写死只有 S/A/B/C），选中态同样带 bg-slate-900 ——
+        // 必须认得这两个文案，否则 D/U 激活时自定义卡不会被同步隐藏。
         var activeGrade = '全部评级';
         categoryBtns.forEach(function(btn) {
           var text = btn.textContent.trim();
-          if (['全部评级', 'S 级', 'A 级', 'B 级', 'C 级'].includes(text)) {
+          if (['全部评级', 'S 级', 'A 级', 'B 级', 'C 级', 'D 级', 'U 级'].includes(text)) {
             if (btn.className.includes('bg-black') || btn.className.includes('bg-gray-900') || btn.className.includes('bg-slate-900')) {
               activeGrade = text;
             }
@@ -7704,7 +7706,7 @@
        1) 顶部「打卡并生成小票」改为弹窗，引导去品牌档案卡打卡（原来默认给第一家品牌打卡，会误导）
        2) 自定义品牌卡（DOM 克隆）没有 React onClick，补上「打卡」「详情证据」功能 -->
   <script src="./custom-card-actions.js?v=19"></script>
-  <script src="./u-grade-patch.js?v=3"></script>
+  <script src="./u-grade-patch.js?v=4"></script>
   <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
   <script src="./factcheck-button.js?v=1"></script>
   <!-- 拼音 / 首字母模糊搜索联想。
@@ -7748,7 +7750,7 @@
 <!-- 右侧纯文字「提醒」悬浮按钮（2026-10-28 站长要求；2026-10-30 文案换成站长亲笔《双休购》长文）：点击弹出「双休购」模态层；
      其余悬浮按钮行为不变。挂 body、不碰 React 的 #root 地盘，避让 TOP/⤓/AI 对话钮。 -->
 <script src="./remind-button.js?v=5"></script>
-<script src="./stat-filter.js?v=8"></script>
+<script src="./stat-filter.js?v=9"></script>
   <!-- 搜索口径修正：summary 命中降级为兜底。2026-10-24 站长截图：搜「瑞幸咖啡」
        结果里同时出现库迪咖啡。根因：bundle 主过滤器的 7 路匹配里有 summary，
        而库迪 summary 写着「由瑞幸咖啡创始团队于 2022 年创立」——叙述性长文本

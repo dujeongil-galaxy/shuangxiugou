@@ -5522,6 +5522,32 @@ section('21c. 首页滑到底部按钮');
     `只有 ${srcCount} 条来源 → 事实无出处，与本站证据链纪律冲突`);
 }
 
+// ---------- 21k. 评级过滤条必须认得 D/U（bundle 数组写死 S/A/B/C，补丁注入） ----------
+// 2026-11-02 站长截图指出：新增 D 级后评级过滤条仍只有 S/A/B/C —— 选任何具体
+// 档位时 U/D 卡被 React 内存过滤（DOM 上不存在），且无法筛出 D/U。
+// 修法（bundle 红线不许改）：u-grade-patch.js 往过滤条注入「D 级」「U 级」按钮 +
+// DOM 层过滤；三处必须同步，缺一处就打架或漏卡：
+//   ① u-grade-patch.js 注入逻辑  ② index.html 自定义卡过滤枚举  ③ stat-filter.js
+//   评级行互斥枚举（点 D/U 时清五格筛选，capture 阶段先跑，顺序天然正确）。
+{
+  const ugp = read('u-grade-patch.js');
+  const idx = read('index.html');
+  const sf = read('stat-filter.js');
+  check(/GF_LETTERS = \['D', 'U'\]/.test(ugp) && /GF_BTN_ATTR/.test(ugp) && /评级过滤:/.test(ugp),
+    'u-grade-patch.js 会向评级过滤条注入「D 级」「U 级」按钮（bundle 数组写死 S/A/B/C）',
+    '按钮注入逻辑缺失或锚点文案失配 → D/U 卡永远无法被筛出');
+  check(/'全部评级',\s*'S 级',\s*'A 级',\s*'B 级',\s*'C 级',\s*'D 级',\s*'U 级'/.test(idx),
+    'index.html 自定义卡评级过滤枚举含「D 级」「U 级」',
+    'index.html 没跟上 → D/U 激活时 120 张自定义卡不会被同步隐藏（bundle 卡藏了自定义卡还在）');
+  const rowTexts = (sf.match(/ROW_RATING_TEXTS = \[([^\]]*)\]/) || ['', ''])[1];
+  check(/'D 级'/.test(rowTexts) && /'U 级'/.test(rowTexts),
+    'stat-filter.js 评级行互斥枚举含「D 级」「U 级」（点 D/U 清五格筛选）',
+    'stat-filter 没跟上 → 点 D/U 不清四格筛选，两套过滤层互相覆盖出现空面板');
+  check(/u-grade-patch\.js\?v=4/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
+    'u-grade-patch.js?v=4 / stat-filter.js?v=9（缓存号已随内容 bump）',
+    '缓存号没 bump → 用户拿旧补丁，D/U 按钮注入不生效（2026-11-01 拼音索引同类事故）');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {
