@@ -49,9 +49,17 @@ function until(condFn, timeoutMs) {
   });
 }
 
-/** 造一个页面：onlyMobile=true 时 matchMedia 只对 max-width:640 命中。 */
-function mkDom(onlyMobile) {
-  const dom = new JSDOM('<!DOCTYPE html><html><head></head><body><div id="root"></div></body></html>',
+/** 造一个页面：onlyMobile=true 时 matchMedia 只对 max-width:640 命中。
+ *  withNotice=true 时带上公告栏 + 版本号节点 —— 手机菜单的版本号项是从
+ *  这个节点读文本的，桩里不给就等于永远测不到那条路径（救绿形态）。 */
+function mkDom(onlyMobile, withNotice) {
+  const notice = withNotice
+    ? '<div id="site-notice"><span id="evidence-notice">本站全部数据均附公开证据链</span>'
+      + '<span class="notice-sep">｜</span>'
+      + '<span class="notice-ver" style="color:#000;font-weight:700">当前版本号 abc1234</span></div>'
+    : '';
+  const dom = new JSDOM('<!DOCTYPE html><html><head></head><body>' + notice
+    + '<div id="root"></div></body></html>',
     { runScripts: 'outside-only', url: 'https://dujeongil-galaxy.github.io/shuangxiugou/' });
   const w = dom.window;
   const listeners = [];
@@ -76,7 +84,7 @@ function mkDom(onlyMobile) {
 (async function () {
   /* ================= ① 桌面：常显、条目立即建好 ================= */
   console.log('\n① 桌面（>640px）常显');
-  const wd = mkDom(false);
+  const wd = mkDom(false, true);
   const docD = wd.document;
   await until(() => docD.getElementById('sxg-nav'), 2000);
 
@@ -87,8 +95,14 @@ function mkDom(onlyMobile) {
   check('注入 #sxg-nav 容器', !!rootD);
   check('注入主按钮 #sxg-nav-fab', !!fabD);
   check('注入面板 #sxg-nav-panel', !!panelD);
-  check('桌面端条目立即创建（常显，3 条）',
-    panelD && panelD.querySelectorAll('.sxg-nav-item').length === 3,
+  // 桌面也要建版本项，视觉交给 CSS 隐藏。只在手机端建是错的：桌面宽屏
+  // 首屏加载时 built 已置 true，之后把窗口拖窄到 <640px 不会再补建，
+  // 手机上就永远少这一条（2026-11-02 首版实测就是这个坑，截图里只有 3 项）。
+  check('桌面端也建版本号项（跨断点才补得上，视觉由 CSS 隐藏）',
+    panelD && panelD.querySelectorAll('.sxg-nav-ver').length === 1,
+    panelD && panelD.querySelectorAll('.sxg-nav-ver').length);
+  check('桌面端条目 4 条（3 导航 + 1 版本号）',
+    panelD && panelD.querySelectorAll('.sxg-nav-item').length === 4,
     panelD && panelD.querySelectorAll('.sxg-nav-item').length);
 
   const itemsD = panelD ? Array.from(panelD.querySelectorAll('.sxg-nav-item')) : [];
@@ -128,6 +142,20 @@ function mkDom(onlyMobile) {
     /#sxg-nav-panel\{display:none/.test(mqBlock) && /\.is-open #sxg-nav-panel\{display:flex\}/.test(mqBlock),
     { panelHide: /#sxg-nav-panel\{display:none/.test(mqBlock) });
   check('底距用 --sxg-bar-h 变量（避让良配吸底条）', /var\(--sxg-bar-h/.test(css));
+  // 版本号项：桌面隐藏、手机露出。写在断点里没写基础规则的话，桌面上
+  // 会跟 dock 并排多出一条灰底 pill；只有基础规则不写断点，手机上则永远看不见。
+  check('★ 版本号项基础规则隐藏、只在手机断点露出',
+    /\.sxg-nav-ver\{display:none/.test(css)
+      && /#sxg-nav \.sxg-nav-ver\{display:block\}/.test(mqBlock),
+    {
+      baseHide: /\.sxg-nav-ver\{display:none/.test(css),
+      mqShow: /#sxg-nav \.sxg-nav-ver\{display:block\}/.test(mqBlock),
+    });
+  // 桌面版本号项以 display:none 留在 DOM 里，它仍然是 :last-child。
+  // 右端圆角若还写 :last-child，会画到那个看不见的节点上，
+  // 第三个导航项变成直角收尾（真渲染截图里一眼可见）。
+  check('★ dock 右端圆角挂在 a:last-of-type（不被隐藏的版本号 div 吃掉）',
+    /a\.sxg-nav-item:last-of-type\{border-right:1px solid #d1d5db;border-radius:0 19px 19px 0\}/.test(css));
   // 坑（2026-11-02 实测）：≥1440px 良配是右上卡片，但脚本照样把它的高度
   // （实测 279px）写进 --sxg-bar-h，不覆盖的话桌面 dock 会被顶到页面中部。
   check('★ ≥1440px 覆盖掉条高变量，dock 贴回右下角',
@@ -136,7 +164,7 @@ function mkDom(onlyMobile) {
 
   /* ================= ② 手机：点开才加载 ================= */
   console.log('\n② 手机（≤640px）按需创建');
-  const wm = mkDom(true);
+  const wm = mkDom(true, true);
   const docM = wm.document;
   await until(() => docM.getElementById('sxg-nav'), 2000);
 
@@ -156,10 +184,10 @@ function mkDom(onlyMobile) {
 
   // 点开
   fabM.dispatchEvent(new wm.MouseEvent('click', { bubbles: true }));
-  await until(() => panelM.querySelectorAll('.sxg-nav-item').length === 3, 1000);
+  await until(() => panelM.querySelectorAll('.sxg-nav-item').length === 4, 1000);
 
   const itemsM = Array.from(panelM.querySelectorAll('.sxg-nav-item'));
-  check('★ 点开后条目才被创建（3 条）', itemsM.length === 3, itemsM.length);
+  check('★ 点开后条目才被创建（3 个导航 + 1 个版本号 = 4 条）', itemsM.length === 4, itemsM.length);
   check('展开态 is-open 挂上', rootM.classList.contains('is-open'));
   check('展开后 aria-expanded=true', fabM.getAttribute('aria-expanded') === 'true');
   check('点开后的第一条是「证据链公示」→ #evidence-board',
@@ -168,6 +196,17 @@ function mkDom(onlyMobile) {
     itemsM[1] && itemsM[1].textContent === '同类项目导航' && itemsM[1].getAttribute('href') === './projects.html');
   check('点开后的第三条是「成功案例」→ ./success-stories.html',
     itemsM[2] && itemsM[2].textContent === '成功案例' && itemsM[2].getAttribute('href') === './success-stories.html');
+  // 版本号项：文本必须来自公告栏 DOM（比对的是桩里写死的 abc1234，
+  // 不是「含『当前版本号』」这种子串断言 —— 子串断言在 JS 里另写死一份
+  // 同样能过，等于没测到「读 DOM」这个关键行为）
+  const verM = panelM.querySelector('.sxg-nav-ver');
+  check('手机菜单第四条是版本号（文本为公告栏 .notice-ver 原文）',
+    verM && verM.textContent === '当前版本号 abc1234', verM && verM.textContent);
+  check('版本号项不是链接（<div>、无 href，点了不会跳走）',
+    verM && verM.tagName === 'DIV' && !verM.hasAttribute('href'),
+    verM && [verM.tagName, verM.getAttribute('href')]);
+  check('版本号项排在导航之后（不在第一条，别抢「证据链公示」的位置）',
+    itemsM[itemsM.length - 1] === verM);
 
   // 再点收起，且不复建
   const firstNode = itemsM[0];
@@ -175,12 +214,12 @@ function mkDom(onlyMobile) {
   await wait(20);
   check('再点一次收起（is-open 移除）', !rootM.classList.contains('is-open'));
   check('收起后条目仍在 DOM 里（只切显隐，不销毁重建）',
-    panelM.querySelectorAll('.sxg-nav-item').length === 3);
+    panelM.querySelectorAll('.sxg-nav-item').length === 4);
   check('★ 收起再点开不重复创建（还是同一批节点）',
     (function () {
       fabM.dispatchEvent(new wm.MouseEvent('click', { bubbles: true }));
       const again = Array.from(panelM.querySelectorAll('.sxg-nav-item'));
-      return again.length === 3 && again[0] === firstNode;
+      return again.length === 4 && again[0] === firstNode;
     })());
 
   /* ================= ③ Esc / 点空白 ================= */
@@ -202,10 +241,26 @@ function mkDom(onlyMobile) {
   await wait(20);
   check('重复执行不重复注入 #sxg-nav', docM.querySelectorAll('#sxg-nav').length === 1);
   check('重复执行不重复注入 #sxg-nav-style', docM.querySelectorAll('#sxg-nav-style').length === 1);
-  check('重复执行后条目数不变（仍是 3）', panelM.querySelectorAll('.sxg-nav-item').length === 3);
+  check('重复执行后条目数不变（仍是 4）', panelM.querySelectorAll('.sxg-nav-item').length === 4);
 
-  /* ================= ⑤ 出口文件真实存在 ================= */
-  console.log('\n⑤ 出口可达');
+  /* ================= ⑤ 没有公告栏的页面：不留空壳 ================= */
+  console.log('\n⑤ 读不到版本号时不建空壳');
+  const wm2 = mkDom(true, false);
+  const docM2 = wm2.document;
+  await until(() => docM2.getElementById('sxg-nav'), 2000);
+  const panelN2 = docM2.getElementById('sxg-nav-panel');
+  const fabN2 = docM2.getElementById('sxg-nav-fab');
+  fabN2.dispatchEvent(new wm2.MouseEvent('click', { bubbles: true }));
+  await wait(30);
+  check('页面没有 .notice-ver 时，手机菜单只建 3 条导航',
+    panelN2.querySelectorAll('.sxg-nav-item').length === 3,
+    panelN2.querySelectorAll('.sxg-nav-item').length);
+  check('页面没有 .notice-ver 时也不存在 .sxg-nav-ver 空壳节点',
+    panelN2.querySelectorAll('.sxg-nav-ver').length === 0,
+    panelN2.querySelectorAll('.sxg-nav-ver').length);
+
+  /* ================= ⑥ 出口文件真实存在 ================= */
+  console.log('\n⑥ 出口可达');
   check('projects.html 存在', fs.existsSync(path.join(ROOT, 'projects.html')));
   check('success-stories.html 存在', fs.existsSync(path.join(ROOT, 'success-stories.html')));
   // 页内锚点同理：菜单第一条跳 #evidence-board，这个 id 不在 index.html 里就是死链

@@ -10,6 +10,9 @@
    设计取舍：
    - 只收导航项（证据链公示 / 同类项目导航 / 成功案例），既有五个悬浮按钮
      （视频 / TOP / ⤓ / AI / 提醒）保持原样，不并进来。
+   - 手机端另挂一条**不可点**的版本号（第二轮，2026-11-02）：公告栏为了压到
+     单行把 .notice-ver 隐藏了，版本号得有地方看，就搬进这里。它不是导航、
+     不是链接，用 <div> + pointer-events:none；文本运行时读 DOM，不另存哈希。
    - PC 端放在最底部一行的右侧、避开右侧悬浮按钮列（right:72px 让开 16+44 的
      按钮列），横向 pill 常显；<640px 折叠成圆形主按钮。
    - 手机端主按钮放**左下**：右侧从 bottom 48 到 272 已经排满五个按钮，再往那
@@ -67,9 +70,20 @@
       '  border:1px solid #d1d5db;border-right:none;white-space:nowrap;',
       '  transition:background-color .16s,color .16s;}',
       '.sxg-nav-item:first-child{border-radius:19px 0 0 19px}',
-      '.sxg-nav-item:last-child{border-right:1px solid #d1d5db;border-radius:0 19px 19px 0}',
+      /* 右端收口用 a:last-of-type，不能再用 :last-child ——
+         版本号项是 <div>，桌面靠 display:none 藏着，但它仍是 last-child：
+         圆角会画到那个看不见的节点上，第三个导航项变成直角收尾
+         （2026-11-02 真渲染截图里一眼可见）。 */
+      'a.sxg-nav-item:last-of-type{border-right:1px solid #d1d5db;border-radius:0 19px 19px 0}',
       '.sxg-nav-item:hover{background:#0F766E;color:#fff}',
       '.sxg-nav-item:focus-visible{outline:2px solid #0F766E;outline-offset:2px}',
+
+      /* 版本号项（2026-11-02 第二轮）：手机端公告栏把 .notice-ver 隐藏了
+         （那条原来独占公告栏第二行，49px 压不下去），版本号改在这里显示。
+         不是链接，所以用 <div> 且 pointer-events:none —— 顺手把 :hover
+         也一并废掉，不靠再写一条 hover 覆盖去追。 */
+      '.sxg-nav-ver{display:none;pointer-events:none;cursor:default;',
+      '  background:#f3f4f6;color:#6b7280;font-weight:600;}',
 
       /* 手机：折叠成一个主按钮，面板浮在按钮上方 */
       '@media (max-width:640px){',
@@ -80,13 +94,16 @@
       '  #sxg-nav.is-open #sxg-nav-panel{display:flex}',
       '  .sxg-nav-item{border:1px solid #d1d5db;border-radius:14px;padding:11px 14px;',
       '    box-shadow:0 4px 14px rgba(0,0,0,.14);}',
-      '  .sxg-nav-item:first-child,.sxg-nav-item:last-child{border-radius:14px;border-right:1px solid #d1d5db}',
+      '  .sxg-nav-item:first-child,.sxg-nav-item:last-child,a.sxg-nav-item:last-of-type{border-radius:14px;border-right:1px solid #d1d5db}',
+      /* 版本号项只在手机断点露出来：桌面公告栏那一行本来就看得到，重复是噪音 */
+      '  #sxg-nav .sxg-nav-ver{display:block}',
       '}',
 
       /* 暗色适配：随笔页一类有 prefers-color-scheme: dark 的页面 */
       '@media (prefers-color-scheme: dark){',
       '  .sxg-nav-item{background:#1f2937;color:#5eead4;border-color:#374151}',
       '  .sxg-nav-item:hover{background:#0F766E;color:#fff}',
+      '  .sxg-nav-ver{background:#111827;color:#9ca3af;border-color:#374151}',
       '}'
     ].join('');
     var style = document.createElement('style');
@@ -103,6 +120,15 @@
     return window.matchMedia && window.matchMedia('(max-width:640px)').matches;
   }
 
+  // 版本号：运行时从公告栏节点读，**不在这里另存一份哈希**。
+  // 存一份的后果是 sync-version.mjs 只改 index.html，菜单里的会永远停在旧值，
+  // 而且没有任何断言会发现（两份数据没有比对源）。
+  function noticeVersion() {
+    var el = document.querySelector('#site-notice .notice-ver');
+    if (!el) return '';
+    return (el.textContent || '').replace(/\s+/g, ' ').trim();
+  }
+
   // 条目 DOM 按需创建：手机端第一次点开才建，PC 端常显所以直接建。
   function ensureItems() {
     if (built || !panel) return;
@@ -114,6 +140,18 @@
       a.textContent = it.label;
       panel.appendChild(a);
     });
+    // 版本号（桌面也建、靠 CSS 隐藏）：不能只在手机端建 —— 桌面宽屏加载
+    // 时 built 已经置 true，之后把窗口拖窄到 <640px 就不会再补建，
+    // 手机上永远少这一条（2026-11-02 首版实测正是这个坑，截图只剩 3 项）。
+    // 读不到就干脆不加 —— 别留一个「当前版本号」空壳（notes.html 之类
+    // 没挂公告栏的页面也会加载本脚本）。
+    var ver = noticeVersion();
+    if (ver) {
+      var box = document.createElement('div');
+      box.className = 'sxg-nav-item sxg-nav-ver';
+      box.textContent = ver;
+      panel.appendChild(box);
+    }
   }
 
   function setOpen(next) {

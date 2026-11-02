@@ -897,6 +897,18 @@ section('2g. 首页证据链完整公示');
       check(/-webkit-line-clamp:\s*1/.test(mfc)
         && /\.notice-more-cb:checked\s*~\s*#evidence-notice/.test(mfc),
         '手机端公告栏默认压成 1 行、展开态解除（mobile-fixes.css）');
+      // 第二轮（2026-11-02）：版本号不再占公告栏第二行，49px → 约 28px。
+      // 只断言「藏了」还不够 —— 藏了但菜单没搬，等于手机上版本号彻底没了，
+      // 所以 §9c 那边同时断言菜单真的去读了 .notice-ver。
+      // 选择器是「.notice-sep, .notice-ver{display:none}」这种并列写法，
+      // 所以 .notice-ver 到 { 之间允许夹逗号/换行，不能要求紧跟大括号。
+      check(/#site-notice \.notice-ver[^{}]*\{[^}]*display:\s*none/.test(mfc),
+        '手机端版本号让位（公告栏只留「正文 1 行 + 展开」）');
+      // 「展开」原先 padding-left 只有 4px，实测跟省略号贴在一起，
+      // 「…已在本页…展开」读起来像连写（2026-11-02 站长看截图指出）。
+      // 判据两条：间距抬到 ≥8px + 左边界有一条分隔线。
+      check(/\.notice-more-lbl\s*\{[^}]*padding-left:\s*(?:[89]|1[0-9])px[^}]*border-left:\s*1px solid/.test(mfc),
+        '折叠开关与正文有视觉分隔（间距 ≥8px + 左侧分隔线）');
     }
   }
 
@@ -909,6 +921,11 @@ section('2g. 首页证据链完整公示');
     // 公告栏折叠后，不想点「展开」的人得有别的路到证据链 —— 菜单里补一个页内锚点
     check(nm.includes("'#evidence-board'"),
       '悬浮菜单含「证据链公示」页内跳转（公告栏折叠后的补偿入口）');
+    // 公告栏为了收成单行把 .notice-ver 藏了，版本号必须有地方看 → 搬进菜单。
+    // 同理断言「读 DOM」而不是「有版本号」：JS 里另写死一份哈希也能过字面检查，
+    // 但那份永远不会跟着 sync-version 更新，所以行为测试比对的是桩里的原文。
+    check(/notice-ver/.test(nm) && /sxg-nav-ver/.test(nm),
+      '手机菜单承载公告栏版本号（运行时读 .notice-ver，不另存哈希）');
     check(/<script src="\.\/nav-menu\.js\?v=\d+"><\/script>/.test(html),
       'index.html 已挂载 nav-menu.js（带 ?v 缓存号）');
     // PC 常显 / 手机折叠：两个断点都必须写在样式里，否则等同只有一个形态

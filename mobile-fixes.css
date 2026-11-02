@@ -287,7 +287,10 @@
        展开后文本换行独占一块，label 单独一行 —— auto 会把它推到右端，
        位置和展开前一致，不会出现「点一下按钮跳到屏幕中间」的跳动。 */
     margin-left: auto;
-    padding-left: 4px;
+    padding-left: 10px;
+    /* 淡竖线把「展开」跟正文省略号隔开：原先 4px 间距实测贴在一起，
+       「…已在本页…展开」读起来像连写的半个词（2026-11-02 站长看截图指出）。 */
+    border-left: 1px solid #fecaca;
     color: #0f766e;
     font-size: 11px;
     font-weight: 700;
@@ -310,15 +313,14 @@
     outline-offset: 2px;
   }
 
-  /* 版本号独占一行、字号降一档：不再跟正文抢同一行的宽度，
-     把正文从「4 行」压到「1 行 + 版本号 1 行」。 */
-  #site-notice .notice-sep {
-    display: none;
-  }
-
+  /* 版本号：手机上整条隐藏，公告栏只留「正文 1 行 + 展开」收尾
+     （2026-11-02 第二轮：上一版是「正文 1 行 + 版本号 1 行」= 49px，
+     站长看着仍是两行。现在版本号搬进右下角三横菜单，49px → 约 28px）。
+     ⚠️ HTML 里的 .notice-ver 节点必须留着 —— sync-version.mjs 的回写锚点
+     是「当前版本号 xxxxxxx</span>」，删节点等于让每日版本号同步静默失效。
+     菜单侧由 nav-menu.js 运行时读这个节点的文本，不另存一份哈希。 */
+  #site-notice .notice-sep,
   #site-notice .notice-ver {
-    flex: 0 0 100%;
-    margin-top: 1px;
-    font-size: 11px;
+    display: none;
   }
 }
