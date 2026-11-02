@@ -5405,6 +5405,56 @@ section('21c. 首页滑到底部按钮');
     stale.length ? stale.join('； ') : `本次有 ${changed} 个资源内容变更，?v 均已同步`);
 }
 
+// ---------- 21i. customCardsConfig 的 insertAfter 锚点必须可解析 ----------
+// 血泪（2026-11-02 站长实测）：alibaba-card 的锚点写成 'nongfu'（拼音 slug）——
+// findCardByH3 三条路全打不中（无 id="nongfu" 的元素，卡片标题「农夫山泉」
+// 也不含拉丁字 nongfu）→ 每次新插入都走「列表末尾兜底」。搜索会把注入的
+// 自定义卡从 DOM 移除、清空搜索后注入层重新注入，链头落点随注入时机漂移
+// （真渲染实测：阿里 70 位→44 位，工行链被挤到 155 位）——站长观感是
+// 「搜索奇瑞汽车删除后列表变样，F5 刷新才正常」。
+// 判据：每个 insertAfter 必须 ①命中某张自定义卡的 id（链式锚点，即
+// getElementById 能找到），或 ②被 bundle 某个 name:`X` 包含（对应
+// findCardByH3 的标题 includes 匹配）。两条都不满足 = 该锚点永远解析失败
+// = 位置必然漂移 → 判红。
+{
+  const htmlIdx = read('index.html');
+  const cfgText = (htmlIdx.match(/var customCardsConfig = \[([\s\S]*?)\n      \];/) || ['', ''])[1];
+  const pairs = [...cfgText.matchAll(/id:\s*'([^']+)'[\s\S]*?insertAfter:\s*'([^']+)'/g)]
+    .map((m) => ({ id: m[1], after: m[2] }));
+  check(pairs.length > 0, '能解析 customCardsConfig 的 id/insertAfter 对（空集=断言失效）',
+    '解析到 0 对 → 正则与 index.html 的配置格式失配，本断言形同虚设');
+  const cardNames = [...read('assets/index-YthXZ9eP.js').matchAll(/name:`([^`]{1,80})`/g)]
+    .map((m) => m[1]);
+  const ids = new Set(pairs.map((p) => p.id));
+  // 锚点也可以指向先注入的自定义卡的中文 name（findCardByH3 的标题扫描
+  // 会命中已注入的自定义卡，如「赵一鸣/零食很忙」）——注入按 config 顺序
+  // 进行，name 锚点指向的卡必须在本卡之前，这里只验「可命中」，顺序由
+  // 真渲染验收把关。
+  const customNames = new Set([...cfgText.matchAll(/name:\s*'([^']{1,60})'/g)].map((m) => m[1]));
+  const badAnchors = pairs.filter((p) =>
+    !ids.has(p.after) &&
+    !customNames.has(p.after) &&
+    ![...customNames].some((n) => n.includes(p.after)) &&
+    !cardNames.some((n) => n.includes(p.after)));
+  check(badAnchors.length === 0,
+    `customCardsConfig 全部 ${pairs.length} 个 insertAfter 锚点可解析（id 链或 bundle 卡名）`,
+    badAnchors.length
+      ? '以下锚点永远无法被 findCardByH3 命中，注入会走「列表末尾兜底」导致位置随搜索/清空漂移：'
+        + badAnchors.map((p) => `${p.id} <- ${JSON.stringify(p.after)}`).join('； ')
+      : '');
+  // 锚点唯一性：两张卡共用同一个锚点时，MO 归位每轮都把对方挤走 ——
+  // 互相追逐无限自激，真浏览器主线程直接卡死（2026-11-02 修 nongfu 锚点时
+  // 险些引入：阿里锚到「农夫山泉」，与茶百道撞车，真渲染 9 分钟无响应）。
+  const seen2 = new Map();
+  for (const p of pairs) seen2.set(p.after, (seen2.get(p.after) || 0) + 1);
+  const dupAnchors = [...seen2.entries()].filter(([, n]) => n > 1).map(([a]) => a);
+  check(dupAnchors.length === 0,
+    '每个 insertAfter 锚点只被一张卡使用（共用 = 归位互抢 = 无限自激卡死）',
+    dupAnchors.length
+      ? '以下锚点被多张卡共用：' + dupAnchors.map((a) => `${JSON.stringify(a)} ×${seen2.get(a)}`).join('； ')
+      : '');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {
