@@ -897,59 +897,88 @@ section('2g. 首页证据链完整公示');
     check(/当前版本号\s*[0-9a-f]{7}/.test(noticeDiv[0]),
       '公告栏保留「当前版本号 xxxxxxx」纯文字（sync-version 回写锚点）');
 
-    /* 手机端折叠（2026-11-02 站长：「仍然占了 3–4 行」）
-       —— 单行折叠 + 展开，开关是纯 CSS 的 checkbox + label（不依赖脚本）。
-       三件都必须在一起，缺一件就等于没折叠或者折叠了打不开：
+      /* 手机端折叠：站长三轮口令的最终形态
+         —— 第二轮「仍然占了 3–4 行」→ 第三轮「你确定手机版一行文字就能显示完？
+            不考虑设备屏幕大小吗？」→ 第四轮「我要的是这句完整的话，最多两行，
+            或者做折叠，你看着办吧，别问我了」。
+       定稿：正文永远是**原句**，手机端压两行 + 展开看全，开关是纯 CSS 的
+       checkbox + label（不依赖脚本）。三件缺一件就等于没折叠或折叠了打不开：
          ① 开关控件、② 指向它的 label、③ 真正生效的 clamp 规则。 */
     check(/id="notice-more"/.test(noticeDiv[0]),
       '公告栏带折叠开关控件（#notice-more）');
     check(/<label[^>]*for="notice-more"/.test(noticeDiv[0]),
       '折叠开关有可点的 label（纯 CSS 开关，脚本挂了也能展开）');
+
+    /* 第四轮定稿：正文是**原句**，不许再改写成短句。
+       —— 第三轮曾把手机文本换成 21 字改写句「全站 N 家企业 M 条证据已公示」，
+          读着省事，但那已经不是本站的证据链口径，站长原话是「我要的是这句完整的话」。
+       判据四条：原句开头 / 四个分句一个不少 / 以「欢迎核实纠错」收尾 / 正文无省略号。
+       截断只许发生在 CSS 层（line-clamp），DOM 里必须是完整一句话 ——
+       爬虫、读屏、复制粘贴拿到的都得是全本。 */
+    // 正文取自主告栏 span 本体（前面 §9 里的 nb 在上一个 if 块里，作用域出不来）。
+    // 右边界用「紧跟 <!-- /notice -->」，与生成器的 NOTICE_SPAN_RE 同口径，
+    // 以后谁再往里套标签也不会被内层 </span> 提前截断。
+    const nb = (noticeDiv[0].match(
+      new RegExp(`<span id="${NOTICE_ID}">[\\s\\S]*?</span><!-- /notice -->`)) || [''])[0]
+      .replace(new RegExp(`^<span id="${NOTICE_ID}">`), '')
+      .replace(/<\/span><!-- \/notice -->$/, '');
+    const NOTICE_OPEN = '本站全部数据均附公开证据链：';
+    check(nb.trim().startsWith(NOTICE_OPEN),
+      '公告栏正文以原句开头（「本站全部数据均附公开证据链：」）',
+      '实际开头：' + nb.trim().slice(0, 20));
+    const CLAUSES = ['家企业', '条证据已在本页完整公示',
+      '（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；',
+      '家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错'];
+    const missingClause = CLAUSES.filter((c) => !nb.includes(c));
+    check(missingClause.length === 0,
+      '公告栏是完整一句话（四个分句一个不少，含「欢迎核实纠错」收尾）',
+      '缺：' + missingClause.join(' / '));
+    check(nb.trim().endsWith('欢迎核实纠错'),
+      '公告栏正文以「欢迎核实纠错」收尾（句子没被砍尾）',
+      '实际结尾：' + nb.trim().slice(-14));
+    check(!/[….．]{1,3}/.test(nb) && !/\.\.\./.test(nb),
+      '公告栏正文里没有省略号（截断交给 CSS，文本本身是完整句子）',
+      '正文含省略号：' + nb.trim().slice(-24));
+    // 改写句必须彻底消失：HTML 与 CSS 都清掉，否则「手机显示的是哪一句」有两个答案
+    // （真机谁赢取决于具体实现，验不了 = 等于没验）。
     if (exists('mobile-fixes.css')) {
       const mfc = stripCssComments(read('mobile-fixes.css'));
-      check(/-webkit-line-clamp:\s*1/.test(mfc)
-        && /\.notice-more-cb:checked\s*~\s*#evidence-notice/.test(mfc),
-        '手机端公告栏默认压成 1 行、展开态解除（mobile-fixes.css）');
-      // 第二轮（2026-11-02）：版本号不再占公告栏第二行，49px → 约 28px。
+      check(!/notice-short/.test(html) && !/notice-short/.test(mfc),
+        '不再有「手机改写短句」机制（notice-short 已从 HTML 与 CSS 一并清除）',
+        'notice-short 残留：' + (/notice-short/.test(html) ? 'index.html ' : '')
+          + (/notice-short/.test(mfc) ? 'mobile-fixes.css' : ''));
+      check(/-webkit-line-clamp:\s*2/.test(mfc)
+        && /\.notice-more-cb:checked\s*~\s*#evidence-notice\s*\{[^}]*(?:display:\s*block|-webkit-line-clamp:\s*none)/.test(mfc),
+        '手机端公告栏默认压成 2 行、展开态解除 clamp（mobile-fixes.css）',
+        'line-clamp:2 或展开态解除规则缺失');
+    // 展开态必须给「提醒」悬浮按钮让位：按钮是 right:14 固定定位，纵向位置由
+    // bottom:calc(--sxg-bar-h + 272px) 决定 —— 实测 320×720（--sxg-bar-h=356px）时
+    // 按钮矩形 left 257 / top 46 / 49×46，正好压在展开后第 3–4 行上。
+    // 折叠态只有两行（y 0–49）只蹭到内边距不压字，所以只需在展开态让位。
+    const expandRule = mfc.match(/\.notice-more-cb:checked\s*~\s*#evidence-notice\s*\{([^}]*)\}/);
+    const padR = expandRule && expandRule[1].match(/padding-right:\s*(\d+)px/);
+    check(!!padR && Number(padR[1]) >= 50,
+      '展开态右侧给「提醒」悬浮按钮让位（padding-right ≥50px，否则压住第 3–4 行）',
+      padR ? `padding-right 只有 ${padR[1]}px` : '展开态没有 padding-right，正文会钻到按钮底下');
+      // 「2 行」不是写个 2 就够：clamp 只在 -webkit-box 上生效，
+      // 有人把 display 改回 block，clamp 会静默失效 → 公告栏又变回 5 行。
+      const noticeBox = mfc.match(/#evidence-notice\s*\{([^}]*)\}/);
+      check(!!noticeBox && /display:\s*-webkit-box/.test(noticeBox[1])
+        && /-webkit-box-orient:\s*vertical/.test(noticeBox[1]),
+        '两行折叠的前提条件在位（display:-webkit-box + box-orient:vertical）',
+        '缺 -webkit-box 布局，clamp 会静默失效');
+      // 第二轮（2026-11-02）：版本号不再占公告栏第二行。
       // 只断言「藏了」还不够 —— 藏了但菜单没搬，等于手机上版本号彻底没了，
       // 所以 §9c 那边同时断言菜单真的去读了 .notice-ver。
       // 选择器是「.notice-sep, .notice-ver{display:none}」这种并列写法，
       // 所以 .notice-ver 到 { 之间允许夹逗号/换行，不能要求紧跟大括号。
       check(/#site-notice \.notice-ver[^{}]*\{[^}]*display:\s*none/.test(mfc),
-        '手机端版本号让位（公告栏只留「正文 1 行 + 展开」）');
+        '手机端版本号让位（公告栏只留「正文两行 + 展开」）');
       // 「展开」原先 padding-left 只有 4px，实测跟省略号贴在一起，
       // 「…已在本页…展开」读起来像连写（2026-11-02 站长看截图指出）。
       // 判据两条：间距抬到 ≥8px + 左边界有一条分隔线。
       check(/\.notice-more-lbl\s*\{[^}]*padding-left:\s*(?:[89]|1[0-9])px[^}]*border-left:\s*1px solid/.test(mfc),
         '折叠开关与正文有视觉分隔（间距 ≥8px + 左侧分隔线）');
-
-      /* 2026-11-02 第三轮（站长：「你确定手机版一行文字就能显示完？不考虑设备屏幕大小吗？」）
-         —— 一句 95 字的公告在 320px 屏只有约 246px 可用（≈20 字），
-         之前的「1 行」其实是「1 行 + 省略号」，主体读不到。
-         现在改成长句（桌面）+ 短句（手机）两段：短句必须**完整成句、不带省略号**。 */
-      const shortM = noticeDiv[0].match(/<span class="notice-short">([^<]+)<\/span>/);
-      const longM = noticeDiv[0].match(/<span class="notice-long">([\s\S]+?)<\/span>/);
-      check(!!shortM && !!longM,
-        '公告栏正文拆成「长句 + 手机短句」两段',
-        '缺 .notice-short 或 .notice-long');
-      if (shortM) {
-        check(!/[….．]{1,3}/.test(shortM[1]) && !/\.\.\./.test(shortM[1]),
-          '手机短句是完整句子（不含省略号）', '短句里出现省略号：' + shortM[1]);
-        check(shortM[1].length <= 30,
-          '手机短句足够短（≤30 字，320px 屏实测可整句显示）',
-          `实际 ${shortM[1].length} 字：${shortM[1]}`);
-        // 两段不能各报一套数字 —— 那比不写更容易被引用错。
-        const shortNum = shortM[1].match(/(\d+)\s*家企业\s*(\d+)\s*条证据/);
-        const longNum = longM && longM[1].match(/(\d+)\s*家企业\s*(\d+)\s*条证据/);
-        check(!!shortNum && !!longNum && shortNum[1] === longNum[1] && shortNum[2] === longNum[2],
-          '长句与短句的「N 家企业 M 条证据」数字完全一致（不出现第二套口径）',
-          `短句 ${shortNum ? shortNum[1] + '/' + shortNum[2] : '无'} vs 长句 ${longNum ? longNum[1] + '/' + longNum[2] : '无'}`);
-      }
-      check(/#evidence-notice \.notice-short\s*\{[^}]*display:\s*inline/.test(mfc)
-        && /#evidence-notice \.notice-long\s*\{[^}]*display:\s*none/.test(mfc)
-        && /\.notice-more-cb:checked\s*~\s*#evidence-notice \.notice-long\s*\{[^}]*display:\s*inline/.test(mfc),
-        '手机默认显示短句、展开后切回长句（mobile-fixes.css 三处配套）',
-        '短句/长句的显示切换不完整');
     }
   }
 

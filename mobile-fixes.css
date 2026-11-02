@@ -250,15 +250,14 @@
   display: none;
 }
 
-/* 公告栏正文分「长句 / 短句」两段（2026-11-02 第三轮，站长追问：
-   「你确定手机版一行文字就能显示完？不考虑设备屏幕大小吗？」）
-   —— 长句 95 个字符，320px 屏可用宽度只有约 246px（≈20 字），
-   所谓「1 行」其实是「1 行 + 省略号 + 展开」，读者读不到句子主体。
-   所以桌面用长句、手机用一句真正放得下的短句（不带省略号）；
-   手机想看长句点「展开」。默认藏短句，手机的切换写在下面 ≤640px 段。 */
-.notice-short {
-  display: none;
-}
+/* 公告栏正文 = 证据链**原句**，一个字都不改写（2026-11-02 第四轮，站长：
+   「我要的是这句完整的话，最多两行，或者做折叠，你看着办吧，别问我了」）。
+   上一轮手机换了一句 21 字的改写句（「全站 N 家企业 M 条证据已公示」），
+   读着是省事，但那已经不是我本站的证据链口径了 —— 站长要的是原句。
+   所以：正文只有一段，桌面整段铺开；手机端用 line-clamp 压到两行 + 「展开」，
+   截断只发生在 CSS 层，DOM 里、爬虫拿到的、读屏念出来的都是完整一句话。
+   ⚠️ 别再把句子改短：改短等于换了一套口径（verify §9 有「原句四个分句一个不少」
+   的断言，改短会判红）。 */
 
 @media (max-width: 640px) {
   /* 用 flex 而不是默认 block：正文要能被压到 1 行，而「展开」必须留在同一行右侧。
@@ -271,41 +270,44 @@
     padding: 5px 10px;
   }
 
-  /* 手机只读短句：短句「全站 N 家企业 M 条证据已公示」在 320px 下
-     实测完整显示（无省略号、无横向溢出）；长句交给「展开」。
-     注意选择器带 #evidence-notice 前缀，避免误伤别处的同名 class。 */
-  #evidence-notice .notice-short {
-    display: inline;
-  }
-
-  #evidence-notice .notice-long {
-    display: none;
-  }
-
-  .notice-more-cb:checked ~ #evidence-notice .notice-long {
-    display: inline;
-  }
-
-  .notice-more-cb:checked ~ #evidence-notice .notice-short {
-    display: none;
-  }
-
-  /* 正文：默认压成 1 行，超出显示省略号 */
+  /* 正文：整句原话压到**两行**（不再是替换成短句）。
+     两行 ≈ 43 字，320px 下能读到「…已在本页完整公示（招聘口径、员工反馈」这个主干，
+     点「展开」看全（约 5 行）。 */
   #evidence-notice {
     flex: 1 1 0%;
     min-width: 0;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 1;
+    -webkit-line-clamp: 2;
     overflow: hidden;
     text-align: left;
   }
 
-  /* 展开态：回到普通块级（line-clamp 只对 -webkit-box 生效，换掉即解除） */
+  /* 展开态：回到普通块级（line-clamp 只对 -webkit-box 生效，换掉即解除）。
+     右侧让位给**整列**悬浮按钮，不只是「提醒」那一个：
+     实测 320×720（--sxg-bar-h=356px，来自底部 lp-ad 的高度）时右列从 y=46 一路排到
+     y=316 —— 提醒(257,46,49×46)、ai-fab(250,98,56×56)、bottom(260,164,46×46)、
+     top(262,224,44×44)、video(245,274,61×42)，z 全是 9000，公告栏 999 压根盖不住。
+     折叠态只有两行（y 0–42），按钮从 y46 起，不压字；展开后高 120，第 3–5 行整段在
+     右列底下，所以展开态必须让位。64px = 320 - 10(自身右内边距) - 250(最左的 ai-fab)
+     + 4 余量；实测让位后正文右边缘 246 < 250，五档宽度（320/375/390/414）全部无压字。 */
   .notice-more-cb:checked ~ #evidence-notice {
     display: block;
     overflow: visible;
+    -webkit-line-clamp: none;
     min-width: 100%;
+    padding-right: 64px;
+  }
+
+  /* 展开后「收起」不再贴右：右列被悬浮按钮占着，贴在右下角会被 ai-fab 压掉一半
+     （320×720 实测 label 落在 y≈96–114，正好是 ai-fab 的 98–154）。
+     改到正文下方左对齐，离右列 200px 以上，任何悬浮组合都压不到。
+     分隔竖线是「跟在省略号后面」才需要的，独占一行时只会显得突兀，一起去掉。 */
+  .notice-more-cb:checked ~ .notice-more-lbl {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: 0;
+    margin-top: 2px;
   }
 
   .notice-more-lbl {
