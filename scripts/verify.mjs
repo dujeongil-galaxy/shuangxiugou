@@ -390,7 +390,11 @@ if (curCheck === 'ok') {
 //   故恢复 U 为合法档位，但机器强制以下硬规则——任何一条不满足即判红：
 //   ① 标 U 的品牌详情页 MUST 含「证据缺失说明」区块（标记 id="evidence-gap" 或 data-evgap="1"），
 //      写明检索了哪些渠道、为何无任何可采信证据；无说明 = 无效 U = 判红（堵死「懒得查就标 U」）。
-//   ② U 级详情页 MUST NOT 含任何「证据来源」有效条目（有证据就必须用 S/A/B/C）；U 却夹带证据 = 判红。
+//   ② U 级详情页 MUST NOT 给出定档结论（「判 C 级」「定级 A 级」）——那样卡片徽标与正文自相矛盾。
+//      注意：**不是**「不能有任何证据条目」。U 页恰恰要记录「查过什么」（规则①的说明块），
+//      这些证据（如客服热线时间、校招 JD 的「三班倒」）只能证明形态、换算不出月休天数，
+//      不足以定档。2026-11-02 修正：原判据是「有证据来源条目就判红」，会把
+//      「查过但定不了档」的正常 U 页一律误杀，也逼着人把已查过的来源删掉。
 //   ③ U 级不计入 S/A/B/C 合格统计，须单独列示（证据不足 N 家），不得混入红榜/避雷（由 §2e 四格不含 U 保证）。
 //   ④ gen-pinyin-index.py 允许 U 映射；但 U 品牌须带 证据缺失说明（verify 兜底，缺则判红）。
 //   ⑤ 禁止以「我不确定 / 没空查 / 懒得找」为由标 U——每次标 U 必须记录检索动作（规则写死）。
@@ -403,18 +407,37 @@ const brandHtmlPages = readdirSync(join(ROOT, 'brand')).filter((f) => f.endsWith
 const uPages = [];
 for (const f of brandHtmlPages) {
   const ph = readFileSync(join(ROOT, 'brand', f), 'utf8');
-  const isU = /badge[^>]*>U 级<|data-tier=["']U["']/.test(ph);
+  // 注意（2026-11-02 救绿教训）：原正则写的是 `>U 级<`，要求标签闭合紧跟，
+  // 而实际徽标是「U 级 · 证据不足」，于是 isU 恒为 false → uPages 空集 →
+  // 下面两条 every() 在空集上恒真，断言形同虚设（注入故障也照样绿）。
+  // 改成不要求闭合，并新增「必须抓到 U 页」的断言兜底。
+  const isU = /class="badge"[^>]*>\s*U\s*级|data-tier=["']U["']/.test(ph);
   if (!isU) continue;
-  const hasGap = /id="evidence-gap"|data-evgap="1"|证据缺失说明/.test(ph);
-  const hasEvidence = /<h2>证据来源<\/h2>[\s\S]*?<li style="margin:0 0 12px">/.test(ph);
-  uPages.push({ f, hasGap, hasEvidence });
+  // 只认结构标记：曾经把裸词「证据缺失说明」当备选，结果正文里引用了一次
+  // 这几个字就能让「删掉说明块」的故障注入照样绿。
+  const hasGap = /id="evidence-gap"|data-evgap="1"/.test(ph);
+  // 自相矛盾 = 徽标说 U、正文却给 S/A/B/C 的定档结论（如「按…口径判 C 级」）
+  const hasVerdict = /(判|定级为|定档为)\s*[SABC]\s*级/.test(ph);
+  uPages.push({ f, hasGap, hasVerdict });
 }
+// 空集兜底：bundle 有 U 卡时，uPages 必须非空——否则上面两条 every() 白跑
+const bundleUCount = (() => {
+  let n = 0;
+  brandCards.forEach((c, i) => {
+    const end = i + 1 < brandCards.length ? brandCards[i + 1].pos : bundle.length;
+    if (bundle.slice(c.pos, end).includes('tier:`U`')) n += 1;
+  });
+  return n;
+})();
+check(bundleUCount === 0 || uPages.length >= bundleUCount,
+  'bundle 内 U 档卡都在 brand/ 里被识别为 U 级页（空集不许冒充通过）',
+  'bundle U=' + bundleUCount + ' / 识别到 U 页=' + uPages.length + '（' + uPages.map((p) => p.f).join(',') + '）');
 check(uPages.every((p) => p.hasGap),
   'U 级详情页 MUST 含「证据缺失说明」（规则①：无说明 = 无效 U，堵死 AI 偷懒）',
   uPages.filter((p) => !p.hasGap).map((p) => p.f).join(', ') || '全部 U 页均附说明');
-check(uPages.every((p) => !p.hasEvidence),
-  'U 级详情页 MUST NOT 含有效证据条目（有证据就该用 S/A/B/C，规则②）',
-  uPages.filter((p) => p.hasEvidence).map((p) => p.f).join(', ') || '无 U 页夹带证据');
+check(uPages.every((p) => !p.hasVerdict),
+  'U 级详情页不得自相矛盾：正文不能出现「判 S/A/B/C 级」定档结论（规则②）',
+  uPages.filter((p) => p.hasVerdict).map((p) => p.f).join(', ') || '无 U 页给出定档结论');
 
 // bundle 内置卡同理：tier:`U` 必须对应详情页附证据缺失说明
 const bundleU = [];
@@ -461,6 +484,26 @@ for (const page of htmlPages) {
 check(uDeadHits.length === 0,
   '旧 U 时代死文案仍禁用（新 U 用「U 级 + 证据缺失说明」，不沿用旧措辞）',
   uDeadHits.length ? uDeadHits.join('；') : '已清零');
+
+// 倒置口径全站禁用（2026-11-02 站长：「6 家未核实继续给 U 级」）
+// 「查不到统一双休证据即视为无双休」= 举证责任倒置——把"我没找到"当成"确实没有"，
+// 据此判 C 级。这不是站长的口径（站长：C = 月休不足 6 天／严重超时／通报违约／拒答双休），
+// 是 AI 自拟的过度口径，2026-10-31 已被站长纠正，但 brand 页里躺了 4 处没清。
+// 注意不要误伤「查不到就不作评级」——那正是现在要的口径（U 级）。
+const inverseHits = [];
+const INVERSE_RE = /查不到[^。；\n]{0,40}(即视为无双休|视为无双休|即判\s*C\s*级|判\s*C\s*级)/;
+for (const f of brandHtmlPages) {
+  const ph = readFileSync(join(ROOT, 'brand', f), 'utf8');
+  if (INVERSE_RE.test(ph)) inverseHits.push('brand/' + f);
+}
+check(inverseHits.length === 0,
+  '禁用「查不到即视为无双休」倒置口径（查不到 → U 级，不是 C 级）',
+  inverseHits.length ? inverseHits.join(', ') : '已清零');
+
+// 首页口径区必须声明 U 级合法且不得再写「废除 U 级」
+// （2026-10-31 站长当晚已反转，但口径区漏改，导致代码与文案打架、全站 U 卡清零）
+check(/<strong>U 级（证据不足）<\/strong>/.test(html) && !/废除\s*「?U 级/.test(html),
+  'index.html 评级口径区声明 U 级（证据不足）为合法档位，且不得再写「废除 U 级」');
 
 // gen-pinyin 允许 U（不再 crash），规则由 verify §2d 兜底
 const genTool = readFileSync(join(ROOT, 'scripts', 'gen-pinyin-index.py'), 'utf8');
@@ -585,19 +628,37 @@ const uCards2e = tier2e.U + byGrade2e('U级');
 check(fourSum2e === totalCards2e - uCards2e,
   'U 级单独列示、不并入四格统计（四格合计 = 总卡数 − U 卡数）',
   '四格 ' + fourSum2e + ' / 总 ' + totalCards2e + ' − U ' + uCards2e);
-// bundle 侧改判锁定：宏碁/三星/霸王茶姬 tier C
-const bundleULock = ['acer', 'samsung', 'chagee'];
+// bundle 侧档位锁定（2026-11-02 站长复核：宏碁/三星拿不到月休天数、正文自己写着
+// 「不作评级」，挂 C 级是自相矛盾 → 改 U；霸王茶姬有 BOSS 直聘门店岗「月休 4 天」
+// 快照（与名创同形态），维持 C。改任何一张都要同步这条断言，防止悄悄回退）
+const BUNDLE_TIER_LOCK = { acer: 'U', samsung: 'U', chagee: 'C' };
 const badBundleLock = [];
-for (const bid of bundleULock) {
+for (const bid of Object.keys(BUNDLE_TIER_LOCK)) {
   const idx = brandCards.findIndex((c) => c.id === bid);
   if (idx === -1) { badBundleLock.push(bid + '：卡不存在'); continue; }
   const end = idx + 1 < brandCards.length ? brandCards[idx + 1].pos : bundle.length;
   const chunk = bundle.slice(brandCards[idx].pos, end);
-  if (!chunk.includes('tier:`C`')) badBundleLock.push(bid + '：不是 C 档');
+  const want = 'tier:`' + BUNDLE_TIER_LOCK[bid] + '`';
+  if (!chunk.includes(want)) badBundleLock.push(bid + '：不是 ' + BUNDLE_TIER_LOCK[bid] + ' 档');
 }
 check(badBundleLock.length === 0,
-  '宏碁/三星/霸王茶姬维持 C 档（2026-10-31 改判锁定）',
+  '宏碁/三星 = U 档、霸王茶姬 = C 档（2026-11-02 复核锁定）',
   badBundleLock.join(', ') || '锁定生效');
+
+// u-grade-patch.js 的 U 品牌清单必须与 bundle 内 tier:`U` 的卡一一对应。
+// 漏改的后果不是报错，是那张卡**徽标空白**（bundle 的 switch 没有 U 分支）——
+// 静默失效，只有真渲染才看得出来，所以必须机器咬住。
+const bundleTierU = [];
+brandCards.forEach((c, i) => {
+  const end = i + 1 < brandCards.length ? brandCards[i + 1].pos : bundle.length;
+  if (bundle.slice(c.pos, end).includes('tier:`U`')) bundleTierU.push(c.id);
+});
+const patchSrc = readFileSync(join(ROOT, 'u-grade-patch.js'), 'utf8');
+const patchList = (patchSrc.match(/U_BRANDS\s*=\s*\[([^\]]*)\]/) || [])[1] || '';
+const patchCount = (patchList.match(/'/g) || []).length / 2;
+check(patchCount === bundleTierU.length,
+  'u-grade-patch.js 的 U_BRANDS 条数 = bundle 内 U 档卡数（漏一条 = 该卡徽标空白）',
+  '清单 ' + patchCount + ' 条 / bundle U 档 ' + bundleTierU.length + ' 张（' + bundleTierU.join(',') + '）');
 // ---- 2e-2. 月休口径落地断言（2026-10-31 站长口径）----
 // 防两类回退：① 口径区文字被改回「无双休证据即判 C」旧口径；
 // ② 数据层改档但 brand/ 详情页徽章没跟着改（首页 A、详情页 C 的自相矛盾）。
@@ -650,7 +711,9 @@ section('2g. 首页证据链完整公示');
   /** 从单个详情页解析：档位 + 证据条数 + 带链接条数。口径须与生成器一致。 */
   function parseBrandEvidence(pagePath) {
     const t = read(pagePath);
-    const grade = (t.match(/<span class="badge"[^>]*>\s*([SABC])\s*级/) || [])[1] || '';
+    // 2026-11-02：U 级重新出现（三星/宏碁证据不足），这里必须包含 U，
+    // 否则 truth.grade 变成空串、与公示区的 data-g="U" 对不上，整条契约断言判红。
+    const grade = (t.match(/<span class="badge"[^>]*>\s*([SABCU])\s*级/) || [])[1] || '';
     const evBlock = t.match(/<h2>证据来源<\/h2>\s*<ul>([\s\S]*?)<\/ul>/);
     const items = evBlock
       ? [...evBlock[1].matchAll(/<li style="margin:0 0 12px">([\s\S]*?)<\/li>/g)]

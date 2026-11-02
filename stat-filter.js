@@ -7,8 +7,12 @@
      · 点「避雷预警」→ 只显示 C 级
      · 点「收录品牌」→ 清除筛选、显示全部
      再点一次同一个按钮 = 取消筛选。
-  U 级（待核实·不评级）恢复为合法档位，但须单独列示、不并入四格统计（硬规则见 verify §2d）；
-  四格统计保持 4 列，卡片按 S/A/B/C 识别，U 卡由 u-grade-patch.js 单独渲染中性灰。
+  U 级（证据不足）为合法档位，但单独列示、不并入四格统计（硬规则见 verify §2d）；
+  四格统计保持 4 列，卡片按 S/A/B/C/U 识别，U 卡由 u-grade-patch.js 补中性灰徽标。
+  U 卡的行为：只在「收录品牌（全部）」视图可见；点 S/A/B/C 任何一格都隐藏它
+  （它不是红榜也不是避雷，混进任何一格都是错误归类）。
+  坑（2026-11-02）：原来的 tierMatches 先判 `tier === null → false`，而 U 卡识别
+  返回 null，结果连「全部」也把它藏了——U 卡会凭空消失，读者以为数据丢了。
 
    实现约束（AGENTS.md / PITFALLS.md）：
    · 只做 DOM 层补丁，不改压缩包渲染逻辑；
@@ -63,14 +67,15 @@
   }
 
   /* ---------------------------------------------------------- 档位识别 */
-  // 读卡内第一个档位徽章：S级/A级/B级/C级（兼容空格差异）。
-  // 2026-10-31 起不再识别「待核实」：U 级已废除，识别不到返回 null。
+  // 读卡内第一个档位徽章：S级/A级/B级/C级/U级（兼容空格差异）。
+  // 2026-11-02 起 U 级重新合法（三星/宏碁证据不足），必须识别，否则 U 卡在
+  // 「全部」视图下被 tierMatches 当成 null 隐藏。
   function cardTier(card) {
     if ((card.textContent || '').indexOf('虚拟对比黑榜') !== -1) return 'V';
     var nodes = card.querySelectorAll('span,div');
     for (var i = 0; i < nodes.length; i++) {
       var s = (nodes[i].textContent || '').trim();
-      var m = /^(S|A|B|C)\s*级/.exec(s);
+      var m = /^(S|A|B|C|U)\s*级/.exec(s);
       if (m) return m[1];
     }
     return null;
@@ -78,8 +83,11 @@
 
   function tierMatches(tier, key) {
     var conf = FILTERS[key];
-    if (!conf || !conf.tiers) return true; // all
-    if (tier === 'V' || tier === null) return false;
+    if (!conf) return true;
+    // 全部：除虚拟对比黑榜外一律显示（**含 U**——U 卡也是收录品牌，只是不进四格）
+    if (!conf.tiers) return tier !== 'V';
+    // 分档筛选：U 不属于任何一格，null（识别不到档位）同样不匹配
+    if (tier === 'V' || tier === null || tier === 'U') return false;
     return conf.tiers.indexOf(tier) !== -1;
   }
 

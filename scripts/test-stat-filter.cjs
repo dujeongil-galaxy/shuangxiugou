@@ -6,7 +6,8 @@
 //   工/建/中/成都 4 家银行网点轮休制周休 2 天（≈月休 8.6 天）→ A 级；
 //   农行官方口径单休网点占 61%（主体月休 4-5 天）→ 维持 C 级。
 //   badge 卡共 173 张（53 内置 - 1 虚拟 + 120 自定义），可见 172 张（虚拟卡 class 隐藏）。
-//   红榜(S/A) 81 + 大小周(B) 31 + 避雷(C) 60 = 172；四格无第五格「待核实」；
+//   红榜(S/A) 81 + 大小周(B) 31 + 避雷(C) 58 = 170；另有 2 家 U 级（三星/宏碁，证据不足）
+//   不计入四格，由 u-grade-patch.js 在四格下方补一行说明；
 //   评级行无「待核实」按钮。
 //   2026-11-02：自定义卡 16 → 120（批量导入榜单 104 张），上列数字同步放大，算式仍闭合。
 // 末尾另有苹果「富士康补充说明」框回归（PITFALLS 1.10 第二变体）：
@@ -48,7 +49,7 @@ function tierOf(card) {
   const nodes = card.querySelectorAll('span,div');
   for (const n of nodes) {
     const s = (n.textContent || '').trim();
-    const m = /^(S|A|B|C)\s*级/.exec(s);
+    const m = /^(S|A|B|C|U)\s*级/.exec(s);
     if (m) return m[1];
   }
   return null;
@@ -78,7 +79,7 @@ function click(box) {
 }
 
 setTimeout(() => {
-  console.log('=== stat-filter：四格点击筛选（U 级废除后口径）===\n');
+  console.log('=== stat-filter：四格点击筛选（U 级单独列示口径）===\n');
 
   const red = boxOf('双休红榜');
   const zhou = boxOf('大小周观察');
@@ -91,14 +92,14 @@ setTimeout(() => {
     && lei.getAttribute('data-sxg-stat') === 'lei'
     && all.getAttribute('data-sxg-stat') === 'all');
   // ── U 级废除断言：第五格与 U 按钮必须不复存在 ──
-  check('★ U 级废除：无第五格「待核实」统计盒',
+  check('★ 四格不设第五格「待核实」盒（U 不进四格统计）',
     boxOf('待核实') === null,
     boxOf('待核实') ? '仍然存在，stat-filter 未清理干净' : '已移除');
-  check('★ U 级废除：评级行无「待核实」按钮',
+  check('★ 评级行无「待核实」筛选按钮（U 不参与分档筛选）',
     [...window.document.querySelectorAll('button')]
       .every((b) => (b.textContent || '').trim() !== '待核实'),
     '仍存在 data-sxg-row-u 按钮或残留按钮文本');
-  check('★ U 级废除：卡内无「待核实」徽章（tierOf 不再返回 U）',
+  check('★ 卡内无旧措辞「待核实 · 无证据不作评级」（新 U 用「U级 · 证据不足」）',
     [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
       .every((c) => (c.textContent || '').indexOf('待核实 · 无证据不作评级') === -1));
 
@@ -106,6 +107,25 @@ setTimeout(() => {
   check('初始可见 172 张（badge 卡 173 张，虚拟卡被 class 隐藏）',
     base.visible.length === 172 && base.total === 173,
     { total: base.total, visible: base.visible.length });
+
+  // ── U 级（2026-11-02 三星/宏碁证据不足改判）──
+  // 这一档最容易被静默弄坏：bundle 的档位 switch 没有 U 分支，徽标由
+  // u-grade-patch.js 注入；stat-filter 若不认 U，卡还会在「全部」视图消失。
+  const uCards = base.visible.filter((c) =>
+    ['三星', '宏碁'].some((k) => (c.textContent || '').includes(k)));
+  check('★ U 级卡（三星/宏碁）在「全部」视图可见（不被 tierMatches 当 null 藏掉）',
+    uCards.length === 2, { found: uCards.map((c) => (c.textContent || '').slice(0, 10)) });
+  check('★ U 级卡徽标为「U级 · 证据不足」（bundle 无 U 分支，由补丁注入）',
+    uCards.length === 2 && uCards.every((c) => {
+      const b = c.querySelector('[data-sxg-ubadge]');
+      return !!b && /^U级\s*·\s*证据不足$/.test((b.textContent || '').trim());
+    }),
+    { badges: uCards.map((c) => { const b = c.querySelector('[data-sxg-ubadge]'); return b ? b.textContent.trim() : '(无)'; }) });
+  check('★ 四格下方有 U 级出口说明（否则 172 与四格合计 170 对不上，看着像算错）',
+    (() => {
+      const n = window.document.getElementById('sxg-u-note');
+      return !!n && /另有\s*2\s*家/.test(n.textContent || '');
+    })());
 
   // —— 双休红榜：只显示 S/A ——
   click(red);
@@ -134,8 +154,8 @@ setTimeout(() => {
   // —— 避雷预警：只显示 C（虚拟卡除外）——
   click(lei);
   s = snapshot();
-  check('点「避雷预警」→ 仅 C 级可见（60 张，含农行/宏碁/三星/霸王茶姬/淘宝闪购/BOSS直聘；81+31+60=172 对账）',
-    s.visible.length === 60 && s.visible.every((c) => tierOf(c) === 'C'),
+  check('点「避雷预警」→ 仅 C 级可见（58 张，含农行/霸王茶姬/淘宝闪购/BOSS直聘；81+31+58=170，另有 2 家 U 不在四格）',
+    s.visible.length === 58 && s.visible.every((c) => tierOf(c) === 'C'),
     { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
   const bankInLei = s.visible.filter((c) =>
     ['农业银行', '淘宝闪购'].some((k) => (c.textContent || '').includes(k)));
@@ -147,8 +167,11 @@ setTimeout(() => {
     { found: bankGoneFromLei.map((c) => (c.textContent || '').slice(0, 12)) });
   const builtinInLei = s.visible.filter((c) =>
     ['宏碁', '三星', '霸王茶姬'].some((k) => (c.textContent || '').includes(k)));
-  check('★ 改判内置卡在避雷档可见（宏碁/三星/霸王茶姬 = 3 张）', builtinInLei.length === 3,
-    { found: builtinInLei.length });
+  // 2026-11-02：宏碁/三星拿不到月休天数（正文自认「不作评级」），已改判 U 级，
+  // 不该出现在避雷档；只有有门店招聘「月休 4 天」口径的霸王茶姬留在 C。
+  check('★ 改判内置卡：霸王茶姬在避雷档可见、宏碁/三星（U 级）不在避雷档',
+    builtinInLei.length === 1 && (builtinInLei[0].textContent || '').includes('霸王茶姬'),
+    { found: builtinInLei.map((c) => (c.textContent || '').slice(0, 12)) });
 
   // —— 收录品牌：清除筛选 ——
   click(all);
@@ -187,16 +210,16 @@ setTimeout(() => {
   (async () => {
     const cCards = [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
       .filter((c) => tierOf(c) === 'C');
-    check('前置：DOM 中 C 级卡 60 张（2026-10-31 月休口径改判后 + BOSS直聘 C 级 2026-11-01 + 批量导入 29 张）', cCards.length === 60, cCards.length);
+    check('前置：DOM 中 C 级卡 58 张（2026-11-02 三星/宏碁改判 U 后 −2；含 BOSS直聘 + 批量导入 29 张）', cCards.length === 58, cCards.length);
     const removed = cCards.map((c) => {
       const p = c.parentNode; const nx = c.nextSibling;
       p.removeChild(c); return { c, p, nx };
     });
     await new Promise((r) => setTimeout(r, 450));
     const lei2 = boxOf('避雷预警');
-    // 四格避雷数字是 bundle 手写常数（60），搜索卸载卡不改变盒子数字
-    check('搜索过滤（C 卡被卸载）后避雷盒仍是手写常数 60',
-      lei2 && lei2.children[0].textContent === '60', lei2 && lei2.children[0].textContent);
+    // 四格避雷数字是 bundle 手写常数（58），搜索卸载卡不改变盒子数字
+    check('搜索过滤（C 卡被卸载）后避雷盒仍是手写常数 58',
+      lei2 && lei2.children[0].textContent === '58', lei2 && lei2.children[0].textContent);
     // ⚠️ 恢复前先清掉「MO 自愈在卸载窗口期重建的同 id 新卡」：
     // removeChild 后 MutationObserver 会触发 insertAllCustomCards 重建自定义卡
     //（降级插列表末）。若直接把旧节点插回原位，DOM 里会出现同 id 两张卡。

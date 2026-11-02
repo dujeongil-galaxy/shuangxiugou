@@ -91,8 +91,8 @@ KIND_COLOR = {
 }
 
 # 档位 → 徽章色（与 brand/ 页、bundle 一致）
-GRADE_COLOR = {'S': '#7c3aed', 'A': '#0f766e', 'B': '#b45309', 'C': '#be123c'}
-GRADE_ORDER = {'S': 0, 'A': 1, 'B': 2, 'C': 3}
+GRADE_COLOR = {'S': '#7c3aed', 'A': '#0f766e', 'B': '#b45309', 'C': '#be123c', 'U': '#64748b'}
+GRADE_ORDER = {'S': 0, 'A': 1, 'B': 2, 'C': 3, 'U': 4}
 
 
 def norm_kind(raw):
@@ -131,7 +131,7 @@ def parse_brand(path):
         name = re.sub(r'\s*几点下班与加班情况\s*$', '', name).strip()
 
     grade = ''
-    m = re.search(r'<span class="badge"[^>]*>\s*([SABC])\s*级', text)
+    m = re.search(r'<span class="badge"[^>]*>\s*([SABCU])\s*级', text)
     if m:
         grade = m.group(1)
 
@@ -320,6 +320,10 @@ def render_board(rows, generated_note):
       '两处不一致会被 <code>scripts/verify.mjs</code> 判红。</p>')
 
     # ---- 统计条
+    # 2026-11-02：U 级（证据不足）重新出现后，四档合计不再等于收录总数。
+    # 必须单独列一格，否则「S/A/B/C 家数 6/75/31/58」会被读者当成 170 家，
+    # 和「172 家」对不上，看着像算错。
+    u_count = grades.get('U', 0)
     w('  <div class="ev-stats">')
     stat = [
         ('证据总条数', str(total_items), '#0f766e'),
@@ -327,12 +331,19 @@ def render_board(rows, generated_note):
         ('无可点链接', str(unlinked), '#b45309'),
         ('S/A/B/C 家数', '%d/%d/%d/%d' % (grades.get('S', 0), grades.get('A', 0),
                                      grades.get('B', 0), grades.get('C', 0)), '#475569'),
-        ('证据薄弱企业', '%d 家' % len(weak_rows), '#be123c'),
     ]
+    if u_count:
+        stat.append(('U 级（证据不足）',
+                     '%d 家' % u_count, '#64748b'))
+    stat.append(('证据薄弱企业', '%d 家' % len(weak_rows), '#be123c'))
     for label, val, color in stat:
         w('    <div class="ev-stat"><b style="color:%s">%s</b><i>%s</i></div>'
           % (color, esc(val), esc(label)))
     w('  </div>')
+    if u_count:
+        w('  <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">'
+          'U 级（证据不足）<strong>不计入 S/A/B/C 四档</strong>：这几家已尽合理检索仍拿不到'
+          '可采信的月休天数或双休率，本站不评级、不估算，详情页各附「证据缺失说明」。</p>')
 
     # ---- 证据强度图例
     w('  <div class="ev-legend">')
