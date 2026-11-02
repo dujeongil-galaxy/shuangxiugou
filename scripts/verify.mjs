@@ -1881,30 +1881,32 @@ if (exists('notes.html')) {
   check(!/解锁彩蛋/.test(dp),
     '弹窗按钮已还原为「站长随笔」（不再是「解锁彩蛋」）',
     '站长 2026-10-25 原话：「解锁彩蛋按钮还原为站长随笔」');
-  // 2026-11-02 站长指令：弹窗内容整体替换为「成都景区飞椅悬停」事件摘要
-  //   （天府微城记 2026-11-02 19:00 发布）；旧版「压榨员工 / 抖音视频推荐」
-  //   数据不删，单独存档于 prompt-original.html，弹窗底部保留存档入口
-  //   （同 remind-original.html 模式）。
+  // 2026-11-03 站长指令：飞椅版**回退**，弹窗还原为 2026-11-02 之前的旧版
+  //   《压榨员工的产品，最后买单的是谁？》（汽车 / 抖音视频推荐）。
+  //   站长原话：「全程仅用 20 分钟，好像不能说他们有什么问题，还是还原吧」。
+  //   —— 景区从故障到游客落地仅 20 分钟，处置及时，不宜当负面案例挂首页弹窗。
   //   ⚠️ dp 已剥注释 —— 注释里记沿革不算，只认代码本体。
-  check(/景区飞椅悬停半小时/.test(dp),
-    '弹窗标题已是新版（2026-11-02 飞椅事件摘要）',
-    '仍是旧标题 → 内容替换被回滚');
-  check(/mp\.weixin\.qq\.com\/s\/ABOwm-j6UtQKuYzoDIJGfw/.test(dp),
-    '弹窗主链接指向微信原文（飞椅事件）',
-    '主链接不是微信原文 → 链接被改坏或替换被回滚');
-  check(/dyp__archive/.test(dp) && /href="\.\/prompt-original\.html"/.test(dp),
-    '弹窗底部有「访问被删除的内容」存档入口（prompt-original.html）',
-    '存档入口缺失 → 旧版数据不可达，违反「原文不删、单独存档」的站长指示');
-  if (exists('prompt-original.html')) {
-    const po = read('prompt-original.html');
-    check(/压榨员工的产品，最后买单的是谁/.test(po) && /v\.douyin\.com\/37pbo6qxUbs/.test(po),
-      '存档页保留旧版完整内容（标题 + 抖音视频链接）',
-      '存档页内容缺失 → 「原来的数据单独放一个地方」没有落地');
-    check(/noindex/.test(po),
-      '存档页 robots noindex（存档页不参与搜索收录）');
-  } else {
-    check(false, 'prompt-original.html 存在', '存档页文件缺失 → 弹窗存档入口指向 404');
-  }
+  check(/压榨员工的产品，最后买单的是谁/.test(dp),
+    '弹窗标题已还原为旧版（汽车 / 压榨员工的产品）',
+    '标题不是旧版 → 2026-11-03 的回退没落地，或又被换了别的内容');
+  check(/v\.douyin\.com\/37pbo6qxUbs/.test(dp),
+    '弹窗主链接指向旧版抖音视频',
+    '主链接不是抖音原视频 → 回退不完整（链接被改坏或仍指向微信原文）');
+  check(!/景区飞椅/.test(dp) && !/mp\.weixin\.qq\.com/.test(dp) && !/阅读微信原文/.test(dp),
+    '飞椅版内容在弹窗里已清零（标题/链接/按钮文案）',
+    '仍有飞椅残留 → 2026-11-02 那版没退干净，两份内容会并存');
+  check(!/dyp__archive/.test(dp) && !/prompt-original/.test(dp),
+    '弹窗底部存档行已移除，且不再引用 prompt-original.html',
+    '存档行/存档页引用还在 → 会指向已删除的页面（404）');
+  check(!exists('prompt-original.html'),
+    '独立存档页 prompt-original.html 已删除（内容已回到弹窗本体）',
+    '存档页还在 → 2026-11-03 站长「记得删独立页」没执行');
+  const dpcss = exists('douyin-prompt.css')
+    ? read('douyin-prompt.css').replace(/\/\*[\s\S]*?\*\//g, '')
+    : '';
+  check(!/dyp__archive/.test(dpcss),
+    'douyin-prompt.css 已清掉 .dyp__archive 死样式',
+    '存档行节点没了但样式还留着 → 死代码堆积，下次再加节点会莫名带上旧样式');
 
   // 写作进度面板的小节提取必须限定在 .wrap 内。
   //
