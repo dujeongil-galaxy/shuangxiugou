@@ -9,12 +9,12 @@
      ③ 手机只露一个主按钮，**点开才加载**其余条目。
 
    覆盖路径：
-     ① 桌面（matchMedia 不命中 640）：条目立即建好、两个出口 href 正确
+     ① 桌面（matchMedia 不命中 640）：条目立即建好、三个出口 href 正确
      ② 手机（matchMedia 命中 640）：panel 初始为空（真·按需创建），点开才出现
      ③ 再点一次收起；条目不复建（不是「隐藏/显示」假按需）
      ④ Esc 收起、点空白处收起
      ⑤ 幂等：重复执行脚本不重复注入节点 / style
-     ⑥ 两个出口文件真实存在（链到 404 的菜单等于没菜单）
+     ⑥ 三个出口可达：两个页面文件真实存在 + #evidence-board 锚点真实存在
      ⑦ img/svg 图标存在，按钮有 aria 属性（无障碍）
 
    ⚠️ jsdom 没有 window.matchMedia，必须自己打桩，否则永远走桌面分支，
@@ -87,17 +87,20 @@ function mkDom(onlyMobile) {
   check('注入 #sxg-nav 容器', !!rootD);
   check('注入主按钮 #sxg-nav-fab', !!fabD);
   check('注入面板 #sxg-nav-panel', !!panelD);
-  check('桌面端条目立即创建（常显，2 条）',
-    panelD && panelD.querySelectorAll('.sxg-nav-item').length === 2,
+  check('桌面端条目立即创建（常显，3 条）',
+    panelD && panelD.querySelectorAll('.sxg-nav-item').length === 3,
     panelD && panelD.querySelectorAll('.sxg-nav-item').length);
 
   const itemsD = panelD ? Array.from(panelD.querySelectorAll('.sxg-nav-item')) : [];
-  check('① 同类项目导航 → ./projects.html',
-    itemsD[0] && itemsD[0].textContent === '同类项目导航' && itemsD[0].getAttribute('href') === './projects.html',
+  check('① 证据链公示 → #evidence-board（页内锚点）',
+    itemsD[0] && itemsD[0].textContent === '证据链公示' && itemsD[0].getAttribute('href') === '#evidence-board',
     itemsD[0] && [itemsD[0].textContent, itemsD[0].getAttribute('href')]);
-  check('② 成功案例 → ./success-stories.html',
-    itemsD[1] && itemsD[1].textContent === '成功案例' && itemsD[1].getAttribute('href') === './success-stories.html',
+  check('② 同类项目导航 → ./projects.html',
+    itemsD[1] && itemsD[1].textContent === '同类项目导航' && itemsD[1].getAttribute('href') === './projects.html',
     itemsD[1] && [itemsD[1].textContent, itemsD[1].getAttribute('href')]);
+  check('③ 成功案例 → ./success-stories.html',
+    itemsD[2] && itemsD[2].textContent === '成功案例' && itemsD[2].getAttribute('href') === './success-stories.html',
+    itemsD[2] && [itemsD[2].textContent, itemsD[2].getAttribute('href')]);
 
   check('桌面端不进入展开态（is-open 不挂）', !rootD.classList.contains('is-open'));
 
@@ -153,16 +156,18 @@ function mkDom(onlyMobile) {
 
   // 点开
   fabM.dispatchEvent(new wm.MouseEvent('click', { bubbles: true }));
-  await until(() => panelM.querySelectorAll('.sxg-nav-item').length === 2, 1000);
+  await until(() => panelM.querySelectorAll('.sxg-nav-item').length === 3, 1000);
 
   const itemsM = Array.from(panelM.querySelectorAll('.sxg-nav-item'));
-  check('★ 点开后条目才被创建（2 条）', itemsM.length === 2, itemsM.length);
+  check('★ 点开后条目才被创建（3 条）', itemsM.length === 3, itemsM.length);
   check('展开态 is-open 挂上', rootM.classList.contains('is-open'));
   check('展开后 aria-expanded=true', fabM.getAttribute('aria-expanded') === 'true');
-  check('点开后的第一条是「同类项目导航」→ ./projects.html',
-    itemsM[0] && itemsM[0].textContent === '同类项目导航' && itemsM[0].getAttribute('href') === './projects.html');
-  check('点开后的第二条是「成功案例」→ ./success-stories.html',
-    itemsM[1] && itemsM[1].textContent === '成功案例' && itemsM[1].getAttribute('href') === './success-stories.html');
+  check('点开后的第一条是「证据链公示」→ #evidence-board',
+    itemsM[0] && itemsM[0].textContent === '证据链公示' && itemsM[0].getAttribute('href') === '#evidence-board');
+  check('点开后的第二条是「同类项目导航」→ ./projects.html',
+    itemsM[1] && itemsM[1].textContent === '同类项目导航' && itemsM[1].getAttribute('href') === './projects.html');
+  check('点开后的第三条是「成功案例」→ ./success-stories.html',
+    itemsM[2] && itemsM[2].textContent === '成功案例' && itemsM[2].getAttribute('href') === './success-stories.html');
 
   // 再点收起，且不复建
   const firstNode = itemsM[0];
@@ -170,12 +175,12 @@ function mkDom(onlyMobile) {
   await wait(20);
   check('再点一次收起（is-open 移除）', !rootM.classList.contains('is-open'));
   check('收起后条目仍在 DOM 里（只切显隐，不销毁重建）',
-    panelM.querySelectorAll('.sxg-nav-item').length === 2);
+    panelM.querySelectorAll('.sxg-nav-item').length === 3);
   check('★ 收起再点开不重复创建（还是同一批节点）',
     (function () {
       fabM.dispatchEvent(new wm.MouseEvent('click', { bubbles: true }));
       const again = Array.from(panelM.querySelectorAll('.sxg-nav-item'));
-      return again.length === 2 && again[0] === firstNode;
+      return again.length === 3 && again[0] === firstNode;
     })());
 
   /* ================= ③ Esc / 点空白 ================= */
@@ -197,12 +202,16 @@ function mkDom(onlyMobile) {
   await wait(20);
   check('重复执行不重复注入 #sxg-nav', docM.querySelectorAll('#sxg-nav').length === 1);
   check('重复执行不重复注入 #sxg-nav-style', docM.querySelectorAll('#sxg-nav-style').length === 1);
-  check('重复执行后条目数不变（仍是 2）', panelM.querySelectorAll('.sxg-nav-item').length === 2);
+  check('重复执行后条目数不变（仍是 3）', panelM.querySelectorAll('.sxg-nav-item').length === 3);
 
   /* ================= ⑤ 出口文件真实存在 ================= */
   console.log('\n⑤ 出口可达');
   check('projects.html 存在', fs.existsSync(path.join(ROOT, 'projects.html')));
   check('success-stories.html 存在', fs.existsSync(path.join(ROOT, 'success-stories.html')));
+  // 页内锚点同理：菜单第一条跳 #evidence-board，这个 id 不在 index.html 里就是死链
+  const idxHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  check('index.html 里真有 id="evidence-board"（页内跳转不是死链）',
+    /id="evidence-board"/.test(idxHtml));
 
   console.log('\n' + '='.repeat(60));
   console.log('通过 ' + passed + ' 项，失败 ' + failed + ' 项');

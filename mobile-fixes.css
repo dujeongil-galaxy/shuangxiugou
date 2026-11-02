@@ -201,3 +201,124 @@
 /* 注：内容避让吸底广告条的 body padding-bottom 写在 liangpei-ad.css 的
    ≤1439px 段里（那条规则属于广告条自身，且本文件新增断点会让
    verify §13b-5 的三按钮区间核查误判为「该断点未覆盖顶栏按钮」）。 */
+/* --------------------------------------------------------------------------
+   2026-11-02：手机端公告栏折叠成一行（站长：仍然占了 3–4 行）
+   --------------------------------------------------------------------------
+   站长提过两个方案，都试过、都否了，记在这里免得下次又绕回来：
+
+   ✗ 横向滚动（跑马灯）
+     字在动 → 永远读不完整句，只能反复等它转回来；而且**移动的东西点不准**，
+     那个「68 家企业 179 条证据」的跳转等于被迫放弃。
+     prefers-reduced-motion 的用户更是直接看不到后半句。原生 <marquee> 也已废弃。
+
+   ✗ 逐字输出
+     得等它吐完才能读，读完前不能点；**吐完之后占的还是 3–4 行** ——
+     只是把同一个问题延后三秒，行数一点没省。
+
+   ✓ 采用：单行折叠 + 展开
+     默认 1 行（超长省略号），右侧一个「展开」；点开看全文，全文里那个
+     #evidence-board 超链接照旧可点（站长要求保留这个 url）。
+     顺带把跳转也放进三横菜单（nav-menu.js），不想展开的人一次点击也能到证据链。
+
+   实现：checkbox + label 纯 CSS 开关，没有脚本依赖 —— nav-menu.js 挂了、
+   bundle 报错、甚至 JS 全禁，公告栏都还能展开。所以不做成 JS 组件。
+
+   ⚠️ 不加新断点宽度：verify §13b-5 会把每个 @media 宽度从首次出现到文件末
+   当作区间，核对顶栏三按钮的 nowrap 覆盖；凭空多一个宽度会凭空多三条红。
+   -------------------------------------------------------------------------- */
+
+/* 开关本体：视觉隐藏但仍在焦点顺序里（不能用 hidden / display:none，
+   那样键盘用户按 Tab 永远到不了，等于只有鼠标能用） */
+.notice-more-cb {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 桌面端不折叠：整句放得下，多一个「展开」反而是噪音 */
+.notice-more-lbl {
+  display: none;
+}
+
+.notice-more-lbl .t-less {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  /* 用 flex 而不是默认 block：正文要能被压到 1 行，而「展开」必须留在同一行右侧。
+     block 布局下 -webkit-line-clamp 的盒子是块级，label 只能掉到下一行（多占一行）。 */
+  #site-notice {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: center;
+    padding: 5px 10px;
+  }
+
+  /* 正文：默认压成 1 行，超出显示省略号 */
+  #evidence-notice {
+    flex: 1 1 0%;
+    min-width: 0;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    text-align: left;
+  }
+
+  /* 展开态：回到普通块级（line-clamp 只对 -webkit-box 生效，换掉即解除） */
+  .notice-more-cb:checked ~ #evidence-notice {
+    display: block;
+    overflow: visible;
+    min-width: 100%;
+  }
+
+  .notice-more-lbl {
+    display: inline-block;
+    flex: 0 0 auto;
+    /* margin-left:auto 而不是固定 4px：
+       收起状态下文本是 flex:1，auto 拿到 0，label 紧贴右端；
+       展开后文本换行独占一块，label 单独一行 —— auto 会把它推到右端，
+       位置和展开前一致，不会出现「点一下按钮跳到屏幕中间」的跳动。 */
+    margin-left: auto;
+    padding-left: 4px;
+    color: #0f766e;
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: underline;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .notice-more-cb:checked ~ .notice-more-lbl .t-more {
+    display: none;
+  }
+
+  .notice-more-cb:checked ~ .notice-more-lbl .t-less {
+    display: inline;
+  }
+
+  /* 键盘聚焦时给出可见焦点环（label 不是控件，靠兄弟选择器把环画在它身上） */
+  .notice-more-cb:focus-visible ~ .notice-more-lbl {
+    outline: 2px solid #0f766e;
+    outline-offset: 2px;
+  }
+
+  /* 版本号独占一行、字号降一档：不再跟正文抢同一行的宽度，
+     把正文从「4 行」压到「1 行 + 版本号 1 行」。 */
+  #site-notice .notice-sep {
+    display: none;
+  }
+
+  #site-notice .notice-ver {
+    flex: 0 0 100%;
+    margin-top: 1px;
+    font-size: 11px;
+  }
+}

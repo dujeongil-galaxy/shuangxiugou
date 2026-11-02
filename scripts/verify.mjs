@@ -827,12 +827,16 @@ section('2g. 首页证据链完整公示');
   check(!!notice, '公告栏证据链句子有 evidence-notice 标记（生成器托管，不许手写）');
   if (notice) {
     const nb = notice[1];
-    // 2026-11-02 站长：「超链接不放顶部」。公告栏整条只允许纯文字，
-    // 原来那个跳 #evidence-board 的 <a> 已去掉 —— 这条断言方向整体反转。
-    // （旧断言是「必须是可点入口」，留着就会把正确实现判红。）
-    check(!/<a\s/i.test(nb),
-      '公告栏证据链句子是纯文字，不含任何超链接（2026-11-02「超链接不放顶部」）',
-      '句子里仍有 <a>：' + (nb.match(/<a\s[^>]*>/gi) || []).join(' | '));
+    // 2026-11-02 一天里两轮指令的合并口径：
+    //   上午「超链接不放顶部」→ 导航链接（同类项目导航 / 成功案例）全部移走；
+    //   下午「这个我看了，建议还是保持原样，url 超链接」→ 这一句**恢复成**
+    //   跳 #evidence-board 的页内锚点。
+    // 所以判据不是「零超链接」也不是「必须有超链接」，而是：
+    //   **恰好 1 个，且必须指向本页证据链区块**。多一个、指错地方都判红。
+    const nbAnchors = nb.match(/<a\s[^>]*>/gi) || [];
+    check(nbAnchors.length === 1 && /href="#evidence-board"/.test(nbAnchors[0]),
+      '公告栏那句是跳 #evidence-board 的页内链接（且全句只此一个）',
+      `实际 ${nbAnchors.length} 个 <a>：${nbAnchors.join(' | ') || '（无）'}`);
     // ⚠️ 假承诺闸门：公告栏说「已在本页完整公示」，那本页就必须真有公示区块。
     //    区块被删而口号还在，比根本不公示更坏——它在骗读者。
     //    2026-10-31 故障注入②实测：区块整块删掉后，公告栏 6 条断言仍全绿，
@@ -857,23 +861,43 @@ section('2g. 首页证据链完整公示');
     check(!bareSlogan, '公告栏旧口号原句已被托管句替换（不留第二份空话）');
   }
 
-  // ---------- 9b. 顶部公告栏整条不许有超链接（2026-11-02 站长指令）----------
-  // 原话：「不是说了超链接不放顶部吗？」——顶部公告栏此前挂着 3 个可点元素
-  // （#evidence-board 锚点 / 同类项目导航 / 成功案例），导航挤在红字条里既乱
-  // 又不该占首屏。现在整条只留纯文字，导航入口改由右下角悬浮菜单承担。
-  // 只查 <span id="evidence-notice"> 内部不够：那两个导航链接在 span 外面，
+  // ---------- 9b. 顶部公告栏：只留一个页内锚点，导航链接一个都不许回来 ----------
+  // 站长原话两轮：「不是说了超链接不放顶部吗？」→ 导航移走；
+  // 随后「68 家企业 179 条证据…建议还是保持原样，url 超链接」→ 这一句恢复。
+  // 判据：整条公告栏**恰好 1 个 <a>**，且 href 必须是 #evidence-board；
+  // 指向 projects.html / success-stories.html 的导航链接一律判红（那是菜单的活）。
+  // 只查 <span id="evidence-notice"> 内部不够：有人可能把导航再加到 span 外面，
   // 所以必须在**整条 #site-notice**范围内扫。
   const noticeDiv = html.match(/<div id="site-notice"[\s\S]*?<\/div>/);
   check(!!noticeDiv, '顶部公告栏容器 #site-notice 在位');
   if (noticeDiv) {
     const anchors = noticeDiv[0].match(/<a\s[^>]*>/gi) || [];
-    check(anchors.length === 0,
-      '★ 顶部公告栏整条没有任何超链接（含导航链接与页内锚点）',
-      '仍有 ' + anchors.length + ' 个 <a>：' + anchors.join(' | '));
+    check(anchors.length === 1 && /href="#evidence-board"/.test(anchors[0]),
+      '★ 公告栏整条只有一个超链接，且是跳 #evidence-board 的页内锚点',
+      `实际 ${anchors.length} 个 <a>：${anchors.join(' | ') || '（无）'}`);
+    const navBack = anchors.filter((a) => /href="\.\/(projects|success-stories)\.html"/.test(a));
+    check(navBack.length === 0,
+      '公告栏里没有回到「同类项目导航 / 成功案例」的链接（导航归悬浮菜单）',
+      '又挂回来了：' + navBack.join(' | '));
     // 版本号必须继续以纯文字留在这里：sync-version.mjs 靠
     // 「当前版本号 xxxxxxx</span>」这个锚点回写，挪走就会静默失效。
     check(/当前版本号\s*[0-9a-f]{7}/.test(noticeDiv[0]),
       '公告栏保留「当前版本号 xxxxxxx」纯文字（sync-version 回写锚点）');
+
+    /* 手机端折叠（2026-11-02 站长：「仍然占了 3–4 行」）
+       —— 单行折叠 + 展开，开关是纯 CSS 的 checkbox + label（不依赖脚本）。
+       三件都必须在一起，缺一件就等于没折叠或者折叠了打不开：
+         ① 开关控件、② 指向它的 label、③ 真正生效的 clamp 规则。 */
+    check(/id="notice-more"/.test(noticeDiv[0]),
+      '公告栏带折叠开关控件（#notice-more）');
+    check(/<label[^>]*for="notice-more"/.test(noticeDiv[0]),
+      '折叠开关有可点的 label（纯 CSS 开关，脚本挂了也能展开）');
+    if (exists('mobile-fixes.css')) {
+      const mfc = stripCssComments(read('mobile-fixes.css'));
+      check(/-webkit-line-clamp:\s*1/.test(mfc)
+        && /\.notice-more-cb:checked\s*~\s*#evidence-notice/.test(mfc),
+        '手机端公告栏默认压成 1 行、展开态解除（mobile-fixes.css）');
+    }
   }
 
   // ---------- 9c. 导航出口改由右下角悬浮菜单承担 ----------
@@ -882,6 +906,9 @@ section('2g. 首页证据链完整公示');
     const nm = read('nav-menu.js');
     check(nm.includes("'./projects.html'") && nm.includes("'./success-stories.html'"),
       '悬浮菜单含「同类项目导航 / 成功案例」两个出口');
+    // 公告栏折叠后，不想点「展开」的人得有别的路到证据链 —— 菜单里补一个页内锚点
+    check(nm.includes("'#evidence-board'"),
+      '悬浮菜单含「证据链公示」页内跳转（公告栏折叠后的补偿入口）');
     check(/<script src="\.\/nav-menu\.js\?v=\d+"><\/script>/.test(html),
       'index.html 已挂载 nav-menu.js（带 ?v 缓存号）');
     // PC 常显 / 手机折叠：两个断点都必须写在样式里，否则等同只有一个形态
