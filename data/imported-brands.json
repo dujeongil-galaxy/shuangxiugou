@@ -1,0 +1,1084 @@
+{
+  "_meta": {
+    "source": "https://interviewasssistant.com/zh/blog/company-work-schedule-2026",
+    "sourceTitle": "双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）",
+    "sourceDate": "2026-07-11",
+    "importedAt": "2026-11-02",
+    "note": "榜单口径导入。评级按本站月休口径换算（A=月休≥8 天 / B=6-8 天 / C=不足 6 天），数字一律不估填，未核实即 null。"
+  },
+  "brands": [
+    {
+      "slug": "alibaba",
+      "name": "阿里巴巴",
+      "category": "互联网软件",
+      "grade": "A",
+      "policy": "名义双休 / 强度看部门",
+      "overtime": "工作日长，项目期加班",
+      "products": "淘宝 / 闲鱼 / 高德 / 钉钉",
+      "quote": "阿里 / 蚂蚁（淘宝/支付宝/高德/钉钉）：名义双休，强度看部门"
+    },
+    {
+      "slug": "ant",
+      "name": "蚂蚁集团",
+      "category": "互联网软件",
+      "grade": "A",
+      "policy": "名义双休 / 强度看部门",
+      "overtime": "工作日长，项目期加班",
+      "products": "支付宝 / 余额宝",
+      "quote": "阿里 / 蚂蚁：名义双休，强度看部门"
+    },
+    {
+      "slug": "baidu",
+      "name": "百度",
+      "category": "互联网软件",
+      "grade": "A",
+      "policy": "名义双休 / 强度看部门",
+      "overtime": "项目期加班",
+      "products": "文心一言 / 百度地图 / 百度网盘",
+      "quote": "百度（文心/百度地图/网盘）：名义双休，强度看部门"
+    },
+    {
+      "slug": "netease",
+      "name": "网易",
+      "category": "互联网软件",
+      "grade": "A",
+      "policy": "名义双休 / 强度看部门",
+      "overtime": "项目期加班",
+      "products": "网易云音乐 / 网易严选 / 有道",
+      "quote": "网易（云音乐/有道/严选）：名义双休，强度看部门"
+    },
+    {
+      "slug": "jd",
+      "name": "京东",
+      "category": "互联网服务",
+      "grade": "A",
+      "policy": "名义双休 / 强度看部门",
+      "overtime": "大促期加班",
+      "products": "京东商城 / 京东物流",
+      "quote": "京东：名义双休，强度看部门"
+    },
+    {
+      "slug": "dewu",
+      "name": "得物",
+      "category": "互联网软件",
+      "grade": "A",
+      "policy": "双休（2022 年废大小周）",
+      "overtime": "大促期加班",
+      "products": "得物 App",
+      "quote": "得物（2022 废大小周）：双休，反内卷口碑较好"
+    },
+    {
+      "slug": "bilibili",
+      "name": "哔哩哔哩",
+      "category": "互联网软件",
+      "grade": "A",
+      "policy": "双休",
+      "overtime": "项目期加班",
+      "products": "B 站 / 番剧",
+      "quote": "B站：双休，反内卷口碑较好"
+    },
+    {
+      "slug": "lilith",
+      "name": "莉莉丝游戏",
+      "category": "互联网软件",
+      "grade": "A",
+      "policy": "多数双休",
+      "overtime": "项目期加班",
+      "products": "剑与远征 / 万国觉醒",
+      "quote": "米哈游 / 莉莉丝 / 网易游戏 / 腾讯游戏 / 心动网络：多数双休，项目期加班"
+    },
+    {
+      "slug": "xindong",
+      "name": "心动网络",
+      "category": "互联网软件",
+      "grade": "A",
+      "policy": "多数双休",
+      "overtime": "项目期加班",
+      "products": "TapTap / 心动游戏",
+      "quote": "心动网络（TapTap）：多数双休，项目期加班"
+    },
+    {
+      "slug": "google",
+      "name": "谷歌",
+      "category": "互联网软件",
+      "grade": "A",
+      "policy": "955 / 严格双休",
+      "overtime": "加班少，招聘规模小",
+      "products": "Google 搜索 / Android",
+      "quote": "外企标杆：微软、谷歌、英伟达、苹果、SAP、Intel、IBM、亚马逊/AWS —— 普遍 955、双休、加班少（招得少）"
+    },
+    {
+      "slug": "nvidia",
+      "name": "英伟达",
+      "category": "数码3C",
+      "grade": "A",
+      "policy": "955 / 严格双休",
+      "overtime": "加班少，招聘规模小",
+      "products": "GPU / 显卡",
+      "quote": "外企标杆：普遍 955、双休、加班少"
+    },
+    {
+      "slug": "intel",
+      "name": "英特尔",
+      "category": "数码3C",
+      "grade": "A",
+      "policy": "955 / 严格双休",
+      "overtime": "加班少，招聘规模小",
+      "products": "CPU / 芯片",
+      "quote": "外企标杆：普遍 955、双休、加班少"
+    },
+    {
+      "slug": "ibm",
+      "name": "IBM",
+      "category": "互联网服务",
+      "grade": "A",
+      "policy": "955 / 严格双休",
+      "overtime": "加班少，招聘规模小",
+      "products": "企业级 IT 服务",
+      "quote": "外企标杆：普遍 955、双休、加班少"
+    },
+    {
+      "slug": "aws",
+      "name": "亚马逊云科技",
+      "category": "互联网服务",
+      "grade": "A",
+      "policy": "955 / 严格双休",
+      "overtime": "加班少，招聘规模小",
+      "products": "AWS 云服务",
+      "quote": "外企标杆：亚马逊/AWS —— 普遍 955、双休、加班少"
+    },
+    {
+      "slug": "wps",
+      "name": "金山办公",
+      "category": "互联网软件",
+      "grade": "A",
+      "policy": "双休为主",
+      "overtime": "版本期加班",
+      "products": "WPS Office",
+      "quote": "金山办公 WPS、联想：双休为主"
+    },
+    {
+      "slug": "lenovo",
+      "name": "联想",
+      "category": "数码3C",
+      "grade": "A",
+      "policy": "双休为主",
+      "overtime": "大促期加班",
+      "products": "ThinkPad / 拯救者 / moto",
+      "quote": "金山办公 WPS、联想（ThinkPad/拯救者/moto）：双休为主"
+    },
+    {
+      "slug": "honor",
+      "name": "荣耀",
+      "category": "数码3C",
+      "grade": "A",
+      "policy": "双休",
+      "overtime": "核心研发项目期偏忙",
+      "products": "Magic 系列手机",
+      "quote": "荣耀（Magic 手机）：双休，核心研发项目期偏忙"
+    },
+    {
+      "slug": "transmion",
+      "name": "传音控股",
+      "category": "数码3C",
+      "grade": "A",
+      "policy": "双休",
+      "overtime": "项目期偏忙",
+      "products": "Tecno / Infinix",
+      "quote": "传音（Tecno/Infinix）：双休，核心研发项目期偏忙"
+    },
+    {
+      "slug": "insta360",
+      "name": "影石 Insta360",
+      "category": "数码3C",
+      "grade": "A",
+      "policy": "双休",
+      "overtime": "新品项目期偏忙",
+      "products": "全景相机 / 运动相机",
+      "quote": "影石 Insta360（全景/运动相机）：双休，核心研发项目期偏忙"
+    },
+    {
+      "slug": "anker",
+      "name": "安克创新",
+      "category": "数码3C",
+      "grade": "A",
+      "policy": "双休",
+      "overtime": "旺季项目期偏忙",
+      "products": "Anker / eufy / soundcore",
+      "quote": "安克 Anker（充电器/eufy/soundcore）：双休，核心研发项目期偏忙"
+    },
+    {
+      "slug": "ugreen",
+      "name": "绿联",
+      "category": "数码3C",
+      "grade": "A",
+      "policy": "双休",
+      "overtime": "项目期偏忙",
+      "products": "充电器 / NAS / 扩展坞",
+      "quote": "绿联 UGREEN（充电/NAS）：双休，核心研发项目期偏忙"
+    },
+    {
+      "slug": "ecovacs",
+      "name": "科沃斯",
+      "category": "家电数码",
+      "grade": "A",
+      "policy": "双休",
+      "overtime": "新品项目期偏忙",
+      "products": "扫地机器人 / 擦窗机器人",
+      "quote": "科沃斯（扫地机）：双休，核心研发项目期偏忙"
+    },
+    {
+      "slug": "xgimi",
+      "name": "极米科技",
+      "category": "家电数码",
+      "grade": "A",
+      "policy": "双休",
+      "overtime": "新品项目期偏忙",
+      "products": "智能投影仪",
+      "quote": "极米（投影仪）：双休，核心研发项目期偏忙"
+    },
+    {
+      "slug": "naura",
+      "name": "北方华创",
+      "category": "半导体制造",
+      "grade": "A",
+      "policy": "双休为主",
+      "overtime": "产线交付期偏忙",
+      "products": "半导体设备",
+      "quote": "北方华创（半导体设备）：双休为主"
+    },
+    {
+      "slug": "will",
+      "name": "韦尔股份",
+      "category": "半导体制造",
+      "grade": "A",
+      "policy": "双休为主",
+      "overtime": "交付期偏忙",
+      "products": "图像传感器（豪威）",
+      "quote": "韦尔/豪威（图像传感器）：双休为主"
+    },
+    {
+      "slug": "tianma",
+      "name": "天马微电子",
+      "category": "半导体制造",
+      "grade": "A",
+      "policy": "职能岗双休",
+      "overtime": "产线倒班另计",
+      "products": "中小尺寸面板",
+      "quote": "天马微电子（职能岗）：双休为主"
+    },
+    {
+      "slug": "genki",
+      "name": "元气森林",
+      "category": "食品饮品",
+      "grade": "A",
+      "policy": "职能岗双休",
+      "overtime": "旺季销售岗周六出勤",
+      "products": "气泡水 / 外星人电解质水",
+      "quote": "元气森林（气泡水/外星人电解质水/燃茶）：职能岗双休，销售岗周六常出勤"
+    },
+    {
+      "slug": "yili",
+      "name": "伊利",
+      "category": "食品饮品",
+      "grade": "A",
+      "policy": "职能岗双休",
+      "overtime": "销售岗周六常出勤",
+      "products": "金典 / 安慕希 / 巧乐兹",
+      "quote": "伊利（金典/安慕希/巧乐兹）：职能岗双休，销售岗周六常出勤"
+    },
+    {
+      "slug": "tongyi",
+      "name": "统一",
+      "category": "食品饮品",
+      "grade": "B",
+      "policy": "职能岗双休 / 销售岗周六常出勤",
+      "overtime": "销售岗周六出勤，旺季推广加班",
+      "products": "老坛酸菜面 / 阿萨姆奶茶 / 小茗同学",
+      "quote": "统一（老坛酸菜面/阿萨姆奶茶/小茗同学）：职能岗双休，销售岗周六常出勤",
+      "trademark": {
+        "marks": "本站未检索到统一名下被国家知识产权局宣告无效的「心机商标」记录（如你有线索，欢迎在 Issues 补充）",
+        "status": "同类风险请自行核对包装右上角是否标有 ™ / ®"
+      },
+      "extraEvidence": [
+        {
+          "title": "1700 余件「心机商标」被宣告无效（央视新闻）",
+          "date": "2026-08-19",
+          "kind": "媒体报道",
+          "summary": "国家知识产权局商标局依职权集中宣告 1782 件带有欺骗性的商标无效，含「一桶半」「多半袋」「手擀」等。",
+          "url": "https://news.hubeidaily.net/mobile/c_5874173.html"
+        }
+      ]
+    },
+    {
+      "slug": "coke",
+      "name": "可口可乐",
+      "category": "食品饮品",
+      "grade": "A",
+      "policy": "职能岗双休",
+      "overtime": "销售岗周六常出勤",
+      "products": "可口可乐 / 雪碧 / 美汁源 / COSTA",
+      "quote": "可口可乐（可乐/雪碧/美汁源/COSTA）：职能岗双休，销售岗周六常出勤"
+    },
+    {
+      "slug": "qiaqia",
+      "name": "洽洽食品",
+      "category": "零食饮料",
+      "grade": "A",
+      "policy": "办公岗双休",
+      "overtime": "旺季生产排班另计",
+      "products": "洽洽瓜子 / 小黄袋每日坚果",
+      "quote": "洽洽（瓜子/小黄袋每日坚果）：办公岗双休"
+    },
+    {
+      "slug": "liangpin",
+      "name": "良品铺子",
+      "category": "零食饮料",
+      "grade": "B",
+      "policy": "纸面双休 / 实际加班多",
+      "overtime": "被曝纸面双休、加班较多",
+      "products": "良品铺子零食",
+      "quote": "良品铺子：办公岗双休（良品被曝纸面双休、加班多）"
+    },
+    {
+      "slug": "bright",
+      "name": "光明乳业",
+      "category": "食品饮品",
+      "grade": "A",
+      "policy": "办公岗双休",
+      "overtime": "冷链与销售岗排班另计",
+      "products": "莫斯利安 / 优倍",
+      "quote": "光明乳业（莫斯利安/优倍）：办公岗双休"
+    },
+    {
+      "slug": "mcd",
+      "name": "麦当劳",
+      "category": "餐饮连锁",
+      "grade": "A",
+      "policy": "全职周休二天 / 门店轮班",
+      "overtime": "门店轮班，有加班费",
+      "products": "麦当劳中国门店",
+      "quote": "麦当劳（全职周休二/有加班费）：总部/全职双休，门店轮班"
+    },
+    {
+      "slug": "proya",
+      "name": "珀莱雅",
+      "category": "美妆日化",
+      "grade": "A",
+      "policy": "设每月最长工时 / 拒绝规模内卷",
+      "overtime": "大促期加班",
+      "products": "珀莱雅 / 彩棠",
+      "quote": "珀莱雅（珀莱雅/彩棠）：官方称设每月最长工时、『拒绝规模内卷』"
+    },
+    {
+      "slug": "bluemoon",
+      "name": "蓝月亮",
+      "category": "美妆日化",
+      "grade": "A",
+      "policy": "职能岗双休",
+      "overtime": "大促与旺季加班",
+      "products": "洗衣液 / 洗手液",
+      "quote": "蓝月亮（洗衣液）：职能岗双休"
+    },
+    {
+      "slug": "jahwa",
+      "name": "上海家化",
+      "category": "美妆日化",
+      "grade": "A",
+      "policy": "职能岗双休",
+      "overtime": "大促期加班",
+      "products": "六神 / 佰草集 / 玉泽",
+      "quote": "上海家化（六神/佰草集/玉泽）：职能岗双休"
+    },
+    {
+      "slug": "maogeping",
+      "name": "毛戈平",
+      "category": "美妆日化",
+      "grade": "A",
+      "policy": "总部双休",
+      "overtime": "门店与直播岗另计",
+      "products": "毛戈平彩妆",
+      "quote": "毛戈平（总部）：职能岗双休"
+    },
+    {
+      "slug": "lining",
+      "name": "李宁",
+      "category": "运动服饰",
+      "grade": "A",
+      "policy": "双休为主",
+      "overtime": "门店与电商岗另计",
+      "products": "李宁 / 中国李宁",
+      "quote": "李宁（李宁/中国李宁）：双休为主，门店/电商另计"
+    },
+    {
+      "slug": "361du",
+      "name": "361 度",
+      "category": "运动服饰",
+      "grade": "A",
+      "policy": "双休为主",
+      "overtime": "门店与电商岗另计",
+      "products": "361° 运动鞋服",
+      "quote": "361度：双休为主，门店/电商另计"
+    },
+    {
+      "slug": "semir",
+      "name": "森马",
+      "category": "服装饰品",
+      "grade": "A",
+      "policy": "双休为主",
+      "overtime": "门店与电商大促另计",
+      "products": "森马 / 巴拉巴拉",
+      "quote": "森马/巴拉巴拉：双休为主，门店/电商另计"
+    },
+    {
+      "slug": "bosideng",
+      "name": "波司登",
+      "category": "服装饰品",
+      "grade": "B",
+      "policy": "招聘写双休 / 员工称加班多",
+      "overtime": "羽绒旺季加班多",
+      "products": "波司登羽绒服",
+      "quote": "波司登（招聘写双休，员工称加班多）：双休为主，门店/电商另计"
+    },
+    {
+      "slug": "supor",
+      "name": "苏泊尔",
+      "category": "家电数码",
+      "grade": "A",
+      "policy": "办公岗双休 / 基本准点",
+      "overtime": "旺季生产排班另计",
+      "products": "炊具 / 电饭煲",
+      "quote": "苏泊尔（炊具/电饭煲）：办公岗双休、基本准点"
+    },
+    {
+      "slug": "bull",
+      "name": "公牛集团",
+      "category": "家电数码",
+      "grade": "A",
+      "policy": "办公岗双休 / 基本准点",
+      "overtime": "产线旺季排班另计",
+      "products": "开关插座",
+      "quote": "公牛（开关插座）：办公岗双休、基本准点"
+    },
+    {
+      "slug": "goodbaby",
+      "name": "好孩子",
+      "category": "母婴用品",
+      "grade": "A",
+      "policy": "办公岗双休 / 基本准点",
+      "overtime": "旺季排班另计",
+      "products": "好孩子 / Babycare 母婴",
+      "quote": "好孩子/Babycare（母婴）：办公岗双休、基本准点"
+    },
+    {
+      "slug": "musie",
+      "name": "慕思股份",
+      "category": "家居建材",
+      "grade": "A",
+      "policy": "总部双休",
+      "overtime": "门店与营销岗另计",
+      "products": "慕思床垫",
+      "quote": "慕思（床垫）：总部双休"
+    },
+    {
+      "slug": "oppein",
+      "name": "欧派家居",
+      "category": "家居建材",
+      "grade": "A",
+      "policy": "总部双休",
+      "overtime": "营销岗另计",
+      "products": "欧派定制家居",
+      "quote": "欧派/索菲亚（定制家居，营销岗另计）：总部双休"
+    },
+    {
+      "slug": "sofia",
+      "name": "索菲亚",
+      "category": "家居建材",
+      "grade": "A",
+      "policy": "总部双休",
+      "overtime": "营销岗另计",
+      "products": "索菲亚定制家居",
+      "quote": "欧派/索菲亚（定制家居，营销岗另计）：总部双休"
+    },
+    {
+      "slug": "pingan",
+      "name": "中国平安",
+      "category": "金融保险",
+      "grade": "A",
+      "policy": "内勤双休",
+      "overtime": "外勤与销售岗另计",
+      "products": "平安保险 / 银行 / 陆金所",
+      "quote": "中国平安、中国人寿（内勤）：双休为主"
+    },
+    {
+      "slug": "chinalife",
+      "name": "中国人寿",
+      "category": "金融保险",
+      "grade": "A",
+      "policy": "内勤双休",
+      "overtime": "外勤与销售岗另计",
+      "products": "中国人寿保险",
+      "quote": "中国平安、中国人寿（内勤）：双休为主"
+    },
+    {
+      "slug": "eastmoney",
+      "name": "东方财富",
+      "category": "金融保险",
+      "grade": "A",
+      "policy": "部分岗位双休",
+      "overtime": "行情与活动期加班",
+      "products": "东方财富 / 天天基金",
+      "quote": "东方财富、华泰证券、中国银联、财付通、招银（部分岗）：双休为主"
+    },
+    {
+      "slug": "htsec",
+      "name": "华泰证券",
+      "category": "金融保险",
+      "grade": "A",
+      "policy": "部分岗位双休",
+      "overtime": "投行与研究所另计",
+      "products": "华泰证券 / 涨乐财富通",
+      "quote": "东方财富、华泰证券、中国银联、财付通、招银（部分岗）：双休为主"
+    },
+    {
+      "slug": "unionpay",
+      "name": "中国银联",
+      "category": "金融保险",
+      "grade": "A",
+      "policy": "双休为主",
+      "overtime": "清算值班另计",
+      "products": "银联卡 / 云闪付",
+      "quote": "中国银联（部分岗）：双休为主"
+    },
+    {
+      "slug": "tenpay",
+      "name": "财付通",
+      "category": "金融保险",
+      "grade": "A",
+      "policy": "双休为主",
+      "overtime": "项目期加班",
+      "products": "微信支付",
+      "quote": "财付通（部分岗）：双休为主"
+    },
+    {
+      "slug": "hengrui",
+      "name": "恒瑞医药",
+      "category": "医药健康",
+      "grade": "A",
+      "policy": "销售岗双休",
+      "overtime": "指标冲刺期加班",
+      "products": "恒瑞医药",
+      "quote": "恒瑞医药（销售岗）：双休为主"
+    },
+    {
+      "slug": "yunnanbaiyao",
+      "name": "云南白药",
+      "category": "医药健康",
+      "grade": "A",
+      "policy": "双休为主",
+      "overtime": "旺季生产排班另计",
+      "products": "云南白药牙膏 / 气雾剂",
+      "quote": "云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主"
+    },
+    {
+      "slug": "tongrentang",
+      "name": "同仁堂",
+      "category": "医药健康",
+      "grade": "A",
+      "policy": "双休为主",
+      "overtime": "门店排班另计",
+      "products": "同仁堂中成药",
+      "quote": "云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主"
+    },
+    {
+      "slug": "pianzihuang",
+      "name": "片仔癀",
+      "category": "医药健康",
+      "grade": "A",
+      "policy": "双休为主",
+      "overtime": "门店排班另计",
+      "products": "片仔癀",
+      "quote": "云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主"
+    },
+    {
+      "slug": "baiyunshan",
+      "name": "白云山",
+      "category": "医药健康",
+      "grade": "A",
+      "policy": "双休为主",
+      "overtime": "旺季生产排班另计",
+      "products": "白云山 / 王老吉",
+      "quote": "云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主"
+    },
+    {
+      "slug": "sinopharm",
+      "name": "国药控股",
+      "category": "医药健康",
+      "grade": "A",
+      "policy": "双休为主",
+      "overtime": "配送与仓储排班另计",
+      "products": "医药流通",
+      "quote": "国药控股/九州通（医药流通）：双休为主"
+    },
+    {
+      "slug": "jzt",
+      "name": "九州通",
+      "category": "医药健康",
+      "grade": "A",
+      "policy": "双休为主",
+      "overtime": "配送与仓储排班另计",
+      "products": "医药流通",
+      "quote": "国药控股/九州通（医药流通）：双休为主"
+    },
+    {
+      "slug": "hikvision",
+      "name": "海康威视",
+      "category": "安防监控",
+      "grade": "B",
+      "policy": "大小周（长期 995.5）",
+      "overtime": "小周无加班费，多次传取消未落地",
+      "products": "安防摄像头 / 视频监控",
+      "quote": "海康威视 / 大华：大小周，长期 995.5、小周无加班费，多次传取消未落地"
+    },
+    {
+      "slug": "dahua",
+      "name": "大华股份",
+      "category": "安防监控",
+      "grade": "B",
+      "policy": "大小周（长期 995.5）",
+      "overtime": "小周无加班费",
+      "products": "安防摄像头 / 视频监控",
+      "quote": "海康威视 / 大华：大小周，长期 995.5、小周无加班费"
+    },
+    {
+      "slug": "lixiang",
+      "name": "理想汽车",
+      "category": "新能源车",
+      "grade": "B",
+      "policy": "名义双休但加班重",
+      "overtime": "新势力月均加班 70-100h",
+      "products": "理想 L 系列",
+      "quote": "理想 / 蔚来 / 比亚迪：名义双休但加班重，新势力月均加班 70-100h，多为涨薪未强制下班"
+    },
+    {
+      "slug": "nio",
+      "name": "蔚来",
+      "category": "新能源车",
+      "grade": "B",
+      "policy": "名义双休但加班重",
+      "overtime": "新势力月均加班 70-100h",
+      "products": "蔚来 ES/ET 系列",
+      "quote": "理想 / 蔚来 / 比亚迪：名义双休但加班重，新势力月均加班 70-100h"
+    },
+    {
+      "slug": "anta",
+      "name": "安踏",
+      "category": "运动服饰",
+      "grade": "B",
+      "policy": "名义双休",
+      "overtime": "周末带电脑加班",
+      "products": "安踏 / FILA 中国",
+      "quote": "安踏 / 特步：名义双休/单休，安踏周末带电脑加班"
+    },
+    {
+      "slug": "wuxiapptec",
+      "name": "药明康德",
+      "category": "医药健康",
+      "grade": "B",
+      "policy": "大小周",
+      "overtime": "每周六天、常加班到 21:30，无加班费仅餐补",
+      "products": "CRO / CDMO 服务",
+      "quote": "药明康德：大小周，每周六天、常加班到 21:30，无加班费仅餐补"
+    },
+    {
+      "slug": "yatsen",
+      "name": "逸仙电商",
+      "category": "美妆日化",
+      "grade": "B",
+      "policy": "大小周",
+      "overtime": "广州总部大小周、节假日变单休",
+      "products": "完美日记",
+      "quote": "逸仙电商（完美日记）：大小周，广州总部大小周、节假日变单休"
+    },
+    {
+      "slug": "robam",
+      "name": "老板电器",
+      "category": "家电数码",
+      "grade": "B",
+      "policy": "名义双休实为大小周",
+      "overtime": "周六常加班",
+      "products": "老板油烟机 / 灶具",
+      "quote": "老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：名义双休实为大小周，周六常加班"
+    },
+    {
+      "slug": "joyoung",
+      "name": "九阳",
+      "category": "家电数码",
+      "grade": "B",
+      "policy": "名义双休实为大小周",
+      "overtime": "周六常加班",
+      "products": "豆浆机 / 破壁机",
+      "quote": "老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：大小周，周六常加班"
+    },
+    {
+      "slug": "hisense",
+      "name": "海信",
+      "category": "家电数码",
+      "grade": "B",
+      "policy": "名义双休实为大小周",
+      "overtime": "周六常加班",
+      "products": "海信电视 / 空调",
+      "quote": "老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：大小周，周六常加班"
+    },
+    {
+      "slug": "junlebao",
+      "name": "君乐宝",
+      "category": "食品饮品",
+      "grade": "B",
+      "policy": "名义双休实为大小周",
+      "overtime": "周六常加班",
+      "products": "君乐宝奶粉 / 酸奶",
+      "quote": "老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：大小周，周六常加班"
+    },
+    {
+      "slug": "haitian",
+      "name": "海天味业",
+      "category": "食品饮品",
+      "grade": "B",
+      "policy": "名义双休实为大小周",
+      "overtime": "周六常加班",
+      "products": "海天酱油 / 蚝油",
+      "quote": "老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：大小周，周六常加班"
+    },
+    {
+      "slug": "tsingtao",
+      "name": "青岛啤酒",
+      "category": "食品饮品",
+      "grade": "B",
+      "policy": "名义双休实为大小周",
+      "overtime": "周六常加班",
+      "products": "青岛啤酒",
+      "quote": "老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：大小周，周六常加班"
+    },
+    {
+      "slug": "snowbeer",
+      "name": "华润雪花",
+      "category": "食品饮品",
+      "grade": "B",
+      "policy": "名义双休实为大小周",
+      "overtime": "周六常加班",
+      "products": "雪花啤酒 / 勇闯天涯",
+      "quote": "老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：大小周，周六常加班"
+    },
+    {
+      "slug": "dreame",
+      "name": "追觅科技",
+      "category": "家电数码",
+      "grade": "C",
+      "policy": "单休",
+      "overtime": "2025 被曝要求月工时 240h、批『8 点下班太早』",
+      "products": "扫地机 / 吹风机",
+      "quote": "追觅：单休，2025 被曝要求月工时 240h、批『8 点下班太早』"
+    },
+    {
+      "slug": "wentai",
+      "name": "闻泰科技",
+      "category": "精密制造",
+      "grade": "C",
+      "policy": "单休 / 倒班",
+      "overtime": "产线月工时 120-350h",
+      "products": "手机 ODM / 半导体",
+      "quote": "闻泰 / 立讯 / 富士康 / 蓝思 / 歌尔：单休/倒班，产线月工时 120-350h"
+    },
+    {
+      "slug": "luxshare",
+      "name": "立讯精密",
+      "category": "精密制造",
+      "grade": "C",
+      "policy": "单休 / 倒班",
+      "overtime": "产线月工时 120-350h",
+      "products": "连接器 / 代工组装",
+      "quote": "闻泰 / 立讯 / 富士康 / 蓝思 / 歌尔：单休/倒班，产线月工时 120-350h"
+    },
+    {
+      "slug": "foxconn",
+      "name": "富士康",
+      "category": "精密制造",
+      "grade": "C",
+      "policy": "单休 / 倒班",
+      "overtime": "产线月工时 120-350h",
+      "products": "iPhone 等代工组装",
+      "quote": "闻泰 / 立讯 / 富士康 / 蓝思 / 歌尔：单休/倒班，产线月工时 120-350h"
+    },
+    {
+      "slug": "lens",
+      "name": "蓝思科技",
+      "category": "精密制造",
+      "grade": "C",
+      "policy": "单休 / 倒班",
+      "overtime": "产线月工时 120-350h",
+      "products": "手机玻璃盖板",
+      "quote": "闻泰 / 立讯 / 富士康 / 蓝思 / 歌尔：单休/倒班，产线月工时 120-350h"
+    },
+    {
+      "slug": "goertek",
+      "name": "歌尔股份",
+      "category": "精密制造",
+      "grade": "C",
+      "policy": "单休 / 倒班",
+      "overtime": "产线月工时 120-350h",
+      "products": "声学器件 / VR 代工",
+      "quote": "闻泰 / 立讯 / 富士康 / 蓝思 / 歌尔：单休/倒班，产线月工时 120-350h"
+    },
+    {
+      "slug": "smic",
+      "name": "中芯国际",
+      "category": "半导体制造",
+      "grade": "C",
+      "policy": "四休二 12 小时倒班",
+      "overtime": "核心产线倒班",
+      "products": "晶圆代工",
+      "quote": "中芯国际 / 长江存储 / 京东方 / 华星：倒班，核心产线四休二 12h 倒班"
+    },
+    {
+      "slug": "ymttc",
+      "name": "长江存储",
+      "category": "半导体制造",
+      "grade": "C",
+      "policy": "四休二 12 小时倒班",
+      "overtime": "核心产线倒班",
+      "products": "NAND 闪存",
+      "quote": "中芯国际 / 长江存储 / 京东方 / 华星：倒班，核心产线四休二 12h 倒班"
+    },
+    {
+      "slug": "boe",
+      "name": "京东方",
+      "category": "半导体制造",
+      "grade": "C",
+      "policy": "四休二 12 小时倒班",
+      "overtime": "核心产线倒班",
+      "products": "液晶面板 / OLED",
+      "quote": "中芯国际 / 长江存储 / 京东方 / 华星：倒班，核心产线四休二 12h 倒班"
+    },
+    {
+      "slug": "csot",
+      "name": "TCL 华星",
+      "category": "半导体制造",
+      "grade": "C",
+      "policy": "四休二 12 小时倒班",
+      "overtime": "核心产线倒班",
+      "products": "液晶面板 / OLED",
+      "quote": "中芯国际 / 长江存储 / 京东方 / 华星：倒班，核心产线四休二 12h 倒班"
+    },
+    {
+      "slug": "kuka",
+      "name": "顾家家居",
+      "category": "家居建材",
+      "grade": "C",
+      "policy": "单休",
+      "overtime": "门店/总部部分岗月休 4 天",
+      "products": "顾家沙发 / 床垫",
+      "quote": "顾家家居 / 海澜之家 / 太平鸟：单休，门店/总部部分岗月休 4 天"
+    },
+    {
+      "slug": "hla",
+      "name": "海澜之家",
+      "category": "服装饰品",
+      "grade": "C",
+      "policy": "单休",
+      "overtime": "门店/总部部分岗月休 4 天",
+      "products": "海澜之家男装",
+      "quote": "顾家家居 / 海澜之家 / 太平鸟：单休，门店/总部部分岗月休 4 天"
+    },
+    {
+      "slug": "taipingniao",
+      "name": "太平鸟",
+      "category": "服装饰品",
+      "grade": "C",
+      "policy": "单休",
+      "overtime": "门店/总部部分岗月休 4 天",
+      "products": "太平鸟服饰",
+      "quote": "顾家家居 / 海澜之家 / 太平鸟：单休，门店/总部部分岗月休 4 天"
+    },
+    {
+      "slug": "xibei",
+      "name": "西贝餐饮",
+      "category": "餐饮连锁",
+      "grade": "C",
+      "policy": "单休 / 排班",
+      "overtime": "月休 4 天、日工作 10-11h（总部『715』）",
+      "products": "西贝莜面村",
+      "quote": "海底捞 / 西贝 / 太二 / 老乡鸡 / 呷哺：单休/排班，月休 4 天、日工作 10-11h（西贝总部『715』）"
+    },
+    {
+      "slug": "taier",
+      "name": "太二酸菜鱼",
+      "category": "餐饮连锁",
+      "grade": "C",
+      "policy": "单休 / 排班",
+      "overtime": "月休 4 天、日工作 10-11h",
+      "products": "太二酸菜鱼",
+      "quote": "海底捞 / 西贝 / 太二 / 老乡鸡 / 呷哺：单休/排班，月休 4 天、日工作 10-11h"
+    },
+    {
+      "slug": "laoxiangji",
+      "name": "老乡鸡",
+      "category": "餐饮连锁",
+      "grade": "C",
+      "policy": "单休 / 排班",
+      "overtime": "月休 4 天、日工作 10-11h",
+      "products": "老乡鸡快餐",
+      "quote": "海底捞 / 西贝 / 太二 / 老乡鸡 / 呷哺：单休/排班，月休 4 天、日工作 10-11h"
+    },
+    {
+      "slug": "xiabu",
+      "name": "呷哺呷哺",
+      "category": "餐饮连锁",
+      "grade": "C",
+      "policy": "单休 / 排班",
+      "overtime": "月休 4 天、日工作 10-11h",
+      "products": "呷哺呷哺火锅",
+      "quote": "海底捞 / 西贝 / 太二 / 老乡鸡 / 呷哺：单休/排班，月休 4 天、日工作 10-11h"
+    },
+    {
+      "slug": "wallace",
+      "name": "华莱士",
+      "category": "餐饮连锁",
+      "grade": "C",
+      "policy": "单休 / 三班倒",
+      "overtime": "多为月休 3-4 天",
+      "products": "华莱士炸鸡",
+      "quote": "肯德基 / 华莱士 / 喜家德 / 巴奴：单休/排班，三班倒，多为月休 3-4 天"
+    },
+    {
+      "slug": "xijiade",
+      "name": "喜家德",
+      "category": "餐饮连锁",
+      "grade": "C",
+      "policy": "单休 / 三班倒",
+      "overtime": "多为月休 3-4 天",
+      "products": "喜家德水饺",
+      "quote": "肯德基 / 华莱士 / 喜家德 / 巴奴：单休/排班，三班倒，多为月休 3-4 天"
+    },
+    {
+      "slug": "banana",
+      "name": "巴奴毛肚火锅",
+      "category": "餐饮连锁",
+      "grade": "C",
+      "policy": "单休 / 排班（已改时薪制）",
+      "overtime": "多为月休 3-4 天",
+      "products": "巴奴毛肚火锅",
+      "quote": "肯德基 / 华莱士 / 喜家德 / 巴奴：单休/排班，三班倒，多为月休 3-4 天（巴奴改时薪制）"
+    },
+    {
+      "slug": "wumart",
+      "name": "物美",
+      "category": "商超零售",
+      "grade": "C",
+      "policy": "单休 / 一线排班",
+      "overtime": "活动期加班，多为月休 4 天",
+      "products": "物美超市 / 多点",
+      "quote": "名创优品（门店）/ 海底捞 / 盒马 / 物美：单休/排班，一线排班、活动期加班，多为月休 4 天"
+    },
+    {
+      "slug": "cicc",
+      "name": "中金公司",
+      "category": "金融保险",
+      "grade": "C",
+      "policy": "单休 / 超长待机",
+      "overtime": "投行 10 点到凌晨、周末工作约一天半",
+      "products": "投行 / 研究",
+      "quote": "中金 / 中信证券 / 国泰海通：单休/超长待机，投行 10 点到凌晨、周末工作约一天半"
+    },
+    {
+      "slug": "citicsec",
+      "name": "中信证券",
+      "category": "金融保险",
+      "grade": "C",
+      "policy": "单休 / 超长待机",
+      "overtime": "投行 10 点到凌晨、周末工作约一天半",
+      "products": "投行 / 研究",
+      "quote": "中金 / 中信证券 / 国泰海通：单休/超长待机，投行 10 点到凌晨、周末工作约一天半"
+    },
+    {
+      "slug": "gtja",
+      "name": "国泰海通",
+      "category": "金融保险",
+      "grade": "C",
+      "policy": "单休 / 超长待机",
+      "overtime": "投行 10 点到凌晨、周末工作约一天半",
+      "products": "投行 / 研究",
+      "quote": "中金 / 中信证券 / 国泰海通：单休/超长待机，投行 10 点到凌晨、周末工作约一天半"
+    },
+    {
+      "slug": "cmb",
+      "name": "招商银行",
+      "category": "金融保险",
+      "grade": "C",
+      "policy": "加班文化重",
+      "overtime": "2026 董事长称『加班是护城河』『很少准点下班』",
+      "products": "零售银行 / 信用卡",
+      "quote": "招商银行：加班文化重，2026 董事长称『加班是护城河』『很少准点下班』"
+    },
+    {
+      "slug": "xtep",
+      "name": "特步",
+      "category": "运动服饰",
+      "grade": "C",
+      "policy": "6 天工作制",
+      "overtime": "周六正常上班",
+      "products": "特步跑鞋 / 服饰",
+      "quote": "安踏 / 特步：名义双休/单休，特步 6 天工作制"
+    },
+    {
+      "slug": "foto",
+      "name": "方太",
+      "category": "家电数码",
+      "grade": "C",
+      "policy": "六天工作 / 月休 4 天为主",
+      "overtime": "周六上班",
+      "products": "方太烟机 / 灶具",
+      "quote": "方太 / 加多宝 / 海澜之家 / 顾家：单休，六天工作/月休 4 天为主"
+    },
+    {
+      "slug": "jdb",
+      "name": "加多宝",
+      "category": "食品饮品",
+      "grade": "C",
+      "policy": "六天工作 / 月休 4 天为主",
+      "overtime": "周六上班",
+      "products": "加多宝凉茶",
+      "quote": "方太 / 加多宝 / 海澜之家 / 顾家：单休，六天工作/月休 4 天为主"
+    },
+    {
+      "slug": "jml",
+      "name": "今麦郎",
+      "category": "食品饮品",
+      "grade": "C",
+      "policy": "一线 12 小时两班倒、月休 2-4 天 / 职能岗双休",
+      "overtime": "生产一线月休 4 天为主，天长厂月休 2-3 天；销售管培生单休",
+      "products": "1 桶半 / 老范家 / 拉面范",
+      "quote": "生产一线（普工/操作工）：月休 4 天为主；今麦郎饮品天长分公司 12 小时两班倒、月休 2-3 天；面品管培生单休",
+      "trademark": {
+        "marks": "「1 袋半」「1 桶半」「今麦郎袋半」",
+        "status": "「1 袋半」2020 年被裁定无效、2022 年北京高院二审维持；2026-04-09「今麦郎袋半」被商标局依职权宣告无效；「1 桶半」包装标注 ™（未注册成功）"
+      },
+      "extraEvidence": [
+        {
+          "title": "「1 桶半」是文字游戏？今麦郎「1 桶半」包装标注 TM（中国青年报）",
+          "date": "2025-06-06",
+          "kind": "媒体报道",
+          "summary": "「1 桶半」桶装面饼 110g，与「弹面小桶 85g」按 1.5 倍算应为 127.5g；包装「1 桶半」右侧标注 TM，属未注册商标。",
+          "url": "https://m.cyol.com/gb/articles/2025-06/06/content_0zRyVjsvQB.html"
+        },
+        {
+          "title": "1700 余件「心机商标」被宣告无效（央视新闻）",
+          "date": "2026-08-19",
+          "kind": "媒体报道",
+          "summary": "国家知识产权局商标局依职权集中宣告 1782 件带有欺骗性的商标无效，含「一桶半」「多半袋」「手擀」等。",
+          "url": "https://news.hubeidaily.net/mobile/c_5874173.html"
+        }
+      ]
+    }
+  ]
+}

@@ -128,13 +128,19 @@
           best = s;
         }
       }
-      if (best) hits.push({ entry: entry, lv: best[0], hitTerm: best[3] });
+      if (best) hits.push({ entry: entry, lv: best[0], pos: best[2], hitTerm: best[3] });
     }
+    // 2026-11-02：同一层级、同一重要度时，**命中位置更靠前**的排前面。
+    // 起因：榜单导入把品牌数从 68 拉到 172 后，输「ping」时毛戈平（maoge-ping）
+    // 与苹果（ping-guo，位置 0）同属「音节边界命中」，旧规则按名字长度排，
+    // 3 字的毛戈平就压过了苹果；输「ning」同理，李宁（li-ning）压过宁德时代。
+    // 用户打的是词首，位置 0 就该赢 —— 位置比长度更接近「用户想找谁」。
     hits.sort(function (a, b) {
       if (a.lv !== b.lv) return a.lv - b.lv;
       var aw = weightOf(a.entry, a.hitTerm);
       var bw = weightOf(b.entry, b.hitTerm);
       if (aw !== bw) return aw - bw;
+      if (a.pos !== b.pos) return a.pos - b.pos;
       return a.entry.name.length - b.entry.name.length;
     });
     return hits.slice(0, MAX_SHOW);

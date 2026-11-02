@@ -250,6 +250,16 @@
   display: none;
 }
 
+/* 公告栏正文分「长句 / 短句」两段（2026-11-02 第三轮，站长追问：
+   「你确定手机版一行文字就能显示完？不考虑设备屏幕大小吗？」）
+   —— 长句 95 个字符，320px 屏可用宽度只有约 246px（≈20 字），
+   所谓「1 行」其实是「1 行 + 省略号 + 展开」，读者读不到句子主体。
+   所以桌面用长句、手机用一句真正放得下的短句（不带省略号）；
+   手机想看长句点「展开」。默认藏短句，手机的切换写在下面 ≤640px 段。 */
+.notice-short {
+  display: none;
+}
+
 @media (max-width: 640px) {
   /* 用 flex 而不是默认 block：正文要能被压到 1 行，而「展开」必须留在同一行右侧。
      block 布局下 -webkit-line-clamp 的盒子是块级，label 只能掉到下一行（多占一行）。 */
@@ -259,6 +269,25 @@
     align-items: baseline;
     justify-content: center;
     padding: 5px 10px;
+  }
+
+  /* 手机只读短句：短句「全站 N 家企业 M 条证据已公示」在 320px 下
+     实测完整显示（无省略号、无横向溢出）；长句交给「展开」。
+     注意选择器带 #evidence-notice 前缀，避免误伤别处的同名 class。 */
+  #evidence-notice .notice-short {
+    display: inline;
+  }
+
+  #evidence-notice .notice-long {
+    display: none;
+  }
+
+  .notice-more-cb:checked ~ #evidence-notice .notice-long {
+    display: inline;
+  }
+
+  .notice-more-cb:checked ~ #evidence-notice .notice-short {
+    display: none;
   }
 
   /* 正文：默认压成 1 行，超出显示省略号 */

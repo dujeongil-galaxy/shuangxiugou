@@ -526,7 +526,13 @@ const headerStat = (label, cls) => {
   return m ? Number(m[1]) : null;
 };
 check(virtual2e === 1, '虚拟对比卡恰 1 张（口径排除依据，id 变更需同步本节）', '实际 ' + virtual2e);
-check(customPairs2e.length === 16, '能解析全部自定义卡（16 张，含 2026-10-31 BOSS直聘）', '实际 ' + customPairs2e.length);
+// 2026-11-02 批量导入 104 张榜单卡（data/imported-brands.json 生成）后，16 → 120。
+// 这个数不是「随便写死」：它同时被 §2e 的四格统计、brand/ 页数、公告栏数字三处引用，
+// 任何一处生成器漏跑都会在这里对不上，所以必须保留为硬断言。
+const IMPORTED_CARD_COUNT = 104;
+check(customPairs2e.length === 16 + IMPORTED_CARD_COUNT,
+  `能解析全部自定义卡（${16 + IMPORTED_CARD_COUNT} 张 = 16 张手工卡 + ${IMPORTED_CARD_COUNT} 张榜单导入卡）`,
+  '实际 ' + customPairs2e.length);
 check(headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') === statTotal,
   '顶部「收录品牌」= 实名企业卡总数', '页面 ' + headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') + ' / 计算 ' + statTotal + '（改 bundle 顶部统计常数）');
 check(headerStat('双休红榜', 'text-emerald-700/70 text-\\[11px\\]') === statHong,
@@ -563,11 +569,14 @@ check(relockedU2e.length === 0,
   relockedU2e.length ? relockedU2e.join(', ') : '锁定生效');
 check(locked2e.length === 6,
   '6 张锁定卡全部存在（删卡判红）', '实际 ' + locked2e.length);
-check(byGrade2e('A级') === 4,
-  '自定义卡 A 级共 4 张（工/建/中/成都银行，2026-10-31 月休口径改判）',
+// 2026-11-02 起：A 级 / C 级计数含榜单导入卡（A 58 张、C 29 张）。
+// 断言仍然写成「基准 + 导入数」的算式，导入批次调整时改 IMPORTED_CARD_COUNT 一处即可，
+// 但两个基准值（4 / 11）必须保持 —— 那是手工卡的既有口径，动了就等于偷偷改档。
+check(byGrade2e('A级') === 4 + 58,
+  '自定义卡 A 级共 62 张（工/建/中/成都银行 4 张 + 榜单导入 58 张）',
   '实际 ' + byGrade2e('A级'));
-check(byGrade2e('C级') === 11,
-  '自定义卡 C 级共 11 张（原 14 张 - 4 家银行改判 A + 2026-10-31 增 BOSS直聘）',
+check(byGrade2e('C级') === 11 + 29,
+  '自定义卡 C 级共 40 张（手工 11 张 + 榜单导入 29 张）',
   '实际 ' + byGrade2e('C级'));
 // 规则③：U 级单独列示、不并入四格统计（红榜/观察/避雷只含 S/A/B/C）
 const fourSum2e = statHong + statZhou + statLei;
@@ -913,6 +922,34 @@ section('2g. 首页证据链完整公示');
       // 判据两条：间距抬到 ≥8px + 左边界有一条分隔线。
       check(/\.notice-more-lbl\s*\{[^}]*padding-left:\s*(?:[89]|1[0-9])px[^}]*border-left:\s*1px solid/.test(mfc),
         '折叠开关与正文有视觉分隔（间距 ≥8px + 左侧分隔线）');
+
+      /* 2026-11-02 第三轮（站长：「你确定手机版一行文字就能显示完？不考虑设备屏幕大小吗？」）
+         —— 一句 95 字的公告在 320px 屏只有约 246px 可用（≈20 字），
+         之前的「1 行」其实是「1 行 + 省略号」，主体读不到。
+         现在改成长句（桌面）+ 短句（手机）两段：短句必须**完整成句、不带省略号**。 */
+      const shortM = noticeDiv[0].match(/<span class="notice-short">([^<]+)<\/span>/);
+      const longM = noticeDiv[0].match(/<span class="notice-long">([\s\S]+?)<\/span>/);
+      check(!!shortM && !!longM,
+        '公告栏正文拆成「长句 + 手机短句」两段',
+        '缺 .notice-short 或 .notice-long');
+      if (shortM) {
+        check(!/[….．]{1,3}/.test(shortM[1]) && !/\.\.\./.test(shortM[1]),
+          '手机短句是完整句子（不含省略号）', '短句里出现省略号：' + shortM[1]);
+        check(shortM[1].length <= 30,
+          '手机短句足够短（≤30 字，320px 屏实测可整句显示）',
+          `实际 ${shortM[1].length} 字：${shortM[1]}`);
+        // 两段不能各报一套数字 —— 那比不写更容易被引用错。
+        const shortNum = shortM[1].match(/(\d+)\s*家企业\s*(\d+)\s*条证据/);
+        const longNum = longM && longM[1].match(/(\d+)\s*家企业\s*(\d+)\s*条证据/);
+        check(!!shortNum && !!longNum && shortNum[1] === longNum[1] && shortNum[2] === longNum[2],
+          '长句与短句的「N 家企业 M 条证据」数字完全一致（不出现第二套口径）',
+          `短句 ${shortNum ? shortNum[1] + '/' + shortNum[2] : '无'} vs 长句 ${longNum ? longNum[1] + '/' + longNum[2] : '无'}`);
+      }
+      check(/#evidence-notice \.notice-short\s*\{[^}]*display:\s*inline/.test(mfc)
+        && /#evidence-notice \.notice-long\s*\{[^}]*display:\s*none/.test(mfc)
+        && /\.notice-more-cb:checked\s*~\s*#evidence-notice \.notice-long\s*\{[^}]*display:\s*inline/.test(mfc),
+        '手机默认显示短句、展开后切回长句（mobile-fixes.css 三处配套）',
+        '短句/长句的显示切换不完整');
     }
   }
 
@@ -1013,7 +1050,8 @@ if (cfgBlock) {
   }
 }
 const CUSTOM_COUNT = customCards.length;
-check(CUSTOM_COUNT === 16, `自定义卡 ${CUSTOM_COUNT} 张（期望 16，2026-10-31 增 BOSS直聘）`);
+check(CUSTOM_COUNT === 16 + 104,
+  `自定义卡 ${CUSTOM_COUNT} 张（16 张手工 + 104 张榜单导入，2026-11-02）`);
 
 // null 规则：双休率 / 下班时间不得为占位 0，也不得是字符串 '未知'
 customCards.forEach((c) => {
@@ -1024,8 +1062,12 @@ customCards.forEach((c) => {
     `自定义卡「${c.name}」下班时间未使用「未知」字符串（当前 ${c.off}）`,
     c.off === "'未知'" ? '应改为 null，由 statText() 渲染成「—」' : '');
   check(c.insertAfter !== '(缺失)', `自定义卡「${c.name}」配置了 insertAfter`);
-  check(!!c.logo && localExists(c.logo.replace(/^\.\//, '')),
-    `自定义卡「${c.name}」logo 路径有效：${c.logo}`);
+  // logo 可以是 null：榜单导入的 104 张卡没有官方 logo 文件，注入层会直接回退成
+  // 品牌简称文字（index.html 里 `if (!config.logo)` 分支）。只要有 src 就必须真实存在，
+  // 否则就是破图；null 属于「已知无图」而不是「路径写错」，两者必须分开判。
+  check(c.logo === '' || localExists(c.logo.replace(/^\.\//, '')),
+    `自定义卡「${c.name}」logo 路径有效或显式留空：${c.logo || '(null=文字回退)'}`,
+    c.logo && !localExists(c.logo.replace(/^\.\//, '')) ? '路径指向不存在的文件（会破图）' : '');
 });
 
 // ---------- 4. logo 与资源路径 ----------
@@ -1096,6 +1138,30 @@ if (ns) {
   const missingCustom = customCards.filter((c) => !brands.some((b) => b.includes(c.name.split('/')[0].slice(0, 3))));
   check(missingCustom.length === 0, `${CUSTOM_COUNT} 张自定义卡全部在 noscript 清单中`,
     missingCustom.length ? `漏了：${missingCustom.map((c) => c.name).join('、')}` : '');
+
+  /* noscript 里「全部品牌详细页（N 个）」的 N 必须同时等于：
+   *   ① 该 <ul> 里实际列出的唯一 slug 数  ② brand/ 目录里的页数
+   *
+   * 2026-11-02 踩坑：批量导入 104 条 <li> 塞进的正是这个 <ul>，标题却还写着旧的 64。
+   * 结果是「用户看到 JS 渲染的 172 张卡，爬虫看到一份自称 64 个的清单」——
+   * 两边不一致，而且没有任何东西会报错（noscript 用户看不见，爬虫不会抱怨）。
+   * 标题里的数字是手工抄的，列表是脚本追加的，两者天然会漂，所以必须机器咬住。
+   */
+  const listSeg = (() => {
+    const k = ns[1].indexOf('全部品牌详细页');
+    if (k < 0) return '';
+    const s = ns[1].indexOf('<ul', k);
+    const e = s >= 0 ? ns[1].indexOf('</ul>', s) : -1;
+    return e > s ? ns[1].slice(s, e) : '';
+  })();
+  const listSlugs = new Set(
+    [...listSeg.matchAll(/href="\.\/brand\/([a-z0-9-]+)\.html"/g)].map((m) => m[1]));
+  const headN = Number((ns[1].match(/全部品牌详细页（(\d+) 个）/) || [])[1]);
+  const pageCount = existsSync(join(ROOT, 'brand'))
+    ? readdirSync(join(ROOT, 'brand')).filter((f) => f.endsWith('.html')).length : 0;
+  check(Number.isInteger(headN) && headN === listSlugs.size && headN === pageCount,
+    `noscript「全部品牌详细页（${headN} 个）」= 列表 ${listSlugs.size} 个 = brand/ ${pageCount} 页`,
+    `标题 ${headN} / 列表 ${listSlugs.size} / 页数 ${pageCount} —— 三者必须相等，否则爬虫看到的清单自相矛盾`);
 
   /* noscript 是给爬虫看的正文兜底 —— 用户看不见，所以这东西坏了没人举报。
    *

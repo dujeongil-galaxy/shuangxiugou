@@ -88,12 +88,20 @@ const remindSrc = read('remind-button.js');
   check('noscript 两处清单均含 molina（爬虫兜底，每处一行）', nsMolinaLines === 2, nsMolinaLines);
   check('sitemap.xml 含 molina 详情页', /brand\/molina\.html/.test(read('sitemap.xml')));
   check('projects.html 含 molina（互链网）', /brand\/molina\.html/.test(read('projects.html')));
-  check('页脚「共 68 家」口径', /（共 68 家）/.test(html));
+  // 2026-11-02：原来写死「页脚（共 68 家）」+ bundle 常数 68，批量导入 104 张卡后全红。
+  // 复查发现页脚那句「（共 68 家）」早就不存在了（旧断言靠别的文本撞上了正则才假通过），
+  // 真正该咬的是「证据链公示头部（共 N 家）」——它由 gen-evidence-board.py 生成，
+  // 与 bundle 的收录品牌常数必须一致，否则首页会出现「头部说 N、角标说 M」的自相矛盾。
+  const headTotal = html.match(/全部证据条目（共 (\d+) 家）/);
+  const TOTAL = headTotal ? Number(headTotal[1]) : NaN;
+  check('证据链公示头部「共 N 家」存在', Number.isInteger(TOTAL) && TOTAL > 0, TOTAL);
 
   // ── bundle 统计常数 ──
   const bundle = read('assets/index-YthXZ9eP.js');
-  check('★ bundle「收录品牌」常数 = 68', /text-base`,children:68\}/.test(bundle));
-  check('★ bundle tab 角标常数 = 68', /rounded-full`,children:68\}/.test(bundle));
+  check('★ bundle「收录品牌」常数 = 证据链头部总数 ' + TOTAL,
+    new RegExp('text-base`,children:' + TOTAL + '\\}').test(bundle));
+  check('★ bundle tab 角标常数 = 证据链头部总数 ' + TOTAL,
+    new RegExp('rounded-full`,children:' + TOTAL + '\\}').test(bundle));
   check('bundle 引用已 bump（?v=50，2026-10-31 U 分支死代码清理 + 银行月休口径改判）', /index-YthXZ9eP\.js\?v=50/.test(html));
 
   // ── 拼音索引 ──

@@ -457,7 +457,10 @@ def render_board(rows, generated_note):
 #   替换必须幂等——第二次跑生成器时原句已经不存在了，直接匹配原句会报错。
 #   包一层固定 id 的 span，之后每轮只换 span 的内容，跑几次都收敛到同一结果。
 NOTICE_ID = 'evidence-notice'
-NOTICE_SPAN_RE = re.compile(r'<span id="%s">.*?</span>' % NOTICE_ID, re.S)
+# 公告栏内容改成「长短两段」后（见下），非贪婪的 `.*?</span>` 会先撞上内层
+# 的 </span> 就收尾，把外层结构拦腰截断。用「紧跟 <!-- /notice -->」当右边界，
+# 这样无论内层套几层 span 都能整体匹配。
+NOTICE_SPAN_RE = re.compile(r'<span id="%s">.*?</span><!-- /notice -->' % NOTICE_ID, re.S)
 NOTICE_ORIG = ('本站全部数据均附公开证据链：招聘口径、员工反馈与官方通报分项标注，'
                '来源可查可溯，欢迎核实纠错')
 
@@ -475,23 +478,32 @@ def render_notice(total_brands, total_items, weak_count):
     现在的口径：整条 #site-notice 零超链接；跳转入口只有悬浮菜单里的
     「证据链公示」（verify §9b 正向判零、§9c 正向判菜单必须有）。
     """
-    return ('本站全部数据均附公开证据链：'
-            '%d 家企业 %d 条证据已在本页完整公示'
-            '（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；'
-            '其中 %d 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错'
-            % (total_brands, total_items, weak_count))
+    long_text = ('本站全部数据均附公开证据链：'
+                 '%d 家企业 %d 条证据已在本页完整公示'
+                 '（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；'
+                 '其中 %d 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错'
+                 % (total_brands, total_items, weak_count))
+    # 2026-11-02 站长追问「你确定手机版一行文字就能显示完？不考虑设备屏幕大小吗？」
+    # —— 问得对。原句 95 个字符，320px 屏只有约 246px 可用（≈20 字），
+    # 之前所谓「1 行」实际上是「1 行 + 省略号」，读者根本读不到句子主体。
+    # 改法：长句照旧（桌面完整显示），另出一句**真正放得下**的短句给手机，
+    # 短句是完整句子、不带省略号；想看全文点「展开」。
+    short_text = '全站 %d 家企业 %d 条证据已公示' % (total_brands, total_items)
+    return ('<span class="notice-long">%s</span>'
+            '<span class="notice-short">%s</span>' % (long_text, short_text))
 
 
 def update_notice(index_text, total_brands, total_items, weak_count):
     inner = render_notice(total_brands, total_items, weak_count)
     if NOTICE_SPAN_RE.search(index_text):
         return NOTICE_SPAN_RE.sub(
-            lambda _m: '<span id="%s">%s</span>' % (NOTICE_ID, inner), index_text, count=1)
+            lambda _m: '<span id="%s">%s</span><!-- /notice -->' % (NOTICE_ID, inner),
+            index_text, count=1)
     if NOTICE_ORIG not in index_text:
         raise SystemExit('公告栏原句找不到、marker span 也不存在——index.html 结构变了？'
                          '请更新 NOTICE_ORIG / NOTICE_SPAN_RE')
     return index_text.replace(
-        NOTICE_ORIG, '<span id="%s">%s</span>' % (NOTICE_ID, inner), 1)
+        NOTICE_ORIG, '<span id="%s">%s</span><!-- /notice -->' % (NOTICE_ID, inner), 1)
 
 
 def splice(index_text, board):
@@ -559,7 +571,7 @@ def main():
         m = NOTICE_SPAN_RE.search(cur)
         if not m:
             bad.append('公告栏缺 evidence-notice 标记（证据链口号未变成可点入口）')
-        elif m.group(0) != '<span id="%s">%s</span>' % (NOTICE_ID, want_notice):
+        elif m.group(0) != '<span id="%s">%s</span><!-- /notice -->' % (NOTICE_ID, want_notice):
             bad.append('公告栏证据条数与 brand/ 实况不一致')
         if bad:
             print('FAIL: ' + '；'.join(bad))
