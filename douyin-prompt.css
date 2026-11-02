@@ -282,6 +282,27 @@
   text-decoration: underline;
 }
 
+/* 原文存档行（2026-11-02）：弹窗内容被替换后，旧版数据单独存档于
+   prompt-original.html，这里只保留一行入口小字（措辞与 remind-button.js
+   的 .sxg-rm-archive 保持一致）。字号与 tip 同级，不抢正文视觉。 */
+.dyp__archive {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #9b8f80;
+  text-align: center;
+}
+
+.dyp__archive a {
+  color: #3dad8a;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.dyp__archive a:hover {
+  color: #2f9c7a;
+}
+
 /* 关闭倒计时（2026-10-29 站长要求）：弹出后 8 秒内关闭不生效，
    倒计时数字递减 + 进度条收缩，到点后放行关闭。 */
 .dyp__count {
