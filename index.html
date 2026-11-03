@@ -150,7 +150,7 @@
            display:none 的那一半不进无障碍树，名字会随状态自己变；
            写死 aria-label 反而一直是「展开」，收起后就读错了。 -->
       <input type="checkbox" id="notice-more" class="notice-more-cb">
-      <span id="evidence-notice">本站全部数据均附公开证据链：173 家企业 375 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 6 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice -->
+      <span id="evidence-notice">本站全部数据均附公开证据链：173 家企业 415 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 6 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice -->
       <label for="notice-more" class="notice-more-lbl"><span class="t-more">展开</span><span class="t-less">收起</span></label>
     </div>
     <!-- 版本号唯一真相源（2026-11-02 第五轮，站长：「版本号不要写这里了，加入三横菜单吧」）
@@ -160,7 +160,7 @@
          这个锚点回写与校验，删节点等于让每日版本号同步静默失效。
          用 hidden 而不是删掉：hidden 只影响渲染，textContent 照样可读，
          nav-menu.js 运行时读它，菜单里不另存哈希（两份数据没有比对源，必然漂）。 -->
-    <span id="site-version" hidden><span class="notice-ver">当前版本号 c6eeca9</span></span>
+    <span id="site-version" hidden><span class="notice-ver">当前版本号 b1829c4</span></span>
     <div id="root">
       <!-- 首屏占位：React 大包解析期间先显示「加载中」，避免 #root 为空把下方证据链区块
            甩到视口顶部造成白屏闪烁（FOUC）。React 挂载后自动替换本节点。 -->
@@ -178,7 +178,7 @@
      本区块由 scripts/gen-evidence-board.py 自动生成，请勿手改。
      改证据请改 brand/*.html 详情页，然后重跑：python scripts/gen-evidence-board.py
      单一真相源在 brand/ 页；scripts/verify.mjs 有防漂移断言逐条比对。
-     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：173 家企业 / 375 条证据 / 329 条带原始链接 / 6 家证据薄弱。 -->
+     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：173 家企业 / 415 条证据 / 369 条带原始链接 / 6 家证据薄弱。 -->
 <style>#evidence-board{max-width:960px;margin:0 auto;padding:28px 16px 40px;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.75;color:#1f2937;font-size:14px}
 #evidence-board h2{font-size:20px;font-weight:700;margin:0 0 6px;color:#0f172a;line-height:1.4}
 #evidence-board a{color:#0f766e}
@@ -227,13 +227,13 @@
 #evidence-board .ev-more{margin-top:10px;font-size:12px}
 #evidence-board .ev-foot{margin:16px 0 0;font-size:12.5px;color:#64748b}
 @media(max-width:640px){#evidence-board{padding:20px 12px 32px}#evidence-board .ev-stat{flex:1 1 44%}#evidence-board .ct{margin-left:0;width:100%}}</style>
-<section id="evidence-board" data-ev-brands="173" data-ev-total="375" data-ev-linked="329" data-ev-weak="6">
-  <h2>全站证据链公示（173 家企业 · 375 条证据）</h2>
+<section id="evidence-board" data-ev-brands="173" data-ev-total="415" data-ev-linked="369" data-ev-weak="6">
+  <h2>全站证据链公示（173 家企业 · 415 条证据）</h2>
   <p class="ev-lead">站长要求「证据链必须首页完整公示，口说无凭」——以下是站内每一条评级的取证清单，含证据类型、取证日期、文书编号与可点击的原始来源链接。数据由各品牌详情页（<code>brand/*.html</code>）自动汇总生成，两处不一致会被 <code>scripts/verify.mjs</code> 判红。</p>
-  <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">其中 <strong>62 家</strong>目前仅有一条来源（第三方榜单聚合，2026-07-11，二手、未抓原文），属<strong>榜单口径换算</strong>而非实测：这些企业的真实双休率未核实，详情页已逐家公示「证据链」——来源、日期、原话、以及尚缺哪几类证据。补齐任一类证据后即重新核实改档。</p>
+  <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">其中 <strong>42 家</strong>目前仅有一条来源（第三方榜单聚合，2026-07-11，二手、未抓原文），属<strong>榜单口径换算</strong>而非实测：这些企业的真实双休率未核实，详情页已逐家公示「证据链」——来源、日期、原话、以及尚缺哪几类证据。补齐任一类证据后即重新核实改档。</p>
   <div class="ev-stats">
-    <div class="ev-stat"><b style="color:#0f766e">375</b><i>证据总条数</i></div>
-    <div class="ev-stat"><b style="color:#1d4ed8">329</b><i>带原始链接</i></div>
+    <div class="ev-stat"><b style="color:#0f766e">415</b><i>证据总条数</i></div>
+    <div class="ev-stat"><b style="color:#1d4ed8">369</b><i>带原始链接</i></div>
     <div class="ev-stat"><b style="color:#b45309">46</b><i>无可点链接</i></div>
     <div class="ev-stat"><b style="color:#475569">6/75/32/57/1</b><i>S/A/B/C/D 家数</i></div>
     <div class="ev-stat"><b style="color:#450a0a">1 家</b><i>D 级（站长强制降级）</i></div>
@@ -253,14 +253,14 @@
       <span class="ev-pill" style="border-color:#b45309;color:#b45309">媒体报道/调查 <b>46</b></span>
       <span class="ev-pill" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径 <b>20</b></span>
       <span class="ev-pill" style="border-color:#c2410c;color:#c2410c">站长一手实测 <b>3</b></span>
-      <span class="ev-pill" style="border-color:#57534e;color:#57534e">员工/社群反馈 <b>72</b></span>
+      <span class="ev-pill" style="border-color:#57534e;color:#57534e">员工/社群反馈 <b>73</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">旁证/二手汇总 <b>127</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（field_verification） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（third_party） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体报道（含员工爆料，二手）） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体评论（附法条对照）） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体评论） <b>1</b></span>
-      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径） <b>47</b></span>
+      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径） <b>86</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（暗访） <b>1</b></span>
     </div>
     <div class="ev-note">司法裁判文书与劳动监察通报为最高强度证据；招聘平台自述属「招聘方口径」，只证明企业怎么说、不证明实际怎么排班；社群匿名反馈与旁证汇总强度最低，本站不用它们单独定档。</div>
@@ -637,6 +637,136 @@
         <div class="ev-more"><a href="./brand/jahwa.html">查看 上海家化 完整详情页 →</a></div>
       </div>
     </details>
+    <details id="ev-eastmoney" data-b="eastmoney" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">东方财富</span><span class="co">东方财富</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">东方财富证券服务经理南京（智联招聘）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">智联东方财富证券岗写明「周末双休、法定节假日休假」，六险一金/每年免费体检/年度旅游。</div>
+            <div class="u"><a href="https://m.zhaopin.com/jobs/CC152251410J40875412111.htm" rel="nofollow noopener" target="_blank">m.zhaopin.com/jobs/CC152251410J40875412111.htm</a></div>
+          </li>
+          <li>
+            <div class="t">东方财富证券客户经理（智联招聘·矛盾点）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">智联东方财富证券客户经理写明「上班时间9:00-11:30 &amp; 13:00-18:00，周末双休，但若有重点产品推进，工作日晚上会有1-2小时加班」——常态双休但业务冲刺期偶有加班…</div>
+            <div class="u"><a href="https://www.zhaopin.com/jobdetail/CCL1467822870J40839679614.htm" rel="nofollow noopener" target="_blank">zhaopin.com/jobdetail/CCL1467822870J40839679614.htm</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">东方财富、华泰证券、中国银联、财付通、招银（部分岗）：双休为主</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/eastmoney.html">查看 东方财富 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-chinalife" data-b="chinalife" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">中国人寿</span><span class="co">中国人寿</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">中国人寿广州VIP客户福利服务顾问（国聘）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">国聘中国人寿广州市第二支公司岗写明「周末固定双休、法定全休，无加班、无异地出差」，9:00-17:00。</div>
+            <div class="u"><a href="https://iguopin.com/job/detail?id=214321296438199288" rel="nofollow noopener" target="_blank">iguopin.com/job/detail?id=214321296438199288</a></div>
+          </li>
+          <li>
+            <div class="t">中国人寿杭州人事行政助理（今日人才）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">中国人寿杭州分公司岗亮点「双休不加班|8小时工作制（8:30-12:00,13:30-17:30）」，央企。</div>
+            <div class="u"><a href="https://www.jrrc.com/job1753742444.shtml" rel="nofollow noopener" target="_blank">jrrc.com/job1753742444.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">中国平安、中国人寿（内勤）：双休为主</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/chinalife.html">查看 中国人寿 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-pingan" data-b="pingan" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">中国平安</span><span class="co">中国平安</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">中国平安人寿广州社区金融岗（智联招聘）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">智联中国平安人寿广东分公司岗写明「工作日周一至周五8:30-18:00（午休2h），周末双休，国家法定节假日休息」。</div>
+            <div class="u"><a href="https://m.zhaopin.com/jobs/CCL1487620930J40918278204.htm" rel="nofollow noopener" target="_blank">m.zhaopin.com/jobs/CCL1487620930J40918278204.htm</a></div>
+          </li>
+          <li>
+            <div class="t">中国平安日照社区网格专员（BeBee转智联）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">平安日照社区网格岗写明「朝九晚六，固定周末双休，法定节假日跟着国家放」「不加班」，签劳动合同买五险一金。</div>
+            <div class="u"><a href="https://bebee.com/cn/jobs/c900-1700--techmap_cn_CC000204810J40901191612" rel="nofollow noopener" target="_blank">bebee.com/cn/jobs/c900-1700--techmap_cn_CC000204810J4090119161…</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">中国平安、中国人寿（内勤）：双休为主</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/pingan.html">查看 中国平安 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-unionpay" data-b="unionpay" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">中国银联</span><span class="co">中国银联</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">中国银联黄山园区公开招聘（歙县论坛·微信）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">歙县论坛转发中国银联黄山园区招聘：「五险一金、双休」，工程/安保/环境岗工作时间「做五休二、做二休二」。</div>
+            <div class="u"><a href="http://mp.weixin.qq.com/s?__biz=MjM5OTc1NDAxMg==&amp;mid=2652360642&amp;idx=1&amp;sn=8879fd6ac03233c7f39bcb7c4cc30b2f&amp;chksm=bdd144d9b1ddc1ddd79801cbd3f42b5c2488e64f4b1607711c29336dd300e529e8f62c6f65de#rd" rel="nofollow noopener" target="_blank">mp.weixin.qq.com/s?__biz=MjM5OTc1NDAxMg==&amp;mid=2652360642&amp;idx=1…</a></div>
+          </li>
+          <li>
+            <div class="t">银联金融运营管培生黄山（聚才直聘）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">聚才直聘银联黄山园区金融运营管培生：「8小时轮班（每月仅5-8天晚班），双休，入职即缴五险一金，提供园区宿舍」。</div>
+            <div class="u"><a href="https://www.jucaizhipin.com/job/167759" rel="nofollow noopener" target="_blank">jucaizhipin.com/job/167759</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">中国银联（部分岗）：双休为主</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/unionpay.html">查看 中国银联 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-yunnanbaiyao" data-b="yunnanbaiyao" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">云南白药</span><span class="co">云南白药</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">云南白药煎药中心中药调剂员（盘龙人才网）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">盘龙人才网云南白药集团岗标注「不加班 周末双休」，五险一金/带薪年假/节日福利。</div>
+            <div class="u"><a href="https://www.kmplrc.com/job2840283832.shtml" rel="nofollow noopener" target="_blank">kmplrc.com/job2840283832.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">云南白药财务BP（宁德人才网）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">宁德人才网云南白药财务BP岗标注「不加班 周末双休」，六险二金/带薪年假/年度体检。</div>
+            <div class="u"><a href="http://www.ningdercw.com/job2423326776.shtml" rel="nofollow noopener" target="_blank">ningdercw.com/job2423326776.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/yunnanbaiyao.html">查看 云南白药 完整详情页 →</a></div>
+      </div>
+    </details>
     <details id="ev-aws" data-b="aws" data-g="A" data-n="3" data-l="3">
       <summary><span class="g" style="background:#0f766e">A</span><span class="bn">亚马逊云科技</span><span class="co">亚马逊云科技</span><span class="ct">3 条证据</span></summary>
       <div class="ev-body">
@@ -793,6 +923,32 @@
         <div class="ev-more"><a href="./brand/bright.html">查看 光明乳业 完整详情页 →</a></div>
       </div>
     </details>
+    <details id="ev-bull" data-b="bull" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">公牛集团</span><span class="co">公牛集团</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">公牛集团2027届校招（安徽师范大学就业服务网）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">校招简章福利体系写明「五险一金、周末双休、免费住宿、年度旅游、健康体检、团队活动经费、带薪年休假等」。</div>
+            <div class="u"><a href="https://career.ahnu.edu.cn/info/1008/35222.htm" rel="nofollow noopener" target="_blank">career.ahnu.edu.cn/info/1008/35222.htm</a></div>
+          </li>
+          <li>
+            <div class="t">公牛集团校招（西安电子科技大学就业网）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">西电就业网公牛2027届校招福利：「五险一金、周末双休、食堂、免费住宿、年度旅游、健康体检、团队活动经费、带薪年休假等」。</div>
+            <div class="u"><a href="https://job.xidian.edu.cn/campus/view/id/757877" rel="nofollow noopener" target="_blank">job.xidian.edu.cn/campus/view/id/757877</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">公牛（开关插座）：办公岗双休、基本准点</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/bull.html">查看 公牛集团 完整详情页 →</a></div>
+      </div>
+    </details>
     <details id="ev-naura" data-b="naura" data-g="A" data-n="3" data-l="3">
       <summary><span class="g" style="background:#0f766e">A</span><span class="bn">北方华创</span><span class="co">北方华创</span><span class="ct">3 条证据</span></summary>
       <div class="ev-body">
@@ -817,6 +973,32 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/naura.html">查看 北方华创 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-htsec" data-b="htsec" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">华泰证券</span><span class="co">华泰证券</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">华泰证券苏州财富管理与机构业务岗（91job）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">江苏24365平台华泰证券苏州分公司岗薪资福利：「六险二金、节假日食品福利、体检、高温补贴、年假、午餐补贴、双休」。</div>
+            <div class="u"><a href="https://www.91job.org.cn/recruitment/jobDetails?dwid=651867&amp;zpgwid=1000000000767811" rel="nofollow noopener" target="_blank">91job.org.cn/recruitment/jobDetails?dwid=651867&amp;zpgwid=1000000…</a></div>
+          </li>
+          <li>
+            <div class="t">华泰证券张家港金港营业部机构业务岗（苏州人才网）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">苏州人才网华泰证券张家港岗职位亮点「六险二金，周末双休，福利优厚」，五险一金/补充医疗/带薪年假。</div>
+            <div class="u"><a href="https://www.jsszrcw.com/job4035921062.shtml" rel="nofollow noopener" target="_blank">jsszrcw.com/job4035921062.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">东方财富、华泰证券、中国银联、财付通、招银（部分岗）：双休为主</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/htsec.html">查看 华泰证券 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-coke" data-b="coke" data-g="A" data-n="3" data-l="3">
@@ -845,6 +1027,32 @@
         <div class="ev-more"><a href="./brand/coke.html">查看 可口可乐 完整详情页 →</a></div>
       </div>
     </details>
+    <details id="ev-tongrentang" data-b="tongrentang" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">同仁堂</span><span class="co">同仁堂</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">北京同仁堂集团2027届高校毕业生招聘公告（覆盖北京/天津等30城）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">同仁堂集团2027届校招公告覆盖北京、天津等30个省市自治区；福利含七险二金、企业年金、年度体检、带薪年假、节日福利，公告未明示统一休息天数（依岗位而定）。</div>
+            <div class="u"><a href="http://mp.weixin.qq.com/s?__biz=MzA3MzUwOTM1OQ==&amp;mid=2247693630&amp;idx=1&amp;sn=78c5ed2b77edce17d6c25eda6b0a1864&amp;chksm=9e29a9b78e673c5348fe9363c9c52e45371acaf1405771d08c801b6740cd2c9089d0b3647d23#rd" rel="nofollow noopener" target="_blank">mp.weixin.qq.com/s?__biz=MzA3MzUwOTM1OQ==&amp;mid=2247693630&amp;idx=1…</a></div>
+          </li>
+          <li>
+            <div class="t">北京同仁堂拉萨药店（康强医疗人才网·矛盾点）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">康强医疗北京同仁堂拉萨药店岗写明「09:30-22:00 周休1天 偶尔加班」——该西藏门店为周休1天（单休），与集团多数职能/总部双休口径差异显著，门店间差异大。</div>
+            <div class="u"><a href="https://www.kq36.com/job/3877161" rel="nofollow noopener" target="_blank">kq36.com/job/3877161</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/tongrentang.html">查看 同仁堂 完整详情页 →</a></div>
+      </div>
+    </details>
     <details id="ev-bilibili" data-b="bilibili" data-g="A" data-n="3" data-l="3">
       <summary><span class="g" style="background:#0f766e">A</span><span class="bn">哔哩哔哩</span><span class="co">哔哩哔哩</span><span class="ct">3 条证据</span></summary>
       <div class="ev-body">
@@ -871,6 +1079,32 @@
         <div class="ev-more"><a href="./brand/bilibili.html">查看 哔哩哔哩 完整详情页 →</a></div>
       </div>
     </details>
+    <details id="ev-sinopharm" data-b="sinopharm" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">国药控股</span><span class="co">国药控股</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">国药控股四川医药销售（四川大学就业指导中心）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">川大就业网国药控股四川医药销售岗转正福利：「五险一金、周末双休、带薪年假、免费午餐、补充意外险、年终奖金、年度体检」。</div>
+            <div class="u"><a href="https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh4Y5aKu9S2s3bddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E" rel="nofollow noopener" target="_blank">jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMD…</a></div>
+          </li>
+          <li>
+            <div class="t">国药控股郴州（智通直聘）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">智通直聘国药控股郴州岗写明「日工作时间八小时，周末双休，其它节假日按国家规定享受」，五险/免费工作餐/住宿。</div>
+            <div class="u"><a href="https://www.job5156.com/gongsi/gs027b098d1fc4e98130a07ad757a35674" rel="nofollow noopener" target="_blank">job5156.com/gongsi/gs027b098d1fc4e98130a07ad757a35674</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">国药控股/九州通（医药流通）：双休为主</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/sinopharm.html">查看 国药控股 完整详情页 →</a></div>
+      </div>
+    </details>
     <details id="ev-tianma" data-b="tianma" data-g="A" data-n="3" data-l="3">
       <summary><span class="g" style="background:#0f766e">A</span><span class="bn">天马微电子</span><span class="co">天马微电子</span><span class="ct">3 条证据</span></summary>
       <div class="ev-body">
@@ -895,6 +1129,32 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/tianma.html">查看 天马微电子 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-goodbaby" data-b="goodbaby" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">好孩子</span><span class="co">好孩子</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">好孩子儿童用品有限公司（猎聘公司页）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">猎聘好孩子儿童用品公司页标注工作时间「08:00-16:30 周末双休 弹性工作」，五险一金/免费班车/年底双薪。</div>
+            <div class="u"><a href="https://m.liepin.com/company/7976296/" rel="nofollow noopener" target="_blank">m.liepin.com/company/7976296/</a></div>
+          </li>
+          <li>
+            <div class="t">好孩子国风设计师（BOSS直聘）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">BOSS直聘好孩子集团国风设计师岗标注「周末双休」「现场办公」，五险一金/补充医疗/员工旅游/餐补。</div>
+            <div class="u"><a href="https://www.zhipin.com/job_detail/35738458c1ef865903x9396_GFRV.html" rel="nofollow noopener" target="_blank">zhipin.com/job_detail/35738458c1ef865903x9396_GFRV.html</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">好孩子/Babycare（母婴）：办公岗双休、基本准点</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/goodbaby.html">查看 好孩子 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-anker" data-b="anker" data-g="A" data-n="3" data-l="3">
@@ -973,6 +1233,58 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/dewu.html">查看 得物 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-hengrui" data-b="hengrui" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">恒瑞医药</span><span class="co">恒瑞医药</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">恒瑞医药肿瘤综合医药信息沟通专员（广陵人才网）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">广陵人才网恒瑞医药岗标注「不加班 周末双休」，五险一金/每年多次调薪/项目奖金。</div>
+            <div class="u"><a href="http://www.yzglrc.com/job1368103225.shtml" rel="nofollow noopener" target="_blank">yzglrc.com/job1368103225.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">恒瑞医药QC微生物研究员（张家港人才网）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">张家港人才网恒瑞QC微生物研究员岗标注「不加班 周末双休」，五险一金/试用期全额/弹性工作。</div>
+            <div class="u"><a href="https://www.szzjgrc.com/job180473314.shtml" rel="nofollow noopener" target="_blank">szzjgrc.com/job180473314.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">恒瑞医药（销售岗）：双休为主</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/hengrui.html">查看 恒瑞医药 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-musie" data-b="musie" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">慕思股份</span><span class="co">慕思股份</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">慕思健康睡眠股份有限公司（智联招聘公司页）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">智联慕思公司页福利写明「5天8小时，周末双休，法定节假日及礼物、带薪年假、生日礼物等」，提供公寓住宿/四大食堂。</div>
+            <div class="u"><a href="https://www.zhaopin.com/companydetail/CZL1324372550.htm" rel="nofollow noopener" target="_blank">zhaopin.com/companydetail/CZL1324372550.htm</a></div>
+          </li>
+          <li>
+            <div class="t">慕思营销管培生（南昌大学就业网）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">南昌大学就业网慕思2027届营销管培生：「五天8小时工作制，周六日双休，提供食宿，法定节假日」。</div>
+            <div class="u"><a href="http://jy.ncu.edu.cn:8086/detail/job?id=2704050&amp;online_id=3627226" rel="nofollow noopener" target="_blank">jy.ncu.edu.cn:8086/detail/job?id=2704050&amp;online_id=3627226</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">慕思（床垫）：总部双休</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/musie.html">查看 慕思股份 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-ctrip" data-b="ctrip" data-g="A" data-n="3" data-l="3">
@@ -1079,6 +1391,58 @@
         <div class="ev-more"><a href="./brand/gree.html">查看 格力 (GREE) 完整详情页 →</a></div>
       </div>
     </details>
+    <details id="ev-semir" data-b="semir" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">森马</span><span class="co">森马</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">森马集团（BOSS直聘公司主页）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">BOSS直聘森马集团主页工作时间及福利标注「周末双休，全年13天带薪假期随你浪」，五险一金/年终奖/股票期权/餐补/节日福利。</div>
+            <div class="u"><a href="https://m.zhipin.com/gongsi/review/5e400346612fd16c1nN-29S8.html" rel="nofollow noopener" target="_blank">m.zhipin.com/gongsi/review/5e400346612fd16c1nN-29S8.html</a></div>
+          </li>
+          <li>
+            <div class="t">森马电商员工反馈（职Q·矛盾点）</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：员工反馈</span> <span class="d">2026</span></div>
+            <div class="s">职Q匿名员工反馈：「双休（虽然休息时也免不了在线值班）」「加班情况很普遍，在正常下班点走会被主管约谈」——电商等业务线休息日仍需在线，岗位间差异明显。</div>
+            <div class="u"><a href="https://zhiq.zhaopin.com/moment/2247214" rel="nofollow noopener" target="_blank">zhiq.zhaopin.com/moment/2247214</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">森马/巴拉巴拉：双休为主，门店/电商另计</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/semir.html">查看 森马 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-oppein" data-b="oppein" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">欧派家居</span><span class="co">欧派家居</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">欧派家居整装专员（BOSS直聘）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">BOSS直聘欧派家居岗写明「周一至周五:8:30-17:15 周六日双休，逢周五或大假前一天提前1小时下班」，五险一金/免费体检/年终奖。</div>
+            <div class="u"><a href="https://www.zhipin.com/job_detail/eb9a69022d23c15d03Z729u_F1NU.html" rel="nofollow noopener" target="_blank">zhipin.com/job_detail/eb9a69022d23c15d03Z729u_F1NU.html</a></div>
+          </li>
+          <li>
+            <div class="t">欧派家居校招新生π计划（广东外语外贸大学就业网）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">广外就业网欧派校招：「标准工时7.25h/天，双休（周五提前1小时下班），春节假期长达15天」。</div>
+            <div class="u"><a href="https://career.gdufs.edu.cn/index.php/web/index/preach-detail?id=1683" rel="nofollow noopener" target="_blank">career.gdufs.edu.cn/index.php/web/index/preach-detail?id=1683</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">欧派/索菲亚（定制家居，营销岗另计）：总部双休</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/oppein.html">查看 欧派家居 完整详情页 →</a></div>
+      </div>
+    </details>
     <details id="ev-maogeping" data-b="maogeping" data-g="A" data-n="3" data-l="3">
       <summary><span class="g" style="background:#0f766e">A</span><span class="bn">毛戈平</span><span class="co">毛戈平</span><span class="ct">3 条证据</span></summary>
       <div class="ev-body">
@@ -1131,6 +1495,32 @@
         <div class="ev-more"><a href="./brand/qiaqia.html">查看 洽洽食品 完整详情页 →</a></div>
       </div>
     </details>
+    <details id="ev-pianzihuang" data-b="pianzihuang" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">片仔癀</span><span class="co">片仔癀</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">厦门片仔癀宏仁医药（猎聘）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">猎聘厦门片仔癀宏仁（漳州片仔癀药业核心子公司）福利：「上班时间7h/天，5天制」，免费三餐/班车/五险一金。</div>
+            <div class="u"><a href="https://www.liepin.com/job/1972120461.shtml" rel="nofollow noopener" target="_blank">liepin.com/job/1972120461.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">厦门片仔癀宏仁资深品牌设计师（BOSS直聘）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">BOSS直聘片仔癀宏仁资深品牌设计师岗标注「周末双休」，五险一金/包吃/现场办公。</div>
+            <div class="u"><a href="https://m.zhipin.com/job_detail/760ac5ab85e67cb10nRz2925GVNY.html" rel="nofollow noopener" target="_blank">m.zhipin.com/job_detail/760ac5ab85e67cb10nRz2925GVNY.html</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/pianzihuang.html">查看 片仔癀 完整详情页 →</a></div>
+      </div>
+    </details>
     <details id="ev-proya" data-b="proya" data-g="A" data-n="3" data-l="3">
       <summary><span class="g" style="background:#0f766e">A</span><span class="bn">珀莱雅</span><span class="co">珀莱雅</span><span class="ct">3 条证据</span></summary>
       <div class="ev-body">
@@ -1155,6 +1545,32 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/proya.html">查看 珀莱雅 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-baiyunshan" data-b="baiyunshan" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">白云山</span><span class="co">白云山</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">白云山潘高寿中药研发专员（广东人才网）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">广东人才网白云山潘高寿中药研发岗写明「上班时间8:15-16:20；双休」，国有企业/五险两金/免费食堂/通勤车。</div>
+            <div class="u"><a href="http://www.chinagdrc.com/job2945699032.shtml" rel="nofollow noopener" target="_blank">chinagdrc.com/job2945699032.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">白云山潘高寿电商专员（萝岗人才网）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">萝岗人才网白云山潘高寿医药O2O电商岗标注「不加班 周末双休」，国企/五险一金/餐补。</div>
+            <div class="u"><a href="http://www.gzlgrc.com/job201725498.shtml" rel="nofollow noopener" target="_blank">gzlgrc.com/job201725498.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/baiyunshan.html">查看 白云山 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-baidu" data-b="baidu" data-g="A" data-n="3" data-l="3">
@@ -1207,6 +1623,32 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/ecovacs.html">查看 科沃斯 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-sofia" data-b="sofia" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">索菲亚</span><span class="co">索菲亚</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">索菲亚设计支持师（BOSS直聘）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">BOSS直聘索菲亚家居公司福利写明「工作时间:双休，8小时/天」，五险一金/法定公众节假日/年度旅游。</div>
+            <div class="u"><a href="https://m.zhipin.com/job_detail/7da2ae1066561b7c1HB-3d28GFRZ.html" rel="nofollow noopener" target="_blank">m.zhipin.com/job_detail/7da2ae1066561b7c1HB-3d28GFRZ.html</a></div>
+          </li>
+          <li>
+            <div class="t">索菲亚样柜设计师（BOSS直聘）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">BOSS直聘索菲亚样柜设计师岗标注「周末双休」，福利同含双休8小时/天、五险一金、餐补。</div>
+            <div class="u"><a href="https://m.zhipin.com/job_detail/5dbde90d759cfa0a03J_2Ni6EVBV.html" rel="nofollow noopener" target="_blank">m.zhipin.com/job_detail/5dbde90d759cfa0a03J_2Ni6EVBV.html</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">欧派/索菲亚（定制家居，营销岗另计）：总部双休</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/sofia.html">查看 索菲亚 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-ugreen" data-b="ugreen" data-g="A" data-n="3" data-l="3">
@@ -1311,6 +1753,32 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/pdl.html">查看 胖东来 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-supor" data-b="supor" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">苏泊尔</span><span class="co">苏泊尔</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">苏泊尔研发工程师（台州人才网）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">台州玉环苏泊尔研发工程师岗位福利标注「【周末休息】:双休」「8小时工作制」，五险/公积金/定期体检。</div>
+            <div class="u"><a href="https://job.tzrl.com/job/2185-756377.htm" rel="nofollow noopener" target="_blank">job.tzrl.com/job/2185-756377.htm</a></div>
+          </li>
+          <li>
+            <div class="t">杭州苏泊尔普工（597直聘·矛盾点）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">杭州苏泊尔普工招聘写明「长白班两班倒随机分」，两班倒岗早上7:30-晚9:30（计12.5h）、半个月转班——产线为倒班制，与研发岗双休口径不同。</div>
+            <div class="u"><a href="https://m.597.com/job/ccf13c5852566.html" rel="nofollow noopener" target="_blank">m.597.com/job/ccf13c5852566.html</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">苏泊尔（炊具/电饭煲）：办公岗双休、基本准点</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/supor.html">查看 苏泊尔 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-nvidia" data-b="nvidia" data-g="A" data-n="3" data-l="3">
@@ -1441,6 +1909,32 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/ant.html">查看 蚂蚁集团 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-tenpay" data-b="tenpay" data-g="A" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">财付通</span><span class="co">财付通</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">财付通（成都）信息技术服务有限公司（猎聘公司页）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">猎聘财付通（成都）公司页标注工作时间「09:00-18:30 周末双休」，六险一金/免费班车/员工餐厅/定期体检。</div>
+            <div class="u"><a href="https://m.liepin.com/company/13994107/" rel="nofollow noopener" target="_blank">m.liepin.com/company/13994107/</a></div>
+          </li>
+          <li>
+            <div class="t">财付通结算分析师（广东人才网）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">广东人才网财付通结算分析师岗标注「不加班 周末双休」，深圳市腾讯计算机系统有限公司。</div>
+            <div class="u"><a href="http://www.chinagdrc.com/job465115802.shtml" rel="nofollow noopener" target="_blank">chinagdrc.com/job465115802.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">财付通（部分岗）：双休为主</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/tenpay.html">查看 财付通 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-wps" data-b="wps" data-g="A" data-n="3" data-l="3">
@@ -1699,62 +2193,6 @@
         <div class="ev-more"><a href="./brand/uniqlo.html">查看 Uniqlo (优衣库) 完整详情页 →</a></div>
       </div>
     </details>
-    <details id="ev-eastmoney" data-b="eastmoney" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">东方财富</span><span class="co">东方财富</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">东方财富、华泰证券、中国银联、财付通、招银（部分岗）：双休为主</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/eastmoney.html">查看 东方财富 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-chinalife" data-b="chinalife" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">中国人寿</span><span class="co">中国人寿</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">中国平安、中国人寿（内勤）：双休为主</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/chinalife.html">查看 中国人寿 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-pingan" data-b="pingan" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">中国平安</span><span class="co">中国平安</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">中国平安、中国人寿（内勤）：双休为主</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/pingan.html">查看 中国平安 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-unionpay" data-b="unionpay" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">中国银联</span><span class="co">中国银联</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">中国银联（部分岗）：双休为主</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/unionpay.html">查看 中国银联 完整详情页 →</a></div>
-      </div>
-    </details>
     <details id="ev-jzt" data-b="jzt" data-g="A" data-n="1" data-l="1">
       <summary><span class="g" style="background:#0f766e">A</span><span class="bn">九州通</span><span class="co">九州通</span><span class="ct">1 条证据</span></summary>
       <div class="ev-body">
@@ -1767,174 +2205,6 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/jzt.html">查看 九州通 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-yunnanbaiyao" data-b="yunnanbaiyao" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">云南白药</span><span class="co">云南白药</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/yunnanbaiyao.html">查看 云南白药 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-bull" data-b="bull" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">公牛集团</span><span class="co">公牛集团</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">公牛（开关插座）：办公岗双休、基本准点</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/bull.html">查看 公牛集团 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-htsec" data-b="htsec" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">华泰证券</span><span class="co">华泰证券</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">东方财富、华泰证券、中国银联、财付通、招银（部分岗）：双休为主</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/htsec.html">查看 华泰证券 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-tongrentang" data-b="tongrentang" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">同仁堂</span><span class="co">同仁堂</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/tongrentang.html">查看 同仁堂 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-sinopharm" data-b="sinopharm" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">国药控股</span><span class="co">国药控股</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">国药控股/九州通（医药流通）：双休为主</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/sinopharm.html">查看 国药控股 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-goodbaby" data-b="goodbaby" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">好孩子</span><span class="co">好孩子</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">好孩子/Babycare（母婴）：办公岗双休、基本准点</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/goodbaby.html">查看 好孩子 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-hengrui" data-b="hengrui" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">恒瑞医药</span><span class="co">恒瑞医药</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">恒瑞医药（销售岗）：双休为主</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/hengrui.html">查看 恒瑞医药 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-musie" data-b="musie" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">慕思股份</span><span class="co">慕思股份</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">慕思（床垫）：总部双休</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/musie.html">查看 慕思股份 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-semir" data-b="semir" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">森马</span><span class="co">森马</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">森马/巴拉巴拉：双休为主，门店/电商另计</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/semir.html">查看 森马 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-oppein" data-b="oppein" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">欧派家居</span><span class="co">欧派家居</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">欧派/索菲亚（定制家居，营销岗另计）：总部双休</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/oppein.html">查看 欧派家居 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-pianzihuang" data-b="pianzihuang" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">片仔癀</span><span class="co">片仔癀</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/pianzihuang.html">查看 片仔癀 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-baiyunshan" data-b="baiyunshan" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">白云山</span><span class="co">白云山</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/baiyunshan.html">查看 白云山 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-pepsi" data-b="pepsi" data-g="A" data-n="1" data-l="0">
@@ -1951,34 +2221,6 @@
         <div class="ev-more"><a href="./brand/pepsi.html">查看 百事食品 (乐事 Lay&#x27;s / 桂格燕麦) 完整详情页 →</a></div>
       </div>
     </details>
-    <details id="ev-sofia" data-b="sofia" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">索菲亚</span><span class="co">索菲亚</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">欧派/索菲亚（定制家居，营销岗另计）：总部双休</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/sofia.html">查看 索菲亚 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-supor" data-b="supor" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">苏泊尔</span><span class="co">苏泊尔</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">苏泊尔（炊具/电饭煲）：办公岗双休、基本准点</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/supor.html">查看 苏泊尔 完整详情页 →</a></div>
-      </div>
-    </details>
     <details id="ev-bee-flower" data-b="bee-flower" data-g="A" data-n="1" data-l="0">
       <summary><span class="g" style="background:#0f766e">A</span><span class="bn">蜂花 (Bee &amp; Flower)</span><span class="co">上海蜂花日用品有限公司</span><span class="ct">1 条证据</span></summary>
       <div class="ev-body">
@@ -1991,20 +2233,6 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/bee-flower.html">查看 蜂花 (Bee &amp; Flower) 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-tenpay" data-b="tenpay" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">财付通</span><span class="co">财付通</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">财付通（部分岗）：双休为主</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/tenpay.html">查看 财付通 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-tongyi" data-b="tongyi" data-g="B" data-n="4" data-l="4">
@@ -2167,6 +2395,32 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/kuaishou.html">查看 快手 (Kuaishou) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-bosideng" data-b="bosideng" data-g="B" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">波司登</span><span class="co">波司登</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">波司登2025届校园招聘（汕头大学就业指导中心）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">校招公告职位诱惑写明「五险一金，双休，包吃包住」，覆盖常熟总部/上海/全国20+零售公司。</div>
+            <div class="u"><a href="https://gdcs.stu.edu.cn/Job/24628" rel="nofollow noopener" target="_blank">gdcs.stu.edu.cn/Job/24628</a></div>
+          </li>
+          <li>
+            <div class="t">波司登常熟制衣厂缝纫工（BOSS直聘·矛盾点）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径）</span> <span class="raw">原标注：招聘平台口径</span> <span class="d">2026</span></div>
+            <div class="s">BOSS直聘波司登常熟制衣厂缝纫工写明「做六休一，4-9月每周加班3天，10-12月内销视生产任务加班」——产线岗为单休倾向，与职能/校招双休口径差异显著，应聘需确认岗位。</div>
+            <div class="u"><a href="https://m.zhipin.com/job_detail/7a2e49e69de1dd461Hd_09W1E1JU.html" rel="nofollow noopener" target="_blank">m.zhipin.com/job_detail/7a2e49e69de1dd461Hd_09W1E1JU.html</a></div>
+          </li>
+          <li>
+            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">波司登（招聘写双休，员工称加班多）：双休为主，门店/电商另计</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/bosideng.html">查看 波司登 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-mihoyo" data-b="mihoyo" data-g="B" data-n="3" data-l="3">
@@ -2371,20 +2625,6 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/master-kong.html">查看 康师傅 (Master Kong) 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-bosideng" data-b="bosideng" data-g="B" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#b45309">B</span><span class="bn">波司登</span><span class="co">波司登</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">双休公司推荐名单 2026（270+ 家持续更新）· 即答侠编辑部（HireMe AI）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">波司登（招聘写双休，员工称加班多）：双休为主，门店/电商另计</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/bosideng.html">查看 波司登 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-hisense" data-b="hisense" data-g="B" data-n="1" data-l="1">
