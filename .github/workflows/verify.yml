@@ -123,6 +123,13 @@ jobs:
       - name: 四格筛选测试
         run: node scripts/test-stat-filter.cjs
 
+      # D/U 评级过滤误伤布局（2026-11-03 站长实测 bug）：点评级过滤条的
+      # 「D 级」「U 级」后拼音搜索框整块消失。根因是 CARD_SEL 命中面比品牌卡宽，
+      # 「搜索+品类+评级过滤」操作区容器也被 display:none。本测试真渲染整页、
+      # 真点按钮、断言搜索框可见性（不是断言源码写法）。
+      - name: 评级过滤 D/U 误伤布局测试
+        run: node scripts/test-gf-search.cjs
+
       # 空态块同步（2026-10-30 修复）：搜自定义卡（美宜佳等不在 bundle brands
       # 数组）时 React 渲染「未找到匹配」空态块与注入卡同屏——观感是「搜索
       # 出不相关内容」。断言同步逻辑在 filterCustomCards 体内、搜美宜佳空态

@@ -5615,9 +5615,69 @@ section('21c. 首页滑到底部按钮');
   check(/'D 级'/.test(rowTexts) && /'U 级'/.test(rowTexts),
     'stat-filter.js 评级行互斥枚举含「D 级」「U 级」（点 D/U 清五格筛选）',
     'stat-filter 没跟上 → 点 D/U 不清四格筛选，两套过滤层互相覆盖出现空面板');
-  check(/u-grade-patch\.js\?v=5/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
-    'u-grade-patch.js?v=5 / stat-filter.js?v=9（缓存号已随内容 bump）',
+  check(/u-grade-patch\.js\?v=6/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
+    'u-grade-patch.js?v=6 / stat-filter.js?v=9（缓存号已随内容 bump）',
     '缓存号没 bump → 用户拿旧补丁，D/U 按钮注入不生效（2026-11-01 拼音索引同类事故）');
+  // 2026-11-03 站长实测 bug：点「D 级 / U 级」后拼音搜索框整块消失。
+  // 根因：CARD_SEL（div.bg-white.rounded-2xl.border）命中面比品牌卡宽，
+  // 「搜索+品类+评级过滤」操作区容器同样命中，它没有品牌标题、识别不到档位，
+  // 旧代码 `tier !== gfActive` 一刀切 display:none 把搜索区藏了（实测点 D 隐藏 173 个节点）。
+  // 结构防护必须两道都在，删任何一道这个 bug 就会复活：
+  //   ① gfIsCard() 只认带 h2/h3 品牌标题的节点为卡片
+  //   ② gfApply() 里 tier 为空时 gfUnmark + continue（不许隐藏）
+  const gfApplySrc = (ugp.match(/function gfApply\(\)\s*\{[\s\S]*?\n  \}/) || [''])[0];
+  check(/function gfIsCard[\s\S]{0,200}querySelector\('h3, h2'\)/.test(ugp),
+    'u-grade-patch.js 有结构防护栏 gfIsCard（只认带品牌标题 h2/h3 的节点为卡片）',
+    'gfIsCard 缺失 → CARD_SEL 会继续命中搜索/筛选操作区容器，点 D/U 藏掉搜索框');
+  check(/if \(!gfIsCard\(card\)\) \{\s*gfUnmark\(card\); continue; \}/.test(gfApplySrc),
+    'gfApply()：非卡片节点（布局容器）一律跳过，不写 display',
+    'gfApply 对布局容器也做隐藏 → 点 D/U 后搜索框消失（2026-11-03 站长实测 bug）');
+  check(/if \(!tier\) \{\s*gfUnmark\(card\); continue; \}/.test(gfApplySrc),
+    'gfApply()：档位识别不到时不动该节点（与 stat-filter 的 tier===null 同口径）',
+    '档位未知就隐藏 → 任何非品牌区块（操作区/证据板）都会被误伤');
+  check(/if \(gfActive && tier !== gfActive\) \{/.test(gfApplySrc),
+    'gfApply()：只有 tier 已识别时才按档位隐藏',
+    'gfApply 的隐藏条件被改写 → 防护失效');
+}
+
+// ---------- 21l. D/U 过滤误伤布局的回归测试必须存在且已接线 ----------
+// 站长 2026-11-03 实测：点「D 级 / U 级」后拼音搜索框整块消失。
+// §21k 只是源码断言，改个写法就能绕过；真正的症状是渲染结果，
+// 所以另立 jsdom 行为测试 scripts/test-gf-search.cjs（verify 保持零依赖，
+// 不在本脚本里 require jsdom）。这里只咬「测试还在 + CI 真的会跑」。
+{
+  const testFile = 'scripts/test-gf-search.cjs';
+  check(exists(testFile),
+    '存在 D/U 过滤误伤布局的回归测试（jsdom，真点按钮验搜索框）',
+    '测试文件缺失 → 2026-11-03「点 D/U 搜索框消失」没有任何行为层防线');
+  if (exists(testFile)) {
+    const t = read(testFile);
+    check(/site-search-input/.test(t) && /data-sxg-gf-letter/.test(t),
+      '回归测试真的在查搜索框 + D/U 按钮（不是空壳文件）',
+      '测试里没有搜索框或按钮锚点 → 测了个寂寞');
+    check(/getComputedStyle|display/.test(t),
+      '回归测试断言的是可见性（display），不是节点存在与否',
+      '只断言节点存在 → 搜索框明明被 display:none 也照样绿');
+    // 计数断言（2026-11-03 注入实验逼出来的）：只查锚点存在会被「留一条同义断言」救绿——
+    // 掏空 D 分支那条，U 分支那条照样让上面两条恒真。所以要求「搜索框仍可见」至少
+    // 出现 2 次（D / U 各一次），且两条分支都真的点过按钮。
+    // 分片断言（不是计数）：两条分支的断言文案各自唯一，掏空任一条立即判红。
+    // 计数会被「第三处同义断言」救绿（2026-11-03 注入实验实测：删了 D 分支，
+    // 「取消 D 后搜索框仍可见」那条顶上，visCount 仍 ≥2）。
+    check(/搜索框仍可见（核心回归/.test(t),
+      'D 分支有「点 D 后搜索框仍可见」断言（文案唯一，掏空即红）',
+      'D 分支的可见性断言被删/改写 → 站上报的原始症状没人咬');
+    check(/搜索框仍可见（U 分支/.test(t),
+      'U 分支有「点 U 后搜索框仍可见」断言（文案唯一，掏空即红）',
+      'U 分支的可见性断言被删/改写');
+    check(/clickBtn\('D'\)/.test(t) && /clickBtn\('U'\)/.test(t),
+      '回归测试真的点了 D 与 U 两个按钮',
+      '缺 clickBtn 调用 → 按钮没点，可见性断言恒真');
+  }
+  const wf = read('.github/workflows/verify.yml');
+  check(/node scripts\/test-gf-search\.cjs/.test(wf),
+    'CI 已接线 test-gf-search.cjs（写完不挂 CI = 只跑一次的测试）',
+    'README 写死的「新测试必须挂进 CI」没落实 → 这个 bug 下次照样复发');
 }
 
 // ---------- 汇总 ----------

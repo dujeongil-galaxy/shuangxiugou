@@ -366,19 +366,43 @@
     }
   }
 
+  /* 结构防护栏（2026-11-03 修 bug 加，别删）：
+     CARD_SEL 是按 Tailwind 类名拼的，命中面比「品牌卡」宽 ——
+     「搜索 + 品类 + 评级过滤」那一整块操作区容器
+     （div.bg-white.p-4.rounded-2xl.border.border-slate-200.shadow-sm.space-y-4）
+     同样命中。它没有品牌标题、识别不到档位，早期版本按 `tier !== gfActive`
+     一刀切 → 点「D 级 / U 级」把拼音搜索框整个藏掉（站长 2026-11-03 实测）。
+     两道闸：
+       ① 只认带品牌标题（h2/h3）的节点为卡片（结构判据，不依赖文案内容）；
+       ② 档位识别不到就一律不动（与 stat-filter.js applyTierFilter 的
+          `tier === null → return` 同口径，宁漏标不许误伤布局）。
+     注：工牌/证据板等非卡片区块有的也带 h2/h3，但它们没有档位徽标，
+     会被第②道闸挡住。 */
+  function gfIsCard(node) {
+    return !!(node.querySelector('h3, h2'));
+  }
+
+  function gfUnmark(node) {
+    if (node.getAttribute(GF_MARK)) {
+      node.style.display = '';
+      node.removeAttribute(GF_MARK);
+    }
+  }
+
   function gfApply() {
     var cards = document.querySelectorAll(CARD_SEL);
     for (var i = 0; i < cards.length; i++) {
       var card = cards[i];
       // 自定义卡（id 形如 xxx-card）由 index.html filterCustomCards 管，跳过
-      if (card.id && /-card$/.test(card.id)) continue;
+      if (card.id && /-card$/.test(card.id)) { gfUnmark(card); continue; }
+      if (!gfIsCard(card)) { gfUnmark(card); continue; }   // 布局容器：永远不碰
       var tier = gfCardTier(card);
+      if (!tier) { gfUnmark(card); continue; }             // 档位未知：不动
       if (gfActive && tier !== gfActive) {
         card.style.display = 'none';
         card.setAttribute(GF_MARK, '1');
-      } else if (card.getAttribute(GF_MARK)) {
-        card.style.display = '';
-        card.removeAttribute(GF_MARK);
+      } else {
+        gfUnmark(card);
       }
     }
   }
@@ -418,7 +442,13 @@
       return;
     }
     if (old) return;
-    var first = document.querySelector(CARD_SEL);
+    // 锚点必须是**真卡片**：CARD_SEL 的第一个命中是搜索/筛选操作区容器，
+    // 插在它前面会把提示条塞到搜索框上方（2026-11-03 同批修）。
+    var all = document.querySelectorAll(CARD_SEL);
+    var first = null;
+    for (var j = 0; j < all.length; j++) {
+      if (gfIsCard(all[j])) { first = all[j]; break; }
+    }
     if (!first || !first.parentNode) return;
     var p = document.createElement('div');
     p.id = GF_EMPTY_ID;
