@@ -5686,6 +5686,77 @@ section('21c. 首页滑到底部按钮');
     'README 写死的「新测试必须挂进 CI」没落实 → 这个 bug 下次照样复发');
 }
 
+// ---------- 21m. 记账条目的时间必须是该提交的真实 commit 时间 ----------
+// 2026-11-03 自查发现：CHANGELOG / 最近更新 / README 里 110 处「时间 · 提交 `hash`」
+// 的时间是我凭感觉写的，与 git 真实提交时间不符（`8f83b84` 真实 10:02，记账写 02:40，
+// 差了 7 小时）。哈希有断言咬着所以没写错，时间没有，于是一路错到现在。
+// 记账的第一性是「可核对」，时间与哈希一样必须是事实而不是估计 —— 这里按哈希反查
+// 真实提交时间逐条比对。用 author date（%ad）：rebase 不会改写它，比 committer 稳定。
+{
+  let timeMap = {};
+  try {
+    // ⚠️ 命令里不能带空格或 | ：execSync 在 Windows 走 cmd.exe，
+    //    --date=format:"%Y-%m-%d %H:%M" 会被拆成两个参数，%h|%ad 的 | 会直接变成管道符
+    //    （两种写法都实测取不到数据，静默变空集 → 断言空跑）。改用 unix 时间戳（%at），
+    //    由 Node 自己格式化成本地时间，彻底绕开 shell 转义。
+    // ⚠️ 用 %H（40 位全哈希）建表：git 的短哈希长度会随仓库规模变，
+    //    历史记账里既有 7 位也有 8 位（CHANGELOG 第 1308 行就记载过 8 位短哈希），
+    //    用 %h 建表会让 8 位引用全部查不到、被误报成「哈希不存在」。
+    //    查询时按前缀匹配，既支持任意长度短哈希，又不用逐个跑 git rev-parse。
+    const out = execSync('git log --pretty=format:%H-%at', {
+      cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024,
+    }).toString();
+    const pad = (n) => String(n).padStart(2, '0');
+    for (const line of out.split('\n')) {
+      const t = line.trim();
+      const k = t.indexOf('-');
+      if (k <= 0) continue;
+      const sec = parseInt(t.slice(k + 1), 10);
+      if (!sec) continue;
+      const d = new Date(sec * 1000);
+      timeMap[t.slice(0, k)] = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
+        + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    }
+  } catch (e) { /* 非 git 环境：下面会因为 map 为空而走 missing 分支 */ }
+
+  // 任意长度短哈希 → 时间（前缀匹配；40 位全哈希直接命中）
+  // ⚠️ 必须写在 try/catch 之外：const 是块级作用域，留在 try 块里会
+  //    ReferenceError: timeOf is not defined（实测踩到）。
+  const timeOf = (h) => {
+    if (timeMap[h]) return timeMap[h];
+    for (const k in timeMap) if (k.indexOf(h) === 0) return timeMap[k];
+    return null;
+  };
+
+  // 7~40 位：git 短哈希长度会随仓库规模自动变（不一定正好 7 位），
+  // 只认 7 位会让「把哈希写成 8 位乱码」这种错误整个逃过扫描（故障注入实测）。
+  const PAT = /(\d{4}-\d{2}-\d{2} \d{2}:\d{2})([^`]{0,120}?)`([0-9a-f]{7,40})`/g;
+  const bad = [];
+  const missing = [];
+  let checked = 0;
+  for (const f of ['CHANGELOG.md', '\u6700\u8fd1\u66f4\u65b0.md', 'README.md']) {
+    if (!exists(f)) continue;
+    const txt = read(f);
+    for (const m of txt.matchAll(PAT)) {
+      checked++;
+      const h = m[3];
+      const real = timeOf(h);
+      if (!real) { missing.push(f + ' 引用了仓库里不存在的哈希 ' + h); continue; }
+      if (m[1] !== real) bad.push(f + '：' + h + ' 写作 ' + m[1] + '，真实提交时间是 ' + real);
+    }
+  }
+  // 空集不许冒充通过：映射拿不到或一条都没匹配到，说明正则/环境坏了
+  check(Object.keys(timeMap).length > 20 && checked > 30,
+    '时间戳断言真的扫到了记账条目（git 时间映射 + 匹配数双重空集防护）',
+    '映射 ' + Object.keys(timeMap).length + ' 条 / 匹配 ' + checked + ' 处 → 断言在空跑');
+  check(bad.length === 0,
+    '记账条目写的时间 = 该提交的真实 commit 时间（三个记账文件全量比对）',
+    bad.slice(0, 4).join('；') + (bad.length > 4 ? '（共 ' + bad.length + ' 处）' : ''));
+  check(missing.length === 0,
+    '记账引用的哈希在仓库里都真实存在（防 rebase 后忘记回填新哈希）',
+    missing.slice(0, 4).join('；'));
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {
