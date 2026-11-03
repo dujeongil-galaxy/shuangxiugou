@@ -8,7 +8,7 @@
 //   badge 卡共 174 张（53 内置 - 1 虚拟 + 121 自定义），可见 173 张（虚拟卡 class 隐藏）。
 //   红榜(S/A) 81 + 大小周(B) 31 + 避雷(C 58 + D 1) 59 = 171；另有 2 家 U 级（三星/宏碁，证据不足）
 //   D 级 = 站长人工降级（现仅 BOSS直聘，2026-11-03 平台类目例外），计入避雷格；U 级不计入四格。
-//   2026-11-03：新增中国联通 C 级（招聘信息与实际不符，站长人工定级），C 57→58。
+//   2026-11-03：新增中国联通 B 级（站长线下核实一个城市，月休 8 天以上），B 级 +1。
 //   不计入四格，由 u-grade-patch.js 在四格下方补一行说明；
 //   评级行无「待核实」按钮。
 //   2026-11-02：自定义卡 16 → 120（批量导入榜单 104 张），上列数字同步放大，算式仍闭合。
@@ -180,8 +180,8 @@ setTimeout(() => {
   check('★ D 出口说明：bundle 无 D 卡时不注入 sxg-d-note（不出现幽灵计数）',
     !window.document.getElementById('sxg-d-note'));
   const bankInLei = s.visible.filter((c) =>
-    ['农业银行', '淘宝闪购', '中国联通'].some((k) => (c.textContent || '').includes(k)));
-  check('★ C 级锁定卡在避雷档可见（农行 + 淘宝闪购 + 联通 = 3 张）', bankInLei.length === 3,
+    ['农业银行', '淘宝闪购'].some((k) => (c.textContent || '').includes(k)));
+  check('★ C 级锁定卡在避雷档可见（农行 + 淘宝闪购 = 2 张）', bankInLei.length === 2,
     { found: bankInLei.length });
   const bankGoneFromLei = s.visible.filter((c) =>
     ['工商银行', '建设银行', '中国银行', '成都银行'].some((k) => (c.textContent || '').includes(k)));
@@ -232,7 +232,7 @@ setTimeout(() => {
   (async () => {
     const cCards = [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
       .filter((c) => tierOf(c) === 'C');
-    check('前置：DOM 中 C 级卡 58 张（2026-11-03 增联通 C +1；含 BOSS直聘转 D 前口径、批量导入 29 张）', cCards.length === 58, cCards.length);
+    check('前置：DOM 中 C 级卡 57 张（2026-11-03 联通改判 B 级；含 BOSS直聘转 D 前口径、批量导入 29 张）', cCards.length === 57, cCards.length);
     const removed = cCards.map((c) => {
       const p = c.parentNode; const nx = c.nextSibling;
       p.removeChild(c); return { c, p, nx };

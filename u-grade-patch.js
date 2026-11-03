@@ -259,8 +259,56 @@
   var GF_LETTERS = ['D', 'U'];
   var gfActive = null;                // null | 'D' | 'U'
   var gfBar = null;                   // 评级过滤按钮容器
-  var gfApplyingFilter = false;          // 标记是否正在应用过滤器（防止 MO 重复触发）
+  var _scanTimer = null;              // 统一的 scan 防抖计时器（16ms = 一帧）
+  var _observer = null;               // MutationObserver 实例
+  var _skipMO = false;                // scan() 执行期间设为 true，防止 MO 触发自己
+  var _userActionPending = false;     // 用户操作后设为 true，scan() 跳过 gfSyncAndApply()
+  var _overlayTimer = null;           // 遮罩层定时器
   var ROW_RATING_TEXTS = ['全部评级', 'S 级', 'A 级', 'B 级', 'C 级', 'D 级', 'U 级'];
+
+  // 2026-11-03 新增：评级过滤切换时的加载遮罩（掩盖 DOM 操作的闪烁）
+  // 参考首页加载动画方案：点击按钮 → 显示遮罩 0.5 秒 → 移除遮罩显示结果
+  var GF_OVERLAY_ID = 'sxg-gf-overlay';
+  function showFilterOverlay() {
+    if (document.getElementById(GF_OVERLAY_ID)) return;  // 已显示
+    var overlay = document.createElement('div');
+    overlay.id = GF_OVERLAY_ID;
+    overlay.setAttribute('style', [
+      'position:fixed', 'top:0', 'left:0', 'right:0', 'bottom:0',
+      'z-index:9999', 'background:rgba(255,255,255,0.85)',
+      'display:flex', 'align-items:center', 'justify-content:center',
+      'font-size:16px', 'color:#475569', 'font-weight:600',
+      'transition:opacity 0.15s ease-out'
+    ].join(';'));
+    overlay.textContent = '正在切换评级…';
+    document.body.appendChild(overlay);
+  }
+  function hideFilterOverlay() {
+    var overlay = document.getElementById(GF_OVERLAY_ID);
+    if (!overlay) return;
+    // 淡出动画
+    overlay.style.opacity = '0';
+    setTimeout(function() {
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    }, 150);
+  }
+  function scheduleHideOverlay() {
+    // 0.5 秒后移除遮罩（给用户足够时间看到动画，同时掩盖 DOM 操作）
+    if (_overlayTimer) clearTimeout(_overlayTimer);
+    _overlayTimer = setTimeout(function() {
+      _overlayTimer = null;
+      hideFilterOverlay();
+    }, 500);
+  }
+  function _scheduleScan() {
+    if (_scanTimer) {
+      clearTimeout(_scanTimer);  // 清除旧的定时器，确保最后一次点击后 16ms 才执行
+    }
+    _scanTimer = setTimeout(function () {
+      _scanTimer = null;
+      scan();
+    }, 16);
+  }
 
   function gfCardTier(card) {
     if ((card.textContent || '').indexOf('虚拟对比黑榜') !== -1) return 'V';
@@ -335,39 +383,39 @@
   function gfOnClick(e) {
     var btn = e.target && e.target.closest ? e.target.closest('button') : null;
     if (!btn || !gfBar.contains(btn)) return;
+    // 只处理我们自己的 D/U 按钮（带 GF_BTN_ATTR 属性）
     if (btn.hasAttribute(GF_BTN_ATTR)) {
       var letter = btn.getAttribute('data-sxg-gf-letter');
       // 再点同一个 = 取消（回到全部评级；React state 未动过，列表仍是全量）
       gfActive = (gfActive === letter) ? null : letter;
-      gfApplyingFilter = true;
-      try {
-        gfSyncAndApply();
-      } finally {
-        // 延迟重置标志，让 MutationObserver 的防抖窗口跳过这次 DOM 变化
-        setTimeout(function() { gfApplyingFilter = false; }, 350);
-      }
-    } else if (gfActive) {
-      gfActive = null;                 // 点了 React 按钮 → 交还 React
-      gfApplyingFilter = true;
-      try {
-        gfClear();
-        gfSyncStyles();
-        gfEmptyNote();                   // 空态提示随过滤态一起收起
-      } finally {
-        setTimeout(function() { gfApplyingFilter = false; }, 350);
-      }
+      // 2026-11-03 新增：显示加载遮罩（掩盖 DOM 操作的闪烁）
+      showFilterOverlay();
+      gfSyncAndApply();
+      _userActionPending = true;  // 标记用户操作，scan() 跳过重复的 gfSyncAndApply()
+      // 0.5 秒后移除遮罩
+      scheduleHideOverlay();
+      // 16ms 后补一次 scan，确保状态同步
+      _scheduleScan();
     }
+    // React 按钮的点击由捕获监听器（第370-391行）处理，这里不再重复处理
   }
 
   // 2026-11-03 修复闪烁：在捕获阶段监听 React 按钮点击，同步清除我们的过滤状态
   // 这样在 React 重渲染之前，gfActive 已经是 null，避免 MO 触发时的级联重绘
+  // 2026-11-03 再优化（反复切换 C↔D 卡顿）：点击 React 按钮后，立即同步按钮状态 +
+  // 设置标志位跳过 MO 的重复触发 + 延迟 100ms 再同步一次（等 React 重渲染完成）
+  // 2026-11-03 修复误拦截：排除我们自己的 D/U 按钮（data-sxg-gf-btn），只拦截 React 按钮
   document.addEventListener('click', function (e) {
     var t = e.target;
     if (!t || t.tagName !== 'BUTTON') return;
+    // 排除我们自己的 D/U 按钮（它们有 data-sxg-gf-btn 属性）
+    if (t.hasAttribute(GF_BTN_ATTR)) return;
     var text = (t.textContent || '').trim();
     if (ROW_RATING_TEXTS.indexOf(text) === -1) return;
-    // 用户点击了 React 的评级按钮（全部/S/A/B/C/D/U），同步清除我们的状态
-    if (gfActive) {
+    // 用户点击了 React 的评级按钮（全部/S/A/B/C），同步清除我们的状态
+    if (gfActive || document.getElementById(GF_EMPTY_ID)) {
+      // 2026-11-03 新增：显示加载遮罩（掩盖 DOM 操作的闪烁）
+      showFilterOverlay();
       gfActive = null;
       gfClear();
       if (gfBar) {
@@ -377,6 +425,11 @@
         }
       }
       gfEmptyNote();
+      _userActionPending = true;  // 标记用户操作，scan() 跳过重复的 gfSyncAndApply()
+      // 0.5 秒后移除遮罩
+      scheduleHideOverlay();
+      // 16ms 后补一次 scan
+      _scheduleScan();
     }
   }, true);
 
@@ -499,15 +552,32 @@
   function gfEnsure() {
     gfEnsureButtons();
     // React 重渲染（搜索/品类/点赞）会重建卡片与过滤条：重放当前过滤态
-    if (gfActive) gfSyncAndApply();
+    // 注意：不调用 gfSyncAndApply()，避免在 scan() 中重复修改 DOM
+    // gfSyncAndApply() 的调用由 gfOnClick 和捕获监听器负责
   }
 
   function scan() {
-    try { injectD(); } catch (e) { warn(e); }
-    try { injectU(); } catch (e) { warn(e); }
-    try { injectStatNote(); } catch (e) { warn(e); }
-    try { injectDStatNote(); } catch (e) { warn(e); }
-    try { gfEnsure(); } catch (e) { warn(e); }
+    // 2026-11-03 修复反复切换 C↔D 延迟动画：
+    // 根因是 scan() 每次都调用 gfSyncAndApply()，而用户操作后已经调用过了
+    // 重复操作 DOM 导致延迟动画（用户点 D → gfOnClick 调用 → 16ms 后 scan 又调用）
+    // 新方案：用 _userActionPending 标志位区分用户操作和 React 重渲染
+    if (scan._running) { scan._pending = true; return; }
+    scan._running = true;
+    _skipMO = true;  // 开始执行，MO 检测到变化也不触发 scan()
+    try {
+      try { injectD(); } catch (e) { warn(e); }
+      try { injectU(); } catch (e) { warn(e); }
+      try { injectStatNote(); } catch (e) { warn(e); }
+      try { injectDStatNote(); } catch (e) { warn(e); }
+      try { gfEnsureButtons(); } catch (e) { warn(e); }
+      // 只有 React 重渲染触发的 scan 才需要重新应用过滤（用户操作后已应用过）
+      if (!_userActionPending && gfActive) { try { gfSyncAndApply(); } catch (e) { warn(e); } }
+      _userActionPending = false;  // 重置标志位
+    } finally {
+      scan._running = false;
+      _skipMO = false;  // 执行完毕，恢复 MO 监听
+      if (scan._pending) { scan._pending = false; _scheduleScan(); }
+    }
   }
   function warn(e) {
     if (typeof console !== 'undefined' && console.warn) {
@@ -524,15 +594,14 @@
   window.addEventListener('load', scan);
 
   // React 重渲染会重建卡片 DOM → 监听兜底重注入。
-  // 防抖 300ms（2026-11-03 优化：从 800ms 降至 300ms，减少快速切换时的视觉延迟）+ 名字预筛，避免在 174 张卡的页面上把主线程拖死（初版教训）。
-  // 2026-11-03 再加 gfApplyingFilter 守卫：用户点击评级按钮时我们自己改 DOM（隐藏/显示卡片），
-  // 这会触发 MO → 300ms 后又跑一遍 scan() → 按钮状态闪烁/级联重绘。加标志位跳过这个窗口。
-  var timer = null;
+  // 2026-11-03 修复反复切换 C↔D 闪烁：移除 gfApplyingFilter 机制，改用统一的 16ms 防抖
+  // 所有触发点（gfOnClick / 捕获监听器 / MO）都用 _scheduleScan()，避免计时器互相覆盖
+  // scan() 执行期间会断开 MO，执行完再重新连接，彻底切断反馈循环
   try {
-    new MutationObserver(function () {
-      if (timer) return;
-      if (gfApplyingFilter) return;   // 我们自己触发的 DOM 变化，不重扫
-      timer = setTimeout(function () { timer = null; scan(); }, 300);
-    }).observe(document.body, { childList: true, subtree: true });
+    _observer = new MutationObserver(function () {
+      // 16ms 防抖，几乎无延迟
+      _scheduleScan();
+    });
+    _observer.observe(document.body, { childList: true, subtree: true });
   } catch (e) { /* 无 MO 时退化为上面的定时扫描 */ }
 })();

@@ -608,15 +608,15 @@ const EXPECT_GRADE_2E = {
   'abc-card': 'C级', 'taobao-shanguang-card': 'C级',
   // 2026-11-03 站长拍板：BOSS直聘 C→D（平台类目例外），奇瑞 D→C —— 两张卡都不许再动。
   'bosszhipin-card': 'D级',
-  // 2026-11-03 新增：中国联通 C 级（招聘信息与实际岗位不符，站长人工定级，见 brand/unicom.html）。
-  'unicom-card': 'C级',
+  // 2026-11-03 新增：中国联通 B 级（站长线下核实一个城市，月休 8 天以上，见 brand/unicom.html）。
+  'unicom-card': 'B级',
 };
 const locked2e = customPairs2e.filter((c) => EXPECT_GRADE_2E[c.id]);
 const relockedU2e = locked2e
   .filter((c) => c.grade !== EXPECT_GRADE_2E[c.id])
   .map((c) => c.id + '=' + c.grade + '（应 ' + EXPECT_GRADE_2E[c.id] + '）');
 check(relockedU2e.length === 0,
-  '4 家银行 A 级 + 农行/淘宝闪购/联通 C 级 + BOSS直聘 D 级（锁定，不得回退）',
+  '4 家银行 A 级 + 农行/淘宝闪购 C 级 + BOSS直聘 D 级（锁定，不得回退）',
   relockedU2e.length ? relockedU2e.join(', ') : '锁定生效');
 check(locked2e.length === 8,
   '8 张锁定卡全部存在（删卡判红）', '实际 ' + locked2e.length);
@@ -626,8 +626,8 @@ check(locked2e.length === 8,
 check(byGrade2e('A级') === 4 + 58,
   '自定义卡 A 级共 62 张（工/建/中/成都银行 4 张 + 榜单导入 58 张）',
   '实际 ' + byGrade2e('A级'));
-check(byGrade2e('C级') === 11 + 29,
-  '自定义卡 C 级共 40 张（手工 11 张含联通 + 榜单导入 29 张；BOSS直聘 2026-11-03 转入 D 级）',
+check(byGrade2e('C级') === 10 + 29,
+  '自定义卡 C 级共 39 张（手工 10 张 + 榜单导入 29 张；BOSS直聘 2026-11-03 转入 D 级）',
   '实际 ' + byGrade2e('C级'));
 // D 级自定义卡：2026-11-03 起只有 BOSS直聘 一张（平台类目例外）。多一张或少一张都要判红 ——
 // 这一档是「人的结论」，被悄悄批量加卡就等于把站长的判断稀释成普通档位。
@@ -1337,7 +1337,7 @@ if (cfgBlock) {
 }
 const CUSTOM_COUNT = customCards.length;
 check(CUSTOM_COUNT === 17 + 104,
-  `自定义卡 ${CUSTOM_COUNT} 张（17 张手工含联通 + 104 张榜单导入；2026-11-02 批量导入，2026-11-03 增联通）`);
+  `自定义卡 ${CUSTOM_COUNT} 张（17 张手工 + 104 张榜单导入；2026-11-02 批量导入，2026-11-03 增联通 B 级）`);
 
 // null 规则：双休率 / 下班时间不得为占位 0，也不得是字符串 '未知'
 customCards.forEach((c) => {
@@ -5707,8 +5707,8 @@ section('21c. 首页滑到底部按钮');
   check(/'D 级'/.test(rowTexts) && /'U 级'/.test(rowTexts),
     'stat-filter.js 评级行互斥枚举含「D 级」「U 级」（点 D/U 清五格筛选）',
     'stat-filter 没跟上 → 点 D/U 不清四格筛选，两套过滤层互相覆盖出现空面板');
-  check(/u-grade-patch\.js\?v=7/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
-    'u-grade-patch.js?v=7 / stat-filter.js?v=9（缓存号已随内容 bump）',
+  check(/u-grade-patch\.js\?v=10/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
+    'u-grade-patch.js?v=10 / stat-filter.js?v=9（缓存号已随内容 bump）',
     '缓存号没 bump → 用户拿旧补丁，D/U 按钮注入不生效（2026-11-01 拼音索引同类事故）');
   // 2026-11-03 站长实测 bug：点「D 级 / U 级」后拼音搜索框整块消失。
   // 根因：CARD_SEL（div.bg-white.rounded-2xl.border）命中面比品牌卡宽，
