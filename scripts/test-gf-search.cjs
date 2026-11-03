@@ -48,6 +48,65 @@ for (const m of html.matchAll(/<script[^>]*\bsrc="([^"]+)"/g)) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// ⚠️ 一律用轮询，不用固定 sleep 等「异步注入/异步过滤」完成：
+//    2026-11-03 实测用 sleep(400) 等按钮注入，本地稳定过、CI（机器慢/负载高）
+//    判红 —— 固定等待在快的机器上富余、在慢的机器上不够。
+//    超时只影响「等不到就按现状断言」，不会提前退出，判红交给断言本身。
+const until = async (fn, timeout = 6000) => {
+  for (let t = 0; t < timeout; t += 25) {
+    if (fn()) return true;
+    await sleep(25);
+  }
+  return false;
+};
+const gfMarked = () => doc.querySelectorAll('[data-sxg-gf]').length;
+
+// 等「可见档位集合」达到期望（点 D 期望 [D]，点 U 期望 [U,U]），超时就按现状断言。
+// 为什么不数标记、也不固定 sleep：
+//   ① 数标记 —— 打第一个标记时就 >0，拿到半完成状态（实测 U 分支少算卡）；
+//   ② 固定 sleep —— 本地 50ms 够、CI 机器慢时不够（2026-11-03 CI 判红）；
+//   ③ 等标记数稳定 —— 两次采样恰好相同也可能停在半完成态（同样判红）。
+// 直接轮询**断言关心的那个事实**最可靠：快机器立即返回，慢机器能等到，
+// 等不到就超时按现状交给断言判红。
+// 等卡片渲染到稳定张数：自定义卡是异步注入的，拍初始快照太早会少算卡，
+// 导致后面「取消过滤后张数回到初始值」永远不等（实测判红）。
+// 连续 3 次采样相同才认定稳定 —— 只采 2 次会停在半完成态。
+const untilCardsStable = async (timeout = 8000) => {
+  let prev = -1;
+  let same = 0;
+  for (let t = 0; t < timeout; t += 50) {
+    const n = snapshot().visibleTiers.length;
+    if (n > 0 && n === prev) { same++; if (same >= 3) return true; } else { same = 0; }
+    prev = n;
+    await sleep(50);
+  }
+  return false;
+};
+
+const untilTiers = async (wantLen, wantTier, timeout = 6000) => {
+  for (let t = 0; t < timeout; t += 25) {
+    const v = snapshot().visibleTiers;
+    if (v.length === wantLen && v.every((x) => x === wantTier)) return true;
+    await sleep(25);
+  }
+  return false;
+};
+
+// 过滤是逐节点打标记的：「marked > 0」在刚打完第一个标记时就成立，
+// 立刻快照拿到的是半完成状态（实测 U 分支因此少算卡）。
+// 所以激活态要等**标记数稳定**（连采两次一致）再快照；
+// 取消态的终态是 0，起始值 >0，不会误满足，直接等 0 即可。
+const stable = async (timeout = 6000) => {
+  let prev = -1;
+  for (let t = 0; t < timeout; t += 50) {
+    const cur = gfMarked();
+    if (cur > 0 && cur === prev) return true;
+    prev = cur;
+    await sleep(50);
+  }
+  return false;
+};
+
 // 卡片档位识别：与生产代码同口径（先看 data-sxg-tier，再看徽标文本）
 function tierOf(card) {
   const attr = card.getAttribute('data-sxg-tier');
@@ -95,7 +154,8 @@ function snapshot() {
 }
 
 (async () => {
-  await sleep(400);   // 等首轮 scan（setTimeout 0）把 D/U 按钮注入过滤条
+  // 等首轮 scan（setTimeout 0）把 D/U 按钮注入过滤条
+  await until(() => doc.querySelector('[data-sxg-gf-letter="D"]') && doc.querySelector('[data-sxg-gf-letter="U"]'));
 
   const input = doc.getElementById('site-search-input');
   const dBtn = doc.querySelector('[data-sxg-gf-letter="D"]');
@@ -110,6 +170,7 @@ function snapshot() {
     process.exit(1);
   }
 
+  await untilCardsStable();   // 自定义卡异步注入，等渲染完再拍初始快照
   const s0 = snapshot();
   check('页面渲染出 ≥150 个 CARD_SEL 节点（真渲染，不是空壳）', s0.totalNodes >= 150, s0.totalNodes);
   check('其中存在「无档位、含输入框」的操作区容器（本 bug 的受害者）',
@@ -118,7 +179,7 @@ function snapshot() {
 
   console.log('点「D 级」');
   clickBtn('D');
-  await sleep(50);
+  await untilTiers(1, 'D');
   let s = snapshot();
   check('搜索框仍可见（核心回归：2026-11-03 bug）',
     searchHiddenBy(input).length === 0, searchHiddenBy(input));
@@ -133,7 +194,8 @@ function snapshot() {
 
   console.log('取消「D 级」');
   clickBtn('D');
-  await sleep(50);
+  await until(() => gfMarked() === 0);
+  await untilCardsStable();
   s = snapshot();
   check('标记清零', s.marked === 0, s.marked);
   check('搜索框仍可见', searchHiddenBy(input).length === 0, searchHiddenBy(input));
@@ -142,7 +204,7 @@ function snapshot() {
 
   console.log('点「U 级」');
   clickBtn('U');
-  await sleep(50);
+  await untilTiers(2, 'U');
   s = snapshot();
   check('搜索框仍可见（U 分支同样不许误伤）',
     searchHiddenBy(input).length === 0, searchHiddenBy(input));
@@ -153,7 +215,7 @@ function snapshot() {
 
   console.log('再点「U 级」取消');
   clickBtn('U');
-  await sleep(50);
+  await until(() => gfMarked() === 0);
   s = snapshot();
   check('标记清零且搜索框可见', s.marked === 0 && searchHiddenBy(input).length === 0, s);
 

@@ -5715,9 +5715,14 @@ section('21c. 首页滑到底部按钮');
       if (k <= 0) continue;
       const sec = parseInt(t.slice(k + 1), 10);
       if (!sec) continue;
-      const d = new Date(sec * 1000);
-      timeMap[t.slice(0, k)] = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
-        + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+      // ⚠️ 记账里的「时间」一直是北京时间（+0800）。这里不能直接用 getFullYear/getHours：
+      //    它们取的是**运行环境**时区，CI runner 是 UTC，会把所有时间算少 8 小时
+      //    （2026-11-03 实测：本地全绿、CI 全红，正是这个原因）。
+      //    做法：时间戳先平移 +8h，再用 getUTC* 读取 —— 无论机器在哪个时区，
+      //    输出的都是 UTC+8 的墙上时间。
+      const d = new Date(sec * 1000 + 8 * 3600 * 1000);
+      timeMap[t.slice(0, k)] = d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate())
+        + ' ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes());
     }
   } catch (e) { /* 非 git 环境：下面会因为 map 为空而走 missing 分支 */ }
 
