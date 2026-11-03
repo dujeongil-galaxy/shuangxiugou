@@ -4,6 +4,16 @@
 
 ---
 
+### 修评级切换闪烁 + D 级空态链接自动展开跳转（2026-11-03 09:48 · 提交 `2b9db05`）
+
+- 你 11-03 截图反馈两件事：①「评级在 U/D/C 之间来回切换时，按钮状态闪烁、卡片显示有零点几秒的卡顿」；②「D 级空态提示里的『全站证据链公示』链接，点击后应该自动展开证据板并跳转到 BOSS直聘 条目」。
+- **① 评级切换闪烁根因**：u-grade-patch.js 的 MutationObserver 防抖 800ms，用户快速点击评级按钮时，MO 在过滤器应用后 800ms 又触发一遍 scan()，导致按钮状态和卡片显示级联重绘。修法：防抖降至 300ms；新增 `gfApplyingFilter` 标志位，过滤器应用期间 MO 直接跳过；捕获阶段监听 React 按钮点击，同步清除 `gfActive`，避免 React 重渲染时我们的过滤状态还挂着。
+- **② D 级空态链接行为**：原链接 `href="#evidence-board"` 只跳转到证据板标题，但证据板默认折叠，用户看不到 BOSS直聘 条目。修法：evidence-collapse.js 暴露 `window.__sxgOpenEvidenceBoard(targetId)` 全局函数，接收目标 id（如 `'ev-bosszhipin'`），先展开证据板（如果折叠），再滚动到目标条目（如果是 `<details>` 元素，自动设置 `open` 属性）；u-grade-patch.js 的链接改为 `javascript:void(0)` + `onclick="window.__sxgOpenEvidenceBoard('ev-bosszhipin')"`，点击后自动展开并跳转。
+- 版本号同步：u-grade-patch.js v6→v7、evidence-collapse.js v1→v2；verify.mjs §21k 断言同步到 v7。
+- verify 1379 项全绿（带密码）；本地肉眼验收：U↔D↔C 快速切换无闪烁；D 级空态链接点击后证据板自动展开、滚动到 BOSS直聘 条目。
+
+---
+
 ### 修 320px 窄屏吸底条竖排爆炸顶飞悬浮按钮群 + 申诉弹窗真浏览器关不掉 + 成功案例 #03（微信提现手续费案）（2026-11-03 16:02 · 提交 `dcf9729`）
 
 - 你 11-03 截图反馈两件事：①「320px 窄屏下，右下角提醒按钮在公告栏展开态会压住正文末尾两三行（折叠态正常）」；②提现手续费视频拍板记入成功案例（并补事实：最低提现门槛 0.1 元→现已下调至 0.01 元）。诊断时顺带坐实第三处真 bug：申诉弹窗在真浏览器里关不掉。
