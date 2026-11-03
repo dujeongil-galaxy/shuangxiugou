@@ -69,6 +69,33 @@
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
     });
 
+    // 暴露全局函数：外部链接可调用展开并跳转到指定条目
+    // 用法：window.__sxgOpenEvidenceBoard('ev-bosszhipin')
+    window.__sxgOpenEvidenceBoard = function (targetId) {
+      if (collapsed) {
+        collapsed = false;
+        apply();
+      }
+      if (targetId) {
+        var target = document.getElementById(targetId);
+        if (target) {
+          // 如果是 <details> 元素，展开它
+          if (target.tagName === 'DETAILS') {
+            target.setAttribute('open', '');
+          }
+          // 延迟一帧确保 DOM 已渲染再滚动
+          requestAnimationFrame(function () {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        }
+      } else {
+        // 没有目标则滚动到证据板标题
+        requestAnimationFrame(function () {
+          board.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      }
+    };
+
     board.dataset.evCollapsed = '1';
     apply();
   }

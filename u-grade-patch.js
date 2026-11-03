@@ -259,6 +259,8 @@
   var GF_LETTERS = ['D', 'U'];
   var gfActive = null;                // null | 'D' | 'U'
   var gfBar = null;                   // 评级过滤按钮容器
+  var gfApplyingFilter = false;          // 标记是否正在应用过滤器（防止 MO 重复触发）
+  var ROW_RATING_TEXTS = ['全部评级', 'S 级', 'A 级', 'B 级', 'C 级', 'D 级', 'U 级'];
 
   function gfCardTier(card) {
     if ((card.textContent || '').indexOf('虚拟对比黑榜') !== -1) return 'V';
@@ -337,14 +339,46 @@
       var letter = btn.getAttribute('data-sxg-gf-letter');
       // 再点同一个 = 取消（回到全部评级；React state 未动过，列表仍是全量）
       gfActive = (gfActive === letter) ? null : letter;
-      gfSyncAndApply();
+      gfApplyingFilter = true;
+      try {
+        gfSyncAndApply();
+      } finally {
+        // 延迟重置标志，让 MutationObserver 的防抖窗口跳过这次 DOM 变化
+        setTimeout(function() { gfApplyingFilter = false; }, 350);
+      }
     } else if (gfActive) {
       gfActive = null;                 // 点了 React 按钮 → 交还 React
-      gfClear();
-      gfSyncStyles();
-      gfEmptyNote();                   // 空态提示随过滤态一起收起
+      gfApplyingFilter = true;
+      try {
+        gfClear();
+        gfSyncStyles();
+        gfEmptyNote();                   // 空态提示随过滤态一起收起
+      } finally {
+        setTimeout(function() { gfApplyingFilter = false; }, 350);
+      }
     }
   }
+
+  // 2026-11-03 修复闪烁：在捕获阶段监听 React 按钮点击，同步清除我们的过滤状态
+  // 这样在 React 重渲染之前，gfActive 已经是 null，避免 MO 触发时的级联重绘
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t || t.tagName !== 'BUTTON') return;
+    var text = (t.textContent || '').trim();
+    if (ROW_RATING_TEXTS.indexOf(text) === -1) return;
+    // 用户点击了 React 的评级按钮（全部/S/A/B/C/D/U），同步清除我们的状态
+    if (gfActive) {
+      gfActive = null;
+      gfClear();
+      if (gfBar) {
+        var mine = gfBar.querySelectorAll('[' + GF_BTN_ATTR + ']');
+        for (var i = 0; i < mine.length; i++) {
+          gfSetBtnState(mine[i], false);
+        }
+      }
+      gfEmptyNote();
+    }
+  }, true);
 
   function gfSyncStyles() {
     if (!gfBar) return;
@@ -456,8 +490,9 @@
       + 'background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-size:13px;line-height:1.7');
     p.innerHTML = '本站 <strong>D 级 1 家</strong>——BOSS直聘（平台类目例外，站长人工介入定级）。'
       + '它是招聘平台、没有企业用工卡，所以卡片区筛不出结果；'
-      + '请到下方 <a href="#evidence-board" style="color:#991b1b;font-weight:700">「全站证据链公示」</a>'
-      + ' 查看它的评级理由。';
+      + '请到下方 <a href="javascript:void(0)" onclick="window.__sxgOpenEvidenceBoard(\'ev-bosszhipin\')" '
+      + 'style="color:#991b1b;font-weight:700;text-decoration:underline;cursor:pointer">'
+      + '「全站证据链公示」</a> 查看它的评级理由（点击自动展开并跳转）。';
     first.parentNode.insertBefore(p, first);
   }
 
@@ -489,12 +524,15 @@
   window.addEventListener('load', scan);
 
   // React 重渲染会重建卡片 DOM → 监听兜底重注入。
-  // 防抖 800ms + 名字预筛，避免在 174 张卡的页面上把主线程拖死（初版教训）。
+  // 防抖 300ms（2026-11-03 优化：从 800ms 降至 300ms，减少快速切换时的视觉延迟）+ 名字预筛，避免在 174 张卡的页面上把主线程拖死（初版教训）。
+  // 2026-11-03 再加 gfApplyingFilter 守卫：用户点击评级按钮时我们自己改 DOM（隐藏/显示卡片），
+  // 这会触发 MO → 300ms 后又跑一遍 scan() → 按钮状态闪烁/级联重绘。加标志位跳过这个窗口。
   var timer = null;
   try {
     new MutationObserver(function () {
       if (timer) return;
-      timer = setTimeout(function () { timer = null; scan(); }, 800);
+      if (gfApplyingFilter) return;   // 我们自己触发的 DOM 变化，不重扫
+      timer = setTimeout(function () { timer = null; scan(); }, 300);
     }).observe(document.body, { childList: true, subtree: true });
   } catch (e) { /* 无 MO 时退化为上面的定时扫描 */ }
 })();
