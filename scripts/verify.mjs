@@ -573,8 +573,8 @@ check(virtual2e === 1, '虚拟对比卡恰 1 张（口径排除依据，id 变�
 // 这个数不是「随便写死」：它同时被 §2e 的四格统计、brand/ 页数、公告栏数字三处引用，
 // 任何一处生成器漏跑都会在这里对不上，所以必须保留为硬断言。
 const IMPORTED_CARD_COUNT = 104;
-check(customPairs2e.length === 16 + IMPORTED_CARD_COUNT,
-  `能解析全部自定义卡（${16 + IMPORTED_CARD_COUNT} 张 = 16 张手工卡 + ${IMPORTED_CARD_COUNT} 张榜单导入卡）`,
+check(customPairs2e.length === 17 + IMPORTED_CARD_COUNT,
+  `能解析全部自定义卡（${17 + IMPORTED_CARD_COUNT} 张 = 17 张手工卡含联通 + ${IMPORTED_CARD_COUNT} 张榜单导入卡）`,
   '实际 ' + customPairs2e.length);
 check(headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') === statTotal,
   '顶部「收录品牌」= 实名企业卡总数', '页面 ' + headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') + ' / 计算 ' + statTotal + '（改 bundle 顶部统计常数）');
@@ -584,8 +584,12 @@ check(headerStat('大小周观察', 'text-amber-700/70 text-\\[11px\\]') === sta
   '顶部「大小周观察」= B 级卡数', '页面 ' + headerStat('大小周观察', 'text-amber-700/70 text-\\[11px\\]') + ' / 计算 ' + statZhou);
 check(headerStat('避雷预警', 'text-rose-700/70 text-\\[11px\\]') === statLei,
   '顶部「避雷预警」= C 级卡数', '页面 ' + headerStat('避雷预警', 'text-rose-700/70 text-\\[11px\\]') + ' / 计算 ' + statLei);
-check(new RegExp('共\\s*' + statTotal + '\\s*家').test(html),
-  '页脚清单「共 N 家」与收录总数一致', '应含「共 ' + statTotal + ' 家」');
+// 2026-11-03 加强：曾发现 noscript 清单标题停在「共 67 家」（上游旧账，断言只咬第一处）——
+// 改为全文所有「共 N 家」都必须等于 statTotal，防止再出现漏改的第二处。
+const allTotals2e = [...html.matchAll(new RegExp('共\\s*(\\d+)\\s*家', 'g'))].map((m) => Number(m[1]));
+check(allTotals2e.length >= 2 && allTotals2e.every((n) => n === statTotal),
+  '页面全部「共 N 家」与收录总数一致（出现 ' + allTotals2e.length + ' 处）',
+  '不一致处：' + JSON.stringify(allTotals2e));
 const brandPages2e = readdirSync(join(ROOT, 'brand')).filter((f) => f.endsWith('.html')).length;
 check(brandPages2e === statTotal, 'brand/ 详情页数量 = 收录总数（虚拟对比卡无详情页）', '页面 ' + brandPages2e + ' / 计算 ' + statTotal);
 // 「企业真假双休档案」tab 上的数字角标也是手写常数（2026-10-17 发现它停在 36，
@@ -604,24 +608,26 @@ const EXPECT_GRADE_2E = {
   'abc-card': 'C级', 'taobao-shanguang-card': 'C级',
   // 2026-11-03 站长拍板：BOSS直聘 C→D（平台类目例外），奇瑞 D→C —— 两张卡都不许再动。
   'bosszhipin-card': 'D级',
+  // 2026-11-03 新增：中国联通 C 级（招聘信息与实际岗位不符，站长人工定级，见 brand/unicom.html）。
+  'unicom-card': 'C级',
 };
 const locked2e = customPairs2e.filter((c) => EXPECT_GRADE_2E[c.id]);
 const relockedU2e = locked2e
   .filter((c) => c.grade !== EXPECT_GRADE_2E[c.id])
   .map((c) => c.id + '=' + c.grade + '（应 ' + EXPECT_GRADE_2E[c.id] + '）');
 check(relockedU2e.length === 0,
-  '4 家银行 A 级 + 农行/淘宝闪购 C 级 + BOSS直聘 D 级（改判锁定，不得回退）',
+  '4 家银行 A 级 + 农行/淘宝闪购/联通 C 级 + BOSS直聘 D 级（锁定，不得回退）',
   relockedU2e.length ? relockedU2e.join(', ') : '锁定生效');
-check(locked2e.length === 7,
-  '7 张锁定卡全部存在（删卡判红）', '实际 ' + locked2e.length);
+check(locked2e.length === 8,
+  '8 张锁定卡全部存在（删卡判红）', '实际 ' + locked2e.length);
 // 2026-11-02 起：A 级 / C 级计数含榜单导入卡（A 58 张、C 29 张）。
 // 断言仍然写成「基准 + 导入数」的算式，导入批次调整时改 IMPORTED_CARD_COUNT 一处即可，
 // 但两个基准值（4 / 11）必须保持 —— 那是手工卡的既有口径，动了就等于偷偷改档。
 check(byGrade2e('A级') === 4 + 58,
   '自定义卡 A 级共 62 张（工/建/中/成都银行 4 张 + 榜单导入 58 张）',
   '实际 ' + byGrade2e('A级'));
-check(byGrade2e('C级') === 10 + 29,
-  '自定义卡 C 级共 39 张（手工 10 张 + 榜单导入 29 张；BOSS直聘 2026-11-03 转入 D 级）',
+check(byGrade2e('C级') === 11 + 29,
+  '自定义卡 C 级共 40 张（手工 11 张含联通 + 榜单导入 29 张；BOSS直聘 2026-11-03 转入 D 级）',
   '实际 ' + byGrade2e('C级'));
 // D 级自定义卡：2026-11-03 起只有 BOSS直聘 一张（平台类目例外）。多一张或少一张都要判红 ——
 // 这一档是「人的结论」，被悄悄批量加卡就等于把站长的判断稀释成普通档位。
@@ -1328,8 +1334,8 @@ if (cfgBlock) {
   }
 }
 const CUSTOM_COUNT = customCards.length;
-check(CUSTOM_COUNT === 16 + 104,
-  `自定义卡 ${CUSTOM_COUNT} 张（16 张手工 + 104 张榜单导入，2026-11-02）`);
+check(CUSTOM_COUNT === 17 + 104,
+  `自定义卡 ${CUSTOM_COUNT} 张（17 张手工含联通 + 104 张榜单导入；2026-11-02 批量导入，2026-11-03 增联通）`);
 
 // null 规则：双休率 / 下班时间不得为占位 0，也不得是字符串 '未知'
 customCards.forEach((c) => {

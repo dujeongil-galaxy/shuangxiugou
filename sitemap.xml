@@ -846,6 +846,9 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+    <url>
+        <loc>https://dujeongil-galaxy.github.io/shuangxiugou/brand/unicom.html</loc>
+    </url>
   <url>
     <loc>https://dujeongil-galaxy.github.io/shuangxiugou/brand/tencent.html</loc>
     <lastmod>2026-11-02</lastmod>

@@ -150,7 +150,7 @@
            display:none 的那一半不进无障碍树，名字会随状态自己变；
            写死 aria-label 反而一直是「展开」，收起后就读错了。 -->
       <input type="checkbox" id="notice-more" class="notice-more-cb">
-      <span id="evidence-notice">本站全部数据均附公开证据链：172 家企业 292 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 6 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice -->
+      <span id="evidence-notice">本站全部数据均附公开证据链：173 家企业 294 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 6 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice -->
       <label for="notice-more" class="notice-more-lbl"><span class="t-more">展开</span><span class="t-less">收起</span></label>
     </div>
     <!-- 版本号唯一真相源（2026-11-02 第五轮，站长：「版本号不要写这里了，加入三横菜单吧」）
@@ -178,7 +178,7 @@
      本区块由 scripts/gen-evidence-board.py 自动生成，请勿手改。
      改证据请改 brand/*.html 详情页，然后重跑：python scripts/gen-evidence-board.py
      单一真相源在 brand/ 页；scripts/verify.mjs 有防漂移断言逐条比对。
-     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：172 家企业 / 292 条证据 / 249 条带原始链接 / 6 家证据薄弱。 -->
+     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：173 家企业 / 294 条证据 / 249 条带原始链接 / 6 家证据薄弱。 -->
 <style>#evidence-board{max-width:960px;margin:0 auto;padding:28px 16px 40px;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.75;color:#1f2937;font-size:14px}
 #evidence-board h2{font-size:20px;font-weight:700;margin:0 0 6px;color:#0f172a;line-height:1.4}
 #evidence-board a{color:#0f766e}
@@ -227,33 +227,33 @@
 #evidence-board .ev-more{margin-top:10px;font-size:12px}
 #evidence-board .ev-foot{margin:16px 0 0;font-size:12.5px;color:#64748b}
 @media(max-width:640px){#evidence-board{padding:20px 12px 32px}#evidence-board .ev-stat{flex:1 1 44%}#evidence-board .ct{margin-left:0;width:100%}}</style>
-<section id="evidence-board" data-ev-brands="172" data-ev-total="292" data-ev-linked="249" data-ev-weak="6">
-  <h2>全站证据链公示（172 家企业 · 292 条证据）</h2>
+<section id="evidence-board" data-ev-brands="173" data-ev-total="294" data-ev-linked="249" data-ev-weak="6">
+  <h2>全站证据链公示（173 家企业 · 294 条证据）</h2>
   <p class="ev-lead">站长要求「证据链必须首页完整公示，口说无凭」——以下是站内每一条评级的取证清单，含证据类型、取证日期、文书编号与可点击的原始来源链接。数据由各品牌详情页（<code>brand/*.html</code>）自动汇总生成，两处不一致会被 <code>scripts/verify.mjs</code> 判红。</p>
   <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">其中 <strong>101 家</strong>目前仅有一条来源（第三方榜单聚合，2026-07-11，二手、未抓原文），属<strong>榜单口径换算</strong>而非实测：这些企业的真实双休率未核实，详情页已逐家公示「证据链」——来源、日期、原话、以及尚缺哪几类证据。补齐任一类证据后即重新核实改档。</p>
   <div class="ev-stats">
-    <div class="ev-stat"><b style="color:#0f766e">292</b><i>证据总条数</i></div>
+    <div class="ev-stat"><b style="color:#0f766e">294</b><i>证据总条数</i></div>
     <div class="ev-stat"><b style="color:#1d4ed8">249</b><i>带原始链接</i></div>
-    <div class="ev-stat"><b style="color:#b45309">43</b><i>无可点链接</i></div>
-    <div class="ev-stat"><b style="color:#475569">6/75/31/57/1</b><i>S/A/B/C/D 家数</i></div>
-    <div class="ev-stat"><b style="color:#450a0a">1 家</b><i>D 级（站长人工介入）</i></div>
+    <div class="ev-stat"><b style="color:#b45309">45</b><i>无可点链接</i></div>
+    <div class="ev-stat"><b style="color:#475569">6/75/31/58/1</b><i>S/A/B/C/D 家数</i></div>
+    <div class="ev-stat"><b style="color:#450a0a">1 家</b><i>D 级（站长强制降级）</i></div>
     <div class="ev-stat"><b style="color:#64748b">2 家</b><i>U 级（证据不足）</i></div>
     <div class="ev-stat"><b style="color:#be123c">6 家</b><i>证据薄弱企业</i></div>
   </div>
-  <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">D 级（站长人工介入）<strong>计入首页避雷预警格</strong>：判据是管理层主动设计绕开劳动法——① 指令性规避法律风险安排加班（高管邮件主动要求「想办法规避法律风险」）；② 公开倡导、以加班为荣；③ 劝导／诱导员工放弃法定社保等义务。<strong>该档位不由 AI 判定</strong>，只记录站长的人工介入结论，详情页附「人工干预记录」。另有一类<strong>平台类目例外</strong>：不属于用工单位、双休口径不适用的主体（如招聘平台），由站长直接定级、理由单列，不硬套上述三类——当前 D 级 1 家即 BOSS直聘。②③ 自 2026-11-03 起施行、不追溯已有结论。</p>
+  <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">D 级（站长强制降级）<strong>计入首页避雷预警格</strong>：判据是管理层指令性规避法律风险加班（高管邮件主动要求「想办法规避法律风险」）。<strong>该档位不由 AI 判定</strong>，只记录站长的人工介入结论，详情页附「人工干预记录」。</p>
   <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">U 级（证据不足）<strong>不计入 S/A/B/C 四档</strong>：这几家已尽合理检索仍拿不到可采信的月休天数或双休率，本站不评级、不估算，详情页各附「证据缺失说明」。</p>
   <div class="ev-legend">
     <div>证据强度分级（强 → 弱）</div>
     <div class="ev-pills">
       <span class="ev-pill" style="border-color:#7c3aed;color:#7c3aed">司法裁判 <b>7</b></span>
       <span class="ev-pill" style="border-color:#be123c;color:#be123c">官方处罚/通报 <b>5</b></span>
-      <span class="ev-pill" style="border-color:#0f766e;color:#0f766e">官方公示/备案 <b>21</b></span>
+      <span class="ev-pill" style="border-color:#0f766e;color:#0f766e">官方公示/备案 <b>22</b></span>
       <span class="ev-pill" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述 <b>9</b></span>
       <span class="ev-pill" style="border-color:#0369a1;color:#0369a1">ESG/审计报告 <b>9</b></span>
       <span class="ev-pill" style="border-color:#b45309;color:#b45309">媒体报道/调查 <b>36</b></span>
       <span class="ev-pill" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径 <b>17</b></span>
       <span class="ev-pill" style="border-color:#c2410c;color:#c2410c">站长一手实测 <b>3</b></span>
-      <span class="ev-pill" style="border-color:#57534e;color:#57534e">员工/社群反馈 <b>57</b></span>
+      <span class="ev-pill" style="border-color:#57534e;color:#57534e">员工/社群反馈 <b>58</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">旁证/二手汇总 <b>123</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（third_party） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体报道（含员工爆料，二手）） <b>1</b></span>
@@ -294,7 +294,7 @@
     </ul>
   </div>
   <div class="ev-list">
-    <div class="ev-listhead">按档位排列 · 点击企业名展开该企业的全部证据条目（共 172 家）</div>
+    <div class="ev-listhead">按档位排列 · 点击企业名展开该企业的全部证据条目（共 173 家）</div>
     <details id="ev-apple" data-b="apple" data-g="S" data-n="1" data-l="0">
       <summary><span class="g" style="background:#7c3aed">S</span><span class="bn">Apple (苹果中国)</span><span class="co">苹果电脑贸易（上海）有限公司</span><span class="ct">1 条证据</span></summary>
       <div class="ev-body">
@@ -2553,38 +2553,6 @@
         <div class="ev-more"><a href="./brand/gwm.html">查看 长城汽车 (GWM) 完整详情页 →</a></div>
       </div>
     </details>
-    <details id="ev-bosszhipin" data-b="bosszhipin" data-g="D" data-n="4" data-l="1">
-      <summary><span class="g" style="background:#450a0a">D</span><span class="bn">BOSS直聘</span><span class="co">北京华品博睿网络技术有限公司</span><span class="ct">4 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">运营主体：北京华品博睿网络技术有限公司</div>
-            <div class="m"><span class="k" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述</span> <span class="raw">原标注：company_site</span> <span class="d">平台官网公示</span></div>
-            <div class="s">BOSS直聘（zhipin.com）官网登录页公示的运营主体，即本卡定级责任主体；企业服务热线 400 065 5799。</div>
-            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
-          </li>
-          <li>
-            <div class="t">站长一手亲历：2017 年成都求职被电销轰炸、HR 言语打压、回嘴后封号（换号因设备关联秒封）</div>
-            <div class="m"><span class="k" style="border-color:#c2410c;color:#c2410c">站长一手实测</span> <span class="raw">原标注：first_hand</span> <span class="d">2017</span></div>
-            <div class="s">站长本人经历，见上方「站长备注」全文。该经历用于说明平台规则的双标性，不用于推导双休口径。</div>
-            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
-          </li>
-          <li>
-            <div class="t">平台虚假招聘 / 诈骗岗位投诉密集（站长长期观察 + 平台类投诉公开讨论）</div>
-            <div class="m"><span class="k" style="border-color:#c2410c;color:#c2410c">站长一手实测</span> <span class="raw">原标注：first_hand</span> <span class="d">长期观察</span></div>
-            <div class="s">「高薪低门槛」「培训贷」「刷单」「传销式招聘」等套路在平台反复出现。本条定性为站长主观判断，附类比为「PDD 假货多」，。</div>
-            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
-          </li>
-          <li>
-            <div class="t">相关视频：BOSS直聘等招聘网站的骗局套路大全（抖音）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（third_party）</span> <span class="raw">原标注：third_party</span> <span class="d">2026-10-31</span></div>
-            <div class="s">—— 该视频罗列的招聘平台套路，站长当年基本都碰到过；首页视频卡可点击播放（站内播放受平台限制时，可跳转抖音观看）。</div>
-            <div class="u"><a href="https://v.douyin.com/uEMZRkt73Jg/" rel="nofollow noopener" target="_blank">v.douyin.com/uEMZRkt73Jg/</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/bosszhipin.html">查看 BOSS直聘 完整详情页 →</a></div>
-      </div>
-    </details>
     <details id="ev-mixue" data-b="mixue" data-g="C" data-n="4" data-l="3">
       <summary><span class="g" style="background:#be123c">C</span><span class="bn">蜜雪冰城 (MIXUE)</span><span class="co">蜜雪冰城股份有限公司</span><span class="ct">4 条证据</span></summary>
       <div class="ev-body">
@@ -2641,6 +2609,32 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/jml.html">查看 今麦郎 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-chery" data-b="chery" data-g="C" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">奇瑞汽车 (CHERY)</span><span class="co">奇瑞汽车股份有限公司</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">财联社：奇瑞高管要求规避法律风险想办法加班，称“周六是奋斗者正常工作日”</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（多源交叉）</span> <span class="d">2023-03-08</span></div>
+            <div class="s">「高新华在邮件内容中写道：“以奋斗者为本，周六是奋斗者的正常工作日。对于行政领导们，必须是正常工作日，请想办法（规避法律风险）；学习华为精神，让奋斗者努力，也不能让奋斗者吃亏！从机…</div>
+            <div class="u"><a href="https://m.cls.cn/detail/1287914" rel="nofollow noopener" target="_blank">m.cls.cn/detail/1287914</a></div>
+          </li>
+          <li>
+            <div class="t">新浪财经（转界面新闻）：奇瑞员工曝强制加班，月工作300小时挣4800元</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（快照）</span> <span class="d">2024-07-02</span></div>
+            <div class="s">「一位认证为“奇瑞员工”的网友发帖称，奇瑞汽车内部存在强制加班行为，每周加班时长需大于20小时并且没有加班费，仅补贴10元餐补。」（搜索快照，未抓原文）。</div>
+            <div class="u"><a href="https://finance.sina.cn/2024-07-02/detail-incatkzi0499403.d.html" rel="nofollow noopener" target="_blank">finance.sina.cn/2024-07-02/detail-incatkzi0499403.d.html</a></div>
+          </li>
+          <li>
+            <div class="t">中国青年报·中青汽车：奇瑞高管回应“想办法加班”</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：企业回应（快照）</span> <span class="d">2023-03-09</span></div>
+            <div class="s">「高新华在3月8日做出回应称：邮件要求对象不是普通员工，是激发愿意努力工作的员工，鼓励他们奋斗，同时不让他们吃亏，本意不是压榨员工。」（搜索快照；回应承认邮件存在，属口径对照）。</div>
+            <div class="u"><a href="http://auto.cyol.com/gb/articles/2023-03/09/content_Q4POJYtRKX.html" rel="nofollow noopener" target="_blank">auto.cyol.com/gb/articles/2023-03/09/content_Q4POJYtRKX.html</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/chery.html">查看 奇瑞汽车 (CHERY) 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-haidilao" data-b="haidilao" data-g="C" data-n="3" data-l="3">
@@ -2765,6 +2759,26 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/byd.html">查看 BYD (比亚迪) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-unicom" data-b="unicom" data-g="C" data-n="2" data-l="0">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">中国联通</span><span class="co">中国联合网络通信集团有限公司</span><span class="ct">2 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">求职者反映：联通认证账号发布的「储备干部」岗位，到面实为营销岗</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">2026-11-02</span></div>
+            <div class="s">招聘平台面试邀约信息显示：主体「中国联通」的认证招聘账号（职务「驻地网主管」）发布「储备干部[可实习+晋升+五险一金]·5-7K」岗位，面试地点为成都成华区中国联通（成华新鸿路自有…</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">运营主体：中国联合网络通信集团有限公司</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：public_record</span> <span class="d">企业工商信息</span></div>
+            <div class="s">中国联通（China Unicom）为国内三大电信运营商之一，即本卡定级责任主体。本页所涉招聘信息发布账号的主体显示为中国联通，面试地点位于其自有营业厅旁。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/unicom.html">查看 中国联通 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-xingyu" data-b="xingyu" data-g="C" data-n="2" data-l="2">
@@ -3321,30 +3335,36 @@
         <div class="ev-more"><a href="./brand/chabaidao.html">查看 茶百道 完整详情页 →</a></div>
       </div>
     </details>
-    <details id="ev-chery" data-b="chery" data-g="C" data-n="3" data-l="3">
-      <summary><span class="g" style="background:#be123c">C</span><span class="bn">奇瑞汽车 (CHERY)</span><span class="co">奇瑞汽车股份有限公司</span><span class="ct">3 条证据</span></summary>
+    <details id="ev-bosszhipin" data-b="bosszhipin" data-g="D" data-n="4" data-l="1">
+      <summary><span class="g" style="background:#450a0a">D</span><span class="bn">BOSS直聘</span><span class="co">北京华品博睿网络技术有限公司</span><span class="ct">4 条证据</span></summary>
       <div class="ev-body">
         <ol class="ev-items">
           <li>
-            <div class="t">财联社：奇瑞高管要求规避法律风险想办法加班，称“周六是奋斗者正常工作日”</div>
-            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（多源交叉）</span> <span class="d">2023-03-08</span></div>
-            <div class="s">「高新华在邮件内容中写道：“以奋斗者为本，周六是奋斗者的正常工作日。对于行政领导们，必须是正常工作日，请想办法（规避法律风险）；学习华为精神，让奋斗者努力，也不能让奋斗者吃亏！从机…</div>
-            <div class="u"><a href="https://m.cls.cn/detail/1287914" rel="nofollow noopener" target="_blank">m.cls.cn/detail/1287914</a></div>
+            <div class="t">运营主体：北京华品博睿网络技术有限公司</div>
+            <div class="m"><span class="k" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述</span> <span class="raw">原标注：company_site</span> <span class="d">平台官网公示</span></div>
+            <div class="s">BOSS直聘（zhipin.com）官网登录页公示的运营主体，即本卡定级责任主体；企业服务热线 400 065 5799。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
           </li>
           <li>
-            <div class="t">新浪财经（转界面新闻）：奇瑞员工曝强制加班，月工作300小时挣4800元</div>
-            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（快照）</span> <span class="d">2024-07-02</span></div>
-            <div class="s">「一位认证为“奇瑞员工”的网友发帖称，奇瑞汽车内部存在强制加班行为，每周加班时长需大于20小时并且没有加班费，仅补贴10元餐补。」（搜索快照，未抓原文）。</div>
-            <div class="u"><a href="https://finance.sina.cn/2024-07-02/detail-incatkzi0499403.d.html" rel="nofollow noopener" target="_blank">finance.sina.cn/2024-07-02/detail-incatkzi0499403.d.html</a></div>
+            <div class="t">站长一手亲历：2017 年成都求职被电销轰炸、HR 言语打压、回嘴后封号（换号因设备关联秒封）</div>
+            <div class="m"><span class="k" style="border-color:#c2410c;color:#c2410c">站长一手实测</span> <span class="raw">原标注：first_hand</span> <span class="d">2017</span></div>
+            <div class="s">站长本人经历，见上方「站长备注」全文。该经历用于说明平台规则的双标性，不用于推导双休口径。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
           </li>
           <li>
-            <div class="t">中国青年报·中青汽车：奇瑞高管回应“想办法加班”</div>
-            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：企业回应（快照）</span> <span class="d">2023-03-09</span></div>
-            <div class="s">「高新华在3月8日做出回应称：邮件要求对象不是普通员工，是激发愿意努力工作的员工，鼓励他们奋斗，同时不让他们吃亏，本意不是压榨员工。」（搜索快照；回应承认邮件存在，属口径对照）。</div>
-            <div class="u"><a href="http://auto.cyol.com/gb/articles/2023-03/09/content_Q4POJYtRKX.html" rel="nofollow noopener" target="_blank">auto.cyol.com/gb/articles/2023-03/09/content_Q4POJYtRKX.html</a></div>
+            <div class="t">平台虚假招聘 / 诈骗岗位投诉密集（站长长期观察 + 平台类投诉公开讨论）</div>
+            <div class="m"><span class="k" style="border-color:#c2410c;color:#c2410c">站长一手实测</span> <span class="raw">原标注：first_hand</span> <span class="d">长期观察</span></div>
+            <div class="s">「高薪低门槛」「培训贷」「刷单」「传销式招聘」等套路在平台反复出现。本条定性为站长主观判断，附类比为「PDD 假货多」，。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">相关视频：BOSS直聘等招聘网站的骗局套路大全（抖音）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（third_party）</span> <span class="raw">原标注：third_party</span> <span class="d">2026-10-31</span></div>
+            <div class="s">—— 该视频罗列的招聘平台套路，站长当年基本都碰到过；首页视频卡可点击播放（站内播放受平台限制时，可跳转抖音观看）。</div>
+            <div class="u"><a href="https://v.douyin.com/uEMZRkt73Jg/" rel="nofollow noopener" target="_blank">v.douyin.com/uEMZRkt73Jg/</a></div>
           </li>
         </ol>
-        <div class="ev-more"><a href="./brand/chery.html">查看 奇瑞汽车 (CHERY) 完整详情页 →</a></div>
+        <div class="ev-more"><a href="./brand/bosszhipin.html">查看 BOSS直聘 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-samsung" data-b="samsung" data-g="U" data-n="10" data-l="10">
@@ -3484,7 +3504,7 @@
           <strong>U 级（证据不足）</strong>：已尽合理检索仍无可采信证据时使用，卡面标「U级 · 证据不足」。它不评级、不猜测，<strong>不以「查不到」代替「没有」</strong>；单独列示、不并入上方四格统计，且必须附证据缺失说明（该企业查过哪些渠道、缺哪一类证据）。企业公开披露休息制度后即可重新核实改档。
         </p>
 
-        <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">已收录企业双休评级与平均下班时间（共 67 家）</h2>
+        <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">已收录企业双休评级与平均下班时间（共 173 家）</h2>
         <p style="margin:0 0 8px">
           下表按评级与真实双休率列出。判定口径是「每周能完整休满两天的员工占比」；
           平均下班时间取员工实际离岗点的众数，连锁门店取晚班打烊／交班点，不以门店营业时间代替。
@@ -3529,6 +3549,7 @@
           <li><strong><a href="./brand/chery.html">奇瑞汽车 (CHERY)</a></strong>：C 级（避雷预警） · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/chery.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/volvo.html">Volvo (沃尔沃汽车)</a></strong>：S 级 · 真实双休率 92% · 平均下班 18:05</li> <a href="./brand/volvo.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/huawei.html">华为终端 (Huawei)</a></strong>：C 级 · 真实双休率 35% · 平均下班 20:30</li> <a href="./brand/huawei.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/unicom.html">中国联通</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/unicom.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/apple.html">Apple (苹果中国)</a></strong>：S 级 · 真实双休率 92% · 平均下班 18:00</li> <a href="./brand/apple.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/sony.html">Sony (索尼中国)</a></strong>：A 级 · 真实双休率 90% · 平均下班 18:00</li> <a href="./brand/sony.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/dji.html">大疆 DJI</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 21:00</li> <a href="./brand/dji.html" style="color:#0F766E">详细→</a>
@@ -3619,7 +3640,7 @@
           按证据强度分项标注。本站数据仅供个人择业与消费偏好参考，不构成商业背书或法律定性。
         </p>
 
-                <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">全部品牌详细页（172 个）</h2>
+                <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">全部品牌详细页（173 个）</h2>
         <p style="margin:0 0 8px">每个品牌都有独立页面，含完整评级说明、判定依据与证据来源链接：</p>
         <ul style="margin:0 0 16px;padding-left:22px">
           <li><a href="./brand/patagonia.html">Patagonia (巴塔哥尼亚)</a> —— S 级 · 双休率 98% · 平均下班 17:45</li>
@@ -3689,6 +3710,7 @@
           <li><a href="./brand/chengdubank.html">成都银行 (BOCD)</a> —— A 级 · 双休率 未核实 · 平均下班 —</li>
           <li><a href="./brand/meiyijia.html">美宜佳</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
           <li><a href="./brand/molina.html">茉莉奶白</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
+          <li><a href="./brand/unicom.html">中国联通</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
           <li><a href="./brand/bosszhipin.html">BOSS直聘</a> —— D 级（站长人工介入 · 平台类目例外） · 双休率 不适用（平台类目） · 平均下班 —</li>
         <!-- IMPORTED-NOSCRIPT-START -->
           <li><strong><a href="./brand/alibaba.html">阿里巴巴</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/alibaba.html" style="color:#0F766E">详细→</a>
@@ -4303,6 +4325,31 @@
           insertAfter: '美宜佳',
           keywords: ['茉莉奶白', 'Molina', 'mollytea', '奶茶', '新茶饮', '月休', 'mlnb', 'mlb'],
           category: '食品饮品',
+          grade: 'C级'
+        },
+        // ── 中国联通（2026-11-03 新增·站长人工定级）──
+        // 招聘信息与实际岗位不符（「储备干部」到面实为营销岗），详见 brand/unicom.html。
+        // 站长指令：不写爆料来源平台，只写事实与证据强度（单一来源已在详情页如实标注）。
+        {
+          id: 'unicom-card',
+          name: '中国联通',
+          company: '中国联合网络通信集团有限公司',
+          logo: './assets/unicom.svg',
+          logoAlt: '中国联通',
+          workPolicy: '未核实（本页证据不涉及工时）',
+          overtime: '未核实',
+          doubleRestRate: null,
+          offWorkTime: null,
+          voteCount: '0',
+          desc: '"通信运营商（中国联合网络通信集团有限公司，三大运营商之一）。2026-11-02 有求职者反映：联通认证招聘账号发布「储备干部[可实习+晋升+五险一金]·5-7K」岗位（面试地点为成都成华区联通自有营业厅旁招聘办），到面后实为营销岗，招聘信息与实际不符。站长 2026-11-03 人工定级 C 级（招聘诚信问题，不涉月休口径；单一来源，待更多佐证复核，详见详情页）"',
+          tags: ['中国联通', '联通', '通信运营商', '储备干部', '招聘避雷', 'unicom'],
+          likeCount: '0',
+          dislikeCount: '0',
+          recommendText: '⚠️ C 级 · 招聘信息与实际岗位不符（站长人工定级）',
+          recommendColor: 'red',
+          insertAfter: '华为终端',
+          keywords: ['中国联通', '联通', 'unicom', 'China Unicom', '中国联通招聘', '运营商', 'lantong'],
+          category: '通信运营商',
           grade: 'C级'
         },
         // ── 淘宝闪购（2026-10-31 新增·新口径首单）──
@@ -7734,7 +7781,7 @@
        所以这里只做「输入联想 + 回填」：给出候选，用户点了回填中文名，
        后续过滤仍走 React 原生搜索路径，渲染逻辑零改动。
        索引数据在 pinyin-index.js，必须先于本脚本加载。 -->
-  <script src="./pinyin-index.js?v=9"></script>
+  <script src="./pinyin-index.js?v=10"></script>
   <script src="./pinyin-search.js?v=5"></script>
 
   <!-- 彻底禁用数字搜索。2026-10-17 用户反馈：输入「1」「2」会搜出一堆无关卡片。
