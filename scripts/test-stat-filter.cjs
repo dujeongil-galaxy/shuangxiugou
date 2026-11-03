@@ -5,9 +5,10 @@
 //   U 级（待核实·不评级）已废除；2026-10-31 站长按月休口径复核改判：
 //   工/建/中/成都 4 家银行网点轮休制周休 2 天（≈月休 8.6 天）→ A 级；
 //   农行官方口径单休网点占 61%（主体月休 4-5 天）→ 维持 C 级。
-//   badge 卡共 173 张（53 内置 - 1 虚拟 + 120 自定义），可见 172 张（虚拟卡 class 隐藏）。
-//   红榜(S/A) 81 + 大小周(B) 31 + 避雷(C 57 + D 1) 58 = 170；另有 2 家 U 级（三星/宏碁，证据不足）
-//   D 级 = 站长人工降级（奇瑞，2026-11-02），计入避雷格；U 级不计入四格。
+//   badge 卡共 174 张（53 内置 - 1 虚拟 + 121 自定义），可见 173 张（虚拟卡 class 隐藏）。
+//   红榜(S/A) 81 + 大小周(B) 31 + 避雷(C 58 + D 1) 59 = 171；另有 2 家 U 级（三星/宏碁，证据不足）
+//   D 级 = 站长人工降级（现仅 BOSS直聘，2026-11-03 平台类目例外），计入避雷格；U 级不计入四格。
+//   2026-11-03：新增中国联通 C 级（招聘信息与实际不符，站长人工定级），C 57→58。
 //   不计入四格，由 u-grade-patch.js 在四格下方补一行说明；
 //   评级行无「待核实」按钮。
 //   2026-11-02：自定义卡 16 → 120（批量导入榜单 104 张），上列数字同步放大，算式仍闭合。
@@ -105,8 +106,8 @@ setTimeout(() => {
       .every((c) => (c.textContent || '').indexOf('待核实 · 无证据不作评级') === -1));
 
   const base = snapshot();
-  check('初始可见 172 张（badge 卡 173 张，虚拟卡被 class 隐藏）',
-    base.visible.length === 172 && base.total === 173,
+  check('初始可见 173 张（badge 卡 174 张，虚拟卡被 class 隐藏）',
+    base.visible.length === 173 && base.total === 174,
     { total: base.total, visible: base.visible.length });
 
   // ── U 级（2026-11-02 三星/宏碁证据不足改判）──
@@ -122,7 +123,7 @@ setTimeout(() => {
       return !!b && /^U级\s*·\s*证据不足$/.test((b.textContent || '').trim());
     }),
     { badges: uCards.map((c) => { const b = c.querySelector('[data-sxg-ubadge]'); return b ? b.textContent.trim() : '(无)'; }) });
-  check('★ 四格下方有 U 级出口说明（否则 172 与四格合计 170 对不上，看着像算错）',
+  check('★ 四格下方有 U 级出口说明（否则 173 与四格合计 171 对不上，看着像算错）',
     (() => {
       const n = window.document.getElementById('sxg-u-note');
       return !!n && /另有\s*2\s*家/.test(n.textContent || '');
@@ -155,28 +156,32 @@ setTimeout(() => {
   // —— 避雷预警：显示 C + D（D 是 C 的加重版，站长人工降级，同属避雷）——
   click(lei);
   s = snapshot();
-  check('点「避雷预警」→ C/D 级可见（58 张 = C 57 + D 1；81+31+58=170，另有 2 家 U 不在四格）',
-    s.visible.length === 58 && s.visible.every((c) => ['C', 'D'].includes(tierOf(c))),
+  check('点「避雷预警」→ C/D 级可见（59 张 = C 58 + D 1；81+31+59=171，另有 2 家 U 不在四格）',
+    s.visible.length === 59 && s.visible.every((c) => ['C', 'D'].includes(tierOf(c))),
     { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
   const dInLei = s.visible.filter((c) => tierOf(c) === 'D');
-  check('★ D 级卡（奇瑞，站长强制降级）在避雷档可见',
-    dInLei.length === 1 && (dInLei[0].textContent || '').includes('奇瑞'),
-    { found: dInLei.map((c) => (c.textContent || '').slice(0, 12)) });
-  const dBadge = dInLei[0] && dInLei[0].querySelector('[data-sxg-dbadge]');
-  check('★ D 级徽标文案 =「D级 · 站长强制降级」（bundle 无 D 分支，由补丁注入）',
-    !!dBadge && /^D级\s*·\s*站长强制降级$/.test((dBadge.textContent || '').trim()),
-    { badge: dBadge ? dBadge.textContent.trim() : '(无)' });
-  check('★ D 级卡内有「站长人工干预」备注条（站长明确要求备注）',
-    !!dInLei[0] && !!dInLei[0].querySelector('[data-sxg-dnote]')
-      && /站长人工干预/.test(dInLei[0].textContent || ''));
-  check('★ 四格下方有 D 级出口说明（避雷格含 D，得说清成分）',
-    (() => {
-      const n = window.document.getElementById('sxg-d-note');
-      return !!n && /D 级 · 站长强制降级/.test(n.textContent || '');
-    })());
+  // 2026-11-03 站长拍板：奇瑞 D→C；当前唯一 D 级 = BOSS直聘（自定义卡，平台类目例外）。
+  check('★ D 级卡（BOSS直聘，站长人工介入·平台类目例外）在避雷档可见',
+    dInLei.length === 1 && (dInLei[0].textContent || '').includes('BOSS直聘')
+      && (dInLei[0].id === 'bosszhipin-card'),
+    { found: dInLei.map((c) => (c.id || '') + ':' + (c.textContent || '').slice(0, 12)) });
+  // 自定义卡的 D 徽标由 getGradeTemplateCard 渲染（深红「D级 · 站长强制降级」），
+  // 不是 u-grade-patch 的 data-sxg-dbadge（那只管 bundle 卡，D_BRANDS 现为空）。
+  const dBadgeText = dInLei[0]
+    ? [...dInLei[0].querySelectorAll('span,div')].map((n) => (n.textContent || '').trim())
+        .find((t) => /^D级\s*·\s*站长(强制降级|人工介入)/.test(t))
+    : null;
+  check('★ D 级徽标文案 =「D级 · 站长强制降级」（bundle 无 D 分支，自定义卡渲染）',
+    !!dBadgeText, { badge: dBadgeText || '(无)' });
+  check('★ D 级卡内写明站长人工介入（站长明确要求留痕）',
+    !!dInLei[0] && /站长人工介入/.test(dInLei[0].textContent || ''));
+  // sxg-d-note 只在 bundle 内有 D 档卡时注入（D_BRANDS 现为空）；
+  // D 级成分说明现写在首页证据板口径区（「目前 1 家：BOSS直聘」），verify §2e 盯着。
+  check('★ D 出口说明：bundle 无 D 卡时不注入 sxg-d-note（不出现幽灵计数）',
+    !window.document.getElementById('sxg-d-note'));
   const bankInLei = s.visible.filter((c) =>
-    ['农业银行', '淘宝闪购'].some((k) => (c.textContent || '').includes(k)));
-  check('★ C 级锁定卡在避雷档可见（农行 + 淘宝闪购 = 2 张）', bankInLei.length === 2,
+    ['农业银行', '淘宝闪购', '中国联通'].some((k) => (c.textContent || '').includes(k)));
+  check('★ C 级锁定卡在避雷档可见（农行 + 淘宝闪购 + 联通 = 3 张）', bankInLei.length === 3,
     { found: bankInLei.length });
   const bankGoneFromLei = s.visible.filter((c) =>
     ['工商银行', '建设银行', '中国银行', '成都银行'].some((k) => (c.textContent || '').includes(k)));
@@ -193,7 +198,7 @@ setTimeout(() => {
   // —— 收录品牌：清除筛选 ——
   click(all);
   s = snapshot();
-  check('点「收录品牌」→ 清除筛选恢复可见 172 张（虚拟卡仍隐藏）', s.visible.length === 172,
+  check('点「收录品牌」→ 清除筛选恢复可见 173 张（虚拟卡仍隐藏）', s.visible.length === 173,
     { visible: s.visible.length, total: s.total });
   check('清除后无激活态', ['双休红榜', '大小周观察', '避雷预警'].every((lbl) => {
     const b = boxOf(lbl);
@@ -204,7 +209,7 @@ setTimeout(() => {
   click(red);
   click(red);
   s = snapshot();
-  check('再点一次「双休红榜」= 取消筛选（可见 172 张）', s.visible.length === 172,
+  check('再点一次「双休红榜」= 取消筛选（可见 173 张）', s.visible.length === 173,
     { visible: s.visible.length, total: s.total });
 
   // —— 评级过滤行（U 级废除后不再注入按钮）——
@@ -216,7 +221,7 @@ setTimeout(() => {
   click(red);
   s = snapshot();
   check('互斥前置：点红榜后隐藏 ' + (s.total - s.visible.length) + ' 张（含 class 隐藏的虚拟卡）',
-    s.hidden === 92, s.hidden); // total 173（含虚拟卡）- 可见 81 = 92
+    s.hidden === 93, s.hidden); // total 174（含虚拟卡）- 可见 81 = 93
   const allBtn = rowBtn('全部评级');
   if (allBtn) click(allBtn);
   s = snapshot();
@@ -227,16 +232,16 @@ setTimeout(() => {
   (async () => {
     const cCards = [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
       .filter((c) => tierOf(c) === 'C');
-    check('前置：DOM 中 C 级卡 57 张（2026-11-02 三星/宏碁改判 U −2、奇瑞人工降 D −1；含 BOSS直聘 + 批量导入 29 张）', cCards.length === 57, cCards.length);
+    check('前置：DOM 中 C 级卡 58 张（2026-11-03 增联通 C +1；含 BOSS直聘转 D 前口径、批量导入 29 张）', cCards.length === 58, cCards.length);
     const removed = cCards.map((c) => {
       const p = c.parentNode; const nx = c.nextSibling;
       p.removeChild(c); return { c, p, nx };
     });
     await new Promise((r) => setTimeout(r, 450));
     const lei2 = boxOf('避雷预警');
-    // 四格避雷数字是 bundle 手写常数（58），搜索卸载卡不改变盒子数字
-    check('搜索过滤（C 卡被卸载）后避雷盒仍是手写常数 58',
-      lei2 && lei2.children[0].textContent === '58', lei2 && lei2.children[0].textContent);
+    // 四格避雷数字是 bundle 手写常数（59），搜索卸载卡不改变盒子数字
+    check('搜索过滤（C 卡被卸载）后避雷盒仍是手写常数 59',
+      lei2 && lei2.children[0].textContent === '59', lei2 && lei2.children[0].textContent);
     // ⚠️ 恢复前先清掉「MO 自愈在卸载窗口期重建的同 id 新卡」：
     // removeChild 后 MutationObserver 会触发 insertAllCustomCards 重建自定义卡
     //（降级插列表末）。若直接把旧节点插回原位，DOM 里会出现同 id 两张卡。
@@ -255,8 +260,8 @@ setTimeout(() => {
     });
     await new Promise((r) => setTimeout(r, 450));
     const s2 = snapshot();
-    check('恢复全部卡片后可见回到 172 张（无卡丢失、无同 id 双卡）',
-      s2.visible.length === 172, { visible: s2.visible.length, total: s2.total });
+    check('恢复全部卡片后可见回到 173 张（无卡丢失、无同 id 双卡）',
+      s2.visible.length === 173, { visible: s2.visible.length, total: s2.total });
     const ids = [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
       .filter((c) => c.id).map((c) => c.id);
     check('自定义卡 id 无重复（自愈重建未造成双卡）',
