@@ -14,12 +14,19 @@
  *        （规则由 verify.mjs §2d 机器强制）。视觉用**中性灰**——既不是绿（良）也不是红（避雷），
  *        表达「本站暂无法评级，非褒非贬」。
  *
- *   D 级 = 站长人工干预级。判据固定为一条：**管理层指令性规避法律风险加班**——
- *        企业高管/公司文件主动要求「想办法规避法律风险」以安排加班（奇瑞 2023-03 内部邮件
- *        「周六是奋斗者的正常工作日…请想办法（规避法律风险）」为标本）。
- *        它比 C 更重：C 是被动超时/月休不足/拒不披露，D 是**明知违法而设计规避**。
- *        **AI 不得自行判 D**：D 只由站长人工介入判定，卡面必须写明「站长强制降级」，
- *        这是全站唯一一档「人的结论高于数据推演」的记录，所以视觉用**近黑深红** + 卡内备注条。
+ *   D 级 = 站长人工干预级。判据（2026-11-03 扩为三类，占一条即够格）：
+ *        ① 指令性规避法律风险安排加班（标本：奇瑞 2023-03 内部邮件「请想办法（规避法律风险）」）
+ *        ② 公开倡导、以加班为荣  ③ 劝导／诱导员工放弃法定社保等义务。
+ *        **AI 不得自行判 D**：D 只由站长人工介入判定，详情页必须留「人工干预记录」，
+ *        这是全站唯一一档「人的结论高于数据推演」的记录，视觉用**近黑深红** + 卡内备注条。
+ *
+ *        2026-11-03 站长拍板的现状（重要，别按老版本理解）：
+ *        - **奇瑞已回退 C 级**（站长：「D级还原为C级吧…不然越改越混乱」），bundle 内不再有 D 档卡；
+ *        - **当前唯一 D 级是 BOSS直聘**，它属「平台类目」——不是用工单位、不适用双休判档，
+ *          是三类判据之外的**站长主观定级例外**（理由单列，见 brand/bosszhipin.html）；
+ *        - BOSS直聘 在首页只出现在静态证据板（无 bundle 卡片），所以 **D_BRANDS 为空数组**——
+ *          本补丁只负责「bundle 卡片上的 D 徽标」，证据板/详情页是手写 HTML，不需要补丁。
+ *          将来若真有 bundle 卡被判 D，把品牌名加回 D_BRANDS 即可。
  *
  * 识别靠品牌名清单（不能靠 DOM class：Tailwind 是按需生成的，bundle 源码里没出现过的
  * class 在 CSS 里也不存在）。清单必须与 bundle 内 tier:`U` / tier:`D` 的卡一一对应，
@@ -45,8 +52,10 @@
   // 与 bundle 内 tier:`U` 的卡一一对应（verify §2d-3 强制核对）
   var U_BRANDS = ['三星', '宏碁'];
   // 与 bundle 内 tier:`D` 的卡一一对应（verify §2e-4 强制核对）。
+  // 2026-11-03 起为**空**：奇瑞已回退 C（bundle 内 tier:D 归零），
+  // 当前唯一 D 级 BOSS直聘 是平台类目，只出现在静态证据板 + 详情页，没有 bundle 卡片。
   // 加品牌 = 站长人工降级，必须同时在详情页写入「人工干预记录」区块。
-  var D_BRANDS = ['奇瑞'];
+  var D_BRANDS = [];
 
   var U_BADGE_CSS = [
     'display:inline-flex', 'align-items:center', 'gap:4px',
@@ -81,7 +90,7 @@
     s.setAttribute('style', D_BADGE_CSS);
     s.textContent = 'D级 · 站长强制降级';
     s.title = 'D 级不由 AI 判定：站长人工介入，强制把该卡从 AI 原判档位降为 D 级；'
-      + '判据为管理层指令性规避法律风险加班，详见详情页「人工干预记录」';
+      + '判据见详情页「人工干预记录」（三类：规避法律风险加班／以加班为荣／劝放弃法定社保）';
     return s;
   }
 
@@ -97,9 +106,8 @@
     ].join(';'));
     d.innerHTML = '<strong>⚑ 站长人工干预 · 强制降级</strong>：'
       + '本卡原判 <s>C 级</s>，站长介入后强制降为 <strong>D 级</strong>。'
-      + '判据：高管内部邮件要求「想办法（规避法律风险）」把周六定为奋斗者正常工作日——'
-      + '属<strong>管理层指令性规避法律风险加班</strong>，比一般超时更重。'
-      + '该档位不由 AI 判定，详见详情页「人工干预记录」。';
+      + '判据与理由见详情页「人工干预记录」——该档位不由 AI 判定，'
+      + '只记录站长的人工结论。';
     return d;
   }
 
@@ -218,8 +226,8 @@
     var p = document.createElement('div');
     p.id = DNOTE_ID;
     p.setAttribute('style', 'margin-top:4px;font-size:11px;line-height:1.5;color:#991b1b;text-align:center');
-    p.textContent = '其中 ' + n + ' 家为 D 级 · 站长强制降级（管理层指令性规避法律风险加班，'
-      + '已计入上表避雷预警；该档位不由 AI 判定）';
+    p.textContent = '其中 ' + n + ' 家为 D 级 · 站长人工介入降级'
+      + '（已计入上表避雷预警；该档位不由 AI 判定，理由见各详情页「人工干预记录」）';
     var uNote = document.getElementById(NOTE_ID);
     grid.parentElement.insertBefore(p, uNote ? uNote.nextSibling : grid.nextSibling);
   }
@@ -309,7 +317,7 @@
       b.type = 'button';
       b.textContent = GF_LETTERS[k] + ' 级';
       b.title = GF_LETTERS[k] === 'D'
-        ? 'D 级 · 站长强制降级（管理层指令性规避法律风险加班，不由 AI 判定）'
+        ? 'D 级 · 站长人工介入降级（不由 AI 判定，理由见详情页「人工干预记录」）'
         : 'U 级 · 证据不足（已尽合理检索仍无可采信证据，不评级）';
       gfSetBtnState(b, gfActive === GF_LETTERS[k]);
       if (last && last.parentNode === gfBar) last.parentNode.insertBefore(b, last.nextSibling);
@@ -334,6 +342,7 @@
       gfActive = null;                 // 点了 React 按钮 → 交还 React
       gfClear();
       gfSyncStyles();
+      gfEmptyNote();                   // 空态提示随过滤态一起收起
     }
   }
 
@@ -385,6 +394,41 @@
   function gfSyncAndApply() {
     gfSyncStyles();
     gfApply();
+    gfEmptyNote();
+  }
+
+  /* D 级空态提示（2026-11-03 新增）：
+     D 级现在没有 bundle 卡片 —— 唯一一家 BOSS直聘 是平台类目，只在静态证据板 + 详情页。
+     于是「点 D 级」会筛出空面板，看起来像 bug。这里补一条说明，指向证据板对应条目。
+     只在「确实一张 D 卡都没有」时出现；将来若有 D 卡自动消失。 */
+  var GF_EMPTY_ID = 'sxg-gf-empty';
+  function gfEmptyNote() {
+    var old = document.getElementById(GF_EMPTY_ID);
+    var need = false;
+    if (gfActive === 'D') {
+      var cards = document.querySelectorAll(CARD_SEL);
+      var anyD = false;
+      for (var i = 0; i < cards.length; i++) {
+        if (gfCardTier(cards[i]) === 'D') { anyD = true; break; }
+      }
+      need = !anyD;
+    }
+    if (!need) {
+      if (old && old.parentNode) old.parentNode.removeChild(old);
+      return;
+    }
+    if (old) return;
+    var first = document.querySelector(CARD_SEL);
+    if (!first || !first.parentNode) return;
+    var p = document.createElement('div');
+    p.id = GF_EMPTY_ID;
+    p.setAttribute('style', 'margin:0 0 14px;padding:10px 12px;border-radius:8px;'
+      + 'background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-size:13px;line-height:1.7');
+    p.innerHTML = '本站 <strong>D 级 1 家</strong>——BOSS直聘（平台类目例外，站长人工介入定级）。'
+      + '它是招聘平台、没有企业用工卡，所以卡片区筛不出结果；'
+      + '请到下方 <a href="#evidence-board" style="color:#991b1b;font-weight:700">「全站证据链公示」</a>'
+      + ' 查看它的评级理由。';
+    first.parentNode.insertBefore(p, first);
   }
 
   function gfEnsure() {

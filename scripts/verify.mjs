@@ -602,25 +602,32 @@ check(tabBadge2e !== undefined && Number(tabBadge2e) === statTotal,
 const EXPECT_GRADE_2E = {
   'icbc-card': 'A级', 'ccb-card': 'A级', 'boc-card': 'A级', 'chengdubank-card': 'A级',
   'abc-card': 'C级', 'taobao-shanguang-card': 'C级',
+  // 2026-11-03 站长拍板：BOSS直聘 C→D（平台类目例外），奇瑞 D→C —— 两张卡都不许再动。
+  'bosszhipin-card': 'D级',
 };
 const locked2e = customPairs2e.filter((c) => EXPECT_GRADE_2E[c.id]);
 const relockedU2e = locked2e
   .filter((c) => c.grade !== EXPECT_GRADE_2E[c.id])
   .map((c) => c.id + '=' + c.grade + '（应 ' + EXPECT_GRADE_2E[c.id] + '）');
 check(relockedU2e.length === 0,
-  '4 家银行 A 级 + 农行/淘宝闪购 C 级（2026-10-31 月休口径改判锁定，不得回退）',
+  '4 家银行 A 级 + 农行/淘宝闪购 C 级 + BOSS直聘 D 级（改判锁定，不得回退）',
   relockedU2e.length ? relockedU2e.join(', ') : '锁定生效');
-check(locked2e.length === 6,
-  '6 张锁定卡全部存在（删卡判红）', '实际 ' + locked2e.length);
+check(locked2e.length === 7,
+  '7 张锁定卡全部存在（删卡判红）', '实际 ' + locked2e.length);
 // 2026-11-02 起：A 级 / C 级计数含榜单导入卡（A 58 张、C 29 张）。
 // 断言仍然写成「基准 + 导入数」的算式，导入批次调整时改 IMPORTED_CARD_COUNT 一处即可，
 // 但两个基准值（4 / 11）必须保持 —— 那是手工卡的既有口径，动了就等于偷偷改档。
 check(byGrade2e('A级') === 4 + 58,
   '自定义卡 A 级共 62 张（工/建/中/成都银行 4 张 + 榜单导入 58 张）',
   '实际 ' + byGrade2e('A级'));
-check(byGrade2e('C级') === 11 + 29,
-  '自定义卡 C 级共 40 张（手工 11 张 + 榜单导入 29 张）',
+check(byGrade2e('C级') === 10 + 29,
+  '自定义卡 C 级共 39 张（手工 10 张 + 榜单导入 29 张；BOSS直聘 2026-11-03 转入 D 级）',
   '实际 ' + byGrade2e('C级'));
+// D 级自定义卡：2026-11-03 起只有 BOSS直聘 一张（平台类目例外）。多一张或少一张都要判红 ——
+// 这一档是「人的结论」，被悄悄批量加卡就等于把站长的判断稀释成普通档位。
+check(byGrade2e('D级') === 1 && customPairs2e.filter((c) => c.grade === 'D级').map((c) => c.id)[0] === 'bosszhipin-card',
+  '自定义卡 D 级恰好 1 张 = BOSS直聘（平台类目例外，不许增删）',
+  '实际 ' + byGrade2e('D级') + ' 张：' + customPairs2e.filter((c) => c.grade === 'D级').map((c) => c.id).join(','));
 // 规则③：U 级单独列示、不并入四格统计（红榜/观察/避雷只含 S/A/B/C）
 const fourSum2e = statHong + statZhou + statLei;
 const totalCards2e = builtin2e + customPairs2e.length;
@@ -631,7 +638,7 @@ check(fourSum2e === totalCards2e - uCards2e,
 // bundle 侧档位锁定（2026-11-02 站长复核：宏碁/三星拿不到月休天数、正文自己写着
 // 「不作评级」，挂 C 级是自相矛盾 → 改 U；霸王茶姬有 BOSS 直聘门店岗「月休 4 天」
 // 快照（与名创同形态），维持 C。改任何一张都要同步这条断言，防止悄悄回退）
-const BUNDLE_TIER_LOCK = { acer: 'U', samsung: 'U', chagee: 'C', chery: 'D' };
+const BUNDLE_TIER_LOCK = { acer: 'U', samsung: 'U', chagee: 'C', chery: 'C' };
 const badBundleLock = [];
 for (const bid of Object.keys(BUNDLE_TIER_LOCK)) {
   const idx = brandCards.findIndex((c) => c.id === bid);
@@ -642,23 +649,31 @@ for (const bid of Object.keys(BUNDLE_TIER_LOCK)) {
   if (!chunk.includes(want)) badBundleLock.push(bid + '：不是 ' + BUNDLE_TIER_LOCK[bid] + ' 档');
 }
 check(badBundleLock.length === 0,
-  '宏碁/三星 = U 档、霸王茶姬 = C 档、奇瑞 = D 档（2026-11-02 复核/人工介入锁定）',
+  '宏碁/三星 = U 档、霸王茶姬 = C 档、奇瑞 = C 档（2026-11-02 复核；奇瑞 2026-11-03 从 D 回退 C）',
   badBundleLock.join(', ') || '锁定生效');
 
 /* ---- 2e-4. D 级（站长人工干预）硬规则 ----
  *
- * 站长 2026-11-02：「像这种，高管要求规避法律风险想办法加班，直接D级，
- * 并备注站长人为干预，强制介入要求Ai降级」。
- * 站长 2026-11-03 扩充判据：「如果是什么加班为荣，以及主动规避劳动法的，
- * 劝员工自愿放弃购买社保的，这种就可以D级了」→ 三类：规避法律风险加班／以加班为荣／
- * 劝放弃法定社保。同时拍板「新判据只管往后」→ 招商银行（2026-11-02 定 C）不追溯、维持 C。
+ * 沿革：
+ *   2026-11-02 设立。站长：「像这种，高管要求规避法律风险想办法加班，直接D级，
+ *     并备注站长人为干预，强制介入要求Ai降级」→ 奇瑞由 C 强制降为 D。
+ *   2026-11-03 判据扩为三类：「如果是什么加班为荣，以及主动规避劳动法的，
+ *     劝员工自愿放弃购买社保的，这种就可以D级了」+ 同时确立「新判据只管往后」
+ *     → 招商银行（2026-11-02 定 C）不追溯、维持 C。
+ *   2026-11-03 再拍板（同日稍晚）：「D级还原为C级吧，boss直聘那个给D级算了，哎。
+ *     不然越改越混乱」→ **奇瑞回退 C**，D 级只留 BOSS直聘 一家，
+ *     且 BOSS直聘 是「平台类目例外」——不属于用工单位、双休口径不适用，
+ *     三类判据套不上，由站长直接定级、理由单列。
  *
- * D 级是全站唯一一档「人的结论高于数据推演」：判据（管理层主动设计绕开劳动法）
- * AI 推不出来，所以规则必须反过来咬——AI 不能自己判 D，也不能悄悄把 D 改回去。
- * 三条机器规则：
- *   ① bundle 内 tier:`D` 的卡数 = u-grade-patch.js 的 D_BRANDS 条数（漏一条 = 徽标空白）
- *   ② 每张 D 页必须有「人工干预记录」结构标记（data-manual-override），否则等于只降了档没留账
- *   ③ 口径区必须写明「D 级不由 AI 判定」，防止日后被当成普通档位滥用
+ * ⚠️ 结构变了（2026-11-03）：D 级**不再对应 bundle 卡片**。
+ *   BOSS直聘 在首页只出现在静态证据板，没有 bundle 卡 → bundle 内 tier:`D` 必须为 0，
+ *   u-grade-patch.js 的 D_BRANDS 也必须为空。别再按「bundle D 卡数」去核对，
+ *   那套规则会让「把 D 悄悄塞回卡片」和「卡片没徽标」两种错误都逃过校验。
+ * 四条机器规则：
+ *   ① bundle 内 tier:`D` = 0，且 D_BRANDS 条数与之相等（两者必须同步为 0）
+ *   ② brand/ 里标 D 徽标的页 = 白名单 D_MANUAL_PAGES（非空，防空集恒真）
+ *   ③ 每个 D 页必须有「人工干预记录」（data-manual-override）并写明站长介入
+ *   ④ 口径区必须写明「不由 AI 判定」+ 平台类目例外 + 奇瑞已回退 C
  */
 const bundleTierD = [];
 brandCards.forEach((c, i) => {
@@ -668,11 +683,15 @@ brandCards.forEach((c, i) => {
 const patchSrc0 = readFileSync(join(ROOT, 'u-grade-patch.js'), 'utf8');
 const dListRaw = (patchSrc0.match(/D_BRANDS\s*=\s*\[([^\]]*)\]/) || [])[1] || '';
 const dListCount = (dListRaw.match(/'/g) || []).length / 2;
+check(bundleTierD.length === 0,
+  'bundle 内无 D 档卡（2026-11-03 起 D 级不再来自 bundle：BOSS直聘 仅为证据板+详情页）',
+  '仍有 D 档卡：' + bundleTierD.join(',') + ' → 奇瑞回退没退干净，或有人把 D 塞回卡片');
 check(dListCount === bundleTierD.length,
-  'u-grade-patch.js 的 D_BRANDS 条数 = bundle 内 D 档卡数（漏一条 = 该卡徽标空白）',
+  'u-grade-patch.js 的 D_BRANDS 条数 = bundle 内 D 档卡数（现在两边都必须是 0）',
   '清单 ' + dListCount + ' 条 / bundle D 档 ' + bundleTierD.length + ' 张（' + bundleTierD.join(',') + '）');
-check(bundleTierD.length > 0, 'bundle 内存在 D 档卡（空集会让上面那条恒真）', '实际 ' + bundleTierD.length);
 
+// D 级页面白名单：改动档位（增/删）必须同步此清单，否则下面那条「页数 = 清单数」会判红。
+const D_MANUAL_PAGES = ['bosszhipin.html'];
 const dPages = [];
 const badDPage = [];
 for (const f of readdirSync(join(ROOT, 'brand')).filter((x) => x.endsWith('.html'))) {
@@ -682,15 +701,41 @@ for (const f of readdirSync(join(ROOT, 'brand')).filter((x) => x.endsWith('.html
   if (!/data-manual-override="1"/.test(ph)) badDPage.push(f + '：缺「人工干预记录」区块（data-manual-override）');
   if (!/站长/.test(ph)) badDPage.push(f + '：正文未写明是站长介入');
 }
-check(dPages.length === bundleTierD.length,
-  'brand/ 里标 D 级的页数 = bundle 内 D 档卡数（空集不许冒充通过）',
-  '页面 ' + dPages.length + ' / bundle ' + bundleTierD.length);
+check(D_MANUAL_PAGES.length > 0,
+  'D 级白名单非空（空集会让下面两条恒真，这是本站踩过的坑）');
+check(dPages.length === D_MANUAL_PAGES.length && D_MANUAL_PAGES.every((x) => dPages.includes(x)),
+  'brand/ 里标 D 级的页 = 白名单（当前仅 BOSS直聘）',
+  '页面 ' + dPages.join(',') + ' / 白名单 ' + D_MANUAL_PAGES.join(','));
 check(dPages.length > 0 && badDPage.length === 0,
   'D 级详情页必须附「人工干预记录」并写明站长介入（降了档就必须留账）',
   badDPage.join('；') || dPages.join(', ') + ' 均已留账');
 check(/D 级（站长人工介入，2026-11-02 设立、2026-11-03 扩充）/.test(html) && /不由 AI 判定|AI 不得自行判定/.test(html),
   'index.html 评级口径区声明 D 级存在、且明确「不由 AI 判定」',
   '口径区 D 级标题被改而本断言未同步，或「不由 AI 判定」字样丢失 → D 会被当成普通档位滥用');
+
+// 平台类目例外（2026-11-03 站长拍板）：BOSS直聘 不是用工单位，三类判据套不上，
+// 走单独通道 —— 但这条通道 AI 不得使用，必须写在口径区里。
+check(/平台类目例外/.test(html) && /BOSS直聘/.test(html),
+  '★ 口径区写明「平台类目例外」并把 BOSS直聘 点名（D 级唯一例外的落点）',
+  '缺例外条款 → BOSS直聘 的 D 级看起来像「违反了三类判据」，或 AI 会照着给企业套 D');
+const bossPage = readFileSync(join(ROOT, 'brand', 'bosszhipin.html'), 'utf8');
+check(/平台类目例外/.test(bossPage) && /不套三类判据|套不上/.test(bossPage) && /2026-11-03/.test(bossPage),
+  '★ BOSS直聘 页必须写清「平台类目例外、不套三类判据、2026-11-03 改判」',
+  '缺一句 → 读者（和未来的 AI）会以为它是按劳动法判据评的 D');
+// 奇瑞回退：结论没变（仍 C 级避雷预警），但历史必须留痕，且不许再标 D 徽标。
+const cheryPage = readFileSync(join(ROOT, 'brand', 'chery.html'), 'utf8');
+check(!/class="badge"[^>]*>\s*D\s*级/.test(cheryPage) && /class="badge"[^>]*>\s*C\s*级/.test(cheryPage),
+  '★ 奇瑞页已回退 C 级（不再有 D 徽标）',
+  '奇瑞仍标 D → 2026-11-03「D级还原为C级」没落地');
+check(/2026-11-02/.test(cheryPage) && /回退为 C 级/.test(cheryPage) && /2026-11-03/.test(cheryPage),
+  '★ 奇瑞页保留「2026-11-02 判 D → 2026-11-03 回退 C」留痕（结论可改，账不能抹）',
+  '回退留痕缺失 → 以后没人知道这一档曾被人工改过两次');
+// 证据板 data-g 必须与详情页档位一致（手写 HTML 最容易漏改的一处）。
+const evChery = (html.match(/<details id="ev-chery"[^>]*>/) || [''])[0];
+const evBoss = (html.match(/<details id="ev-bosszhipin"[^>]*>/) || [''])[0];
+check(/data-g="C"/.test(evChery) && /data-g="D"/.test(evBoss),
+  '★ 首页证据板 data-g 与详情页档位一致（chery=C、bosszhipin=D）',
+  '证据板档位没跟着改 → 过滤/统计与详情页打架：' + evChery + ' / ' + evBoss);
 
 // ---------------------------------------------------------------------------
 // §2f 证据链：定档判据「只有一条、还是第三方二手」的页面，必须把证据链写在明面上。
@@ -5570,8 +5615,8 @@ section('21c. 首页滑到底部按钮');
   check(/'D 级'/.test(rowTexts) && /'U 级'/.test(rowTexts),
     'stat-filter.js 评级行互斥枚举含「D 级」「U 级」（点 D/U 清五格筛选）',
     'stat-filter 没跟上 → 点 D/U 不清四格筛选，两套过滤层互相覆盖出现空面板');
-  check(/u-grade-patch\.js\?v=4/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
-    'u-grade-patch.js?v=4 / stat-filter.js?v=9（缓存号已随内容 bump）',
+  check(/u-grade-patch\.js\?v=5/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
+    'u-grade-patch.js?v=5 / stat-filter.js?v=9（缓存号已随内容 bump）',
     '缓存号没 bump → 用户拿旧补丁，D/U 按钮注入不生效（2026-11-01 拼音索引同类事故）');
 }
 
