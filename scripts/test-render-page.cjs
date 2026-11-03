@@ -88,7 +88,14 @@ const html = read('index.html');
   // 真实浏览器里内联脚本是 module，天然在 bundle 之后跑；jsdom 里是同步 eval，
   // 所以这里手动重试一次，对齐真实时序后确认报错是否消失。
   const retried = [];
-  if (typeof window.insertAllCustomCards === 'function') {
+  // 分批注入重构后，insertAllCustomCards 改为门面（首调启动异步分片调度），
+  // 这里优先用 __sxgInject（force 同步全量）以保证测试确定性；
+  // 分批首屏性能表现由真浏览器渲染单独验证。
+  if (typeof window.__sxgInject === 'function') {
+    window.__sxgInject();
+    await new Promise((r) => setTimeout(r, 400));
+    retried.push('__sxgInject');
+  } else if (typeof window.insertAllCustomCards === 'function') {
     window.insertAllCustomCards();
     await new Promise((r) => setTimeout(r, 400));
     retried.push('insertAllCustomCards');

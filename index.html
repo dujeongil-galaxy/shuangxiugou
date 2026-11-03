@@ -6786,10 +6786,11 @@
         return null;
       }
       
-      // 通用：插入所有自定义卡片
-      function insertAllCustomCards() {
+      // 通用：插入自定义卡片（子集）。抽成内部函数，便于「分片调度」逐批调用，
+      // 且调用它时不受下方 __sxgInjectingBatch 守卫影响（只有门面 insertAllCustomCards 才守）。
+      function injectCustomCardsNow(list) {
         // 遍历配置，逐个生成并插入（已存在的卡片直接跳过，避免重复重建）
-        customCardsConfig.forEach(function(config) {
+        list.forEach(function(config) {
           // 找插入位置的参考卡片
           var refCard = findCardByH3(config.insertAfter);
           var existing = document.getElementById(config.id);
@@ -6993,10 +6994,41 @@
         });
       }
 
+      // 门面：被 init()/MutationObserver 调用。首次触发时启动分片调度；
+      // 分片进行中（__sxgInjectingBatch=true）由 MO 重跑触发的调用直接 return，
+      // 避免「插入→MO 触发→再次全量插入」自激卡死。测试钩子用 {force:true} 绕过，
+      // 保持同步全量语义（scripts/test-custom-card-injection.cjs 依赖确定性）。
+      function insertAllCustomCards(opts) {
+        if (opts && opts.force) { injectCustomCardsNow(customCardsConfig); return; }
+        if (window.__sxgInjectingBatch) return;
+        injectCustomCardsInBatches(24);
+      }
+
+      // 分片注入：首批同步执行（保证首屏立即有内容），其余用空闲回调逐批插入，
+      // 每批之间让出主线程，避免一次性同步注入 121 张复杂卡片造成的长任务卡顿
+      // （品牌从 60 扩到 173 后首屏白屏 13s 的主因）。每批 24 张 + bundle 的 53 张内置卡
+      // 先落地，其余滚动/空闲时补齐。
+      function injectCustomCardsInBatches(batchSize) {
+        window.__sxgInjectingBatch = true;
+        var i = 0;
+        function next() {
+          if (i >= customCardsConfig.length) { window.__sxgInjectingBatch = false; return; }
+          var end = Math.min(i + batchSize, customCardsConfig.length);
+          injectCustomCardsNow(customCardsConfig.slice(i, end));
+          i = end;
+          if (i < customCardsConfig.length) {
+            (window.requestIdleCallback || function (cb) { setTimeout(cb, 0); })(next);
+          } else {
+            window.__sxgInjectingBatch = false;
+          }
+        }
+        next();
+      }
+
       // 测试/调试钩子：暴露注入函数，供 scripts/test-custom-card-injection.cjs
       // 在无头 Edge 里确定性地复现「参照卡缺失」场景（不依赖 React 重渲染时序）。
       // 仅挂载函数引用，无任何副作用，不影响线上行为。
-      window.__sxgInject = insertAllCustomCards;
+      window.__sxgInject = function () { insertAllCustomCards({ force: true }); };
       // 在Apple卡片下面插入富士康双休提示框
       //
       // ⚠️⚠️ 必须保持幂等，否则整页卡死。
