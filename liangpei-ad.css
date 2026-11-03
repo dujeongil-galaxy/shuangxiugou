@@ -403,6 +403,53 @@
   }
 }
 
+/* ---------- 超窄屏（≤374px，含 320px） ----------
+   2026-11-03 修复：320px 下 .lp-ad__text 因 min-width:0 被
+   nowrap 的 CTA + LOGO + 内边距挤到只剩十几 px，主文案一字一行
+   竖排爆炸，吸底条实测撑到 356px 高 —— body 被垫高 356px，
+   TOP/⤓/AI/提醒整组悬浮按钮被 calc(var(--sxg-bar-h) + Npx)
+   顶出屏幕或压到正文上（站长截图「提醒按钮压住正文末尾两三行」）。
+   修在源头：超窄屏整体收紧（LOGO/CTA/间距/字号），让主文案回到
+   正常两行，吸底条高度回落到 ~85px，按钮群随之归位。
+   各值算过账：320px 下 44(logo)+~85(cta)+16(gap)+44(左右内边距)
+   ≈ 189px 固定占用，正文区约 130px，13px 品牌行（~117px）放得下。 */
+@media (max-width: 374px) {
+  .lp-ad {
+    gap: 8px;
+    padding: 10px 34px 10px 10px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .lp-ad__body {
+    gap: 8px;
+  }
+
+  .lp-ad__logo {
+    width: 44px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .lp-ad__limit {
+    font-size: 10px;
+    padding: 1px 5px;
+  }
+
+  .lp-ad__brand {
+    font-size: 13px;
+  }
+
+  .lp-ad__title {
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .lp-ad__cta {
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+}
+
 
 .lp-ad-toast code:active {
   background: rgba(255, 255, 255, 0.3);

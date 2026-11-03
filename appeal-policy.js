@@ -56,6 +56,13 @@
       'background:rgba(15,23,42,.55)',
       'padding:16px'
     ].join(';');
+    /* 2026-11-03 真浏览器实测：本组件全靠 hidden 属性切显隐，但上面 cssText 里有
+       'display:flex' —— 内联样式会压过 UA 样式表的 [hidden]{display:none}，
+       后果是弹窗一旦渲染就永远关不掉（拒绝/ESC/点遮罩全失效），且页面一加载
+       bindModalButtons→buildModal 就把它渲染出来挡住整页。jsdom 测不出来
+       （不做布局）。修法：显隐改用内联 display 直接控制，hidden 属性只留给
+       无障碍语义。PITFALLS「hidden 属性切显隐须补兜底」教训的又一次实例。 */
+    mask.style.display = 'none';
 
     var card = document.createElement('div');
     card.style.cssText = [
@@ -113,13 +120,17 @@
     var modal = buildModal();
     modal.dataset.targetUrl = targetUrl || '';
     modal.hidden = false;
+    modal.style.display = 'flex'; // 同步内联 display（hidden 会被内联 flex 压过，见 buildModal 注释）
     var yes = document.getElementById(MODAL_ID + '-agree');
     if (yes) yes.focus();
   }
 
   function closeModal() {
     var modal = document.getElementById(MODAL_ID);
-    if (modal) modal.hidden = true;
+    if (modal) {
+      modal.hidden = true;
+      modal.style.display = 'none';
+    }
   }
 
   /* ---------------------------------------------------------- 绑定 */

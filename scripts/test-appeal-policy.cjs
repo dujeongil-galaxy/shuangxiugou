@@ -73,11 +73,18 @@ function until(condFn, timeoutMs) {
   console.log('\n② 点击申诉链接 → 弹政策层，不直接跳转');
   const bound = await until(() => doc.getElementById('link-appeal').dataset.sxgAppealBound === '1', 2500);
   check('申诉链接被绑定（dataset 标记）', bound);
+  // 2026-11-03：hidden 属性会被内联 display:flex 压过（真浏览器弹窗关不掉的根因），
+  // 显隐必须以 style.display 为准做双重断言
+  const modal0 = doc.getElementById('sxg-appeal-policy');
+  check('初始挂载不显示（display:none）', modal0 && modal0.style.display === 'none',
+    modal0 && modal0.style.display);
   w.__opens.length = 0;
   doc.getElementById('link-appeal').dispatchEvent(new w.Event('click', { bubbles: true, cancelable: true }));
   const modal = doc.getElementById('sxg-appeal-policy');
   check('弹层节点存在', !!modal);
   check('弹层显示（hidden=false）', modal && modal.hidden === false);
+  check('弹层显示（display:flex）', modal && modal.style.display === 'flex',
+    modal && modal.style.display);
   check('点击后未直接跳转（open 零调用）', w.__opens.length === 0);
   check('弹层记录了目标 URL', modal && modal.dataset.targetUrl === ISSUE_URL, modal && modal.dataset.targetUrl);
 
@@ -98,6 +105,7 @@ function until(condFn, timeoutMs) {
   check('同意后 window.open 了目标 URL', w.__opens.length === 1 && w.__opens[0].url === ISSUE_URL,
     w.__opens);
   check('同意后弹层关闭', modal.hidden === true);
+  check('同意后 display:none', modal.style.display === 'none', modal.style.display);
   check('同意后 open 用 _blank', w.__opens.length === 1 && w.__opens[0].target === '_blank');
 
   /* ④ 拒绝 → 不跳转 */
@@ -108,6 +116,7 @@ function until(condFn, timeoutMs) {
   w.__opens.length = 0;
   doc.getElementById('sxg-appeal-policy-deny').dispatchEvent(new w.Event('click', { bubbles: true }));
   check('拒绝后弹层关闭', modal.hidden === true);
+  check('拒绝后 display:none', modal.style.display === 'none', modal.style.display);
   check('拒绝后未跳转', w.__opens.length === 0);
 
   /* ⑤ ESC / 遮罩 */
@@ -117,10 +126,12 @@ function until(condFn, timeoutMs) {
   check('ESC 前弹层开着', modal.hidden === false);
   doc.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
   check('ESC 关闭弹层', modal.hidden === true);
+  check('ESC 后 display:none', modal.style.display === 'none', modal.style.display);
   doc.getElementById('link-appeal').dispatchEvent(new w.Event('click', { bubbles: true, cancelable: true }));
   await wait(50);
   modal.dispatchEvent(new w.Event('click', { bubbles: true }));
   check('点遮罩关闭弹层', modal.hidden === true);
+  check('点遮罩后 display:none', modal.style.display === 'none', modal.style.display);
 
   /* ⑥ 幂等 */
   console.log('\n⑥ 幂等与复用');
