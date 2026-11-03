@@ -1269,7 +1269,9 @@ section('2g. 首页证据链完整公示');
       if (navInCi) {
         check(navInCi, 'CI 里已接入悬浮菜单行为测试');
       } else {
-        note('悬浮菜单测试尚未接入 CI（本机 token 缺 workflow 权限，见 CHANGELOG 2026-11-02 01:40）');
+        // 2026-11-03：本机 token 补了 workflow scope，已挂进 CI（见 verify.yml
+        // 「悬浮菜单测试」step）。这条只在接线被删掉时才提示。
+        note('悬浮菜单测试未接入 CI（test-nav-menu.cjs 不在 verify.yml 里）');
       }
     }
   }

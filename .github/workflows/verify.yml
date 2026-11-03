@@ -130,6 +130,12 @@ jobs:
       - name: 评级过滤 D/U 误伤布局测试
         run: node scripts/test-gf-search.cjs
 
+      # 悬浮菜单（2026-11-02 上线，当时因本机 token 缺 workflow 权限没挂上 CI，
+      # 只在本地跑；2026-11-03 站长给 token 加了 workflow scope 后补接线）。
+      # 断言页内跳转锚点真实存在、各入口不是死链等 50 项。
+      - name: 悬浮菜单测试
+        run: node scripts/test-nav-menu.cjs
+
       # 空态块同步（2026-10-30 修复）：搜自定义卡（美宜佳等不在 bundle brands
       # 数组）时 React 渲染「未找到匹配」空态块与注入卡同屏——观感是「搜索
       # 出不相关内容」。断言同步逻辑在 filterCustomCards 体内、搜美宜佳空态
