@@ -4,7 +4,7 @@
 
 ---
 
-### 第一批 20 家导入品牌补硬证据链（2026-11-04 09:26 · 提交 `c65260c`）
+### 第一批 20 家导入品牌补硬证据链（2026-11-04 01:26 · 提交 `c65260c`）
 
 - 站长指示：对新增导入品牌逐批联网核查硬证据（官方 JD 作息 / 招聘口径 / 媒体调查 / 员工实名爆料），能搜到可引用来源的，详情页「证据来源」补真实条目与可点原文链接；搜不到的继续保留答侠兜底链接（已于 0e679ff 加第三方核实指引）。
 - 本批覆盖 slugs 1–20：alibaba、ant、baidu、netease、jd、dewu、bilibili、lilith、xindong、google、nvidia、intel、ibm、aws、wps、lenovo、honor、transmion、insta360、anker。共注入 40 条证据（每家 1–3 条）。
