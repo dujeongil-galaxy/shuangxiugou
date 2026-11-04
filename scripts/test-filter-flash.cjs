@@ -57,37 +57,50 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   // 清抖音弹窗
   await ev(`(()=>{const d=document.querySelector('.dyp'); if(d) d.remove(); return 'ok';})()`);
 
+  // 先把「A 级」按钮滚到视口中部，让「过滤条在上方、结果卡片在下方」同框
+  await ev(`(()=>{const b=[...document.querySelectorAll('button')].find(x=>(x.textContent||'').trim()==='A 级'); if(b) b.scrollIntoView({block:'center'}); return 'ok';})()`);
+  await sleep(400);
+
   // 点击「A 级」评级按钮
   const clicked = await ev(`(()=>{const b=[...document.querySelectorAll('button')].find(x=>(x.textContent||'').trim()==='A 级'); if(!b) return {found:false}; b.click(); return {found:true};})()`);
   console.log('click A 级:', JSON.stringify(clicked));
 
-  // 立刻（~150ms）验闪屏状态
+  // 立刻（~150ms）验 frosted 遮罩状态
   await sleep(150);
   const during = await ev(`JSON.stringify({
     flashing: document.body.classList.contains('sxg-filter-flashing'),
     cardFilter: (()=>{const c=document.querySelector('div.bg-white.rounded-2xl.border'); return c?getComputedStyle(c).filter:'no-card';})(),
-    visibleCards: [...document.querySelectorAll('div.bg-white.rounded-2xl.border')].filter(c=>c.offsetParent!==null).length
+    mask: (()=>{const m=document.getElementById('sxg-flash-mask'); if(!m) return {exists:false}; const cs=getComputedStyle(m); const mr=m.getBoundingClientRect(); const btn=[...document.querySelectorAll('button')].find(x=>(x.textContent||'').trim()==='A 级'); const cards=[...document.querySelectorAll('div.bg-white.rounded-2xl.border')]; return {exists:true, display:cs.display, zIndex:cs.zIndex, backdrop:cs.backdropFilter||cs.webkitBackdropFilter, top:cs.top, btnBottom: btn?btn.getBoundingClientRect().bottom:null, cardsBelow: cards.filter(c=>c.getBoundingClientRect().top>=mr.top-5).length, allCardsBlurred: cards.every(c=>/blur/.test(getComputedStyle(c).filter))};})()
   })`);
-  console.log('点击后 150ms（应 flashing=true, blur(16px), 卡片仍占位）:', during);
+  console.log('点击后 150ms（应 mask 显示 + backdrop blur(36px) + 卡片 blur(20px)）:', during);
 
-  // 滚到评级过滤条，让过滤按钮 + 下方卡片同框（闪屏中）
-  await ev(`(()=>{const b=[...document.querySelectorAll('button')].find(x=>(x.textContent||'').trim()==='A 级'); if(b) b.scrollIntoView({block:'center'}); return 'ok';})()`);
-  await sleep(200);
-  // 截图（闪屏中）
+  // 截图（闪屏中，不滚动）
   const cap = await call('Page.captureScreenshot', { format: 'png' });
   fs.writeFileSync(OUT, Buffer.from(cap.result.data, 'base64'));
   console.log('截图已存:', OUT);
 
-  // 等 600ms（>500ms）验闪屏已消除
+  // 等 600ms（>500ms）验遮罩已消除
   await sleep(600);
   const after = await ev(`JSON.stringify({
     flashing: document.body.classList.contains('sxg-filter-flashing'),
-    cardFilter: (()=>{const c=document.querySelector('div.bg-white.rounded-2xl.border'); return c?getComputedStyle(c).filter:'no-card';})()
+    cardFilter: (()=>{const c=document.querySelector('div.bg-white.rounded-2xl.border'); return c?getComputedStyle(c).filter:'no-card';})(),
+    maskDisplay: (()=>{const m=document.getElementById('sxg-flash-mask'); return m?getComputedStyle(m).display:'no-mask';})()
   })`);
-  console.log('600ms 后（应 flashing=false, 无 blur，A 级卡片可见）:', after);
+  console.log('600ms 后（应 mask 隐藏、无 blur、A 级卡片可见）:', after);
 
   const d = JSON.parse(during), a = JSON.parse(after);
-  const pass = clicked.found && d.flashing === true && /blur\(16px\)/.test(d.cardFilter) && a.flashing === false && !/blur/.test(a.cardFilter);
+  const pass = clicked.found
+    && d.flashing === true
+    && d.mask && d.mask.exists && d.mask.display === 'block'
+    && /blur\(36px\)/.test(d.mask.backdrop)
+    && d.mask.zIndex === '8000'
+    && /blur\(20px\)/.test(d.cardFilter)
+    && d.mask.btnBottom <= parseFloat(d.mask.top) + 2   // 过滤按钮在遮罩之上（清晰）
+    && d.mask.cardsBelow >= 1                            // 遮罩之下确有品牌卡被覆盖
+    && d.mask.allCardsBlurred === true                   // 所有卡片（含遮罩之上的汇总卡）均被模糊
+    && a.flashing === false
+    && a.maskDisplay === 'none'
+    && !/blur/.test(a.cardFilter);
   console.log('验收状态:', pass ? 'PASS' : 'FAIL');
 
   ws.close(); edge.kill(); server.close();
