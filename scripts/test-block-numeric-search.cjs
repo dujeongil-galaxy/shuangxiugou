@@ -29,7 +29,7 @@ const indexHtml = read('index.html');
 // ---------- 1. 引入与顺序 ----------
 console.log('--- 引入 ---');
 check('index.html 引入了 block-numeric-search.js',
-  /<script src="\.\/block-numeric-search\.js\?v=\d+"/.test(indexHtml));
+  /<script(?:\s+defer)? src="\.\/block-numeric-search\.js\?v=\d+"/.test(indexHtml));
 const iPinyin = indexHtml.indexOf('pinyin-search.js');
 const iBlock = indexHtml.indexOf('block-numeric-search.js');
 check('在 pinyin-search.js 之后加载（联想层要先拿到干净查询词）',

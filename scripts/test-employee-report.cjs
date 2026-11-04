@@ -26,7 +26,7 @@ const indexHtml = read('index.html');
 // ---------- 1. 引入与顺序 ----------
 console.log('--- 引入 ---');
 check('index.html 引入了 employee-report-to-issue.js',
-  /<script src="\.\/employee-report-to-issue\.js\?v=\d+"/.test(indexHtml));
+  /<script(?:\s+defer)? src="\.\/employee-report-to-issue\.js\?v=\d+"/.test(indexHtml));
 check('带了 ?v= 缓存版本号', /employee-report-to-issue\.js\?v=\d+/.test(indexHtml));
 
 // ---------- 2. 原来的假入库必须已被替换 ----------
