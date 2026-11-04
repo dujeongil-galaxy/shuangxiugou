@@ -4,6 +4,24 @@
 
 ---
 
+### 打卡成功自动弹分享弹窗、打赏收款面板默认隐藏点击展开（2026-11-04 22:14 · 提交 `b8aa117`）
+
+- **2026-11-04 站长要求**（本轮未完成项补齐）：
+  - **打卡页面打开成功弹分享弹窗**：自定义卡点「打卡」→ 小票弹窗点「确认打卡并计入全网总额」→ 结算并关闭后自动调起分享弹窗（平台口径同上一条：国内五圆标 + 海外清单）。share-modal.js 未加载时静默跳过，不打断打卡主流程。
+  - **打赏页面保持隐藏，点击才打开**：sponsor.html 的打赏收款面板（交易所/币种/网络/二维码/收款地址）默认隐藏，新增「💰 展开打赏收款方式」按钮，点击展开并收起按钮区。
+- **改动范围**：
+  - `custom-card-actions.js`（?v=19→20）：doneBtn 监听器在 `settleReceipt()` + `closeLayer()` 之后追加 `window.SXGShare.open()`。
+  - `index.html`：挂载 `share-modal.js?v=1`（defer）；custom-card-actions.js 版本号同步 bump。
+  - `sponsor.html`：`.panel` 改为 `id="rewardPanel"` 默认 `display:none`；新增 `#rewardToggle` 按钮与展开脚本（展开后按钮区隐藏）。
+  - `scripts/verify.mjs`：新增 **§21b-2 五条断言**——面板默认隐藏 / 展开按钮存在 / 点击真展开（绑定在监听器内）/ index 与 sponsor 都挂 share-modal.js（defer，两种属性顺序都认）/ 打卡成功真调起 SXGShare.open。
+- **故障注入验证**（铁律，6 组全部判红后恢复）：①面板 display:none 删除 ②按钮 id 改名 ③展开逻辑改值 ④index 的 share-modal 挂载删除 ⑤sponsor 标签丢 defer ⑥SXGShare.open 调用删除——各组 verify 均判红。
+- **真渲染验收**（无头 Edge + CDP，9/9 PASS）：sponsor 面板初始隐藏、点击展开、按钮区收起、收款地址渲染（5 项）；index 真点自定义卡「打卡」→ 弹窗打开 → 点「确认打卡并计入全网总额」→ 分享弹窗自动弹出并带 `on` 类（4 项）。截图存 `D:/WebArchive/_shots/checkin-share-modal.png`。
+  - 验收脚本首版误点**内置卡**（bundle React 弹窗，无我们的监听器）判 FAIL，改为只点 `data-sxg-bound="1"` 自定义卡内按钮后全过——测的是脚本定位错，不是功能错。
+- **测试回归**：test-builtin-ticket-dom 57/57、test-ticket-total 52/52 全过。`test-empty-state-sync` 2 项失败（美宜佳卡可见性）经 HEAD 对照确认为**预存失败**，与本次改动无关。
+- verify **1385 项**全部通过（新增 5 条）。
+
+---
+
 ### 分享弹窗重做（国内圆形图标 + 海外 Discord/KakaoTalk/Line 清单）、隐私窗口加载优化（2026-11-04 21:25 · 提交 `51c24fe`）
 
 - **2026-11-04 站长指定分享弹窗平台口径**：
