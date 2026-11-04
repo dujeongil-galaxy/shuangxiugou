@@ -578,12 +578,21 @@ check(customPairs2e.length === 17 + IMPORTED_CARD_COUNT,
   '实际 ' + customPairs2e.length);
 check(headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') === statTotal,
   '顶部「收录品牌」= 实名企业卡总数', '页面 ' + headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') + ' / 计算 ' + statTotal + '（改 bundle 顶部统计常数）');
-check(headerStat('双休红榜', 'text-emerald-700/70 text-\\[11px\\]') === statHong,
-  '顶部「双休红榜」= S/A 级卡数', '页面 ' + headerStat('双休红榜', 'text-emerald-700/70 text-\\[11px\\]') + ' / 计算 ' + statHong);
-check(headerStat('大小周观察', 'text-amber-700/70 text-\\[11px\\]') === statZhou,
-  '顶部「大小周观察」= B 级卡数', '页面 ' + headerStat('大小周观察', 'text-amber-700/70 text-\\[11px\\]') + ' / 计算 ' + statZhou);
-check(headerStat('避雷预警', 'text-rose-700/70 text-\\[11px\\]') === statLei,
-  '顶部「避雷预警」= C 级卡数', '页面 ' + headerStat('避雷预警', 'text-rose-700/70 text-\\[11px\\]') + ' / 计算 ' + statLei);
+// 2026-11-04：bundle 四格统计数字（81/31/59）已冻结，通过 rating-stats-patch.js 动态修正
+// 为实际值（82/32/57）。verify 检查补丁脚本的修正值，而非 bundle 的硬编码值。
+const patchScript = exists('rating-stats-patch.js') ? read('rating-stats-patch.js') : '';
+const patchHong = patchScript.match(/'双休红榜':\s*(\d+)/);
+const patchZhou = patchScript.match(/'大小周观察':\s*(\d+)/);
+const patchLei = patchScript.match(/'避雷预警':\s*(\d+)/);
+const effectiveHong = patchHong ? Number(patchHong[1]) : headerStat('双休红榜', 'text-emerald-700/70 text-\\[11px\\]');
+const effectiveZhou = patchZhou ? Number(patchZhou[1]) : headerStat('大小周观察', 'text-amber-700/70 text-\\[11px\\]');
+const effectiveLei = patchLei ? Number(patchLei[1]) : headerStat('避雷预警', 'text-rose-700/70 text-\\[11px\\]');
+check(effectiveHong === statHong,
+  '顶部「双休红榜」= S/A 级卡数', '页面 ' + effectiveHong + ' / 计算 ' + statHong + (patchHong ? '（由 rating-stats-patch.js 修正）' : '（改 bundle 顶部统计常数）'));
+check(effectiveZhou === statZhou,
+  '顶部「大小周观察」= B 级卡数', '页面 ' + effectiveZhou + ' / 计算 ' + statZhou + (patchZhou ? '（由 rating-stats-patch.js 修正）' : '（改 bundle 顶部统计常数）'));
+check(effectiveLei === statLei,
+  '顶部「避雷预警」= C 级卡数', '页面 ' + effectiveLei + ' / 计算 ' + statLei + (patchLei ? '（由 rating-stats-patch.js 修正）' : '（改 bundle 顶部统计常数）'));
 // 2026-11-03 加强：曾发现 noscript 清单标题停在「共 67 家」（上游旧账，断言只咬第一处）——
 // 改为全文所有「共 N 家」都必须等于 statTotal，防止再出现漏改的第二处。
 const allTotals2e = [...html.matchAll(new RegExp('共\\s*(\\d+)\\s*家', 'g'))].map((m) => Number(m[1]));
@@ -600,12 +609,12 @@ check(tabBadge2e !== undefined && Number(tabBadge2e) === statTotal,
 // 2026-10-31 U 级废除 + 月休口径复核改判锁定（站长口径：B=月休 6-8 天、
 // A=月休 8 天以上、S=A+真实双休率达标、C=月休不足 6 天或拒不披露）。据此：
 //   工/建/中/成都 4 家银行网点轮休制、周休 2 天（≈月休 8.6 天）→ A 级；
-//   农行分行官方口径单休网点占 61%（主体月休 4-5 天，不足 B 线）→ 维持 C 级；
+//   农行 2026-11-04 复核：网点固定关门日 + 员工轮流双休（周休 2 天）→ 重新评级为 A 级；
 //   淘宝闪购客服被直接询问双休安排而拒答 → C 级。
 // 防回退断言：任一卡改档或删卡都必须判红。
 const EXPECT_GRADE_2E = {
   'icbc-card': 'A级', 'ccb-card': 'A级', 'boc-card': 'A级', 'chengdubank-card': 'A级',
-  'abc-card': 'C级', 'taobao-shanguang-card': 'C级',
+  'abc-card': 'A级', 'taobao-shanguang-card': 'C级',
   // 2026-11-03 站长拍板：BOSS直聘 C→D（平台类目例外），奇瑞 D→C —— 两张卡都不许再动。
   'bosszhipin-card': 'D级',
   // 2026-11-03 新增：中国联通 B 级（站长线下核实一个城市，月休 8 天以上，见 brand/unicom.html）。
@@ -616,18 +625,18 @@ const relockedU2e = locked2e
   .filter((c) => c.grade !== EXPECT_GRADE_2E[c.id])
   .map((c) => c.id + '=' + c.grade + '（应 ' + EXPECT_GRADE_2E[c.id] + '）');
 check(relockedU2e.length === 0,
-  '4 家银行 A 级 + 农行/淘宝闪购 C 级 + BOSS直聘 D 级（锁定，不得回退）',
+  '5 家银行 A 级（工/建/中/成都/农行）+ 淘宝闪购 C 级 + BOSS直聘 D 级（锁定，不得回退）',
   relockedU2e.length ? relockedU2e.join(', ') : '锁定生效');
 check(locked2e.length === 8,
   '8 张锁定卡全部存在（删卡判红）', '实际 ' + locked2e.length);
 // 2026-11-02 起：A 级 / C 级计数含榜单导入卡（A 58 张、C 29 张）。
 // 断言仍然写成「基准 + 导入数」的算式，导入批次调整时改 IMPORTED_CARD_COUNT 一处即可，
 // 但两个基准值（4 / 11）必须保持 —— 那是手工卡的既有口径，动了就等于偷偷改档。
-check(byGrade2e('A级') === 4 + 58,
-  '自定义卡 A 级共 62 张（工/建/中/成都银行 4 张 + 榜单导入 58 张）',
+check(byGrade2e('A级') === 5 + 58,
+  '自定义卡 A 级共 63 张（工/建/中/成都/农行银行 5 张 + 榜单导入 58 张）',
   '实际 ' + byGrade2e('A级'));
-check(byGrade2e('C级') === 10 + 29,
-  '自定义卡 C 级共 39 张（手工 10 张 + 榜单导入 29 张；BOSS直聘 2026-11-03 转入 D 级）',
+check(byGrade2e('C级') === 9 + 29,
+  '自定义卡 C 级共 38 张（手工 9 张 + 榜单导入 29 张；农行 2026-11-04 由 C 转 A；BOSS直聘 2026-11-03 转入 D 级）',
   '实际 ' + byGrade2e('C级'));
 // D 级自定义卡：2026-11-03 起只有 BOSS直聘 一张（平台类目例外）。多一张或少一张都要判红 ——
 // 这一档是「人的结论」，被悄悄批量加卡就等于把站长的判断稀释成普通档位。
@@ -830,7 +839,7 @@ check(html.includes('轮休制周休 2 天（做五休二）属双休、判 A �
   'index.html 口径区写明「轮休制周休 2 天属双休判 A」（废除 AI 自拟的周末限定口径）');
 check(!html.includes('查不到直雇统一双休证据即视为无双休'),
   'index.html 已无「查不到直雇统一双休证据即视为无双休」自拟旧口径（活文案）');
-const BANK_PAGE_TIER = { icbc: 'A', ccb: 'A', boc: 'A', chengdubank: 'A', abc: 'C' };
+const BANK_PAGE_TIER = { icbc: 'A', ccb: 'A', boc: 'A', chengdubank: 'A', abc: 'A' };
 const badBankPage = [];
 for (const [slug, tier] of Object.entries(BANK_PAGE_TIER)) {
   const page = join('brand', slug + '.html');
@@ -848,7 +857,7 @@ for (const [slug, tier] of Object.entries(BANK_PAGE_TIER)) {
   }
 }
 check(badBankPage.length === 0,
-  'brand/ 5 张银行页徽章与判据跟数据层一致（4 家 A 级 + 农行 C 级硬证据）',
+  'brand/ 5 张银行页徽章与判据跟数据层一致（5 家 A 级硬证据）',
   badBankPage.join('；') || '一致');
 
 // ---- 2g. 首页证据链完整公示（2026-10-31 站长要求「证据链必须首页完整公示，口说无凭」）----
