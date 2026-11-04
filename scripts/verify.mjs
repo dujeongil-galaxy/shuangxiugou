@@ -1260,7 +1260,7 @@ section('2g. 首页证据链完整公示');
     check(!/\.sxg-nav-ver\s*\{[^}]*display:\s*none/.test(nm),
       'PC 端菜单也显示版本号（.sxg-nav-ver 不再被 display:none 藏起来）',
       '样式里还有 .sxg-nav-ver{display:none}，桌面端会看不到版本号');
-    check(/<script src="\.\/nav-menu\.js\?v=\d+"><\/script>/.test(html),
+    check(/<script(?:\s+defer)? src="\.\/nav-menu\.js\?v=\d+"><\/script>/.test(html),
       'index.html 已挂载 nav-menu.js（带 ?v 缓存号）');
     // PC 常显 / 手机折叠：两个断点都必须写在样式里，否则等同只有一个形态
     check(/@media \(max-width:640px\)/.test(nm) && /--sxg-bar-h/.test(nm),
@@ -4844,7 +4844,7 @@ section('20i. 星巴克公告框注入闸门（与苹果同构）');
   const idxHtml = read('index.html');
   section('20k. 搜索口径修正（summary 命中降级为兜底）');
   check(exists('search-scope-fix.js')
-    && /<script src="\.\/search-scope-fix\.js\?v=\d+"><\/script>/.test(idxHtml),
+    && /<script(?:\s+defer)? src="\.\/search-scope-fix\.js\?v=\d+"><\/script>/.test(idxHtml),
     '口径修正补丁存在且在 index.html 挂载');
   // 提取必须括号配平 + 跳过模板字符串：词条间距不固定，正则前瞻会跨对象
   // 误匹配（gen-pinyin-index.py 踩过：patagonia 被安上别家关键词）；
@@ -5142,7 +5142,7 @@ section('21c. 首页滑到底部按钮');
   const idx = readFileSync(join(ROOT, 'index.html'), 'utf8');
   // 脚本引用在位：盯着 <script src> 标签，不是文件存在性
   // （文件存在但没挂进页面 = 白做，2026-10-24 photo-gate.js 的教训）
-  check(/<script src="\.\/bottom-button\.js\?v=\d+"><\/script>/.test(idx),
+  check(/<script(?:\s+defer)? src="\.\/bottom-button\.js\?v=\d+"><\/script>/.test(idx),
     'index.html 挂载了 bottom-button.js 脚本标签');
   // 底部按钮文件本体：幂等保护 + 点击绑定 scrollTo，缺一即判红
   const bbPath = join(ROOT, 'bottom-button.js');
@@ -5167,7 +5167,7 @@ section('21c. 首页滑到底部按钮');
   const idxHtml = read('index.html');
   section('21d. 申诉入口政策确认弹窗');
   check(exists('appeal-policy.js')
-    && /<script src="\.\/appeal-policy\.js\?v=\d+"><\/script>/.test(idxHtml),
+    && /<script(?:\s+defer)? src="\.\/appeal-policy\.js\?v=\d+"><\/script>/.test(idxHtml),
     '申诉政策弹窗脚本存在且在 index.html 挂载');
   // 判定逻辑：issues 链接才拦，普通链接放过（盯逻辑行，注释救绿已防）
   check(/github\\.com\\\/\[\^\/\]\+\\\/\[\^\/\]\+\\\/issues/.test(ap),
@@ -5217,7 +5217,7 @@ section('21c. 首页滑到底部按钮');
   const vcr = exists('virtual-card-remove.js') ? read('virtual-card-remove.js') : '';
   section('21e. 虚拟对比黑榜卡下线');
   check(exists('virtual-card-remove.js')
-    && /<script src="\.\/virtual-card-remove\.js\?v=\d+"><\/script>/.test(html),
+    && /<script(?:\s+defer)? src="\.\/virtual-card-remove\.js\?v=\d+"><\/script>/.test(html),
     '下线脚本存在且在 index.html 挂载');
   // 判定逻辑盯真效果：MARK 字面 + textContent 命中
   check(/var MARK = '虚拟对比黑榜'/.test(vcr)
@@ -5317,8 +5317,8 @@ section('21c. 首页滑到底部按钮');
       '挂载顺序：ai-config.js 在 ai-chat.js 之前');
   }
   // ---- 首页也挂（2026-10-26 站长指令：保证手机端可见——手机用户主要逛首页） ----
-  check(/<script src="\.\/ai-config\.js\?v=\d+"><\/script>/.test(html)
-    && /<script src="\.\/ai-chat\.js\?v=\d+"><\/script>/.test(html),
+  check(/<script(?:\s+defer)? src="\.\/ai-config\.js\?v=\d+"><\/script>/.test(html)
+    && /<script(?:\s+defer)? src="\.\/ai-chat\.js\?v=\d+"><\/script>/.test(html),
     '首页 index.html 也挂载了挂件（手机端主入口）');
   {
     const cfgPos = html.indexOf('ai-config.js?v=');

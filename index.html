@@ -111,6 +111,12 @@
     </script>
     <script type="module" crossorigin src="./assets/index-YthXZ9eP.js?v=50"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-BgVofs0W.css">
+    <!-- 预加载关键补丁脚本（与 HTML 解析并行下载，减少隐私窗口无缓存时 RTT 等待） -->
+    <link rel="preload" href="./custom-card-actions.js?v=19" as="script">
+    <link rel="preload" href="./u-grade-patch.js?v=13" as="script">
+    <link rel="preload" href="./stat-filter.js?v=9" as="script">
+    <link rel="preload" href="./pinyin-index.js?v=10" as="script">
+    <link rel="preload" href="./nav-menu.js?v=6" as="script">
     <!-- 良配 · 限时推广广告位（独立文件，改文案/样式不必动主页面；改完请把 ?v=N 的 N +1 防缓存） -->
     <link rel="stylesheet" href="./liangpei-ad.css?v=13">
     <!-- 首页视频推荐弹窗（改完请把 ?v=N 的 N +1 防缓存） -->
@@ -8675,31 +8681,31 @@
       }, 500);
     </script>
   <!-- 页脚友情链接（互链接到shuangxiugou.top 等同类项目） -->
-  <script src="./friend-links-footer.js?v=15"></script>
+  <script defer src="./friend-links-footer.js?v=15"></script>
   <!-- 双休率口径标注：给「0%」挂「口径换算」徽标、给「—」挂「未核实」徽标+原因行（bundle 不可改，DOM 层补丁） -->
-  <script src="./rate-note-patch.js?v=2"></script>
+  <script defer src="./rate-note-patch.js?v=2"></script>
   <!-- 顶栏按钮容器标记：给三按钮所在容器打 data-hdr-acts，
        供mobile-fixes.css 定位（真机实测 :has() 未生效，需属性选择器兜底） -->
-  <script src="./header-fix.js?v=1"></script>
+  <script defer src="./header-fix.js?v=1"></script>
   <!-- 讨论广场「发布交流」改为跳转到专属说明页（该表单原为写入本地 state，刷新即丢；功能暂未开放）。
        注意不是 404.html —— 那个是全站兜底，给输错网址的人看的，用错文案等于误导。 -->
-  <script src="./discussion-to-404.js?v=2"></script>
+  <script defer src="./discussion-to-404.js?v=2"></script>
   <!-- 良配 · 限时推广广告位：注入 DOM + 倒计时 + 微信小程序 scheme 分环境处理 -->
-  <script src="./liangpei-ad.js?v=11"></script>
+  <script defer src="./liangpei-ad.js?v=11"></script>
   <!-- 首页视频推荐弹窗：延迟自动弹出，冷却期内不重复弹（localStorage） -->
-  <script src="./douyin-prompt.js?v=14"></script>
+  <script defer src="./douyin-prompt.js?v=14"></script>
   <!-- 全站证据链公示区折叠：h2 作把手，其下内容默认收起、点击展开（不改动生成内容，verify 防漂移不受影响）。2026-10-31 站长反馈「太乱」 -->
-  <script src="./evidence-collapse.js?v=2"></script>
+  <script defer src="./evidence-collapse.js?v=2"></script>
   <!-- 首页常驻抖音视频卡（专科双非怎么混进钱多事少的红利公司）：封面+播放按钮，点击尽力内嵌播放器，失败降级跳抖音。2026-10-31 站长要求「视频加这里，嵌入式点击可播放」 -->
-  <script src="./featured-douyin.js?v=4"></script>
+  <script defer src="./featured-douyin.js?v=4"></script>
   <!-- 打卡引导 + 自定义卡片按钮修复：
        1) 顶部「打卡并生成小票」改为弹窗，引导去品牌档案卡打卡（原来默认给第一家品牌打卡，会误导）
        2) 自定义品牌卡（DOM 克隆）没有 React onClick，补上「打卡」「详情证据」功能 -->
-  <script src="./custom-card-actions.js?v=19"></script>
-  <script src="./u-grade-patch.js?v=13"></script>
-  <script src="./rating-stats-patch.js?v=2"></script>
+  <script defer src="./custom-card-actions.js?v=19"></script>
+  <script defer src="./u-grade-patch.js?v=13"></script>
+  <script defer src="./rating-stats-patch.js?v=2"></script>
   <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
-  <script src="./factcheck-button.js?v=1"></script>
+  <script defer src="./factcheck-button.js?v=1"></script>
   <!-- 拼音 / 首字母模糊搜索联想。
        背景：bundle 的搜索是纯 includes 硬匹配，输「ning」「ndsd」搜不到
        「宁德时代」。真要改就得动压缩产物 assets/index-YthXZ9eP.js，
@@ -8707,8 +8713,8 @@
        所以这里只做「输入联想 + 回填」：给出候选，用户点了回填中文名，
        后续过滤仍走 React 原生搜索路径，渲染逻辑零改动。
        索引数据在 pinyin-index.js，必须先于本脚本加载。 -->
-  <script src="./pinyin-index.js?v=10"></script>
-  <script src="./pinyin-search.js?v=5"></script>
+  <script defer src="./pinyin-index.js?v=10"></script>
+  <script defer src="./pinyin-search.js?v=5"></script>
 
   <!-- 彻底禁用数字搜索。2026-10-17 用户反馈：输入「1」「2」会搜出一堆无关卡片。
        根因：bundle 的搜索是纯子串匹配，条件含 name/companyName/category/
@@ -8718,15 +8724,15 @@
        拦掉：数字键直接不响应，粘贴/输入法带进来的数字会被剔除，
        React 收到的查询词里永远不含数字。
        必须在 pinyin-search.js 之后：联想层要先拿到干净的查询词。 -->
-  <script src="./block-numeric-search.js?v=1"></script>
+  <script defer src="./block-numeric-search.js?v=1"></script>
   <!-- 《答案之书》随机占位：把搜索框的 placeholder 换成每次刷新随机一条的答案。
        原来那句「消费前，先了解这个品牌是否双休；用订单（消费力），反向考核企业」
        太长太重，压在搜索框里像广告语。
        placeholder 写死在压缩产物里，同样不能手改，走 DOM 层覆盖。
        ⚠️ 数据文件必须先于逻辑文件加载，否则逻辑层开头 `if (!BOOK) return`
           会直接静默退出 —— 页面不报错，placeholder 也不变。 -->
-  <script src="./answer-book-data.js?v=1"></script>
-  <script src="./answer-book.js?v=1"></script>
+  <script defer src="./answer-book-data.js?v=1"></script>
+  <script defer src="./answer-book.js?v=1"></script>
 
   <!-- 员工工时投稿 → 转 GitHub Issue 入库。
        查证结论：压缩包里的 onSubmit 只做 React 本地 state 更新
@@ -8735,13 +8741,13 @@
        这里在捕获阶段劫持原生提交，拼成 GitHub「新建 issue」URL 交给浏览器打开，
        用户确认后即真正进入仓库 issue 列表。
        不用 fetch 调 GitHub API：token 放前端等于公开，会被滥用刷 issue。 -->
-  <script src="./employee-report-to-issue.js?v=1"></script>
-<script src="./top-button.js?v=4"></script>
-<script src="./bottom-button.js?v=5"></script>
+  <script defer src="./employee-report-to-issue.js?v=1"></script>
+<script defer src="./top-button.js?v=4"></script>
+<script defer src="./bottom-button.js?v=5"></script>
 <!-- 右侧纯文字「提醒」悬浮按钮（2026-10-28 站长要求；2026-10-30 文案换成站长亲笔《双休购》长文）：点击弹出「双休购」模态层；
      其余悬浮按钮行为不变。挂 body、不碰 React 的 #root 地盘，避让 TOP/⤓/AI 对话钮。 -->
-<script src="./remind-button.js?v=5"></script>
-<script src="./stat-filter.js?v=9"></script>
+<script defer src="./remind-button.js?v=5"></script>
+<script defer src="./stat-filter.js?v=9"></script>
   <!-- 搜索口径修正：summary 命中降级为兜底。2026-10-24 站长截图：搜「瑞幸咖啡」
        结果里同时出现库迪咖啡。根因：bundle 主过滤器的 7 路匹配里有 summary，
        而库迪 summary 写着「由瑞幸咖啡创始团队于 2022 年创立」——叙述性长文本
@@ -8752,29 +8758,29 @@
        零命中时（如搜「六休一」）summary 兜底展示，不空结果。
        必须在 stat-filter.js 之后：两补丁操作同一批卡片，本补丁的隐藏用
        class + !important，晚加载保证层级语义上「口径修正在档位筛选之上」。 -->
-  <script src="./search-scope-fix.js?v=3"></script>
+  <script defer src="./search-scope-fix.js?v=3"></script>
   <!-- 评级过滤切换 0.5s 高度模糊闪屏（2026-11-04 站长要求）：捕获阶段拦截评级按钮点击，
        给卡片区加 blur(16px) 覆盖 500ms，期间 bundle 即时重渲染 + filterCustomCards 的 100ms
        二次调整都在模糊下完成，取消模糊时已是最终态，消除「点一下画面变两下」的抖动。
        必须在 stat-filter.js 之后加载（与口径修正同批卡片，且只做 DOM 层补丁，不碰压缩产物）。 -->
-  <script src="./filter-flash.js?v=2"></script>
+  <script defer src="./filter-flash.js?v=2"></script>
   <!-- 申诉政策确认弹窗（2026-10-25 站长要求）：申诉入口点击先弹政策，
        同意并跳转 / 拒绝并关闭。目标链接从页面既有 a[href] 现场读取，
        本文件不维护第二份 issueUrl。 -->
-  <script src="./appeal-policy.js?v=2"></script>
+  <script defer src="./appeal-policy.js?v=2"></script>
   <!-- 虚拟对比黑榜卡下线（2026-10-26 站长指令）：bundle 不能动，
        DOM 层移除该卡 + noscript 清单同步删行 + MutationObserver
        兜底 React 重渲染（搜索/筛选/切标签会把卡挂回来）。 -->
-  <script src="./virtual-card-remove.js?v=1"></script>
+  <script defer src="./virtual-card-remove.js?v=1"></script>
   <!-- 劳动法小助手（2026-10-26 站长指令）：挂 body（React 只管 #root，
        照 bottom-button 纪律不碰它管的地盘）；endpoint 配在 ai-config.js
        （未配置时挂件自动不显示）。按钮避让 TOP/⤓ 浮钮，手机端 56px 可点。 -->
-  <script src="./ai-config.js?v=1"></script>
-  <script src="./ai-chat.js?v=16"></script>
+  <script defer src="./ai-config.js?v=1"></script>
+  <script defer src="./ai-chat.js?v=16"></script>
   <!-- 右下角悬浮导航菜单（2026-11-02 站长指令）：顶部公告栏不许再挂超链接，
        同类项目导航 / 成功案例 收到这里。PC 常显横向 dock，<640px 折叠成一个
        主按钮，点开才创建条目 DOM。 -->
-  <script src="./nav-menu.js?v=6"></script>
+  <script defer src="./nav-menu.js?v=6"></script>
 
   </body>
 </html>
