@@ -472,7 +472,65 @@
       <a class="btn btn-ghost" href="https://github.com/dujeongil-galaxy/shuangxiugou/issues" target="_blank" rel="noopener noreferrer">
         提交你所在企业的真实双休数据
       </a>
+      <button class="btn btn-ghost" id="shareBtn" type="button" style="cursor:pointer;">
+        📤 分享本站
+      </button>
     </div>
+
+    <!-- 分享弹窗 -->
+    <div id="shareModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);align-items:center;justify-content:center;">
+      <div style="background:#fff;border-radius:16px;padding:28px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;">
+        <button id="shareClose" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:24px;cursor:pointer;color:#6b7280;">×</button>
+        <h3 style="margin:0 0 16px;font-size:18px;font-weight:700;color:#0f766e;">📤 分享双休购</h3>
+        <p style="margin:0 0 16px;font-size:14px;color:#4b5563;">让更多人了解这些品牌的双休情况：</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <a id="shareWeibo" href="#" target="_blank" rel="noopener noreferrer" style="display:block;padding:10px 16px;background:#e6162d;color:#fff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:600;text-align:center;">分享到微博</a>
+          <a id="shareQQ" href="#" target="_blank" rel="noopener noreferrer" style="display:block;padding:10px 16px;background:#12b7f5;color:#fff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:600;text-align:center;">分享到 QQ</a>
+          <a id="shareTelegram" href="#" target="_blank" rel="noopener noreferrer" style="display:block;padding:10px 16px;background:#0088cc;color:#fff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:600;text-align:center;">分享到 Telegram</a>
+          <a id="shareTwitter" href="#" target="_blank" rel="noopener noreferrer" style="display:block;padding:10px 16px;background:#1da1f2;color:#fff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:600;text-align:center;">分享到 Twitter</a>
+          <div style="margin-top:8px;padding:10px;background:#f9fafb;border-radius:8px;">
+            <p style="margin:0 0 6px;font-size:12px;color:#6b7280;">或直接复制链接：</p>
+            <div style="display:flex;gap:6px;">
+              <input id="shareUrl" type="text" readonly style="flex:1;padding:8px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;" />
+              <button id="copyShareUrl" type="button" style="padding:8px 14px;background:#0f766e;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">复制</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    (function() {
+      var shareBtn = document.getElementById('shareBtn');
+      var shareModal = document.getElementById('shareModal');
+      var shareClose = document.getElementById('shareClose');
+      var shareUrl = document.getElementById('shareUrl');
+      var copyShareUrl = document.getElementById('copyShareUrl');
+      
+      var pageUrl = encodeURIComponent(window.location.href);
+      var pageTitle = encodeURIComponent('双休购 ShuangxiuGo - 收录具名企业的真实双休率与平均下班时间');
+      var pageDesc = encodeURIComponent('帮助求职者避雷单休、大小周、996，也帮消费者在购物前了解品牌背后的用工制度。');
+      
+      document.getElementById('shareWeibo').href = 'https://service.weibo.com/share/share.php?url=' + pageUrl + '&title=' + pageTitle + '&pic=' + encodeURIComponent('https://dujeongil-galaxy.github.io/shuangxiugou/favicon.svg');
+      document.getElementById('shareQQ').href = 'https://connect.qq.com/widget/shareqq/index.html?url=' + pageUrl + '&title=' + pageTitle + '&desc=' + pageDesc;
+      document.getElementById('shareTelegram').href = 'https://t.me/share/url?url=' + pageUrl + '&text=' + pageTitle;
+      document.getElementById('shareTwitter').href = 'https://twitter.com/intent/tweet?url=' + pageUrl + '&text=' + pageTitle;
+      
+      shareUrl.value = window.location.href;
+      
+      shareBtn.onclick = function() { shareModal.style.display = 'flex'; };
+      shareClose.onclick = function() { shareModal.style.display = 'none'; };
+      shareModal.onclick = function(e) { if (e.target === shareModal) shareModal.style.display = 'none'; };
+      
+      copyShareUrl.onclick = function() {
+        shareUrl.select();
+        document.execCommand('copy');
+        this.textContent = '已复制';
+        var btn = this;
+        setTimeout(function() { btn.textContent = '复制'; }, 1500);
+      };
+    })();
+    </script>
 
     <p class="note">
       <strong>这个项目做的事：</strong>收录具名企业的真实双休率与平均下班时间，附公开证据链，

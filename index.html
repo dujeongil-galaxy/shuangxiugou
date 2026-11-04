@@ -5128,7 +5128,7 @@
           doubleRestRate: null,
           offWorkTime: null,
           voteCount: '0',
-          desc: '"招聘平台，不套用双休口径，站长人工介入直接判 D 级（平台类目例外，不套三类 D 判据）：① 平台虚假招聘、诈骗岗位、培训贷等套路长期泛滥，密度如同 PDD 上假货多；② 规则双标——HR 对求职者冷嘲热讽无人管，求职者回嘴即封号、换号因设备关联秒封（站长 2017 年成都求职亲历）。本卡为人工定级，理由与个人经历已在详情页如实交代。<br>🔗 <a href=\"https://www.zhaopin.com\" target=\"_blank\" style=\"color:#2563eb;text-decoration:underline\">智联招聘官网</a>（同类招聘平台对比参考）"',
+          desc: '"招聘平台，不套用双休口径，站长人工介入直接判 D 级（平台类目例外，不套三类 D 判据）：① 平台虚假招聘、诈骗岗位、培训贷等套路长期泛滥，密度如同 PDD 上假货多；② 规则双标——HR 对求职者冷嘲热讽无人管，求职者回嘴即封号、换号因设备关联秒封（站长 2017 年成都求职亲历）。本卡为人工定级，理由与个人经历已在详情页如实交代。"',
           tags: ['招聘平台', 'BOSS直聘', '虚假招聘', '求职骗局'],
           likeCount: '0',
           dislikeCount: '0',
@@ -8313,6 +8313,75 @@
         tagsRow.parentNode.insertBefore(note, tagsRow.nextSibling);
       }
 
+      // BOSS直聘「抵制提示」公示框（2026-11-04 站长要求）
+      // 在卡片下方注入红色加粗文案：「抵制垃圾Boss直聘，请使用智联招聘App」
+      // 与 insertAbcNote **平行实现**：标题匹配 → 无卡摘除 → 子树隐藏摘除 → 幂等判断
+      function insertBossNote() {
+        var note = document.getElementById('boss-note');
+
+        var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');
+        var bossCard = null;
+        for (var i = 0; i < cards.length; i++) {
+          var titleEl = cards[i].querySelector('h2,h3');
+          var title = titleEl ? titleEl.textContent.trim() : '';
+          if (title.indexOf('BOSS') === 0) {
+            bossCard = cards[i];
+          }
+        }
+
+        function sxgHiddenSubtreeBoss(el) {
+          var n = el;
+          while (n && n !== document.body) {
+            if (n.style && n.style.display === 'none') return true;
+            n = n.parentNode;
+          }
+          return false;
+        }
+        var bossHidden = bossCard && sxgHiddenSubtreeBoss(bossCard);
+
+        if (!bossCard) {
+          if (note && note.parentNode) note.parentNode.removeChild(note);
+          return;
+        }
+        if (bossHidden) {
+          if (note && note.parentNode) note.parentNode.removeChild(note);
+          return;
+        }
+
+        var tagsRow = bossCard.querySelector('.flex-wrap');
+        if (!tagsRow) {
+          diagWarn('insertBossNote 找不到BOSS直聘卡的产品标签行（.flex-wrap），未插入公示框');
+          return;
+        }
+
+        var noteInsideBoss = false;
+        if (note) {
+          if (bossCard.contains && bossCard.contains(note)) {
+            noteInsideBoss = true;
+          } else {
+            var anc = note.parentNode;
+            while (anc) {
+              if (anc === bossCard) { noteInsideBoss = true; break; }
+              anc = anc.parentNode;
+            }
+          }
+        }
+        if (note && noteInsideBoss
+                   && note.parentNode === tagsRow.parentNode
+                   && note.previousSibling === tagsRow) {
+          return;
+        }
+
+        if (note && note.parentNode) note.parentNode.removeChild(note);
+        if (!note) {
+          note = document.createElement('div');
+          note.id = 'boss-note';
+          note.style.cssText = 'margin-top:12px;padding:10px 14px;background:#fef2f2;border:1px solid #dc2626;border-radius:8px;color:#dc2626;font-size:14px;font-weight:bold;';
+          note.innerHTML = '🚫 抵制垃圾Boss直聘，请使用智联招聘App';
+        }
+        tagsRow.parentNode.insertBefore(note, tagsRow.nextSibling);
+      }
+
       // 星巴克「真实双休率」显示覆盖（2026-10-22 站长指示：显示为 98%，A 级评级不变）。
       // 该值源自冻结 bundle 的 realDoubleWeekendRate:85，bundle 按铁律不可改，
       // 故在 DOM 层覆盖显示值。与 insertStarbucksNote **平行实现**：找标题以 Starbucks
@@ -8478,6 +8547,7 @@
         replaceAllLogos();
         insertAppleNote();
         insertAbcNote();
+        insertBossNote();
         insertStarbucksNote();
         insertMeiyijiaNote();
         insertMolinaNote();
@@ -8550,6 +8620,7 @@
           requestAnimationFrame(function() {
             try { insertAppleNote(); } catch (err) { diagError('insertAppleNote 抛异常', err); }
             try { insertAbcNote(); } catch (err) { diagError('insertAbcNote 抛异常', err); }
+            try { insertBossNote(); } catch (err) { diagError('insertBossNote 抛异常', err); }
             try { insertStarbucksNote(); } catch (err) { diagError('insertStarbucksNote 抛异常', err); }
             try { insertMeiyijiaNote(); } catch (err) { diagError('insertMeiyijiaNote 抛异常', err); }
             try { insertMolinaNote(); } catch (err) { diagError('insertMolinaNote 抛异常', err); }
@@ -8566,6 +8637,7 @@
             filterCustomCards();
             try { insertAppleNote(); } catch (err) { diagError('insertAppleNote 抛异常', err); }
             try { insertAbcNote(); } catch (err) { diagError('insertAbcNote 抛异常', err); }
+            try { insertBossNote(); } catch (err) { diagError('insertBossNote 抛异常', err); }
             try { insertStarbucksNote(); } catch (err) { diagError('insertStarbucksNote 抛异常', err); }
             try { insertMeiyijiaNote(); } catch (err) { diagError('insertMeiyijiaNote 抛异常', err); }
             try { insertMolinaNote(); } catch (err) { diagError('insertMolinaNote 抛异常', err); }
@@ -8624,7 +8696,7 @@
        1) 顶部「打卡并生成小票」改为弹窗，引导去品牌档案卡打卡（原来默认给第一家品牌打卡，会误导）
        2) 自定义品牌卡（DOM 克隆）没有 React onClick，补上「打卡」「详情证据」功能 -->
   <script src="./custom-card-actions.js?v=19"></script>
-  <script src="./u-grade-patch.js?v=12"></script>
+  <script src="./u-grade-patch.js?v=13"></script>
   <script src="./rating-stats-patch.js?v=2"></script>
   <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
   <script src="./factcheck-button.js?v=1"></script>

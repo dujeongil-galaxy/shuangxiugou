@@ -211,6 +211,17 @@
     p.textContent = '四格统计 S/A/B/C（D 级已计入避雷预警格）；另有 ' + n
       + ' 家已尽合理检索仍无证据，标为 U级 · 证据不足（不计入上表）';
     grid.parentElement.insertBefore(p, grid.nextSibling);
+    /* 2026-11-04 站长指定：紧接上述说明文字下方换行，
+       红色加粗写「抵制垃圾Boss直聘，请使用智联招聘App」（含智联官网链接）。 */
+    var b = document.createElement('div');
+    b.id = 'sxg-boss-boycott';
+    b.setAttribute('style', 'margin-top:4px;font-size:14px;font-weight:900;'
+      + 'color:#dc2626;text-align:center;line-height:1.6');
+    b.innerHTML = '🚫 抵制垃圾Boss直聘，'
+      + '请使用<a href="https://www.zhaopin.com" target="_blank" rel="noopener noreferrer"'
+      + ' style="color:#dc2626;text-decoration:underline">智联招聘App</a>';
+    p.appendChild(document.createElement('br'));
+    p.appendChild(b);
   }
 
   /* D 级出口：它**计入**避雷预警格（D 是 C 的加重版，不是另一类），
