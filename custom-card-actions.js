@@ -1511,6 +1511,20 @@
         if (fTotalBrand) fTotalBrand.textContent = '￥' + fmtMoney(brandNext);
         paintBuiltinAmount(receipt, total);
         paintBuiltinBrandRow(receipt, brandKey, brandNext);
+        // 2026-11-04 站长要求：分享弹窗覆盖所有卡片（含内置卡）。
+        // 内置小票由 bundle React 关闭，这里轮询等 .receipt-tear-top 离开 DOM
+        // 再弹分享，避免分享弹窗被压在小票弹窗底下。10s 兜底防卡死。
+        if (t.indexOf('确认打卡') !== -1) {
+          var waited = 0;
+          (function waitBuiltinClose() {
+            if (!document.body.contains(receipt)) {
+              if (window.SXGShare) window.SXGShare.open();
+              return;
+            }
+            if ((waited += 120) > 10000) return; // React 没关就别抢戏
+            setTimeout(waitBuiltinClose, 120);
+          })();
+        }
       }, true);
     }
 

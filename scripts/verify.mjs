@@ -5165,6 +5165,24 @@ section('21b-2. 打赏面板默认隐藏 + 分享弹窗接线');
   const cca = readFileSync(join(ROOT, 'custom-card-actions.js'), 'utf8');
   check(/window\.SXGShare\) window\.SXGShare\.open\(\)/.test(cca),
     'custom-card-actions.js 打卡成功后调起分享弹窗（SXGShare.open）');
+  // 2026-11-04 站长追加：分享弹窗覆盖所有卡片（含内置卡）。
+  // 内置卡由 bundle React 关小票，必须轮询 .receipt-tear-top 离开 DOM 再弹。
+  check(/waitBuiltinClose/.test(cca)
+    && /document\.body\.contains\(receipt\)/.test(cca)
+    && /waitBuiltinClose[\s\S]{0,400}window\.SXGShare\) window\.SXGShare\.open\(\)/.test(cca),
+    '内置卡打卡也接分享（waitBuiltinClose 轮询关小票后调起 SXGShare）',
+    '删掉 waitBuiltinClose → 内置卡打卡后不弹分享，只有自定义卡有');
+  // 分享文案：复制类平台带说明文字，不照搬网站标题（站长 2026-11-04 要求）
+  const sm = readFileSync(join(ROOT, 'share-modal.js'), 'utf8');
+  check(/FALLBACK_DESC/.test(sm)
+    && /og:description/.test(sm)
+    && /i\.desc \+ '\\n' \+ i\.url/.test(sm),
+    'share-modal.js 复制类平台带说明文案（og:description + 兜底 FALLBACK_DESC）',
+    '删掉 desc 拼接 → 复制出去又是光秃秃一个链接');
+  // og 标签：微信/Discord/Telegram 贴链接时的卡片与配图（og:image 必须是位图绝对 URL）
+  check(/property="og:image" content="https:\/\/dujeongil-galaxy\.github\.io\/shuangxiugou\/og-share\.png"/.test(idx)
+    && /property="og:description"/.test(idx),
+    'index.html 有 og:image（og-share.png 位图绝对 URL）与 og:description 卡片标签');
 }
 
 // ---------- 21c. 首页滑到底部按钮 ----------

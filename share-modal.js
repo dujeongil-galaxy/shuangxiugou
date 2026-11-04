@@ -44,6 +44,12 @@
 
   var D = 'M15 3h1.9c.3 1.7 1.4 3.1 3.1 3.4v2c-1.2 0-2.3-.4-3.2-1.1v6.2c0 3-2.4 5.4-5.4 5.4S6 16.5 6 13.5s2.4-5.4 5.4-5.4c.3 0 .6 0 .9.1v2c-.3-.1-.6-.1-.9-.1-1.9 0-3.4 1.5-3.4 3.4s1.5 3.4 3.4 3.4 3.4-1.5 3.4-3.4V3z';
 
+  // 兜底分享文案（页面没有 og:description 时用）。
+  // 口径参考必应收录的站点简介，站长 2026-11-04 认可这个方向。
+  var FALLBACK_DESC = '双休购 ShuangxiuGo —— 开源的劳工厂友好品牌索引：查公司双休制度、'
+    + '企业工时评级、员工实测数据，避雷单休、大小周、996 血汗工厂，'
+    + '买东西、找工作前先查一查。';
+
   var ICON = {
     moments: '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="8.6"/><path d="M12 3.4l6.4 8M20.6 12l-9 6.4M12 20.6l-6.4-8M3.4 12l9-6.4"/></g></svg>',
     wechat: '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="#fff"><path d="M9.6 4.1C6 4.1 3 6.6 3 9.6c0 1.7.9 3.3 2.4 4.3l-.7 2.2 2.5-1.2c.7.2 1.5.3 2.3.3h.4c-.2-.5-.3-1.1-.3-1.7 0-2.9 2.8-5.2 6.2-5.2h.4C15.7 5.8 12.9 4.1 9.6 4.1z"/><path d="M21 13.4c0-2.5-2.5-4.5-5.5-4.5S10 10.9 10 13.4s2.5 4.5 5.5 4.5c.6 0 1.2-.1 1.8-.2l2 1-.6-1.7c1.4-.8 2.3-2.1 2.3-3.6z"/></g></svg>',
@@ -62,21 +68,21 @@
   };
 
   var DOMESTIC = [
-    { k: 'moments', name: '朋友圈', bg: '#0B7A4B', copy: '链接已复制，打开微信发朋友圈时粘贴' },
-    { k: 'wechat', name: '微信', bg: '#07C160', copy: '链接已复制，打开微信粘贴给好友' },
-    { k: 'douyin', name: '抖音', bg: '#000000', copy: '链接已复制，打开抖音粘贴给好友' },
-    { k: 'xhs', name: '小红书', bg: '#FF2442', copy: '链接已复制，打开小红书粘贴分享' },
+    { k: 'moments', name: '朋友圈', bg: '#0B7A4B', copy: '文案和链接已复制，打开微信发朋友圈时粘贴' },
+    { k: 'wechat', name: '微信', bg: '#07C160', copy: '文案和链接已复制，打开微信粘贴给好友' },
+    { k: 'douyin', name: '抖音', bg: '#000000', copy: '文案和链接已复制，打开抖音粘贴给好友' },
+    { k: 'xhs', name: '小红书', bg: '#FF2442', copy: '文案和链接已复制，打开小红书粘贴分享' },
     { k: 'weibo', name: '微博', bg: '#E6162D', url: 'weibo' }
   ];
 
   var FOREIGN = [
-    { k: 'discord', name: 'Discord', copy: '链接已复制，粘贴到 Discord 频道' },
+    { k: 'discord', name: 'Discord', copy: '文案和链接已复制，粘贴到 Discord 频道' },
     { k: 'facebook', name: 'Facebook', url: 'facebook' },
     { k: 'x', name: 'X', url: 'x' },
     { k: 'linkedin', name: 'LinkedIn', url: 'linkedin' },
     { k: 'reddit', name: 'Reddit', url: 'reddit' },
     { k: 'telegram', name: 'Telegram', url: 'telegram' },
-    { k: 'kakaotalk', name: 'KakaoTalk', copy: '链接已复制，粘贴到 KakaoTalk 聊天' },
+    { k: 'kakaotalk', name: 'KakaoTalk', copy: '文案和链接已复制，粘贴到 KakaoTalk 聊天' },
     { k: 'line', name: 'Line', url: 'line' }
   ];
 
@@ -93,7 +99,13 @@
     var title = document.title || '双休购 ShuangxiuGo';
     var og = document.querySelector('meta[property="og:title"]');
     if (og && og.getAttribute('content')) title = og.getAttribute('content');
-    return { url: url, title: title };
+    // 2026-11-04 站长要求：分享出去不能光秃秃一个链接/照搬网站标题，
+    // 要带一句人话说明。优先取页面 og:description，取不到用兜底文案。
+    var desc = FALLBACK_DESC;
+    var od = document.querySelector('meta[property="og:description"]')
+      || document.querySelector('meta[name="description"]');
+    if (od && od.getAttribute('content')) desc = od.getAttribute('content');
+    return { url: url, title: title, desc: desc };
   }
 
   function build() {
@@ -101,15 +113,18 @@
     var i = info();
     var u = encodeURIComponent(i.url);
     var t = encodeURIComponent(i.title);
-    var pic = encodeURIComponent('https://dujeongil-galaxy.github.io/shuangxiugou/favicon.svg');
+    // 分享文本用说明文案，不照搬网站标题（站长 2026-11-04 要求）
+    var d = encodeURIComponent(i.desc);
+    // 能附图的平台就附图（og-share.png：微信/Discord/Telegram 链接卡片与微博配图共用）
+    var pic = encodeURIComponent('https://dujeongil-galaxy.github.io/shuangxiugou/og-share.png');
     var urls = {
-      weibo: 'https://service.weibo.com/share/share.php?url=' + u + '&title=' + t + '&pic=' + pic,
+      weibo: 'https://service.weibo.com/share/share.php?url=' + u + '&title=' + d + '&pic=' + pic,
       facebook: 'https://www.facebook.com/sharer/sharer.php?u=' + u,
-      x: 'https://twitter.com/intent/tweet?url=' + u + '&text=' + t,
+      x: 'https://twitter.com/intent/tweet?url=' + u + '&text=' + d,
       linkedin: 'https://www.linkedin.com/sharing/share-offsite/?url=' + u,
       reddit: 'https://www.reddit.com/submit?url=' + u + '&title=' + t,
-      telegram: 'https://t.me/share/url?url=' + u + '&text=' + t,
-      line: 'https://social-plugins.line.me/lineit/share?url=' + u + '&text=' + t
+      telegram: 'https://t.me/share/url?url=' + u + '&text=' + d,
+      line: 'https://social-plugins.line.me/lineit/share?url=' + u + '&text=' + d
     };
 
     var html = '<div class="sxg-share-card" role="dialog" aria-modal="true" aria-label="分享双休购">'
@@ -146,7 +161,7 @@
     });
 
     html += '</div>'
-      + '<button type="button" class="sxg-share-copy" data-copy="1" data-msg="链接已复制">'
+      + '<button type="button" class="sxg-share-copy" data-copy="link" data-msg="链接已复制">'
       + '<span class="sxg-sf-ico">' + ICON.link + '</span>'
       + '<span class="sxg-sf-name">复制链接</span></button>'
       + '</div>';
@@ -168,8 +183,12 @@
       var el = e.target.closest ? e.target.closest('[data-act="close"], [data-copy]') : null;
       if (!el) return;
       if (el.getAttribute('data-act') === 'close') { close(); return; }
-      if (el.getAttribute('data-copy')) {
+      var mode = el.getAttribute('data-copy');
+      if (mode === 'link') {
         copyText(i.url, el.getAttribute('data-msg') || '链接已复制');
+      } else {
+        // 复制类平台：带说明文案 + 链接，不光秃秃一个 URL（站长 2026-11-04 要求）
+        copyText(i.desc + '\n' + i.url, el.getAttribute('data-msg') || '文案和链接已复制');
       }
     });
   }
