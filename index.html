@@ -8310,16 +8310,24 @@
         // 2026-11-02：「D 级」「U 级」按钮由 u-grade-patch.js 注入到评级过滤条
         //（bundle 数组写死只有 S/A/B/C），选中态同样带 bg-slate-900 ——
         // 必须认得这两个文案，否则 D/U 激活时自定义卡不会被同步隐藏。
+        // 2026-11-04 修复「从某档切到 U 级时 C 级卡泄漏进 U 视图」：
+        // 选中态 className 不可靠——React 重渲染会重建评级条按钮、丢失 bg-slate-900，
+        // 此时若还靠扫描 className，会误判「无选中」→ 默认回退「全部评级」→ 自定义卡一个都不藏。
+        // 因此 U/D 激活态改由 u-grade-patch.js 写入 window.__sxgGradeFilter 作为单一真相源，
+        // 这里优先采信；其余（S/A/B/C/全部）仍按原 className 扫描（那几条 React 自带、稳定）。
         var activeGrade = '全部评级';
-        categoryBtns.forEach(function(btn) {
-          var text = btn.textContent.trim();
-          if (['全部评级', 'S 级', 'A 级', 'B 级', 'C 级', 'D 级', 'U 级'].includes(text)) {
-            if (btn.className.includes('bg-black') || btn.className.includes('bg-gray-900') || btn.className.includes('bg-slate-900')) {
-              activeGrade = text;
+        if (window.__sxgGradeFilter === 'U 级' || window.__sxgGradeFilter === 'D 级') {
+          activeGrade = window.__sxgGradeFilter;
+        } else {
+          categoryBtns.forEach(function(btn) {
+            var text = btn.textContent.trim();
+            if (['全部评级', 'S 级', 'A 级', 'B 级', 'C 级', 'D 级', 'U 级'].includes(text)) {
+              if (btn.className.includes('bg-black') || btn.className.includes('bg-gray-900') || btn.className.includes('bg-slate-900')) {
+                activeGrade = text;
+              }
             }
-          }
-        });
-        
+          });
+        }
         // 遍历所有自定义卡片，判断显示还是隐藏
         Object.keys(customCardsMeta).forEach(function(cardId) {
           var card = document.getElementById(cardId);
@@ -8542,7 +8550,7 @@
        1) 顶部「打卡并生成小票」改为弹窗，引导去品牌档案卡打卡（原来默认给第一家品牌打卡，会误导）
        2) 自定义品牌卡（DOM 克隆）没有 React onClick，补上「打卡」「详情证据」功能 -->
   <script src="./custom-card-actions.js?v=19"></script>
-  <script src="./u-grade-patch.js?v=11"></script>
+  <script src="./u-grade-patch.js?v=12"></script>
   <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
   <script src="./factcheck-button.js?v=1"></script>
   <!-- 拼音 / 首字母模糊搜索联想。

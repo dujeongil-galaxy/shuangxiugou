@@ -5707,8 +5707,8 @@ section('21c. 首页滑到底部按钮');
   check(/'D 级'/.test(rowTexts) && /'U 级'/.test(rowTexts),
     'stat-filter.js 评级行互斥枚举含「D 级」「U 级」（点 D/U 清五格筛选）',
     'stat-filter 没跟上 → 点 D/U 不清四格筛选，两套过滤层互相覆盖出现空面板');
-  check(/u-grade-patch\.js\?v=11/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
-    'u-grade-patch.js?v=11 / stat-filter.js?v=9（缓存号已随内容 bump）',
+  check(/u-grade-patch\.js\?v=12/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
+    'u-grade-patch.js?v=12 / stat-filter.js?v=9（缓存号已随内容 bump）',
     '缓存号没 bump → 用户拿旧补丁，D/U 按钮注入不生效（2026-11-01 拼音索引同类事故）');
   // 2026-11-03 站长实测 bug：点「D 级 / U 级」后拼音搜索框整块消失。
   // 根因：CARD_SEL（div.bg-white.rounded-2xl.border）命中面比品牌卡宽，
@@ -5730,6 +5730,17 @@ section('21c. 首页滑到底部按钮');
   check(/if \(gfActive && tier !== gfActive\) \{/.test(gfApplySrc),
     'gfApply()：只有 tier 已识别时才按档位隐藏',
     'gfApply 的隐藏条件被改写 → 防护失效');
+  // 2026-11-04 修复「从某档切到 U 级时 C 级卡泄漏进 U 视图」：
+  // 根因是 filterCustomCards 靠扫描按钮 className(bg-slate-900) 判激活，React 重渲染
+  // 重建评级条会丢这个类 → 误判无选中 → 默认回退「全部评级」→ 自定义卡一个都不藏。
+  // 修法：u-grade-patch.js 把激活态写入 window.__sxgGradeFilter（'U 级'/'D 级'/'all'），
+  // filterCustomCards 优先采信。下面两道静态断言守住这条机器契约，避免被「改写法」绕过。
+  check(/function gfSetActive/.test(ugp) && /window\.__sxgGradeFilter/.test(ugp),
+    'u-grade-patch.js：U/D 激活态写入 window.__sxgGradeFilter 单一真相源（gfSetActive）',
+    '缺失 → 重渲染丢失 className 时 U/D 激活态无从同步，C 级卡会漏进 U 视图');
+  check(/window\.__sxgGradeFilter\s*===\s*'U 级'\s*\|\|\s*window\.__sxgGradeFilter\s*===\s*'D 级'/.test(idx),
+    'index.html filterCustomCards：U/D 激活态优先采信 window.__sxgGradeFilter',
+    '回退成纯 className 扫描 → 重渲染后误判无选中，自定义卡泄漏（2026-11-04 bug 复活）');
 }
 
 // ---------- 21l. D/U 过滤误伤布局的回归测试必须存在且已接线 ----------

@@ -258,6 +258,17 @@
   var GF_BTN_ATTR = 'data-sxg-gf-btn';
   var GF_LETTERS = ['D', 'U'];
   var gfActive = null;                // null | 'D' | 'U'
+
+  /* 单一真相源：把当前 U/D 激活态同步给 index.html 的 filterCustomCards。
+   * 2026-11-04 修复「从某档切到 U 级时 C 级卡泄漏」：filterCustomCards 原本靠
+   * 扫描按钮 className(bg-slate-900) 判激活，而 React 重渲染会重建评级条、丢失该
+   * 类，导致误判「无选中」回退「全部评级」。这里直接写入 window.__sxgGradeFilter
+   * （'U 级'/'D 级'/'all'），filterCustomCards 优先采信，跨重渲染稳定。 */
+  try { window.__sxgGradeFilter = 'all'; } catch (e) {}
+  function gfSetActive(v) {
+    gfActive = v;
+    try { window.__sxgGradeFilter = v ? (v + ' 级') : 'all'; } catch (e) {}
+  }
   var gfBar = null;                   // 评级过滤按钮容器
   var _scanTimer = null;              // 统一的 scan 防抖计时器（16ms = 一帧）
   var _observer = null;               // MutationObserver 实例
@@ -408,19 +419,19 @@
       var letter = btn.getAttribute('data-sxg-gf-letter');
       var willActivate = (gfActive !== letter);
       // 再点同一个 = 取消（回到全部评级；React state 保持「全部」，列表仍是全量）
-      gfActive = willActivate ? letter : null;
+      gfSetActive(willActivate ? letter : null);
       // 2026-11-03 新增：显示加载遮罩（掩盖 DOM 操作的闪烁）
       showFilterOverlay();
       if (willActivate) {
         var needed = gfResetReactToAll();   // 弹回全部；点击会触发捕获监听把 gfActive 临时清零
         if (needed) {
-          gfActive = letter;                // 重新置回激活态（捕获监听已把它重置）
+          gfSetActive(letter);                // 重新置回激活态（捕获监听已把它重置）
           // React 重渲染是异步的，等它把全部卡片（含 U/D）渲染进 DOM 后再应用我们的过滤。
           // 用定时器兜底；同时 MO 在 React 重渲染完也会触发 scan()→gfSyncAndApply() 做同样的事。
           setTimeout(function () {
             try { injectU(); } catch (_) {}
             try { injectD(); } catch (_) {}
-            gfActive = letter;
+            gfSetActive(letter);
             gfSyncAndApply();
           }, 150);
           _userActionPending = true;        // 拦住 16ms 那次 scan，别在 React 重渲染前误应用
@@ -456,7 +467,7 @@
     if (gfActive || document.getElementById(GF_EMPTY_ID)) {
       // 2026-11-03 新增：显示加载遮罩（掩盖 DOM 操作的闪烁）
       showFilterOverlay();
-      gfActive = null;
+      gfSetActive(null);
       gfClear();
       if (gfBar) {
         var mine = gfBar.querySelectorAll('[' + GF_BTN_ATTR + ']');
@@ -533,6 +544,7 @@
       }
     }
   }
+
 
   function gfClear() {
     var marked = document.querySelectorAll('[' + GF_MARK + ']');
