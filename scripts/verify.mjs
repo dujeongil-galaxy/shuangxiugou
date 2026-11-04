@@ -5181,6 +5181,18 @@ section('21b-2. 安全事件默认收起 + 分享弹窗接线');
   check(/property="og:image" content="https:\/\/dujeongil-galaxy\.github\.io\/shuangxiugou\/og-share\.png"/.test(idx)
     && /property="og:description"/.test(idx),
     'index.html 有 og:image（og-share.png 位图绝对 URL）与 og:description 卡片标签');
+  // og 唯一性（2026-11-04 清理）：index.html 曾同时存在新旧两套 og 标签
+  // （初始导入的模板遗留 + 后加的 og-share 套），两组冲突的 title/description/image
+  // 让爬虫与社交平台随机取值。现在必须各恰好一次，且不得再引用已退役的 og-cover.png。
+  const ogCount = (re) => (idx.match(re) || []).length;
+  check(ogCount(/property="og:title"/g) === 1
+    && ogCount(/property="og:description"/g) === 1
+    && ogCount(/property="og:image"/g) === 1
+    && ogCount(/property="og:url"/g) === 1,
+    'index.html og:title/description/image/url 各恰好一次（无重复 og 块）',
+    '再塞进第二套 og 标签 → 爬虫取值随机，必应摘要又乱');
+  check(!/og-cover\.png/.test(idx),
+    'index.html 不再引用已退役的 assets/og-cover.png（统一 og-share.png）');
   // BOSS直聘详情页入口（2026-11-04 站长指定）：抵制行下方
   // 「点击这里阅读 狗日的Boss直聘」，「这里」链接 brand/bosszhipin.html，
   // 「狗日的Boss直聘」单独换色（#d97706）
