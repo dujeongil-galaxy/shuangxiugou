@@ -113,7 +113,7 @@
     <link rel="stylesheet" crossorigin href="./assets/index-BgVofs0W.css">
     <!-- 预加载关键补丁脚本（与 HTML 解析并行下载，减少隐私窗口无缓存时 RTT 等待） -->
     <link rel="preload" href="./custom-card-actions.js?v=20" as="script">
-    <link rel="preload" href="./u-grade-patch.js?v=13" as="script">
+    <link rel="preload" href="./u-grade-patch.js?v=14" as="script">
     <link rel="preload" href="./stat-filter.js?v=9" as="script">
     <link rel="preload" href="./pinyin-index.js?v=10" as="script">
     <link rel="preload" href="./nav-menu.js?v=6" as="script">
@@ -8383,7 +8383,7 @@
           note = document.createElement('div');
           note.id = 'boss-note';
           note.style.cssText = 'margin-top:12px;padding:10px 14px;background:#fef2f2;border:1px solid #dc2626;border-radius:8px;color:#dc2626;font-size:14px;font-weight:bold;';
-          note.innerHTML = '🚫 抵制垃圾Boss直聘，请使用智联招聘App';
+          note.innerHTML = '🚫 抵制垃圾Boss直聘，请使用<span style="color:#1d4ed8">智联招聘App</span>';
         }
         tagsRow.parentNode.insertBefore(note, tagsRow.nextSibling);
       }
@@ -8703,7 +8703,7 @@
        2) 自定义品牌卡（DOM 克隆）没有 React onClick，补上「打卡」「详情证据」功能 -->
   <script defer src="./custom-card-actions.js?v=20"></script>
   <script defer src="./share-modal.js?v=1"></script>
-  <script defer src="./u-grade-patch.js?v=13"></script>
+  <script defer src="./u-grade-patch.js?v=14"></script>
   <script defer src="./rating-stats-patch.js?v=2"></script>
   <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
   <script defer src="./factcheck-button.js?v=1"></script>

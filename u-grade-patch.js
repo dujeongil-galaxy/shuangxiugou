@@ -219,7 +219,7 @@
       + 'color:#dc2626;text-align:center;line-height:1.6');
     b.innerHTML = '🚫 抵制垃圾Boss直聘，'
       + '请使用<a href="https://www.zhaopin.com" target="_blank" rel="noopener noreferrer"'
-      + ' style="color:#dc2626;text-decoration:underline">智联招聘App</a>';
+      + ' style="color:#1d4ed8;text-decoration:underline">智联招聘App</a>';
     p.appendChild(document.createElement('br'));
     p.appendChild(b);
   }
