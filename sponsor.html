@@ -387,7 +387,7 @@
       <a href="./usdt-guide.html">USDT 充值教程</a>。
     </p>
 
-    <details class="incident" open>
+    <details class="incident">
       <summary><span class="incident__tag">安全事件</span>币安 10·29 热钱包事件：约 63 亿美元被盗，提币已部分恢复</summary>
       <div class="incident__body">
         <p>
@@ -428,14 +428,7 @@
       </div>
     </details>
 
-    <!-- 2026-11-04 站长要求：打赏收款面板默认隐藏，点击才展开 -->
-    <div class="actions" id="rewardToggleWrap" style="margin-bottom:18px;">
-      <button class="btn btn-ghost" id="rewardToggle" type="button" style="cursor:pointer;">
-        💰 展开打赏收款方式
-      </button>
-    </div>
-
-    <div class="panel" id="rewardPanel" style="display:none">
+    <div class="panel">
       <div class="field">
         <span class="label">选择交易所</span>
         <div class="opts" id="exOpts" role="group" aria-label="交易所"></div>
@@ -485,21 +478,10 @@
     </div>
 
     <!-- 分享弹窗：由 share-modal.js 注入（国内圆形图标 + 海外清单 + 复制链接） -->
-    <script src="./share-modal.js?v=2" defer></script>
+    <script src="./share-modal.js?v=3" defer></script>
 
     <script>
     (function() {
-      // 打赏收款面板默认隐藏，点击才展开（展开后按钮收起，不提供再折叠）
-      var rt = document.getElementById('rewardToggle');
-      var rp = document.getElementById('rewardPanel');
-      var rw = document.getElementById('rewardToggleWrap');
-      if (rt && rp && rw) {
-        rt.onclick = function() {
-          rp.style.display = '';
-          rw.style.display = 'none';
-        };
-      }
-
       var shareBtn = document.getElementById('shareBtn');
       if (!shareBtn) return;
       shareBtn.onclick = function() {

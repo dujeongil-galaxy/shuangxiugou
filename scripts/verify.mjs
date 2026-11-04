@@ -5117,9 +5117,11 @@ section('21b-1. 打赏页交易所安全事件带');
 {
   const sp = readFileSync(join(ROOT, 'sponsor.html'), 'utf8');
   check(/\.incident\s*\{/.test(sp), 'sponsor.html 定义了 .incident 样式');
-  check(/<details class="incident" open>/.test(sp),
-    '安全事件块是默认展开的原生 <details>（零 JS 依赖）',
-    '去掉 open → 「提币通道全停」这条要再点一次才看得到，等于没提示');
+  // 2026-11-04 站长改口径：安全事件默认收起（点 summary 展开），
+  // 取代此前「默认展开」的断言。块内容完整性与免责口径的断言保持不变。
+  check(/<details class="incident">/.test(sp) && !/<details class="incident"[^>]*\bopen/.test(sp),
+    '安全事件块默认收起的原生 <details>（零 JS 依赖，点 summary 展开）',
+    'details 带 open → 安全事件默认展开，违反站长 2026-11-04 收起口径');
   check(/币安 10·29 热钱包事件/.test(sp) && /63 亿美元/.test(sp),
     '事件块写明起因与规模（10-29 热钱包、约 63 亿美元）');
   check(/由 80% 升至/.test(sp) && /100% 覆盖/.test(sp),
@@ -5136,25 +5138,17 @@ section('21b-1. 打赏页交易所安全事件带');
     '事件块外链来源带 rel=noopener noreferrer nofollow');
 }
 
-// ---------- 21b-2. 打赏面板默认隐藏 + 分享弹窗接线 ----------
-// 背景（2026-11-04 站长要求）：①打赏收款面板（交易所/币种/二维码/地址）
-// 默认隐藏，点击「展开打赏收款方式」才显示；②打卡成功后弹分享弹窗
-// （custom-card-actions.js 的 doneBtn → window.SXGShare.open()，
-// share-modal.js 必须挂进 index.html 才能生效）。
-section('21b-2. 打赏面板默认隐藏 + 分享弹窗接线');
+// ---------- 21b-2. 安全事件默认收起 + 分享弹窗接线 ----------
+// 背景（2026-11-04 站长两轮纠偏）：①「默认收起」针对的是安全事件块
+// （details.incident），不是打赏收款面板——收款面板已还原为常驻展示；
+// ②打卡成功后弹分享弹窗覆盖所有卡片（share-modal.js 挂进页面才生效）。
+section('21b-2. 安全事件默认收起 + 分享弹窗接线');
 {
   const sp = readFileSync(join(ROOT, 'sponsor.html'), 'utf8');
-  // 默认隐藏：面板必须带 display:none 内联样式，展开按钮必须真实存在
-  check(/<div class="panel" id="rewardPanel" style="display:none">/.test(sp),
-    '打赏收款面板默认隐藏（rewardPanel 带 display:none 内联样式）',
-    '删掉 display:none → 收款地址未点击就露出，站长要求落空');
-  check(/id="rewardToggle"/.test(sp) && /展开打赏收款方式/.test(sp),
-    '赞助页有「展开打赏收款方式」按钮（rewardToggle）');
-  // 点击真的能展开：绑定在监听器内，且展开后按钮区隐藏
-  check(/getElementById\('rewardToggle'\)/.test(sp)
-    && /rp\.style\.display = ''/.test(sp)
-    && /rw\.style\.display = 'none'/.test(sp),
-    'rewardToggle 点击真的展开面板并收起按钮区（绑定在监听器内）');
+  // 收款面板还原：不得再出现 rewardToggle/rewardPanel（2026-11-04 曾误改，已还原）
+  check(!/rewardPanel|rewardToggle/.test(sp) && /<div class="panel">/.test(sp),
+    '打赏收款面板保持常驻展示（还原 rewardToggle 默认隐藏改法）',
+    '收款面板又被藏起来 = 超出站长指令范围');
   // 分享弹窗：sponsor.html 与 index.html 都挂 share-modal.js（打卡成功弹分享的依赖）
   // 标签两种写法都认：<script defer src=…> 与 <script src=… defer>
   const shareTag = (h) => /<script(?=[^>]*\bsrc="\.\/share-modal\.js\?v=\d+")(?=[^>]*\bdefer)[^>]*><\/script>/.test(h);
@@ -5179,10 +5173,23 @@ section('21b-2. 打赏面板默认隐藏 + 分享弹窗接线');
     && /i\.desc \+ '\\n' \+ i\.url/.test(sm),
     'share-modal.js 复制类平台带说明文案（og:description + 兜底 FALLBACK_DESC）',
     '删掉 desc 拼接 → 复制出去又是光秃秃一个链接');
+  // 海外平台清单含 WhatsApp（2026-11-04 站长指定最底部新增）
+  check(/name: 'WhatsApp', url: 'whatsapp'/.test(sm) && /wa\.me\/\?text=/.test(sm),
+    'share-modal.js 海外清单含 WhatsApp（wa.me 分享，挂在最底部）',
+    '删掉 WhatsApp 条目 → 站长指定的平台缺失');
   // og 标签：微信/Discord/Telegram 贴链接时的卡片与配图（og:image 必须是位图绝对 URL）
   check(/property="og:image" content="https:\/\/dujeongil-galaxy\.github\.io\/shuangxiugou\/og-share\.png"/.test(idx)
     && /property="og:description"/.test(idx),
     'index.html 有 og:image（og-share.png 位图绝对 URL）与 og:description 卡片标签');
+  // BOSS直聘详情页入口（2026-11-04 站长指定）：抵制行下方
+  // 「点击这里阅读 狗日的Boss直聘」，「这里」链接 brand/bosszhipin.html，
+  // 「狗日的Boss直聘」单独换色（#d97706）
+  const ugp = readFileSync(join(ROOT, 'u-grade-patch.js'), 'utf8');
+  check(/brand\/bosszhipin\.html/.test(ugp)
+    && /狗日的Boss直聘<\/span>/.test(ugp)
+    && /color:#d97706/.test(ugp),
+    '抵制行下方有 BOSS直聘详情页入口（这里=链接，狗日的Boss直聘换色标注）',
+    '删掉入口行 → 站长指定的阅读链接缺失');
 }
 
 // ---------- 21c. 首页滑到底部按钮 ----------
@@ -5765,8 +5772,8 @@ section('21c. 首页滑到底部按钮');
   check(/'D 级'/.test(rowTexts) && /'U 级'/.test(rowTexts),
     'stat-filter.js 评级行互斥枚举含「D 级」「U 级」（点 D/U 清五格筛选）',
     'stat-filter 没跟上 → 点 D/U 不清四格筛选，两套过滤层互相覆盖出现空面板');
-  check(/u-grade-patch\.js\?v=14/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
-    'u-grade-patch.js?v=14 / stat-filter.js?v=9（缓存号已随内容 bump）',
+  check(/u-grade-patch\.js\?v=15/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
+    'u-grade-patch.js?v=15 / stat-filter.js?v=9（缓存号已随内容 bump）',
     '缓存号没 bump → 用户拿旧补丁，D/U 按钮注入不生效（2026-11-01 拼音索引同类事故）');
   // 2026-11-03 站长实测 bug：点「D 级 / U 级」后拼音搜索框整块消失。
   // 根因：CARD_SEL（div.bg-white.rounded-2xl.border）命中面比品牌卡宽，

@@ -222,6 +222,15 @@
       + ' style="color:#1d4ed8;text-decoration:underline">智联招聘App</a>';
     p.appendChild(document.createElement('br'));
     p.appendChild(b);
+    /* 2026-11-04 站长指定：抵制行下方挂 BOSS直聘详情页入口——
+       「点击这里阅读 狗日的Boss直聘」，「这里」是链接，
+       「狗日的Boss直聘」单独换色标注。 */
+    var r = document.createElement('div');
+    r.setAttribute('style', 'margin-top:4px;font-size:13px;text-align:center;line-height:1.6');
+    r.innerHTML = '点击<a href="./brand/bosszhipin.html"'
+      + ' style="color:#1d4ed8;text-decoration:underline">这里</a>阅读 '
+      + '<span style="color:#d97706;font-weight:bold">狗日的Boss直聘</span>';
+    p.appendChild(r);
   }
 
   /* D 级出口：它**计入**避雷预警格（D 是 C 的加重版，不是另一类），

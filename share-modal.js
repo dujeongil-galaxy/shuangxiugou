@@ -64,6 +64,7 @@
     telegram: '<svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="11" fill="#229ED9"/><path d="M5.2 10.9l11-4.3c.5-.2 1 .1.8.8l-1.9 8.7c-.1.5-.5.6-.9.4l-2.4-1.8-1.2 1.2c-.2.2-.4.2-.5.1l.2-2.6 4.9-4.4-6 3.7-2.7-.7c-.6-.2-.6-.7 0-.9z" fill="#fff"/></svg>',
     kakaotalk: '<svg viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="6.2" fill="#FEE500"/><path d="M11 5.5c-3.5 0-6.3 2.3-6.3 5.1 0 1.7 1 3.2 2.6 4.1l-.7 2.4 2.7-1.5c.5.1 1.1.2 1.7.2 3.5 0 6.3-2.3 6.3-5.2S14.5 5.5 11 5.5z" fill="#3C1E1E"/></svg>',
     line: '<svg viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="6.2" fill="#06C755"/><text x="11" y="11.4" text-anchor="middle" dominant-baseline="middle" font-size="6.4" font-weight="700" fill="#fff" font-family="-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif">LINE</text></svg>',
+    whatsapp: '<svg viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="6.2" fill="#25D366"/><path d="M11 4.6c-3.5 0-6.4 2.8-6.4 6.3 0 1.2.3 2.3.9 3.2L4.5 17.6l3.6-.9c.9.5 1.8.7 2.9.7 3.5 0 6.4-2.8 6.4-6.3S14.5 4.6 11 4.6z" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/><path d="M8.7 7.9c.2-.4.4-.4.6-.4h.5c.2 0 .3.1.4.3l.7 1.5c.1.2.1.4-.1.6l-.5.5c-.1.1-.1.3-.1.4.4.8 1.3 1.6 2.1 2 .2.1.3.1.5-.1l.5-.5c.2-.2.4-.2.6-.1l1.5.7c.3.1.4.3.4.5-.1.9-.8 1.5-1.7 1.5-2.3 0-5.1-2.6-5.1-5.1 0-.8.1-1.4.7-1.8z" fill="#fff"/></svg>',
     link: '<svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="11" fill="#E2E8F0"/><g fill="none" stroke="#475569" stroke-width="1.6" stroke-linecap="round"><path d="M9.4 12.6a2.5 2.5 0 0 0 3.5 0l2.1-2.1a2.5 2.5 0 0 0-3.5-3.5l-.9.9"/><path d="M12.6 9.4a2.5 2.5 0 0 0-3.5 0l-2.1 2.1a2.5 2.5 0 0 0 3.5 3.5l.9-.9"/></g></svg>'
   };
 
@@ -83,7 +84,8 @@
     { k: 'reddit', name: 'Reddit', url: 'reddit' },
     { k: 'telegram', name: 'Telegram', url: 'telegram' },
     { k: 'kakaotalk', name: 'KakaoTalk', copy: '文案和链接已复制，粘贴到 KakaoTalk 聊天' },
-    { k: 'line', name: 'Line', url: 'line' }
+    { k: 'line', name: 'Line', url: 'line' },
+    { k: 'whatsapp', name: 'WhatsApp', url: 'whatsapp' }
   ];
 
   function injectStyle() {
@@ -123,9 +125,11 @@
       x: 'https://twitter.com/intent/tweet?url=' + u + '&text=' + d,
       linkedin: 'https://www.linkedin.com/sharing/share-offsite/?url=' + u,
       reddit: 'https://www.reddit.com/submit?url=' + u + '&title=' + t,
-      telegram: 'https://t.me/share/url?url=' + u + '&text=' + d,
-      line: 'https://social-plugins.line.me/lineit/share?url=' + u + '&text=' + d
-    };
+    telegram: 'https://t.me/share/url?url=' + u + '&text=' + d,
+    line: 'https://social-plugins.line.me/lineit/share?url=' + u + '&text=' + d,
+    // wa.me 只有 text 参数，链接要拼进文案里
+    whatsapp: 'https://wa.me/?text=' + d + '%0A' + u
+  };
 
     var html = '<div class="sxg-share-card" role="dialog" aria-modal="true" aria-label="分享双休购">'
       + '<button type="button" class="sxg-share-x" data-act="close" aria-label="关闭">×</button>'
