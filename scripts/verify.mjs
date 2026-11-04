@@ -4549,17 +4549,15 @@ if (exists(ADJS) && exists(ADCSS) && exists('ai-chat.js')) {
     '≥1440px 或广告隐藏时 --sxg-bar-h 恒为 0（桌面没有吸底条可让位）',
     '桌面仍写卡片高度 → 悬浮按钮组与 AI 面板被整体抬高 279px');
 
-  // 2) 面板避让：广告真的显示时面板左移，广告关掉（.is-hidden）后条件失效自动复位。
-  const avoid = aic.match(/body:has\(\.lp-ad:not\(\.is-hidden\)\) #' \+ PANEL_ID \+ '\{right:calc\(16px \+ (\d+)px \+ 16px\)\}'/);
-  check(!!avoid, 'AI 面板在广告显示时左移（:has() 条件规则存在）',
-    '面板仍贴 right:14 → 与右上广告卡同列，被 z-index 9990 压住右半屏');
-
-  // 3) 避让量必须等于广告卡真实宽度。改卡宽忘了改这里，重叠会悄悄回潮 ——
-  //    这类「两个文件各写一个数字」的耦合必须机器盯住，不能靠记性。
-  const cardW = (adc.match(/@media \(min-width: 1440px\)[\s\S]*?\.lp-ad \{[\s\S]*?width:\s*(\d+)px/) || [])[1];
-  check(!!cardW && !!avoid && avoid[1] === cardW,
-    `面板避让量与广告卡宽度一致（${cardW}px）`,
-    '面板左移量 ≠ 广告卡宽度 → 面板重新压到卡片下面');
+  // 2) 2026-11-05 站长拍板：AI 挂件整体挪到左下角。按钮 left:14 锚定；
+  //    面板改左锚定后与右上广告卡不再同列，旧的 :has() 避让规则必须拔掉，
+  //    残留即死规则 —— 谁把面板改回右锚定而不删它，这里判红。
+  check(/'#' \+ BTN_ID \+ '\{position:fixed;left:14px;/.test(aic),
+    'AI 按钮左下角锚定（left:14px，2026-11-05 站长拍板）',
+    'AI 按钮仍锚右侧 → 与「回到顶部」钮（≥1440 距底 6px）同心叠住（2026-11-05 站长截图）');
+  check(!/body:has\(\.lp-ad/.test(aic),
+    '面板避让规则已拔除（面板左锚定后与右上广告卡不再同列）',
+    '旧 :has() 避让规则残留 —— 面板已不贴右，规则成了永不生效的死代码');
 } else {
   err('缺少 liangpei-ad.js / liangpei-ad.css / ai-chat.js', '桌面悬浮层避让无法校验');
 }
@@ -5422,6 +5420,10 @@ section('21c. 首页滑到底部按钮');
     '手机端媒体查询在位（输入 16px 防 iOS 聚焦缩放）');
   check(/env\(safe-area-inset-bottom, 0px\)/.test(aiChat),
     '按钮/面板底距带 safe-area 安全区（刘海屏不贴边）');
+  // 手机端 AI 钮必须抬到左下导航主按钮（bar-h+48 起 46px 高）上方：bar-h+104
+  check(/\+ 104px \+ env\(safe-area-inset-bottom/.test(aiChat) && /\+ 170px \+ env\(safe-area-inset-bottom/.test(aiChat),
+    '手机端 AI 钮/面板抬高到导航主按钮上方（钮 +104 / 面板 +170）',
+    '手机端 AI 钮停在距底 14px → 与左下导航主按钮（+48..94）重叠');
   check(/z-index:9000/.test(aiChat) && /z-index:9001/.test(aiChat),
     'z-index 9000/9001 与浮钮家族平级（广告条 9990 之下，不盖广告）');
 

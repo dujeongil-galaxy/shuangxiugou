@@ -101,37 +101,34 @@
     var s = document.createElement('style');
     s.id = STYLE_ID;
     s.textContent = [
-      '#' + BTN_ID + '{position:fixed;right:14px;',
+      /* 2026-11-05 站长拍板：AI 挂件整体挪到左下角。
+         右下角那格本来住着「回到顶部」钮（≥1440 时距底 6px），
+         2026-11-04 把 AI 钮锚到距底 14px 后两钮几乎同心叠住（暗色模式下
+         回顶部钮是深黑圆，站长截图指出）；窄屏档还会与「视频」钮重叠。
+         挪左下后：按钮贴左下角（距底 14px），面板从按钮正上方起长
+         （距底 76px = 14 + 52 按钮高 + 10 间隙），max-height 用 100vh 减去
+         广告条高度再留 200px 顶边距，面板顶端永不进入首屏 Hero/统计卡区。
+         面板改左锚定后与右上良配广告卡不再同列，旧的 :has() 避让规则已拔除。 */
+      '#' + BTN_ID + '{position:fixed;left:14px;',
       'bottom:calc(var(--sxg-bar-h, 0px) + 14px + env(safe-area-inset-bottom, 0px));width:52px;height:52px;border-radius:50%;',
       'background:#0F766E;color:#fff;border:none;cursor:pointer;font-size:24px;line-height:1;',
       'box-shadow:0 4px 14px rgba(15,118,110,.35);z-index:9000;',
       'display:flex;align-items:center;justify-content:center;transition:transform .15s ease;',
       '-webkit-tap-highlight-color:transparent}',
       '#' + BTN_ID + ':hover{transform:scale(1.08)}',
-      /* 2026-11-04 重新锚定：面板从「距底 270px 处向上长」改为真正右下角。
-         按钮贴广告条上方（距底 14px），面板从按钮正上方起长（距底 76px = 14 + 52 按钮高 + 10 间隙），
-         max-height 用 100vh 减去广告条高度再留 200px 顶边距，保证面板顶端永不进入首屏 Hero/统计卡区。
-         展开时由 toggle() 给 body 加 .sxg-ai-open，隐藏会被面板盖住的右列三颗钮（见下方规则），
-         回到顶部钮（距底 6px，在面板之下）与右侧 nav 列不受影响。 */
-      '#' + PANEL_ID + '{position:fixed;right:14px;',
+      '#' + PANEL_ID + '{position:fixed;left:14px;',
       'bottom:calc(var(--sxg-bar-h, 0px) + 76px + env(safe-area-inset-bottom, 0px));width:min(340px,calc(100vw - 28px));',
       'max-height:min(480px, calc(100vh - var(--sxg-bar-h, 0px) - 200px));display:flex;flex-direction:column;',
       'background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.16);',
       'z-index:9001;overflow:hidden;font-family:system-ui,-apple-system,\'PingFang SC\',\'Microsoft YaHei\',sans-serif}',
-      'body.sxg-ai-open #sxg-video-btn,body.sxg-ai-open #sxg-bottom-btn,body.sxg-ai-open #sxg-remind-btn{display:none!important}',
-      /* 手机端：小屏面板两侧撑满、输入 16px 防 iOS 聚焦自动缩放、按钮加大到 56px */
+      /* 手机端：首页左下住着导航折叠主按钮（nav-menu.js，bar-h+48 起 46px 高），
+         AI 钮抬高到它上方（bar-h+104），面板再从 AI 钮上方起长（bar-h+170），
+         高度钳制同步多让 90px，面板顶端同样不进首屏上部。 */
       '@media (max-width:640px){',
-      '#' + PANEL_ID + '{left:14px;right:14px;width:auto}',
+      '#' + BTN_ID + '{left:14px;bottom:calc(var(--sxg-bar-h, 0px) + 104px + env(safe-area-inset-bottom, 0px))}',
+      '#' + PANEL_ID + '{left:14px;right:14px;width:auto;bottom:calc(var(--sxg-bar-h, 0px) + 170px + env(safe-area-inset-bottom, 0px));max-height:min(480px, calc(100vh - var(--sxg-bar-h, 0px) - 290px))}',
       '.sxg-ai-in{font-size:16px}',
       '#' + BTN_ID + '{width:56px;height:56px}',
-      '}',
-      /* 2026-11-02：桌面 ≥1440px 时右上角是良配推广卡（right:16、宽 176、top:88），
-         面板原本也贴 right:14 —— 两者在右侧同一列，广告 z-index 9990 直接压住
-         面板右半屏（实测重叠 176×263px，站长截图指出）。
-         这里用 :has() 只在广告**真的显示**时把面板左移一个「卡宽 + 16px 间隙」，
-         广告被关掉（.is-hidden）后条件不再成立，面板自动回到 right:14。 */
-      '@media (min-width:1440px){',
-      'body:has(.lp-ad:not(.is-hidden)) #' + PANEL_ID + '{right:calc(16px + 176px + 16px)}',
       '}',
       '#' + PANEL_ID + '[hidden]{display:none}',
       '.sxg-ai-head{background:#0F766E;color:#fff;padding:10px 14px;font-size:14px;font-weight:600}',
@@ -177,9 +174,8 @@
     btn.addEventListener('click', function () { toggle(); });
 
     // 移动端（<1440px）：AI 面板默认收起。
-    // 否则首访全宽展开会盖住右侧悬浮按钮组——尤其「提醒」钮在 bottom:272，
-    // 正好落在面板覆盖区（bottom:270 起）里，导致点不到。桌面端（≥1440px）
-    // 提醒钮在 160（位于面板 270 之下）不受影响，保持原「首访展开 + 8 秒收起」。
+    // 首访全宽自动展开在中小屏上会一次性盖住近半屏内容，且手机端用户
+    // 多半只是路过；桌面端（≥1440px）保持「首访展开 + 8 秒收起」。
     // 判定用 matchMedia，jsdom（无 matchMedia）会短路为 false → 走桌面逻辑，单测稳定。
     var isCompact = !!(window.matchMedia && window.matchMedia('(max-width: 1439px)').matches);
     var panel = document.createElement('div');
@@ -279,10 +275,7 @@
     // 用户一旦在面板内交互（点击/输入）即取消自动收起。
     // 移动端默认已收起（panel.hidden=isCompact），不再启动自动收起计时。
     panel.addEventListener('pointerdown', clearAutoClose);
-    if (!isCompact) {
-      document.body.classList.add('sxg-ai-open');
-      startAutoClose();
-    }
+    if (!isCompact) startAutoClose();
   }
 
   // 切换头像弹层显隐（头像与「切换形象」按钮共用）
@@ -358,7 +351,6 @@
       var p = document.getElementById(PANEL_ID);
       if (p && !p.hidden) {
         p.hidden = true;
-        document.body.classList.remove('sxg-ai-open');
       }
       autoCloseTimer = null;
     }, 8000);
@@ -370,11 +362,9 @@
     if (panel.hidden) {
       // 用户手动点开：保持展开，不触发自动收起
       panel.hidden = false;
-      document.body.classList.add('sxg-ai-open');
       clearAutoClose();
     } else {
       panel.hidden = true;
-      document.body.classList.remove('sxg-ai-open');
       clearAutoClose();
     }
   }
