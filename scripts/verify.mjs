@@ -1935,6 +1935,22 @@ if (exists('notes.html')) {
   check(!/dyp--notice/.test(dp),
     '「还在写」公告弹窗已移除',
     'notes.html 已可直接访问（保留密码锁），公告弹窗不应再出现');
+  // ⑦ 防搬运锁（2026-11-04 站长指令）：随笔页禁 F12/右键/复制剪切选择拖拽，
+  //    Ctrl/Shift/Alt/Meta 组合键全禁；密码输入框豁免 Shift（大写字母）与粘贴。
+  //    盯行为关键点：事件名 + preventDefault 必须成对出现在 notes.html 里，
+  //    且密码框豁免逻辑（isPw / type==='password'）真实存在。
+  check(/addEventListener\('contextmenu'[\s\S]{0,80}preventDefault\(\)/.test(nt)
+    && /'(copy|cut|selectstart|dragstart)'/.test(nt)
+    && /addEventListener\('paste'[\s\S]{0,120}isPw\(e\.target\)[\s\S]{0,40}preventDefault\(\)/.test(nt),
+    'notes.html 防搬运锁：右键/复制/剪切/选中/拖拽全禁、粘贴仅密码框放行',
+    '删掉任一禁用分支 → 正文可被右键/复制带走');
+  check(/e\.key === 'F12'/.test(nt)
+    && /e\.key === 'ContextMenu'/.test(nt)
+    && /e\.ctrlKey \|\| e\.altKey \|\| e\.metaKey/.test(nt)
+    && /if \(combo \|\| e\.shiftKey\)/.test(nt)
+    && /t\.type === 'password'/.test(nt),
+    'notes.html 防搬运锁：F12/菜单键/Ctrl+Alt+Meta 组合/输入框外 Shift 组合全禁，密码框豁免 Shift',
+    '删掉 F12 拦截或组合键拦截 → 快捷键又通了');
   check(!/以后再说/.test(dp),
     '弹窗已移除「以后再说」按钮',
     '该位置已改为「站长随笔」，两个文案不应并存（注释中提及旧文案不算）');
