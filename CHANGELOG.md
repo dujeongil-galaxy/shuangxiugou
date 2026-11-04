@@ -4,6 +4,21 @@
 
 ---
 
+### 分享弹窗重做（国内圆形图标 + 海外 Discord/KakaoTalk/Line 清单）、隐私窗口加载优化（2026-11-04 21:25 · 提交 `51c24fe`）
+
+- **2026-11-04 站长指定分享弹窗平台口径**：
+  - **国内平台**按站长给的圆形图标样式：朋友圈 / 微信 / 抖音 / 小红书 / 微博。
+  - **海外平台**按清单式：Discord（**替换原 Email**）/ Facebook / X / LinkedIn / Reddit / Telegram / **KakaoTalk（新增）** / **Line（新增）**，末尾「复制链接」。
+  - 技术实情：微信、朋友圈、抖音、小红书、Discord、KakaoTalk 没有可用的网页分享接口，这些统一走「复制链接 + toast 提示粘贴」，不假装能一键跳转；微博/Facebook/X/LinkedIn/Reddit/Telegram/Line 有真实分享 URL。
+- **改动范围**：
+  - 新增 `share-modal.js`（?v=1）：可复用分享弹窗，任意页面 `<script defer>` 引入后 `window.SXGShare.open()` 调起；样式与 DOM 均由脚本注入，Esc / 点遮罩可关。
+  - `sponsor.html`：删除原内联分享弹窗（微博/QQ/Telegram/Twitter 四个大按钮 + 复制框），改为 `share-modal.js` 引用；分享按钮在脚本未加载时兜底复制当前链接。原 QQ 分享入口随旧弹窗一并移除（新口径未包含 QQ）。
+  - `index.html`（隐私窗口加载优化）：`<head>` 增加 bundle JS / CSS / custom-card-actions / u-grade-patch / stat-filter 的 `preload`；body 底部 25 个补丁脚本全部加 `defer`（保持执行顺序不变，下载与 HTML 解析并行），改善无 Cookie 隐私窗口的首屏加载。
+  - `scripts/verify.mjs`：脚本标签断言正则兼容 `defer` 属性；缓存号断言更新为 u-grade-patch ?v=13。
+- **真渲染验收**：无头 Edge + CDP 截图（430px 移动宽 + 1280px 桌面宽）——国内五圆标、海外八行清单、复制链接行全部正常渲染，点击「复制链接」toast「链接已复制」正常弹出；修复微博图标下 `<a>` 默认下划线。`node scripts/verify.mjs` 1380 项全部通过。
+
+---
+
 ### 评级修正 — Apple 回滚 S 级（授权经销商≠直营店）、农行文案修正（关门日不固定）（2026-11-04 20:23 · 提交 `1e191ef`）
 
 - **2026-11-04 站长补充说明**：
