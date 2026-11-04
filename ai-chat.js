@@ -102,17 +102,23 @@
     s.id = STYLE_ID;
     s.textContent = [
       '#' + BTN_ID + '{position:fixed;right:14px;',
-      'bottom:calc(var(--sxg-bar-h, 0px) + 210px + env(safe-area-inset-bottom, 0px));width:52px;height:52px;border-radius:50%;',
+      'bottom:calc(var(--sxg-bar-h, 0px) + 14px + env(safe-area-inset-bottom, 0px));width:52px;height:52px;border-radius:50%;',
       'background:#0F766E;color:#fff;border:none;cursor:pointer;font-size:24px;line-height:1;',
       'box-shadow:0 4px 14px rgba(15,118,110,.35);z-index:9000;',
       'display:flex;align-items:center;justify-content:center;transition:transform .15s ease;',
       '-webkit-tap-highlight-color:transparent}',
       '#' + BTN_ID + ':hover{transform:scale(1.08)}',
+      /* 2026-11-04 重新锚定：面板从「距底 270px 处向上长」改为真正右下角。
+         按钮贴广告条上方（距底 14px），面板从按钮正上方起长（距底 76px = 14 + 52 按钮高 + 10 间隙），
+         max-height 用 100vh 减去广告条高度再留 200px 顶边距，保证面板顶端永不进入首屏 Hero/统计卡区。
+         展开时由 toggle() 给 body 加 .sxg-ai-open，隐藏会被面板盖住的右列三颗钮（见下方规则），
+         回到顶部钮（距底 6px，在面板之下）与右侧 nav 列不受影响。 */
       '#' + PANEL_ID + '{position:fixed;right:14px;',
-      'bottom:calc(var(--sxg-bar-h, 0px) + 270px + env(safe-area-inset-bottom, 0px));width:min(340px,calc(100vw - 28px));',
-      'max-height:min(520px,calc(100vh - 300px));display:flex;flex-direction:column;',
+      'bottom:calc(var(--sxg-bar-h, 0px) + 76px + env(safe-area-inset-bottom, 0px));width:min(340px,calc(100vw - 28px));',
+      'max-height:min(480px, calc(100vh - var(--sxg-bar-h, 0px) - 200px));display:flex;flex-direction:column;',
       'background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.16);',
       'z-index:9001;overflow:hidden;font-family:system-ui,-apple-system,\'PingFang SC\',\'Microsoft YaHei\',sans-serif}',
+      'body.sxg-ai-open #sxg-video-btn,body.sxg-ai-open #sxg-bottom-btn,body.sxg-ai-open #sxg-remind-btn{display:none!important}',
       /* 手机端：小屏面板两侧撑满、输入 16px 防 iOS 聚焦自动缩放、按钮加大到 56px */
       '@media (max-width:640px){',
       '#' + PANEL_ID + '{left:14px;right:14px;width:auto}',
@@ -273,7 +279,10 @@
     // 用户一旦在面板内交互（点击/输入）即取消自动收起。
     // 移动端默认已收起（panel.hidden=isCompact），不再启动自动收起计时。
     panel.addEventListener('pointerdown', clearAutoClose);
-    if (!isCompact) startAutoClose();
+    if (!isCompact) {
+      document.body.classList.add('sxg-ai-open');
+      startAutoClose();
+    }
   }
 
   // 切换头像弹层显隐（头像与「切换形象」按钮共用）
@@ -347,7 +356,10 @@
     clearAutoClose();
     autoCloseTimer = setTimeout(function () {
       var p = document.getElementById(PANEL_ID);
-      if (p && !p.hidden) p.hidden = true;
+      if (p && !p.hidden) {
+        p.hidden = true;
+        document.body.classList.remove('sxg-ai-open');
+      }
       autoCloseTimer = null;
     }, 8000);
   }
@@ -358,9 +370,11 @@
     if (panel.hidden) {
       // 用户手动点开：保持展开，不触发自动收起
       panel.hidden = false;
+      document.body.classList.add('sxg-ai-open');
       clearAutoClose();
     } else {
       panel.hidden = true;
+      document.body.classList.remove('sxg-ai-open');
       clearAutoClose();
     }
   }
