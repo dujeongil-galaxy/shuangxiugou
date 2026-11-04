@@ -380,17 +380,57 @@
     }
   }
 
+  /* 把 React 的评级过滤弹回「全部评级」，确保 U/D 卡片进入 DOM。
+   * 根因（2026-11-04 站长实测）：React 的评级过滤会按 tier 在内存里过滤卡片，
+   * 选中 S/A/B/C 任一具体档位时，U/D 卡根本不在 DOM 里——我们这层 DOM 补丁只能
+   * hide 现存的卡，唤不回 React 删掉的卡。所以激活 U/D 前必须先让 React 回到「全部」，
+   * 等它把全部卡片（含 U/D）渲染进来，再做 DOM 层 hide。
+   * 返回 true 表示确实点了「全部评级」（需等 React 异步重渲染）；false 表示已在全部。 */
+  function gfResetReactToAll() {
+    if (!gfBar) return false;
+    var allBtn = null;
+    var btns = gfBar.querySelectorAll('button');
+    for (var i = 0; i < btns.length; i++) {
+      if ((btns[i].textContent || '').trim() === '全部评级') { allBtn = btns[i]; break; }
+    }
+    if (!allBtn) return false;
+    var active = allBtn.className.indexOf('bg-slate-900') !== -1;
+    if (active) return false;        // 已在全部，无需点
+    allBtn.click();                  // 触发 React 重渲染（异步）；其捕获监听会先把 gfActive 临时清零
+    return true;
+  }
+
   function gfOnClick(e) {
     var btn = e.target && e.target.closest ? e.target.closest('button') : null;
     if (!btn || !gfBar.contains(btn)) return;
     // 只处理我们自己的 D/U 按钮（带 GF_BTN_ATTR 属性）
     if (btn.hasAttribute(GF_BTN_ATTR)) {
       var letter = btn.getAttribute('data-sxg-gf-letter');
-      // 再点同一个 = 取消（回到全部评级；React state 未动过，列表仍是全量）
-      gfActive = (gfActive === letter) ? null : letter;
+      var willActivate = (gfActive !== letter);
+      // 再点同一个 = 取消（回到全部评级；React state 保持「全部」，列表仍是全量）
+      gfActive = willActivate ? letter : null;
       // 2026-11-03 新增：显示加载遮罩（掩盖 DOM 操作的闪烁）
       showFilterOverlay();
-      gfSyncAndApply();
+      if (willActivate) {
+        var needed = gfResetReactToAll();   // 弹回全部；点击会触发捕获监听把 gfActive 临时清零
+        if (needed) {
+          gfActive = letter;                // 重新置回激活态（捕获监听已把它重置）
+          // React 重渲染是异步的，等它把全部卡片（含 U/D）渲染进 DOM 后再应用我们的过滤。
+          // 用定时器兜底；同时 MO 在 React 重渲染完也会触发 scan()→gfSyncAndApply() 做同样的事。
+          setTimeout(function () {
+            try { injectU(); } catch (_) {}
+            try { injectD(); } catch (_) {}
+            gfActive = letter;
+            gfSyncAndApply();
+          }, 150);
+          _userActionPending = true;        // 拦住 16ms 那次 scan，别在 React 重渲染前误应用
+          scheduleHideOverlay();
+          return;                            // 跳过下方的立即 gfSyncAndApply
+        }
+        gfSyncAndApply();
+      } else {
+        gfSyncAndApply();
+      }
       _userActionPending = true;  // 标记用户操作，scan() 跳过重复的 gfSyncAndApply()
       // 0.5 秒后移除遮罩
       scheduleHideOverlay();
