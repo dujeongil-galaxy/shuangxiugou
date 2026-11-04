@@ -4,6 +4,15 @@
 
 ---
 
+### 站点交互与内容修正（2026-11-04 11:50 · 提交 `b4e9dc9`）
+
+- **评级过滤切换 0.5s 高度模糊闪屏**（站长 2026-11-04 要求）：点任意评级按钮（全部评级 / S / A / B / C / D / U），捕获阶段先给卡片区加 `blur(16px)` 覆盖 500ms，期间 bundle 即时重渲染 + `filterCustomCards()` 的 100ms 二次调整都在模糊下完成；500ms 后取消模糊，已是最终态。根治「点一下画面变两下」的肉眼可见抖动。
+  - 只模糊卡片（`div.bg-white.rounded-2xl.border`），过滤条按钮与悬浮钮保持清晰；`filter` 不改变盒模型，卡片数量变化时无高度跳动。
+  - 铁律：绝不改动压缩产物 `assets/index-YthXZ9eP.js`，只新增 DOM 层补丁 `filter-flash.js`（`?v=1`）并在 `index.html` 末尾引入。
+- **BOSS直聘 红框加超链接推智联招聘**（站长 2026-11-04 要求）：在 `brand/bosszhipin.html` 的 `#manual-override` 红色人工干预记录框末尾，换行追加「想换更靠谱的求职渠道？推荐改用 智联招聘（Zhaopin）」并指向 `https://www.zhaopin.com/`（新窗口、noopener）。
+- 改了哪些文件：`filter-flash.js`（新增）、`index.html`（引入脚本 + 注释）、`brand/bosszhipin.html`（红框末追加一行）、`scripts/test-filter-flash.cjs`（真渲染验收脚本）。
+- 怎么验证：无头 Edge + CDP 真渲染——点「A 级」后 150ms 验 `body.sxg-filter-flashing=true` 且卡片 `computed filter=blur(16px)`、76 张 A 级卡仍占位；600ms 后验 `flashing=false`、`filter=none`；**验收 PASS**。verify 通过 1377 项（2 项预存 B/C 卡数断言与本次无关）。
+
 ### 第三批 20 家导入品牌补硬证据链（2026-11-04 01:49 · 提交 `2710f12`）
 
 - 站长指示：延续前两批节奏，对新增导入品牌逐批联网核查硬证据（官方招聘作息 / 招聘平台口径 / 员工实名反馈 / 公司官方校招公告 / 第三方论坛转发官方招聘），能搜到可引用来源的，详情页「证据来源」补真实条目与可点原文链接；搜不到的继续保留答侠兜底链接。
