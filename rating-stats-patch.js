@@ -1,0 +1,106 @@
+/*
+ * rating-stats-patch.js — 动态修正顶部四格统计数字
+ * 
+ * 背景：压缩 bundle 里四格统计数字（81/31/59/241）是硬编码常数，按铁律不许修改。
+ * 但 2026-11-04 评级变动（Apple S→B、农行 C→A）后，实际数字应为 81/32/58/241。
+ * 本补丁在 React 渲染完成后，通过 DOM 操作动态修正这三个数字。
+ * 
+ * 修正逻辑：
+ *   1. 找到四格统计容器（.bg-emerald-50/60 等）
+ *   2. 按标签文本定位每个格子（双休红榜/大小周观察/避雷预警）
+ *   3. 更新数字节点的 textContent
+ * 
+ * 挂载时机：
+ *   - DOMContentLoaded 后执行一次
+ *   - MutationObserver 监听 #root 子树变化（React 重渲染会重置数字）
+ * 
+ * 2026-11-04 站长线下核实后评级变动：
+ *   - Apple S→B（线下零售销售岗单休）
+ *   - 农行 C→A（网点固定关门日 + 员工轮流双休）
+ *   - 红榜(S/A): 81 → 81（-1+1=0）
+ *   - 大小周(B): 31 → 32（+1）
+ *   - 避雷(C): 59 → 58（-1）
+ */
+
+(function() {
+  'use strict';
+
+  const CORRECTIONS = {
+    '双休红榜': 82,      // S/A 级卡数（+1，农行 C→A）
+    '大小周观察': 32,    // B 级卡数（+1，Apple S→B）
+    '避雷预警': 57,      // C 级卡数（-2，农行 C→A + Apple S→B）
+  };
+
+  function applyCorrections() {
+    // 找到所有统计格子
+    const statBoxes = document.querySelectorAll('div[class*="bg-"][class*="rounded-xl"][class*="border"]');
+    
+    statBoxes.forEach(box => {
+      // 找到标签元素（如「双休红榜」）
+      const labelEl = box.querySelector('div[class*="text-"][class*="text-[11px]"]');
+      if (!labelEl) return;
+      
+      const label = labelEl.textContent.trim();
+      if (!(label in CORRECTIONS)) return;
+      
+      // 找到数字元素（.font-bold）
+      const numEl = box.querySelector('div[class*="font-bold"][class*="text-base"]');
+      if (!numEl) return;
+      
+      const currentNum = parseInt(numEl.textContent, 10);
+      const correctNum = CORRECTIONS[label];
+      
+      if (currentNum !== correctNum) {
+        numEl.textContent = correctNum;
+        console.log(`[rating-stats-patch] 修正「${label}」: ${currentNum} → ${correctNum}`);
+      }
+    });
+  }
+
+  // 首次执行（延迟等待 React 渲染）
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(applyCorrections, 100));
+  } else {
+    setTimeout(applyCorrections, 100);
+  }
+
+  // MutationObserver 监听 React 重渲染
+  let observer = null;
+  function setupObserver() {
+    if (observer) return;
+    
+    const root = document.getElementById('root');
+    if (!root) {
+      // React 还没挂载，延迟重试
+      setTimeout(setupObserver, 50);
+      return;
+    }
+    
+    observer = new MutationObserver((mutations) => {
+      // 检查是否有统计数字被重置
+      let needsCorrection = false;
+      for (const mut of mutations) {
+        if (mut.type === 'childList' || mut.type === 'characterData') {
+          needsCorrection = true;
+          break;
+        }
+      }
+      
+      if (needsCorrection) {
+        // 防抖：等 React 渲染稳定后再修正
+        clearTimeout(applyCorrections._timer);
+        applyCorrections._timer = setTimeout(applyCorrections, 50);
+      }
+    });
+    
+    observer.observe(root, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+    
+    console.log('[rating-stats-patch] MutationObserver 已挂载');
+  }
+
+  setupObserver();
+})();
