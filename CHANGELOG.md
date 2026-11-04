@@ -4,7 +4,19 @@
 
 ---
 
-### AI 聊天挂件重新锚定到真正右下角，不再漂到页面中部（2026-11-04 14:10 · 提交 `d3b59be`）
+### 修复「从某档切到 U 级时 C 级卡泄漏进 U 视图」（2026-11-04 18:00 · 提交 `67dc5cb`）
+
+- **问题（站长 2026-11-04 实测反馈 + 截图）**：首页点「U 级」筛选，列表里混进了本该是 C 级的卡片（赵一鸣/零食很忙、零食有鸣、兵立王、一点点、阿里巴巴 等），即「从某筛选档位（如四格避雷预警）切到 U 级时，原档位卡片泄漏进 U 视图」。
+- **根因**：`u-grade-patch.js` 的 `gfApply()` 按铁律跳过全部自定义卡（id 以 `-card` 结尾，共 121 张品牌卡，全站品牌卡都在 `window.customCardsMeta` 里被登记为自定义卡），依赖 `index.html` 的 `filterCustomCards()` 按 U/D 评级隐藏它们；而 `filterCustomCards` 靠**扫描按钮 className（`bg-slate-900`）**判断当前激活档位。在「四格避雷预警 → U 级」这条路径下，React 重渲染重建了评级条按钮、把 U 按钮的 `bg-slate-900` 激活类丢失，于是 `filterCustomCards` 扫不到任何激活档位 → 默认回退「全部评级」→ 自定义卡一个都不藏 → 119 张非 U 自定义卡全部泄漏（真渲染实测：四格→U 级后可见 123 张、其中 121 张是自定义卡、仅 2 张真 U）。
+- **修法**（不改压缩 bundle `assets/index-YthXZ9eP.js`）：
+  - `u-grade-patch.js` 新增 `gfSetActive(v)`，把 U/D 激活态写入**单一真相源** `window.__sxgGradeFilter`（`'U 级'`/`'D 级'`/`'all'`），所有原 `gfActive` 赋值点（点击激活/取消、捕获监听清场、allBtn 异步回填）统一走它；
+  - `index.html` 的 `filterCustomCards()` 改为**优先采信 `window.__sxgGradeFilter`**（仅对 `'U 级'`/`'D 级'`），其余 S/A/B/C/全部仍按原 className 扫描（这几条 React 自带、稳定）；
+  - `u-grade-patch.js ?v=11→12`（内容已变，必须 bump），`index.html` 同步 `?v=12`；`verify.mjs` §21k 写死的 `?v=11` 期望同步为 `?v=12`，避免死文案断言随版本 bump 误红。
+- 改了哪些文件：`u-grade-patch.js`（`gfSetActive` + `window.__sxgGradeFilter` 真相源，`?v=12`）、`index.html`（`filterCustomCards` 优先采信真相源、`?v=12`）、`scripts/verify.mjs`（§21k 增加两道静态断言守住机器契约 + `?v=12` 期望）、`scripts/test-u-filter.cjs`（新增无头 Edge+CDP 真渲染回归，覆盖 A：全部→U / B：C→U / C：四格避雷预警→U / D：四格+React C→U 四场景）。
+- **真渲染验收（无头 Edge + CDP，全 PASS）**：① 全部→U = 2 张（三星+宏碁）② C→U = 2 张 ③ **四格避雷预警→U = 2 张（修复前=123 张泄漏）** ④ 四格+React C→U = 2 张。修复后 `C_classify.visibleBrandCards=2、withCardIdSuffix=0`（修复前=121），`C_diag.hiddenCount=172`（修复前=51）。
+- `node scripts/verify.mjs`：本次新增 2 项断言通过；仓库另有 4 项**预存**失败（顶部 B/C 卡数 bundle 常数、公告栏版本号落后 3 个提交、旧条目哈希引用笔误）与本次无关，待站长拍板。
+
+### AI 聊天挂件重新锚定到真正右下角，不再漂到页面中部（2026-11-04 14:10 · 提交 `266d692`）
 
 - **问题（站长实测反馈）**：首页「劳动法AI助手」聊天面板漂到页面中部，盖住 Hero / 统计卡（图 1）。
 - **根因**：挂件（`ai-chat.js`）本是 `brand/*.html` 品牌详情页设计，被引到 React 首页后，沿原品牌页锚点 `bottom:calc(var(--sxg-bar-h) + 270px)` 向上长 `max-height:min(520px, calc(100vh - 300px))` 展开；整列右侧悬浮钮为避让 76px 广告条整体抬高，面板向上长 276px 后顶端落进视口中部（宽屏实测 top≈36% 视口高），且横跨 +48~+352 区间还压住抖音 / 投稿 / 提醒三颗钮。
