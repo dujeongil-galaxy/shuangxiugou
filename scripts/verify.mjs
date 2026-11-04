@@ -579,7 +579,7 @@ check(customPairs2e.length === 17 + IMPORTED_CARD_COUNT,
 check(headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') === statTotal,
   '顶部「收录品牌」= 实名企业卡总数', '页面 ' + headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') + ' / 计算 ' + statTotal + '（改 bundle 顶部统计常数）');
 // 2026-11-04：bundle 四格统计数字（81/31/59）已冻结，通过 rating-stats-patch.js 动态修正
-// 为实际值（82/32/57）。verify 检查补丁脚本的修正值，而非 bundle 的硬编码值。
+// 为实际值（82/31/58）。verify 检查补丁脚本的修正值，而非 bundle 的硬编码值。
 const patchScript = exists('rating-stats-patch.js') ? read('rating-stats-patch.js') : '';
 const patchHong = patchScript.match(/'双休红榜':\s*(\d+)/);
 const patchZhou = patchScript.match(/'大小周观察':\s*(\d+)/);

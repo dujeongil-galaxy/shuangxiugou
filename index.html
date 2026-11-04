@@ -297,8 +297,8 @@
   </div>
   <div class="ev-list">
     <div class="ev-listhead">按档位排列 · 点击企业名展开该企业的全部证据条目（共 173 家）</div>
-    <details id="ev-apple" data-b="apple" data-g="B" data-n="1" data-l="0">
-      <summary><span class="g" style="background:#b45309">B</span><span class="bn">Apple (苹果中国)</span><span class="co">苹果电脑贸易（上海）有限公司</span><span class="ct">1 条证据</span></summary>
+    <details id="ev-apple" data-b="apple" data-g="S" data-n="1" data-l="0">
+      <summary><span class="g" style="background:#059669">S</span><span class="bn">Apple (苹果中国)</span><span class="co">苹果电脑贸易（上海）有限公司</span><span class="ct">1 条证据</span></summary>
       <div class="ev-body">
         <ol class="ev-items">
           <li>
@@ -4288,7 +4288,7 @@
           <li><strong><a href="./brand/volvo.html">Volvo (沃尔沃汽车)</a></strong>：S 级 · 真实双休率 92% · 平均下班 18:05</li> <a href="./brand/volvo.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/huawei.html">华为终端 (Huawei)</a></strong>：C 级 · 真实双休率 35% · 平均下班 20:30</li> <a href="./brand/huawei.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/unicom.html">中国联通</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/unicom.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/apple.html">Apple (苹果中国)</a></strong>：B 级 · 真实双休率 92%（总部口径）· 平均下班 18:00</li> <a href="./brand/apple.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/apple.html">Apple (苹果中国)</a></strong>：S 级 · 真实双休率 92%（总部口径）· 平均下班 18:00</li> <a href="./brand/apple.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/sony.html">Sony (索尼中国)</a></strong>：A 级 · 真实双休率 90% · 平均下班 18:00</li> <a href="./brand/sony.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/dji.html">大疆 DJI</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 21:00</li> <a href="./brand/dji.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/luckin.html">瑞幸咖啡 (Luckin Coffee)</a></strong>：C 级 · 真实双休率 40% · 平均下班 21:30</li> <a href="./brand/luckin.html" style="color:#0F766E">详细→</a>
@@ -4419,7 +4419,7 @@
           <li><a href="./brand/chery.html">奇瑞汽车 (CHERY)</a> —— C 级（避雷预警） · 双休率 0%（口径换算） · 平均下班 —</li>
           <li><a href="./brand/volvo.html">Volvo (沃尔沃汽车)</a> —— S 级 · 双休率 92% · 平均下班 18:05</li>
           <li><a href="./brand/huawei.html">华为终端 (Huawei)</a> —— C 级 · 双休率 35% · 平均下班 20:30</li>
-          <li><a href="./brand/apple.html">Apple (苹果中国)</a> —— B 级 · 双休率 92%（总部口径）· 平均下班 18:00</li>
+          <li><a href="./brand/apple.html">Apple (苹果中国)</a> —— S 级 · 双休率 92%（总部口径）· 平均下班 18:00</li>
           <li><a href="./brand/sony.html">Sony (索尼中国)</a> —— A 级 · 双休率 90% · 平均下班 18:00</li>
           <li><a href="./brand/dji.html">大疆 DJI</a> —— B 级 · 双休率 未核实 · 平均下班 21:00</li>
           <li><a href="./brand/luckin.html">瑞幸咖啡 (Luckin Coffee)</a> —— C 级 · 双休率 40% · 平均下班 21:30</li>
@@ -4897,7 +4897,7 @@
         // 还必须有合格的真实双休率。双休 = 每周休两天（做五休二），不要求固定
         // 周六日。此前「查不到直雇统一周末双休即视为无双休」为本站自拟过度口径，
         // 2026-10-31 站长纠正后废弃；工/建/中/成都轮休制周休 2 天 ≈ 月休 8.6 天，
-        // 判 A 级；农行 2026-11-04 复核：网点固定关门日 + 员工轮流双休（周休 2 天），由 C 级重新评级为 A 级。
+        // 判 A 级；农行 2026-11-04 复核：各网点每周关门一天（具体哪天不固定）+ 员工轮流双休（周休 2 天），由 C 级重新评级为 A 级。
         {
           id: 'icbc-card',
           name: '工商银行',
@@ -4970,16 +4970,16 @@
           company: '中国农业银行股份有限公司',
           logo: './assets/abc.svg',
           logoAlt: '农业银行',
-          workPolicy: '轮流双休 / 做五休二（网点固定关门日，员工轮换休息）',
-          overtime: '网点固定关门日轮休；员工周休 2 天、休息日按排班',
+          workPolicy: '轮流双休 / 做五休二（各网点每周关门一天，具体哪天不固定；员工轮换休息）',
+          overtime: '各网点每周关门一天（具体哪天不固定）；员工周休 2 天、休息日按排班',
           doubleRestRate: null,
           offWorkTime: null,
           voteCount: '0',
-          desc: '"站长 2026-11-04 复核：农行网点有固定关门日，员工实行轮流双休（做五休二、周休 2 天、休息日按排班不固定），符合「轮休制周休 2 天 = 双休 = 判 A」口径。与工/建/中/成都四行同类（周休 2 天 ≈ 月休 8.6 天，判 A 级）。此前「单休网点占比 61%」早年口径已被本次复核修正（站长线下复核 + 最新调查，2026-11-04 重新评级）"',
+          desc: '"站长 2026-11-04 复核：农行各网点每周关门一天（具体哪天不固定），员工实行轮流双休（做五休二、周休 2 天、休息日按排班不固定），符合「轮休制周休 2 天 = 双休 = 判 A」口径。与工/建/中/成都四行同类（周休 2 天 ≈ 月休 8.6 天，判 A 级）。此前「单休网点占比 61%」早年口径已被本次复核修正（站长线下复核 + 最新调查，2026-11-04 重新评级）"',
           tags: ['国有银行', '农业银行', '金融银行', 'ABC', '网点轮休'],
           likeCount: '0',
           dislikeCount: '0',
-          recommendText: '✅ A 级 · 网点固定关门日 + 员工轮流双休（周休 2 天），与工/建/中/成都行一致',
+          recommendText: '✅ A 级 · 各网点每周关门一天（不固定）+ 员工轮流双休（周休 2 天），与工/建/中/成都行一致',
           recommendColor: 'green',
           insertAfter: '中国银行', // 插到 boc 卡后面（h3 关键词）
           keywords: ['农业银行', 'ABC', '农行', '国有银行', '银行双休', '网点轮休', 'abchina'],
@@ -7910,7 +7910,7 @@
           note = document.createElement('div');
           note.id = 'apple-note';
           note.style.cssText = 'margin-top:12px;padding:10px 14px;background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;color:#92400e;font-size:13px;';
-          note.innerHTML = '💡 <strong>补充说明：</strong>富士康产线网传2023年起全面双休（部分地区存疑）；2019年成都园区核实为单休、两班倒<br>📋 <strong>2026-11-04 评级变动：</strong>由 S 级下调为 B 级（<strong style="color:#dc2626">站长已线下核实</strong>：线下零售销售岗单休，上六休一）';
+          note.innerHTML = '💡 <strong>补充说明：</strong>富士康产线网传2023年起全面双休（部分地区存疑）；2019年成都园区核实为单休、两班倒<br>📋 <strong>2026-11-04 站长线下核实：</strong>线下苹果<strong>授权经销商</strong>（非 Apple Store 直营店）销售岗单休，上六休一。苹果官方直营店待遇另行说明。';
         }
         tagsRow.parentNode.insertBefore(note, tagsRow.nextSibling);
       }
@@ -8243,7 +8243,7 @@
       }
 
       // 农业银行「评级变动」公示框（2026-11-04 站长要求）
-      // 农行由 C 级上调为 A 级，原因：网点固定关门日 + 员工轮流双休（周休2天）
+      // 农行由 C 级上调为 A 级，原因：各网点每周关门一天（不固定）+ 员工轮流双休（周休2天）
       // 与工/建/中/成都行一致，站长已线下核实
       // 与 insertAppleNote **平行实现**：标题匹配（农业银行前缀）→ 无卡摘除 →
       // 子树隐藏摘除 → 已在正确位置什么都不做（幂等）→ 位置不对先摘后插
@@ -8308,7 +8308,7 @@
           note = document.createElement('div');
           note.id = 'abc-note';
           note.style.cssText = 'margin-top:12px;padding:10px 14px;background:#ecfdf5;border:1px solid #10b981;border-radius:8px;color:#065f46;font-size:13px;';
-          note.innerHTML = '📋 <strong>2026-11-04 评级变动：</strong>由 C 级上调为 A 级（<strong style="color:#059669">站长已线下核实</strong>：网点固定关门日 + 员工轮流双休，周休2天，与工/建/中/成都行一致）';
+          note.innerHTML = '📋 <strong>2026-11-04 评级变动：</strong>由 C 级上调为 A 级（<strong style="color:#059669">站长已线下核实</strong>：各网点关门日不固定，但银行员工轮流双休，周休2天，与工/建/中/成都行一致）';
         }
         tagsRow.parentNode.insertBefore(note, tagsRow.nextSibling);
       }
@@ -8625,7 +8625,7 @@
        2) 自定义品牌卡（DOM 克隆）没有 React onClick，补上「打卡」「详情证据」功能 -->
   <script src="./custom-card-actions.js?v=19"></script>
   <script src="./u-grade-patch.js?v=12"></script>
-  <script src="./rating-stats-patch.js?v=1"></script>
+  <script src="./rating-stats-patch.js?v=2"></script>
   <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
   <script src="./factcheck-button.js?v=1"></script>
   <!-- 拼音 / 首字母模糊搜索联想。
