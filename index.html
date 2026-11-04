@@ -8597,6 +8597,11 @@
        必须在 stat-filter.js 之后：两补丁操作同一批卡片，本补丁的隐藏用
        class + !important，晚加载保证层级语义上「口径修正在档位筛选之上」。 -->
   <script src="./search-scope-fix.js?v=3"></script>
+  <!-- 评级过滤切换 0.5s 高度模糊闪屏（2026-11-04 站长要求）：捕获阶段拦截评级按钮点击，
+       给卡片区加 blur(16px) 覆盖 500ms，期间 bundle 即时重渲染 + filterCustomCards 的 100ms
+       二次调整都在模糊下完成，取消模糊时已是最终态，消除「点一下画面变两下」的抖动。
+       必须在 stat-filter.js 之后加载（与口径修正同批卡片，且只做 DOM 层补丁，不碰压缩产物）。 -->
+  <script src="./filter-flash.js?v=1"></script>
   <!-- 申诉政策确认弹窗（2026-10-25 站长要求）：申诉入口点击先弹政策，
        同意并跳转 / 拒绝并关闭。目标链接从页面既有 a[href] 现场读取，
        本文件不维护第二份 issueUrl。 -->
