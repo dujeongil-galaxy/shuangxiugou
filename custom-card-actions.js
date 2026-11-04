@@ -803,6 +803,10 @@
     doneBtn.addEventListener('click', function () {
       settleReceipt();
       closeLayer();
+      // 2026-11-04 站长要求：打卡成功（结算+关小票弹窗）后弹分享弹窗。
+      // share-modal.js 在 index.html defer 引入，正常此时已就绪；
+      // 未就绪/未引入时静默跳过，不打断打卡主流程。
+      if (window.SXGShare) window.SXGShare.open();
     });
     btnRow.appendChild(copyBtn);
     btnRow.appendChild(saveBtn);

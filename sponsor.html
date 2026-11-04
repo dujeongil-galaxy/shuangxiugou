@@ -428,7 +428,14 @@
       </div>
     </details>
 
-    <div class="panel">
+    <!-- 2026-11-04 站长要求：打赏收款面板默认隐藏，点击才展开 -->
+    <div class="actions" id="rewardToggleWrap" style="margin-bottom:18px;">
+      <button class="btn btn-ghost" id="rewardToggle" type="button" style="cursor:pointer;">
+        💰 展开打赏收款方式
+      </button>
+    </div>
+
+    <div class="panel" id="rewardPanel" style="display:none">
       <div class="field">
         <span class="label">选择交易所</span>
         <div class="opts" id="exOpts" role="group" aria-label="交易所"></div>
@@ -482,6 +489,17 @@
 
     <script>
     (function() {
+      // 打赏收款面板默认隐藏，点击才展开（展开后按钮收起，不提供再折叠）
+      var rt = document.getElementById('rewardToggle');
+      var rp = document.getElementById('rewardPanel');
+      var rw = document.getElementById('rewardToggleWrap');
+      if (rt && rp && rw) {
+        rt.onclick = function() {
+          rp.style.display = '';
+          rw.style.display = 'none';
+        };
+      }
+
       var shareBtn = document.getElementById('shareBtn');
       if (!shareBtn) return;
       shareBtn.onclick = function() {

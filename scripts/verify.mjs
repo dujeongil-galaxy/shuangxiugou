@@ -5136,6 +5136,37 @@ section('21b-1. 打赏页交易所安全事件带');
     '事件块外链来源带 rel=noopener noreferrer nofollow');
 }
 
+// ---------- 21b-2. 打赏面板默认隐藏 + 分享弹窗接线 ----------
+// 背景（2026-11-04 站长要求）：①打赏收款面板（交易所/币种/二维码/地址）
+// 默认隐藏，点击「展开打赏收款方式」才显示；②打卡成功后弹分享弹窗
+// （custom-card-actions.js 的 doneBtn → window.SXGShare.open()，
+// share-modal.js 必须挂进 index.html 才能生效）。
+section('21b-2. 打赏面板默认隐藏 + 分享弹窗接线');
+{
+  const sp = readFileSync(join(ROOT, 'sponsor.html'), 'utf8');
+  // 默认隐藏：面板必须带 display:none 内联样式，展开按钮必须真实存在
+  check(/<div class="panel" id="rewardPanel" style="display:none">/.test(sp),
+    '打赏收款面板默认隐藏（rewardPanel 带 display:none 内联样式）',
+    '删掉 display:none → 收款地址未点击就露出，站长要求落空');
+  check(/id="rewardToggle"/.test(sp) && /展开打赏收款方式/.test(sp),
+    '赞助页有「展开打赏收款方式」按钮（rewardToggle）');
+  // 点击真的能展开：绑定在监听器内，且展开后按钮区隐藏
+  check(/getElementById\('rewardToggle'\)/.test(sp)
+    && /rp\.style\.display = ''/.test(sp)
+    && /rw\.style\.display = 'none'/.test(sp),
+    'rewardToggle 点击真的展开面板并收起按钮区（绑定在监听器内）');
+  // 分享弹窗：sponsor.html 与 index.html 都挂 share-modal.js（打卡成功弹分享的依赖）
+  // 标签两种写法都认：<script defer src=…> 与 <script src=… defer>
+  const shareTag = (h) => /<script(?=[^>]*\bsrc="\.\/share-modal\.js\?v=\d+")(?=[^>]*\bdefer)[^>]*><\/script>/.test(h);
+  const idx = readFileSync(join(ROOT, 'index.html'), 'utf8');
+  check(shareTag(idx) && shareTag(sp),
+    'index.html 与 sponsor.html 都挂载了 share-modal.js 脚本标签（defer，属性顺序不限）');
+  // 打卡成功 → 分享弹窗：盯「结算+关弹窗之后真的调起 SXGShare」
+  const cca = readFileSync(join(ROOT, 'custom-card-actions.js'), 'utf8');
+  check(/window\.SXGShare\) window\.SXGShare\.open\(\)/.test(cca),
+    'custom-card-actions.js 打卡成功后调起分享弹窗（SXGShare.open）');
+}
+
 // ---------- 21c. 首页滑到底部按钮 ----------
 section('21c. 首页滑到底部按钮');
 {
