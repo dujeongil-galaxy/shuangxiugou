@@ -4,6 +4,19 @@
 
 ---
 
+### 打卡分享覆盖所有卡片（内置卡接入）、分享文案带说明文字、og 卡片图（2026-11-04 22:50 · 提交 `df53f59`）
+
+- **2026-11-04 站长反馈（两条）**：①「我说的不是所有卡片吗，怎么到你这里就成了自定义？」——打卡成功弹分享必须覆盖内置卡，不能只有自定义卡；②复制类平台「链接里面好歹写个文字说明」，不要照搬网站标题，参考必应收录的站点简介那样带一句人话；能带图的平台带图。
+- **改动**：
+  - **内置卡接入分享**（`custom-card-actions.js` ?v=20→21）：内置卡小票由 bundle React 管理，铁律禁改 bundle。在既有结算监听（捕获阶段）里，识别「确认打卡」后启动 `waitBuiltinClose` 轮询——等 `.receipt-tear-top` 离开 DOM（React 关掉小票弹窗）再调起 `window.SXGShare.open()`，10s 兜底超时。自定义卡原有链路（doneBtn 直接弹）不变。
+  - **分享文案带说明**（`share-modal.js` ?v=1→2）：复制类平台（朋友圈/微信/抖音/小红书/Discord/KakaoTalk）改为复制「说明文案 + 换行 + 链接」——文案优先取页面 `og:description`，取不到用 `FALLBACK_DESC` 兜底（口径与必应收录的站点简介一致）；toast 同步改为「文案和链接已复制，打开 xx 粘贴给好友」。URL 类平台（微博/X/Telegram/Line）分享文本也从网站标题换成说明文案（Reddit 保持用标题）；微博配图 favicon.svg → og-share.png（位图）。底部「复制链接」保持纯 URL（`data-copy="link"` 单独标记）。
+  - **og 卡片标签**（index.html）：新增 `og:title / og:description / og:url / og:image`（og-share.png 位图**绝对 URL**——微信/Discord/Telegram 的链接卡片不认 SVG、不认相对路径）+ `og:image:width/height/alt` + `twitter:card`。此前首页一个 og 标签都没有，贴链接出去没图没描述，这就是「分享难看」的另一半根因。
+  - **新增 `og-share.png`**（1200×630）：品牌分享卡图——S/A/B/C 四枚评级徽章（与站点评级配色一致）+ 站名 + 一句话简介 + 域名。用无头 Edge 把临时 HTML 截图生成（脚本用完即删）。
+- **校验**：verify §21b-2 新增 3 条断言（内置卡 waitBuiltinClose 真调起、复制文案带说明拼接、og:image 必须是 og-share.png 位图），**5 组故障注入全部判红**（删轮询/改轮询条件永不等关/退回纯链接/删 og:image/og:image 换 svg）后恢复；verify **1389 项**全部通过。
+- **真渲染验收**（无头 Edge + CDP）**9/9 PASS**：内置卡真点「打卡」→「确认打卡并计入全网总额」→ React 关小票 → 分享弹窗自动弹出（截图确认，背景撒花彩带可见）；微信按钮复制内容 = 说明文案 + `\n` + URL；底部复制链接仍纯 URL；微博/X 分享链接文本 = 说明文案且带 og-share.png 配图。回归：test-builtin-ticket-dom 57/57、test-ticket-total 52/52 不回归。
+
+---
+
 ### 抵制文案配色微调：「智联招聘App」单独改蓝，不再整段全红（2026-11-04 22:29 · 提交 `3ce2b14`）
 
 - **2026-11-04 站长反馈**：抵制文案整句全红看着难受，「智联招聘」单独换个颜色。
