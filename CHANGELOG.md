@@ -4,6 +4,20 @@
 
 ---
 
+### AI 聊天挂件重新锚定到真正右下角，不再漂到页面中部（2026-11-04 14:10 · 提交 `d3b59be`）
+
+- **问题（站长实测反馈）**：首页「劳动法AI助手」聊天面板漂到页面中部，盖住 Hero / 统计卡（图 1）。
+- **根因**：挂件（`ai-chat.js`）本是 `brand/*.html` 品牌详情页设计，被引到 React 首页后，沿原品牌页锚点 `bottom:calc(var(--sxg-bar-h) + 270px)` 向上长 `max-height:min(520px, calc(100vh - 300px))` 展开；整列右侧悬浮钮为避让 76px 广告条整体抬高，面板向上长 276px 后顶端落进视口中部（宽屏实测 top≈36% 视口高），且横跨 +48~+352 区间还压住抖音 / 投稿 / 提醒三颗钮。
+- **修法**（`ai-chat.js` 仅动样式与切换逻辑，**未碰压缩 bundle** `assets/index-YthXZ9eP.js`）：
+  - 按钮贴广告条上方（距底 14px），面板从按钮正上方起长（距底 76px = 14 + 52 按钮高 + 10 间隙）；
+  - `max-height:min(480px, calc(100vh - var(--sxg-bar-h) - 200px))`：用视口高减广告条再留 200px 顶边距，保证面板顶端永不进入首屏 Hero / 统计卡区；
+  - 展开时 body 加 `.sxg-ai-open`，隐藏会被面板盖住的右列三钮（`sxg-video-btn` / `sxg-bottom-btn` / `sxg-remind-btn`）；回到顶部钮（距底 6px，在面板之下）与右侧 nav 列（right:72px）不受影响；
+  - `toggle()` / `startAutoClose()` / 初始自动展开三处同步加收 `.sxg-ai-open`，开关状态一致；
+  - 手机端（<640px）面板 `left:14px;right:14px;width:auto` 撑满、仍由 isCompact 默认收起，行为不变。
+- 改了哪些文件：`ai-chat.js`（定位重写 + `.sxg-ai-open` 联动，`?v=15→16`，index.html 同步 bump）、`index.html`（ai-chat.js `?v=16`）、`scripts/test-ai-anchor.cjs`（新增真渲染验收）。
+- **真渲染验收（无头 Edge + CDP，全 PASS）**：宽屏 1680×950 自动展开 + 窄屏 1280×900 点开两视口——面板距底 76px（无广告条环境）/ 152px（带 76px 广告条）、顶端占屏 61–63%（下半屏，不盖 Hero）、fab 在面板之下可点关闭、右列三钮展开时 `display:none`、收起后复原为 `flex`。
+- `node scripts/verify.mjs` 通过 **1376 项**（2 项预存 B/C 卡数 bundle 常数断言与本次无关，待站长拍板）。
+
 ### U/D 级过滤按钮在 React 具体档位下不显示的 bug 修复（2026-11-04 12:44 · 提交 `2618dbb`）
 
 - **站长 2026-11-04 实测 bug**：在评级过滤选了 A 级（或 B/S 等具体档位）后，再点 U 级（或 D 级）按钮，结果区整片空白、直接落页脚，任何卡片都不显示（图 2）。
