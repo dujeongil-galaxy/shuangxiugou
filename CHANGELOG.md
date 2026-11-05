@@ -4,6 +4,16 @@
 
 ---
 
+### 搜索清空闪屏与切换评价卡统一 + 打卡引导重复点击（2026-11-05 17:16 · 提交 `237a977`）
+
+- **站长指令**：「不只是搜索银行，无论搜索什么。接下来，删除搜索结果，保持空白，你会肉眼可见一个新的加载动画。所以和切换评价卡保持一致，高度模糊遮挡预加载动画。品类卡切换目前还没发现有这个情况，所以暂时先不改」。
+- **定位**：无头 Edge + CDP 真渲染复现（`scripts/dbg-search-clear.cjs`，本地与线上两条链路）：清空瞬间 React 把被过滤掉的 52 张卡一次性插回（123 → 175 张），拼音联想面板同时收起，各 DOM 补丁再逐个重注入；0~1400ms 逐帧采样 + MutationObserver（childList / attributes）都没抓到恒定的 spinner 节点 —— 站长看到的是**整段重渲染窗口**（线上还叠加 bundle / 图片请求等待），所以修法不能是「按 class 找到那个动画元素藏起来」。
+- **修法**：`filter-flash.js` 把评级切换的覆盖式 frosted 遮罩抽成共用 `flash()`；捕获阶段用 `beforeinput` + `input` 判「非空 → 空」边沿（打字、删到一半、已空后重复 Backspace 都不闪），清空时复用**同一节点、同一规格**：`backdrop-filter: blur(36px) saturate(0.7)` + `rgba(252,252,253,0.9)` + z-index 8000 + 500ms + 卡片 `filter:blur(20px)`；遮罩 top 仍取评级工具条底边 +4，与切换评价卡几何一致、工具条保持清晰。另加 CSS 在闪屏期把 `#sxg-loading` / `.sxg-boot` / spinner 压成 `visibility:hidden!important` —— 首屏预加载层 z-index 是 2147483647，靠 z-8000 的磨砂层根本盖不住。品类卡的 click 分支一个字没动（白名单里也不许混进品类文案）。
+- **同批带上**：上一轮已完成但未提交的「打卡并生成小票」引导弹窗第二次及以后轻量提醒（`guideShown` 布尔 → 计数，按钮文案随弹次变化），并修好 `scripts/test-guide-repeat.cjs` 的弹层选择器（`.sxg-layer` 是 class 不是 id）与 jsdom `scrollIntoView` stub。两者一并上线，避免 verify 断言与线上代码脱节把 CI 判红。
+- **改了哪些文件**：`filter-flash.js`、`index.html`（`?v=2`→`?v=3` 与注释）、`custom-card-actions.js`、`scripts/verify.mjs`（§17b 共 16 项静态断言）、`scripts/dbg-search-clear.cjs`（诊断）、`scripts/test-search-clear-flash.cjs`（18 项 jsdom 行为）、`scripts/test-search-clear-render.cjs`（17 项 CDP 真渲染）、`scripts/test-guide-repeat.cjs`、`.github/workflows/verify.yml`（两个新测试挂 CI）。
+- **三层强制**：脚本（共用 `flash()` + 边沿触发）+ 校验（verify §17b：共用 flash、边沿条件、几何、模糊规格、预加载层兜底、品类文案不得混入）+ CI（两个新测试挂到 verify.yml）。**五组故障注入全部判红后还原**：①边沿条件退回「值为空就闪」②删掉清空分支的 flash 调用 ③预加载层兜底 CSS 失效 ④全局把 blur(36px) 降成 blur(8px) ⑤把「数码外设」混进评级白名单。
+- **怎么验证**：`NOTES_KEY=… node scripts/verify.mjs` **1389 项全绿**；**36 组 `test-*.cjs` 按退出码全为 0**；无头 Edge + CDP 真渲染 17/17 PASS —— 清空后 130ms 验 computed `backdrop-filter=blur(36px) saturate(0.7)`、z-index 8000、遮罩 top 556 = 评级按钮底边 552+4、卡片 `filter=blur(20px)`、注入的模拟 `#sxg-loading` 被压成 hidden、可见动画元素 0；600ms 后遮罩与模糊全撤、卡片恢复 175 张；品类卡点击不闪、评级按钮仍闪。**截图肉眼确认**：结果区呈重度磨砂，看不到转圈与「页面加载中…」，右侧悬浮钮与顶部统计保持清晰。压缩产物 `assets/index-YthXZ9eP.js` 未改动。
+
 ### 品牌 LOGO 逐一核实替换 + 加密落库（2026-11-05 13:45 · 提交 `f005fb7`）
 
 - **站长指令**：60→170 新增品牌 LOGO「逐一核实，替换正确的 LOGO，其中建行 LOGO 仍然错误」；「LOGO 图标缓存放 GitHub 仓库（blob 容器、不得明文），优化之后不再引用站外来源」。

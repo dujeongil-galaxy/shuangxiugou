@@ -2553,3 +2553,35 @@ node -e 里，模板字面量的 `${slug}` 被展开成空，59 处全部变成 
 **logos.enc 的缓存号有三处要同步**：logo-vault.js 的 ENC_URL、douyin-prompt.js
 的 ENC_LOGO_URL（预热）、index.html 的 logo-vault.js?v= 脚本标签——verify §20n
 有三处一致性断言，改容器记得全部 bump。
+
+---
+
+## 第三十一章：搜索清空闪屏一轮踩的坑（2026-11-05 · 提交 `237a977`）
+
+**「加载动画」查不到 ≠ 没有。** CDP 0~1400ms 逐帧 + MutationObserver
+（childList + attributes）都没抓到恒定的 spinner 节点，只看到 52 张卡一次性插回。
+别按 class 去找「那个动画元素」再隐藏它——要遮的是整段重渲染窗口，
+所以最终方案是整层 frosted 遮罩，而不是给某个节点打补丁。
+
+**z-index 8000 盖不住 2147483647。** 首屏 `#sxg-loading` 是整页不透明白 + 转圈，
+层级比 frosted 遮罩高得多，只在结果区盖磨砂层的话转圈照样浮在最上面。
+闪屏期用 `visibility:hidden!important` 压住，撤闪屏自动恢复；
+别去 `remove()`——页面真在重新加载时移除它，会露出半成品页面。
+
+**CDP 截图比 500ms 窗口慢。** 验收脚本的 `sample()` 原本对 `body *` 逐个
+`getComputedStyle`（175 张卡、几千个节点），直接把闪屏窗口耗光，
+拍到的是「遮罩已撤 + 模拟加载层恢复可见」的全白转圈图，
+肉眼一看还以为 bug 根本没修。改成只查加载动画相关选择器，
+再先拍两张预热合成器，截图才落在真实清空触发帧。
+
+**jsdom 的 CSSStyleDeclaration 会丢 `backdrop-filter`。** `mask.style.cssText`
+里读不到 blur(36px)，行为测试拿它当判据必然假红。模糊规格交给
+verify 静态源码断言 + CDP `getComputedStyle` 真渲染，两边互补。
+
+**正则 `/全部/` 会匹配「全部评级」。** 品类卡不闪的断言因此把评级按钮
+点了进去，误判成实现有 bug。按钮文案一律精确相等比较。
+
+**故障注入要全局替换。** `String.replace('backdrop-filter:blur(36px)…')`
+第一次只命中 `-webkit-` 那一行的子串，独立那行还在，verify 与行为测试
+照旧全绿，差点得出「断言没生效」的反结论。用 `split().join()` 全局替换，
+并打印命中处数确认真的改到了。
