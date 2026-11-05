@@ -2517,3 +2517,39 @@ D 判据是「管理层**主动设计规避法律风险**」（奇瑞「请想�
 **两条路都通向违法，但性质不同，档位就该不同。** 判据一旦写成一条话，就要照着那条话判，
 不能因为"感觉同样恶劣"就合并——合并了，D 级就变成了情绪档位。
 页面里已写明「为什么不是 D 级」，把判据摆给读者。
+
+## 第三十章：59 张品牌 LOGO 抓取、核实与加密落库一轮踩的坑（2026-11-05 · 提交 `f0ab3bf`）
+
+**sharp 的 flatten({background:{alpha:0}}) 会把透明像素合成黑色。**
+本意「补个透明底」实际是「把 alpha 通道整个拆掉、RGBA 变 RGB、透明像素落成
+(0,0,0) 黑」——第一批 contact sheet 一片黑块全是它。规范化管线里**不要 flatten**，
+RGBA 原样过 resize 就行；要白底合成那是展示层的事。
+
+**ICO 的透明信息经常只在 AND 掩码里。** 手写解码器第一版只处理「alpha 全 0
+才用掩码」，实测一批 32bpp favicon 的 alpha 通道**全 255（不透明）**、真正的
+轮廓在 1bpp AND 掩码里——判定「有没有非零 alpha」再决定用不用掩码的写法
+会漏掉这批。正确语义：掩码位=1 就是透明，**无条件应用**（对不透明图标无害）。
+另外 8bpp/4bpp 调色板帧：调色板项的 alpha 保留位恒 0，不能采信，一律靠掩码。
+
+**sharp 不带 ico 支持（Input file contains unsupported image format）**，
+libvips 编译没带 magickload。ICO 全手写：6 字节头 + N×16 字节目录项，
+帧可能是 PNG（`\x89PNG`）也可能是 DIB（BITMAPINFOHEADER，biHeight=像素高×2）。
+
+**构建器分支里引用兄弟分支的 var 会中断整批注入。** 新加 `enc:` 分支时写了
+`logoImg.setAttribute(...)`，而 `var logoImg` 声明在下面的 else 分支里——var
+提升但未初始化，TypeError 一抛，分批注入的 setTimeout 链直接断，表现是
+「174 张卡只进 54 张、batchFlag 永远 true」，7 组整页测试同时红。**新分支
+一律用独立变量名**，别蹭兄弟分支的。
+
+**预热模块别把标识符当 URL。** douyin-prompt warmScan 原本「预加载
+img[data-sxg-enc]」，但 LOGO 落库后 data-sxg-enc 里是**裸 slug**（'kfc'）不是
+URL——每轮弹窗预热 59 个 404（本地 http 服务日志里一排 GET /kfc 404 抓现行）。
+预热对象改成容器文件本体（一个请求覆盖全部），并加 verify 断言钉死。
+
+**bash 内联 node -e 的 `${var}` 会被 shell 吃掉。** 一次批量替换写在内联
+node -e 里，模板字面量的 `${slug}` 被展开成空，59 处全部变成 `logo: 'enc:/'`。
+复杂替换一律**落成脚本文件**再跑（本仓库已多次受益于这条，这次又栽了一次）。
+
+**logos.enc 的缓存号有三处要同步**：logo-vault.js 的 ENC_URL、douyin-prompt.js
+的 ENC_LOGO_URL（预热）、index.html 的 logo-vault.js?v= 脚本标签——verify §20n
+有三处一致性断言，改容器记得全部 bump。

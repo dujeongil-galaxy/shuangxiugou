@@ -4,6 +4,16 @@
 
 ---
 
+### 品牌 LOGO 逐一核实替换 + 加密落库（2026-11-05 13:45 · 提交 `f0ab3bf`）
+
+- **站长指令**：60→170 新增品牌 LOGO「逐一核实，替换正确的 LOGO，其中建行 LOGO 仍然错误」；「LOGO 图标缓存放 GitHub 仓库（blob 容器、不得明文），优化之后不再引用站外来源」。
+- **核实**：三轮抓取（固定路径 → 官网首页 HTML 解析 → 定向补抓）对 108 个品牌（107 个字母标卡 + 建行），命中 74+7；无头 Edge 截 contact sheet 逐页人工核对，**59 张采纳**（含站长点名的建行——官网 logo.png 裁出左侧 37×40 双 C 官方符号替换手绘近似标），19 张剔除（明显错标/白底隐形/低清不可辨：aws、coke、transsion、bluemoon、bosideng、supor、derucci、suofeiya、htsec、tenpay、yunnanbaiyao、hikvision、dahua、wuxiapptec、robam、kuka、taier、laoxiangji、tongyi、alibaba、ecovacs，其中 alibaba 8bpp 调色板解码成马赛克、ecovacs 16px 几乎不可见），33 个无候选的品牌保留字母标。
+- **落库**：59 张规范化 ≤128px 透明 PNG（scripts/build-logos.mjs：手写 ICO 解码器，含 32bpp「alpha 全不透明、透明在 AND 掩码」与 8/4bpp 调色板形态）打包加密成单个 `assets/logos.enc`（scripts/encrypt-logos.mjs：PBKDF2-SHA256 21 万次 + AES-256-GCM，照片同款参数，往返自检；287KB 一个请求覆盖全部）。
+- **前端**：新增 logo-vault.js（照片同款 UMD）：本地解密 → Blob URL → 回填 `img[data-sxg-enc]`（构建器早于解密完成时走 `window.__sxgEncQueue` 队列 + 全 DOM 扫描双保险），失败恢复品牌文字不留空框；59 张卡 `config.logo` 改 `enc:<slug>`；预热模块同步改为预热容器文件本体。
+- **测试**：新增 scripts/test-logo-vault.cjs 37 项（真容器真口令解密 59 张 PNG magic、口令漂移拒绝、回填/失败/幂等/adopt、index.html 接线、CI 挂载），已挂 CI；verify 新增 §20n（20 张断言：真解密、enc: 配置与容器一一对应、建行旧标下线、ENC_URL 缓存号三处一致），三组故障注入（slug 指向不存在、口令漂移、删脚本标签）全部判红后还原；全部 33 组 test-*.cjs 按退出码跑通。
+- **验收**：无头 Edge + CDP 真渲染——59/59 Blob URL 回填，百度/京东/网易/得物/哔哩哔哩/莉莉丝/心动等官方标真渲染成功（截图存 D:/WebArchive/_shots/2026-11-05-enc-logos.png）；明文 PNG 与管线脚本备份在 notes-备份/logo-norm-备份/，仓库只有密文。
+- **踩坑**（详见 PITFALLS 第三十章）：sharp flatten(alpha:0) 把透明像素合成黑色；ICO 透明在 AND 掩码里；构建器 var 提升引用兄弟分支变量会中断整批注入；warmScan 把裸 slug 当 URL 产生 59×404。
+
 ### 弹窗 8 秒锁定窗口资源预热（2026-11-05 12:20 · 提交 `a724de8`）
 
 - **站长指令**：劳工友好弹窗 8 秒强制观看期内「也能预加载很多了吧」——窗口不该白白空转。
