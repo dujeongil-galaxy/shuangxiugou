@@ -2218,6 +2218,62 @@ if (exists('notes.html')) {
     }
   }
 
+  // ⑩d 测评结果专题：站长 2026-11-05「永远保持把它放在最后一章独立的专题页面」，
+  // 「并备注后续会随着测评结果的增加而逐步更新」。带 recordId（token）的结果页
+  // 只准集中在这一节；这一节是「顺序打乱」规则唯一的固定锚点，永远留在正文末尾
+  // （「附：AI 解读」之前）。规则不能只写文档（2026-10-19 血泪）：配套断言 + 故障注入。
+  {
+    const ws = plain === null ? -1 : plain.indexOf('<div class="wrap">');
+    const we = plain === null ? -1 : plain.indexOf('</div><!-- /.layout -->');
+    const wrap = (ws >= 0 && we > ws) ? plain.slice(ws, we) : (plain || '');
+    const hs = [...wrap.matchAll(/<h2>([^<]+)<\/h2>/g)]
+      .map((m) => ({ t: m[1].trim(), i: m.index }));
+    const topicIdx = hs.findIndex((x) => /测评结果存档/.test(x.t));
+    const ch2Idx = hs.findIndex((x) => /^二、/.test(x.t));
+    const seg = (a, b) => (a >= 0 && b > a) ? wrap.slice(a, b) : '';
+    const topicStart = hs[topicIdx]?.i ?? -1;
+    const topicEnd = hs[topicIdx + 1]?.i ?? wrap.length;
+    const ch2Text = seg(hs[ch2Idx]?.i ?? -1, hs[ch2Idx + 1]?.i ?? -1);
+    const topicText = seg(topicStart, topicEnd);
+    // 金额只有截图第一条显示了 ¥0.01；另外两条页面没标，故留空、不代补。
+    const rows = [
+      ['6e1f22ff5d224c1c959c93910aef5cc4', '原生家庭创伤测试', '2026/08/19 21:27', '¥0.01', '已解锁'],
+      ['54352712fd22422090610508a723e299', '情绪价值测试', '2026/08/19 21:19', '', '未解锁'],
+      ['c3aa393b674d4dec9b6658506f532a35', 'IQ 智商测试', '2026/08/19 20:59', '', '未解锁'],
+    ];
+    const pos = rows.map(([id]) => wrap.indexOf('recordId=' + id));
+
+    contentCheck(plain !== null && topicIdx >= 0 && topicIdx === hs.length - 2
+      && /^十三、/.test(hs[topicIdx].t),
+      '测评结果专题固定在正文最后一章（十三、，附之前）',
+      '专题不是倒数第二个 h2 → 以后新章插到它后面，「永远保持在最后一章」就失守了');
+    contentCheck(plain !== null && /固定留在末尾|固定在?正文最后/.test(topicText)
+      && /逐步更新/.test(topicText) && /token/.test(topicText),
+      '专题写明带 token、固定在末尾、后续逐步更新',
+      '缺了「固定末尾」或「逐步更新」的备注 → 后续维护会把它当成普通章节挪走');
+    contentCheck(plain !== null && pos.every((p) => p >= 0)
+      && (wrap.match(/recordId=/g) || []).length === 3
+      && pos.every((p) => p > topicStart && p < topicEnd),
+      '三条带 token 的结果链接全部、且仅集中在专题章内',
+      '链接散到别的章节，或专题里缺了一条 → 不再是独立专题');
+    contentCheck(plain !== null && pos[0] < pos[1] && pos[1] < pos[2],
+      '三条结果按截图时间倒序（最新在前、最早在最下）',
+      '顺序被打乱 → 站长要求「最新的摆前面，最早的放在最下面」没落实');
+    contentCheck(plain !== null && rows.every(([, name, time, amount, status]) => {
+      const i = topicText.indexOf(name);
+      if (i < 0) return false;
+      const line = topicText.slice(i, i + 180);
+      return line.includes(time) && line.includes(status)
+        && (!amount || line.includes(amount));
+    }), '每条记录照截图写全名称／时间／金额／解锁状态',
+      '记录字段缺失，或替截图补了没显示的金额 → 不照抄也不许编造');
+    contentCheck(plain !== null
+      && ch2Text.includes('https://www.toolxq.com/psych/mbti64/index')
+      && /四格八维/.test(ch2Text) && /MBTI/.test(ch2Text),
+      '第二章末尾有 MBTI 入口链接与四格八维说明',
+      'MBTI 入口链接或说明不在第二章 → 站长要求的落点没落实');
+  }
+
   // ⑪ 尾注必须存在。
   //
   // 这一页是站长个人随笔，AI 参与了排版与润色。**这件事必须写在页面上** ——
