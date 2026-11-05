@@ -162,6 +162,64 @@
     if (box) box.classList.remove('is-open');
   }
 
+  // ── 8 秒锁定窗口的资源预热（2026-11-05 站长指令）────────────────────
+  // 站长原话大意：8 秒的时间内，也能预加载很多了吧？
+  // 实现：弹窗弹出即开始低优先级并发预热首页品牌卡 LOGO 图片
+  // （含后续 logo 加密 blob .enc 容器），并发 4 路、每 2s 重扫一遍
+  // 捡漏（自定义卡是分批渐进注入的，弹窗时点可能还没注完），
+  // 倒计时结束停止。用户关掉弹窗往下滚时 LOGO 已在 HTTP 缓存里。
+  var warmSeen = {};
+  var warmTimer = null;
+  var warmUrls = [];
+  var warmIdx = 0;
+  function warmScan() {
+    var imgs = document.querySelectorAll('div.bg-white.rounded-2xl.border img[src]');
+    for (var i = 0; i < imgs.length; i++) {
+      var u = imgs[i].getAttribute('src');
+      if (u && !/^data:/.test(u) && !warmSeen[u]) {
+        warmSeen[u] = 1;
+        warmUrls.push(u);
+      }
+    }
+    // 加密 LOGO 容器（logo-vault 流程：img 不带 src，.enc 地址在 data-sxg-enc）
+    // 预热 .enc 文件本身，后续解密只差一次 WebCrypto 本地计算。
+    var encs = document.querySelectorAll('img[data-sxg-enc]');
+    for (var j = 0; j < encs.length; j++) {
+      var e = encs[j].getAttribute('data-sxg-enc');
+      if (e && !warmSeen[e]) {
+        warmSeen[e] = 1;
+        warmUrls.push(e);
+      }
+    }
+  }
+  function warmNext() {
+    if (warmIdx >= warmUrls.length) return;
+    var u = warmUrls[warmIdx];
+    warmIdx += 1;
+    if (/\.enc$/.test(u)) {
+      fetch(u, { priority: 'low' }).catch(function () {});
+      warmNext(); // fetch 无 onload，链式取下一个
+    } else {
+      var img = new Image();
+      img.onload = img.onerror = warmNext;
+      img.src = u;
+    }
+  }
+  function warmStart() {
+    warmScan();
+    warmNext(); // 并发 4 路：4 个 Image 同时跑，各自 onload 链式取下一个
+    warmNext();
+    warmNext();
+    warmNext();
+    // 每 2s 重扫一遍捡漏（分批注入的后到卡片），倒计时到点清掉
+    clearInterval(warmTimer);
+    warmTimer = setInterval(warmScan, 2000);
+  }
+  function warmStop() {
+    clearInterval(warmTimer);
+    warmTimer = null;
+  }
+
   // 8 秒滚动倒计时：数字递减 + 进度条收缩；到点后放行关闭
   function startCountdown() {
     unlockAt = Date.now() + 8000;
@@ -169,11 +227,15 @@
     var barEl = box.querySelector('.dyp__count__bar > i');
     var labelEl = box.querySelector('.dyp__count__label');
     if (countTimer) clearInterval(countTimer);
+    warmStart(); // 锁定窗口开场即预热
     function tick() {
       var left = unlockAt - Date.now();
       if (left <= 0) {
         clearInterval(countTimer);
         countTimer = null;
+        warmScan(); // 收尾再扫一遍，把分批注入的后到卡片也预热掉
+        warmNext(); warmNext(); warmNext(); warmNext();
+        setTimeout(warmStop, 3000); // 留 3s 给最后一批拉完，然后停摆
         if (numEl) numEl.textContent = '0';
         if (labelEl) labelEl.textContent = '现在可以关闭了';
         if (barEl) barEl.style.width = '0%';

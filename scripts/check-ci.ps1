@@ -22,29 +22,22 @@ $Workflow = '站点一致性校验'
 $TimeoutMin = 12
 
 if (-not $Sha) {
+    # 需要当前 HEAD 哈希：本机 PATH 不含 git，逐个探测 PortableGit
+    $gitExe = $null
+    foreach ($c in @(
+        'D:\Program Files\WorkBuddy\resources\vendor\PortableGit\cmd\git.exe',
+        (Join-Path $env:USERPROFILE '.workbuddy\binaries\PortableGit\current\mingw64\bin\git.exe'),
+        'C:\Program Files\Git\cmd\git.exe'
+    )) {
+        if (Test-Path $c) { $gitExe = $c; break }
+    }
+    if (-not $gitExe) { Write-Output 'ERR: 未传 Sha 且找不到 git.exe'; exit 1 }
     $Sha = (& $gitExe -C (Split-Path -Parent (Split-Path -Parent $PSCommandPath)) rev-parse HEAD).Trim()
 }
 $Sha = $Sha.Substring(0, [Math]::Min(12, $Sha.Length))
 
-# token：与本机 push 凭据同源（git credential fill）。
-# 本机 PATH 不含 git，用 PortableGit 绝对路径（存在性逐个探测）。
-$gitExe = $null
-foreach ($c in @(
-    'D:\Program Files\WorkBuddy\resources\vendor\PortableGit\cmd\git.exe',
-    (Join-Path $env:USERPROFILE '.workbuddy\binaries\PortableGit\current\mingw64\bin\git.exe'),
-    'C:\Program Files\Git\cmd\git.exe'
-)) {
-    if (Test-Path $c) { $gitExe = $c; break }
-}
-if (-not $gitExe) { Write-Output 'ERR: 找不到 git.exe（凭据获取依赖它）'; exit 1 }
-$sec = 'protocol=https' + "`n" + 'host=github.com' + "`n" + "`n" | & $gitExe credential fill
-$token = $null
-foreach ($line in $sec) {
-    if ($line -like 'password=*') { $token = $line.Substring(9) }
-}
-if (-not $token) { Write-Output 'ERR: 拿不到 GitHub token'; exit 1 }
-
-$h = @{ Authorization = "Bearer $token"; 'User-Agent' = 'sxg-check-ci' }
+# 无需 token：公开仓库的 Actions API 匿名可读（rate limit 60/h 足够轮询用）。
+$h = @{ 'User-Agent' = 'sxg-check-ci' }
 Write-Output ("WRFFMB 检查：{0} @ {1}" -f $Repo, $Sha)
 
 $deadline = (Get-Date).AddMinutes($TimeoutMin)

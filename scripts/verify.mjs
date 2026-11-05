@@ -1979,6 +1979,21 @@ if (exists('notes.html')) {
   check(!exists('prompt-original.html'),
     '独立存档页 prompt-original.html 已删除（内容已回到弹窗本体）',
     '存档页还在 → 2026-11-03 站长「记得删独立页」没执行');
+  // ⑧ 8 秒锁定窗口资源预热（2026-11-05 站长指令「8 秒的时间内也能预加载很多了吧」）：
+  //    弹窗倒计时开场即低优先级预热品牌卡 LOGO 图片与加密容器（.enc），
+  //    收尾再扫一遍捡分批注入的后到卡，倒计时结束停摆。
+  check(/function warmStart\(\)/.test(dp)
+    && /function warmStop\(\)/.test(dp)
+    && /data-sxg-enc/.test(dp)
+    && /new Image\(\)/.test(dp),
+    '弹窗预热模块齐备（warmStart/warmStop/Image 预载/.enc 容器扫描）',
+    '预热模块缺失 → 8 秒锁定窗口白白空转，用户下滑时 LOGO 才开始加载');
+  check(/startCountdown[\s\S]{0,400}warmStart\(\)/.test(dp),
+    '预热挂在 8 秒倒计时开场（startCountdown → warmStart）',
+    '倒计时不预热 → 预加载与锁定窗口脱钩，改动时序后失效');
+  check(/left <= 0[\s\S]{0,700}setTimeout\(warmStop, 3000\)/.test(dp),
+    '倒计时到点后预热收尾停摆（tick → 延时 warmStop）',
+    '预热不停摆 → 弹窗关了后台还在反复扫 DOM 拉资源');
   const dpcss = exists('douyin-prompt.css')
     ? read('douyin-prompt.css').replace(/\/\*[\s\S]*?\*\//g, '')
     : '';
