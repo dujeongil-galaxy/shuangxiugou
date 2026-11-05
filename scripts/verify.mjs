@@ -619,21 +619,23 @@ const EXPECT_GRADE_2E = {
   'bosszhipin-card': 'D级',
   // 2026-11-03 新增：中国联通 B 级（站长线下核实一个城市，月休 8 天以上，见 brand/unicom.html）。
   'unicom-card': 'B级',
+  // 2026-11-05 新增：小米 B→A（爱企查公开知识条目「公司普遍每周双休」；原有线下销售岗单休备注保留）。
+  'xiaomi-card': 'A级',
 };
 const locked2e = customPairs2e.filter((c) => EXPECT_GRADE_2E[c.id]);
 const relockedU2e = locked2e
   .filter((c) => c.grade !== EXPECT_GRADE_2E[c.id])
   .map((c) => c.id + '=' + c.grade + '（应 ' + EXPECT_GRADE_2E[c.id] + '）');
 check(relockedU2e.length === 0,
-  '5 家银行 A 级（工/建/中/成都/农行）+ 淘宝闪购 C 级 + BOSS直聘 D 级（锁定，不得回退）',
+  '5 家银行 A 级（工/建/中/成都/农行）+ 小米 A 级 + 淘宝闪购 C 级 + BOSS直聘 D 级（锁定，不得回退）',
   relockedU2e.length ? relockedU2e.join(', ') : '锁定生效');
-check(locked2e.length === 8,
-  '8 张锁定卡全部存在（删卡判红）', '实际 ' + locked2e.length);
+check(locked2e.length === 9,
+  '9 张锁定卡全部存在（删卡判红）', '实际 ' + locked2e.length);
 // 2026-11-02 起：A 级 / C 级计数含榜单导入卡（A 58 张、C 29 张）。
 // 断言仍然写成「基准 + 导入数」的算式，导入批次调整时改 IMPORTED_CARD_COUNT 一处即可，
 // 但两个基准值（4 / 11）必须保持 —— 那是手工卡的既有口径，动了就等于偷偷改档。
-check(byGrade2e('A级') === 5 + 58,
-  '自定义卡 A 级共 63 张（工/建/中/成都/农行银行 5 张 + 榜单导入 58 张）',
+check(byGrade2e('A级') === 6 + 58,
+  '自定义卡 A 级共 64 张（工/建/中/成都/农行银行 5 张 + 小米 2026-11-05 B→A + 榜单导入 58 张）',
   '实际 ' + byGrade2e('A级'));
 check(byGrade2e('C级') === 9 + 29,
   '自定义卡 C 级共 38 张（手工 9 张 + 榜单导入 29 张；农行 2026-11-04 由 C 转 A；BOSS直聘 2026-11-03 转入 D 级）',

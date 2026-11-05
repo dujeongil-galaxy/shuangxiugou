@@ -135,10 +135,10 @@ function click(box) {
   // —— 双休红榜：只显示 S/A ——
   click(red);
   let s = snapshot();
-  const okRed = s.visible.length === 82
+  const okRed = s.visible.length === 83
     && s.visible.every((c) => { const t = tierOf(c); return t === 'S' || t === 'A'; })
-    && s.hidden === s.total - 82;
-  check('点「双休红榜」→ 仅 S/A 级可见（82 张 = S 6 + A 76，含 2026-10-31 改判 A 的 4 家银行 + 2026-11-04 农行 C→A）', okRed,
+    && s.hidden === s.total - 83;
+  check('点「双休红榜」→ 仅 S/A 级可见（83 张 = S 6 + A 77，含 2026-10-31 改判 A 的 4 家银行 + 2026-11-04 农行 C→A + 2026-11-05 小米 B→A）', okRed,
     { visible: s.visible.length, hidden: s.hidden,
       tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
   check('红榜激活态写上 data-sxg-active', red.getAttribute('data-sxg-active') === '1');
@@ -152,14 +152,14 @@ function click(box) {
   // —— 大小周观察：只显示 B ——
   click(zhou);
   s = snapshot();
-  check('点「大小周观察」→ 仅 B 级可见（32 张，与四格修正后「大小周观察 32」一致：Apple 2026-11-04 S→B）',
-    s.visible.length === 32 && s.visible.every((c) => tierOf(c) === 'B'),
+  check('点「大小周观察」→ 仅 B 级可见（31 张，与四格修正后「大小周观察 31」一致：Apple 2026-11-04 S→B，小米 2026-11-05 B→A）',
+    s.visible.length === 31 && s.visible.every((c) => tierOf(c) === 'B'),
     { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
 
   // —— 避雷预警：显示 C + D（D 是 C 的加重版，站长人工降级，同属避雷）——
   click(lei);
   s = snapshot();
-  check('点「避雷预警」→ C/D 级可见（57 张 = C 56 + D 1；82+32+57=171，另有 2 家 U 不在四格；农行 11-04 C→A 后 -1）',
+  check('点「避雷预警」→ C/D 级可见（57 张 = C 56 + D 1；83+31+57=171，另有 2 家 U 不在四格；农行 11-04 C→A 后 -1）',
     s.visible.length === 57 && s.visible.every((c) => ['C', 'D'].includes(tierOf(c))),
     { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
   const dInLei = s.visible.filter((c) => tierOf(c) === 'D');
@@ -226,7 +226,7 @@ function click(box) {
   click(red);
   s = snapshot();
   check('互斥前置：点红榜后隐藏 ' + (s.total - s.visible.length) + ' 张（含 class 隐藏的虚拟卡）',
-    s.hidden === 92, s.hidden); // total 174（含虚拟卡）- 可见 82 = 92
+    s.hidden === 91, s.hidden); // total 174（含虚拟卡）- 可见 83 = 91
   const allBtn = rowBtn('全部评级');
   if (allBtn) click(allBtn);
   s = snapshot();
