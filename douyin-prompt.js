@@ -172,6 +172,9 @@
   var warmTimer = null;
   var warmUrls = [];
   var warmIdx = 0;
+  /* 加密 LOGO 容器地址（与 logo-vault.js 的 ENC_URL 同一个文件；改容器缓存号
+     时两边的 ?v 要一起 bump）。预热它 = 一次请求覆盖全部 59 张 LOGO。 */
+  var ENC_LOGO_URL = './assets/logos.enc?v=1';
   function warmScan() {
     var imgs = document.querySelectorAll('div.bg-white.rounded-2xl.border img[src]');
     for (var i = 0; i < imgs.length; i++) {
@@ -181,15 +184,12 @@
         warmUrls.push(u);
       }
     }
-    // 加密 LOGO 容器（logo-vault 流程：img 不带 src，.enc 地址在 data-sxg-enc）
-    // 预热 .enc 文件本身，后续解密只差一次 WebCrypto 本地计算。
-    var encs = document.querySelectorAll('img[data-sxg-enc]');
-    for (var j = 0; j < encs.length; j++) {
-      var e = encs[j].getAttribute('data-sxg-enc');
-      if (e && !warmSeen[e]) {
-        warmSeen[e] = 1;
-        warmUrls.push(e);
-      }
+    // 加密 LOGO 容器（logo-vault 流程）：data-sxg-enc 存的是裸 slug（如 'kfc'）
+    // 而不是 URL——真正要预热的是容器文件 ./assets/logos.enc（一个请求覆盖全部
+    // LOGO）。2026-11-05 事故：曾把裸 slug 当 URL 预加载，每轮 59 个 404。
+    if (!warmSeen[ENC_LOGO_URL]) {
+      warmSeen[ENC_LOGO_URL] = 1;
+      warmUrls.push(ENC_LOGO_URL);
     }
   }
   function warmNext() {

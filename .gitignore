@@ -60,3 +60,15 @@ photo-melody.jpg
 # WorkBuddy 本地记忆目录，不入库
 .workbuddy/
 scripts/edgeprof*/
+
+# ===== 品牌 LOGO：仓库里只有 assets/logos.enc 密文，明文只留本机 =====
+# （scripts/build-logos.mjs 产 _logo-norm/，scripts/encrypt-logos.mjs 加密）
+_logo-fetch/
+_logo-fetch3/
+_logo-norm/
+_sheet/
+_logo-*.json
+_ccb-*.html
+_ccb-*.css
+_ccb-*.png
+_enc-map.json

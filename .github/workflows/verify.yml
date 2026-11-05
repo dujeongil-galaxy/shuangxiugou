@@ -206,3 +206,9 @@ jobs:
       # notes.html 锁屏的「我同意/我不同意」门禁行为。
       - name: 笔记锁屏同意门测试
         run: node scripts/test-notes-agree.cjs
+
+      # 品牌 LOGO 加密容器（2026-11-05）：真 .enc + logo-vault.js 源码口令
+      # 解出 59 张 PNG（magic 抽验），load 成功回填 / 失败恢复文字、幂等、
+      # adopt 排队，index.html 侧 enc: 配置与脚本接线断言。
+      - name: LOGO 加密容器测试
+        run: node scripts/test-logo-vault.cjs

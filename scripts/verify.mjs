@@ -1360,9 +1360,12 @@ customCards.forEach((c) => {
   // logo 可以是 null：榜单导入的 104 张卡没有官方 logo 文件，注入层会直接回退成
   // 品牌简称文字（index.html 里 `if (!config.logo)` 分支）。只要有 src 就必须真实存在，
   // 否则就是破图；null 属于「已知无图」而不是「路径写错」，两者必须分开判。
-  check(c.logo === '' || localExists(c.logo.replace(/^\.\//, '')),
+  // 2026-11-05 起 'enc:<slug>' 是加密 LOGO 容器标记（logo-vault.js 本地解密），
+  // 不落磁盘路径——有效性由 §20p「enc: 配置与容器一一对应」盯着。
+  check(c.logo === '' || /^enc:[a-z0-9]+$/.test(c.logo)
+    || localExists(c.logo.replace(/^\.\//, '')),
     `自定义卡「${c.name}」logo 路径有效或显式留空：${c.logo || '(null=文字回退)'}`,
-    c.logo && !localExists(c.logo.replace(/^\.\//, '')) ? '路径指向不存在的文件（会破图）' : '');
+    c.logo && !/^enc:/.test(c.logo) && !localExists(c.logo.replace(/^\.\//, '')) ? '路径指向不存在的文件（会破图）' : '');
 });
 
 // ---------- 4. logo 与资源路径 ----------
@@ -1984,10 +1987,15 @@ if (exists('notes.html')) {
   //    收尾再扫一遍捡分批注入的后到卡，倒计时结束停摆。
   check(/function warmStart\(\)/.test(dp)
     && /function warmStop\(\)/.test(dp)
-    && /data-sxg-enc/.test(dp)
+    && /assets\/logos\.enc\?v=\d+/.test(dp)
     && /new Image\(\)/.test(dp),
-    '弹窗预热模块齐备（warmStart/warmStop/Image 预载/.enc 容器扫描）',
+    '弹窗预热模块齐备（warmStart/warmStop/Image 预载/加密容器预热）',
     '预热模块缺失 → 8 秒锁定窗口白白空转，用户下滑时 LOGO 才开始加载');
+  // 2026-11-05 事故：warmScan 曾把 data-sxg-enc 的裸 slug（'kfc' 等）当 URL
+  // 预加载 → 每轮 59 个 404。断言钉死「预热的是容器文件，不是裸 slug」。
+  check(!/getAttribute\('data-sxg-enc'\)[\s\S]{0,120}warmUrls\.push/.test(dp),
+    '预热不再把 data-sxg-enc 裸 slug 当 URL（那是 59 个 404 的元凶）',
+    '裸 slug 请求 = 无效流量 + 服务器 404 日志噪音');
   check(/startCountdown[\s\S]{0,400}warmStart\(\)/.test(dp),
     '预热挂在 8 秒倒计时开场（startCountdown → warmStart）',
     '倒计时不预热 → 预加载与锁定窗口脱钩，改动时序后失效');
@@ -5022,6 +5030,93 @@ section('20i. 星巴克公告框注入闸门（与苹果同构）');
     '灯箱交互齐全（委托点击放大 + Esc/遮罩/✕ 关闭）');
   check(exists('scripts/test-photo-vault.cjs'),
     '存在解密/灯箱行为测试（jsdom + Node Web Crypto，30 项）');
+}
+
+// ---------- 20p. 品牌 LOGO 加密容器（2026-11-05 站长拍板） ----------
+// 背景：站长要求「LOGO 图标缓存放 GitHub 仓库，blob 容器、不得明文，
+//   优化后不再引用站外来源」。59 张核实过的官方 LOGO 经
+//   scripts/build-logos.mjs 规范化 + scripts/encrypt-logos.mjs 加密成单个
+//   assets/logos.enc（PBKDF2-SHA256 21 万次 + AES-256-GCM，photo 同款），
+//   页面侧 logo-vault.js 浏览器本地解密成 Blob URL。
+// 判据：.enc 在库且被跟踪、真解密出 59 张 PNG、口令同源、enc: 配置与容器
+//   一一对应（漏一条 = 卡片 logo 永远空框）、index.html 接线、CI 挂测试。
+{
+  const lv = read('logo-vault.js');
+  section('20p. 品牌 LOGO 加密容器');
+  check(exists('assets/logos.enc'), 'assets/logos.enc 密文容器在仓库里');
+  let tracked20m = [];
+  try {
+    tracked20m = execSync('git ls-files', { cwd: ROOT, encoding: 'utf8' })
+      .split('\n').map((s) => s.trim()).filter(Boolean);
+  } catch (e) { /* git 不可用时跳过 git 层断言 */ }
+  if (tracked20m.length) {
+    check(tracked20m.includes('assets/logos.enc'),
+      'logos.enc 已被 git 跟踪（随仓库推送，访客才取得到）');
+  }
+  // 真解密：用 logo-vault.js 源码里的口令解容器（防口令/脚本漂移——
+  // 漂移时线上所有 LOGO 框全空，静态审查看不出来）
+  const lvPass = /PASSPHRASE = '([^']+)'/.exec(lv);
+  const elScript = exists('scripts/encrypt-logos.mjs') ? read('scripts/encrypt-logos.mjs') : '';
+  const elPass = /PASSPHRASE = '([^']+)'/.exec(elScript);
+  check(!!lvPass && !!elPass && lvPass[1] === elPass[1] && lvPass[1].length >= 12,
+    'logo-vault.js 与 encrypt-logos.mjs 口令完全一致（同值且 ≥12 位）',
+    `不一致：前端「${lvPass ? lvPass[1] : '未找到'}」 vs 脚本「${elPass ? elPass[1] : '未找到'}」`
+    + '——两边改漏一个，线上就是一排空 logo 框；跑 node scripts/test-logo-vault.cjs 可验');
+  let logoSlugs = null;
+  try {
+    const cryptoMod = await import('node:crypto');
+    const c = JSON.parse(read('assets/logos.enc'));
+    const key = cryptoMod.pbkdf2Sync(lvPass ? lvPass[1] : '', Buffer.from(c.salt, 'base64'), c.iter, 32, 'sha256');
+    const d = cryptoMod.createDecipheriv('aes-256-gcm', key, Buffer.from(c.iv, 'base64'));
+    d.setAuthTag(Buffer.from(c.tag, 'base64'));
+    const plain = JSON.parse(Buffer.concat([d.update(Buffer.from(c.data, 'base64')), d.final()]).toString('utf8'));
+    logoSlugs = Object.keys(plain.logos || {});
+    const allPng = logoSlugs.every((s) => Buffer.from(plain.logos[s].d, 'base64').slice(0, 4).toString('hex') === '89504e47');
+    check(logoSlugs.length === 59 && allPng,
+      `容器真解密出 59 张 PNG（实际 ${logoSlugs.length} 张，PNG magic 全对：${allPng}）`,
+      '数量或格式不对 → 先重跑 scripts/build-logos.mjs + scripts/encrypt-logos.mjs');
+  } catch (e) {
+    err('logos.enc 用前端口令解不开（口令漂移或容器损坏）: ' + e.message,
+      '线上会是一排空 logo 框');
+  }
+  // index.html 的 enc: 配置与容器一一对应（漏一条 = 该卡永远空框）
+  const encVals = [...new Set([...html.matchAll(/logo: 'enc:([a-z0-9]+)'/g)].map((m) => m[1]))];
+  if (logoSlugs) {
+    const missing = encVals.filter((s) => !logoSlugs.includes(s));
+    check(encVals.length === 59 && missing.length === 0,
+      `index.html 有 59 处 enc: 配置且全部在容器里（实际 ${encVals.length} 处，缺失：${missing.join('、') || '无'}）`,
+      'enc: 指向容器里没有的 slug = 卡片 logo 永远空框');
+    const unused = logoSlugs.filter((s) => !encVals.includes(s));
+    check(unused.length === 0,
+      `容器里没有闲 Image 素材（未接线：${unused.join('、') || '无'}）`,
+      '多出来的 slug 说明 encrypt-logos.mjs 与 index.html 不同步');
+  }
+  // 建行手绘旧标必须下线（2026-11-05 站长点名「建行 LOGO 仍然错误」）
+  check(!/\.\/assets\/ccb\.svg/.test(html) && /logo: 'enc:ccb'/.test(html),
+    '建行手绘近似标已换成官方标（enc:ccb，ccb.svg 不再被引用）');
+  // 前端接线：脚本标签 + preload + 构建器分支
+  check(/<script defer src="\.\/logo-vault\.js\?v=\d+"><\/script>/.test(html)
+    && /<link rel="preload" href="\.\/logo-vault\.js\?v=\d+" as="script">/.test(html),
+    'index.html 挂了 logo-vault.js（defer 脚本 + preload，带 ?v 缓存号）');
+  check(/setAttribute\('data-sxg-enc'/.test(html) && /__sxgEncQueue/.test(html),
+    '卡片构建器给 enc 卡写 data-sxg-enc 并接入回填队列');
+  check(/data-sxg-enc/.test(lv) && /__sxgEncQueue/.test(lv) && /sxg-logos-ready/.test(lv)
+    && /sxg-logos-failed/.test(lv),
+    'logo-vault.js 队列+DOM 双回填、成功/失败事件齐全（失败恢复文字不留空框）');
+  // ENC_URL 缓存号与脚本标签一致（改了容器没 bump ?v = 用户拿旧密文）
+  const mEncUrlLv = /ENC_URL = '\.\/assets\/logos\.enc\?v=(\d+)'/.exec(lv);
+  const mTagLv = /logo-vault\.js\?v=(\d+)/.exec(html);
+  check(!!mEncUrlLv && !!mTagLv && mEncUrlLv[1] === mTagLv[1],
+    'ENC_URL 的 ?v 与 logo-vault.js 脚本标签 ?v 一致',
+    'pinyin-index ?v 事故同款：改了内容没 bump 缓存号，用户永远拿旧文件');
+  check(exists('scripts/test-logo-vault.cjs'), '存在 LOGO 容器行为测试');
+  // douyin-prompt 预热的容器地址必须与 logo-vault 的 ENC_URL 同一个 ?v
+  // （改容器不 bump 预热侧 = 预热白热一个旧文件）
+  const dpWarm = read('douyin-prompt.js');
+  const mWarmEnc = /ENC_LOGO_URL = '\.\/assets\/logos\.enc\?v=(\d+)'/.exec(dpWarm);
+  check(!!mWarmEnc && !!mEncUrlLv && mWarmEnc[1] === mEncUrlLv[1],
+    '弹窗预热的 logos.enc 缓存号与 logo-vault ENC_URL 一致',
+    '不一致 = 预热拉的是旧容器，等于白预热');
 }
 
 // ---------- 20g. 页面版本号必须等于「上一次提交」 ----------
