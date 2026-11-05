@@ -100,6 +100,9 @@ const html = read('index.html');
 
   await new Promise((r) => setTimeout(r, 800));
 
+  // 2026-11-05：注入改分批渐进（80b8ffd）后轮询等落齐，固定等待只看得到首批
+  try { await require('./_wait-cards.cjs')(window); } catch (e) { console.log('✗ ' + e.message); process.exit(1); }
+
   // React 渲染后手动触发一次注入（对齐 jsdom 同步 eval 的时序补跑）
   if (typeof window.insertAllCustomCards === 'function') {
     try { window.insertAllCustomCards(); } catch (e) {}

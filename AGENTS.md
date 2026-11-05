@@ -229,6 +229,29 @@ git push origin main
 - 只暂存真正改动的文件（尤其别把明文正文提交进去）
 - 推送后如果改了 index.html 公告栏，见上文规则一
 
+### 死命令：WRFFMB（2026-11-05 站长拍板）
+
+**每次 `git push` 线上之后，必须对「站点一致性校验」workflow 做一次检查**，
+确认在该 commit 上跑完全绿；判红立即修，不许留给下次提交一并处理。
+GitHub 通知会因 CI 连红持续轰炸站长——CI 红着不修等于把告警静音。
+
+```powershell
+# 在 PowerShell 工具里跑（轮询到 workflow 结束，全绿 exit 0）：
+.\scripts\check-ci.ps1            # 检查当前 HEAD
+.\scripts\check-ci.ps1 <sha12>    # 检查指定 commit
+```
+
+- 为什么是 .ps1：本机 node(undici)/libcurl 直连 api.github.com 报
+  `UNABLE_TO_VERIFY_LEAF_SIGNATURE`，只有 Windows 证书库通道（PowerShell
+  Invoke-RestMethod）能通。公开仓库的 Actions API 匿名可读，无需 token。
+- 教训锚点：run #490（2026-11-03）起 CI 连红 36 次才被发现——当时只看
+  pages 部署三条 check 误判「全绿」。看 CI 必须 workflow_runs 列表逐条
+  核对，不许只看部署状态。
+- 连红根因（已修 5d2fb4b + 本次提交）：2026-11-04 defer 批次漏改两个
+  test 断言正则 + 80b8ffd 分批注入后 4 个 jsdom 测试 1.5s 固定等待
+  只看得到首批 24 张卡。**改 script 挂载方式或注入节奏后，必须本地跑
+  全部 27 组 test-\*.cjs（用退出码判，别只跑 verify）。**
+
 ---
 
 ## 环境说明

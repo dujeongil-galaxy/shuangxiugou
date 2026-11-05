@@ -184,6 +184,8 @@ const remindSrc = read('remind-button.js');
     try { window.eval(read(clean)); } catch (e) { errors.push('eval ' + clean + ': ' + e.message); }
   }
   await new Promise((r) => setTimeout(r, 800));
+  // 2026-11-05：注入改分批渐进（80b8ffd）后轮询等落齐
+  try { await require('./_wait-cards.cjs')(window); } catch (e) { console.log('✗ ' + e.message); process.exit(1); }
   if (typeof window.insertAllCustomCards === 'function') {
     try { window.insertAllCustomCards(); } catch (e) {}
     await new Promise((r) => setTimeout(r, 400));

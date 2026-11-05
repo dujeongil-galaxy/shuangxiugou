@@ -35,8 +35,8 @@ check('文案含组长嘲讽原话「你真是公务员」', /你真是公务员
 check('文案写明与网传口径不符', /网传/.test(html) && /严重不符/.test(html));
 check('文案写明月休 4 天是异类不是常态', /异类/.test(html) && /并非行业常态/.test(html));
 check('文案注明 bundle 评论区口径仅供对照参考', /仅供参考/.test(html));
-check('init() 里挂载 insertMeituanNote',
-  /insertAppleNote\(\);\s*\n\s*insertStarbucksNote\(\);\s*\n\s*insertMeiyijiaNote\(\);\s*\n\s*insertMolinaNote\(\);\s*\n\s*insertMeituanNote\(\);/.test(html));
+check('init() 里挂载 insertMeituanNote（Apple 之后的挂载序列，中间允许插入其他品牌 note）',
+  /insertAppleNote\(\);[\s\S]{0,300}?insertMeituanNote\(\);/.test(html));
 check('input 触发点挂载 insertMeituanNote',
   /try \{ insertMeituanNote\(\); \} catch \(err\) \{ diagError\('insertMeituanNote 抛异常', err\); \}/.test(html));
 const triggerCount = (html.match(/try \{ insertMeituanNote\(\); \}/g) || []).length;
@@ -111,6 +111,9 @@ function makeMtCard() {
 setTimeout(async () => {
   console.log('\n=== 第三层：jsdom 行为断言 ===');
   console.log('=== meituan-note 注入位置回归测试 ===\n');
+
+  // 2026-11-05：注入改分批渐进（80b8ffd）后轮询等落齐
+  try { await require('./_wait-cards.cjs')(window); } catch (e) { console.log('✗ ' + e.message); process.exit(1); }
 
   check('前置：美团卡由 bundle 渲染在场', !!mtCard());
   check('基准：浏览态说明框存在于美团卡内',
