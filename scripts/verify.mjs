@@ -2191,22 +2191,31 @@ if (exists('notes.html')) {
 
   // ⑩c 随笔章节编排：站长 2026-11-05「我说过，顺序打乱，别非要写在第 11 章」。
   // 新写的章节不许按写作时间追加到正文末尾，必须按内容主题插到既有章节之间。
-  // 只咬结构、不咬具体标题文字，改稿换标题不会误伤；特征词覆盖本批补写的故事。
+  // 只咬结构、不咬具体标题文字，改稿换标题不会误伤；特征词按补写批次登记。
   // 规则不能只写文档（2026-10-19 血泪）：这条已被站长提醒过两次，故配套断言。
+  // 2026-11-05 追加第二批（Soul 封号 / 付费搭讪），同一条规则要能咬住每一批新章。
   {
     const ws = plain === null ? -1 : plain.indexOf('<div class="wrap">');
     const we = plain === null ? -1 : plain.indexOf('</div><!-- /.layout -->');
     const wrap = (ws >= 0 && we > ws) ? plain.slice(ws, we) : (plain || '');
     const hs = [...wrap.matchAll(/<h2>([^<]+)<\/h2>/g)].map((m) => m[1].trim());
-    const mark = /较真|驾照|储物柜|退群/;
+    const batches = [
+      { name: '较真／驾照批次', mark: /较真|驾照|储物柜|退群/ },
+      { name: 'Soul 封号批次', mark: /Soul|封号|舔狗经济|搭讪/ },
+    ];
     const lastBody = hs.length >= 2 ? hs[hs.length - 2] : ''; // 末位是「附：AI 解读」
-    const inMiddle = hs.some((x, i) => i > 0 && i < hs.length - 2 && mark.test(x));
-    contentCheck(plain !== null && hs.length >= 12 && !mark.test(lastBody),
-      '随笔新章未追加到正文末尾（站长「顺序打乱，别放最后一章」）',
-      '倒数第二个 h2 命中新章特征词 → 又按写作时间把新故事排到了最后一章');
-    contentCheck(plain !== null && inMiddle,
-      '新章按主题插在既有章节之间（且确实存在）',
-      '正文中段找不到新章 → 可能被删，或仍被排在末尾');
+    contentCheck(plain !== null && hs.length >= 13,
+      '随笔章节数已含新写的章节（≥13 个 h2）',
+      '少一个 h2 → 新章节可能被删，或根本没写进正文');
+    for (const b of batches) {
+      contentCheck(plain !== null && !b.mark.test(lastBody),
+        `随笔新章未追加到正文末尾（${b.name}）`,
+        '倒数第二个 h2 命中新章特征词 → 又按写作时间把新故事排到了最后一章');
+      contentCheck(plain !== null
+        && hs.some((x, i) => i > 0 && i < hs.length - 2 && b.mark.test(x)),
+        `新章按主题插在既有章节之间（${b.name}）`,
+        '正文中段找不到新章 → 可能被删，或仍被排在末尾');
+    }
   }
 
   // ⑪ 尾注必须存在。
