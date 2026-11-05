@@ -1558,13 +1558,18 @@
 
   /* ------------------------------- 弹窗 3：首页顶部按钮的引导（去档案卡打卡） */
 
-  var guideShown = false;
+  var guideShown = null;
+  // 2026-11-05 站长反馈：知道一次以后再点顶部按钮不该毫无响应。
+  // 第二次及以后改弹一则简短轻量的提醒（口径与首弹不同），仍然把人往档案卡引。
 
   function openGuideModal() {
-    if (guideShown) return;
-    guideShown = true;
-    // 同一次会话只弹一次，刷新后可再次触发
-    try { sessionStorage.setItem('sxg-guide-checkin', '1'); } catch (e) {}
+    var isRepeat = guideShown != null;
+    var times = guideShown || 0;
+    guideShown = times + 1;
+    // 首弹后写会话标记（存档自检用）；重复弹写次数
+    try { sessionStorage.setItem('sxg-guide-checkin', isRepeat ? String(guideShown) : '1'); } catch (e) {}
+
+    if (isRepeat) { showGuideRepeatModal(guideShown); return; }
 
     closeLayer();
     var layer = ensureLayer();
@@ -1593,6 +1598,42 @@
     var foot = el('div', 'sxg-actions right');
     var go = el('button', 'sxg-btn sxg-btn-primary sxg-btn-sm', '去下面看看');
     var close = el('button', 'sxg-btn sxg-btn-ghost sxg-btn-sm', '知道了');
+    go.addEventListener('click', function () {
+      closeLayer();
+      scrollToArchive();
+    });
+    close.addEventListener('click', closeLayer);
+    foot.appendChild(go);
+    foot.appendChild(close);
+    box.appendChild(foot);
+
+    layer.appendChild(box);
+  }
+
+  // 第二次及以后的轻量提醒：不重复首弹的长篇说明，
+  // 一句话 + 一个直接带路的按钮，几秒扫完就能关。
+  function showGuideRepeatModal(times) {
+    closeLayer();
+    var layer = ensureLayer();
+
+    var box = el('div', 'sxg-box sxg-pad sxg-space');
+    box.style.maxWidth = '384px';
+    box.innerHTML =
+      '<div class="sxg-row-top">' +
+        '<h3 class="sxg-h3">' +
+        '小票还是要从品牌卡生成～' +
+        '</h3>' +
+      '</div>' +
+      '<p class="sxg-p">' +
+        '顶部这个按钮只负责引路，真正打卡在下方' +
+        '<strong>「企业真双休档案」</strong>的卡片上。' +
+        '想好支持谁，我们带你过去。' +
+      '</p>';
+
+    var foot = el('div', 'sxg-actions right');
+    var go = el('button', 'sxg-btn sxg-btn-primary sxg-btn-sm',
+      times === 2 ? '这次带我去' : '又来啦？带我去');
+    var close = el('button', 'sxg-btn sxg-btn-ghost sxg-btn-sm', '我自己翻');
     go.addEventListener('click', function () {
       closeLayer();
       scrollToArchive();

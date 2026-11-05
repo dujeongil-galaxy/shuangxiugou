@@ -212,3 +212,12 @@ jobs:
       # adopt 排队，index.html 侧 enc: 配置与脚本接线断言。
       - name: LOGO 加密容器测试
         run: node scripts/test-logo-vault.cjs
+
+      # 顶部「打卡并生成小票」引导：第二次及以后不再静默吞掉点击。
+      - name: 打卡引导重复点击测试
+        run: node scripts/test-guide-repeat.cjs
+
+      # 搜索框删空 → 与评级切换共用同一套 frosted 遮罩；
+      # 打字不闪、品类卡不闪、预加载层被压住（2026-11-05 站长需求）。
+      - name: 搜索清空闪屏测试
+        run: node scripts/test-search-clear-flash.cjs

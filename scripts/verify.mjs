@@ -4279,8 +4279,63 @@ if (exists('custom-card-actions.js')) {
 
   check(/custom-card-actions\.js\?v=\d+/.test(html17),
     'index.html 引入了 custom-card-actions.js');
+
+  // 顶部「打卡并生成小票」引导弹窗：第二次及以后点击必须仍有提示，
+  // 且口径不能与首弹完全一致（2026-11-05 站长需求）。
+  check(/function showGuideRepeatModal\(/.test(cca) && /var isRepeat = guideShown != null/.test(cca),
+    '引导弹窗有「第二次及以后」的轻量提醒分支（第二次点击不再是毫无响应）');
+  check(!/if \(isRepeat\) \{ showGuideRepeatModal\(\);/.test(cca),
+    '重复弹分支传入了弹次计数（按钮文案随次数变化，不是死文案）');
+  check(!/guideShown = true/.test(cca) && /guideShown = times \+ 1/.test(cca),
+    'guideShown 改为计数（老写法布尔短路 = 第二次点击静默吞掉）');
+  check(/这次带我去|又来啦？带我去/.test(cca) && /我自己翻/.test(cca),
+    '重复提醒的按钮文案与首弹不同（不与第一次完全一致）');
 } else {
   warn('custom-card-actions.js 不存在，跳过小票累计检查');
+}
+
+// ---------- 17b. 结果区 frosted 闪屏：评级切换 + 搜索清空共用一套 ----------
+// 2026-11-05 站长报障：搜索框删空后看得见一次新的预加载动画，
+// 要求「和切换评价卡保持一致，高度模糊遮挡」，且品类卡切换暂不改。
+// 行为由 scripts/test-search-clear-flash.cjs 真跑一遍，这里守静态口径：
+// 两种场景必须共用 flash()、边沿触发、预加载层兜底、品类文案不得混入。
+if (exists('filter-flash.js')) {
+  const ff = read('filter-flash.js');
+  const htmlFF = read('index.html');
+
+  check(ff.length > 1500, 'filter-flash.js 非空集（防空文件把下面断言全变成假通过）');
+  check(/<script defer src="\.\/filter-flash\.js\?v=3"><\/script>/.test(htmlFF),
+    'index.html 引入了 filter-flash.js?v=3（改脚本必须 bump 缓存号）');
+  check(/function flash\(top\)/.test(ff) && /flash\(btn\.getBoundingClientRect\(\)\.bottom \+ 4\)/.test(ff),
+    '评级切换走共用 flash()');
+  check(/flash\(ratingBarBottom\(\)\)/.test(ff),
+    '★ 搜索清空也走同一套 flash()（模糊规格不可能与评级切换漂开）');
+  check(/addEventListener\('beforeinput'/.test(ff) && /addEventListener\('input'/.test(ff),
+    '搜索分支挂了 beforeinput + input 两道捕获监听');
+  check(/was !== null && was !== '' && now === ''/.test(ff),
+    '★ 只在「非空 → 空」边沿触发（打字/删一半/重复 Backspace 都不闪）');
+  check(/var SEARCH_ID = 'site-search-input'/.test(ff) && /t\.id !== SEARCH_ID/.test(ff),
+    '只认 #site-search-input，不误绑页面其它输入框');
+  check(/function ratingBarBottom\(\)/.test(ff) && /isRatingButton\(btns\[i\]\)/.test(ff),
+    '遮罩 top 沿用评级工具条底边 +4（与切评价卡同一几何，工具条保持清晰）');
+  check(/blur\(36px\) saturate\(0\.7\)/.test(ff) && /rgba\(252,252,253,0\.9\)/.test(ff),
+    'frosted 遮罩仍是 blur(36px) + 近页面底色 0.9');
+  check(/z-index:8000/.test(ff) && /var DURATION = 500/.test(ff) && /pointer-events:none/.test(ff),
+    'z-index 8000 / 500ms / 不挡点击 三项规格未漂');
+  check(/filter:blur\(20px\)/.test(ff),
+    '卡片自身 blur(20px) 双保险仍在');
+  check(/body\.sxg-filter-flashing #sxg-loading/.test(ff) && /visibility:hidden!important/.test(ff),
+    '★ 闪屏期压住 z-index 2147483647 的首屏预加载层（转圈不会浮在磨砂之上）');
+  check(/\.sxg-boot__spinner/.test(ff),
+    '首屏占位 spinner 同样被压住');
+  check(!/数码外设|数码3C|户外服饰|个人护理|运动器材|零食饮料|汽车用品|互联网软件|家电数码|物流服务|汽车生活|食品饮品|互联网服务|服装饰品/.test(ff),
+    '★ 品类卡文案完全没进本脚本（站长 2026-11-05 明确「品类卡切换暂时先不改」）');
+  check((ff.match(/addEventListener\('click'/g) || []).length === 1,
+    'click 监听仍只有评级按钮那一处（没有偷偷扩到品类卡点击）');
+  check(!/fetch\(|XMLHttpRequest|location\.reload/.test(ff),
+    '闪屏补丁纯 DOM 层，不发请求、不刷新页面');
+} else {
+  warn('filter-flash.js 不存在，跳过结果区闪屏检查');
 }
 
 // ---------- 18. 内置卡小票 DOM 定位（源码断言不够，必须打真实 bundle） ----------

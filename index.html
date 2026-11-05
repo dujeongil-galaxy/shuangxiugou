@@ -106,7 +106,7 @@
     <script type="module" crossorigin src="./assets/index-YthXZ9eP.js?v=50"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-BgVofs0W.css">
     <!-- 预加载关键补丁脚本（与 HTML 解析并行下载，减少隐私窗口无缓存时 RTT 等待） -->
-    <link rel="preload" href="./custom-card-actions.js?v=21" as="script">
+    <link rel="preload" href="./custom-card-actions.js?v=22" as="script">
     <link rel="preload" href="./u-grade-patch.js?v=15" as="script">
     <link rel="preload" href="./logo-vault.js?v=1" as="script">
     <link rel="preload" href="./stat-filter.js?v=9" as="script">
@@ -8725,7 +8725,7 @@
   <!-- 打卡引导 + 自定义卡片按钮修复：
        1) 顶部「打卡并生成小票」改为弹窗，引导去品牌档案卡打卡（原来默认给第一家品牌打卡，会误导）
        2) 自定义品牌卡（DOM 克隆）没有 React onClick，补上「打卡」「详情证据」功能 -->
-  <script defer src="./custom-card-actions.js?v=21"></script>
+  <script defer src="./custom-card-actions.js?v=22"></script>
   <script defer src="./share-modal.js?v=3"></script>
   <script defer src="./u-grade-patch.js?v=15"></script>
   <script defer src="./rating-stats-patch.js?v=2"></script>
@@ -8784,11 +8784,13 @@
        必须在 stat-filter.js 之后：两补丁操作同一批卡片，本补丁的隐藏用
        class + !important，晚加载保证层级语义上「口径修正在档位筛选之上」。 -->
   <script defer src="./search-scope-fix.js?v=3"></script>
-  <!-- 评级过滤切换 0.5s 高度模糊闪屏（2026-11-04 站长要求）：捕获阶段拦截评级按钮点击，
-       给卡片区加 blur(16px) 覆盖 500ms，期间 bundle 即时重渲染 + filterCustomCards 的 100ms
-       二次调整都在模糊下完成，取消模糊时已是最终态，消除「点一下画面变两下」的抖动。
+  <!-- 结果区切换 0.5s 高度模糊闪屏（2026-11-04 评级切换；2026-11-05 扩到搜索清空）：
+       捕获阶段拦截评级按钮点击，或搜索框「非空 → 空」的清空动作，立刻盖一层
+       blur(36px) frosted 遮罩 500ms，期间 bundle 即时重渲染 + filterCustomCards 的 100ms
+       二次调整 + 加载动画都在模糊下完成，撤遮罩时已是最终态。
+       搜索清空那一支只在边沿触发（打字不闪），品类卡切换按站长要求暂不接入。
        必须在 stat-filter.js 之后加载（与口径修正同批卡片，且只做 DOM 层补丁，不碰压缩产物）。 -->
-  <script defer src="./filter-flash.js?v=2"></script>
+  <script defer src="./filter-flash.js?v=3"></script>
   <!-- 申诉政策确认弹窗（2026-10-25 站长要求）：申诉入口点击先弹政策，
        同意并跳转 / 拒绝并关闭。目标链接从页面既有 a[href] 现场读取，
        本文件不维护第二份 issueUrl。 -->
