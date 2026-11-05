@@ -94,7 +94,10 @@ const PROBE = {
   // 内容探针：第三节（标题 + 关键句）。
   s3Title: [9, 'dda5c20a002ecaf8a2126c1f05a47975928a7a34816751324ddd799a023b652a'],
   s3Key:   [9, '10c31c645597da7f9cf7894885db6b5950b2b9b6571e48f9c3fe573e34fcc6cb'],
-  // 内容探针：第八节（标题 + 手势对象 + 同义表述多种写法）。
+  // 内容探针：川西自驾游一节（标题 + 手势对象 + 同义表述多种写法）。
+  // ⚠️ 命名沿用历史叫法「第八节 / s8」；2026-11-05 随笔重排后该节顺延为第九节。
+  //    探针窗口取的是标题里的「2025 川西自驾游」，不含章节号，因此顺延无需刷新哈希；
+  //    jamStart 之后到下一个 <h2> 仍是该节全文，手势类探针也不受影响。
   s8Title:  [10, 'ab6ce68d18b10ffd35cdcc69d0f20d6ae7962f82e6469fe00cde4ec8740f78a1'],
   s8Hand:   [4, 'b2dbedcbd2fd02553981abe9ac6dd46299c16e4d930524ba14295aa4556a602e'],
   s8Left:   [2, '6a0ef384c814c9e51e1eaac30390c6bd0c072a2993dccbd015374baa8869cf2a'],
@@ -2184,6 +2187,26 @@ if (exists('notes.html')) {
     contentCheck(!probeHit(plain, PROBE.wordRide),
       'notes.html 未用两轮车动词形容四轮车（探针 wordRide）',
       '四轮车应使用卡/压类动词；两轮车动词属用词错误，读者一眼能看出');
+  }
+
+  // ⑩c 随笔章节编排：站长 2026-11-05「我说过，顺序打乱，别非要写在第 11 章」。
+  // 新写的章节不许按写作时间追加到正文末尾，必须按内容主题插到既有章节之间。
+  // 只咬结构、不咬具体标题文字，改稿换标题不会误伤；特征词覆盖本批补写的故事。
+  // 规则不能只写文档（2026-10-19 血泪）：这条已被站长提醒过两次，故配套断言。
+  {
+    const ws = plain === null ? -1 : plain.indexOf('<div class="wrap">');
+    const we = plain === null ? -1 : plain.indexOf('</div><!-- /.layout -->');
+    const wrap = (ws >= 0 && we > ws) ? plain.slice(ws, we) : (plain || '');
+    const hs = [...wrap.matchAll(/<h2>([^<]+)<\/h2>/g)].map((m) => m[1].trim());
+    const mark = /较真|驾照|储物柜|退群/;
+    const lastBody = hs.length >= 2 ? hs[hs.length - 2] : ''; // 末位是「附：AI 解读」
+    const inMiddle = hs.some((x, i) => i > 0 && i < hs.length - 2 && mark.test(x));
+    contentCheck(plain !== null && hs.length >= 12 && !mark.test(lastBody),
+      '随笔新章未追加到正文末尾（站长「顺序打乱，别放最后一章」）',
+      '倒数第二个 h2 命中新章特征词 → 又按写作时间把新故事排到了最后一章');
+    contentCheck(plain !== null && inMiddle,
+      '新章按主题插在既有章节之间（且确实存在）',
+      '正文中段找不到新章 → 可能被删，或仍被排在末尾');
   }
 
   // ⑪ 尾注必须存在。
