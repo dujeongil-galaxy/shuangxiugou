@@ -4,7 +4,7 @@
 
 ---
 
-### 品牌 LOGO 逐一核实替换 + 加密落库（2026-11-05 13:45 · 提交 `f0ab3bf`）
+### 品牌 LOGO 逐一核实替换 + 加密落库（2026-11-05 13:45 · 提交 `f005fb7`）
 
 - **站长指令**：60→170 新增品牌 LOGO「逐一核实，替换正确的 LOGO，其中建行 LOGO 仍然错误」；「LOGO 图标缓存放 GitHub 仓库（blob 容器、不得明文），优化之后不再引用站外来源」。
 - **核实**：三轮抓取（固定路径 → 官网首页 HTML 解析 → 定向补抓）对 108 个品牌（107 个字母标卡 + 建行），命中 74+7；无头 Edge 截 contact sheet 逐页人工核对，**59 张采纳**（含站长点名的建行——官网 logo.png 裁出左侧 37×40 双 C 官方符号替换手绘近似标），19 张剔除（明显错标/白底隐形/低清不可辨：aws、coke、transsion、bluemoon、bosideng、supor、derucci、suofeiya、htsec、tenpay、yunnanbaiyao、hikvision、dahua、wuxiapptec、robam、kuka、taier、laoxiangji、tongyi、alibaba、ecovacs，其中 alibaba 8bpp 调色板解码成马赛克、ecovacs 16px 几乎不可见），33 个无候选的品牌保留字母标。
