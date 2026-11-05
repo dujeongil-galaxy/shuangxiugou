@@ -1,3 +1,4 @@
+// 【本机专用 · 不挂 CI】依赖本机无头 Edge 绝对路径，CI runner 无此文件；真渲染验收只在本机跑（verify §21o 咬此标记）。
 // 真渲染验收：评级过滤切换 0.5s 高度模糊闪屏（filter-flash.js）
 // 照 dbg-shot-local-note.cjs / shot-ai-chat.cjs 的 CDP 纪律：
 // 无头 Edge + CDP；先清抖音弹窗 .dyp；点击「A 级」后立刻验 body.sxg-filter-flashing

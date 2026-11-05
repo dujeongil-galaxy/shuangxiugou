@@ -1,3 +1,4 @@
+// 【本机专用 · 不挂 CI】依赖本机无头 Edge 绝对路径，CI runner 无此文件；真渲染复现只在本机跑（verify §21o 咬此标记）。
 // 边界场景：B→U / S→U / U激活后再次点U取消回到全部 / 普通A级过滤仍正常
 const http=require('http'),fs=require('fs'),path=require('path'),{spawn}=require('child_process');
 const PORT=19491,DBG=19591,ROOT=path.resolve(__dirname,'..'),EDGE='C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';

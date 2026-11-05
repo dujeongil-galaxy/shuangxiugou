@@ -6119,6 +6119,81 @@ section('21c. 首页滑到底部按钮');
     missing.slice(0, 4).join('；'));
 }
 
+// ---------- 21n. fix: 提交必须记进 README 相关页面 ----------
+// 站长 2026-11-05：「根据 GitHub 规则，修复 bug 必须记录 README 相关页面」。
+// GitHub 仓库首页展示的就是 README，只写进 CHANGELOG 等于访客看不见。
+// 规则只写文档会漏（2026-10-19 血泪），这里按 Conventional Commits 的 fix:
+// 类型取 git log 里最近一次 bug 修复提交，强制 README.md 与 最近更新.md 都引用它。
+// ⚠️ 用 git log 而非 CHANGELOG 顶部条目：CHANGELOG 的哈希要「提交后回填」，
+//    拿顶部条目当基准会形成「先写文档、后拿哈希」的自指死结。
+{
+  const UPDATE_DOC = '\u6700\u8fd1\u66f4\u65b0.md';
+  let fixHash = null;
+  let fixCount = 0;
+  try {
+    // %H-%s：全哈希是纯 hex，不含 '-'，用第一个 '-' 切分安全。
+    const out = execSync('git log --pretty=format:%H-%s', {
+      cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024,
+    }).toString();
+    for (const line of out.split('\n')) {
+      const k = line.indexOf('-');
+      if (k < 0) continue;
+      if (/^fix(\([^)]*\))?:/.test(line.slice(k + 1).trim())) {
+        fixCount++;
+        if (!fixHash) fixHash = line.slice(0, k).slice(0, 7);
+      }
+    }
+  } catch (e) { /* 非 git 环境 / shallow clone：下面走空集判红 */ }
+
+  const rd = exists('README.md') ? read('README.md') : '';
+  const ru = exists(UPDATE_DOC) ? read(UPDATE_DOC) : '';
+  check(!!fixHash && fixCount >= 5,
+    '§21n 真的扫到了 fix: 提交（git 历史 + 修复提交数双重空集防护）',
+    'fixHash=' + fixHash + ' / fixCount=' + fixCount + ' → 断言在空跑');
+  check(rd.length > 1000 && ru.length > 1000,
+    '§21n README.md 与 最近更新.md 都读到了内容（空集防护）',
+    'README=' + rd.length + ' / 最近更新=' + ru.length);
+
+  // 不许只是「正文碰巧出现这串哈希」：必须落在某个「近期 bug 根因」章节里，
+  // 且至少要有两个这样的章节（新增章节被删掉也会判红）。
+  const headings = [...rd.matchAll(/^### 近期 bug 根因[^\n]*$/gm)].map(m => m.index);
+  check(headings.length >= 2,
+    'README 至少有两个「近期 bug 根因」章节（章节被删也判红）',
+    '当前 ' + headings.length + ' 个');
+  let newest = '';
+  if (headings.length) {
+    const rest = rd.slice(headings[0] + 1);
+    const nxt = rest.search(/\n#{2,3} /);
+    newest = nxt > 0 ? rest.slice(0, nxt) : rest;
+  }
+  // 只认**章节标题行**：正文里碰巧提到旧哈希、或只在别处摘要里提一嘴，都不算
+  // 「为这次 bug 立了条」。故障注入实测：从正文里删哈希容易被同串文本蒙混过关。
+  check(!!fixHash && newest.split('\n')[0].includes(fixHash),
+    `README「近期 bug 根因」最新章节标题记录了最近一次 fix 提交 ${fixHash}`,
+    '最新 bug 根因章节标题没引用 ' + fixHash + ' → 修了 bug 却没在 README 立条');
+  check(!!fixHash && rd.includes(fixHash) && ru.includes(fixHash),
+    `README.md 与 最近更新.md 都引用了最近一次 fix 提交 ${fixHash}`,
+    'README=' + rd.includes(fixHash) + ' / 最近更新=' + ru.includes(fixHash));
+}
+
+// ---------- 21o. 未挂 CI 的 test-*.cjs 必须显式标「本机专用」 ----------
+// 2026-11-05 自查：36 个测试里 6 个没挂 CI，逐个核对确认都是「无头 Edge + CDP
+// 真渲染」、写死本机 Edge 绝对路径（CI runner 没有），属**有意**不挂，不是漏挂。
+// 但「有意」当时只在我脑子里，没有任何东西拦住「新写的 jsdom 测试忘记挂 CI」。
+// 这里反过来要求：没挂 CI 就必须自己声明本机专用，漏挂又没声明的直接判红。
+{
+  const wf = read('.github/workflows/verify.yml');
+  const files = readdirSync(join(ROOT, 'scripts')).filter(f => /^test-.*\.cjs$/.test(f));
+  const unhooked = files.filter(f => !wf.includes('node scripts/' + f));
+  const unmarked = unhooked.filter(f => !/本机专用/.test(read('scripts/' + f).slice(0, 800)));
+  check(files.length >= 30 && unhooked.length >= 1,
+    '§21o 扫描到测试文件与未挂 CI 文件（双重空集防护）',
+    `files=${files.length} / unhooked=${unhooked.length}`);
+  check(unmarked.length === 0,
+    `未挂 CI 的 ${unhooked.length} 个测试都显式标了「本机专用」`,
+    '漏标（可能是新测试忘记挂 CI）：' + unmarked.join(', '));
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {

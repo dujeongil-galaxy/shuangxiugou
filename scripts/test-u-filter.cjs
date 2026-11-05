@@ -1,3 +1,4 @@
+// 【本机专用 · 不挂 CI】依赖本机无头 Edge 绝对路径，CI runner 无此文件；真渲染复现只在本机跑（verify §21o 咬此标记）。
 /* test-u-filter.cjs —— 真渲染复现「U级筛选下出现 C 级卡片」bug
  * 无头 Edge + CDP。启动本地静态服务器（根路径映射到 index.html），
  * 加载首页 → 等 React 渲染 → 点 U 级按钮 → 收集可见卡片及徽标。

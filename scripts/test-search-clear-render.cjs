@@ -1,3 +1,4 @@
+// 【本机专用 · 不挂 CI】依赖本机无头 Edge 绝对路径，CI runner 无此文件；真渲染验收只在本机跑（verify §21o 咬此标记）。
 // 真渲染验收：搜索框删空 → 与评级切换同一套 frosted 闪屏（2026-11-05）
 // 无头 Edge + CDP；照 test-filter-flash.cjs / dbg-search-clear.cjs 的纪律：
 // 先清抖音弹窗 .dyp；真实键盘事件输入/删除；清空后 120ms 验遮罩规格与层级，

@@ -219,5 +219,8 @@ jobs:
 
       # 搜索框删空 → 与评级切换共用同一套 frosted 遮罩；
       # 打字不闪、品类卡不闪、预加载层被压住（2026-11-05 站长需求）。
+      # 配套 scripts/test-search-clear-render.cjs 是 CDP 真渲染验收，写死本机
+      # Edge 绝对路径，CI runner 无此文件 → 有意不挂（头部标「本机专用」，
+      # verify §21o 检查所有未挂 CI 的 test-*.cjs 都必须带该标记）。
       - name: 搜索清空闪屏测试
         run: node scripts/test-search-clear-flash.cjs

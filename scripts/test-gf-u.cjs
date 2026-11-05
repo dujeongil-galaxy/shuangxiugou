@@ -1,3 +1,4 @@
+// 【本机专用 · 不挂 CI】依赖本机无头 Edge 绝对路径，CI runner 无此文件；真渲染复现只在本机跑（verify §21o 咬此标记）。
 // 真渲染复现：U 级过滤按钮在多条切换路径下的可见性（修正版 v2）
 // 关键：按钮文案以 JSON 字符串字面量内嵌进 IIFE，避免箭头函数立即调用解析歧义
 const http=require('http'),fs=require('fs'),path=require('path'),{spawn}=require('child_process');
