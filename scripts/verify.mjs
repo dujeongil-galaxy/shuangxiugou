@@ -6284,6 +6284,36 @@ section('21c. 首页滑到底部按钮');
     '漏标（可能是新测试忘记挂 CI）：' + unmarked.join(', '));
 }
 
+// ---------- 21p. 小米门店性质备注（2026-11-06 站长口径）不得丢、两处必须同步 ----------
+// 站长 2026-11-06 追加：「小米之家属于官方授权直营店，上六休一」，并明确这是门店
+// 备注、不是 A 级评级依据。详情页是唯一真相源，首页自定义卡是副本；任一侧被改回
+// 「线下销售岗位单休」的旧措辞都算脱节。评级依据的爱企查原始链接也一并锁住。
+{
+  const xmDetail = exists('brand/xiaomi.html') ? read('brand/xiaomi.html') : '';
+  const xmIndex = read('index.html');
+  check(xmDetail.length > 1000 && /id: 'xiaomi-card'/.test(xmIndex),
+    '§21p 真的读到了小米详情页与首页自定义卡（双重空集防护）',
+    `detail=${xmDetail.length} / card=${/id: 'xiaomi-card'/.test(xmIndex)}`);
+  // 按「出现次数」锁，不按「文件里有没有」锁：故障注入首轮故意只抹掉一处，
+  // 只查存在性的断言照样全绿（另外几处还写着），等于没拦住「某处被悄悄改回旧措辞」。
+  const xmDetailHits = (xmDetail.match(/官方授权直营店/g) || []).length;
+  const xmIndexHits = (xmIndex.match(/官方授权直营店/g) || []).length;
+  check(/小米之家属于官方授权直营店/.test(xmDetail) && /上六休一/.test(xmDetail) && xmDetailHits >= 6,
+    '§21p 详情页按站长口径写明「小米之家属于官方授权直营店，上六休一」（6 处口径全在）',
+    `detailHits=${xmDetailHits}`);
+  check(xmIndexHits >= 3,
+    '§21p 首页卡片三处（休息制度 / 描述 / 红框）口径全在',
+    `indexHits=${xmIndexHits}`);
+  check(/不是本次 A 级评级的依据/.test(xmDetail) && /不代为合并/.test(xmDetail),
+    '§21p 详情页标明门店备注不是 A 级评级依据、不代为合并口径');
+  check(/recommendText: '⚠️ 小米之家（官方授权直营店）上六休一/.test(xmIndex) &&
+        /小米之家（官方授权直营店）上六休一 \/ 客服轮班/.test(xmIndex),
+    '§21p 首页卡片红框与休息制度字段与详情页同口径');
+  check(/aiqicha\.baidu\.com\/details\/ugknowledge\?id=f5fe5b856c9a6bcf251add4319e48490/.test(xmDetail) &&
+        /aiqicha\.baidu\.com\/details\/ugknowledge\?id=f5fe5b856c9a6bcf251add4319e48490/.test(xmIndex),
+    '§21p 评级依据的爱企查原始链接在详情页与首页证据链都还在');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {
