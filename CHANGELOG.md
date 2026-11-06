@@ -4,6 +4,18 @@
 
 ---
 
+### 小米卡片下方新增微信文章链接卡 + §21q 断言 + 修 CI 陈旧正则（2026-11-06 19:39 · 提交 `c4523ef`）
+
+- **站长指令**（11-06 晚）：小米卡片下面新增一张微信文章链接卡，标题直接用文章原标题，点击带 url 跳转到微信。
+- **原标题逐字核对**：WebFetch 首屏只返回「微信公众平台」，改用 curl 拉微信原文 HTML，交叉核对 `og:title` / `msg_title` / `activity-name` 三处，确认原标题为「小米内置“反诈”被逆向了」（中文弯引号 U+201C / U+201D，公众号「青檬小栈」）。初版误用 ASCII 直引号并多加箭头后缀，已改回逐字原文。
+- **落点选择**：首页主网格的 `injectCustomCardsNow()` 靠克隆评级模板卡生成品牌卡（纯链接卡无 grade，会留下品牌字段与「详情证据」按钮、详情链接 404）；证据链静态 `ev-` 列表受「逐家 data 契约」约束（卡数须等于 brand/ 页数，加卡直接判红）。两处都不动，改为 `index.html` 内联新增 `insertWechatLinkCard()`，在 `init()` 中把独立紧凑链接卡插到 `xiaomi-card` 紧邻之后；`init()` 被 MutationObserver 反复触发，故做成幂等（已存在只归位不重建，小米卡未渲染则等下一轮）。
+- **样式与筛选**：初版给链接卡复用 `bg-white rounded-2xl border` 三连类（正是全站 `CARD_SEL`），评级筛选时被视为「隐藏的无档位布局容器」，`test-gf-search` 护栏判红；改成专属 class `sxg-wechat-link` + 内联样式后脱离所有卡片扫描器。`alignSelf` 也必须内联（Tailwind 预编译 CSS 里没有运行时动态加的 `self-start`）。搜索 / 品类 / 评级筛选态隐藏链接卡防孤儿浮卡，恢复时 `display` 写回 `flex` 保住间距。
+- **机器强制**：`verify.mjs` 新增 §21q 断言（函数体真被切到 / 原标题逐字 / 微信 url 在 `<a href>` 与整卡点击里都写全 / `target="_blank"` + `rel="noopener noreferrer"` / 幂等紧邻 / `init()` 真调用 / 过滤完整表达式 / CARD_SEL 隔离）。首轮故障注入 9/10 抓到「只查变量名」太松并收紧，最终 **11/11 全部判红**、还原后全绿。§21q 不依赖 `NOTES_KEY`，CI 可跑。
+- **顺带修 CI 红灯**：远端「站点一致性校验」自 `9157e85` 起第 7 步「小票累计金额测试」判红。根因是上一批 `77dad9a` 把 `settleReceipt();` 改成 `var r = settleReceipt();`（要拿结算结果里的本品牌累计额传给分享弹窗），而 `scripts/test-ticket-total.cjs` 的正则只认无赋值形式。用 pristine HEAD 基线复现确认与本轮改动无关；生产代码 `custom-card-actions.js` 未动，只放宽正则且仍强制 `settleReceipt` 在 `closeLayer` 之前（漏结算 / 顺序反照样判红），3 组故障注入全判红。
+- **怎么验证**：无密码 `verify.mjs` **1393 项**、带 `NOTES_KEY` **1425 项** 均全绿；36 组 `test-*.cjs` 串行复跑 `pass=36 fail=0`（其中 `test-ai-anchor` / `test-photo-gate` 曾遇本机 CDP 端口与网络时序 flake，单跑复测通过）；无头 Edge + CDP 真渲染验收，DOM 确认链接卡紧邻小米卡、href 正确、display=flex，截图确认紧凑白卡、绿色「微信文章 · 站外跳转」标签、原标题下划线、无溢出无重叠。
+- **纪律**：`notes.html`（随笔 §8.5 分手测评草稿）仍只留本地、不推线上；两个未跟踪 `shot-*.png` 测试截图不入库；三处记账不写微信链接字面 URL、不写 recordId、不摘录随笔正文片段、不写访问密码。
+- **改了哪些文件**：`index.html`（内联插入逻辑 + 筛选态隐藏）、`scripts/verify.mjs`（§21q）、`scripts/test-ticket-total.cjs`（正则放宽）。
+
 ### 分享文案改为「每卡独立品牌+金额」+ 打赏页文案改为「为什么要打赏」（2026-11-06 17:16 · 提交 `77dad9a`）
 
 - **站长指令**（11-06 下午，图）：分享链接文案要带出「我刚在谁（如罗技）消费了 x 元」，每张卡片单独调用一项数据（本品牌累计）；打赏页面重做，文案替换成「为什么要打赏」。
