@@ -5505,6 +5505,22 @@ section('21b-2. 安全事件默认收起 + 分享弹窗接线');
     && /color:#d97706/.test(ugp),
     '抵制行下方有 BOSS直聘详情页入口（这里=链接，狗日的Boss直聘换色标注）',
     '删掉入口行 → 站长指定的阅读链接缺失');
+  // 2026-11-06 站长指定：抵制区末尾追加「海比优」一句 + 固定末句
+  // （海比优文案由站长提供英文 Application Introduction，此处译写一句中文；
+  // 末句一字不改，含「；」不换行：应用商店搜索 + 与本站无关声明）
+  check(/海比优（Haibiyou）是一款认真做招聘的求职平台/.test(ugp)
+    && /为求职者筛选真实可靠的企业岗位，也帮企业快速找到优秀人才。/.test(ugp),
+    '抵制区末尾有海比优介绍句（站长英文 Application Introduction 译写）',
+    '删掉海比优句 → 站长指定的推广文案缺失');
+  check(/欢迎前往各大手机应用商店搜索（开发中，限号注册）；推广内容与本站无关，站长不会收取任何广告费。/.test(ugp),
+    '抵制区末句一字不改（应用商店搜索 + 与本站无关声明，含「；」不换行）',
+    '改末句措辞/断行 → 站长指定的固定收尾句被破坏');
+  // 脚本缓存号：改 u-grade-patch.js 必须同步 ?v=，否则线上仍是旧抵制区
+  const idxUgp = readFileSync(join(ROOT, 'index.html'), 'utf8');
+  check(/u-grade-patch\.js\?v=16/.test(idxUgp)
+    && !/u-grade-patch\.js\?v=15/.test(idxUgp),
+    'index.html 引用 u-grade-patch.js?=16（缓存号已随改动同步 +1）',
+    '漏 bump ?v 或仍写 15 → 浏览器命中旧缓存，新抵制区不生效');
 }
 
 // ---------- 21c. 首页滑到底部按钮 ----------
@@ -6091,8 +6107,8 @@ section('21c. 首页滑到底部按钮');
   check(/'D 级'/.test(rowTexts) && /'U 级'/.test(rowTexts),
     'stat-filter.js 评级行互斥枚举含「D 级」「U 级」（点 D/U 清五格筛选）',
     'stat-filter 没跟上 → 点 D/U 不清四格筛选，两套过滤层互相覆盖出现空面板');
-  check(/u-grade-patch\.js\?v=15/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
-    'u-grade-patch.js?v=15 / stat-filter.js?v=9（缓存号已随内容 bump）',
+  check(/u-grade-patch\.js\?v=16/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
+    'u-grade-patch.js?v=16 / stat-filter.js?v=9（缓存号已随内容 bump）',
     '缓存号没 bump → 用户拿旧补丁，D/U 按钮注入不生效（2026-11-01 拼音索引同类事故）');
   // 2026-11-03 站长实测 bug：点「D 级 / U 级」后拼音搜索框整块消失。
   // 根因：CARD_SEL（div.bg-white.rounded-2xl.border）命中面比品牌卡宽，

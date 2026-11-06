@@ -231,6 +231,20 @@
       + ' style="color:#1d4ed8;text-decoration:underline">这里</a>阅读 '
       + '<span style="color:#d97706;font-weight:bold">狗日的Boss直聘</span>';
     p.appendChild(r);
+    /* 2026-11-06 站长指定：抵制区末尾追加「海比优」一句 + 固定末句。
+       海比优文案由站长提供英文 Application Introduction，此处译写一句中文；
+       末句一字不改（含「；」不换行）：应用商店搜索（开发中，限号注册）+ 与本站无关声明。 */
+    var h = document.createElement('div');
+    h.setAttribute('style', 'margin-top:6px;font-size:13px;text-align:center;'
+      + 'line-height:1.7;color:#475569');
+    h.textContent = '海比优（Haibiyou）是一款认真做招聘的求职平台，'
+      + '为求职者筛选真实可靠的企业岗位，也帮企业快速找到优秀人才。';
+    p.appendChild(h);
+    var f = document.createElement('div');
+    f.setAttribute('style', 'margin-top:4px;font-size:13px;text-align:center;'
+      + 'line-height:1.7;color:#475569');
+    f.textContent = '欢迎前往各大手机应用商店搜索（开发中，限号注册）；推广内容与本站无关，站长不会收取任何广告费。';
+    p.appendChild(f);
   }
 
   /* D 级出口：它**计入**避雷预警格（D 是 C 的加重版，不是另一类），
