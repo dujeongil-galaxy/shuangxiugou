@@ -2301,6 +2301,11 @@ if (exists('notes.html')) {
       && ch8.includes('dating-data-factcheck/picks.html#avoid'),
       '⑩e 双休购第八章只给入口、不放截图、不新增外链',
       '第八章出现 img、外链数量不为 1 或导流链接被改 → 违反「双休购不放原截图，只导流」');
+    contentCheck(plain !== null && /VPN 被打/.test(ch8)
+      && /是我在评价来骂我的那拨人/.test(ch8)
+      && /翻墙看片、脑子看傻了的是他们/.test(ch8),
+      '⑩e 第八章 8.4 写明 VPN 事件且括号原话归属「他们」而非本人',
+      'VPN 段落被删、或归属澄清句被删 → 又会回到站长说的「很容易被误解」');
   }
 
   // ⑪ 尾注必须存在。
