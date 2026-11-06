@@ -4,6 +4,16 @@
 
 ---
 
+### 微信文章链接改为写入小米卡内部（2026-11-06 22:07 · 提交 `2ade213`）
+
+- **站长指令**（11-06 晚，针对上一条 `c4523ef`）：微信文章链接不要单独成卡/弹窗，「写在卡片内，这样很乱」，要求写进小米卡内部。
+- **根因**：`c4523ef` 把链接做成「小米卡紧邻之后的独立紧凑卡」，它占掉主网格三列里的一格，把整行（小米 + 相邻品牌卡）挤错位，视觉很乱；且独立卡在搜索/品类/评级筛选态要单独隐藏防孤儿浮卡，逻辑也更重。
+- **改法**：删除 `insertWechatLinkCard()` 与旧过滤态隐藏变量，新增 `insertWechatInlineLink()`，在 `init()` 里往 `#xiaomi-card` 内容区（`div.p-5`）末尾 append 一行紧凑链接（红框警示之后、按钮行之前）；随卡片同生共死，筛选时随小米卡整体隐藏，不再需要额外隐藏逻辑；`init()` 挂 MutationObserver 反复触发，故幂等——已存在只归位（被 React 重排挪走时重新挂回内容区）、不重建。标题仍逐字用微信原标题「小米内置“反诈”被逆向了」（中文弯引号），链接指向微信原文（`target="_blank" rel="noopener noreferrer"`，记账不写字面 URL）；正文不写该链接。
+- **机器强制**：`verify.mjs` 的 §21q 从「独立卡」重写为「卡内 + 不独立成卡」八条断言（函数体真切到 insertWechatInlineLink / 标题逐字 / `<a href>` 指向微信原文且 url 只出现一次 / 安全跳转 / 卡内幂等归位 / 专属 class 不命中 CARD_SEL / 独立白卡旧函数·旧节点·旧过滤变量·整卡点击不许回流 / init() 真调用）。带密码 verify 1428 项全绿；故障注入 11/11 判红、逐字节还原后全绿。
+- **验证**：无头 Edge + CDP 真渲染，诊断确认 `rowInsideXiaomi:true`、`rowInBody:true`、`noStandalone:true`、href/title/target/rel 全部正确，截图确认链接落在小米卡内部（红框下、按钮上）、无独立浮卡、无重叠溢出。
+- **纪律**：只改 `index.html` 与 `scripts/verify.mjs`；`notes.html`（随笔草稿）仍只留本地，三处记账不写 URL / recordId / 正文片段 / 密码；本次 `feat:` 提交，不触发 §21n fix 记账。
+- **改了哪些文件**：`index.html`（删 insertWechatLinkCard、新增 insertWechatInlineLink 并接入 init）、`scripts/verify.mjs`（§21q 重写）。
+
 ### 打赏页分享文案改为搜索摘要原句 + 保留开源署名（2026-11-06 20:37 · 提交 `71387aa`）
 
 - **站长指令**（11-06 晚）：打赏页点「分享本站」→ 新浪微博，分享框里还是「本项目基于 ZhiqingHeyi/shuangxiugou 二次开发……欢迎赞助支持」旧口径；要求「根据此前给你的那张搜索引擎的截图，可以照抄不优化，同时保留开源署名」。
