@@ -13,6 +13,15 @@
   'use strict';
   if (window.SXGShare) return;
 
+  // 每次打开分享弹窗时由调用方传入（打卡场景：{ brand, amount }）。
+  // 用于把分享文案从「整页简介」切换为「我刚在{品牌}消费了￥X元」。
+  var currentOpts = {};
+
+  function fmtMoney(n) {
+    var v = Number(n) || 0;
+    return v.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
   var CSS = [
     '.sxg-share-mask{position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:20px}',
     '.sxg-share-mask.on{display:flex}',
@@ -107,6 +116,18 @@
     var od = document.querySelector('meta[property="og:description"]')
       || document.querySelector('meta[name="description"]');
     if (od && od.getAttribute('content')) desc = od.getAttribute('content');
+    // 2026-11-06 站长要求：从某张卡片打卡后分享，文案带上该品牌与累计消费额，
+    // 至少包含「我刚在{品牌}消费了￥X元」。仅在 currentOpts.brand 存在时覆盖。
+    if (currentOpts && currentOpts.brand) {
+      var amt = (typeof currentOpts.amount === 'number' && currentOpts.amount > 0)
+        ? fmtMoney(currentOpts.amount) : '';
+      if (amt) {
+        title = '我在' + currentOpts.brand + '打了卡｜双休购 ShuangxiuGo';
+        desc = '我刚在' + currentOpts.brand + '消费了￥' + amt + '元。'
+          + '双休购 ShuangxiuGo —— 开源劳工厂友好品牌索引：查公司双休制度、'
+          + '企业工时评级，用订单反向考核企业，买东西前先查一查。';
+      }
+    }
     return { url: url, title: title, desc: desc };
   }
 
@@ -231,8 +252,14 @@
     if (e.key === 'Escape') close();
   }
 
-  function open() {
+  function open(opts) {
     injectStyle();
+    currentOpts = opts || {};
+    // 每次打开都用最新 opts 重建，避免上一次打卡的品牌文案残留到本次
+    var old = document.getElementById('sxg-share-mask');
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+    var oldToast = document.getElementById('sxg-share-toast');
+    if (oldToast && oldToast.parentNode) oldToast.parentNode.removeChild(oldToast);
     build();
     var mask = document.getElementById('sxg-share-mask');
     if (!mask) return;

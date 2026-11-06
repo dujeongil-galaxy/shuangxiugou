@@ -801,12 +801,13 @@
     });
 
     doneBtn.addEventListener('click', function () {
-      settleReceipt();
+      var r = settleReceipt();
       closeLayer();
       // 2026-11-04 站长要求：打卡成功（结算+关小票弹窗）后弹分享弹窗。
+      // 2026-11-06 站长要求：分享文案带上本品牌与累计消费额（本品牌累计）。
       // share-modal.js 在 index.html defer 引入，正常此时已就绪；
       // 未就绪/未引入时静默跳过，不打断打卡主流程。
-      if (window.SXGShare) window.SXGShare.open();
+      if (window.SXGShare) window.SXGShare.open({ brand: cfg.name, amount: r.brandNext });
     });
     btnRow.appendChild(copyBtn);
     btnRow.appendChild(saveBtn);
@@ -1518,7 +1519,10 @@
           var waited = 0;
           (function waitBuiltinClose() {
             if (!document.body.contains(receipt)) {
-              if (window.SXGShare) window.SXGShare.open();
+              // 2026-11-06 站长要求：分享文案带上本品牌与累计消费额（本品牌累计）。
+              // 内置卡处理函数没有 cfg，品牌名从小票「考核品牌:」节点取，与累计键一致。
+              var bn = ((findValueNode(receipt, '考核品牌:') || {}).textContent || '').trim();
+              if (window.SXGShare) window.SXGShare.open({ brand: bn, amount: brandNext });
               return;
             }
             if ((waited += 120) > 10000) return; // React 没关就别抢戏

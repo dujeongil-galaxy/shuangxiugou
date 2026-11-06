@@ -5460,13 +5460,13 @@ section('21b-2. 安全事件默认收起 + 分享弹窗接线');
     'index.html 与 sponsor.html 都挂载了 share-modal.js 脚本标签（defer，属性顺序不限）');
   // 打卡成功 → 分享弹窗：盯「结算+关弹窗之后真的调起 SXGShare」
   const cca = readFileSync(join(ROOT, 'custom-card-actions.js'), 'utf8');
-  check(/window\.SXGShare\) window\.SXGShare\.open\(\)/.test(cca),
+  check(/window\.SXGShare\) window\.SXGShare\.open\(/.test(cca),
     'custom-card-actions.js 打卡成功后调起分享弹窗（SXGShare.open）');
   // 2026-11-04 站长追加：分享弹窗覆盖所有卡片（含内置卡）。
   // 内置卡由 bundle React 关小票，必须轮询 .receipt-tear-top 离开 DOM 再弹。
   check(/waitBuiltinClose/.test(cca)
     && /document\.body\.contains\(receipt\)/.test(cca)
-    && /waitBuiltinClose[\s\S]{0,400}window\.SXGShare\) window\.SXGShare\.open\(\)/.test(cca),
+    && /waitBuiltinClose[\s\S]{0,400}window\.SXGShare\) window\.SXGShare\.open\(/.test(cca),
     '内置卡打卡也接分享（waitBuiltinClose 轮询关小票后调起 SXGShare）',
     '删掉 waitBuiltinClose → 内置卡打卡后不弹分享，只有自定义卡有');
   // 分享文案：复制类平台带说明文字，不照搬网站标题（站长 2026-11-04 要求）
