@@ -8546,6 +8546,14 @@
             empty.style.display = '';
           }
         }
+        // 微信文章链接卡：仅在默认（无搜索/无品类/无评级筛选）视图显示，
+        // 避免筛选态下变成孤儿浮卡
+        var wlc = document.getElementById('xiaomi-wechat-link-card');
+        if (wlc) {
+          var wlcFilterActive = !!keyword || activeCategory !== '全部' || activeGrade !== '全部评级';
+          // 恢复时写回 'flex'（卡片布局是内联 flex+gap），写 '' 会退回 block、丢掉间距
+          wlc.style.display = wlcFilterActive ? 'none' : 'flex';
+        }
       }
       
       // 立刻试一次，不行就监听页面变化
@@ -8562,10 +8570,63 @@
         if (el && !el.id) el.id = 'site-search-input';
       }
 
+      // 在「小米」卡片正下方插入一张微信文章链接卡（站外跳转）。
+      // 不属于 customCardsConfig（那是品牌卡，克隆评级模板），单独做成独立紧凑链接卡；
+      // init() 每次（含 MO 触发）都会调用，故必须幂等——已存在则只校正位置，不重建。
+      function insertWechatLinkCard() {
+        var existing = document.getElementById('xiaomi-wechat-link-card');
+        var xm = document.getElementById('xiaomi-card');
+        // 小米卡还没渲染出来（时序）：等下一轮 init 再试
+        if (!xm) { return; }
+        // 已存在：若位置偏离（被别的卡挤到非紧邻小米），归位到小米正下方
+        if (existing) {
+          if (existing.previousElementSibling !== xm) {
+            xm.parentNode.insertBefore(existing, xm.nextSibling);
+          }
+          return;
+        }
+        var card = document.createElement('div');
+        card.id = 'xiaomi-wechat-link-card';
+        // 独立紧凑卡片：不复用小米卡 className（那会继承品牌卡的高瘦结构，
+        // 内容少时撑出大片空白）。
+        // ⚠️ 更关键：绝不能带 'bg-white rounded-2xl border' 三连类 —— 那是全站
+        // CARD_SEL（u-grade-patch.js / stat-filter.js / virtual-card-remove.js
+        // / test-gf-search.cjs 都用它扫「品牌卡」）。链接卡没有评级徽标，一旦命中
+        // 就会在评级筛选时被当成「无档位布局容器」，触发 test-gf-search 的护栏判红。
+        // 视觉改用内联样式自足，className 只留一个专属钩子。
+        card.className = 'sxg-wechat-link';
+        card.style.background = '#fff';
+        card.style.border = '1px solid #e2e8f0';
+        card.style.borderRadius = '1rem';
+        card.style.padding = '1.25rem';
+        card.style.boxShadow = '0 1px 2px 0 rgb(0 0 0 / 0.05)';
+        card.style.cursor = 'pointer';
+        // alignSelf/display 用内联样式而非 Tailwind class：self-start 这类 class
+        // 不在预编译 CSS 里（只有源码 HTML 出现过的类才被打包），动态加不生效。
+        card.style.alignSelf = 'start'; // 顶部对齐，不拉伸到整行高度
+        card.style.display = 'flex';
+        card.style.flexDirection = 'column';
+        card.style.gap = '12px';
+        card.setAttribute('data-wechat-link', '1');
+        card.innerHTML =
+          '<div style="display:flex;align-items:center;gap:6px;color:#07c160;font-size:12px;font-weight:600;">'
+          + '<span style="display:inline-block;width:8px;height:8px;border-radius:9999px;background:#07c160;"></span>'
+          + '微信文章 · 站外跳转</div>'
+          + '<a href="https://mp.weixin.qq.com/s/1vEH4Ptw_6lvUJJcnYfpSA" target="_blank" rel="noopener noreferrer" style="color:#0f172a;font-size:18px;font-weight:800;text-decoration:underline;text-underline-offset:2px;">小米内置“反诈”被逆向了</a>'
+          + '<div style="color:#64748b;font-size:12px;line-height:1.5;">第三方公众号「青檬小栈」文章 · 点击在新标签页打开（与本站无隶属关系）</div>';
+        // 整卡可点：点非链接区域也跳微信（点链接本身交给默认行为，避免重复打开）
+        card.addEventListener('click', function(e) {
+          if (e.target && e.target.tagName === 'A') return;
+          window.open('https://mp.weixin.qq.com/s/1vEH4Ptw_6lvUJJcnYfpSA', '_blank', 'noopener');
+        });
+        xm.parentNode.insertBefore(card, xm.nextSibling);
+      }
+
       function init() {
         tagSearchInput();
         replaceLinksAndButtons();
         insertAllCustomCards();
+        insertWechatLinkCard();
         replaceAllLogos();
         insertAppleNote();
         insertAbcNote();

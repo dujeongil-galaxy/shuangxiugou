@@ -199,8 +199,13 @@ console.log('\n=== 5. 源码层面的防回归检查 ===');
     SRC.includes('累计金额与昵称只存在你自己的浏览器里'));
 
   // —— 2026-10-23 站长定稿按钮语义：复制=结算+复制；完成=仅结算，不碰剪切板 ——
+  // 2026-11-06：77dad9a 把 doneBtn 里的 settleReceipt() 改成
+  // `var r = settleReceipt();`（要拿结算结果里的本品牌累计额传给分享弹窗）。
+  // 语义没变，仍是「先结算再关闭」，但旧正则只认无赋值形式，导致 CI 第 7 步
+  // 「小票累计金额测试」长期判红。这里放宽为可选 `var x = ` 赋值前缀，
+  // 同时仍强制 settleReceipt 必须出现在 closeLayer 之前（漏结算照样判红）。
   check('「完成」按钮会先结算再关闭（settleReceipt + closeLayer）',
-    /doneBtn\.addEventListener\('click', function \(\) \{\s*settleReceipt\(\);\s*closeLayer\(\);/.test(SRC));
+    /doneBtn\.addEventListener\('click', function \(\) \{\s*(?:var\s+\w+\s*=\s*)?settleReceipt\(\);\s*closeLayer\(\);/.test(SRC));
   check('「完成」处理器内不碰剪切板/不弹手动复制',
     (function () {
       const m = SRC.match(/doneBtn\.addEventListener\('click', function \(\) \{([\s\S]*?)\}\);/);

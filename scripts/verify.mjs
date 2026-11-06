@@ -6348,6 +6348,57 @@ section('21c. 首页滑到底部按钮');
     '§21p 评级依据的爱企查原始链接在详情页与首页证据链都还在');
 }
 
+// ---------- 21q. 小米卡片下方的微信文章链接卡（2026-11-06 站长要求） ----------
+// 站长要求：「小米卡片的下面，新增这个 mp.weixin.qq.com/s/1vEH4Ptw_6lvUJJcnYfpSA，
+// 标题直接原标题，带 url 跳转到微信链接」。原标题逐字是 小米内置“反诈”被逆向了
+// （中文弯引号 U+201C/U+201D，不是 ASCII 直引号），一字不能改。
+// 该卡由 index.html 内联的 insertWechatLinkCard() 在 init() 里注入：它不走
+// customCardsConfig 的评级模板克隆（那是品牌卡），也不进证据链静态 ev- 列表
+// （§逐家 data 契约会判红），而是独立链接卡，紧邻 xiaomi-card 之后。
+// 因 init() 挂在 MutationObserver 上反复执行，注入必须幂等且过滤态必须隐藏，
+// 否则会出现重复卡 / 孤儿浮卡。以下断言把这几条契约全部锁住。
+{
+  const htmlQ = read('index.html');
+  // 精确切出函数体（函数首行 6 空格缩进，闭合 } 也是 6 空格；内层语句 ≥8 空格）
+  const qFnM = htmlQ.match(/function insertWechatLinkCard\(\) \{[\s\S]*?\n      \}/);
+  const qFn = qFnM ? qFnM[0] : '';
+  check(qFn.length > 300 && /getElementById\('xiaomi-card'\)/.test(qFn),
+    '§21q 真的切到了 insertWechatLinkCard 函数体且锚定小米卡（双重空集防护）',
+    `fnLen=${qFn.length}`);
+  // ① 标题逐字 = 微信原文标题（中文弯引号）；同时禁止回退成 ASCII 直引号
+  check(/小米内置“反诈”被逆向了/.test(qFn) && !/小米内置"反诈"被逆向了/.test(qFn),
+    '§21q 卡片标题逐字等于微信原标题「小米内置“反诈”被逆向了」（中文弯引号，不许改成直引号）');
+  // ② 微信链接：<a href> 与整卡点击 window.open 两处都必须是同一个 url
+  const wxUrl = 'https://mp.weixin.qq.com/s/1vEH4Ptw_6lvUJJcnYfpSA';
+  const wxHits = qFn.split(wxUrl).length - 1;
+  check(wxHits >= 2,
+    '§21q 微信原文 url 在 <a href> 与整卡点击里都写全（出现 ≥2 次）',
+    `hits=${wxHits}`);
+  check(/target="_blank"/.test(qFn) && /rel="noopener noreferrer"/.test(qFn),
+    '§21q 链接带 target="_blank" + rel="noopener noreferrer"（站外新标签页安全跳转）');
+  // ③ 幂等 + 紧邻 + 紧凑：重复 init 不重建、不拉伸到整行高度
+  check(/getElementById\('xiaomi-wechat-link-card'\)/.test(qFn) &&
+        /previousElementSibling !== xm/.test(qFn) &&
+        /insertBefore\(card, xm\.nextSibling\)/.test(qFn) &&
+        /card\.style\.alignSelf = 'start'/.test(qFn),
+    '§21q 注入幂等（已存在只归位）、紧邻小米卡之后、alignSelf=start 不拉伸');
+  // 链接卡不是品牌卡：绝不能带 'bg-white rounded-2xl border' 三连类（全站 CARD_SEL）。
+  // 带上了会被评级筛选当成「无档位布局容器」，test-gf-search 护栏判红（2026-11-06 实测）。
+  check(/card\.className = 'sxg-wechat-link'/.test(qFn) &&
+        !/card\.className = '[^']*bg-white[^']*rounded-2xl[^']*border/.test(qFn),
+    '§21q 链接卡用专属 class，不命中 CARD_SEL（评级筛选/虚拟卡扫描不误伤）');
+  // ④ init() 必须真的调用；⑤ 过滤态必须隐藏（避免搜索/筛选时变孤儿浮卡）
+  check(/\n\s*insertWechatLinkCard\(\);/.test(htmlQ),
+    '§21q init() 里真的调用了 insertWechatLinkCard()');
+  // 按「完整表达式」锁，不能只查变量名在不在：首轮故障注入把
+  // wlcFilterActive 改成 = false，变量名还在、只查存在性的断言照样全绿，
+  // 等于没拦住「筛选时链接卡不隐藏、退化成孤儿浮卡」。
+  check((htmlQ.split("getElementById('xiaomi-wechat-link-card')").length - 1) >= 2 &&
+        /wlcFilterActive\s*=\s*!!keyword\s*\|\|\s*activeCategory !== '全部'\s*\|\|\s*activeGrade !== '全部评级'/.test(htmlQ) &&
+        /wlc\.style\.display\s*=\s*wlcFilterActive\s*\?\s*'none'\s*:\s*'flex'/.test(htmlQ),
+    '§21q filterCustomCards 里同步隐藏链接卡（搜索/品类/评级筛选时不成孤儿浮卡）');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {
