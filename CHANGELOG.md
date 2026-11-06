@@ -4,6 +4,17 @@
 
 ---
 
+### 打赏页分享文案改为搜索摘要原句 + 保留开源署名（2026-11-06 20:37 · 提交 `71387aa`）
+
+- **站长指令**（11-06 晚）：打赏页点「分享本站」→ 新浪微博，分享框里还是「本项目基于 ZhiqingHeyi/shuangxiugou 二次开发……欢迎赞助支持」旧口径；要求「根据此前给你的那张搜索引擎的截图，可以照抄不优化，同时保留开源署名」。
+- **文案来源**：`share-modal.js` 的 `info()` 优先读页面 `og:description`、取不到再读 `meta[name=description]`，把它作为分享文本 `d` 传给微博 `service.weibo.com/share/share.php?...&title=`。打赏页没有 `og:description`，所以微博框里的文案就是 `sponsor.html` 的 meta description。上一批把打赏页正文改成「为什么要打赏」时只改了正文、没同步这个 meta，才留下旧赞助口径。
+- **逐字照抄**：截图为 11-06 16:36 给的 Bing 搜索「双休购」AI 摘要，红框原句是「“双休购”是一项倡导消费者优先购买实行双休制度企业产品的消费行动，并由同名平台（ShuangxiuGo）提供企业双休评级、证据查询和替代品牌建议等工具。」；中文弯引号 U+201C/U+201D、全角括号、顿号/逗号/句号均按截图原样，不优化、不增删、不加后缀。后面原样保留开源署名句「本项目基于 ZhiqingHeyi/shuangxiugou 开源项目（MIT）二次开发，由 dujeongil-galaxy 负责维护。」，只删掉旧的「若你认可这个项目，欢迎赞助支持，或提交你所在企业的真实双休数据。」。
+- **影响面**：这段 description 是分享弹窗共用的 `d`，微博、X、Telegram、LINE、WhatsApp 与朋友圈/微信/抖音/小红书等复制类按钮一起生效；首页有自己的 `og:description`、打卡分享是 `currentOpts.brand` 独立分支，均不受影响。没改 JS 文件，不需要 bump `?v`。
+- **机器强制**：`verify.mjs` 新增 §21r 三条断言 —— 整串等值锁（摘要原句 + 署名句，改写/删署名/换标点即判红）、禁止旧赞助口径与 ASCII 直引号回流、锁住 `share-modal.js` 仍读页面 description 且传给微博 `title`（防止改 meta 不生效）。6 组故障注入（改字 / 直引号 / 半角括号 / 删署名 / 旧口径回流 / 微博参数被摘）**6/6 全部判红**，逐字节还原后 verify 全绿。
+- **怎么验证**：无密码 `verify.mjs` **1396 项**、带 `NOTES_KEY` **1428 项** 全绿；36 组 `test-*.cjs` 串行 `pass=34 fail=2`，两组均为已知本机 flake（`test-ai-anchor` Edge CDP 端口超时、`test-photo-gate` 网络重试时序），单独重跑 exit=0 / 66 项全通过；无头 Edge + CDP 真渲染打开打赏页点「分享本站」，实测微博 / X / Telegram 三个平台 URL 里的 `title` / `text` 参数解码后逐字等于新文案、旧赞助口径消失，弹窗截图布局正常。
+- **纪律**：只改打赏页，不动首页与打卡分享文案；`notes.html`（随笔 §8.5 草稿）仍只留本地；三处记账不写 URL / recordId / 正文片段 / 密码。
+- **改了哪些文件**：`sponsor.html`（meta description）、`scripts/verify.mjs`（§21r）。
+
 ### 小米卡片下方新增微信文章链接卡 + §21q 断言 + 修 CI 陈旧正则（2026-11-06 19:39 · 提交 `c4523ef`）
 
 - **站长指令**（11-06 晚）：小米卡片下面新增一张微信文章链接卡，标题直接用文章原标题，点击带 url 跳转到微信。
