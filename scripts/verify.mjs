@@ -2274,6 +2274,35 @@ if (exists('notes.html')) {
       'MBTI 入口链接或说明不在第二章 → 站长要求的落点没落实');
   }
 
+  // ⑩e 站长 2026-11-06「双休购这边，做一个引导提示，如果想看原截图，去新网站看」。
+  // 原截图只放在 dating-data-factcheck 的 04 避雷节，双休购这边只给入口、不放图；
+  // 并按站长强调写死「图里的女性账号和头像都不是站长」，防止读者按头像对号入座。
+  // 内容断言依赖 NOTES_KEY，CI 不带密码会自动跳过。
+  {
+    const ws = plain === null ? -1 : plain.indexOf('<div class="wrap">');
+    const we = plain === null ? -1 : plain.indexOf('</div><!-- /.layout -->');
+    const wrap = (ws >= 0 && we > ws) ? plain.slice(ws, we) : (plain || '');
+    const hs = [...wrap.matchAll(/<h2>([^<]+)<\/h2>/g)]
+      .map((m) => ({ t: m[1].trim(), i: m.index }));
+    const ch8Idx = hs.findIndex((x) => /^八、/.test(x.t));
+    const ch8 = (ch8Idx >= 0)
+      ? wrap.slice(hs[ch8Idx].i, hs[ch8Idx + 1]?.i ?? wrap.length) : '';
+    const a = ch8.indexOf('<h3>8.1');
+    const b = ch8.indexOf('<h3>8.2');
+    const s81 = (a >= 0 && b > a) ? ch8.slice(a, b) : '';
+    contentCheck(plain !== null && /想看原截图/.test(s81) && /新网站/.test(s81),
+      '⑩e 第八章 8.1 有「想看原截图去新网站」的引导提示',
+      '引导句被删 → 站长 2026-11-06 要求的导流没落实');
+    contentCheck(plain !== null && /女性账号和头像都不是站长/.test(s81),
+      '⑩e 引导处写明「图里的女性账号和头像不是站长」',
+      '澄清句被删 → 读者会按截图里的女性头像对号入座（站长强调「那个女生不是我」）');
+    contentCheck(plain !== null && ch8.length > 0 && !/<img\b/i.test(ch8)
+      && (ch8.match(/<a\s+href=/g) || []).length === 1
+      && ch8.includes('dating-data-factcheck/picks.html#avoid'),
+      '⑩e 双休购第八章只给入口、不放截图、不新增外链',
+      '第八章出现 img、外链数量不为 1 或导流链接被改 → 违反「双休购不放原截图，只导流」');
+  }
+
   // ⑪ 尾注必须存在。
   //
   // 这一页是站长个人随笔，AI 参与了排版与润色。**这件事必须写在页面上** ——
