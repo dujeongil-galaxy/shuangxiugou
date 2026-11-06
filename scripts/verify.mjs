@@ -6399,6 +6399,30 @@ section('21c. 首页滑到底部按钮');
     '§21q filterCustomCards 里同步隐藏链接卡（搜索/品类/评级筛选时不成孤儿浮卡）');
 }
 
+// ---------- 21r. 打赏页分享文案：搜索摘要原句逐字照抄 + 保留开源署名 ----------
+// 站长 2026-11-06：打赏页点「分享本站」→ 微博，框里还是旧的「二次开发 / 欢迎赞助支持」
+// 口径（上一批把打赏页正文改成「为什么要打赏」时漏同步了 meta）。站长要求照抄此前给的
+// Bing 搜索「双休购」AI 摘要截图里红框那句、**不优化**，同时保留开源署名。
+// 这段 description 就是 share-modal.js 的 d（微博 / X / Telegram / LINE / WhatsApp
+// 及复制类平台共用），改一处全平台生效，所以用整串等值锁死，防止日后被顺手改写。
+{
+  const spR = read('sponsor.html');
+  const mR = spR.match(/name="description"\s+content="([^"]+)"/);
+  const descR = mR ? mR[1] : '';
+  const BING_SENTENCE = '“双休购”是一项倡导消费者优先购买实行双休制度企业产品的消费行动，并由同名平台（ShuangxiuGo）提供企业双休评级、证据查询和替代品牌建议等工具。';
+  const CREDIT = '本项目基于 ZhiqingHeyi/shuangxiugou 开源项目（MIT）二次开发，由 dujeongil-galaxy 负责维护。';
+  check(descR.length >= 30 && descR === BING_SENTENCE + CREDIT,
+    '§21r 打赏页 description = 搜索摘要原句逐字照抄 + 原开源署名句（整串等值锁，改写即判红）',
+    `len=${descR.length}`);
+  check(!/欢迎赞助支持|提交你所在企业的真实双休数据|"双休购"/.test(descR),
+    '§21r 旧赞助口径与 ASCII 直引号都不许回流（照抄不优化）');
+  const smR = read('share-modal.js');
+  check(/meta\[property="og:description"\]/.test(smR) &&
+        /meta\[name="description"\]/.test(smR) &&
+        /&title=' \+ d/.test(smR),
+    '§21r 分享弹窗仍读页面 description 并传给微博 title（改 meta 真能生效）');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {
