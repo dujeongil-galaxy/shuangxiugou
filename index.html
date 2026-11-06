@@ -108,6 +108,7 @@
     <!-- 预加载关键补丁脚本（与 HTML 解析并行下载，减少隐私窗口无缓存时 RTT 等待） -->
     <link rel="preload" href="./custom-card-actions.js?v=23" as="script">
     <link rel="preload" href="./u-grade-patch.js?v=16" as="script">
+    <link rel="preload" href="./search-clear-order-fix.js?v=1" as="script">
     <link rel="preload" href="./logo-vault.js?v=1" as="script">
     <link rel="preload" href="./stat-filter.js?v=9" as="script">
     <link rel="preload" href="./pinyin-index.js?v=10" as="script">
@@ -8600,7 +8601,7 @@
           + '微信文章 · 站外跳转</span>'
           + '<span style="color:#94a3b8;font-size:11px;">第三方公众号「青檬小栈」· 与本站无隶属关系</span>'
           + '</div>'
-          + '<a href="https://mp.weixin.qq.com/s/1vEH4Ptw_6lvUJJcnYfpSA" target="_blank" rel="noopener noreferrer" style="color:#0f172a;font-size:14px;font-weight:700;line-height:1.5;text-decoration:underline;text-underline-offset:2px;">小米内置“反诈”被逆向了</a>';
+          + '<a href="https://aiqicha.baidu.com/details/ugknowledge?id=f5fe5b856c9a6bcf251add4319e48490#:~:text=%E5%B0%8F%E7%B1%B3%E5%85%AC%E5%8F%B8%E6%99%AE%E9%81%8D%E5%AE%9E%E8%A1%8C,%E5%9B%A0%E9%A1%B9%E7%9B%AE%E8%BF%9B%E5%BA%A6%E5%BB%B6%E5%90%8E%E3%80%82" target="_blank" rel="noopener noreferrer" style="color:#0f172a;font-size:14px;font-weight:700;line-height:1.5;text-decoration:underline;text-underline-offset:2px;">小米内置“反诈”被逆向了</a>';
         body.appendChild(row);
       }
 
@@ -8768,6 +8769,7 @@
   <script defer src="./custom-card-actions.js?v=23"></script>
   <script defer src="./share-modal.js?v=4"></script>
   <script defer src="./u-grade-patch.js?v=16"></script>
+  <script defer src="./search-clear-order-fix.js?v=1"></script>
   <script defer src="./rating-stats-patch.js?v=3"></script>
   <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
   <script defer src="./factcheck-button.js?v=1"></script>
@@ -8830,7 +8832,7 @@
        二次调整 + 加载动画都在模糊下完成，撤遮罩时已是最终态。
        搜索清空那一支只在边沿触发（打字不闪），品类卡切换按站长要求暂不接入。
        必须在 stat-filter.js 之后加载（与口径修正同批卡片，且只做 DOM 层补丁，不碰压缩产物）。 -->
-  <script defer src="./filter-flash.js?v=3"></script>
+  <script defer src="./filter-flash.js?v=4"></script>
   <!-- 申诉政策确认弹窗（2026-10-25 站长要求）：申诉入口点击先弹政策，
        同意并跳转 / 拒绝并关闭。目标链接从页面既有 a[href] 现场读取，
        本文件不维护第二份 issueUrl。 -->

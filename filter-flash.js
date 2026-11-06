@@ -125,6 +125,11 @@
   document.addEventListener('input', function (e) {
     var t = e.target;
     if (!t || t.id !== SEARCH_ID) return;
+    // search-clear-order-fix.js 为复位 IME 排序残留，会合成「回填最近词 → 延时清空」
+    // 两次 input（带 __sxgScofReplay 标记）。那是内部状态机重放、不是用户删空，
+    // 必须跳过：否则 1.2s 后会多闪一次磨砂并打断「500ms 自动撤除」契约
+    // （scripts/test-search-clear-render.cjs 会稳定判红）。契约另一侧见该脚本。
+    if (e.__sxgScofReplay) return;
     var now = (t.value || '').trim();
     var was = oldValue !== null ? oldValue : lastValue;
     oldValue = null;

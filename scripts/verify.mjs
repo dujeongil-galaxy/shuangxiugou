@@ -4428,8 +4428,8 @@ if (exists('filter-flash.js')) {
   const htmlFF = read('index.html');
 
   check(ff.length > 1500, 'filter-flash.js 非空集（防空文件把下面断言全变成假通过）');
-  check(/<script defer src="\.\/filter-flash\.js\?v=3"><\/script>/.test(htmlFF),
-    'index.html 引入了 filter-flash.js?v=3（改脚本必须 bump 缓存号）');
+  check(/<script defer src="\.\/filter-flash\.js\?v=4"><\/script>/.test(htmlFF),
+    'index.html 引入了 filter-flash.js?v=4（改脚本必须 bump 缓存号）');
   check(/function flash\(top\)/.test(ff) && /flash\(btn\.getBoundingClientRect\(\)\.bottom \+ 4\)/.test(ff),
     '评级切换走共用 flash()');
   check(/flash\(ratingBarBottom\(\)\)/.test(ff),
@@ -4452,6 +4452,8 @@ if (exists('filter-flash.js')) {
     '★ 闪屏期压住 z-index 2147483647 的首屏预加载层（转圈不会浮在磨砂之上）');
   check(/\.sxg-boot__spinner/.test(ff),
     '首屏占位 spinner 同样被压住');
+  check(/if \(e\.__sxgScofReplay\) return;/.test(ff) && /__sxgScofReplay/.test(ff),
+    '★ 跳过 search-clear-order-fix.js 的回放合成 input（不额外闪屏 / 不打断 500ms 撤除）');
   check(!/数码外设|数码3C|户外服饰|个人护理|运动器材|零食饮料|汽车用品|互联网软件|家电数码|物流服务|汽车生活|食品饮品|互联网服务|服装饰品/.test(ff),
     '★ 品类卡文案完全没进本脚本（站长 2026-11-05 明确「品类卡切换暂时先不改」）');
   check((ff.match(/addEventListener\('click'/g) || []).length === 1,
@@ -4460,6 +4462,51 @@ if (exists('filter-flash.js')) {
     '闪屏补丁纯 DOM 层，不发请求、不刷新页面');
 } else {
   warn('filter-flash.js 不存在，跳过结果区闪屏检查');
+}
+
+// ---------- 17c. 搜索框 IME 清空后卡片顺序残留修复 ----------
+// 2026-11-06 站长报障：中文输入法在搜索框输入「小米」后清空，企业卡片列表
+// 顺序残留错乱（首屏不再是默认 Patagonia 序）。根因是 bundle 在 IME 路径下
+// 排序 state 未复位 + 延迟 effect 用残留重排，DOM 层只能回放「最近词→空」复位。
+// 修复脚本 search-clear-order-fix.js 用「缓存基准序 + 检测空态残留 → 回放」实现。
+section('17c. 搜索框 IME 清空顺序残留修复');
+
+if (exists('search-clear-order-fix.js')) {
+  const scf = read('search-clear-order-fix.js');
+  const idx = read('index.html');
+
+  check(/search-clear-order-fix\.js\?v=1/.test(idx) &&
+    (idx.match(/search-clear-order-fix\.js\?v=1/g) || []).length >= 2,
+    'index.html 引用 search-clear-order-fix.js?v=1（preload + script 两处）');
+
+  check(/.bg-white\.rounded-2xl\.border/.test(scf) && /cardTitles|offsetParent/.test(scf),
+    '修复脚本用同样的卡片选择器重建顺序基准，与全站口径一致');
+
+  check(/data-scof-last/.test(scf) && /setAttribute\('data-scof-last'/.test(scf),
+    '记录最近搜过的词（data-scof-last）用于回放，不依赖 composition 事件');
+
+  check(/RESET_DELAY/.test(scf) && /setTimeout/.test(scf) &&
+    /s\.call\(inp, word\)/.test(scf) && /s\.call\(inp, ''\)/.test(scf),
+    '回放走「非 IME 路径回填最近词 → 延时清空」完整转换，让延迟 effect 在干净态复位');
+
+  check(/setTimeout\(function \(\) \{[\s\S]*valueSetter\(\);\s*s\.call\(inp, word\)/.test(scf),
+    '★ 回放必须脱离 input 事件栈（setTimeout 栈外）执行，否则 React 合并忽略');
+
+  check(/if \(sameOrder\(now, baseline\)\) return/.test(scf),
+    '空态顺序与基准一致则跳过修复（正常清空不误触发回放闪烁）');
+
+  // ⚠️ 必须锁「赋值语句」本体：只查 /__sxgScofReplay/ 会被注释里的字样蒙混过关
+  //    （故障注入 B 实测：删掉 ev.__sxgScofReplay = true; 仍全绿）。
+  check(/ev\.__sxgScofReplay = true;/.test(scf) && /function replayInput\(inp\)/.test(scf) &&
+    (scf.match(/replayInput\(inp\);/g) || []).length === 2,
+    '★ 回放的两次合成 input 都带 __sxgScofReplay 标记（与 filter-flash.js 的跳过契约）');
+
+  // 故障注入红线：删掉回放里的「延时清空」那一步，残留将无法复位
+  const scfNoReplay = scf.replace(/s\.call\(inp, ''\);[\s\S]*?replayInput\(inp\);[\s\S]*?\}, RESET_DELAY\);/, '/* replay removed */');
+  check(scfNoReplay !== scf,
+    '回放逻辑存在（故障注入基线：应能删出差异）');
+} else {
+  warn('search-clear-order-fix.js 不存在，跳过 IME 清空顺序修复检查');
 }
 
 // ---------- 18. 内置卡小票 DOM 定位（源码断言不够，必须打真实 bundle） ----------
@@ -6364,7 +6411,7 @@ section('21c. 首页滑到底部按钮');
     '§21p 评级依据的爱企查原始链接在详情页与首页证据链都还在');
 }
 
-// ---------- 21q. 小米卡「内部」的微信文章链接（2026-11-06 站长纠正） ----------
+// ---------- 21q. 小米卡「内部」的站外链接（2026-11-06 站长纠正 / 11-07 换源） ----------
 // 站长原要求：「小米卡片的下面，新增这个 mp.weixin.qq.com/s/1vEH4Ptw_6lvUJJcnYfpSA，
 // 标题直接原标题，带 url 跳转到微信链接」。原标题逐字是 小米内置“反诈”被逆向了
 // （中文弯引号 U+201C/U+201D，不是 ASCII 直引号），一字不能改。
@@ -6373,6 +6420,11 @@ section('21c. 首页滑到底部按钮');
 // 改为 init() 里 insertWechatInlineLink() 往 #xiaomi-card 内容区末尾 append 一行紧凑链接。
 // 链接随小米卡整体隐藏，所以 filterCustomCards 不应再有单独处理；注入仍须幂等
 // （init() 挂 MutationObserver 反复执行）。以下断言把「卡内 + 不独立成卡」锁死。
+// 2026-11-07 站长报微信原文《小米内置“反诈”被逆向了》已被删除，要求「替换为这个」
+// 爱企查企业知识条目 URL。给过三个方案（整行换掉 / 只换跳转地址 / 删掉这行），
+// 站长明确选「只换跳转地址」：标题、绿色标签、公众号来源说明一字不动，
+// 只把 <a href> 从微信原文换成与 §21p 证据链同一条爱企查 URL（带 #:~:text= 定位）。
+// 因此这里锁「新 URL 唯一 + 旧微信 URL 不回流」，但**不**锁标签/来源文案（留给站长后续调整）。
 {
   const htmlQ = read('index.html');
   // 精确切出函数体（函数首行 6 空格缩进，闭合 } 也是 6 空格；内层语句 ≥8 空格）
@@ -6385,12 +6437,16 @@ section('21c. 首页滑到底部按钮');
   // ① 标题逐字 = 微信原文标题（中文弯引号）；同时禁止回退成 ASCII 直引号
   check(/小米内置“反诈”被逆向了/.test(qFn) && !/小米内置"反诈"被逆向了/.test(qFn),
     '§21q 链接标题逐字等于微信原标题「小米内置“反诈”被逆向了」（中文弯引号）');
-  // ② 微信链接写在 <a href> 里；去掉独立卡后不该再有第二份 window.open
-  const wxUrl = 'https://mp.weixin.qq.com/s/1vEH4Ptw_6lvUJJcnYfpSA';
-  const wxHits = qFn.split(wxUrl).length - 1;
-  check(qFn.includes(`href="${wxUrl}"`) && wxHits === 1,
-    '§21q <a href> 指向微信原文且 url 只出现一次（不再有整卡点击的第二份）',
-    `hits=${wxHits}`);
+  // ② 站外链接写在 <a href> 里。2026-11-07 起 href 指向爱企查（微信原文已删），
+  //    去独立卡后不该有第二份 window.open；旧微信 URL 不许回流到首页任何位置。
+  const AQ_URL = 'https://aiqicha.baidu.com/details/ugknowledge?id=f5fe5b856c9a6bcf251add4319e48490#:~:text=%E5%B0%8F%E7%B1%B3%E5%85%AC%E5%8F%B8%E6%99%AE%E9%81%8D%E5%AE%9E%E8%A1%8C,%E5%9B%A0%E9%A1%B9%E7%9B%AE%E8%BF%9B%E5%BA%A6%E5%BB%B6%E5%90%8E%E3%80%82';
+  const OLD_WX_URL = 'https://mp.weixin.qq.com/s/1vEH4Ptw_6lvUJJcnYfpSA';
+  const aqHits = qFn.split(AQ_URL).length - 1;
+  check(qFn.includes(`href="${AQ_URL}"`) && aqHits === 1,
+    '§21q <a href> 指向爱企查企业知识条目（带 #:~:text= 文本片段定位）且整串只出现一次',
+    `hits=${aqHits}`);
+  check(!qFn.includes(OLD_WX_URL) && !htmlQ.includes(OLD_WX_URL),
+    '§21q 已删除的微信原文链接不得回流到卡内链接或首页任何位置');
   check(/target="_blank"/.test(qFn) && /rel="noopener noreferrer"/.test(qFn),
     '§21q 链接带 target="_blank" + rel="noopener noreferrer"（站外新标签页安全跳转）');
   // ③ 卡内 + 幂等：重复 init 不重建，被挪走时归位回小米卡内容区
