@@ -6688,6 +6688,68 @@ section('22. 素材链接规则（blob 格式 / 素材不得明文入库）');
     '发现未登记明文素材：' + stray22.join(', ') + '（须改用 .enc 密文容器或登记进白名单）');
 }
 
+// ---------- 23. README 长段落摘要化（站长 2026-11-07 明确） ----------
+// 原话：「部分内容写得太长了……如果一个段落太长了，就只写摘要，其他的单独放一个页面」。
+// 之前做过的优化：README「🆕 最近更新」把完整版单独放 最近更新.md、下面只列摘要。
+// 本轮把同一条规则推广到全篇并写死：长段落只留摘要 + 独立页面链接，改动明细不堆首页。
+// 三层强制：README 规则原文 + 这里的断言 + 故障注入（缺一层 README 又会膨胀回去）。
+section('23. README 长段落摘要化（摘要 + 独立页面）');
+{
+  const rd23 = read('README.md');
+  const detail23 = exists('README-详情.md') ? read('README-详情.md') : '';
+
+  check(/长段落摘要化/.test(rd23) && /完整原文单独放一个页面/.test(rd23)
+    && /不堆改动明细/.test(rd23),
+    '§23a README 写死「段落写长了只留摘要、完整原文单独放页面、不堆改动明细」规则',
+    '规则只挂口头 → README 下次又会膨胀成上万字的改动明细');
+
+  // 按空行切 prose 块；代码块、表格、项目符号/有序清单不算「叙事段落」
+  // （README 的「硬性要求」是必要的操作清单，不该被摘要化掉）。
+  const ls23 = rd23.split('\n');
+  let fence23 = false, blocks23 = [], cur23 = [];
+  for (const ln of ls23) {
+    if (/^\s*```/.test(ln)) { fence23 = !fence23; continue; }
+    if (fence23) continue;
+    if (ln.trim() === '') {
+      if (cur23.length) { blocks23.push(cur23.join('\n')); cur23 = []; }
+      continue;
+    }
+    cur23.push(ln);
+  }
+  if (cur23.length) blocks23.push(cur23.join('\n'));
+  const prose23 = blocks23.filter(b => {
+    const rows = b.split('\n');
+    // 顶层列表项 ≥2 且整块没有引用行 → 操作清单（如「硬性要求」「加品牌的数据链」），
+    // 它本来就该留在 README 里，不算可摘要化的叙事段落。
+    const tops = rows.filter(r => /^\s*([-*+]\s|\d+\.\s)/.test(r)).length;
+    const quoted = rows.some(r => /^\s*>/.test(r));
+    const tableish = rows.filter(r => /^\s*\|/.test(r)).length;
+    const isList = !quoted && (tops >= 2 || tableish >= rows.length * 0.8);
+    return !isList;
+  });
+  const long23 = prose23.filter(b => b.length > 1500);
+  check(prose23.length > 10 && long23.length === 0,
+    '§23b README 无超过 1500 字的叙事段落（长段落须摘要化，清单/代码块除外）',
+    'prose 块 ' + prose23.length + ' 个 / 超长 ' + long23.length + ' 处：'
+      + long23.map(b => b.slice(0, 30)).join(' | '));
+
+  check(/README-详情\.md/.test(rd23) && /\.\/最近更新\.md/.test(rd23)
+    && /CHANGELOG\.md/.test(rd23),
+    '§23c README 摘要保留指向独立页面的链接（归档页 / 最近更新 / CHANGELOG）');
+
+  check(detail23.length > 1500 && /证据链不完善也照判不回避/.test(detail23)
+    && /两套产物/.test(detail23) && /customCardsConfig/.test(detail23)
+    && /id="scope"/.test(detail23) && /id="architecture"/.test(detail23),
+    '§23d README-详情.md 归档了移出的完整原文（判档口径 / 架构说明 / 数据位置 / 锚点）',
+    '归档页缺失或内容被删 → 摘要指向空页，长段落等于直接丢了');
+
+  check(!/同日更早（2026-11-07 09:37）/.test(rd23)
+    && !/上一批（2026-11-06）/.test(rd23)
+    && !/再上一批（2026-11-04）/.test(rd23),
+    '§23e README 不再堆叠逐批改动明细（完整版归 最近更新.md / CHANGELOG.md）',
+    '旧的「同日更早 / 上一批 / 再上一批」整坨明细回流 README');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {
