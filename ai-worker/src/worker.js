@@ -32,13 +32,15 @@
 export default {
   async fetch(request, env) {
     // ---------- CORS 预检 ----------
+    // 匹配规则：精确白名单 + 模糊匹配 github.io 域名（兼容手机端各种浏览器差异）
     const ALLOWED_ORIGINS = [
-      'https://dujeongil-galaxy.github.io',
       'http://localhost:18970', // 本地验收服务（ai-chat 测试用）
     ];
     const origin = request.headers.get('Origin') || '';
+    // 判断是否放行：精确匹配 OR 包含 github.io（GitHub Pages 所有子域名）
+    const originAllowed = ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.github.io') || origin === 'https://dujeongil-galaxy.github.io';
     const corsHeaders = {
-      'Access-Control-Allow-Origin': ALLOWED_ORIGINS.includes(origin) ? origin : '',
+      'Access-Control-Allow-Origin': originAllowed ? origin : '',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
       'Access-Control-Max-Age': '86400',
@@ -48,8 +50,8 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
     // 非白名单来源：连 POST 都不处理（不消耗 neurons）
-    if (!ALLOWED_ORIGINS.includes(origin)) {
-      return json({ error: 'origin-not-allowed' }, 403, corsHeaders);
+    if (!originAllowed) {
+      return json({ error: 'origin-not-allowed', origin: origin }, 403, corsHeaders);
     }
 
     if (request.method !== 'POST') {
