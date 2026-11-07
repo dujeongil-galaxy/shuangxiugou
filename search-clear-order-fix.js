@@ -23,13 +23,18 @@
 //
 //   代价：清空瞬间会闪现约 1.2s 的「最近搜过的词」搜索结果，随后回到全量。
 //   这是目前不碰 bundle 红线前提下唯一能稳定复位顺序的方案。
+//   2026-11-07 17:45 起这段不再裸奔：回放开始/结束会通知 filter-flash.js
+//   把整屏磨砂遮罩挂起到回放完成，用户只看到「删空 → 高度模糊 → 全量留白」。
 //
-// 与 filter-flash.js 的契约（2026-11-07）：
-//   filter-flash.js 在 document 捕获阶段监听 input 的「非空 → 空」边沿，
-//   据此放 0.5s 磨砂遮罩。若本脚本回放的第二次合成清空被当成真实清空，
-//   会在 1.2s 后多闪一次并打断「500ms 自动撤除」契约
-//   （scripts/test-search-clear-render.cjs 曾稳定判红）。因此两次回放事件
-//   都带 __sxgScofReplay 标记，flash 侧显式跳过。两侧必须同改，勿单侧删除。
+// 与 filter-flash.js 的契约（2026-11-07，两条，必须两侧同改）：
+//   ① filter-flash.js 在 document 捕获阶段监听 input 的「非空 → 空」边沿，
+//      据此放磨砂遮罩。若本脚本回放的第二次合成清空被当成真实清空，
+//      会在 1.2s 后多闪一次并打断撤除契约
+//      （scripts/test-search-clear-render.cjs 曾稳定判红）。因此两次回放事件
+//      都带 __sxgScofReplay 标记，flash 侧显式跳过。
+//   ② 本脚本在决定回放时派发 sxg-scof-hold、回放清空后派发 sxg-scof-release；
+//      flash 侧 hold 期间不撤遮罩，release 后再留 450ms 让 React 空态落地。
+//      这样搜索框回填的词不会露出来（站长：「删除后留空白，也做高度模糊」）。
 // ============================================================
 (function () {
   'use strict';
@@ -60,6 +65,14 @@
     inp.dispatchEvent(ev);
   }
 
+  // 与 filter-flash.js 的挂起契约：回放开始挂起磨砂撤除，回放结束解除。
+  // 用 document 上的自定义事件解耦，两个脚本谁先加载都不影响（事件后到则被忽略）。
+  function notifyFlash(name) {
+    if (typeof CustomEvent === 'function') {
+      document.dispatchEvent(new CustomEvent(name));
+    }
+  }
+
   function captureBaseline() {
     if (baseline) return;
     var o = cardTitles();
@@ -87,6 +100,9 @@
       var word = inp.getAttribute('data-scof-last') || '';
       if (!word) return;
       fixing = true;
+      // 决定回放 = 整屏磨砂必须挂起，直到回放清空、React 空态落地才撤。
+      // filter-flash.js 的搜索清空 flash(0) 在 document 捕获阶段已先跑完。
+      notifyFlash('sxg-scof-hold');
       // 必须在事件栈外执行回放：事件处理函数内同步 dispatch 的 input 会被 React 合并忽略
       setTimeout(function () {
         var s = valueSetter();
@@ -96,6 +112,7 @@
           s.call(inp, '');                     // 第二步：干净的「空」态
           replayInput(inp);
           fixing = false;
+          notifyFlash('sxg-scof-release');     // 撤遮罩（flash 侧再留 450ms 宽限）
         }, RESET_DELAY);
       }, 0);
     });

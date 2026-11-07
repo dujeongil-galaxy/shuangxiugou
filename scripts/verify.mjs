@@ -4469,27 +4469,35 @@ if (exists('custom-card-actions.js')) {
 // ---------- 17b. 结果区 frosted 闪屏：评级切换 + 搜索清空共用一套 ----------
 // 2026-11-05 站长报障：搜索框删空后看得见一次新的预加载动画，
 // 要求「和切换评价卡保持一致，高度模糊遮挡」，且品类卡切换暂不改。
-// 行为由 scripts/test-search-clear-flash.cjs 真跑一遍，这里守静态口径：
-// 两种场景必须共用 flash()、边沿触发、预加载层兜底、品类文案不得混入。
+// 2026-11-07 17:45 站长再要求：「删除小米之后，留空白，也做一个高度模糊的画面。
+// 准确的说，无论是小米，还是其他，只要有这个动作出现了，都要做高度模糊」。
+// CDP 时间线实测出 500ms 之后还有约 1s 的顺序复位回放裸露窗口，故搜索清空改为
+// 整屏 flash(0) + sxg-scof-hold/release 挂起，直到回放清空才撤遮罩。
+// 行为由 scripts/test-search-clear-flash.cjs / test-search-clear-render.cjs 真跑，
+// 这里守静态口径：两场景共用 flash()、边沿触发、任意词、整屏、回放挂起、
+// 预加载层与拼音联想层兜底、品类文案不得混入。
 if (exists('filter-flash.js')) {
   const ff = read('filter-flash.js');
   const htmlFF = read('index.html');
 
   check(ff.length > 1500, 'filter-flash.js 非空集（防空文件把下面断言全变成假通过）');
-  check(/<script defer src="\.\/filter-flash\.js\?v=4"><\/script>/.test(htmlFF),
-    'index.html 引入了 filter-flash.js?v=4（改脚本必须 bump 缓存号）');
+  check(/<script defer src="\.\/filter-flash\.js\?v=5"><\/script>/.test(htmlFF),
+    'index.html 引入了 filter-flash.js?v=5（改脚本必须 bump 缓存号）');
   check(/function flash\(top\)/.test(ff) && /flash\(btn\.getBoundingClientRect\(\)\.bottom \+ 4\)/.test(ff),
-    '评级切换走共用 flash()');
-  check(/flash\(ratingBarBottom\(\)\)/.test(ff),
-    '★ 搜索清空也走同一套 flash()（模糊规格不可能与评级切换漂开）');
+    '评级切换走共用 flash()，几何仍是按钮底边 +4（工具条保持清晰）');
+  check(/flash\(0\)/.test(ff) && !/flash\(ratingBarBottom\(\)\)/.test(ff) &&
+        !/function ratingBarBottom\(\)/.test(ff),
+    '★ 搜索清空改整屏 flash(0)：搜索框与联想面板一起糊，回放回填的词看不见');
   check(/addEventListener\('beforeinput'/.test(ff) && /addEventListener\('input'/.test(ff),
     '搜索分支挂了 beforeinput + input 两道捕获监听');
   check(/was !== null && was !== '' && now === ''/.test(ff),
     '★ 只在「非空 → 空」边沿触发（打字/删一半/重复 Backspace 都不闪）');
   check(/var SEARCH_ID = 'site-search-input'/.test(ff) && /t\.id !== SEARCH_ID/.test(ff),
     '只认 #site-search-input，不误绑页面其它输入框');
-  check(/function ratingBarBottom\(\)/.test(ff) && /isRatingButton\(btns\[i\]\)/.test(ff),
-    '遮罩 top 沿用评级工具条底边 +4（与切评价卡同一几何，工具条保持清晰）');
+  check(!/小米|腾讯|银行|xiaomi|patagonia/.test(ff),
+    '★ 闪屏逻辑不认具体搜索词：任何词、中文 IME、拼音、全选删除一律同样高度模糊');
+  check(/isRatingButton\(/.test(ff) && /RATING\.indexOf/.test(ff),
+    '评级按钮仍走 RATING 文案白名单（click 口径没被扩大）');
   check(/blur\(36px\) saturate\(0\.7\)/.test(ff) && /rgba\(252,252,253,0\.9\)/.test(ff),
     'frosted 遮罩仍是 blur(36px) + 近页面底色 0.9');
   check(/z-index:8000/.test(ff) && /var DURATION = 500/.test(ff) && /pointer-events:none/.test(ff),
@@ -4501,7 +4509,18 @@ if (exists('filter-flash.js')) {
   check(/\.sxg-boot__spinner/.test(ff),
     '首屏占位 spinner 同样被压住');
   check(/if \(e\.__sxgScofReplay\) return;/.test(ff) && /__sxgScofReplay/.test(ff),
-    '★ 跳过 search-clear-order-fix.js 的回放合成 input（不额外闪屏 / 不打断 500ms 撤除）');
+    '★ 跳过 search-clear-order-fix.js 的回放合成 input（不额外闪屏 / 不打断撤除契约）');
+  check(/addEventListener\('sxg-scof-hold', holdFlash, true\)/.test(ff) &&
+        /addEventListener\('sxg-scof-release', releaseFlash, true\)/.test(ff),
+    '★ 顺序复位回放的 hold / release 两个挂起监听都在（与 scof 侧事件同名）');
+  check(/function holdFlash\(\)/.test(ff) && /function releaseFlash\(\)/.test(ff) &&
+        /function dismiss\(\)/.test(ff) && /if \(held\) return;/.test(ff),
+    '★ hold 期间 dismiss 不撤遮罩：1.2s 回放全程保持高度模糊，不留裸露窗口');
+  check(/var RELEASE_GRACE = 450/.test(ff) && /var HOLD_MAX = 3000/.test(ff) &&
+        /timer = setTimeout\(dismiss, RELEASE_GRACE\)/.test(ff),
+    '★ release 后留 450ms 等空态落地；HOLD_MAX 看门狗防 release 丢失把页面永久糊住');
+  check(/body\.sxg-filter-flashing #pinyin-suggest/.test(ff),
+    '★ 闪屏期压住拼音联想面板（整屏糊不被高层联想条漏出破坏）');
   check(!/数码外设|数码3C|户外服饰|个人护理|运动器材|零食饮料|汽车用品|互联网软件|家电数码|物流服务|汽车生活|食品饮品|互联网服务|服装饰品/.test(ff),
     '★ 品类卡文案完全没进本脚本（站长 2026-11-05 明确「品类卡切换暂时先不改」）');
   check((ff.match(/addEventListener\('click'/g) || []).length === 1,
@@ -4523,9 +4542,9 @@ if (exists('search-clear-order-fix.js')) {
   const scf = read('search-clear-order-fix.js');
   const idx = read('index.html');
 
-  check(/search-clear-order-fix\.js\?v=1/.test(idx) &&
-    (idx.match(/search-clear-order-fix\.js\?v=1/g) || []).length >= 2,
-    'index.html 引用 search-clear-order-fix.js?v=1（preload + script 两处）');
+  check(/search-clear-order-fix\.js\?v=2/.test(idx) &&
+    (idx.match(/search-clear-order-fix\.js\?v=2/g) || []).length >= 2,
+    'index.html 引用 search-clear-order-fix.js?v=2（preload + script 两处，改脚本须 bump）');
 
   check(/.bg-white\.rounded-2xl\.border/.test(scf) && /cardTitles|offsetParent/.test(scf),
     '修复脚本用同样的卡片选择器重建顺序基准，与全站口径一致');
@@ -4548,6 +4567,21 @@ if (exists('search-clear-order-fix.js')) {
   check(/ev\.__sxgScofReplay = true;/.test(scf) && /function replayInput\(inp\)/.test(scf) &&
     (scf.match(/replayInput\(inp\);/g) || []).length === 2,
     '★ 回放的两次合成 input 都带 __sxgScofReplay 标记（与 filter-flash.js 的跳过契约）');
+
+  // 2026-11-07 17:45：回放期间必须挂起磨砂撤除，否则删空后 1s 的回填窗口会裸露
+  check(/function notifyFlash\(name\)/.test(scf) &&
+        /notifyFlash\('sxg-scof-hold'\)/.test(scf) &&
+        /notifyFlash\('sxg-scof-release'\)/.test(scf),
+    '★ 回放开始发 sxg-scof-hold、回放清空发 sxg-scof-release（与 filter-flash.js 挂起契约）');
+  const scfPos = {
+    hold: scf.indexOf("notifyFlash('sxg-scof-hold')"),
+    replay: scf.indexOf('var s = valueSetter()'),
+    clear: scf.indexOf("s.call(inp, '')"),
+    release: scf.indexOf("notifyFlash('sxg-scof-release')"),
+  };
+  check(scfPos.hold > -1 && scfPos.replay > scfPos.hold &&
+        scfPos.clear > scfPos.replay && scfPos.release > scfPos.clear,
+    '★ hold 必须在回放开始前、release 必须在第二次清空之后（顺序不能反）', scfPos);
 
   // 故障注入红线：删掉回放里的「延时清空」那一步，残留将无法复位
   const scfNoReplay = scf.replace(/s\.call\(inp, ''\);[\s\S]*?replayInput\(inp\);[\s\S]*?\}, RESET_DELAY\);/, '/* replay removed */');
@@ -6474,9 +6508,13 @@ section('21c. 首页滑到底部按钮');
 // （init() 挂 MutationObserver 反复执行）。以下断言把「卡内 + 不独立成卡」锁死。
 // 2026-11-07 站长报微信原文《小米内置“反诈”被逆向了》已被删除，要求「替换为这个」
 // 爱企查企业知识条目 URL。给过三个方案（整行换掉 / 只换跳转地址 / 删掉这行），
-// 站长明确选「只换跳转地址」：标题、绿色标签、公众号来源说明一字不动，
+// 站长当时选「只换跳转地址」：标题、绿色标签、公众号来源说明一字不动，
 // 只把 <a href> 从微信原文换成与 §21p 证据链同一条爱企查 URL（带 #:~:text= 定位）。
-// 因此这里锁「新 URL 唯一 + 旧微信 URL 不回流」，但**不**锁标签/来源文案（留给站长后续调整）。
+// 2026-11-07 17:45 站长看线上截图再次指出「我不是说这里替换成百度爱企查的链接吗」：
+// 外观三处仍写着微信文章，肉眼完全看不出换过。故本轮把标签、来源、链接文字
+// 一并换成爱企查可见条目（爱企查页面原题《小米公司的上下班时间》），href 保持不变。
+// 断言同步收紧：锁「新 URL 唯一 + 旧微信 URL 不回流 + 可见文案确为爱企查」，
+// 并禁止旧微信文案回流（这正是上一轮「只换 href」留下的坑）。
 {
   const htmlQ = read('index.html');
   // 精确切出函数体（函数首行 6 空格缩进，闭合 } 也是 6 空格；内层语句 ≥8 空格）
@@ -6486,9 +6524,15 @@ section('21c. 首页滑到底部按钮');
         /querySelector\('div\.p-5'\)/.test(qFn),
     '§21q 切到 insertWechatInlineLink 函数体且锚定小米卡内容区（双重空集防护）',
     `fnLen=${qFn.length}`);
-  // ① 标题逐字 = 微信原文标题（中文弯引号）；同时禁止回退成 ASCII 直引号
-  check(/小米内置“反诈”被逆向了/.test(qFn) && !/小米内置"反诈"被逆向了/.test(qFn),
-    '§21q 链接标题逐字等于微信原标题「小米内置“反诈”被逆向了」（中文弯引号）');
+  // ① 链接文字 = 爱企查页面原题（2026-11-07 17:45 换源后可见口径）
+  check(/小米公司的上下班时间/.test(qFn),
+    '§21q 链接文字为爱企查页面原题「小米公司的上下班时间」（外观看得出已换源）');
+  // ①b 旧微信文案不得回流：只换 href 不换外观，站长看截图会以为根本没改
+  check(/百度爱企查 · 站外跳转/.test(qFn) && /爱企查公开信息页 · 与本站无隶属关系/.test(qFn),
+    '§21q 标签与来源写成百度爱企查公开信息页（不再冒充微信文章）');
+  check(!/微信文章 · 站外跳转/.test(qFn) && !/青檬小栈/.test(qFn) &&
+        !/小米内置“反诈”被逆向了/.test(qFn) && !/#07c160/.test(qFn),
+    '§21q 旧微信文章标签 / 公众号来源 / 微信绿 / 旧标题全部不得回流到卡内来源块');
   // ② 站外链接写在 <a href> 里。2026-11-07 起 href 指向爱企查（微信原文已删），
   //    去独立卡后不该有第二份 window.open；旧微信 URL 不许回流到首页任何位置。
   const AQ_URL = 'https://aiqicha.baidu.com/details/ugknowledge?id=f5fe5b856c9a6bcf251add4319e48490#:~:text=%E5%B0%8F%E7%B1%B3%E5%85%AC%E5%8F%B8%E6%99%AE%E9%81%8D%E5%AE%9E%E8%A1%8C,%E5%9B%A0%E9%A1%B9%E7%9B%AE%E8%BF%9B%E5%BA%A6%E5%BB%B6%E5%90%8E%E3%80%82';

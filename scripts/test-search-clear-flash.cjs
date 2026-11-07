@@ -1,19 +1,26 @@
 // 搜索框删空 → 与评级切换同一套 frosted 闪屏（2026-11-05 站长需求）
+// 2026-11-07 17:45 扩：删空留白整屏糊 + 顺序复位回放期间挂起撤除 + 任意词一致
 //
 // 背景：清空搜索框时 React 把被过滤的卡一次性插回，肉眼看得见一次新的预加载动画。
 // 要求「和切换评价卡保持一致，高度模糊遮挡预加载动画」，且「品类卡切换暂时先不改」。
+// 2026-11-07 再报：上一版只糊 500ms，之后 1.2s 的顺序复位回放裸露，
+// 搜索框里还重新冒出词。现搜索清空改 flash(0) 整屏，并用
+// sxg-scof-hold / sxg-scof-release 把撤除挂起到回放清空之后。
 //
 // 断言：
 //   1. 打字 / 删到一半 / 已空后重复 Backspace → 都不闪（只在非空→空边沿触发）
-//   2. 清空 → body.sxg-filter-flashing + #sxg-flash-mask 显示，top 取评级工具条底边+4
-//   3. 遮罩规格 z-index/backdrop 与评级切换共用同一节点，500ms 后自动撤除
-//   4. 闪屏期 CSS 压住 #sxg-loading / .sxg-boot（z-index 2147483647 盖不住的那层）
-//   5. 评级按钮点击仍闪（回归）；品类按钮点击不闪（站长明确暂不改）
+//   2. 清空 → body.sxg-filter-flashing + #sxg-flash-mask 显示，top=0 整屏
+//   3. 遮罩规格 z-index/backdrop 与评级切换共用同一节点，无回放时 500ms 自动撤除
+//   4. 闪屏期 CSS 压住 #sxg-loading / .sxg-boot / #pinyin-suggest
+//   5. 评级按钮点击仍闪且几何仍是按钮底边+4（回归）；品类按钮点击不闪
 //   6. 其它输入框清空不误触发
+//   7. ★ 任意词（中文 / 拼音 / 英文 / 首字母）删空一律同样闪
+//   8. ★ hold 期间超过 500ms 仍保持模糊；release 后宽限期结束才撤
 // 故障注入红线：
 //   a. 把边沿条件改成 `now === ''` → 断言「打字不闪」「已空不重复闪」判红
-//   b. 删掉 `flash(ratingBarBottom())` → 断言「清空会闪」判红
+//   b. 删掉 `flash(0)` → 断言「清空会闪」判红
 //   c. 删掉预加载层 CSS → 断言「压住 #sxg-loading」判红
+//   d. 删掉 hold 的 `if (held) return` → 断言「hold 期间不撤」判红
 const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');
@@ -74,8 +81,8 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   typeOn(input, '');
   check('★ 搜索框「非空 → 空」触发闪屏', flashing());
   check('★ 遮罩显示（与评级切换同一个 #sxg-flash-mask）', visible(), mask() && mask().style.cssText);
-  check('遮罩 top 取评级工具条底边 520+4=524（不是搜索框底边 404）',
-    mask().style.top === '524px', mask().style.top);
+  check('★ 搜索清空遮罩 top=0 整屏糊（搜索框与联想面板一起盖住，回放回填词不可见）',
+    mask().style.top === '0px', mask().style.top);
   // jsdom 的 cssstyle 不认 backdrop-filter，会把它从 cssText 丢掉；
   // 模糊规格由 verify 静态断言 + CDP 真渲染 computed 断言共同守，
   // 这里只验 jsdom 能保留的层级/底色/穿透三项。
@@ -95,6 +102,8 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
     /body\.sxg-filter-flashing #sxg-loading/.test(css) && /visibility:hidden!important/.test(css));
   check('首屏占位 .sxg-boot / spinner 同样被压住',
     /body\.sxg-filter-flashing \.sxg-boot/.test(css) && /\.sxg-boot__spinner/.test(css));
+  check('★ 拼音联想面板 #pinyin-suggest 闪屏期一并压住（整屏糊不被高层联想条漏出）',
+    /body\.sxg-filter-flashing #pinyin-suggest/.test(css));
 
   // --- 4. 已空后重复 Backspace 不重置闪屏 ---
   await sleep(380);
@@ -127,6 +136,39 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   setter.call(input, '');
   input.dispatchEvent(new w.Event('input', { bubbles: true, cancelable: true }));
   check('无 beforeinput 时靠上一次 input 值仍能判出清空（兼容兜底）', flashing() && visible());
+  await sleep(560);
+
+  // --- 9. 任意搜索词一律同样处理（站长 2026-11-07 17:45：无论搜的是什么） ---
+  for (const word of ['小米', '腾讯', 'xiaomi', 'Patagonia', 'xm']) {
+    typeOn(input, word);
+    check(`输入「${word}」过程不闪`, !flashing() && !visible());
+    typeOn(input, '');
+    check(`★ 任意词「${word}」删空都触发整屏高度模糊（top=0）`,
+      flashing() && visible() && mask().style.top === '0px',
+      { flashing: flashing(), top: mask().style.top });
+    await sleep(560);
+  }
+
+  // --- 10. 顺序复位回放：hold 挂起撤除，release 后宽限期才撤 ---
+  typeOn(input, '回放测试');
+  typeOn(input, '');
+  check('回放前已处于整屏闪屏态', flashing() && visible());
+  document.dispatchEvent(new w.CustomEvent('sxg-scof-hold'));
+  await sleep(620);   // 已超过基础 500ms
+  check('★ hold 期间超过 500ms 仍保持高度模糊（1.2s 回放全程不裸露）',
+    flashing() && visible(), { flashing: flashing(), display: mask().style.display });
+  document.dispatchEvent(new w.CustomEvent('sxg-scof-release'));
+  await sleep(250);   // 宽限 450ms 未到
+  check('★ release 后仍留宽限期等 React 空态落地', flashing() && visible());
+  await sleep(300);   // 累计 550 > 450
+  check('★ release 宽限期结束自动撤除（不永久糊住页面）', !flashing() && !visible());
+
+  // --- 11. 看门狗：release 丢失也必须在 HOLD_MAX 后自动撤 ---
+  typeOn(input, '看门狗');
+  typeOn(input, '');
+  document.dispatchEvent(new w.CustomEvent('sxg-scof-hold'));
+  await sleep(3150);
+  check('★ release 丢失时 HOLD_MAX 看门狗自动撤除遮罩', !flashing() && !visible());
 
   console.log(`\n${pass} 通过, ${fail} 失败`);
   if (fail) { console.log('FAIL:', fails.join(' | ')); process.exit(1); }

@@ -1,8 +1,11 @@
 // 【本机专用 · 不挂 CI】依赖本机无头 Edge 绝对路径，CI runner 无此文件；真渲染验收只在本机跑（verify §21o 咬此标记）。
-// 真渲染验收：搜索框删空 → 与评级切换同一套 frosted 闪屏（2026-11-05）
+// 真渲染验收：搜索框删空 → 整屏 frosted 闪屏并覆盖顺序复位回放（2026-11-05 / 11-07）
 // 无头 Edge + CDP；照 test-filter-flash.cjs / dbg-search-clear.cjs 的纪律：
 // 先清抖音弹窗 .dyp；真实键盘事件输入/删除；清空后 120ms 验遮罩规格与层级，
 // 并插一个模拟「首屏预加载层」（z-index 2147483647）确认它被压住、看不见转圈。
+// 2026-11-07 新增：页内 40ms 采样器记录整条时间线，断言 500ms 之后回放窗口
+// 仍全程模糊、搜索框回填词时绝不裸露、撤遮罩时搜索框已是空白且结果已全量。
+// CDP 逐次采样本身有几十毫秒延迟，靠页内日志才能稳定验住这条时间线。
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -108,6 +111,17 @@ const server = http.createServer((req, res) => {
   const searching = await snap();
   check('搜索态卡片确实被过滤（123 张左右，非全量）', searching.cards < 160, searching.cards);
 
+  // 页内高频采样器：从删除动作前开始记录，避免 CDP 往返耗时掩盖时间线
+  await ev(`(()=>{window.__t0=Date.now();window.__flashLog=[];
+    window.__flashTimer=setInterval(function(){var m=document.getElementById('sxg-flash-mask');
+      var i=document.getElementById('site-search-input');
+      window.__flashLog.push({t:Date.now()-window.__t0,
+        flashing:document.body.classList.contains('sxg-filter-flashing'),
+        display:m?getComputedStyle(m).display:'absent',top:m?m.style.top:'',
+        value:i?i.value:null,
+        cards:[].slice.call(document.querySelectorAll('div.bg-white.rounded-2xl.border')).filter(function(c){return c.offsetParent!==null;}).length});},40);
+    return 'started';})()`);
+
   // 逐字删除：第一次删到「银」不该闪，第二次删空才闪
   for (let k = 0; k < 2; k++) {
     await call('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Backspace', code: 'Backspace', windowsVirtualKeyCode: 8, nativeVirtualKeyCode: 8 });
@@ -118,6 +132,7 @@ const server = http.createServer((req, res) => {
       check('★ 删到一半（还剩一个字）不闪', !half.flashing, half);
     }
   }
+  await ev(`(()=>{window.__clearedAt=Date.now()-window.__t0;return window.__clearedAt;})()`);
   await sleep(60);
   const during = await snap();
   console.log('清空后 ~130ms 采样:', JSON.stringify(during));
@@ -128,50 +143,74 @@ const server = http.createServer((req, res) => {
     !!during.mask && /blur\(36px\) saturate\(0\.7\)/.test(during.mask.backdrop), during.mask);
   check('遮罩 z-index=8000 / 0.9 底色 / pointer-events:none',
     !!during.mask && during.mask.z === '8000' && /252, 252, 253/.test(during.mask.bg) && during.mask.pe === 'none', during.mask);
-  check('★ 遮罩 top 取评级工具条底边+4（与切评价卡同一几何）',
-    during.ratingBottom !== null && Math.abs(parseFloat(during.mask.top) - (during.ratingBottom + 4)) <= 2,
-    { top: during.mask.top, ratingBottom: during.ratingBottom });
+  check('★ 搜索清空遮罩 top=0（整屏糊，搜索框与拼音联想面板一起盖住）',
+    during.mask.top === '0px', { top: during.mask.top });
   check('★ 卡片区 computed filter=blur(20px)', /blur\(20px\)/.test(during.cardFilter), during.cardFilter);
   check('★★ 高 z-index 预加载层被压成 visibility:hidden（转圈肉眼不可见）',
     during.loadingVisibility === 'hidden', during.loadingVisibility);
   check('★ 闪屏期没有可见的加载动画元素（.dyp 弹窗除外）', during.visibleAnimations === 0, during.visibleAnimations);
 
-  // 截图专用：重新触发一次清空，中间不做任何 CDP 采样，
-  // 保证 Page.captureScreenshot 落在 500ms 闪屏窗口内
-  // （否则拍到的是遮罩已撤、模拟加载层重新露出来的画面）。
-  await ev(`(()=>{document.getElementById('site-search-input').focus();return 'ok';})()`);
-  await call('Input.insertText', { text: '茶' });
-  await sleep(260);
-  await call('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Backspace', code: 'Backspace', windowsVirtualKeyCode: 8, nativeVirtualKeyCode: 8 });
-  await call('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Backspace', code: 'Backspace', windowsVirtualKeyCode: 8, nativeVirtualKeyCode: 8 });
+  // 截图：闪屏已挂起到回放结束（约 1.6s），窗口比旧版 500ms 宽得多，
+  // 直接截当前帧即可；不再重新触发一次清空，避免叠加第二次 hold 打乱时间线。
   const cap = await call('Page.captureScreenshot', { format: 'png' });
   let shot = cap.result.data;
   const shotState = await snap();
   const realFrame = shotState.flashing && shotState.mask.display === 'block';
   if (!realFrame) {
-    // 截图仍慢于 500ms 时，补一张「闪屏态摆拍」用于肉眼确认 CSS 磨砂效果。
-    // 真实触发是否生效由上方 17 项 DOM/computed 断言负责，摆拍只管看得见。
+    // 极端情况下截图慢于整个挂起窗口：补一张「闪屏态摆拍」肉眼确认磨砂效果。
+    // 摆拍前后必须逐字段恢复现场，否则会污染页内时间线日志。
+    const prev = await ev(`JSON.stringify({f:document.body.classList.contains('sxg-filter-flashing'),` +
+      `top:(document.getElementById('sxg-flash-mask')||{style:{}}).style.top,` +
+      `disp:(document.getElementById('sxg-flash-mask')||{style:{}}).style.display})`);
     await ev(`(()=>{document.body.classList.add('sxg-filter-flashing');` +
-      `var rb=[...document.querySelectorAll('button')].find(b=>['全部评级','S 级','A 级','B 级','C 级','D 级','U 级'].indexOf((b.textContent||'').trim())!==-1);` +
       `var m=document.getElementById('sxg-flash-mask');` +
-      `if(m){m.style.top=((rb?rb.getBoundingClientRect().bottom:0)+4)+'px';m.style.display='block';}return 'ok';})()`);
-    const held = await snap();
+      `if(m){m.style.top='0px';m.style.display='block';}return 'ok';})()`);
+    const posed = await snap();
     check('★ 闪屏态真渲染：computed backdrop-filter 仍是 blur(36px)（磨砂确实生效）',
-      /blur\(36px\) saturate\(0\.7\)/.test(held.mask.backdrop) && held.loadingVisibility === 'hidden',
-      { backdrop: held.mask.backdrop, loading: held.loadingVisibility });
+      /blur\(36px\) saturate\(0\.7\)/.test(posed.mask.backdrop) && posed.loadingVisibility === 'hidden',
+      { backdrop: posed.mask.backdrop, loading: posed.loadingVisibility });
     const cap2 = await call('Page.captureScreenshot', { format: 'png' });
     shot = cap2.result.data;
-    await ev(`(()=>{document.body.classList.remove('sxg-filter-flashing');var m=document.getElementById('sxg-flash-mask');if(m)m.style.display='none';return 'ok';})()`);
+    await ev(`(()=>{var o=JSON.parse(${JSON.stringify(prev)});var m=document.getElementById('sxg-flash-mask');` +
+      `document.body.classList.toggle('sxg-filter-flashing',o.f);` +
+      `if(m){m.style.top=o.top;m.style.display=o.disp;}return 'ok';})()`);
   }
   fs.writeFileSync(OUT, Buffer.from(shot, 'base64'));
   console.log('截图来源:', realFrame ? '真实清空触发帧' : '闪屏态摆拍（真实触发由上方 DOM 断言验证）');
   console.log('闪屏中截图:', OUT);
 
-  await sleep(650);
+  // 回放（1200ms）+ release 宽限（450ms）之后收日志，取页内 40ms 时间线
+  await sleep(2600);
+  await ev(`(()=>{clearInterval(window.__flashTimer);return 'stopped';})()`);
+  const tl = JSON.parse(await ev(`JSON.stringify({clearedAt:window.__clearedAt,log:window.__flashLog})`));
+  const afterClear = tl.log.filter(x => x.t >= tl.clearedAt);
+  const replayed = afterClear.some(x => x.value && x.value.trim() !== '');
+  const leaked = afterClear.filter(x => x.value && x.value.trim() !== '' && !x.flashing);
+  const visibleMasks = afterClear.filter(x => x.display === 'block');
+  console.log('页内时间线:', JSON.stringify({
+    clearedAt: tl.clearedAt, samples: afterClear.length, replayed,
+    first: afterClear[0], at600: afterClear.find(x => x.t >= tl.clearedAt + 600),
+    at1200: afterClear.find(x => x.t >= tl.clearedAt + 1200), last: afterClear[afterClear.length - 1]
+  }));
+
+  check('★ 清空后立刻进入高度模糊（页内时间线首个样本即 flashing）',
+    afterClear.length > 10 && afterClear[0].flashing && afterClear[0].display === 'block', afterClear[0]);
+  check('★ 整段时间线里遮罩 top 恒为 0px（整屏糊，不退回工具条以下）',
+    visibleMasks.length > 0 && visibleMasks.every(x => x.top === '0px'), visibleMasks.slice(0, 3));
+  check('★ 顺序复位回放确实发生过（搜索框回填过最近词，对照组有效）', replayed,
+    { samples: afterClear.length });
+  check('★★ 回放回填词的每一帧都被高度模糊盖住（删空后不会再看见词冒出来）',
+    replayed && leaked.length === 0, { leaked: leaked.slice(0, 5) });
+  check('★★ 旧版 500ms 就撤的窗口现在仍在模糊（t≥600ms / t≥1200ms 都还 flashing）',
+    afterClear.some(x => x.t >= tl.clearedAt + 600 && x.flashing) &&
+    afterClear.some(x => x.t >= tl.clearedAt + 1200 && x.flashing),
+    { at600: afterClear.find(x => x.t >= tl.clearedAt + 600), at1200: afterClear.find(x => x.t >= tl.clearedAt + 1200) });
+
   const after = await snap();
-  check('★ 500ms 后闪屏自动撤除（class / mask / 卡片模糊全清）',
+  check('★ 回放结束 + 宽限期后闪屏自动撤除（class / mask / 卡片模糊全清）',
     !after.flashing && after.mask.display === 'none' && !/blur/.test(after.cardFilter), after);
-  check('撤遮罩后结果已是全量最终态（>170 张卡）', after.cards > 170, after.cards);
+  check('★ 撤遮罩时搜索框留空白（值已为空，不是回填态）', after.value === '', after.value);
+  check('★ 撤遮罩后结果已是全量最终态（>170 张卡）', after.cards > 170, after.cards);
   check('闪屏结束后预加载层恢复可见（CSS 只在闪屏期生效，不永久隐藏）',
     after.loadingVisibility === 'visible', after.loadingVisibility);
 
