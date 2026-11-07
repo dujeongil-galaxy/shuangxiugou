@@ -373,7 +373,9 @@
   function addMsg(log, role, text) {
     var m = document.createElement('div');
     m.className = 'sxg-ai-msg ' + role;
-    m.textContent = text;
+    // 自动把 URL 转成可点击的链接（只处理我们自己写的文案，安全可控）
+    var html = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;word-break:break-all">$1</a>');
+    m.innerHTML = html;
     log.appendChild(m);
     log.scrollTop = log.scrollHeight;
     return m;
