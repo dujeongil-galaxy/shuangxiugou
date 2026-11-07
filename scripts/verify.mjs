@@ -6545,17 +6545,24 @@ section('21c. 首页滑到底部按钮');
     '§21r 分享弹窗仍读页面 description 并传给微博 title（改 meta 真能生效）');
 }
 
-// ---------- 22. 素材链接规则（站长 2026-11-07 写死） ----------
-// 站长原话：「链接改为 blog 格式，不要直接在 GitHub 仓库明文，以后也注意这个问题，
-// 除非我明确表示明文，否则都使用 blog，此规则记录在 GitHub 仓库 README，写死规则」。
+// ---------- 22. 素材链接规则（站长 2026-11-07 写死，同日纠正为 blob） ----------
+// 站长原话：「链接改为 blob 格式，不要直接在 GitHub 仓库明文，以后也注意这个问题，
+// 除非我明确表示明文，否则都使用 blob，此规则记录在 GitHub 仓库 README，写死规则」。
+// ⚠️ 2026-11-07 曾把 blob 误听成 blog，据此做过一轮站内目录迁移并写进错误规则，
+//    已撤销；这里同时锁「现行规则里不得残留 blog 说法」，防止再走回头路。
 // 按本项目长期纪律，规则不能只写文档：README + 脚本断言 + 故障注入三层一起落。
-section('22. 素材链接规则（blog 格式 / 素材不得明文入库）');
+section('22. 素材链接规则（blob 格式 / 素材不得明文入库）');
 {
   const rd22 = read('README.md');
-  check(/除非站长明确表示/.test(rd22) && /blog 格式链接/.test(rd22)
-    && /不得把素材原始文件明文提交进 GitHub 仓库/.test(rd22),
-    '§22a README 写死素材链接规则（除非站长明确表示明文，否则一律 blog 格式）',
+  const ruleSec22 = (rd22.split('## 📌 素材链接规则')[1] || '').split('\n---')[0];
+  check(/除非站长明确表示/.test(ruleSec22) && /blob 格式/.test(ruleSec22)
+    && /不得把素材原始文件明文提交进 GitHub 仓库/.test(ruleSec22)
+    && /URL\.createObjectURL/.test(ruleSec22) && /密文容器/.test(ruleSec22),
+    '§22a README 写死素材链接规则（除非站长明确表示明文，否则一律 blob 格式 + .enc 密文 + createObjectURL）',
     '规则只挂在口头 → 下次又会把站长给的截图明文塞进仓库');
+  check(!/blog 格式链接/.test(ruleSec22) && !/站内 `blog\/`/.test(ruleSec22),
+    '§22a2 现行素材规则里不得残留被纠正的 blog 说法（站长说的是 blob）',
+    '把 blob 又写成 blog → 会再去做一次站内目录迁移，白折腾一轮');
 
   // 加密随笔正文里不许出现图片或仓库内素材引用（素材一律不上传、正文只留密文）
   const plain22 = exists('notes.html') ? decryptNotes(read('notes.html')) : null;
@@ -6564,12 +6571,12 @@ section('22. 素材链接规则（blog 格式 / 素材不得明文入库）');
   } else {
     check(!/<img\b/i.test(plain22) && !/\.\/assets\//.test(plain22),
       '§22b 加密随笔正文不放图片、不引用仓库内素材（素材一律不上传）',
-      '正文里出现 img 或仓库内素材路径 → 违反「素材不上传、只走 blog 链接」');
+      '正文里出现 img 或仓库内素材路径 → 违反「素材不上传、只走 blob 解密渲染」');
   }
 
   // 历史存量：站点自带的功能图（打赏二维码 / 分享图 / 既有测试截图）与
   // assets/ 下的品牌 logo 都不属于「站长提供的口述素材」，登记为白名单。
-  // 新增任何其它明文素材文件（已跟踪）即判红，逼迫改用 blog 格式链接。
+  // 新增任何其它明文素材文件（已跟踪）即判红，逼迫改用 .enc 密文 + blob 渲染。
   const LEGACY_MEDIA22 = new Set([
     'company-qrs/qianren.png', 'contact-developer-qr.jpg',
     'crypto-qr/btc-bep20.png', 'crypto-qr/btc-brc20.png', 'crypto-qr/eth-erc20.png',
@@ -6586,8 +6593,8 @@ section('22. 素材链接规则（blog 格式 / 素材不得明文入库）');
     f && !f.startsWith('assets/') && !LEGACY_MEDIA22.has(f)
     && /\.(jpe?g|png|webp|gif|mp4|mov|webm|pdf)$/i.test(f));
   check(stray22.length === 0,
-    '§22c 已跟踪文件里无未登记的明文素材（新增素材须走 blog 格式链接）',
-    '发现未登记明文素材：' + stray22.join(', ') + '（须改用 blog 格式链接或登记进白名单）');
+    '§22c 已跟踪文件里无未登记的明文素材（新增素材须走 .enc 密文 + blob 渲染）',
+    '发现未登记明文素材：' + stray22.join(', ') + '（须改用 .enc 密文容器或登记进白名单）');
 }
 
 // ---------- 汇总 ----------
