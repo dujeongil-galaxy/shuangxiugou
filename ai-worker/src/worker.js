@@ -116,12 +116,19 @@ export default {
     try {
       const result = await env.AI.run('@cf/zai-org/glm-4.7-flash', {
         messages,
-        max_tokens: 600, // 输出是 neuron 大头（约为输入单价 6.6 倍），600 字够答一条劳动法问题
+        max_tokens: 2000, // GLM-4.7-flash 是推理模型，reasoning 会吃掉大量 tokens，留够空间输出正式回答
       });
 
-      const answer = result && result.response ? result.response : '';
+      // GLM-4.7-flash 是 OpenAI 兼容格式，返回 choices[0].message.content
+      // 兼容旧格式 result.response（部分老模型用）
+      let answer = '';
+      if (result && result.response) {
+        answer = result.response;
+      } else if (result && result.choices && result.choices[0] && result.choices[0].message) {
+        answer = result.choices[0].message.content || '';
+      }
       if (!answer) {
-        return json({ error: 'empty-answer' }, 502, corsHeaders);
+        return json({ error: 'empty-answer', raw: result }, 502, corsHeaders);
       }
       return json({ answer }, 200, corsHeaders);
     } catch (e) {
