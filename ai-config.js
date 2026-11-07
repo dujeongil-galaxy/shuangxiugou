@@ -19,5 +19,5 @@
 window.SXG_AI_CONFIG = {
   // 部署 ai-worker 后，把下面引号里换成你的 Worker URL（含 https://）。
   // 例：'https://shuangxiugou-ai-worker.your-subdomain.workers.dev'
-  endpoint: ''
+  endpoint: 'https://shuangxiugou-ai-worker.ovpj01-hk.workers.dev'
 };
