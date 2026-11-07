@@ -257,9 +257,9 @@
     hello.className = 'sxg-ai-msg bot';
     if (STUB) {
       // stub 模式：AI 服务未接入——明说 + 引导，不发请求不装死
-      hello.textContent = '你好，我是双休购的劳动法小助手。AI 服务正在开通中，暂时还不能回答问题——开通后会在这里为你解答劳动法（工时、加班费、年休假、试用期、解除补偿）与本站双休评级口径相关问题。';
+      hello.innerHTML = linkify('你好，我是双休购的劳动法小助手。AI 服务正在开通中，暂时还不能回答问题——开通后会在这里为你解答劳动法（工时、加班费、年休假、试用期、解除补偿）与本站双休评级口径相关问题。');
     } else {
-      hello.textContent = '你好，我是双休购的劳动法小助手。可以问我劳动法相关问题（工时、加班费、年休假、试用期、解除补偿），也可以问本站双休评级的口径。具体企业的最新数据请以站内搜索为准。\n\n（AI 由 Cloudflare Workers 提供 GLM-4.7-flash 模型，国内部分运营商手机网络可能无法直接访问，如遇连接失败请切换网络或开启 VPN：https://47.112.97.173:8000/register?aff=v17mHNYv）';
+      hello.innerHTML = linkify('你好，我是双休购的劳动法小助手。可以问我劳动法相关问题（工时、加班费、年休假、试用期、解除补偿），也可以问本站双休评级的口径。具体企业的最新数据请以站内搜索为准。\n\n（AI 由 Cloudflare Workers 提供 GLM-4.7-flash 模型，国内部分运营商手机网络可能无法直接访问，如遇连接失败请切换网络或开启 VPN：https://47.112.97.173:8000/register?aff=v17mHNYv）');
     }
     log.appendChild(hello);
     if (STUB) {
@@ -370,12 +370,15 @@
   }
 
   // ---------- 对话 ----------
+  // 把文本里的 URL 自动转成可点击链接
+  function linkify(text) {
+    return text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;word-break:break-all">$1</a>');
+  }
+
   function addMsg(log, role, text) {
     var m = document.createElement('div');
     m.className = 'sxg-ai-msg ' + role;
-    // 自动把 URL 转成可点击的链接（只处理我们自己写的文案，安全可控）
-    var html = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;word-break:break-all">$1</a>');
-    m.innerHTML = html;
+    m.innerHTML = linkify(text);
     log.appendChild(m);
     log.scrollTop = log.scrollHeight;
     return m;
