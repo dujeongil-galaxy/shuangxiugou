@@ -37,14 +37,19 @@
 
     if (!best) return;
 
-    // 创建公告节点
+    // 创建公告节点：圆角徽章样式，浅绿色背景
     var notice = document.createElement('p');
     notice.setAttribute('data-ai-notice', '1');
-    notice.style.cssText = 'font-weight:700;color:#0f766e;margin-top:16px;font-size:15px;line-height:1.6;text-align:center;';
+    notice.style.cssText = 'display:inline-block;font-weight:600;color:#0f766e;background:#f0fdfa;border:1px solid #99f6e4;border-radius:999px;padding:8px 20px;margin:20px auto 0;font-size:14px;line-height:1.5;text-align:center;box-shadow:0 1px 2px rgba(15,118,110,0.08);';
     notice.textContent = NOTICE_TEXT;
 
+    // 包一层 div 实现居中
+    var wrapper = document.createElement('div');
+    wrapper.style.cssText = 'text-align:center;';
+    wrapper.appendChild(notice);
+
     // 插在副标题后面
-    best.parentNode.insertBefore(notice, best.nextSibling);
+    best.parentNode.insertBefore(wrapper, best.nextSibling);
   }
 
   // 首次尝试（等页面渲染完再找）
