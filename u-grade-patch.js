@@ -223,13 +223,15 @@
     p.appendChild(document.createElement('br'));
     p.appendChild(b);
     /* 2026-11-04 站长指定：抵制行下方挂 BOSS直聘详情页入口——
-       「点击这里阅读 狗日的Boss直聘」，「这里」是链接，
-       「狗日的Boss直聘」单独换色标注。 */
+       「点击这里阅读 “狗日的”Boss直聘」，「这里」是链接，
+       「“狗日的”Boss直聘」单独换色标注。
+       2026-11-07 站长追加：粗口「狗日的」必须加中文引号（U+201C/U+201D），
+       表示这是引用文章标题里的用词，不是本站/站长在这行骂人。 */
     var r = document.createElement('div');
     r.setAttribute('style', 'margin-top:4px;font-size:13px;text-align:center;line-height:1.6');
     r.innerHTML = '点击<a href="./brand/bosszhipin.html"'
       + ' style="color:#1d4ed8;text-decoration:underline">这里</a>阅读 '
-      + '<span style="color:#d97706;font-weight:bold">狗日的Boss直聘</span>';
+      + '<span style="color:#d97706;font-weight:bold">“狗日的”Boss直聘</span>';
     p.appendChild(r);
     /* 2026-11-06 站长指定：抵制区末尾追加「海比优」一句 + 固定末句。
        海比优文案由站长提供英文 Application Introduction，此处译写一句中文；

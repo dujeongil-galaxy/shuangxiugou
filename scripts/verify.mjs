@@ -2301,11 +2301,32 @@ if (exists('notes.html')) {
       && ch8.includes('dating-data-factcheck/picks.html#avoid'),
       '⑩e 双休购第八章只给入口、不放截图、不新增外链',
       '第八章出现 img、外链数量不为 1 或导流链接被改 → 违反「双休购不放原截图，只导流」');
-    contentCheck(plain !== null && /VPN 被打/.test(ch8)
-      && /是我在评价来骂我的那拨人/.test(ch8)
-      && /翻墙看片、脑子看傻了的是他们/.test(ch8),
-      '⑩e 第八章 8.4 写明 VPN 事件且括号原话归属「他们」而非本人',
-      'VPN 段落被删、或归属澄清句被删 → 又会回到站长说的「很容易被误解」');
+    // 2026-11-07 站长纠正事实：原来 8.1 写「帖子底下和很多人吵了起来，
+    // 吵到最后我被举报，账号封了」是错的。真相是：在那条「瞬间」底下吵的是
+    // 他们自己，站长没在那底下吵；站长跟人吵是在私聊里，另一件事；
+    // 封号是更前面（大概 2017 还是 2018 年）的事，这条动态是 2019 还是 2020 年的，
+    // 两件事不是一回事。同时站长要求现阶段删除 8.4（VPN 被打 /「那个女的」
+    // 其实是前女友，等站长讲清经过再写），并把章末导流链接临时移到 8.1。
+    contentCheck(plain !== null && s81.includes('不是我和他们吵')
+      && /私聊里和别人吵/.test(s81) && /不是同一件事/.test(s81),
+      '⑩f 8.1 写明「不是站长和评论区的人吵／是在私聊里和别人吵／两件事不同」',
+      '把两桩事又混回一次 → 站长 2026-11-07 明确要求「不要混淆」');
+    contentCheck(plain !== null && /2017 年还是 2018 年/.test(s81)
+      && /2019 年还是 2020 年/.test(s81) && /两件事不是一回事/.test(s81),
+      '⑩f 8.1 把封号年份（17/18）与动态年份（19/20）分开写，记不清处照写记不清',
+      '年份被写成确定值或两件事被并成一件 → 替站长圆口径，违反站长纪律');
+    contentCheck(plain !== null && !/吵到最后我被举报，账号封了/.test(s81)
+      && !/跟我吵过的人/.test(s81),
+      '⑩f 8.1 不得再出现旧的错误因果（帖子底下吵架导致封号／跟我吵过的人）');
+    contentCheck(plain !== null && !/VPN 被打/.test(ch8) && !/翻墙看片/.test(ch8),
+      '⑩f 8.4（VPN 被打）已按站长要求现阶段删除，正文不留该节文字',
+      '删掉的 8.4 又回来了 → 站长说过「这里的女的其实才是前女友，后面讲清经过再写」');
+    contentCheck(plain !== null && s81.includes('dating-data-factcheck/picks.html#avoid')
+      && /欢迎去站长的新网站/.test(s81),
+      '⑩f 原章末导流链接已临时移到 8.1 内（8.4 删除后链接不丢）');
+    contentCheck(plain !== null && /<h3>8\.4 顺带说一个我做过的小测试/.test(ch8)
+      && !/<h3>8\.5/.test(ch8),
+      '⑩f 删 8.4 后小节编号连续（原 8.5 顺延为 8.4），目录不跳号');
   }
 
   // ⑪ 尾注必须存在。
@@ -5544,14 +5565,18 @@ section('21b-2. 安全事件默认收起 + 分享弹窗接线');
   check(!/og-cover\.png/.test(idx),
     'index.html 不再引用已退役的 assets/og-cover.png（统一 og-share.png）');
   // BOSS直聘详情页入口（2026-11-04 站长指定）：抵制行下方
-  // 「点击这里阅读 狗日的Boss直聘」，「这里」链接 brand/bosszhipin.html，
-  // 「狗日的Boss直聘」单独换色（#d97706）
+  // 「点击这里阅读 “狗日的”Boss直聘」，「这里」链接 brand/bosszhipin.html，
+  // 「“狗日的”Boss直聘」单独换色（#d97706）。
+  // 2026-11-07 站长追加：「狗日的」必须加中文引号，表明是引用标题用词而非本站骂人。
   const ugp = readFileSync(join(ROOT, 'u-grade-patch.js'), 'utf8');
   check(/brand\/bosszhipin\.html/.test(ugp)
-    && /狗日的Boss直聘<\/span>/.test(ugp)
+    && /狗日的”Boss直聘<\/span>/.test(ugp)
     && /color:#d97706/.test(ugp),
-    '抵制行下方有 BOSS直聘详情页入口（这里=链接，狗日的Boss直聘换色标注）',
+    '抵制行下方有 BOSS直聘详情页入口（这里=链接，“狗日的”Boss直聘换色标注）',
     '删掉入口行 → 站长指定的阅读链接缺失');
+  check(/“狗日的”Boss直聘<\/span>/.test(ugp) && !/[^”]狗日的Boss直聘/.test(ugp),
+    '§21b-3 「狗日的」带中文弯引号（U+201C/U+201D），不得退回无引号原样',
+    '粗口不加引号 → 读起来像本站/站长在这行直接骂人（站长 2026-11-07 明确要求）');
   // 2026-11-06 站长指定：抵制区末尾追加「海比优」一句 + 固定末句
   // （海比优文案由站长提供英文 Application Introduction，此处译写一句中文；
   // 末句一字不改，含「；」不换行：应用商店搜索 + 与本站无关声明）
@@ -5564,9 +5589,9 @@ section('21b-2. 安全事件默认收起 + 分享弹窗接线');
     '改末句措辞/断行 → 站长指定的固定收尾句被破坏');
   // 脚本缓存号：改 u-grade-patch.js 必须同步 ?v=，否则线上仍是旧抵制区
   const idxUgp = readFileSync(join(ROOT, 'index.html'), 'utf8');
-  check(/u-grade-patch\.js\?v=16/.test(idxUgp)
-    && !/u-grade-patch\.js\?v=15/.test(idxUgp),
-    'index.html 引用 u-grade-patch.js?=16（缓存号已随改动同步 +1）',
+  check(/u-grade-patch\.js\?v=17/.test(idxUgp)
+    && !/u-grade-patch\.js\?v=16/.test(idxUgp),
+    'index.html 引用 u-grade-patch.js?v=17（缓存号已随改动同步 +1）',
     '漏 bump ?v 或仍写 15 → 浏览器命中旧缓存，新抵制区不生效');
 }
 
@@ -6154,8 +6179,8 @@ section('21c. 首页滑到底部按钮');
   check(/'D 级'/.test(rowTexts) && /'U 级'/.test(rowTexts),
     'stat-filter.js 评级行互斥枚举含「D 级」「U 级」（点 D/U 清五格筛选）',
     'stat-filter 没跟上 → 点 D/U 不清四格筛选，两套过滤层互相覆盖出现空面板');
-  check(/u-grade-patch\.js\?v=16/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
-    'u-grade-patch.js?v=16 / stat-filter.js?v=9（缓存号已随内容 bump）',
+  check(/u-grade-patch\.js\?v=17/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
+    'u-grade-patch.js?v=17 / stat-filter.js?v=9（缓存号已随内容 bump）',
     '缓存号没 bump → 用户拿旧补丁，D/U 按钮注入不生效（2026-11-01 拼音索引同类事故）');
   // 2026-11-03 站长实测 bug：点「D 级 / U 级」后拼音搜索框整块消失。
   // 根因：CARD_SEL（div.bg-white.rounded-2xl.border）命中面比品牌卡宽，
@@ -6491,6 +6516,51 @@ section('21c. 首页滑到底部按钮');
         /meta\[name="description"\]/.test(smR) &&
         /&title=' \+ d/.test(smR),
     '§21r 分享弹窗仍读页面 description 并传给微博 title（改 meta 真能生效）');
+}
+
+// ---------- 22. 素材链接规则（站长 2026-11-07 写死） ----------
+// 站长原话：「链接改为 blog 格式，不要直接在 GitHub 仓库明文，以后也注意这个问题，
+// 除非我明确表示明文，否则都使用 blog，此规则记录在 GitHub 仓库 README，写死规则」。
+// 按本项目长期纪律，规则不能只写文档：README + 脚本断言 + 故障注入三层一起落。
+section('22. 素材链接规则（blog 格式 / 素材不得明文入库）');
+{
+  const rd22 = read('README.md');
+  check(/除非站长明确表示/.test(rd22) && /blog 格式链接/.test(rd22)
+    && /不得把素材原始文件明文提交进 GitHub 仓库/.test(rd22),
+    '§22a README 写死素材链接规则（除非站长明确表示明文，否则一律 blog 格式）',
+    '规则只挂在口头 → 下次又会把站长给的截图明文塞进仓库');
+
+  // 加密随笔正文里不许出现图片或仓库内素材引用（素材一律不上传、正文只留密文）
+  const plain22 = exists('notes.html') ? decryptNotes(read('notes.html')) : null;
+  if (plain22 === null) {
+    notes.push('跳过「§22b 随笔正文无素材引用」（未提供 NOTES_KEY，密文未解密）');
+  } else {
+    check(!/<img\b/i.test(plain22) && !/\.\/assets\//.test(plain22),
+      '§22b 加密随笔正文不放图片、不引用仓库内素材（素材一律不上传）',
+      '正文里出现 img 或仓库内素材路径 → 违反「素材不上传、只走 blog 链接」');
+  }
+
+  // 历史存量：站点自带的功能图（打赏二维码 / 分享图 / 既有测试截图）与
+  // assets/ 下的品牌 logo 都不属于「站长提供的口述素材」，登记为白名单。
+  // 新增任何其它明文素材文件（已跟踪）即判红，逼迫改用 blog 格式链接。
+  const LEGACY_MEDIA22 = new Set([
+    'company-qrs/qianren.png', 'contact-developer-qr.jpg',
+    'crypto-qr/btc-bep20.png', 'crypto-qr/btc-brc20.png', 'crypto-qr/eth-erc20.png',
+    'crypto-qr/gt.png', 'crypto-qr/mbx-aptos.png', 'crypto-qr/mbx-multi.png',
+    'crypto-qr/sol.png', 'crypto-qr/usdc-polygon.png', 'crypto-qr/usdt-trc20.png',
+    'crypto-qr/wemix.png', 'crypto-qr/xpla.png',
+    'og-share.png', 'scripts/shot-local-note.png', 'sponsor-support.jpg',
+  ]);
+  let tracked22 = '';
+  try {
+    tracked22 = execSync('git ls-files', { cwd: ROOT, encoding: 'utf8' });
+  } catch { tracked22 = ''; }
+  const stray22 = tracked22.split('\n').map((s) => s.trim()).filter((f) =>
+    f && !f.startsWith('assets/') && !LEGACY_MEDIA22.has(f)
+    && /\.(jpe?g|png|webp|gif|mp4|mov|webm|pdf)$/i.test(f));
+  check(stray22.length === 0,
+    '§22c 已跟踪文件里无未登记的明文素材（新增素材须走 blog 格式链接）',
+    '发现未登记明文素材：' + stray22.join(', ') + '（须改用 blog 格式链接或登记进白名单）');
 }
 
 // ---------- 汇总 ----------
