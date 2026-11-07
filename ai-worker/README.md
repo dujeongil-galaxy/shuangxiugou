@@ -20,8 +20,9 @@ npx wrangler deploy       # 部署，输出 https://shuangxiugou-ai-worker.<你�
 ```
 
 `wrangler.json` 已配好 `ai` binding；Workers AI 免费层每日 1 万
-neurons（GLM-4.7-flash 约 340 次标准问答），超出当日限额接口会明确
-返回 `daily-quota-exhausted`（UTC 00:00 重置），前端有对应文案。
+neurons。**注意：GLM-4.7-flash 是推理模型（Reasoning），实际消耗比估算高**——
+单次问答约 20~30 neurons（含 reasoning 思考过程），每日约可支撑 300~500 次问答。
+超出当日限额接口会明确返回 `daily-quota-exhausted`（UTC 00:00 重置），前端有对应文案。
 
 ## 部署后接通前端（一步）
 
@@ -41,7 +42,7 @@ window.SXG_AI_CONFIG = { endpoint: 'https://shuangxiugou-ai-worker.xxx.workers.d
 | CORS | 白名单只放行本站 GitHub Pages 域名 + 本地验收端口 |
 | 输入 | question 1~500 字；history 最多 8 条、每条截 200 字、role 白名单 |
 | 限流 | 每 IP 滑窗 20 次/小时（内存级，防脚本刷；精确配额需 KV，免费层够用） |
-| 输出 | max_tokens 600（输出单价是输入的 6.6 倍，掐输出省 neurons） |
+| 输出 | max_tokens 2000（GLM-4.7-flash 是推理模型，reasoning 会吃掉大量 tokens，必须留够空间输出正式回答） |
 | 角色 | 系统提示词锁定劳动法/双休口径，拒绝无关话题，声明非法律意见 |
 
 ## 本地试跑
@@ -61,3 +62,59 @@ curl -X POST http://localhost:8787 -H "Origin: http://localhost:18970" \
 - 内存限流在边缘节点间不共享：是「防单 IP 脚本刷」的粗限流，不是精确配额。
 - Worker 是无状态的：对话历史存在浏览器端（前端 localStorage 不存，仅当前会话内存），Worker 不记任何用户数据。
 - AI 回答是参考信息不是法律意见——系统提示词里已声明，前端挂件里也有同款文案。
+
+## 部署踩坑记录（GLM-4.7-flash 专属）
+
+> 2026-11-07 首次部署实测踩过的两个坑，后来者不用再踩一遍。
+
+### 坑 1：返回格式是 OpenAI 兼容，不是旧的 `result.response`
+
+GLM 系列在 Cloudflare Workers AI 上用的是 **OpenAI Chat Completions 格式**，返回结构是：
+
+```json
+{
+  "choices": [{
+    "message": {
+      "role": "assistant",
+      "content": "正式回答内容",
+      "reasoning": "思考过程（推理模型专属）"
+    },
+    "finish_reason": "stop"
+  }],
+  "usage": { "neurons": 23.6 }
+}
+```
+
+**错误写法**（旧版 Llama 模型的格式，对 GLM 不生效）：
+```js
+const answer = result.response;  // GLM 里这个字段是 undefined
+```
+
+**正确写法**：
+```js
+let answer = result?.choices?.[0]?.message?.content || '';
+```
+
+### 坑 2：max_tokens 太小会导致 content 为 null（全被 reasoning 吃完）
+
+GLM-4.7-flash 是**推理模型（Reasoning Model）**，生成时会先输出一大段思考过程（`message.reasoning`），再输出正式回答（`message.content`）。
+
+如果 `max_tokens` 设太小（比如 600），思考过程就把 token 额度用完了，`finish_reason` 会是 `"length"`，此时 `content` 还是 `null`——你拿到的是空回答。
+
+**解法**：把 `max_tokens` 调到至少 2000，给推理留够空间。虽然消耗 neurons 多一点，但能正常出结果。
+
+### 快速排障：直接 curl 看原始返回
+
+部署后如果前端报「服务暂时不可用」，先直接 curl Worker 看原始错误：
+
+```bash
+curl -X POST https://your-worker.workers.dev \
+  -H "Origin: https://your-github-pages-domain.github.io" \
+  -H "Content-Type: application/json" \
+  -d '{"question":"test"}'
+```
+
+- `origin-not-allowed` → CORS 白名单没加你的站点域名
+- `empty-answer` + raw 里有 `reasoning` → max_tokens 太小，调大
+- `daily-quota-exhausted` → 当日 neurons 用完了，等 UTC 0 点重置
+- `ai-upstream-error` → Cloudflare Workers AI 临时故障，等几分钟重试
