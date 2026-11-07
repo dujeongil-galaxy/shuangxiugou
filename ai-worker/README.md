@@ -103,6 +103,19 @@ GLM-4.7-flash 是**推理模型（Reasoning Model）**，生成时会先输出�
 
 **解法**：把 `max_tokens` 调到至少 2000，给推理留够空间。虽然消耗 neurons 多一点，但能正常出结果。
 
+### 坑 3：国内联通/移动手机网络访问不到 workers.dev 域名
+
+`xxx.workers.dev` 这个默认域名在国内**电信宽带/Wi-Fi 下正常，但联通/移动的 5G 手机网络下经常连不上**——不是代码问题，是运营商线路对 workers.dev 域名的连通性问题。
+
+**现象**：
+- 电脑上（电信宽带）正常对话
+- 手机上（联通 5G）报「网络异常：连不上 AI 服务」
+- 手机开 VPN 后恢复正常
+
+**前端应对**：错误提示里明确告知「由 Cloudflare 提供，国内部分运营商手机网络可能无法直接访问，请切换网络或开 VPN」。
+
+**彻底解法**：给 Worker 绑定自定义域名（不用 workers.dev 默认域名），只要域名是国内可正常访问的就行。需要你有一个域名并接入 Cloudflare。
+
 ### 快速排障：直接 curl 看原始返回
 
 部署后如果前端报「服务暂时不可用」，先直接 curl Worker 看原始错误：
@@ -118,3 +131,4 @@ curl -X POST https://your-worker.workers.dev \
 - `empty-answer` + raw 里有 `reasoning` → max_tokens 太小，调大
 - `daily-quota-exhausted` → 当日 neurons 用完了，等 UTC 0 点重置
 - `ai-upstream-error` → Cloudflare Workers AI 临时故障，等几分钟重试
+- 前端报「连不上」但 curl 正常 → 手机运营商网络访问不到 workers.dev，见坑 3
