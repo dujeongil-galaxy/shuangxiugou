@@ -2354,6 +2354,21 @@ if (exists('notes.html')) {
     contentCheck(plain !== null && /<h3>8\.4 顺带说一个我做过的小测试/.test(ch8)
       && !/<h3>8\.5/.test(ch8),
       '⑩f 删 8.4 后小节编号连续（原 8.5 顺延为 8.4），目录不跳号');
+    // ⑩h 2026-11-07 19:25 站长纠正：「我没花钱，谢谢，这就是一个免费测评网站」。
+    // 8.4 两处写成「花一块钱」是事实错误；站长同时说「你写的结论我不反驳什么」，
+    // 所以只改付费表述，结论段（不认 48 分的两个理由、反推公式、诚实之处）一字不动。
+    // 专题章「十三、测评结果存档」里那条 ¥0.01 是另一个平台、按截图照抄的字段，
+    // 与本节无关，不在这里一并抹掉（站长纪律：截图没显示的字段不补、显示的照抄）。
+    const c84 = ch8.indexOf('<h3>8.4');
+    const s84 = c84 >= 0 ? ch8.slice(c84) : '';
+    contentCheck(plain !== null && s84.length > 500 && /是免费的/.test(s84)
+      && !/花一块钱|一块钱|付费|掏钱|¥|收费/.test(s84),
+      '⑩h 8.4 写明测评免费，不再出现「花一块钱」等付费表述（站长 2026-11-07 纠正）',
+      '又把免费测评写成花钱 → 站长明确「我没花钱，谢谢」');
+    contentCheck(plain !== null && /套错了人，分就没有意义/.test(s84)
+      && /创伤性联结/.test(s84) && /48\.5/.test(s84)
+      && /尚未完成信效度检验/.test(s84),
+      '⑩h 只改付费表述，8.4 的结论与公式一字未动（站长「结论我不反驳什么」）');
   }
 
   // ⑪ 尾注必须存在。
@@ -6587,6 +6602,38 @@ section('21c. 首页滑到底部按钮');
         /meta\[name="description"\]/.test(smR) &&
         /&title=' \+ d/.test(smR),
     '§21r 分享弹窗仍读页面 description 并传给微博 title（改 meta 真能生效）');
+}
+
+// ---------- 21s. 瑞幸卡片提示语：站长线下核实口径 + 成都地区（2026-11-07 19:25） ----------
+// 站长原话：「首页的瑞幸卡片，可以优化一下提升语，站长线下多家门店核实，均为上六休一
+// （月休4天）；成都地区情况稍微好一点（他们回答的是，想休就请假，属于是不愿意回答，
+// 这个你看着写吧，别套用我原话，可以保留成都地区）」。
+// 瑞幸是内置卡，数据在压缩 bundle（assets/index-YthXZ9eP.js）里，按仓库铁律不能改，
+// 故写独立 DOM 补丁 luckin-note-patch.js：改工时政策栏 + 加红框提示语。
+// 三层强制：这里的静态断言 + 故障注入（9 条全判红）+ CHANGELOG / 最近更新 / README 三处记账。
+{
+  const idxS = read('index.html');
+  const patchS = read('luckin-note-patch.js');
+  check(/<script defer src="\.\/luckin-note-patch\.js\?v=1"><\/script>/.test(idxS)
+    && patchS.length > 800,
+    '§21s 首页引入瑞幸提示语补丁且脚本真的存在（双重空集防护）',
+    `scriptLen=${patchS.length}`);
+  check(/var POLICY = '站长线下核实：上六休一（月休 4 天）'/.test(patchS)
+    && /var NOTE = [^\n]*多家门店排班口径一致/.test(patchS),
+    '§21s 工时政策栏写明线下核实上六休一（月休 4 天），红框写明多家门店口径一致');
+  check(/var NOTE = [^\n]*成都地区/.test(patchS)
+    && /未给出明确排班口径/.test(patchS) && /不据此改判/.test(patchS),
+    '§21s 红框提示保留成都地区差异，并写明不据此单独改判');
+  check(!/想休就请假|不愿意回答|情况稍微好一点|属于是/.test(patchS),
+    '§21s 不套用站长口述原话（门店推脱的说法只写结论，不照抄）',
+    '把「想休就请假／不愿意回答」原话搬上卡片 → 站长明确「别套用我原话」');
+  check(/data-luckin-policy/.test(patchS) && /data-luckin-note/.test(patchS)
+    && /new MutationObserver\(schedule\)/.test(patchS),
+    '§21s 补丁幂等（双标记）+ MutationObserver 兜底 React 重渲染');
+  check(!/writeFileSync|innerHTML\s*=/.test(patchS),
+    '§21s 补丁只在渲染层改 DOM，不写文件、不整块重建（仓库铁律：不动 bundle）');
+  check(/门店排班紧绷 \/ 兼职高压工时/.test(read('assets/index-YthXZ9eP.js')),
+    '§21s 压缩 bundle 里的旧数据保持原样（新口径由补丁在渲染层覆盖）');
 }
 
 // ---------- 22. 素材链接规则（站长 2026-11-07 写死，同日纠正为 blob） ----------
