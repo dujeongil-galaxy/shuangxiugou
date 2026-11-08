@@ -162,7 +162,7 @@
          这个锚点回写与校验，删节点等于让每日版本号同步静默失效。
          用 hidden 而不是删掉：hidden 只影响渲染，textContent 照样可读，
          nav-menu.js 运行时读它，菜单里不另存哈希（两份数据没有比对源，必然漂）。 -->
-    <span id="site-version" hidden><span class="notice-ver">当前版本号 5241438</span></span>
+    <span id="site-version" hidden><span class="notice-ver">当前版本号 0a5f33b</span></span>
     <div id="root">
       <!-- 首屏占位：React 大包解析期间先显示「加载中」，避免 #root 为空把下方证据链区块
            甩到视口顶部造成白屏闪烁（FOUC）。React 挂载后自动替换本节点。 -->
@@ -8840,7 +8840,13 @@
        二次调整 + 加载动画都在模糊下完成，撤遮罩时已是最终态。
        搜索清空那一支只在边沿触发（打字不闪），品类卡切换按站长要求暂不接入。
        必须在 stat-filter.js 之后加载（与口径修正同批卡片，且只做 DOM 层补丁，不碰压缩产物）。 -->
-  <script defer src="./filter-flash.js?v=5"></script>
+  <script defer src="./filter-flash.js?v=6"></script>
+  <!-- 白屏崩溃兜底（2026-11-08 站长报「删掉搜索词后整站白屏，怕用户误退出」）：
+       filter-flash.js 的整屏磨砂层原先接近纯白，容易被当成卡死；现遮罩内已加
+       转圈 + 「加载中…」的明确加载态。本脚本是最后一道防线：盯住 #root，
+       一旦应用挂载过之后又被 React 卸载（真白屏），立刻显示「页面出了一点问题 ·
+       重新加载」恢复卡片，让用户不必关掉网页。纯 DOM 补丁，不碰压缩产物。 -->
+  <script defer src="./white-screen-guard.js?v=1"></script>
   <!-- 申诉政策确认弹窗（2026-10-25 站长要求）：申诉入口点击先弹政策，
        同意并跳转 / 拒绝并关闭。目标链接从页面既有 a[href] 现场读取，
        本文件不维护第二份 issueUrl。 -->

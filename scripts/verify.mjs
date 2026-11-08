@@ -4496,8 +4496,14 @@ if (exists('filter-flash.js')) {
   const htmlFF = read('index.html');
 
   check(ff.length > 1500, 'filter-flash.js 非空集（防空文件把下面断言全变成假通过）');
-  check(/<script defer src="\.\/filter-flash\.js\?v=5"><\/script>/.test(htmlFF),
-    'index.html 引入了 filter-flash.js?v=5（改脚本必须 bump 缓存号）');
+  check(/<script defer src="\.\/filter-flash\.js\?v=6"><\/script>/.test(htmlFF),
+    'index.html 引入了 filter-flash.js?v=6（改脚本必须 bump 缓存号）');
+  check(/sxg-flash-spin/.test(ff) && /sxg-flash-tip/.test(ff) && /加载中/.test(ff),
+    '★ 闪屏遮罩内带转圈 + 「加载中…」明确加载态（近白磨砂不再被误认成卡死/白屏而退出）');
+  check(/@keyframes sxg-flash-spin/.test(ff) && /prefers-reduced-motion:reduce/.test(ff),
+    '加载动画有 keyframes 且尊重 prefers-reduced-motion（减弱动效降级）');
+  check(/m\.appendChild\(box\)/.test(ff) && /function getMask\(\)/.test(ff),
+    '加载动画挂在共用遮罩节点内（评级切换与搜索清空两种闪屏都显示）');
   check(/function flash\(top\)/.test(ff) && /flash\(btn\.getBoundingClientRect\(\)\.bottom \+ 4\)/.test(ff),
     '评级切换走共用 flash()，几何仍是按钮底边 +4（工具条保持清晰）');
   check(/flash\(0\)/.test(ff) && !/flash\(ratingBarBottom\(\)\)/.test(ff) &&
@@ -6748,6 +6754,41 @@ section('23. README 长段落摘要化（摘要 + 独立页面）');
     && !/再上一批（2026-11-04）/.test(rd23),
     '§23e README 不再堆叠逐批改动明细（完整版归 最近更新.md / CHANGELOG.md）',
     '旧的「同日更早 / 上一批 / 再上一批」整坨明细回流 README');
+}
+
+// ---------- 24. 白屏兜底 + 加载态（站长 2026-11-08「删空搜索后整站白屏，怕用户误退出」） ----------
+// 双层防御：① filter-flash.js 的近白磨砂层内加「转圈 + 加载中…」明确加载态（§17b 守）；
+//           ② white-screen-guard.js 盯 #root，真被 React 卸载时显示恢复卡片，不再永久白屏。
+// 三层强制：README 规则 + 这里的静态断言 + scripts/test-white-screen-guard.cjs 行为测试（挂 CI）。
+section('24. 白屏兜底与加载态（防用户误退出）');
+{
+  const html24 = read('index.html');
+  const guard24 = exists('white-screen-guard.js') ? read('white-screen-guard.js') : '';
+
+  check(guard24.length > 1500,
+    '§24a white-screen-guard.js 非空集（防空文件把下面断言全变成假通过）');
+  check(/<script defer src="\.\/white-screen-guard\.js\?v=1"><\/script>/.test(html24),
+    '§24b index.html 引入 white-screen-guard.js?v=1（漏挂 = 兜底完全不生效）');
+  check(/MutationObserver/.test(guard24) && /getElementById\('root'\)/.test(guard24)
+    && /childElementCount/.test(guard24),
+    '§24c 用 MutationObserver 盯 #root 从「已挂载」变空（React 卸载即白屏）');
+  check(/var booted = false/.test(guard24) && /booted = true/.test(guard24)
+    && /booted && rootEmpty\(\)/.test(guard24),
+    '§24d 有 booted 门槛：首屏 React 尚未挂载时不误报崩溃');
+  check(/addEventListener\('error'/.test(guard24) && /addEventListener\('unhandledrejection'/.test(guard24),
+    '§24e 同时监听 window error 与 unhandledrejection');
+  check(/重新加载页面/.test(guard24) && /location\.reload\(\)/.test(guard24)
+    && /setAttribute\('role', 'alert'\)/.test(guard24),
+    '§24f 恢复卡片提供「重新加载页面」按钮并带 role=alert 无障碍提示');
+  check(/var shown = false/.test(guard24) && /if \(shown\) return;/.test(guard24)
+    && /getElementById\(STYLE_ID\)/.test(guard24),
+    '§24g 幂等：恢复卡片与 style 都不重复注入');
+  check(!/fetch\(|XMLHttpRequest|assets\/index-/.test(guard24),
+    '§24h 兜底是纯 DOM 补丁：不发请求、不碰压缩产物');
+  check(/z-index:2147483646/.test(guard24),
+    '§24i 恢复卡片层级低于首屏加载层（2147483647），不与 boot 层打架');
+  check(!/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(guard24),
+    '§24j 兜底 UI 不依赖 emoji（用 CSS 图形，跨平台字形一致）');
 }
 
 // ---------- 汇总 ----------

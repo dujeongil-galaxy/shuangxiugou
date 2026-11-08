@@ -224,3 +224,8 @@ jobs:
       # verify §21o 检查所有未挂 CI 的 test-*.cjs 都必须带该标记）。
       - name: 搜索清空闪屏测试
         run: node scripts/test-search-clear-flash.cjs
+
+      # 白屏崩溃兜底（2026-11-08 站长需求）：#root 被 React 卸载时显示恢复卡片，
+      # 首屏未挂载不误报；与 filter-flash.js 遮罩内的「加载中…」加载态配套。
+      - name: 白屏兜底恢复卡片测试
+        run: node scripts/test-white-screen-guard.cjs

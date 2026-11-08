@@ -51,7 +51,21 @@
             + 'body.sxg-filter-flashing .sxg-boot__spinner,'
             // 2026-11-07：拼音联想面板 z-index 高过遮罩，回放回填词时会漏出联想条，
             // 整屏糊的口径要求它一起不可见。
-            + 'body.sxg-filter-flashing #pinyin-suggest{visibility:hidden!important;}';
+            + 'body.sxg-filter-flashing #pinyin-suggest{visibility:hidden!important;}'
+            // 遮罩内加载动画（转圈 + 文案）：把「近白空白」变成明确的「加载中」，
+            // 避免用户把搜索清空/评级切换时的近白磨砂当成卡死而退出网页。
+            + '#sxg-flash-mask .sxg-flash-box{position:absolute;top:50%;left:50%;'
+            + 'transform:translate(-50%,-50%);display:flex;flex-direction:column;'
+            + 'align-items:center;padding:18px 24px;background:rgba(255,255,255,.94);'
+            + 'border-radius:16px;box-shadow:0 12px 36px rgba(15,23,42,.2)}'
+            + '#sxg-flash-mask .sxg-flash-spin{width:38px;height:38px;margin:0 auto 12px;'
+            + 'border:3px solid rgba(15,118,110,.18);border-top-color:#0F766E;'
+            + 'border-radius:50%;animation:sxg-flash-spin .8s linear infinite}'
+            + '#sxg-flash-mask .sxg-flash-tip{color:#0F766E;font:600 14px/1.4 system-ui,'
+            + '-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;text-align:center;'
+            + 'letter-spacing:.04em}'
+            + '@keyframes sxg-flash-spin{to{transform:rotate(360deg)}}'
+            + '@media (prefers-reduced-motion:reduce){#sxg-flash-mask .sxg-flash-spin{animation-duration:2s}}';
     var s = document.createElement('style');
     s.id = STYLE_ID;
     s.textContent = css;
@@ -70,6 +84,12 @@
         + 'backdrop-filter:blur(36px) saturate(0.7);'
         + '-webkit-backdrop-filter:blur(36px) saturate(0.7);'
         + 'pointer-events:none;display:none;';
+      // 遮罩内的加载动画（转圈 + 文案），让「近白磨砂」呈现为明确的「加载中」
+      var box = document.createElement('div');
+      box.className = 'sxg-flash-box';
+      box.innerHTML = '<div class="sxg-flash-spin" aria-hidden="true"></div>'
+        + '<div class="sxg-flash-tip">加载中…</div>';
+      m.appendChild(box);
       (document.body || document.documentElement).appendChild(m);
     }
     return m;

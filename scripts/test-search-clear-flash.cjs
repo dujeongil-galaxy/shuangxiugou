@@ -96,6 +96,17 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   check('卡片区同时被 blur(20px) 样式规则覆盖',
     /body\.sxg-filter-flashing div\.bg-white\.rounded-2xl\.border/.test(document.getElementById('sxg-filter-flash-style').textContent));
 
+  // --- 2b. 遮罩内加载动画（2026-11-08 站长：近白磨砂被当成白屏/卡死而退出） ---
+  const flashBox = mask().querySelector('.sxg-flash-box');
+  check('★ 闪屏遮罩内含加载动画容器（评级切换与搜索清空共用）', !!flashBox);
+  check('★ 容器内是转圈节点 .sxg-flash-spin（明确的进行中状态）',
+    !!flashBox && !!flashBox.querySelector('.sxg-flash-spin'));
+  check('★ 文案明确写「加载中…」，用户不会把近白磨砂误判为白屏卡死',
+    !!flashBox && /加载中/.test((flashBox.querySelector('.sxg-flash-tip') || {}).textContent || ''));
+  const ffCss = document.getElementById('sxg-filter-flash-style').textContent;
+  check('加载动画 CSS 有旋转 keyframes 且尊重 prefers-reduced-motion',
+    /@keyframes sxg-flash-spin/.test(ffCss) && /prefers-reduced-motion:reduce/.test(ffCss));
+
   // --- 3. 预加载层兜底 ---
   const css = document.getElementById('sxg-filter-flash-style').textContent;
   check('★ 闪屏期 CSS 压住 #sxg-loading（z-index 2147483647 那层）',
