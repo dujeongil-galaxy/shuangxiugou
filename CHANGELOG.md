@@ -4,6 +4,13 @@
 
 ---
 
+### fix：AI 挂件网络异常文案缺失 + max_tokens 断言漂移 + ai-chat.js ?v bump（2026-11-08 16:33 · 提交 `b11f8b1`）
+
+- **背景**：CI run #575 判红，但与此前推送的 2018 章节无关，是 a15aef1 那批 VPN/模型改动的遗留漂移。`ai-chat.js` 网络异常 catch 文案被 a15aef1 改 VPN 文案时误删「网络异常」四字，导致 `test-ai-chat.cjs` ⑧ 判红；`worker.js` 已为 GLM-4.7-flash 推理模型把 `max_tokens` 调到 2000，但 `test-ai-worker.cjs` 断言仍停在 ≤600，导致该测试判红。
+- **改法**：`ai-chat.js` 网络异常文案补回「网络异常」并保留 VPN 提示；`test-ai-worker.cjs` 断言改 `max_tokens === 2000`（与 `worker.js` / `verify.mjs` 同条一致）。同步 `ai-chat.js` 的 `?v` 缓存号（§21h 纪律）：`index.html` 22→23、品牌页/其他页 17→18、生成模板 `import-brands.py` 13→18，避免用户/CDN 命中旧脚本。
+- **验证**：`test-ai-chat.cjs` 35/0、`test-ai-worker.cjs` 27/0；带密码 `verify.mjs` 1476 项全绿；两个截图 `.png` 未纳入提交。
+- **改了哪些文件**：`ai-chat.js`、`scripts/test-ai-worker.cjs`、`index.html`、约 180 个 `*.html`、`scripts/import-brands.py`，以及 README「近期 bug 根因」/ `最近更新.md` / 本文件三处记账。本批 `fix:`，按 §21n 在 README 与 `最近更新.md` 立条。
+
 ### 补录 fix：VPN 文案改为「国内网络无法直接访问，需开 VPN」+ 版本号升到 v22（2026-11-08 10:32 · 提交 `a15aef1`）
 
 - **背景**：早期（版本号 v22 阶段）一处文案原为「可直接访问」，与站点实际不符——部分资源走 GitHub 公开 API / 验证接口，挂代理或 VPN 时出口 IP 与代理用户共享，易被风控判异常。站长指令改为「国内网络无法直接访问，需开 VPN」，与后续 FAQ / 赞助页 / USDT 教程页同类提示口径一致；版本号升到 v22。
