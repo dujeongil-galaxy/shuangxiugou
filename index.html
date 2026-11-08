@@ -4651,9 +4651,10 @@
           loginBtn.className = starBtn.className + ' sxg-header-btn';
           loginBtn.setAttribute('aria-label', 'Login GitHub');
           loginBtn.textContent = '🔑 Login GitHub';
-          // 用蓝色背景，和其他按钮区分开
-          loginBtn.className = loginBtn.className.replace(/bg-slate-9\d{2}/g, 'bg-blue-600')
-                                              .replace(/hover:bg-slate-8\d{2}/g, 'hover:bg-blue-500');
+          // 用紫色背景，和其他按钮区分开（直接内联样式，不依赖 Tailwind 类）
+          loginBtn.style.backgroundColor = '#7c3aed';
+          loginBtn.style.color = '#fff';
+          loginBtn.style.borderColor = '#7c3aed';
           // 插到赞助按钮之后（右侧）
           var sponsorBtn = document.getElementById('sponsor-entry-btn');
           if (sponsorBtn) {
@@ -8529,7 +8530,33 @@
           grade: config.grade
         };
       });
-      
+
+      // 2026-11-08：关联词典别名也要能「直接搜出结果」（站长问「为什么鸿蒙可以、
+      // MIUI 不行，一定要点击才出结果」）。根因不是联想算法，而是两套过滤：
+      //   · 内置卡：bundle 的 useMemo 过滤会查 searchKeywords，`鸿蒙` 就在华为卡的
+      //     searchKeywords 里，所以输「鸿蒙」React 自己就把卡留下了；
+      //   · 自定义卡：不在 bundle 里，只由下面 filterCustomCards() 按 keywords 过滤，
+      //     而 `MIUI` 只存在于离线关联词典的 alias 字段，keywords 里没有 → 0 命中，
+      //     必须点联想回填「小米」才显示。
+      // 压缩产物是项目红线，不能给内置卡补词；自定义卡这边把 alias 展开成可搜词即可。
+      // pinyin-index.js 是 defer 脚本，晚于本段执行，所以这里每次过滤时懒读，
+      // 不缓存 —— 首屏调用时索引还没加载，缓存空对象会把修复永久吞掉。
+      function aliasWordsFor(cardId) {
+        var idx = window.__PINYIN_INDEX__ || [];
+        for (var i = 0; i < idx.length; i++) {
+          var e = idx[i];
+          if (!e || e.id !== cardId || !e.custom || !e.alias || !e.alias.length) continue;
+          var out = [];
+          for (var j = 0; j < e.alias.length; j++) {
+            var a = e.alias[j];
+            if (a[0]) out.push(String(a[0]).toLowerCase());
+            if (a[1]) out.push(String(a[1]).toLowerCase());
+          }
+          return out;
+        }
+        return [];
+      }
+
       // 过滤自定义卡片，跟网站的搜索和筛选保持同步
       function filterCustomCards() {
         // 获取当前搜索关键词
@@ -8581,10 +8608,11 @@
           var meta = customCardsMeta[cardId];
           var shouldShow = true;
           
-          // 1. 检查搜索关键词
+          // 1. 检查搜索关键词（含关联词典别名，见上方 aliasWordsFor 注释）
           if (keyword) {
-            var matchKeyword = meta.keywords.some(function(k) {
-              return k.toLowerCase().includes(keyword);
+            var words = meta.keywords.concat(aliasWordsFor(cardId));
+            var matchKeyword = words.some(function(k) {
+              return String(k).toLowerCase().includes(keyword);
             });
             if (!matchKeyword) shouldShow = false;
           }
@@ -8857,6 +8885,8 @@
   <script defer src="./share-modal.js?v=4"></script>
   <script defer src="./u-grade-patch.js?v=17"></script>
   <script defer src="./luckin-note-patch.js?v=1"></script>
+  <!-- 奶茶／新茶饮类 B/C 级平替统一推荐陆喜依（2026-11-08 站长指定） -->
+  <script defer src="./luxiyi-alt-patch.js?v=1"></script>
   <script defer src="./search-clear-order-fix.js?v=2"></script>
   <script defer src="./rating-stats-patch.js?v=4"></script>
   <script defer src="./ai-notice-patch.js?v=1"></script>
