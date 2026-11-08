@@ -4131,12 +4131,18 @@ if (exists('index.html') && exists('assets/index-YthXZ9eP.js')) {
         : '未能回溯到 button 起点，检查规则可能与 bundle 结构脱节');
   }
 
-  // ③ index.html 的关键词必须含「联系我们」，否则按钮不会被替换成链接
+  // ③ index.html 的关键词数组必须保住顶栏四个按钮的拦截词。
+  //    2026-11-09 手机端下拉菜单批次（12f3126「去掉联系我们的链接改写」）
+  //    已按站长要求把「联系我们」移出数组，页脚按钮不再被改写成链接。
+  //    旧断言仍硬要求该词，导致 CI 持续判红 —— 属于断言过期而非站点故障，
+  //    这里改为锁住真正的不变量：顶栏四个拦截词一个都不能少。
   const kwMatch = ih.match(/var\s+keywords\s*=\s*\[([^\]]*)\]/);
-  check(!!kwMatch && /联系我们/.test(kwMatch[1]),
-    'keywords 数组含「联系我们」（拦截页脚按钮）',
+  const kwText = kwMatch ? kwMatch[1] : '';
+  check(!!kwMatch && ['提交爆料', '我来提供这家', '提交审核', '提供数据']
+      .every((k) => kwText.includes(k)),
+    'keywords 数组含顶栏四个按钮拦截词（页脚「联系我们」改写已按 2026-11-09 口径移除）',
     kwMatch
-      ? `数组内容为 [${kwMatch[1].trim()}] —— 缺「联系我们」会导致页脚按钮仍是原生 button`
+      ? `数组内容为 [${kwText.trim()}] —— 缺任一词会让顶栏按钮退回原生 button`
       : '未找到 keywords 数组定义');
 
   // ④ 顶栏与页脚必须共用同一个 issueUrl，且统一指向 issues 列表页
@@ -6842,6 +6848,135 @@ section('24. 白屏兜底与加载态（防用户误退出）');
     '§25r 导入脚本有增量模式 + 全量重建保护 + 已存在卡可重新生成');
   check(/'双休红榜':\s*84/.test(read('rating-stats-patch.js')),
     '§25s 四格红榜补丁同步为 84（S 级 +1）');
+}
+
+// ---------- 26. 淘宝评论补充说明 / 奶茶类 B/C 平替陆喜依 / 天猫链接隐私 / 别名直搜 ----------
+// 2026-11-08 站长批次。四件事各自都有静默失效的路子：
+//   ① 补充说明被写进「证据来源」列表 → 变成第 6 条伪证据；
+//   ② 带账号/追踪参数的原始 URL 回流进仓库 → 泄露站长账号线索；
+//   ③ 平替被挂到 S/A 级或咖啡卡上 → 口径跑偏；
+//   ④ 别名只在联想里生效 → 用户又得点一下（站长问「鸿蒙可以 MIUI 不行」）。
+// 所以这里把四件事全部写成断言，故障注入见本轮记账。
+{
+  const CLEAN26 = 'https://luxiyi.tmall.com/';
+  // 拼接而非字面量：否则本文件自己会被下面的参数红线扫中
+  const BAD26 = ['spm', 'topIds', 'user_id', 'member_id', 'buyer_id',
+    'sellerId', 'nick', 'trackId'].map((k) => k + '=');
+  const scan26 = (s) => BAD26.filter((p) => s.indexOf(p) !== -1);
+  const tea26 = ['chabaidao', 'yidiandian', 'molina', 'heytea', 'mixue', 'chagee'];
+  const idx26 = read('index.html');
+  const patch26 = exists('luxiyi-alt-patch.js') ? read('luxiyi-alt-patch.js') : '';
+  const lxy26 = read('brand/luxiyi.html');
+
+  // ① 补充说明：文字版、诚实口径、不进证据来源
+  const supM = lxy26.match(/<div class="notice" id="supplement-2026-11-08"[^>]*>([\s\S]*?)<\/div>/);
+  check(!!supM, '§26a 陆喜依详情页有独立的「补充说明」区块（非空集防护）');
+  const sup26 = supM ? supM[1] : '';
+  check(/匿名买家评论/.test(sup26) && /2026 年 9 月 26 日/.test(sup26)
+    && /刺梨原液二盒/.test(sup26),
+    '§26b 补充说明照实写日期、已购商品与评论出处（不代查不编造）');
+  check(/已买不久，舒舒服服的放假吧你们，回头再来追评味道/.test(sup26),
+    '§26c 淘宝评论正文逐字引用（截图显示什么写什么）');
+  check(/漫步惊星（杭州）食品科技有限公司/.test(sup26)
+    && /关于 2026 年中秋、国庆放假安排的通知/.test(sup26),
+    '§26d 补充说明写明放假通知抬头与公司主体');
+  check(/不是员工实测/.test(sup26) && /不是制度证明/.test(sup26)
+    && /不用于本页定档/.test(sup26) && /不计入下方「证据来源」的 5 条/.test(sup26),
+    '§26e 明确「不是员工实测 / 不是制度证明 / 不改档 / 不计入证据来源」');
+  check(/不上传/.test(sup26) && /不放截图外链/.test(sup26),
+    '§26f 截图原件不上传、页面不放截图外链（素材规则）');
+  check(lxy26.indexOf('id="supplement-2026-11-08"') < lxy26.indexOf('<h2>证据来源</h2>'),
+    '§26g 补充说明在「证据来源」之前，不会被证据板解析器当成第 6 条来源');
+
+  // ② 六个奶茶类详情页的平替块
+  let teaOk26 = 0;
+  for (const slug of tea26) {
+    const pg = exists('brand/' + slug + '.html') ? read('brand/' + slug + '.html') : '';
+    const ok = /<!-- LUXIYI-ALT-START -->[\s\S]*?<!-- LUXIYI-ALT-END -->/.test(pg)
+      && /<h2>双休平替推荐（奶茶／新茶饮类 B\/C 级统一口径）<\/h2>/.test(pg)
+      && pg.includes('href="' + CLEAN26 + '"')
+      && /target="_blank" rel="noopener noreferrer"/.test(pg)
+      && /员工实测待补/.test(pg) && /不是同一类目/.test(pg)
+      && /不构成商业背书/.test(pg);
+    if (ok) teaOk26++;
+  }
+  check(teaOk26 === 6, '§26h 六个奶茶／新茶饮类 B/C 品牌详情页都有完整平替块',
+    `通过 ${teaOk26}/6`);
+  const extra26 = brandHtmlPages.filter((f) => !tea26.includes(f.replace(/\.html$/, ''))
+    && /data-luxiyi-alt="1"/.test(read('brand/' + f)));
+  check(extra26.length === 0, '§26i 平替块没有外溢到非奶茶类详情页', extra26.join(', '));
+
+  // ③ 链接隐私：站内只准零参数店铺首页，禁止账号/追踪参数
+  const rootHtml26 = readdirSync(ROOT).filter((f) => f.endsWith('.html'));
+  const rootJs26 = readdirSync(ROOT).filter((f) => f.endsWith('.js'));
+  const assetJs26 = readdirSync(join(ROOT, 'assets')).filter((f) => f.endsWith('.js'))
+    .map((f) => 'assets/' + f);
+  const pub26 = [...new Set([...rootHtml26, ...rootJs26, ...assetJs26,
+    ...brandHtmlPages.map((f) => 'brand/' + f),
+    'README.md', '最近更新.md', 'CHANGELOG.md', 'data/imported-brands.json'])];
+  const dirty26 = [];
+  const tmallRefs26 = [];
+  for (const f of pub26) {
+    if (!exists(f)) continue;
+    const s = read(f);
+    const hit = scan26(s);
+    if (hit.length) dirty26.push(f + ':' + hit.join(','));
+    for (const m of s.matchAll(/https?:\/\/luxiyi\.tmall\.com[^"'`\s<>)]*/g)) {
+      tmallRefs26.push(f + ' → ' + m[0]);
+    }
+  }
+  check(pub26.length > 150, '§26j 参数红线扫描覆盖到全站发布文件（非空集防护）',
+    `扫描 ${pub26.length} 个文件`);
+  check(dirty26.length === 0, '§26k 全站无账号 / 来源追踪 / 类目参数残留', dirty26.join(' | '));
+  check(tmallRefs26.length >= 7 && tmallRefs26.every((x) => x.endsWith(CLEAN26)),
+    '§26l 站内所有天猫链接都是零参数店铺首页（无 category.htm / 无问号）', tmallRefs26);
+  check(!/category\.htm/.test(idx26 + patch26 + tea26.map((s) => read('brand/' + s + '.html')).join('')),
+    '§26m 原始带参分类页路径没有回流');
+
+  // ④ 首页 DOM 补丁与清单、评级对齐
+  check(/<script defer src="\.\/luxiyi-alt-patch\.js\?v=1"><\/script>/.test(idx26),
+    '§26n 首页引入陆喜依平替补丁（漏挂则页面完全不生效）');
+  const targets26 = [...patch26.matchAll(/\{ id: '([^']+)', name: '([^']+)', grade: '([^']+)' \}/g)];
+  check(targets26.length === 6, '§26o 补丁清单恰好 6 家奶茶／新茶饮品牌', targets26.length);
+  const gradeMismatch26 = [];
+  for (const m of targets26) {
+    const id = m[1], g = m[3];
+    const slug = id.replace(/-card$/, '');
+    const gm = new RegExp('data-b="' + slug + '" data-g="([SABCU])"').exec(idx26);
+    const actual = gm ? gm[1] : null;
+    if (!/^[BC]级$/.test(g) || !actual || actual !== g.charAt(0)) {
+      gradeMismatch26.push(id + ':' + g + '/' + actual);
+    }
+  }
+  check(gradeMismatch26.length === 0,
+    '§26p 补丁清单评级与首页证据区逐一对齐，且只允许 B/C 两档', gradeMismatch26.join(', '));
+  check(/function isBC\(g\)/.test(patch26) && /if \(!isBC\(t\.grade\)\) return false/.test(patch26),
+    '§26q 补丁有运行时 B/C 级护栏（升 S/A 后不再推荐）');
+  check(/data-luxiyi-alt/.test(patch26) && /MutationObserver/.test(patch26)
+    && /querySelector\('\[' \+ MARK \+ '="1"\]'\)/.test(patch26),
+    '§26r 补丁幂等且能兜住 React 重渲染');
+  check(scan26(patch26).length === 0, '§26s 补丁自身不含账号 / 追踪参数');
+
+  // ⑤ 关联词典别名直接出结果
+  const filterBody26 = idx26.slice(idx26.indexOf('function filterCustomCards'),
+    idx26.indexOf('function tagSearchInput'));
+  check(/meta\.keywords\.concat\(aliasWordsFor\(cardId\)\)/.test(filterBody26),
+    '§26t 自定义卡过滤真的用上了关联词典别名（不是只写在注释里）');
+  check(/function aliasWordsFor\(cardId\)/.test(idx26)
+    && /window\.__PINYIN_INDEX__/.test(idx26) && /e\.custom/.test(idx26)
+    && /不缓存/.test(idx26),
+    '§26u 别名懒读拼音索引、只取自定义卡、不做空缓存（防首屏吞掉修复）');
+  const aliasJson26 = read('scripts/pinyin-aliases.json');
+  check(/"xiaomi-card"[\s\S]{0,200}"MIUI"/.test(aliasJson26)
+    && /"id":"xiaomi-card"[\s\S]{0,400}"MIUI"/.test(read('pinyin-index.js')),
+    '§26v MIUI 别名在真相源与生成的索引里都在（可直接搜出小米卡）');
+  check(/关联词典别名/.test(read('README.md'))
+    && /必须能直接搜出自定义卡/.test(read('README.md')),
+    '§26w README 写死「别名直接出结果」行为约定');
+  check(/天猫旗舰店链接只准零参数店铺首页/.test(read('README.md'))
+    && /奶茶／新茶饮类 B\/C 级品牌/.test(read('README.md'))
+    && /不计入证据来源/.test(read('README.md')),
+    '§26x README 写死链接清洗 / 平替适用范围 / 补充说明三条口径');
 }
 
 // ---------- 汇总 ----------

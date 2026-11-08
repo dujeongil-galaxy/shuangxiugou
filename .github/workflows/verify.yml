@@ -229,3 +229,8 @@ jobs:
       # 首屏未挂载不误报；与 filter-flash.js 遮罩内的「加载中…」加载态配套。
       - name: 白屏兜底恢复卡片测试
         run: node scripts/test-white-screen-guard.cjs
+
+      # 奶茶／新茶饮类 B/C 级平替推荐陆喜依 + 关联词典别名直接出结果
+      #（2026-11-08 站长批次，见 verify §26）。
+      - name: 陆喜依平替与别名直搜测试
+        run: node scripts/test-luxiyi-alt.cjs
