@@ -91,6 +91,9 @@
       // 先取消隐藏（CSS 里隐藏了它们）
       btn.style.display = '';
       btn.classList.remove('sxg-header-btn'); // 从这个 class 里去掉，不再被 CSS 隐藏
+      // 清空所有原有样式，统一用下拉菜单的样式
+      btn.removeAttribute('class');
+      btn.removeAttribute('style');
       menu.appendChild(btn);
     });
 
