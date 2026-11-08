@@ -91,9 +91,24 @@
       // 先取消隐藏（CSS 里隐藏了它们）
       btn.style.display = '';
       btn.classList.remove('sxg-header-btn'); // 从这个 class 里去掉，不再被 CSS 隐藏
-      // 清空所有原有样式，统一用下拉菜单的样式
+      // 清空所有原有样式，直接用 JS 强制设置统一样式（比 CSS 更可靠）
       btn.removeAttribute('class');
       btn.removeAttribute('style');
+      // 直接内联设置样式，确保万无一失
+      btn.style.display = 'block';
+      btn.style.width = '100%';
+      btn.style.padding = '12px 16px';
+      btn.style.margin = '0';
+      btn.style.color = '#1f2937';
+      btn.style.background = '#fff';
+      btn.style.textDecoration = 'none';
+      btn.style.textAlign = 'left';
+      btn.style.font = '500 14px/1.4 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+      btn.style.borderBottom = '1px solid #f3f4f6';
+      btn.style.borderRadius = '0';
+      btn.style.boxShadow = 'none';
+      btn.style.boxSizing = 'border-box';
+      btn.style.whiteSpace = 'nowrap';
       menu.appendChild(btn);
     });
 
