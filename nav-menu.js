@@ -48,14 +48,6 @@
     { label: '成功案例', href: './success-stories.html' }
   ];
 
-  // 手机端才有的额外菜单项（PC 端右上角按钮保留，不挪下来）
-  var MOBILE_ONLY_ITEMS = [
-    { label: '提交数据 / 申诉', href: 'https://github.com/dujeongil-galaxy/shuangxiugou/issues', external: true },
-    { label: '★ Star on GitHub', href: 'https://github.com/dujeongil-galaxy/shuangxiugou', external: true },
-    { label: '☕ 赞助本项目', href: './sponsor.html' },
-    { label: '🔑 Login GitHub', href: '#', id: 'menu-login-github' }
-  ];
-
   function buildStyle() {
     if (document.getElementById(STYLE_ID)) return;
     var css = [
@@ -121,12 +113,6 @@
       '  .sxg-nav-item{background:#1f2937;color:#5eead4;border-color:#374151}',
       '  .sxg-nav-item:hover{background:#0F766E;color:#fff}',
       '  .sxg-nav-ver{background:#111827;color:#9ca3af;border-color:#374151}',
-      '}',
-
-      /* 手机端隐藏右上角的 4 个按钮（提交数据/Star/赞助/Login），
-         它们已经挪到左下角下拉菜单里了（2026-11-08 站长指令） */
-      '@media (max-width:640px){',
-      '  .sxg-header-btn{display:none !important;}',
       '}'
     ].join('');
     var style = document.createElement('style');
@@ -160,22 +146,10 @@
   function ensureItems() {
     if (built || !panel) return;
     built = true;
-
-    // 手机端才把右上角的 4 个按钮挪到下拉菜单里（PC 端右上角保留，不重复）
-    var items = ITEMS.slice();
-    if (isMobile()) {
-      items = MOBILE_ONLY_ITEMS.concat(items);
-    }
-
-    items.forEach(function (it) {
+    ITEMS.forEach(function (it) {
       var a = document.createElement('a');
       a.className = 'sxg-nav-item';
       a.href = it.href;
-      if (it.external) {
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-      }
-      if (it.id) a.id = it.id;
       a.textContent = it.label;
       panel.appendChild(a);
     });
