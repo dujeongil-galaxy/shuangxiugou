@@ -145,4 +145,57 @@
   // 等 MutationObserver 把按钮都插进来后再执行（因为按钮是运行时补丁插入的）
   setTimeout(build, 1000);
   setTimeout(build, 2000);
+
+  // ---------- GitHub 登录状态提示 ----------
+  function checkLoginStatusOnLoad() {
+    // 检查 URL 参数里的 star_check
+    const urlParams = new URLSearchParams(window.location.search);
+    const starCheck = urlParams.get('star_check');
+    if (starCheck) {
+      let message = '';
+      if (starCheck === 'success') {
+        message = '✅ GitHub 登录成功！检测到你已 Star 本仓库。';
+        localStorage.setItem('sxg_github_logged_in', '1');
+        localStorage.setItem('sxg_github_has_star', '1');
+      } else {
+        message = '⚠️ GitHub 登录成功，但未检测到你 Star 本仓库。Star 后即可解锁国内高速 AI 服务。';
+        localStorage.setItem('sxg_github_logged_in', '1');
+        localStorage.setItem('sxg_github_has_star', '0');
+      }
+      alert(message);
+      // 清除 URL 参数，避免刷新重复提示
+      history.replaceState({}, document.title, window.location.pathname);
+    }
+  }
+
+  // 拦截 Login GitHub 按钮点击
+  function interceptLoginButton() {
+    const loginBtn = document.querySelector('a[href*="/auth/github"]');
+    if (loginBtn) {
+      loginBtn.addEventListener('click', function(e) {
+        const isLoggedIn = localStorage.getItem('sxg_github_logged_in');
+        if (isLoggedIn === '1') {
+          e.preventDefault();
+          const hasStar = localStorage.getItem('sxg_github_has_star') === '1';
+          if (hasStar) {
+            alert('✅ 你已登录，且已 Star 本仓库（满 7 天后解锁国内高速 AI 服务）。');
+          } else {
+            alert('⚠️ 你已登录，但还没 Star 本仓库。Star 后即可解锁国内高速 AI 服务。');
+          }
+        }
+        // 没登录的话，正常跳转到授权页
+      });
+    }
+  }
+
+  // 页面加载时检查登录状态
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', checkLoginStatusOnLoad);
+  } else {
+    checkLoginStatusOnLoad();
+  }
+
+  // 等按钮加载出来后拦截点击
+  setTimeout(interceptLoginButton, 1000);
+  setTimeout(interceptLoginButton, 2000);
 })();
