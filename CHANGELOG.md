@@ -4,6 +4,15 @@
 
 ---
 
+### fix：详情证据弹窗补挂 5 条可点原文链接并纠正「尚未交叉核验」口径（2026-11-09 01:55 · 提交 `faaf1ee`）
+
+- **站长指令**（2026-11-09 01:39，卡面截图）：卡上写了「另有腾讯新闻／济南时报／中国广告杂志／联合新闻网交叉印证」，却一条链接都不给，要求把说好的证据来源挂出来。
+- **审核后定位的根因**：截图来自 `custom-card-actions.js` 的 `openEvidenceModal`（点自定义卡「详情证据」弹出的面板），`cfg.desc` 经 `esc(stripQuotes(...))` 当**纯文本**渲染，媒体名自然点不开；更矛盾的是弹窗底部对所有卡固定写「该品牌为社区提交数据，尚未接入公开司法文书与官方通报的交叉核验」，而陆喜依其实已有主源 + 4 条交叉印证的 5 条可点原文链接（详情页「证据来源」与首页证据链公示区都早已挂出）。
+- **修法（不另造真相源）**：新增 `readEvidenceLinks()` / `buildSourcePanel()`，弹窗按 `cfg.id` 去找首页 `<details id="ev-luxiyi">`，从 `ol.ev-items > li` 抽 5 条标题与 `href`，渲染成「证据来源（5 条，均可点开原文）」面板（带 `rel="nofollow noopener"`、`target="_blank"`、`data-sxg-source-links` 幂等标记、完整详情页入口）。**弹窗脚本里不出现任何一条硬编码 URL** —— 证据板由生成器从 `data/imported-brands.json` 产出，天然与真相源同步。有证据链时底部换 `sxg-note-green` 并写明「媒体报道／调查」一档、不是榜单二手汇总；没有证据链公示条目的社区卡仍走原文案，不凭空编造来源。
+- **文案同步**：`sourceOverride.cardDesc` 与 `index.html` 的 `desc` 在点名四家媒体后补「5 条原文链接见「证据来源」」；详情页「数据口径说明」与 `scopeText` 补「上述五条报道的原文链接均列在下方「证据来源」，可逐条点开核对」。详情页三处媒体名**不改成内联 `<a>`**：生成器对 `scopeText` / `chain` / `reasons` 一律 `esc()`，且重跑 `--only luxiyi` 会抹掉手工补充说明，改了必然被覆盖回去；详情页下方本来就有 5 条可点原文链接。`custom-card-actions.js` 的 `?v` 23→24（preload + script 两处，§21h）。
+- **机器强制**：`scripts/verify.mjs` 新增 **§27 十三条**静态断言（读证据板、不硬编码 URL、rel/target、面板插入、底部说明分支、测试钩子、缓存号、文案与真相源一致、5 条 URL 三处对齐、CI 注册、README 规则）；新增 `scripts/test-luxiyi-sources.cjs`（**30 项**，jsdom 直接跑真实脚本 + 真实证据板片段）并挂进 `verify.yml`（§21o）；README 写死「点名媒体就必须给可点原文链接」长期规则。
+- **改了哪些文件**：`custom-card-actions.js`、`index.html`、`data/imported-brands.json`、`brand/luxiyi.html`、`scripts/verify.mjs`、`scripts/test-luxiyi-sources.cjs`（新增）、`.github/workflows/verify.yml`、`README.md`。压缩产物 `assets/index-YthXZ9eP.js` 零改动。本批 `fix:`，按 §21n 在 README「近期 bug 根因」立条。
+
 ### chore：合并恢复被并行会话 reset 抹掉的四图业务批次（2026-11-09 01:01 · 提交 `6549aae`）
 
 - **背景**：四图业务批次 `a9ca5c3` / `8847abd` 已完成全量校验与全套回归后，另一个并行会话在本地执行了 `git reset --hard origin/main`，把这两个提交从分支与工作区一起抹掉，并另起提交把 GitHub OAuth 登录入口落到线上。提交对象仍在 git 对象库（reflog 可查），正文未丢。
