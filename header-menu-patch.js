@@ -196,12 +196,12 @@
       let message = '';
       if (starCheck === 'success') {
         title = '✅ GitHub 登录成功';
-        message = '已检测到你 Star 本仓库。Star 满 7 天后即可解锁国内高速 AI 服务。';
+        message = '已检测到你 starred 本仓库。starred 满 7 天后即可解锁国内高速 AI 服务。';
         localStorage.setItem('sxg_github_logged_in', '1');
         localStorage.setItem('sxg_github_has_star', '1');
       } else {
-        title = '⚠️ 已登录，未检测到 Star';
-        message = '你已成功登录 GitHub，但还没 Star 本仓库。Star 后即可解锁国内高速 AI 服务。';
+        title = '⚠️ 已登录，未检测到 starred';
+        message = '你已成功登录 GitHub，但还没 starred 本仓库。starred 后即可解锁国内高速 AI 服务。';
         localStorage.setItem('sxg_github_logged_in', '1');
         localStorage.setItem('sxg_github_has_star', '0');
       }
@@ -225,9 +225,9 @@
           e.preventDefault();
           const hasStar = localStorage.getItem('sxg_github_has_star') === '1';
           if (hasStar) {
-            showModal('✅ 已登录', '你已登录 GitHub，且已 Star 本仓库。Star 满 7 天后自动解锁国内高速 AI 服务。', '知道了');
+            showModal('✅ 已登录', '你已登录 GitHub，且已 starred 本仓库。starred 满 7 天后自动解锁国内高速 AI 服务。', '知道了');
           } else {
-            showModal('⚠️ 未 Star 仓库', '你已登录 GitHub，但还没 Star 本仓库。Star 后即可解锁国内高速 AI 服务。', '去 Star');
+            showModal('⚠️ 未 starred 仓库', '你已登录 GitHub，但还没 starred 本仓库。starred 后即可解锁国内高速 AI 服务。', '去 starred');
           }
         }
         // 没登录的话，正常跳转到授权页
