@@ -7047,11 +7047,13 @@ section('24. 白屏兜底与加载态（防用户误退出）');
     && urls27.every((u) => has27(det27, u)),
     '§27k 首页证据板与详情页的 5 条原文链接都与真相源逐条一致',
     '缺：' + urls27.filter((u) => !has27(board27, u) || !has27(det27, u)).join(', '));
-  check(/node scripts\/test-luxiyi-sources\.cjs/.test(wf27)
+  // 行首锚定：故障注入实测，只查「全文有没有这串」会被注释掉的 run 行、
+  // 或别的章节里顺带提到规则短语蒙混过关（假通过）。
+  check(/^\s*run: node scripts\/test-luxiyi-sources\.cjs\s*$/m.test(wf27)
     && /__sxgSourceLinks/.test(tst27) && /anchors\.length === 5/.test(tst27),
-    '§27l 行为测试已挂 CI 且真的验了 5 条外链（§21o）');
-  check(/点名媒体就必须给可点原文链接/.test(read('README.md')),
-    '§27m README 写死「点名媒体声称交叉印证必须给可点原文链接」规则');
+    '§27l 行为测试以 run 行挂进 CI 且真的验了 5 条外链（§21o）');
+  check(/^- \*\*点名媒体就必须给可点原文链接\*\*/m.test(read('README.md')),
+    '§27m README 规则清单里写死「点名媒体声称交叉印证必须给可点原文链接」');
 }
 
 // ---------- 汇总 ----------

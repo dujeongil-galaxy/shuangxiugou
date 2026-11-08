@@ -12,6 +12,7 @@
 - **文案同步**：`sourceOverride.cardDesc` 与 `index.html` 的 `desc` 在点名四家媒体后补「5 条原文链接见「证据来源」」；详情页「数据口径说明」与 `scopeText` 补「上述五条报道的原文链接均列在下方「证据来源」，可逐条点开核对」。详情页三处媒体名**不改成内联 `<a>`**：生成器对 `scopeText` / `chain` / `reasons` 一律 `esc()`，且重跑 `--only luxiyi` 会抹掉手工补充说明，改了必然被覆盖回去；详情页下方本来就有 5 条可点原文链接。`custom-card-actions.js` 的 `?v` 23→24（preload + script 两处，§21h）。
 - **机器强制**：`scripts/verify.mjs` 新增 **§27 十三条**静态断言（读证据板、不硬编码 URL、rel/target、面板插入、底部说明分支、测试钩子、缓存号、文案与真相源一致、5 条 URL 三处对齐、CI 注册、README 规则）；新增 `scripts/test-luxiyi-sources.cjs`（**30 项**，jsdom 直接跑真实脚本 + 真实证据板片段）并挂进 `verify.yml`（§21o）；README 写死「点名媒体就必须给可点原文链接」长期规则。
 - **改了哪些文件**：`custom-card-actions.js`、`index.html`、`data/imported-brands.json`、`brand/luxiyi.html`、`scripts/verify.mjs`、`scripts/test-luxiyi-sources.cjs`（新增）、`.github/workflows/verify.yml`、`README.md`。压缩产物 `assets/index-YthXZ9eP.js` 零改动。本批 `fix:`，按 §21n 在 README「近期 bug 根因」立条。
+- **故障注入与断言校准**：一次注入 9 处故障（漏插面板 / 去掉 `rel` / 去掉测试钩子 / 硬编码原文 URL / 缓存号回退 / 注释掉 CI 的 `run` / 抹掉规则文案 / 抹掉卡面指引 / 抹掉详情页指引），判红 §27d/§27e/§27f/§27g/§27h/§27i/§27j 共 **7 条**并逐字节还原。另抓到 **§27l / §27m 两处假通过**：原本只查「全文有没有这串」，注释掉的 `run:` 行、别的章节顺带提到规则短语都能蒙混过关，已收紧为**行首锚定**并复注入确认两条真判红。正向对照全量校验 **1549 项全绿**、全套回归 **39/39**、无头 Edge + CDP 真点开弹窗确认 5 条链接可点且旧口径已消失。
 
 ### chore：合并恢复被并行会话 reset 抹掉的四图业务批次（2026-11-09 01:01 · 提交 `6549aae`）
 
