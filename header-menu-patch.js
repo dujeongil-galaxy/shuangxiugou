@@ -201,7 +201,7 @@
       
       if (starCheck === 'success') {
         title = '✅ GitHub 登录成功';
-        message = `已检测到你 Starred 本仓库，今天是第 ${starDays} 天。\nStar 日期：${starDate}\n\n已达成满 7 天要求，可解锁国内高速 AI 服务。`;
+        message = `已检测到你 Starred 本仓库，今天是第 ${starDays} 天。\nStar 日期：${starDate}\n\n已达成，可解锁国内高速 AI 服务。`;
         localStorage.setItem('sxg_github_logged_in', '1');
         localStorage.setItem('sxg_github_has_star', '1');
         localStorage.setItem('sxg_star_days', starDays.toString());
@@ -243,7 +243,7 @@
           
           if (hasStar) {
             if (starDays >= 7) {
-              showModal('✅ 已解锁', `你 Starred 本仓库，今天是第 ${starDays} 天，已达成要求。\nStar 日期：${starDate}\n\n可使用国内高速 AI 服务。`, '知道了');
+              showModal('✅ 已解锁', `你 Starred 本仓库，今天是第 ${starDays} 天，已达成。\nStar 日期：${starDate}\n\n可使用国内高速 AI 服务。`, '知道了');
             } else {
               showModal('⏳ 等待中', `你 Starred 本仓库，今天是第 ${starDays} 天，还需 ${remainingDays} 天满 7 天。\nStar 日期：${starDate}`, '知道了');
             }
