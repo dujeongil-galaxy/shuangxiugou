@@ -147,22 +147,65 @@
   setTimeout(build, 2000);
 
   // ---------- GitHub 登录状态提示 ----------
+  // 自定义 modal 弹窗
+  function showModal(title, content, btnText) {
+    // 遮罩
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    
+    // 弹窗卡片
+    var modal = document.createElement('div');
+    modal.style.cssText = 'background:#fff;border-radius:16px;max-width:400px;width:100%;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
+    
+    // 标题
+    var h3 = document.createElement('h3');
+    h3.style.cssText = 'margin:0 0 12px 0;font-size:16px;font-weight:600;color:#1e293b;';
+    h3.textContent = title;
+    modal.appendChild(h3);
+    
+    // 内容
+    var p = document.createElement('p');
+    p.style.cssText = 'margin:0 0 20px 0;font-size:14px;line-height:1.6;color:#475569;';
+    p.textContent = content;
+    modal.appendChild(p);
+    
+    // 按钮
+    var btn = document.createElement('button');
+    btn.style.cssText = 'width:100%;padding:12px;background:#0F766E;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:500;cursor:pointer;';
+    btn.textContent = btnText || '知道了';
+    btn.onclick = function() {
+      document.body.removeChild(overlay);
+    };
+    modal.appendChild(btn);
+    
+    overlay.appendChild(modal);
+    overlay.onclick = function(e) {
+      if (e.target === overlay) {
+        document.body.removeChild(overlay);
+      }
+    };
+    document.body.appendChild(overlay);
+  }
+
   function checkLoginStatusOnLoad() {
     // 检查 URL 参数里的 star_check
     const urlParams = new URLSearchParams(window.location.search);
     const starCheck = urlParams.get('star_check');
     if (starCheck) {
+      let title = '';
       let message = '';
       if (starCheck === 'success') {
-        message = '✅ GitHub 登录成功！检测到你已 Star 本仓库。';
+        title = '✅ GitHub 登录成功';
+        message = '已检测到你 Star 本仓库。Star 满 7 天后即可解锁国内高速 AI 服务。';
         localStorage.setItem('sxg_github_logged_in', '1');
         localStorage.setItem('sxg_github_has_star', '1');
       } else {
-        message = '⚠️ GitHub 登录成功，但未检测到你 Star 本仓库。Star 后即可解锁国内高速 AI 服务。';
+        title = '⚠️ 已登录，未检测到 Star';
+        message = '你已成功登录 GitHub，但还没 Star 本仓库。Star 后即可解锁国内高速 AI 服务。';
         localStorage.setItem('sxg_github_logged_in', '1');
         localStorage.setItem('sxg_github_has_star', '0');
       }
-      alert(message);
+      showModal(title, message, '知道了');
       // 清除 URL 参数，避免刷新重复提示
       history.replaceState({}, document.title, window.location.pathname);
     }
@@ -172,15 +215,19 @@
   function interceptLoginButton() {
     const loginBtn = document.querySelector('a[href*="/auth/github"]');
     if (loginBtn) {
-      loginBtn.addEventListener('click', function(e) {
+      // 先移除之前的监听，避免重复
+      const newBtn = loginBtn.cloneNode(true);
+      loginBtn.parentNode.replaceChild(newBtn, loginBtn);
+      
+      newBtn.addEventListener('click', function(e) {
         const isLoggedIn = localStorage.getItem('sxg_github_logged_in');
         if (isLoggedIn === '1') {
           e.preventDefault();
           const hasStar = localStorage.getItem('sxg_github_has_star') === '1';
           if (hasStar) {
-            alert('✅ 你已登录，且已 Star 本仓库（满 7 天后解锁国内高速 AI 服务）。');
+            showModal('✅ 已登录', '你已登录 GitHub，且已 Star 本仓库。Star 满 7 天后自动解锁国内高速 AI 服务。', '知道了');
           } else {
-            alert('⚠️ 你已登录，但还没 Star 本仓库。Star 后即可解锁国内高速 AI 服务。');
+            showModal('⚠️ 未 Star 仓库', '你已登录 GitHub，但还没 Star 本仓库。Star 后即可解锁国内高速 AI 服务。', '去 Star');
           }
         }
         // 没登录的话，正常跳转到授权页
