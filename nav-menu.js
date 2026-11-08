@@ -43,6 +43,10 @@
   // 「证据链公示」是页内锚点：公告栏在手机上默认折叠成一行，不想点「展开」
   // 的人也能从这儿一步跳到证据链区块（2026-11-02 站长：折叠后跳转要有去处）。
   var ITEMS = [
+    { label: '提交数据 / 申诉', href: 'https://github.com/dujeongil-galaxy/shuangxiugou/issues', external: true },
+    { label: '★ Star on GitHub', href: 'https://github.com/dujeongil-galaxy/shuangxiugou', external: true },
+    { label: '☕ 赞助本项目', href: './sponsor.html' },
+    { label: '🔑 Login GitHub', href: '#', id: 'menu-login-github' },
     { label: '证据链公示', href: '#evidence-board' },
     { label: '同类项目导航', href: './projects.html' },
     { label: '成功案例', href: './success-stories.html' }
@@ -113,6 +117,12 @@
       '  .sxg-nav-item{background:#1f2937;color:#5eead4;border-color:#374151}',
       '  .sxg-nav-item:hover{background:#0F766E;color:#fff}',
       '  .sxg-nav-ver{background:#111827;color:#9ca3af;border-color:#374151}',
+      '}',
+
+      /* 手机端隐藏右上角的 4 个按钮（提交数据/Star/赞助/Login），
+         它们已经挪到左下角下拉菜单里了（2026-11-08 站长指令） */
+      '@media (max-width:640px){',
+      '  .sxg-header-btn{display:none !important;}',
       '}'
     ].join('');
     var style = document.createElement('style');
@@ -150,6 +160,11 @@
       var a = document.createElement('a');
       a.className = 'sxg-nav-item';
       a.href = it.href;
+      if (it.external) {
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+      }
+      if (it.id) a.id = it.id;
       a.textContent = it.label;
       panel.appendChild(a);
     });

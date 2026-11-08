@@ -4619,7 +4619,10 @@
         //
         var starBtn = null;
         document.querySelectorAll('a').forEach(function (a) {
-          if (a.textContent.indexOf('Star on GitHub') >= 0) starBtn = a;
+          if (a.textContent.indexOf('Star on GitHub') >= 0) {
+            starBtn = a;
+            starBtn.classList.add('sxg-header-btn');
+          }
         });
         if (starBtn && !document.getElementById('sponsor-entry-btn')) {
           var s = document.createElement('a');
@@ -4627,7 +4630,7 @@
           s.href = './sponsor.html';
           s.target = '_blank';
           s.rel = 'noopener noreferrer';
-          s.className = starBtn.className;
+          s.className = starBtn.className + ' sxg-header-btn';
           s.setAttribute('aria-label', '赞助本项目');
           s.textContent = '☕ 赞助本项目';
           // 换掉 Star 按钮的深色底，改用站点主色，与「提交爆料」区隔开。
@@ -4638,6 +4641,24 @@
                                     .replace(/hover:bg-slate-8\d{2}/g, 'hover:bg-emerald-500');
           // 插到 Star 按钮之后（右侧），与「Star | 赞助」的阅读顺序一致
           starBtn.parentNode.insertBefore(s, starBtn.nextSibling);
+        }
+
+        // 在「赞助本项目」按钮右侧插入「Login GitHub」入口，用于检测 Star 状态
+        if (starBtn && !document.getElementById('login-github-btn')) {
+          var loginBtn = document.createElement('a');
+          loginBtn.id = 'login-github-btn';
+          loginBtn.href = '#';
+          loginBtn.className = starBtn.className + ' sxg-header-btn';
+          loginBtn.setAttribute('aria-label', 'Login GitHub');
+          loginBtn.textContent = '🔑 Login GitHub';
+          // 用蓝色背景，和其他按钮区分开
+          loginBtn.className = loginBtn.className.replace(/bg-slate-9\d{2}/g, 'bg-blue-600')
+                                              .replace(/hover:bg-slate-8\d{2}/g, 'hover:bg-blue-500');
+          // 插到赞助按钮之后（右侧）
+          var sponsorBtn = document.getElementById('sponsor-entry-btn');
+          if (sponsorBtn) {
+            sponsorBtn.parentNode.insertBefore(loginBtn, sponsorBtn.nextSibling);
+          }
         }
 
 
@@ -4661,7 +4682,7 @@
               a.href = issueUrl;
               a.target = '_blank';
               a.rel = 'noopener noreferrer';
-              a.className = b.className;
+              a.className = b.className + ' sxg-header-btn';
               // 顶栏按钮改名；页脚「联系我们」已是目标文案，不受影响
               a.textContent = b.textContent.replace('提交爆料 / 推荐', '提交数据 / 申诉');
               b.replaceWith(a);
