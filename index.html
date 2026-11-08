@@ -4672,7 +4672,7 @@
 
         // 「提供数据」保留在数组里：bundle 是压缩产物，若将来回滚到旧版本，
         // 旧文案仍能被拦截（不匹配就只是按钮没反应，不会出错）。
-        var keywords = ['提交爆料', '我来提供这家', '提交审核', '提供数据', '联系我们'];
+        var keywords = ['提交爆料', '我来提供这家', '提交审核', '提供数据'];
         document.querySelectorAll('button').forEach(function(b) {
           // 已经是a标签就跳过
           if (b.tagName === 'A') return;
