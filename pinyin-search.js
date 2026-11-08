@@ -129,6 +129,12 @@
         }
       }
       if (best) hits.push({ entry: entry, lv: best[0], pos: best[2], hitTerm: best[3] });
+
+      // 关联词典兜底：直接命中层级（0~4）落空时，再试别名（第 5 层）
+      if (!best) {
+        var al = matchAlias(q, entry.alias);
+        if (al) hits.push({ entry: entry, lv: al[0], pos: al[2], hitTerm: al[3] });
+      }
     }
     // 2026-11-02：同一层级、同一重要度时，**命中位置更靠前**的排前面。
     // 起因：榜单导入把品牌数从 68 拉到 172 后，输「ping」时毛戈平（maoge-ping）
@@ -151,6 +157,35 @@
       if (entry.t[k][0] === hitTerm) return entry.t[k][3] || 3;
     }
     return 3;
+  }
+
+  // ---------- 关联词典 ----------
+  // 英文产品词 / 中文别名 → 品牌（如 MIUI→小米、鸿蒙→华为）。
+  // 数据来自 pinyin-index.js 里每条目的 alias 字段（由
+  // scripts/pinyin-aliases.json 注入，gen-pinyin-index.py 展开成
+  // [展示名, 全拼, 首字母]）。
+  //
+  // 匹配层级固定为 5（关联），永远排在 名字(0)/全拼(1)/首字母(2,3)/近似(4)
+  // 之后 —— 直接命中品牌名永远优先，关联只是「兜底联想」。
+  // 多条别名命中时取位置最靠前那条。命中后回填的仍是品牌主名（fillTerm），
+  // React 原生搜索能命中，零风险。
+  function matchAlias(q, aliasList) {
+    if (!aliasList || !aliasList.length) return null;
+    var best = null;
+    for (var a = 0; a < aliasList.length; a++) {
+      var ali = aliasList[a];
+      var disp = (ali[0] || '').toLowerCase();
+      var fp = (ali[1] || '').toLowerCase();
+      var ini = (ali[2] || '').toLowerCase();
+      var hasCjk = /[一-鿿]/.test(ali[0]);
+      var pos = -1;
+      if (disp.indexOf(q) !== -1) pos = disp.indexOf(q);          // 展示名含（MIUI 含 miui / 鸿蒙 被输中文时含）
+      else if (fp.indexOf(q) !== -1) pos = fp.indexOf(q);          // 全拼/英文小写含（hongmeng / wechat）
+      else if (hasCjk && ini.indexOf(q) !== -1) pos = ini.indexOf(q); // 首字母（hm）
+      if (pos === -1) continue;
+      if (!best || pos < best[2]) best = [5, 3, pos, ali[0]];
+    }
+    return best;
   }
 
   // ---------- 回填用词 ----------
@@ -182,6 +217,7 @@
     if (lv === 1) return '全拼';
     if (lv === 2) return '首字母';
     if (lv === 4) return '近似';
+    if (lv === 5) return '关联';
     return '包含';
   }
 

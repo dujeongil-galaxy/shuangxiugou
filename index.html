@@ -111,7 +111,7 @@
     <link rel="preload" href="./search-clear-order-fix.js?v=2" as="script">
     <link rel="preload" href="./logo-vault.js?v=1" as="script">
     <link rel="preload" href="./stat-filter.js?v=9" as="script">
-    <link rel="preload" href="./pinyin-index.js?v=10" as="script">
+    <link rel="preload" href="./pinyin-index.js?v=11" as="script">
     <link rel="preload" href="./nav-menu.js?v=6" as="script">
     <!-- 良配 · 限时推广广告位（独立文件，改文案/样式不必动主页面；改完请把 ?v=N 的 N +1 防缓存） -->
     <link rel="stylesheet" href="./liangpei-ad.css?v=13">
@@ -162,7 +162,7 @@
          这个锚点回写与校验，删节点等于让每日版本号同步静默失效。
          用 hidden 而不是删掉：hidden 只影响渲染，textContent 照样可读，
          nav-menu.js 运行时读它，菜单里不另存哈希（两份数据没有比对源，必然漂）。 -->
-    <span id="site-version" hidden><span class="notice-ver">当前版本号 d133ddd</span></span>
+    <span id="site-version" hidden><span class="notice-ver">当前版本号 a023bb6</span></span>
     <div id="root">
       <!-- 首屏占位：React 大包解析期间先显示「加载中」，避免 #root 为空把下方证据链区块
            甩到视口顶部造成白屏闪烁（FOUC）。React 挂载后自动替换本节点。 -->
@@ -8788,8 +8788,8 @@
        所以这里只做「输入联想 + 回填」：给出候选，用户点了回填中文名，
        后续过滤仍走 React 原生搜索路径，渲染逻辑零改动。
        索引数据在 pinyin-index.js，必须先于本脚本加载。 -->
-  <script defer src="./pinyin-index.js?v=10"></script>
-  <script defer src="./pinyin-search.js?v=5"></script>
+  <script defer src="./pinyin-index.js?v=11"></script>
+  <script defer src="./pinyin-search.js?v=6"></script>
 
   <!-- 彻底禁用数字搜索。2026-10-17 用户反馈：输入「1」「2」会搜出一堆无关卡片。
        根因：bundle 的搜索是纯子串匹配，条件含 name/companyName/category/

@@ -38,6 +38,54 @@ OUT = os.path.join(ROOT, 'pinyin-index.js')
 
 BT = chr(96)
 
+ALIAS_FILE = os.path.join(ROOT, 'scripts', 'pinyin-aliases.json')
+
+
+def load_aliases():
+    """读取 scripts/pinyin-aliases.json：{ 品牌id: [别名...] }。
+
+    用于「关联词典」：英文产品词/子品牌/中文别名 → 品牌（如 MIUI→小米）。
+    文件缺失或解析失败都返回空 dict，不影响主流程。
+    """
+    if not os.path.exists(ALIAS_FILE):
+        return {}
+    try:
+        with open(ALIAS_FILE, encoding='utf-8') as f:
+            data = json.load(f)
+    except Exception as e:
+        print('警告：读取别名文件失败：', e)
+        return {}
+    out = {}
+    for k, v in data.items():
+        if k.startswith('_'):
+            continue  # 注释键（如 _comment）跳过
+        if isinstance(v, list):
+            out[k] = [str(x).strip() for x in v if str(x).strip()]
+    return out
+
+
+def build_alias_triples(aliases):
+    """把别名列表展开成 [展示名, 全拼, 首字母] 三元组。
+
+    中文别名用 pypinyin 算全拼+首字母（如「鸿蒙」→ hongmeng / hm）；
+    英文/数字别名原样小写（如「MIUI」→ miui / miui）。
+    按展示名（小写）去重。
+    """
+    triples = []
+    seen = set()
+    for a in aliases:
+        disp = a
+        if CJK.search(a):
+            fp, ini = to_pinyin(a)
+        else:
+            fp, ini = a.lower(), a.lower()
+        key = disp.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        triples.append([disp, fp, ini])
+    return triples
+
 
 def extract_brands(src):
     """
@@ -284,6 +332,23 @@ def score(query, entry):
             c = min(cands, key=lambda x: (x[0], x[1], x[2]))
             if best is None or c[:3] < best[:3]:
                 best = c
+    # 关联词典：英文产品词 / 中文别名 → 品牌（第 5 层，永远排在名字/拼音/首字母之后）
+    for a in entry.get('alias', []):
+        disp, fp, ini = a[0].lower(), a[1].lower(), a[2].lower()
+        has_cjk = bool(CJK.search(a[0]))
+        cands2 = []
+        if q in disp:
+            cands2.append((5, 3, disp.index(q), a[0]))
+        if q in fp:
+            pos = fp.find(q)
+            at_boundary = pos == 0 or fp[pos - 1] in 'aeiou'
+            cands2.append((5, 3, pos, a[0]))
+        if has_cjk and q in ini:
+            cands2.append((5, 3, ini.index(q), a[0]))
+        if cands2:
+            c = min(cands2, key=lambda x: (x[0], x[1], x[2]))
+            if best is None or c[:3] < best[:3]:
+                best = c
     return best
 
 
@@ -309,6 +374,8 @@ HEADER = """// ============================================================
 // 字段 t = [原文, 全拼, 首字母, 重要度]
 // 重要度：0 主名 / 1 英文名 / 2 公司全称 / 3 关键词 / 4 产品名
 // 字段 kw：自定义卡的定位回填词（keywords[0]），内置卡为空串
+// 字段 alias：关联别名 [展示名, 全拼, 首字母]，由 scripts/pinyin-aliases.json
+//            注入，支持「MIUI→小米」「鸿蒙→华为」这类英文产品词/中文别名关联。
 //
 // ⚠️ 本文件只做「输入联想」，不改 React 原生搜索逻辑。
 //    改动后必须重跑 scripts/gen-pinyin-index.py。
@@ -374,15 +441,32 @@ if __name__ == '__main__':
     index_custom = build_index(customs)
     index_all = index + index_custom
 
+    # 关联词典：把 scripts/pinyin-aliases.json 里的别名挂到对应品牌条目。
+    # 别名支持「MIUI→小米」「鸿蒙→华为」这类英文产品词/中文别名关联。
+    alias_map = load_aliases()
+    if alias_map:
+        n_alias = 0
+        for e in index_all:
+            al = alias_map.get(e['id'])
+            if al:
+                e['alias'] = build_alias_triples(al)
+                n_alias += 1
+        print('已为 %d 个品牌挂载关联别名（来源 scripts/pinyin-aliases.json）' % n_alias)
+    else:
+        for e in index_all:
+            e['alias'] = []
+
     slim = [{
         'id': e['id'], 'name': e['name'], 'cn': e['cn'],
         'custom': 1 if e['custom'] else 0,
         'kw': e['fill_kw'] if e['custom'] else '',
         't': [[x['t'], x['f'], x['i'], x['w']] for x in e['terms']],
+        'alias': e.get('alias', []),
     } for e in index_all]
 
     print('\n=== 排序自测（L层级/W重要度/命中词条）===')
-    for q in ['ning', 'ndsd', 'byd', 'hw', 'ping', 'mt', 'sf', 'ms', '苹果', 'logi', 'ls', 'lsym', 'ydd']:
+    for q in ['ning', 'ndsd', 'byd', 'hw', 'ping', 'mt', 'sf', 'ms', '苹果', 'logi', 'ls', 'lsym', 'ydd',
+              'miui', 'hongmeng', 'wechat', 'tiktok', 'ios', 'poco', 'taobao']:
         r = [((h[1]['name'], h[1]['custom']), h[0]) for h in search(q, index_all)][:4]
         print(' ', q.ljust(8), '->',
               ' | '.join('%s [L%d/W%d 命中「%s」]%s' % (n, lv, w, hit, '（自定义·定位）' if cust else '')

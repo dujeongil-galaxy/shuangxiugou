@@ -71,6 +71,36 @@ setTimeout(() => {
   n = names();
   check('ningde（全拼）→ 宁德时代', n.length && n[0][0].includes('宁德时代'), n);
 
+  console.log('\n--- 关联词典（你举的 MIUI→小米 就靠它：英文产品词/别名也能搜出品牌）---');
+  fire('miui');
+  n = names();
+  check('miui → 小米（关联 MIUI 系统）', n.length && n.some(x => /小米/.test(x[0])), n.map(x => x[0]));
+  check('关联命中标注「关联」而非「名称匹配」', n.length && n.some(x => /关联/.test(x[2])), n[0] && n[0][2]);
+
+  fire('hongmeng');
+  n = names();
+  check('hongmeng → 华为（关联/全拼 鸿蒙）', n.length && n.some(x => /华为/.test(x[0])), n.map(x => x[0]));
+
+  fire('wechat');
+  n = names();
+  check('wechat → 腾讯（关联 微信/WeChat）', n.length && n.some(x => /腾讯/.test(x[0])), n.map(x => x[0]));
+
+  fire('tiktok');
+  n = names();
+  check('tiktok → 字节跳动（关联 TikTok）', n.length && n.some(x => /字节/.test(x[0])), n.map(x => x[0]));
+
+  fire('ios');
+  n = names();
+  check('ios → 苹果（关联 iOS）', n.length && n.some(x => /Apple|苹果/.test(x[0])), n.map(x => x[0]));
+
+  fire('poco');
+  n = names();
+  check('poco → 小米（关联 POCO）', n.length && n.some(x => /小米/.test(x[0])), n.map(x => x[0]));
+
+  fire('taobao');
+  n = names();
+  check('taobao → 淘宝/阿里相关卡（关联 淘宝）', n.length && n.some(x => /淘宝|阿里/.test(x[0])), n.map(x => x[0]));
+
   console.log('\n--- 排序正确性（这是最容易出 bug 的地方）---');
   fire('byd');
   n = names();
