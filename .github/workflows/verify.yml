@@ -234,3 +234,8 @@ jobs:
       #（2026-11-08 站长批次，见 verify §26）。
       - name: 陆喜依平替与别名直搜测试
         run: node scripts/test-luxiyi-alt.cjs
+
+      # 详情证据弹窗必须挂出 5 条可点原文链接（2026-11-09 站长指出
+      # 「写了交叉印证却不给链接」），且不能对有证据链的卡再写「尚未交叉核验」。
+      - name: 陆喜依证据来源链接测试
+        run: node scripts/test-luxiyi-sources.cjs

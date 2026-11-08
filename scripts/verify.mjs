@@ -6979,6 +6979,81 @@ section('24. 白屏兜底与加载态（防用户误退出）');
     '§26x README 写死链接清洗 / 平替适用范围 / 补充说明三条口径');
 }
 
+// ---------- 27. 详情证据弹窗的可点证据来源（2026-11-09 站长指出） ----------
+// 站长原话：「另有腾讯新闻／济南时报／中国广告杂志／联合新闻网交叉印证，
+// 你自己都这么说了，为什么不挂链接？说了要给证据来源」。
+// 根因：custom-card-actions.js 的 openEvidenceModal 把 cfg.desc 当纯文本渲染，
+// 弹窗里一个链接都没有；底部还固定写「社区提交数据、尚未接入交叉核验」，
+// 和陆喜依已有的 5 条多源交叉证据自相矛盾。
+// 修法：弹窗直接从首页证据链公示区（由生成器从 imported-brands.json 产出，
+// §25p 守）抽 5 条原文链接挂成面板，不另写一份 URL，杜绝漂移。
+// 这里把「点名了媒体就必须给可点来源」写成红灯，防下轮改回纯文字。
+{
+  const cca27 = read('custom-card-actions.js');
+  const idx27 = read('index.html');
+  const det27 = read('brand/luxiyi.html');
+  const tst27 = exists('scripts/test-luxiyi-sources.cjs')
+    ? read('scripts/test-luxiyi-sources.cjs') : '';
+  const wf27 = read('.github/workflows/verify.yml');
+  const imp27 = JSON.parse(read('data/imported-brands.json'));
+  const lxy27 = imp27.brands.find((b) => b.slug === 'luxiyi');
+  const urls27 = lxy27
+    ? [lxy27.sourceOverride.url].concat((lxy27.extraEvidence || []).map((e) => e.url))
+    : [];
+
+  check(cca27.length > 10000 && idx27.length > 100000 && tst27.length > 1000,
+    '§27a 真的读到了弹窗脚本 / 首页 / 行为测试（双重空集防护）',
+    `cca=${cca27.length} / idx=${idx27.length} / test=${tst27.length}`);
+  check(!!lxy27 && urls27.length === 5 && urls27.every((u) => /^https?:\/\//.test(u)),
+    '§27b 真相源恰好 5 条可点原文链接（主源 + 4 条交叉印证）',
+    '实际 ' + urls27.length + ' 条');
+
+  check(/function readEvidenceLinks\(cfg\)/.test(cca27)
+    && /function buildSourcePanel\(cfg\)/.test(cca27)
+    && /getElementById\('ev-' \+ slug\)/.test(cca27),
+    '§27c 弹窗从首页证据链公示区读链接（不是另写一份 URL）');
+  check(!/cqnews\.net|view\.inews\.qq\.com|jinantimes\.com\.cn|udn\.com/.test(cca27),
+    '§27d 弹窗脚本不硬编码原文 URL（防与真相源漂移）');
+  check(/rel="nofollow noopener" target="_blank"/.test(cca27)
+    && /data-sxg-source-links="1"/.test(cca27)
+    && /查看完整详情页与证据链/.test(cca27),
+    '§27e 证据面板链接可点开、带 rel/target、有幂等标记与详情页入口');
+  check(/src\.html/.test(cca27)
+    && /src\.count \? 'sxg-note-green' : 'sxg-note'/.test(cca27)
+    && /不是榜单二手汇总/.test(cca27)
+    && /尚未接入公开司法文书与官方通报的交叉核验/.test(cca27),
+    '§27f 面板真的插进弹窗，底部说明按有无证据链切换（不再自相矛盾）');
+  check(/window\.__sxgSourceLinks = \{ read: readEvidenceLinks, build: buildSourcePanel \}/.test(cca27),
+    '§27g 暴露测试钩子，行为测试能直接验真实渲染逻辑');
+
+  check((idx27.match(/custom-card-actions\.js\?v=24/g) || []).length === 2,
+    '§27h 缓存号已 bump 到 ?v=24（§21h：preload + script 两处都要改）',
+    '实际 ' + (idx27.match(/custom-card-actions\.js\?v=24/g) || []).length + ' 处');
+  check(!!lxy27 && /5 条原文链接见「证据来源」/.test(lxy27.sourceOverride.cardDesc)
+    && idx27.indexOf(lxy27.sourceOverride.cardDesc) !== -1,
+    '§27i 卡面点名媒体时同时指向证据来源，且与真相源逐字一致');
+  check(/上述五条报道的原文链接均列在下方「证据来源」/.test(det27)
+    && !!lxy27 && det27.indexOf(lxy27.sourceOverride.scopeText) !== -1,
+    '§27j 详情页「数据口径说明」指向下方 5 条原文链接，且与真相源一致');
+
+  const evStart27 = idx27.indexOf('id="ev-luxiyi"');
+  const board27 = evStart27 > 0
+    ? idx27.slice(evStart27, idx27.indexOf('</details>', evStart27)) : '';
+  // 证据板由 gen-evidence-board.py 生成，微信链接写成 &amp;；详情页生成器
+  // 直接拼裸 &。两者渲染后等价，比对时统一还原，别把历史写法差异当漂移。
+  const norm27 = (s) => s.replace(/&amp;/g, '&');
+  const has27 = (s, u) => norm27(s).indexOf('href="' + u + '"') !== -1;
+  check(board27.length > 500 && urls27.every((u) => has27(board27, u))
+    && urls27.every((u) => has27(det27, u)),
+    '§27k 首页证据板与详情页的 5 条原文链接都与真相源逐条一致',
+    '缺：' + urls27.filter((u) => !has27(board27, u) || !has27(det27, u)).join(', '));
+  check(/node scripts\/test-luxiyi-sources\.cjs/.test(wf27)
+    && /__sxgSourceLinks/.test(tst27) && /anchors\.length === 5/.test(tst27),
+    '§27l 行为测试已挂 CI 且真的验了 5 条外链（§21o）');
+  check(/点名媒体就必须给可点原文链接/.test(read('README.md')),
+    '§27m README 写死「点名媒体声称交叉印证必须给可点原文链接」规则');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {

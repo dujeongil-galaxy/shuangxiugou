@@ -823,11 +823,82 @@
     }
   }
 
+  /* ------------------------------------- 证据来源链接（2026-11-09 站长指出）
+     卡面写了「另有腾讯新闻／济南时报／中国广告杂志／联合新闻网交叉印证」，
+     却一个链接都不给。根因：这个弹窗把 cfg.desc 当纯文本渲染，底部还固定写
+     「社区提交数据、尚未接入交叉核验」，与陆喜依的真实证据链自相矛盾。
+     这里**不硬编码 URL**：首页「证据链公示区」每个 <details id="ev-xxx">
+     本来就带该品牌全部可点原文链接（由生成器从 data/imported-brands.json
+     产出，verify §25p 守），弹窗直接读它，天然与真相源同步、不会漂移。
+  -------------------------------------------------------------------------- */
+
+  function readEvidenceLinks(cfg) {
+    var slug = String((cfg && cfg.id) || '').replace(/-card$/, '');
+    if (!slug) return [];
+    var details = document.getElementById('ev-' + slug);
+    if (!details) {
+      // 兜底：按 data-b 找，防止以后卡 id 与证据板 id 命名分叉
+      var all = $$('#evidence-board details[data-b]');
+      for (var i = 0; i < all.length; i++) {
+        if (all[i].getAttribute('data-b') === slug) { details = all[i]; break; }
+      }
+    }
+    if (!details) return [];
+    var items = $$('ol.ev-items > li', details);
+    var out = [];
+    for (var j = 0; j < items.length; j++) {
+      var a = $('.u a[href]', items[j]);
+      var t = $('.t', items[j]);
+      if (!a) continue;
+      var href = a.getAttribute('href') || '';
+      if (!/^https?:\/\//.test(href)) continue;
+      out.push({
+        title: t ? String(t.textContent || '').trim() : '',
+        href: href,
+        label: String(a.textContent || '').trim()
+      });
+    }
+    return out;
+  }
+
+  function buildSourcePanel(cfg) {
+    var links = readEvidenceLinks(cfg);
+    if (!links.length) return { html: '', count: 0 };
+    var slug = String((cfg && cfg.id) || '').replace(/-card$/, '');
+    var rows = '';
+    for (var i = 0; i < links.length; i++) {
+      rows += '<li style="margin:0 0 6px">' +
+        '<a href="' + esc(links[i].href) + '" rel="nofollow noopener" target="_blank" ' +
+        'style="color:#047857;font-weight:700">' +
+        esc(links[i].title || links[i].label) + ' ↗</a>' +
+        '<div class="sxg-xs sxg-mono">' + esc(links[i].label) + '</div>' +
+        '</li>';
+    }
+    var html =
+      '<div class="sxg-panel" data-sxg-source-links="1" style="margin-top:10px">' +
+        '<div class="sxg-title-sm">证据来源（' + links.length + ' 条，均可点开原文）：</div>' +
+        '<ol style="margin:8px 0 0;padding-left:20px;font-size:12px;line-height:1.7;color:#475569">' +
+          rows +
+        '</ol>' +
+        '<div style="margin-top:8px;font-size:12px">' +
+          '<a href="./brand/' + esc(slug) + '.html" rel="noopener" ' +
+          'style="color:#047857;font-weight:700">查看完整详情页与证据链 →</a>' +
+        '</div>' +
+      '</div>';
+    return { html: html, count: links.length };
+  }
+
+  // 测试钩子：scripts/test-luxiyi-sources.cjs 直接调，不必等弹窗事件链
+  window.__sxgSourceLinks = { read: readEvidenceLinks, build: buildSourcePanel };
+
   /* ------------------------------------- 弹窗 2：详情证据（对齐内置详情弹窗） */
 
   function openEvidenceModal(cfg) {
     closeLayer();
     var layer = ensureLayer();
+    // 有独立证据链的品牌（如陆喜依）把可点原文链接挂进弹窗；
+    // 没有证据链公示条目的社区卡维持原样，不编造来源。
+    var src = buildSourcePanel(cfg);
 
     var box = el('div', 'sxg-box sxg-box-lg');
     var body = el('div', 'sxg-pad sxg-space');
@@ -861,6 +932,8 @@
           : '') +
       '</div>' +
 
+      src.html +
+
       '<div class="sxg-panel-dark">' +
         '<div class="sxg-dark-label">' +
           '内部员工匿名投票汇总 ( ' + esc(cfg.voteCount || '0') + ' 票 )' +
@@ -872,9 +945,13 @@
         '</div>' +
       '</div>' +
 
-      '<div class="sxg-note">' +
-        '<strong>说明：</strong>该品牌为社区提交数据，尚未接入公开司法文书与官方通报的交叉核验，' +
-        '证据强度低于已核验档案。请以实际排班与劳动合同为准。' +
+      '<div class="' + (src.count ? 'sxg-note-green' : 'sxg-note') + '">' +
+        (src.count
+          ? '<strong>说明：</strong>本卡依据独立公开来源（媒体报道多源交叉 + 企业公开的放假／录用通知），' +
+            '上方 ' + src.count + ' 条均可点开原文核对；证据强度归「媒体报道／调查」一档，不是榜单二手汇总。' +
+            '本站未做员工实测，真实双休率与平均下班时间留空为「未核实」，不据估算改档。'
+          : '<strong>说明：</strong>该品牌为社区提交数据，尚未接入公开司法文书与官方通报的交叉核验，' +
+            '证据强度低于已核验档案。请以实际排班与劳动合同为准。') +
       '</div>';
 
     var foot = el('div', 'sxg-actions right');
