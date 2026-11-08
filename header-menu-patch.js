@@ -191,19 +191,29 @@
     // 检查 URL 参数里的 star_check
     const urlParams = new URLSearchParams(window.location.search);
     const starCheck = urlParams.get('star_check');
+    const starDays = parseInt(urlParams.get('star_days') || '0');
+    
     if (starCheck) {
       let title = '';
       let message = '';
+      const remainingDays = Math.max(0, 7 - starDays);
+      
       if (starCheck === 'success') {
         title = '✅ GitHub 登录成功';
-        message = '已检测到你 starred 本仓库。starred 满 7 天后即可解锁国内高速 AI 服务。';
+        message = `已检测到你 Starred 本仓库，已 Star ${starDays} 天。已满足满 7 天要求，可解锁国内高速 AI 服务。`;
         localStorage.setItem('sxg_github_logged_in', '1');
         localStorage.setItem('sxg_github_has_star', '1');
+        localStorage.setItem('sxg_star_days', starDays.toString());
       } else {
-        title = '⚠️ 已登录，未检测到 starred';
-        message = '你已成功登录 GitHub，但还没 starred 本仓库。starred 后即可解锁国内高速 AI 服务。';
+        title = '⚠️ 未满足解锁条件';
+        if (starDays > 0) {
+          message = `你已 Starred 本仓库 ${starDays} 天，还需 ${remainingDays} 天满 7 天，即可解锁国内高速 AI 服务。`;
+        } else {
+          message = '你已成功登录 GitHub，但还没 Starred 本仓库。Starred 后满 7 天即可解锁国内高速 AI 服务。';
+        }
         localStorage.setItem('sxg_github_logged_in', '1');
         localStorage.setItem('sxg_github_has_star', '0');
+        localStorage.setItem('sxg_star_days', starDays.toString());
       }
       showModal(title, message, '知道了');
       // 清除 URL 参数，避免刷新重复提示
@@ -224,10 +234,17 @@
         if (isLoggedIn === '1') {
           e.preventDefault();
           const hasStar = localStorage.getItem('sxg_github_has_star') === '1';
+          const starDays = parseInt(localStorage.getItem('sxg_star_days') || '0');
+          const remainingDays = Math.max(0, 7 - starDays);
+          
           if (hasStar) {
-            showModal('✅ 已登录', '你已登录 GitHub，且已 starred 本仓库。starred 满 7 天后自动解锁国内高速 AI 服务。', '知道了');
+            if (starDays >= 7) {
+              showModal('✅ 已解锁', `你已 Starred 本仓库 ${starDays} 天，满足满 7 天要求，可使用国内高速 AI 服务。`, '知道了');
+            } else {
+              showModal('⏳ 等待中', `你已 Starred 本仓库 ${starDays} 天，还需 ${remainingDays} 天满 7 天解锁。`, '知道了');
+            }
           } else {
-            showModal('⚠️ 未 starred 仓库', '你已登录 GitHub，但还没 starred 本仓库。starred 后即可解锁国内高速 AI 服务。', '去 starred');
+            showModal('⚠️ 未 Starred 仓库', '你已登录 GitHub，但还没 Starred 本仓库。Starred 后满 7 天即可解锁国内高速 AI 服务。', '去 Starred');
           }
         }
         // 没登录的话，正常跳转到授权页
