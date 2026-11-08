@@ -15,6 +15,11 @@
   function buildStyle() {
     if (document.getElementById(STYLE_ID)) return;
     var css = [
+      /* 手机端先隐藏原来的 4 个按钮，避免加载时闪烁 */
+      '@media (max-width:640px){',
+      '  .sxg-header-btn{display:none !important;}',
+      '}',
+
       /* 手机端才显示这个折叠按钮 */
       '#' + TOGGLE_ID + '{display:none;}',
 
