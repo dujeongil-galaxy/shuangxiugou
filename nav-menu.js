@@ -43,13 +43,17 @@
   // 「证据链公示」是页内锚点：公告栏在手机上默认折叠成一行，不想点「展开」
   // 的人也能从这儿一步跳到证据链区块（2026-11-02 站长：折叠后跳转要有去处）。
   var ITEMS = [
-    { label: '提交数据 / 申诉', href: 'https://github.com/dujeongil-galaxy/shuangxiugou/issues', external: true },
-    { label: '★ Star on GitHub', href: 'https://github.com/dujeongil-galaxy/shuangxiugou', external: true },
-    { label: '☕ 赞助本项目', href: './sponsor.html' },
-    { label: '🔑 Login GitHub', href: '#', id: 'menu-login-github' },
     { label: '证据链公示', href: '#evidence-board' },
     { label: '同类项目导航', href: './projects.html' },
     { label: '成功案例', href: './success-stories.html' }
+  ];
+
+  // 手机端才有的额外菜单项（PC 端右上角按钮保留，不挪下来）
+  var MOBILE_ONLY_ITEMS = [
+    { label: '提交数据 / 申诉', href: 'https://github.com/dujeongil-galaxy/shuangxiugou/issues', external: true },
+    { label: '★ Star on GitHub', href: 'https://github.com/dujeongil-galaxy/shuangxiugou', external: true },
+    { label: '☕ 赞助本项目', href: './sponsor.html' },
+    { label: '🔑 Login GitHub', href: '#', id: 'menu-login-github' }
   ];
 
   function buildStyle() {
@@ -156,7 +160,14 @@
   function ensureItems() {
     if (built || !panel) return;
     built = true;
-    ITEMS.forEach(function (it) {
+
+    // 手机端才把右上角的 4 个按钮挪到下拉菜单里（PC 端右上角保留，不重复）
+    var items = ITEMS.slice();
+    if (isMobile()) {
+      items = MOBILE_ONLY_ITEMS.concat(items);
+    }
+
+    items.forEach(function (it) {
       var a = document.createElement('a');
       a.className = 'sxg-nav-item';
       a.href = it.href;
