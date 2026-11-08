@@ -32,11 +32,13 @@
       '    flex-direction:column;gap:0;background:#fff;border-radius:14px;',
       '    box-shadow:0 8px 24px rgba(0,0,0,.18);overflow:hidden;z-index:1000;min-width:180px;}',
       '  #' + MENU_ID + '.is-open{display:flex;}',
-      '  #' + MENU_ID + ' a{display:block;padding:12px 16px;color:#1f2937;text-decoration:none;',
+      '  #' + MENU_ID + ' a{display:block;padding:12px 16px !important;color:#1f2937 !important;',
+      '    background:#fff !important;text-decoration:none;',
       '    font:500 14px/1.4 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;',
-      '    border-bottom:1px solid #f3f4f6;}',
-      '  #' + MENU_ID + ' a:last-child{border-bottom:none;}',
-      '  #' + MENU_ID + ' a:active{background:#f9fafb;}',
+      '    border-bottom:1px solid #f3f4f6 !important;border-radius:0 !important;',
+      '    box-shadow:none !important;}',
+      '  #' + MENU_ID + ' a:last-child{border-bottom:none !important;}',
+      '  #' + MENU_ID + ' a:active{background:#f9fafb !important;}',
       '}'
     ].join('');
     var style = document.createElement('style');
