@@ -4,6 +4,15 @@
 
 ---
 
+### fix：搜索删空近白磨砂加「加载中…」动效 + 白屏崩溃恢复卡片（2026-11-08 19:33 · 提交 `a3ea7c8`）
+
+- **站长指令**（2026-11-08 傍晚）：「当我删除搜索结果的视频，整站都白屏了，为了防止用户误退出，做一个加载动画吧」。经确认指的是**拼音搜索框删空**（不是视频功能），此前误读已澄清。
+- **根因**：`filter-flash.js` 的整屏 frosted 遮罩底色 `rgba(252,252,253,0.9)` 接近纯白 + `blur(36px)`，删空搜索后覆盖全屏最长约 1.7s（顺序复位回放期间由 `sxg-scof-hold` 挂起撤除），视觉上就是一片白；站点 React 又没有错误边界，任何渲染抛错都会直接卸载整棵 `#root` → 永久白屏。CDP 复现（普通删除 / 模拟 IME 两条路径）均未触发 React 卸载，故主因是近白遮罩被误判成卡死。
+- **改法**：① 遮罩内加转圈 + 「加载中…」小卡（含 `@keyframes` 与 `prefers-reduced-motion` 降级），评级切换与搜索清空共用同一节点；② 新增 `white-screen-guard.js`，`MutationObserver` 盯 `#root`，挂载过之后被卸载即显示「页面出了一点问题 / 重新加载页面」恢复卡片（`booted` 门槛防首屏误报、`shown` 幂等、重新挂载自动移除、`role=alert`）；③ `index.html` 引入 `white-screen-guard.js?v=1`、`filter-flash.js` 的 `?v` 5→6（§21h 缓存纪律）。纯 DOM 补丁，压缩产物零改动。
+- **机器强制**：`verify.mjs` §17b 加 3 条加载态断言、新增 §24 十条兜底断言；`test-search-clear-flash.cjs` 加 4 条，新增 `test-white-screen-guard.cjs` 并注册进 `verify.yml`（§21o）。一批 13 项故障注入（漏挂脚本 / 去 `booted` 门槛 / 去幂等 / 去动画 / 缓存号回退 / 塞 emoji / 测试漏挂 CI 等）全部判红并逐字节还原，正向对照 **1489 项**全绿。
+- **验证**：**37/37** 组 `test-*.cjs` 回归全过；无头 Edge + CDP 真渲染确认 `spinAnimation=sxg-flash-spin`、文案「加载中…」上屏，`#root` 清空后恢复卡片 `role=alert` / 按钮 / `z-index=2147483646` 正常，两张截图肉眼复核通过。
+- **改了哪些文件**：`filter-flash.js`、`white-screen-guard.js`（新增）、`index.html`、`scripts/verify.mjs`、`scripts/test-search-clear-flash.cjs`、`scripts/test-white-screen-guard.cjs`（新增）、`.github/workflows/verify.yml`，以及 README「近期 bug 根因」/ `最近更新.md` / 本文件三处记账。本批 `fix:`，按 §21n 立条。
+
 ### fix：AI 挂件网络异常文案缺失 + max_tokens 断言漂移 + ai-chat.js ?v bump（2026-11-08 16:33 · 提交 `b11f8b1`）
 
 - **背景**：CI run #575 判红，但与此前推送的 2018 章节无关，是 a15aef1 那批 VPN/模型改动的遗留漂移。`ai-chat.js` 网络异常 catch 文案被 a15aef1 改 VPN 文案时误删「网络异常」四字，导致 `test-ai-chat.cjs` ⑧ 判红；`worker.js` 已为 GLM-4.7-flash 推理模型把 `max_tokens` 调到 2000，但 `test-ai-worker.cjs` 断言仍停在 ≤600，导致该测试判红。
