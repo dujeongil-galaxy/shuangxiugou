@@ -2244,8 +2244,8 @@ if (exists('notes.html')) {
     const pos = rows.map(([id]) => wrap.indexOf('recordId=' + id));
 
     contentCheck(plain !== null && topicIdx >= 0 && topicIdx === hs.length - 2
-      && /^十三、/.test(hs[topicIdx].t),
-      '测评结果专题固定在正文最后一章（十三、，附之前）',
+      && /^十四、/.test(hs[topicIdx].t),
+      '测评结果专题固定在正文最后一章（十四、，附之前）',
       '专题不是倒数第二个 h2 → 以后新章插到它后面，「永远保持在最后一章」就失守了');
     contentCheck(plain !== null && /固定留在末尾|固定在?正文最后/.test(topicText)
       && /逐步更新/.test(topicText) && /token/.test(topicText),
@@ -5891,8 +5891,8 @@ section('21c. 首页滑到底部按钮');
     'stub 面板有「开通中」提示文案（欢迎语 + 占位符）');
   check(/input\.disabled = true/.test(aiChat) && /send\.disabled = true/.test(aiChat),
     'stub 模式输入框与发送按钮禁用');
-  check(/endpoint: ''/.test(aiCfg),
-    'ai-config.js 默认 endpoint 为空串（部署 Worker 后填入即激活）');
+  check(/endpoint: '(?:https?:\/\/[^']+)?'/.test(aiCfg),
+    'ai-config.js endpoint 为合法字符串（空串=关闭，或 https Worker 地址=开启）');
   check(/window\.SXG_AI_CONFIG/.test(aiCfg) && /window\.SXG_AI_CONFIG \|\| \{\}/.test(aiChat),
     '配置读取走 window.SXG_AI_CONFIG（两侧同源）');
 
@@ -5920,8 +5920,8 @@ section('21c. 首页滑到底部按钮');
   check(/recent\.length >= 20/.test(worker),
     '每 IP 每小时 20 次限流（429）');
   // 输出上限
-  check(/max_tokens: 600/.test(worker),
-    'max_tokens 600（输出是 neuron 大头）');
+  check(/max_tokens: 2000/.test(worker),
+    'max_tokens 2000（GLM-4.7-flash 推理模型，reasoning 吃掉大量 token，输出是 neuron 大头，需留足空间）');
   // 模型
   check(/@cf\/zai-org\/glm-4\.7-flash/.test(worker),
     '模型 ID = @cf/zai-org/glm-4.7-flash（Workers AI 免费层）');
@@ -6147,9 +6147,9 @@ section('21c. 首页滑到底部按钮');
     '成功案例页含「案例 #02」',
     '案例 #02 缺失 → 新增案例没落地');
   // 序号连续性：新增后 wip 卡必须同步推进到 #04，否则下一条会撞号
-  check(/案例 #04 起整理中/.test(ss),
-    '待补充卡已推进到「案例 #04 起」（新增案例后序号不许撞车）',
-    'wip 卡仍停在旧序号 → 下一条案例会与已有编号重复');
+  check(/前辈案例整理中/.test(ss) && /案例 #04/.test(ss),
+    '待补充卡已推进（致敬前辈板块标注「前辈案例整理中」，且案例 #04 已落地为真实案例）',
+    'wip/致敬卡缺失或案例 #04 未落地 → 新增案例序号可能撞车');
 
   // ① AI 生成披露（站长硬要求）
   check(/class="ai-badge"[^>]*>\s*内容由 AI 生成/.test(case02),
