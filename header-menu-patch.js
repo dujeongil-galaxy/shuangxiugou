@@ -201,7 +201,7 @@
       
       if (starCheck === 'success') {
         title = '✅ GitHub 登录成功';
-        message = `已检测到你 Starred 本仓库，已 Star ${starDays} 天。\nStar 日期：${starDate}\n\n已满足满 7 天要求，可解锁国内高速 AI 服务。`;
+        message = `已检测到你 Starred 本仓库，今天是第 ${starDays} 天。\nStar 日期：${starDate}\n\n已达成满 7 天要求，可解锁国内高速 AI 服务。`;
         localStorage.setItem('sxg_github_logged_in', '1');
         localStorage.setItem('sxg_github_has_star', '1');
         localStorage.setItem('sxg_star_days', starDays.toString());
@@ -209,7 +209,7 @@
       } else {
         title = '⏳ 等待解锁';
         if (starDays > 0) {
-          message = `你已 Starred 本仓库 ${starDays} 天，还需 ${remainingDays} 天满 7 天。\nStar 日期：${starDate}\n\n满 7 天后即可解锁国内高速 AI 服务。`;
+          message = `你已 Starred 本仓库，今天是第 ${starDays} 天，还需 ${remainingDays} 天满 7 天。\nStar 日期：${starDate}\n\n满 7 天后即可解锁国内高速 AI 服务。`;
         } else {
           message = '你已成功登录 GitHub，但还没 Starred 本仓库。Starred 后满 7 天即可解锁国内高速 AI 服务。';
         }
@@ -243,9 +243,9 @@
           
           if (hasStar) {
             if (starDays >= 7) {
-              showModal('✅ 已解锁', `你已 Starred 本仓库 ${starDays} 天，满足满 7 天要求。\nStar 日期：${starDate}\n\n可使用国内高速 AI 服务。`, '知道了');
+              showModal('✅ 已解锁', `你 Starred 本仓库，今天是第 ${starDays} 天，已达成要求。\nStar 日期：${starDate}\n\n可使用国内高速 AI 服务。`, '知道了');
             } else {
-              showModal('⏳ 等待中', `你已 Starred 本仓库 ${starDays} 天，还需 ${remainingDays} 天满 7 天。\nStar 日期：${starDate}`, '知道了');
+              showModal('⏳ 等待中', `你 Starred 本仓库，今天是第 ${starDays} 天，还需 ${remainingDays} 天满 7 天。\nStar 日期：${starDate}`, '知道了');
             }
           } else {
             showModal('⚠️ 未 Starred 仓库', '你已登录 GitHub，但还没 Starred 本仓库。Starred 后满 7 天即可解锁国内高速 AI 服务。', '去 Starred');
