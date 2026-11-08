@@ -27,7 +27,7 @@ const b2u=await ev(clickWaitExpr('U 级',700)); console.log('B级→U:', b2u);
 // S → U
 await reset(); await ev(clickWaitExpr('S 级',600)); console.log('S 级基线:', await ev(STATE));
 const s2u=await ev(clickWaitExpr('U 级',700)); console.log('S级→U:', s2u);
-// U 激活后再点 U 取消 → 回到全部(173)
+// U 激活后再点 U 取消 → 回到全部(174)
 await reset(); await ev(clickWaitExpr('U 级',600)); console.log('U 激活:', await ev(STATE));
 const off=await ev(clickWaitExpr('U 级',600)); console.log('U 取消→全部:', off);
 // 普通 A 级过滤仍正常

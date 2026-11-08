@@ -20,13 +20,18 @@ const server = http.createServer((req, res) => {
 });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+// 2026-11-08：每个用例用独立调试端口。原来三个用例复用 19615，
+// 而 Windows 上 edge.kill() 只杀主进程、子进程会残留并占住端口，
+// 第三个用例常因此等不到 CDP（30s 超时）。端口递增即彻底隔离。
+let caseSeq = 0;
 async function runCase(w, h, autoExpand, label, mobileCheck) {
-  const edge = spawn(EDGE, ['--headless=new', '--disk-cache-size=1', `--remote-debugging-port=${DBG}`,
-    '--no-first-run', '--user-data-dir=' + path.join(__dirname, 'edgeprof-anchor' + Date.now())], { stdio: 'ignore' });
+  const dbg = DBG + caseSeq++ * 2;
+  const edge = spawn(EDGE, ['--headless=new', '--disk-cache-size=1', `--remote-debugging-port=${dbg}`,
+    '--no-first-run', '--user-data-dir=' + path.join(__dirname, 'edgeprof-anchor' + Date.now() + '-' + caseSeq)], { stdio: 'ignore' });
   // 轮询等 CDP 端口就绪（CI 机器慢，固定 sleep 会在第二个用例踩 ECONNREFUSED）
   let list = null;
   for (let i = 0; i < 60; i++) {
-    try { list = await (await fetch(`http://127.0.0.1:${DBG}/json`)).json(); break; }
+    try { list = await (await fetch(`http://127.0.0.1:${dbg}/json`)).json(); break; }
     catch (e) { await sleep(500); }
   }
   if (!list) throw new Error('Edge CDP 端口 30s 内未就绪');

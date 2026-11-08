@@ -16,8 +16,14 @@ import-brands.py —— 把「双休公司推荐名单 2026」榜单里的品牌
 不会越插越多。行尾按各文件原样保留（仓库 .gitattributes 锁 LF，
 mobile-fixes.css 等少数文件是 CRLF）。
 
-用法：
-    python -X utf8 scripts/import-brands.py
+用法（2026-11-08 起）：
+    python -X utf8 scripts/import-brands.py --only <slug>   # 增量新增，唯一允许的方式
+    python -X utf8 scripts/import-brands.py                 # 全量重建，已被 guard_full_rebuild 拒绝
+
+为什么不能全量重跑：导入之后 brand/ 详情页又人工补了招聘证据与 data-evchain
+证据链区块，index.html 的卡片补了 logo、并把 insertAfter 锚点从有 bug 的
+'nongfu' 修成 '茶百道'；模板里没有这些后续成果，全量重跑会把它们一起抹掉。
+详见 guard_full_rebuild() 与 incremental()。
 """
 import json
 import os
@@ -244,20 +250,35 @@ footer{{margin-top:36px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:
 
 
 def build_page(b, total, peers):
-    desc = ('%s 休息制度与加班情况：%s。%s。评级 %s 级（按本站月休口径换算，'
-            '榜单口径导入，真实双休率未核实）。证据来源随页公示。'
-            % (b['name'], b['policy'], b['overtime'], b['grade']))
-    reasons = '\n'.join(
-        '<li>%s</li>' % esc(x) for x in [
-            '上游榜单原话：%s' % b['quote'],
-            '按本站月休口径换算：%s → %s 级（%s）' % (b['policy'], b['grade'], GRADE_DESC[b['grade']]),
-            '本站未对该品牌做独立实测，评级可能随新证据调整',
-        ])
-    evidence = (
-        '<li style="margin:0 0 12px"><strong>%s</strong> '
-        '<span style="color:#6b7280;font-size:13px">（%s · %s）</span><br>'
-        '%s <a href="%s">原文</a></li>'
-        % (esc(SRC_TITLE), SRC_DATE, EVID_KIND, esc(b['quote']), SRC_URL))
+    # 2026-11-08：站长新增「陆喜依」这类**非榜单来源**品牌 —— 它没有出现在
+    # 即答侠榜单里，硬套 SRC_TITLE/SRC_URL 会在详情页写出一条并不存在的证据
+    # （口说无凭，正是证据链公示要防的事）。这类品牌用 sourceOverride 自带
+    # 一手来源；未带该字段的 104 张榜单卡输出逐字不变，保证幂等、零 diff。
+    so = b.get('sourceOverride')
+    if so:
+        desc = ('%s 休息制度与加班情况：%s。%s。评级 %s 级（%s）。证据来源随页公示。'
+                % (b['name'], b['policy'], b['overtime'], b['grade'], so['descNote']))
+        reasons = '\n'.join('<li>%s</li>' % esc(x) for x in so['reasons'])
+        evidence = (
+            '<li style="margin:0 0 12px"><strong>%s</strong> '
+            '<span style="color:#6b7280;font-size:13px">（%s · %s）</span><br>'
+            '%s <a href="%s">原文</a></li>'
+            % (esc(so['title']), so['date'], so['kind'], esc(so['summary']), so['url']))
+    else:
+        desc = ('%s 休息制度与加班情况：%s。%s。评级 %s 级（按本站月休口径换算，'
+                '榜单口径导入，真实双休率未核实）。证据来源随页公示。'
+                % (b['name'], b['policy'], b['overtime'], b['grade']))
+        reasons = '\n'.join(
+            '<li>%s</li>' % esc(x) for x in [
+                '上游榜单原话：%s' % b['quote'],
+                '按本站月休口径换算：%s → %s 级（%s）' % (b['policy'], b['grade'], GRADE_DESC[b['grade']]),
+                '本站未对该品牌做独立实测，评级可能随新证据调整',
+            ])
+        evidence = (
+            '<li style="margin:0 0 12px"><strong>%s</strong> '
+            '<span style="color:#6b7280;font-size:13px">（%s · %s）</span><br>'
+            '%s <a href="%s">原文</a></li>'
+            % (esc(SRC_TITLE), SRC_DATE, EVID_KIND, esc(b['quote']), SRC_URL))
     for extra in b.get('extraEvidence', []):
         evidence += (
             '\n<li style="margin:0 0 12px"><strong>%s</strong> '
@@ -282,12 +303,47 @@ def build_page(b, total, peers):
         '  <p style="margin:8px 0 0">▶ <a href="https://v.douyin.com/MRH7AWoBVyA/" '
         'target="_blank" rel="noopener noreferrer">前往抖音查看官方报道（教你识别心机商标）</a></p>\n'
         '</div>' % (esc(tm['marks']), esc(tm['status'])))
-    return PAGE.format(trademark=trademark, 
+    page = PAGE.format(trademark=trademark,
         slug=b['slug'], name=esc(b['name']), desc=esc(desc), category=esc(b['category']),
         grade=b['grade'], color=GRADE_COLOR[b['grade']], grade_desc=GRADE_DESC[b['grade']],
         advice=GRADE_ADVICE[b['grade']], policy=esc(b['policy']), overtime=esc(b['overtime']),
         quote=esc(b['quote']), products=esc(b['products']),
         reasons=reasons, evidence=evidence, peers=peer_html, total=total)
+    if so:
+        page = apply_source_override(page, so, b['grade'])
+    return page
+
+
+def apply_source_override(page, so, grade):
+    """非榜单来源品牌：模板里的「榜单口径导入」是假的，必须换成真实口径。
+
+    采用**事后精确替换**而不是给模板加占位符 —— 默认（榜单）路径完全不走这里，
+    既有 104 张页输出逐字不变；每个替换都 assert 命中，锚点失效立刻报错，
+    不会静默留下不实表述。
+    """
+    def rep(old, new, label):
+        nonlocal page
+        assert old in page, 'sourceOverride 替换锚点失效：%s' % label
+        page = page.replace(old, new, 1)
+
+    rep('榜单口径导入 2026-11-02', so['subNote'], '副标题')
+
+    m = re.search(r'<h2>数据口径说明</h2>\s*<p>[\s\S]*?</p>', page)
+    assert m, 'sourceOverride 找不到「数据口径说明」段'
+    page = page.replace(m.group(0),
+                        '<h2>数据口径说明</h2>\n<p>%s</p>' % esc(so['scopeText']), 1)
+
+    rep('本页为<strong>榜单口径导入</strong>，证据强度归入「旁证／二手汇总」一档。',
+        esc(so['sourceNote']), '免责段来源说明')
+
+    chain = '\n'.join('    <li><strong>%s</strong>：%s</li>' % (esc(k), esc(v))
+                      for k, v in so['chain'])
+    chain_html = ('<div class="box" id="evidence-chain" data-evchain="1" style="margin:14px 0">\n'
+                  '  <p style="margin:0 0 8px"><strong>证据链（本页 %s 级判据的来源与缺口）</strong></p>\n'
+                  '  <ol style="margin:0;padding-left:20px;font-size:14px;line-height:1.7">\n'
+                  '%s\n  </ol>\n</div>\n\n' % (grade, chain))
+    rep('<h2>证据来源</h2>', chain_html + '<h2>证据来源</h2>', '证据链插入点')
+    return page
 
 
 # ---------------------------------------------------------------- 卡片配置
@@ -300,17 +356,26 @@ def build_card(b, anchor):
     # 把 slug（如 ymttc）和产品长串塞进去会让短查询（mt/hw/ping）命中一堆
     # 本该排在后面的卡，把主名命中的老品牌挤掉（2026-11-02 导入时实测踩到）。
     kws = [b['name'], b['category']]
-    color = 'green' if b['grade'] == 'A' else 'red'
-    tip = {'A': '✅ 榜单口径双休（待独立复核）',
+    so = b.get('sourceOverride')
+    # 2026-11-08：新增 S 级（站长指定「陆喜依」）。原 tip 字典只有 A/B/C，
+    # 直接给 S 会 KeyError；颜色也只认 A 为绿，S 会误标成红。
+    color = 'green' if b['grade'] in ('S', 'A') else 'red'
+    tip = {'S': '✅ 公开双休制度 · 站长指定 S 级（员工实测待补）',
+           'A': '✅ 榜单口径双休（待独立复核）',
            'B': '⚠️ 大小周 / 双休不稳',
            'C': '⚠️ 单休或严重超时'}[b['grade']]
-    desc = ('%s。榜单口径：%s；%s。代表产品／业务：%s。'
-            '（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）'
-            % (b['quote'], b['policy'], b['overtime'], b['products']))
+    if so:
+        desc = so['cardDesc']
+        company = so.get('company', b['name'])
+    else:
+        desc = ('%s。榜单口径：%s；%s。代表产品／业务：%s。'
+                '（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）'
+                % (b['quote'], b['policy'], b['overtime'], b['products']))
+        company = b['name'] + '（集团主体，未独立核实）'
     return '''        {
           id: '%s',
           name: '%s',
-          company: '%s（集团主体，未独立核实）',
+          company: '%s',
           logo: null,
           logoAlt: '%s',
           workPolicy: '%s',
@@ -329,7 +394,7 @@ def build_card(b, anchor):
           category: '%s',
           grade: '%s级'
         }''' % (
-        b['slug'] + '-card', jsq(b['name']), jsq(b['name']), jsq(b['name']),
+        b['slug'] + '-card', jsq(b['name']), jsq(company), jsq(b['name']),
         jsq(b['policy']), jsq(b['overtime']), jsq(desc),
         ', '.join("'%s'" % jsq(t) for t in tags),
         jsq(tip), color, jsq(anchor),
@@ -359,12 +424,117 @@ PJ_START = '<!-- IMPORTED-PROJECTS-START -->'
 PJ_END = '<!-- IMPORTED-PROJECTS-END -->'
 
 
+def guard_full_rebuild():
+    """2026-11-08：全量重建会把导入之后人工补进 brand/ 页的成果抹掉。
+
+    实测踩到：brand/tongyi.html 里后补的两条招聘证据 + data-evchain 证据链区块
+    被模板覆盖；index.html 卡片的 logo 从 ./assets/logo/*.svg 退回 null；
+    修过 bug 的 insertAfter: '茶百道' 退回 'nongfu'（verify §21i 会判红）。
+    所以全量模式一律拦下，新增品牌必须走 --only 增量。
+    """
+    probe = 'brand/tongyi.html'
+    if os.path.exists(probe):
+        text = open(probe, encoding='utf-8').read()
+        if 'data-evchain' in text or '汇博招聘' in text:
+            sys.exit('拒绝全量重建：brand/ 详情页含导入模板不会生成的补充证据／证据链区块，'
+                     '重跑会连 logo 与 insertAfter 锚点一起回退。'
+                     '新增单个品牌请用：python -X utf8 scripts/import-brands.py --only <slug>')
+
+
+def incremental(only, brands, existing, total):
+    """只把 --only 指定的品牌追加进五处；既有 104 张卡／页逐字不动。"""
+    target = [b for b in brands if b['slug'] == only]
+    if len(target) != 1:
+        sys.exit('--only 指定的 slug 在数据集里必须恰好 1 条：%s' % only)
+    b = target[0]
+    slug = b['slug']
+
+    # 同级互链从全量 brands 取，保证新页不是孤儿页
+    peers = [p for p in brands if p['grade'] == b['grade'] and p['slug'] != slug][:5]
+    if len(peers) < 3:
+        peers += [p for p in brands if p['slug'] != slug and p not in peers][:3 - len(peers)]
+
+    # 1. 详情页（只写这一页）
+    with open('brand/%s.html' % slug, 'wb') as fh:
+        fh.write(build_page(b, total, peers).encode('utf-8'))
+    print('详情页：新增 brand/%s.html（共 %d 家）' % (slug, total))
+
+    # 2. index.html：卡片 + noscript + 标题数字
+    html, crlf_html = read_text('index.html')
+    card_id = "id: '%s-card'" % slug
+    bi = brands.index(b)
+    prev = brands[bi - 1]['slug'] + '-card' if bi > 0 else 'nongfu'
+    new_card = build_card(b, prev)
+    if card_id in html:
+        # 2026-11-08：原实现直接「跳过」，数据文件改了字段（如 company）却不会
+        # 同步到页面，单一真相源就断了。改为重新生成该卡块，仍然幂等。
+        pos = html.find(card_id)
+        start = html.rfind('        {\n', 0, pos)
+        end = html.find('\n        }', pos) + len('\n        }')
+        assert start > 0 and end > start, '找不到已存在卡片的完整块'
+        assert html.find(CARDS_START) < start < html.find(CARDS_END), '卡片不在导入锚点内'
+        html = html[:start] + new_card + html[end:]
+        print('index.html：重新生成已存在的卡片配置（数据变更同步）')
+    else:
+        i = html.find(CARDS_END)
+        assert i > 0, '找不到 IMPORTED-CARDS-END 锚点'
+        prefix = html[:i].rstrip('\n')
+        assert prefix.rstrip().endswith('}'), '卡片块结尾不是 }，拒绝盲插'
+        html = prefix + ',\n' + new_card + '\n' + html[i:]
+    ns_i = html.find(NS_END)
+    assert ns_i > 0, '找不到 IMPORTED-NOSCRIPT-END 锚点'
+    ns_start = html.find(NS_START)
+    if ('brand/%s.html' % slug) not in html[ns_start:ns_i]:
+        html = html[:ns_i] + build_noscript_li(b) + '\n' + html[ns_i:]
+    html = re.sub(r'全部品牌详细页（\d+ 个）',
+                  '全部品牌详细页（%d 个）' % total, html)
+    # 2026-11-08 补：noscript 里还有一处手写「（共 N 家）」标题，生成器原先
+    # 只改「N 个」那处，导致 verify「全部共 N 家一致」判红（174 / 173 并存）。
+    html = re.sub(r'已收录企业双休评级与平均下班时间（共 \d+ 家）',
+                  '已收录企业双休评级与平均下班时间（共 %d 家）' % total, html)
+    write_text('index.html', html, crlf_html)
+    print('index.html：卡片 +1、noscript +1、标题 %d 个' % total)
+
+    # 3. projects.html
+    pj, crlf_pj = read_text('projects.html')
+    pj_i = pj.find(PJ_END)
+    assert pj_i > 0, '找不到 IMPORTED-PROJECTS-END 锚点'
+    pj_start = pj.find(PJ_START)
+    if ('brand/%s.html' % slug) not in pj[pj_start:pj_i]:
+        pj = pj[:pj_i] + build_project_li(b) + '\n' + pj[pj_i:]
+    pj = re.sub(r'本站收录的企业双休明细（\d+ 个品牌）',
+                '本站收录的企业双休明细（%d 个品牌）' % total, pj)
+    write_text('projects.html', pj, crlf_pj)
+    print('projects.html：索引 +1、标题 %d 个品牌' % total)
+
+    # 4. sitemap.xml：只追加，绝不重建（重建会把既有 lastmod 全刷成旧日期）
+    sm = open('sitemap.xml', encoding='utf-8').read()
+    if ('/brand/%s.html' % slug) not in sm:
+        pr = '0.8' if b['grade'] in ('S', 'A') else '0.7'
+        block = ('  <url>\n    <loc>https://dujeongil-galaxy.github.io/shuangxiugou/brand/%s.html</loc>\n'
+                 '    <lastmod>2026-11-08</lastmod>\n    <changefreq>monthly</changefreq>\n'
+                 '    <priority>%s</priority>\n  </url>\n' % (slug, pr))
+        sm = sm.replace('</urlset>', block + '</urlset>')
+        with open('sitemap.xml', 'wb') as fh:
+            fh.write(sm.encode('utf-8'))
+        print('sitemap.xml：追加 /brand/%s.html' % slug)
+
+
 def main():
     data = json.load(open(DATA, encoding='utf-8'))
     brands = data['brands']
     if not brands:
         sys.exit('数据集为空')
 
+    # --only 必须在 collide 检查之前分流：新增品牌的 slug 尚未有详情页，
+    # 原 collide 逻辑会把「104 个已存在 + 1 个新增」误判成冲突并退出。
+    if len(sys.argv) >= 3 and sys.argv[1] == '--only':
+        all_pages = sorted(f[:-5] for f in os.listdir('brand') if f.endswith('.html'))
+        slugs = {x['slug'] for x in brands}
+        existing = [s for s in all_pages if s not in slugs]
+        return incremental(sys.argv[2], brands, existing, len(existing) + len(brands))
+
+    guard_full_rebuild()
     existing = sorted(f[:-5] for f in os.listdir('brand') if f.endswith('.html'))
     imported_slugs = {b['slug'] for b in brands}
     collide = imported_slugs & set(existing)
@@ -431,6 +601,10 @@ def main():
     # 爬虫看到的却是一个自相矛盾的 noscript）。
     html = re.sub(r'全部品牌详细页（\d+ 个）',
                   '全部品牌详细页（%d 个）' % total, html)
+    # 2026-11-08 补：noscript 里还有一处手写「（共 N 家）」标题，生成器原先
+    # 只改「N 个」那处，导致 verify「全部共 N 家一致」判红（174 / 173 并存）。
+    html = re.sub(r'已收录企业双休评级与平均下班时间（共 \d+ 家）',
+                  '已收录企业双休评级与平均下班时间（共 %d 家）' % total, html)
     write_text('index.html', html, crlf_html)
     print('index.html：卡片 %d 张 + noscript %d 行' % (len(brands), len(brands)))
 
@@ -478,7 +652,8 @@ def main():
 
     # ---------- 统计 ----------
     g = Counter(b['grade'] for b in brands)
-    print('导入档位：A=%d B=%d C=%d（共 %d）' % (g['A'], g['B'], g['C'], len(brands)))
+    print('导入档位：S=%d A=%d B=%d C=%d（共 %d）'
+          % (g['S'], g['A'], g['B'], g['C'], len(brands)))
 
 
 if __name__ == '__main__':

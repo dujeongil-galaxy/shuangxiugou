@@ -7,7 +7,7 @@
 //   Tailwind 类名拼的，命中面比「品牌卡」宽 —— 「搜索 + 品类 + 评级过滤」那一整块
 //   操作区容器（div.bg-white.p-4.rounded-2xl.border.border-slate-200.shadow-sm.space-y-4）
 //   同样命中。它没有品牌标题、识别不到档位，旧代码 `tier !== gfActive` 一刀切
-//   display:none，于是 173 个节点里夹着搜索区一起被藏了。
+//   display:none，于是 174 个节点里夹着搜索区一起被藏了。
 //   修法：gfApply 加两道闸 —— ① 只认带 h2/h3 品牌标题的节点为卡片；② 档位识别不到
 //   就不动（与 stat-filter 的 `tier === null → return` 同口径）。
 //

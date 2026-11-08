@@ -572,12 +572,13 @@ const headerStat = (label, cls) => {
   return m ? Number(m[1]) : null;
 };
 check(virtual2e === 1, '虚拟对比卡恰 1 张（口径排除依据，id 变更需同步本节）', '实际 ' + virtual2e);
-// 2026-11-02 批量导入 104 张榜单卡（data/imported-brands.json 生成）后，16 → 120。
+// 2026-11-02 批量导入 104 张榜单卡（data/imported-brands.json 生成）后，16 → 120；
+// 2026-11-08 新增「陆喜依」（独立公开来源，非榜单导入）→ 121 张导入卡。
 // 这个数不是「随便写死」：它同时被 §2e 的四格统计、brand/ 页数、公告栏数字三处引用，
 // 任何一处生成器漏跑都会在这里对不上，所以必须保留为硬断言。
-const IMPORTED_CARD_COUNT = 104;
+const IMPORTED_CARD_COUNT = 105;
 check(customPairs2e.length === 17 + IMPORTED_CARD_COUNT,
-  `能解析全部自定义卡（${17 + IMPORTED_CARD_COUNT} 张 = 17 张手工卡含联通 + ${IMPORTED_CARD_COUNT} 张榜单导入卡）`,
+  `能解析全部自定义卡（${17 + IMPORTED_CARD_COUNT} 张 = 17 张手工卡含联通 + ${IMPORTED_CARD_COUNT} 张导入卡（104 榜单 + 1 独立来源））`,
   '实际 ' + customPairs2e.length);
 check(headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') === statTotal,
   '顶部「收录品牌」= 实名企业卡总数', '页面 ' + headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') + ' / 计算 ' + statTotal + '（改 bundle 顶部统计常数）');
@@ -1350,8 +1351,8 @@ if (cfgBlock) {
   }
 }
 const CUSTOM_COUNT = customCards.length;
-check(CUSTOM_COUNT === 17 + 104,
-  `自定义卡 ${CUSTOM_COUNT} 张（17 张手工 + 104 张榜单导入；2026-11-02 批量导入，2026-11-03 增联通 B 级）`);
+check(CUSTOM_COUNT === 17 + IMPORTED_CARD_COUNT,
+  `自定义卡 ${CUSTOM_COUNT} 张（17 张手工 + ${IMPORTED_CARD_COUNT} 张导入；2026-11-02 批量导入，2026-11-03 增联通 B 级，2026-11-08 增陆喜依 S 级）`);
 
 // null 规则：双休率 / 下班时间不得为占位 0，也不得是字符串 '未知'
 customCards.forEach((c) => {
@@ -6256,7 +6257,7 @@ section('21c. 首页滑到底部按钮');
     '按钮注入逻辑缺失或锚点文案失配 → D/U 卡永远无法被筛出');
   check(/'全部评级',\s*'S 级',\s*'A 级',\s*'B 级',\s*'C 级',\s*'D 级',\s*'U 级'/.test(idx),
     'index.html 自定义卡评级过滤枚举含「D 级」「U 级」',
-    'index.html 没跟上 → D/U 激活时 120 张自定义卡不会被同步隐藏（bundle 卡藏了自定义卡还在）');
+    'index.html 没跟上 → D/U 激活时 122 张自定义卡不会被同步隐藏（bundle 卡藏了自定义卡还在）');
   const rowTexts = (sf.match(/ROW_RATING_TEXTS = \[([^\]]*)\]/) || ['', ''])[1];
   check(/'D 级'/.test(rowTexts) && /'U 级'/.test(rowTexts),
     'stat-filter.js 评级行互斥枚举含「D 级」「U 级」（点 D/U 清五格筛选）',
@@ -6789,6 +6790,58 @@ section('24. 白屏兜底与加载态（防用户误退出）');
     '§24i 恢复卡片层级低于首屏加载层（2147483647），不与 boot 层打架');
   check(!/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(guard24),
     '§24j 兜底 UI 不依赖 emoji（用 CSS 图形，跨平台字形一致）');
+}
+
+// ---------- 25. 陆喜依 S 级卡与独立公开证据链（2026-11-08 站长指定）----------
+// 背景：站长给华龙网转载极目新闻报道，要求新增品牌卡、给 S 级、附证据链。
+// 这类品牌**不在**即答侠榜单里，硬套 SRC_URL 会写出并不存在的证据（口说无凭），
+// 所以数据链加了 sourceOverride。同批发现 import-brands.py 全量重跑会抹掉
+// 既有详情页后补的证据／证据链／logo／insertAfter 锚点，故加增量模式与保护。
+{
+  const impPath = 'data/imported-brands.json';
+  const imp25 = exists(impPath) ? JSON.parse(read(impPath)) : { brands: [] };
+  const lxy25 = imp25.brands.find((b) => b.slug === 'luxiyi');
+  check(!!lxy25, '§25a 数据链真相源含 luxiyi 条目');
+  if (lxy25) {
+    check(lxy25.grade === 'S', '§25b 陆喜依评级为 S 级（站长 2026-11-08 指定）');
+    const so25 = lxy25.sourceOverride || {};
+    check(so25.url === 'https://www.cqnews.net/web/content_1547903876716244992.html',
+      '§25c 主证据用站长给的华龙网/极目新闻链接（不许套榜单 SRC_URL）');
+    const ex25 = lxy25.extraEvidence || [];
+    check(ex25.length >= 4 && ex25.every((e) => /^https?:\/\//.test(e.url || '')),
+      '§25d ≥4 条独立佐证且都带可点原始链接', '实际 ' + ex25.length + ' 条');
+    check(Array.isArray(so25.chain) && so25.chain.length >= 5,
+      '§25e 证据链条目写明来源、交叉印证与待补缺口');
+  }
+  const pg25 = exists('brand/luxiyi.html') ? read('brand/luxiyi.html') : '';
+  check(/badge" style="background:#7c3aed">S 级评级/.test(pg25), '§25f 详情页 S 级徽标');
+  check(/id="evidence-chain" data-evchain="1"/.test(pg25), '§25g 详情页有显式证据链区块');
+  check(!/榜单口径导入|旁证／二手汇总/.test(pg25),
+    '§25h 非榜单来源品牌不写「榜单口径导入」等不实表述');
+  const evBlock25 = (pg25.match(/<h2>证据来源<\/h2>\s*<ul>([\s\S]*?)<\/ul>/) || ['', ''])[1];
+  const evCount25 = (evBlock25.match(/<li style="margin:0 0 12px">/g) || []).length;
+  check(evCount25 === 5, '§25i 证据来源恰好 5 条（主源 + 4 条交叉印证）', '实际 ' + evCount25);
+  check(evBlock25.includes('cqnews.net') && evBlock25.includes('view.inews.qq.com'),
+    '§25j 证据来源含主源与独立转载全文链接');
+  const idx25 = read('index.html');
+  const card25 = (idx25.match(/\{\s*\n\s*id: 'luxiyi-card'[\s\S]*?\n\s*\}/) || [''])[0];
+  check(/grade: 'S级'/.test(card25) && /doubleRestRate: null/.test(card25),
+    '§25k 首页卡为 S 级且真实双休率留空 null（不估填）');
+  check(/华龙网转载极目新闻/.test(card25), '§25l 卡面可见文案写明真实来源');
+  check(/\/brand\/luxiyi\.html/.test(idx25) && /全部品牌详细页（174 个）/.test(idx25),
+    '§25m noscript 清单含陆喜依且标题数字同步 174');
+  check(/\/brand\/luxiyi\.html/.test(read('projects.html')), '§25n projects.html 索引含陆喜依');
+  check(/\/brand\/luxiyi\.html/.test(read('sitemap.xml')), '§25o sitemap.xml 含陆喜依详情页');
+  const ebStart = idx25.indexOf('id="evidence-board"');
+  const eb25 = ebStart > 0 ? idx25.slice(ebStart, idx25.indexOf('</section>', ebStart)) : '';
+  check(/陆喜依/.test(eb25), '§25p 首页证据链公示区收录陆喜依');
+  check(/"id":"luxiyi-card"/.test(read('pinyin-index.js')), '§25q 拼音索引含陆喜依（可搜到）');
+  const impPy25 = read('scripts/import-brands.py');
+  check(/--only/.test(impPy25) && /def guard_full_rebuild/.test(impPy25)
+    && /重新生成已存在的卡片配置/.test(impPy25),
+    '§25r 导入脚本有增量模式 + 全量重建保护 + 已存在卡可重新生成');
+  check(/'双休红榜':\s*84/.test(read('rating-stats-patch.js')),
+    '§25s 四格红榜补丁同步为 84（S 级 +1）');
 }
 
 // ---------- 汇总 ----------

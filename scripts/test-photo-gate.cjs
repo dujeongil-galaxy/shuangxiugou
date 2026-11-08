@@ -495,11 +495,16 @@ function type(env, value) {
   const f = mkFetchReject();
   const api = gate.mount({ document: env.doc, localStorage: env.store, fetch: f, retryDelays: [10, 20] });
   api.verify('starfan', false);
-  return wait(150).then(() => {
+  // 2026-11-08：原来固定 wait(150) 在慢机/多用例并发时可能只跑完 2 次请求，
+  // 于是「3 次请求」和「网络提示」两条误判红。改成最多等 3s 的条件轮询，
+  // 等重试真正耗尽再断言（超时仍按真实值判红，不放水）。
+  return (async () => {
+    const deadline = Date.now() + 3000;
+    while (Date.now() < deadline && f.calls.length < 3) await wait(20);
     check('网络断 → 自动重试 2 次后才报错', f.calls.length === 3, f.calls.length);
     check('重试耗尽 → 网络提示', /网络不通/.test(el(env, 'sxg-gate-msg').textContent));
     check('网络断 → 门禁不解锁', el(env, 'sxg-photo-grid').hidden === true);
-  });
+  })();
 })();
 
 (function () {
