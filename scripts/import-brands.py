@@ -237,7 +237,7 @@ footer{{margin-top:36px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:
 </footer>
 </div>
   <script src="../ai-config.js?v=1"></script>
-  <script src="../ai-chat.js?v=13"></script>
+  <script src="../ai-chat.js?v=18"></script>
 </body>
 </html>
 '''

@@ -423,7 +423,7 @@
       })
       .catch(function () {
         thinking.remove();
-        addMsg(log, 'err', '⚠️ 连不上 AI 服务——本站 AI 由 Cloudflare Workers 提供，国内网络无法直接访问，需开启 VPN：https://47.112.97.173:8000/register?aff=v17mHNYv ');
+        addMsg(log, 'err', '⚠️ 网络异常——连不上 AI 服务。本站 AI 由 Cloudflare Workers 提供，国内网络无法直接访问，需开启 VPN：https://47.112.97.173:8000/register?aff=v17mHNYv ');
       })
       .then(function () {
         busy = false;

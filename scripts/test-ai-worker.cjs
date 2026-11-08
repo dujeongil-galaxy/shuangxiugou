@@ -111,7 +111,7 @@ async function main() {
     check('AI 恰好调用一次', env.calls.length === 1);
     const call = env.calls[0];
     check('model ID = @cf/zai-org/glm-4.7-flash', call.modelId === '@cf/zai-org/glm-4.7-flash');
-    check('max_tokens ≤ 600', call.params.max_tokens <= 600);
+    check('max_tokens = 2000（GLM-4.7-flash 推理模型需留余量）', call.params.max_tokens === 2000);
 
     const msgs = call.params.messages;
     check('system 提示词在 messages[0]', msgs[0].role === 'system');
