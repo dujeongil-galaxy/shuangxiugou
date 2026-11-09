@@ -36,13 +36,14 @@ const noBadParams = (s) => BAD_PARAMS.every((p) => s.indexOf(p) === -1);
     <div class="bg-white rounded-2xl border"><div class="p-5"><h2>喜茶 (HEYTEA)</h2></div></div>
     <div class="bg-white rounded-2xl border"><div class="p-5"><h2>蜜雪冰城 (MIXUE)</h2></div></div>
     <div class="bg-white rounded-2xl border"><div class="p-5"><h2>霸王茶姬 (CHAGEE)</h2></div></div>
+    <div id="bingliw-card" class="bg-white rounded-2xl border"><div class="p-5"><h2>兵立王</h2></div></div>
     <div id="luckin-card" class="bg-white rounded-2xl border"><div class="p-5"><h2>瑞幸咖啡 (Luckin Coffee)</h2></div></div>
   </div></body></html>`, { runScripts: 'outside-only', pretendToBeVisual: true });
   const mw = mini.window;
   const patchSrc = read('luxiyi-alt-patch.js');
   mw.eval(patchSrc);
   const hook = mw.__sxgLuxiyiAlt;
-  check('补丁暴露测试钩子且清单为 6 家', !!hook && hook.targets.length === 6,
+  check('补丁暴露测试钩子且清单为 7 家', !!hook && hook.targets.length === 7,
     hook && hook.targets.map((t) => t.id));
   check('清洗后的店铺地址是零参数首页', !!hook && hook.shopUrl === CLEAN_URL, hook && hook.shopUrl);
   check('补丁源码不含账号/追踪参数', noBadParams(patchSrc));
@@ -50,11 +51,11 @@ const noBadParams = (s) => BAD_PARAMS.every((p) => s.indexOf(p) === -1);
 
   hook.apply();
   const boxes = () => mw.document.querySelectorAll('[data-luxiyi-alt="1"]');
-  check('6 张奶茶类卡片各挂一个推荐小块', boxes().length === 6, boxes().length);
+  check('7 张奶茶类卡片各挂一个推荐小块', boxes().length === 7, boxes().length);
   check('非奶茶类（瑞幸）不挂推荐块',
     !mw.document.getElementById('luckin-card').querySelector('[data-luxiyi-alt="1"]'));
   const links = [...mw.document.querySelectorAll('[data-luxiyi-alt="1"] a')];
-  check('每个推荐块都有可点链接', links.length === 6, links.length);
+  check('每个推荐块都有可点链接', links.length === 7, links.length);
   check('链接全部指向零参数店铺首页', links.every((a) => a.getAttribute('href') === CLEAN_URL));
   check('链接 target/rel 安全跳转齐备',
     links.every((a) => a.getAttribute('target') === '_blank'
@@ -66,7 +67,7 @@ const noBadParams = (s) => BAD_PARAMS.every((p) => s.indexOf(p) === -1);
   check('渲染结果不含账号/追踪参数', noBadParams(mw.document.body.innerHTML));
 
   hook.apply();
-  check('重复执行幂等（不叠加第二块）', boxes().length === 6, boxes().length);
+  check('重复执行幂等（不叠加第二块）', boxes().length === 7, boxes().length);
 
   // 档位护栏：改成 S 级后不再补挂
   const first = mw.document.getElementById('chabaidao-card');
@@ -74,7 +75,7 @@ const noBadParams = (s) => BAD_PARAMS.every((p) => s.indexOf(p) === -1);
   hook.targets[0].grade = 'S级';
   hook.apply();
   check('升到 S 级后不再推荐（B/C 级护栏生效）',
-    !first.querySelector('[data-luxiyi-alt="1"]') && boxes().length === 5, boxes().length);
+    !first.querySelector('[data-luxiyi-alt="1"]') && boxes().length === 6, boxes().length);
   hook.targets[0].grade = 'C级';
 
   // ─────────── 2. 真实 index.html：别名直接出结果 ───────────
@@ -145,10 +146,10 @@ const noBadParams = (s) => BAD_PARAMS.every((p) => s.indexOf(p) === -1);
   typeQuery('');
   check('回归：清空后小米卡恢复显示', visible());
 
-  // 首页六个奶茶卡也都挂上了推荐块
+  // 首页七个奶茶卡也都挂上了推荐块（兵立王 2026-11-09 补入清单，6→7）
   if (window.__sxgLuxiyiAlt) window.__sxgLuxiyiAlt.apply();
   const homeBoxes = doc.querySelectorAll('[data-luxiyi-alt="1"]');
-  check('首页奶茶类卡片全部挂上平替推荐块', homeBoxes.length >= 6, homeBoxes.length);
+  check('首页奶茶类卡片全部挂上平替推荐块', homeBoxes.length >= 7, homeBoxes.length);
   check('首页推荐链接全部为清洗 URL',
     [...homeBoxes].every((b) => {
       const a = b.querySelector('a');

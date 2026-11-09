@@ -6977,6 +6977,29 @@ section('24. 白屏兜底与加载态（防用户误退出）');
     && /奶茶／新茶饮类 B\/C 级品牌/.test(read('README.md'))
     && /不计入证据来源/.test(read('README.md')),
     '§26x README 写死链接清洗 / 平替适用范围 / 补充说明三条口径');
+
+  // ⑤ 2026-11-09 站长「去拼音搜索框找陆喜依，提交 logo」：
+  //    陆喜依品牌卡此前 logo:null 只显示文字回退，站长给的插画（民族风少女喝刺梨汁）
+  //    其实早已作为 assets/luxiyi.jpg 入库、被首页滚动广告位引用。按单一真相源，
+  //    让品牌卡复用同一文件，不重复提交明文素材（§22 只豁免 assets/ 下品牌 logo）。
+  //    这里把「卡必须挂图 + 与广告位共用同一文件 + 拼音搜索框能定位」写成红灯。
+  const LXY_LOGO26 = './assets/luxiyi.jpg';
+  const lxyCard26 = idx26.match(/\{\s*id:\s*'luxiyi-card',([\s\S]*?)\n\s*\},?\n/);
+  const lxyLogoM26 = lxyCard26
+    ? lxyCard26[1].match(/logo:\s*'([^']+)'/) : null;
+  check(!!lxyCard26 && !!lxyLogoM26 && lxyLogoM26[1] === LXY_LOGO26,
+    '§26y 陆喜依品牌卡 logo 指向站长提交的插画（不再是 null 文字回退）',
+    lxyLogoM26 ? lxyLogoM26[1] : '(null / 缺失)');
+  check(localExists('assets/luxiyi.jpg'),
+    '§26z 陆喜依 logo 文件真实存在（防破图 / 防指向不存在路径）');
+  const ad26 = exists('black-card-adslot.js') ? read('black-card-adslot.js') : '';
+  check(ad26.indexOf("var IMG = './assets/luxiyi.jpg'") !== -1,
+    '§26aa 滚动广告位品牌卡与搜索结果品牌卡共用同一 logo 文件（单一真相源）');
+  check(/"id":"luxiyi-card"[^}]*"t":\[\["陆喜依","luxiyi","lxy"/.test(read('pinyin-index.js')),
+    '§26ab 拼音搜索框能用 luxiyi / lxy 定位到陆喜依卡（联想回填路径未断）');
+  check(exists('scripts/test-luxiyi-logo.cjs')
+    && /test-luxiyi-logo\.cjs/.test(read('.github/workflows/verify.yml')),
+    '§26ac 陆喜依 logo 真 DOM 行为测试存在且挂进 CI（§21o 同款）');
 }
 
 // ---------- 27. 详情证据弹窗的可点证据来源（2026-11-09 站长指出） ----------

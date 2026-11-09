@@ -61,6 +61,11 @@ photo-melody.jpg
 .workbuddy/
 scripts/edgeprof*/
 
+# CDP 真渲染验收脚本的本机产物（2026-11-09 入库 scripts/cdp-adcheck.cjs）：
+# 截图是明文 png、profile 是浏览器缓存，一律不入库，避免 §22c 素材红线误判。
+scripts/.edge-adcheck/
+scripts/sxg-adcheck.png
+
 # ===== 品牌 LOGO：仓库里只有 assets/logos.enc 密文，明文只留本机 =====
 # （scripts/build-logos.mjs 产 _logo-norm/，scripts/encrypt-logos.mjs 加密）
 _logo-fetch/

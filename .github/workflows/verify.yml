@@ -239,3 +239,8 @@ jobs:
       # 「写了交叉印证却不给链接」），且不能对有证据链的卡再写「尚未交叉核验」。
       - name: 陆喜依证据来源链接测试
         run: node scripts/test-luxiyi-sources.cjs
+
+      # 站长「去拼音搜索框找陆喜依，提交 logo」：真渲染断言品牌卡（拼音搜索结果）
+      # 真的挂上了那张插画、与滚动广告位共用单一真相源、拼音联想回填链路未断。
+      - name: 陆喜依品牌卡 logo 测试
+        run: node scripts/test-luxiyi-logo.cjs
