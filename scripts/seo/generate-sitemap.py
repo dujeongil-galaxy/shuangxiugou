@@ -49,6 +49,21 @@ parts.append(
     f'    <priority>0.8</priority>\n  </url>'
 )
 
+# 成功案例合集 + QQ奶奶专题页（2026-11-09 站长要求：专题单独一页，不占案例序号）
+LASTMOD_CASES = '2026-11-09'
+parts.append(
+    f'  <url>\n    <loc>{BASE}/success-stories.html</loc>\n'
+    f'    <lastmod>{LASTMOD_CASES}</lastmod>\n'
+    f'    <changefreq>monthly</changefreq>\n'
+    f'    <priority>0.7</priority>\n  </url>'
+)
+parts.append(
+    f'  <url>\n    <loc>{BASE}/qq-nainai.html</loc>\n'
+    f'    <lastmod>{LASTMOD_CASES}</lastmod>\n'
+    f'    <changefreq>monthly</changefreq>\n'
+    f'    <priority>0.7</priority>\n  </url>'
+)
+
 # 品牌详情页
 for b in sorted(idx, key=lambda x: x['tier']):
     parts.append(

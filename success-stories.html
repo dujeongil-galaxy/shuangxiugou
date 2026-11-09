@@ -197,6 +197,51 @@
       }
       .wip b { color: #0f766e; }
 
+      /* —— 专题入口（独立页面，不占案例序号）—— */
+      .topic-entry {
+        display: block;
+        margin: 0 0 20px;
+        padding: 22px 24px 24px;
+        border: 1px solid #99f6e4;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #f0fdfa 0%, #ecfdf5 100%);
+        text-decoration: none;
+        color: inherit;
+        transition: border-color .15s ease, box-shadow .15s ease;
+      }
+      .topic-entry:hover {
+        border-color: #5eead4;
+        box-shadow: 0 10px 30px rgba(15, 118, 110, 0.10);
+      }
+      .topic-entry .topic-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 11px;
+        border-radius: 999px;
+        background: #0f766e;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .03em;
+      }
+      .topic-entry h3 {
+        margin: 12px 0 6px;
+        font-size: 19px;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.45;
+      }
+      .topic-entry p {
+        margin: 0 0 12px;
+        font-size: 14px;
+        color: #475569;
+      }
+      .topic-entry .go {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0f766e;
+      }
+
       .back {
         display: inline-block;
         margin-top: 28px;
@@ -272,6 +317,22 @@
           （前辈案例整理中，欢迎通过首页反馈渠道推荐）
         </p>
       </div>
+
+      <!--
+        ===== 专题入口 =====
+        站长 2026-11-09 要求：这条不成案例卡（不占 #05 序号），单独开一个专题页。
+        入口固定在本区块下方、案例 #01 之前；正文在 qq-nainai.html。
+      -->
+      <a class="topic-entry" href="./qq-nainai.html">
+        <span class="topic-tag">专题 · 前辈</span>
+        <h3>「QQ奶奶」张秀丽：一个人，在 QQ 上守了十八年</h3>
+        <p>
+          2005 年，她为了弄懂孩子为什么往网吧跑，花 100 元在打印店学会上网；此后十几年，
+          每晚 8 点在屏幕前陪十几万个孩子说话。她没有起诉过谁，也没有判决书——
+          她赢的方式是把一件事做得够久，久到小学楼下的四点半课堂接住了它。
+        </p>
+        <span class="go">读这个专题 →</span>
+      </a>
 
       <article class="case">
         <div class="case-head">
