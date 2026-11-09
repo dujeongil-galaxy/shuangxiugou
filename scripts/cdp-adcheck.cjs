@@ -1,8 +1,10 @@
 // 【本机专用 · 不挂 CI】真渲染验收：本地起静态服务 + 无头 Edge CDP，
+const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
 // 确认首页黑卡原位已被替换为「滚动式广告位轮播」（陆喜依品牌卡 + 招商占位卡）。
 // 依赖本机 Edge 绝对路径与 CDP 端口，CI runner 无此文件，故有意只在本机手动跑：
 //   node scripts/cdp-adcheck.cjs
-// 产物 scripts/sxg-adcheck.png 与 scripts/.edge-adcheck/ 已在 .gitignore 屏蔽。
+// 产物统一落 D:/WorkBuddy-Cache/（shots/ 与 edge-profiles/，见 _cache-dir.cjs）；
+// 旧路径 scripts/sxg-adcheck.png、scripts/.edge-adcheck/ 仍由 .gitignore 兜底屏蔽。
 // 注：CDP Runtime.evaluate 返回值真实路径是 result.result.value；WebSocket 用全局
 //     + addEventListener + ev.data（require('ws') 的回调拿到 Buffer 会解析失败挂起）。
 const { spawn } = require('child_process');
@@ -15,7 +17,7 @@ const HTTP_PORT = 8799;
 const DBG_PORT = 9292;
 const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const URL = `http://127.0.0.1:${HTTP_PORT}/`;
-const OUT = path.join(ROOT, 'scripts', 'sxg-adcheck.png');
+const OUT = cacheDir('shots/sxg-adcheck.png');
 
 const MIME = { '.html':'text/html', '.js':'application/javascript', '.css':'text/css',
   '.json':'application/json', '.png':'image/png', '.svg':'image/svg+xml', '.ico':'image/x-icon' };
@@ -61,7 +63,7 @@ function cdp(ws, method, params = {}) {
   await new Promise((r) => server.listen(HTTP_PORT, r));
   const edge = spawn(EDGE, [
     '--headless=new', `--remote-debugging-port=${DBG_PORT}`,
-    '--user-data-dir=' + path.join(ROOT, 'scripts', '.edge-adcheck'),
+    '--user-data-dir=' + path.join(cacheRoot(), '.edge-adcheck'),
     '--no-proxy-server', '--disable-gpu', 'about:blank'
   ], { stdio: 'ignore' });
 

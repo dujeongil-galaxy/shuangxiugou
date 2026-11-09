@@ -1,4 +1,5 @@
 /* 验证随笔页 AI 文章里 <mark> 的实际渲染色
+const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
    ——「类名写对了」≠「生效了」。这里用无头 Edge 读 computed style，
       确认：红字生效、浏览器默认黄底被去掉、font-weight 为 700。
    注意：cwd 必须是仓库根目录。 */
@@ -33,7 +34,7 @@ function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
 (async () => {
   const srv = await serve();
-  const prof = path.join(ROOT, 'edgeprof-mark-' + Date.now());
+  const prof = path.join(cacheRoot(), 'edgeprof-mark-' + Date.now());
   const args = [
     '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     '--user-data-dir=' + prof, '--disk-cache-size=1', '--disable-application-cache',

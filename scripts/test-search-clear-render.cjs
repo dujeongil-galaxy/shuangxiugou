@@ -1,4 +1,5 @@
 // 【本机专用 · 不挂 CI】依赖本机无头 Edge 绝对路径，CI runner 无此文件；真渲染验收只在本机跑（verify §21o 咬此标记）。
+const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
 // 真渲染验收：搜索框删空 → 整屏 frosted 闪屏并覆盖顺序复位回放（2026-11-05 / 11-07）
 // 无头 Edge + CDP；照 test-filter-flash.cjs / dbg-search-clear.cjs 的纪律：
 // 先清抖音弹窗 .dyp；真实键盘事件输入/删除；清空后 120ms 验遮罩规格与层级，
@@ -32,7 +33,7 @@ const server = http.createServer((req, res) => {
 
 (async () => {
   await new Promise(r => server.listen(PORT, r));
-  const prof = path.join(__dirname, 'edgeprof-scf' + Date.now());
+  const prof = path.join(cacheRoot(), 'edgeprof-scf' + Date.now());
   const edge = spawn(EDGE, [
     '--headless=new', '--disk-cache-size=1', `--remote-debugging-port=${DBG}`,
     '--no-first-run', '--window-size=1280,900', '--force-device-scale-factor=1',

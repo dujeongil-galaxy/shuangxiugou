@@ -1,4 +1,5 @@
 // 调试：清空搜索框后「肉眼可见的新加载动画」到底是什么（2026-11-05 站长报障）
+const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
 // v2：改用 CDP 真实键盘事件（focus / insertText / Backspace），并把探针放宽到
 //     attributes + 全部新增节点 + 所有 computed animation 非 none 的元素。
 const http = require('http');
@@ -30,7 +31,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 (async () => {
   if (!ONLINE) await new Promise(r => server.listen(PORT, r));
-  const prof = path.join(__dirname, 'edgeprof-scdbg' + Date.now());
+  const prof = path.join(cacheRoot(), 'edgeprof-scdbg' + Date.now());
   const edge = spawn(EDGE, [
     '--headless=new', '--disk-cache-size=1', `--remote-debugging-port=${DBG}`,
     '--no-first-run', '--window-size=1280,900', '--force-device-scale-factor=1',

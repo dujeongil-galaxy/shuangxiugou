@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-label="广告位招商中 · 真实双休标杆品牌长期招募">
+<!--
+  广告位第 2 张：招商中卡的背景设计稿（站点自绘矢量稿，非站长提供的图片素材）。
+  中心留白给 HTML 文案（居中叠在图上），四周是虚线框 + 民族纹样角饰，
+  与第 1 张品牌广告共用同一套蓝/金/红视觉语言。不含任何 URL。
+-->
+<defs>
+  <linearGradient id="rc-bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#f8fbff"/>
+    <stop offset="0.55" stop-color="#eef3ff"/>
+    <stop offset="1" stop-color="#e2eafb"/>
+  </linearGradient>
+  <linearGradient id="rc-line" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#1d3f9e"/>
+    <stop offset="0.5" stop-color="#e5a336"/>
+    <stop offset="1" stop-color="#1d3f9e"/>
+  </linearGradient>
+  <pattern id="rc-grid" width="34" height="34" patternUnits="userSpaceOnUse">
+    <path d="M34 0 L0 0 0 34" fill="none" stroke="#1d3f9e" stroke-opacity="0.06" stroke-width="1"/>
+  </pattern>
+</defs>
+
+<rect width="1200" height="260" fill="url(#rc-bg)"/>
+<rect width="1200" height="260" fill="url(#rc-grid)"/>
+
+<!-- 虚线外框 -->
+<rect x="18" y="18" width="1164" height="224" rx="18" fill="none" stroke="#1d3f9e" stroke-opacity="0.34" stroke-width="2" stroke-dasharray="10 8"/>
+<rect x="28" y="28" width="1144" height="204" rx="14" fill="none" stroke="url(#rc-line)" stroke-opacity="0.5" stroke-width="1.5"/>
+
+<!-- 四角菱形角饰（呼应第 1 张的民族织带） -->
+<g fill="none" stroke="#1d3f9e" stroke-opacity="0.5" stroke-width="2">
+  <path d="M60 66 l16 -16 16 16 -16 16 z"/>
+  <path d="M1140 66 l16 -16 16 16 -16 16 z"/>
+  <path d="M60 194 l16 -16 16 16 -16 16 z"/>
+  <path d="M1140 194 l16 -16 16 16 -16 16 z"/>
+</g>
+<g fill="#e2534b" opacity="0.75">
+  <path d="M76 50 l8 0 -4 10 z"/>
+  <path d="M1156 50 l8 0 -4 10 z"/>
+  <path d="M76 210 l8 0 -4 10 z"/>
+  <path d="M1156 210 l8 0 -4 10 z"/>
+</g>
+
+<!-- 左右织带 -->
+<g opacity="0.35" fill="#1d3f9e">
+  <rect x="0" y="86" width="7" height="88" rx="3"/>
+  <rect x="1193" y="86" width="7" height="88" rx="3"/>
+</g>
+
+<!-- 中心淡淡的圆形印章底，衬 HTML 文案 -->
+<circle cx="600" cy="130" r="102" fill="#ffffff" opacity="0.5"/>
+<circle cx="600" cy="130" r="102" fill="none" stroke="#e5a336" stroke-opacity="0.35" stroke-width="2"/>
+
+<!-- 角标 -->
+<text x="112" y="56" font-family="Arial,sans-serif" font-size="15" fill="#6478a8" letter-spacing="4">AD SLOT · 02 / 02</text>
+<text x="1088" y="218" text-anchor="end" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="15" fill="#6478a8" letter-spacing="2">真实双休 · 品牌招募</text>
+</svg>

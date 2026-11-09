@@ -1,4 +1,5 @@
 // 截图：首页一张品牌卡，肉眼确认「本地存储说明」的实际渲染位置与观感
+const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
 const { execFile } = require('child_process');
 const fs = require('fs');
 const http = require('http');
@@ -28,7 +29,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 async function main() {
   execFile('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
-    ['--headless=new', '--disk-cache-size=1', `--remote-debugging-port=${DBG}`, '--user-data-dir=' + path.join(__dirname, 'edgeprof-' + Date.now()), '--window-size=1280,900', `http://127.0.0.1:${PORT}/?nocache=${Date.now()}`]);
+    ['--headless=new', '--disk-cache-size=1', `--remote-debugging-port=${DBG}`, '--user-data-dir=' + path.join(cacheRoot(), 'edgeprof-' + Date.now()), '--window-size=1280,900', `http://127.0.0.1:${PORT}/?nocache=${Date.now()}`]);
   await sleep(7000);
   const list = await (await fetch(`http://127.0.0.1:${DBG}/json`)).json();
   const page = list.find(t => t.type === 'page' && /127\.0\.0\.1/.test(t.url)) || list.find(t => t.type === 'page');

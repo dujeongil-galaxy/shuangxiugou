@@ -1,4 +1,5 @@
 /**
+const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
  * shot-narrow-320.cjs —— 首页窄屏（默认 320px，可传宽度参数）真渲染验收
  * --------------------------------------------------------------------------
  * 由 2026-11-03 的 320px 修复而来：良配吸底条在 320px 下竖排爆炸（356px 高），
@@ -42,7 +43,7 @@ const server = http.createServer((req, res) => {
 
 (async () => {
   await new Promise((r) => server.listen(PORT, r));
-  const prof = path.join(require('node:os').tmpdir(), 'edgeprof-320');
+  const prof = path.join(cacheRoot(), 'edgeprof-320');
   const p = spawn(EDGE, ['--headless=new', `--remote-debugging-port=${PORT + 100}`,
     `--user-data-dir=${prof}`, '--disable-gpu', '--hide-scrollbars',
     'about:blank'], { stdio: 'ignore' });

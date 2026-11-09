@@ -1,4 +1,5 @@
 // 【本机专用 · 不挂 CI】依赖本机无头 Edge 绝对路径，CI runner 无此文件；真渲染验收只在本机跑（verify §21o 咬此标记）。
+const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
 // 验收：AI 挂件挪到左下角后的真渲染断言（2026-11-05 站长拍板）
 // 覆盖：①宽屏自动展开态面板位置（左锚定、顶端不进首屏上部）
 //       ②展开时右列三钮保持可见（面板在左侧，不再需要让位）
@@ -27,7 +28,7 @@ let caseSeq = 0;
 async function runCase(w, h, autoExpand, label, mobileCheck) {
   const dbg = DBG + caseSeq++ * 2;
   const edge = spawn(EDGE, ['--headless=new', '--disk-cache-size=1', `--remote-debugging-port=${dbg}`,
-    '--no-first-run', '--user-data-dir=' + path.join(__dirname, 'edgeprof-anchor' + Date.now() + '-' + caseSeq)], { stdio: 'ignore' });
+    '--no-first-run', '--user-data-dir=' + path.join(cacheRoot(), 'edgeprof-anchor' + Date.now() + '-' + caseSeq)], { stdio: 'ignore' });
   // 轮询等 CDP 端口就绪（CI 机器慢，固定 sleep 会在第二个用例踩 ECONNREFUSED）
   let list = null;
   for (let i = 0; i < 60; i++) {

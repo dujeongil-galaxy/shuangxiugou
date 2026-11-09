@@ -162,6 +162,16 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 ---
 
+## 🖼 广告位设计稿与缓存落盘（2026-11-09 站长明确，长期有效）
+
+- **广告位设计稿是站点自绘矢量图**：`assets/ad-luxiyi.svg`（陆喜依品牌广告）、`assets/ad-recruit.svg`（招商卡衬底）由本项目绘制，不含任何外链与 URL，属站点自带设计素材，**不是站长提供的口述素材**，不适用下节的 `.enc` + blob 规则；`assets/luxiyi.jpg`（站长给的 mascot）是历史存量品牌 logo，按 §22c 白名单沿用，广告位与搜索结果品牌卡共用单一真相源。
+- **广告位所有天猫入口必须真可点**：整张广告设计图与 CTA 提示词都是 `<a href>`（零参数店铺首页、`target="_blank"`、`rel="noopener"`），品牌名仍指站内详情页；不许再出现「看着像链接其实是 `<div>`」的静默失效。
+- **广告位内容一律居中**：卡片 `align-items:center` + `text-align:center`、信息条 `justify-content:center`；左右箭头放在卡片下方导航条，不得绝对定位盖住招商卡标题。
+- **缓存一律放 D 盘**：站长原话「以后把缓存放在 D 盘，我 C 盘再搞要炸了」。统一缓存根 `D:/WorkBuddy-Cache/`（`edge-profiles/` / `shots/` / `tmp/` / `trash/`），可用 `SXG_CACHE_DIR` 覆盖；所有 `--user-data-dir` 必须经 `scripts/_cache-dir.cjs` 的 `cacheRoot()` 解析，不许再写回 `scripts/` 或 `%TEMP%`（历史上堆过 523 个 Edge profile）。非 Windows / CI 自动回落到系统临时目录。
+- 机器强制：`scripts/verify.mjs` §29 + `scripts/test-adslot.cjs`（挂 CI 的「拼音搜索测试」job）；改规则、改组件都要同步改断言并做故障注入。
+
+---
+
 ## 📌 素材链接规则（站长 2026-11-07 写死，长期有效；同日纠正为 blob）
 
 **除非站长明确表示「明文」，否则站长提供的截图、图片、短视频、附件等素材一律使用 blob 格式，不得把素材原始文件明文提交进 GitHub 仓库。**

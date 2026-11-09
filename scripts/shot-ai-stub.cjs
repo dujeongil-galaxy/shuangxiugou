@@ -1,4 +1,5 @@
 // stub 模式（endpoint 空）真渲染验收：按钮显示 + 「开通中」提示 + 禁用表单
+const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
 // 跑法：node scripts/shot-ai-stub.cjs（需 ws；输出到 ../Star门禁验收截图/）
 const http = require('http');
 const fs = require('fs');
@@ -7,7 +8,7 @@ const { spawn } = require('child_process');
 
 const PORT = 18976;
 const ROOT = path.resolve(__dirname, '..');
-const OUT_DIR = 'C:/Users/dujeo/WorkBuddy/2026-10-20-02-34-17/Star门禁验收截图';
+const OUT_DIR = cacheDir('shots/Star门禁验收截图');
 
 const server = http.createServer((req, res) => {
   let p = path.join(ROOT, decodeURIComponent(req.url.split('?')[0]));
@@ -26,7 +27,7 @@ const server = http.createServer((req, res) => {
   const edge = spawn('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', [
     '--headless=new', `--remote-debugging-port=${PORT + 100}`, '--no-first-run',
     '--window-size=390,844',
-    '--user-data-dir=' + path.join(ROOT, 'scripts/edgeprof-aistub'),
+    '--user-data-dir=' + path.join(cacheRoot(), 'edgeprof-aistub'),
     'about:blank'
   ], { stdio: 'ignore' });
 
@@ -88,6 +89,6 @@ const server = http.createServer((req, res) => {
   const pass = s1.ok && s1.fabVisible && s1.hasAvatar && s1.panelOpen && s1.stubHello && s1.inputDisabled && s1.sendDisabled;
   console.log('验收状态:', pass ? 'PASS' : 'FAIL');
   ws.close(); edge.kill(); server.close();
-  try { fs.rmSync(path.join(ROOT, 'scripts/edgeprof-aistub'), { recursive: true, force: true }); } catch (e) { /* ignore */ }
+  try { fs.rmSync(path.join(cacheRoot(), 'edgeprof-aistub'), { recursive: true, force: true }); } catch (e) { /* ignore */ }
   process.exit(pass ? 0 : 1);
 })().catch(e => { console.error(e); process.exit(1); });

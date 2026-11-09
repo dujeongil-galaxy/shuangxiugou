@@ -1,4 +1,5 @@
 // AI 挂件真渲染验收：无头 Edge + CDP（照 shot-vcr.cjs 纪律）
+const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
 // 场景：① 品牌页默认（endpoint 空）→ stub 模式，按钮+面板渲染，面板默认展开；
 //       ② 模拟已配置（页面注入 endpoint）→ 按钮在、面板默认展开；
 //       ③ 截图两张（stub / 已配置面板展开）。
@@ -10,7 +11,7 @@ const { spawn } = require('child_process');
 
 const PORT = 18970;
 const ROOT = path.resolve(__dirname, '..');
-const OUT_DIR = 'C:/Users/dujeo/WorkBuddy/2026-10-20-02-34-17/Star门禁验收截图';
+const OUT_DIR = cacheDir('shots/Star门禁验收截图');
 
 const server = http.createServer((req, res) => {
   let p = path.join(ROOT, decodeURIComponent(req.url.split('?')[0]));
@@ -29,7 +30,7 @@ const server = http.createServer((req, res) => {
   const edge = spawn('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', [
     '--headless=new', `--remote-debugging-port=${PORT + 100}`, '--no-first-run',
     '--window-size=1672,918',
-    '--user-data-dir=' + path.join(ROOT, 'scripts/edgeprof-aichat'),
+    '--user-data-dir=' + path.join(cacheRoot(), 'edgeprof-aichat'),
     'about:blank'
   ], { stdio: 'ignore' });
 
@@ -106,6 +107,6 @@ const server = http.createServer((req, res) => {
   console.log('验收状态:', pass ? 'PASS' : 'FAIL');
   ws.close(); edge.kill(); server.close();
   // Edge 进程 kill 后瞬时仍锁 profile 目录，删失败不影响验收结果
-  try { fs.rmSync(path.join(ROOT, 'scripts/edgeprof-aichat'), { recursive: true, force: true }); } catch (e) { /* ignore */ }
+  try { fs.rmSync(path.join(cacheRoot(), 'edgeprof-aichat'), { recursive: true, force: true }); } catch (e) { /* ignore */ }
   process.exit(pass ? 0 : 1);
 })().catch(e => { console.error(e); process.exit(1); });

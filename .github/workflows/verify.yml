@@ -244,3 +244,9 @@ jobs:
       # 真的挂上了那张插画、与滚动广告位共用单一真相源、拼音联想回填链路未断。
       - name: 陆喜依品牌卡 logo 测试
         run: node scripts/test-luxiyi-logo.cjs
+
+      # 站长「天猫链接也点不动 / 广告位为什么不居中 / 不能设计一下图片吗」：
+      # 真 DOM 断言 CTA 与整张广告图都是真 <a>、两张自绘设计稿存在且无外链、
+      # 内容居中、箭头在卡片下方导航条、轮播手动切换未坏。
+      - name: 滚动广告位可点与居中测试
+        run: node scripts/test-adslot.cjs

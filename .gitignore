@@ -63,8 +63,11 @@ scripts/edgeprof*/
 
 # CDP 真渲染验收脚本的本机产物（2026-11-09 入库 scripts/cdp-adcheck.cjs）：
 # 截图是明文 png、profile 是浏览器缓存，一律不入库，避免 §22c 素材红线误判。
+# 2026-11-09 起产物已统一落到 D:/WorkBuddy-Cache/（见 scripts/_cache-dir.cjs），
+# 下面三条只作历史残留兜底，防止旧 profile 又被误 add。
 scripts/.edge-adcheck/
 scripts/sxg-adcheck.png
+scripts/.edge-luxiyi/
 
 # ===== 品牌 LOGO：仓库里只有 assets/logos.enc 密文，明文只留本机 =====
 # （scripts/build-logos.mjs 产 _logo-norm/，scripts/encrypt-logos.mjs 加密）

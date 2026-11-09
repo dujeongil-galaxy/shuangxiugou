@@ -1,4 +1,5 @@
 // 虚拟卡下线验收截图（class 隐藏版）：真实浏览器整页渲染
+const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
 // 跑法：node scripts/shot-vcr.cjs（需 ws；输出到 ../Star门禁验收截图/）
 const http = require('http');
 const fs = require('fs');
@@ -7,7 +8,7 @@ const { spawn } = require('child_process');
 
 const PORT = 18960;
 const ROOT = path.resolve(__dirname, '..');
-const OUT_DIR = 'C:/Users/dujeo/WorkBuddy/2026-10-20-02-34-17/Star门禁验收截图';
+const OUT_DIR = cacheDir('shots/Star门禁验收截图');
 
 const server = http.createServer((req, res) => {
   let p = path.join(ROOT, decodeURIComponent(req.url.split('?')[0]));
@@ -28,7 +29,7 @@ const server = http.createServer((req, res) => {
   const edge = spawn('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', [
     '--headless=new', `--remote-debugging-port=${PORT + 100}`, '--no-first-run',
     '--window-size=1672,918',
-    '--user-data-dir=' + path.join(ROOT, 'scripts/edgeprof-v2'),
+    '--user-data-dir=' + path.join(cacheRoot(), 'edgeprof-v2'),
     'about:blank'
   ], { stdio: 'ignore' });
 

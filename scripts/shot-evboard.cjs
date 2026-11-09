@@ -1,4 +1,5 @@
 // 首页「全站证据链公示」区块渲染验收截图（2026-10-31）
+const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
 // 跑法：node scripts/shot-evboard.cjs（需 ws；输出到 D:/WebArchive/_shots/evboard/）
 //
 // 为什么必须有这一步：verify 的 37 项断言全是源码层字符串/DOM 结构比对，
@@ -42,7 +43,7 @@ let notFound = [];
   const edge = spawn('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', [
     '--headless=new', `--remote-debugging-port=${PORT + 100}`, '--no-first-run',
     '--window-size=1500,1000',
-    '--user-data-dir=' + path.join(ROOT, 'scripts/edgeprof-evboard'),
+    '--user-data-dir=' + path.join(cacheRoot(), 'edgeprof-evboard'),
     'about:blank',
   ], { stdio: 'ignore' });
 

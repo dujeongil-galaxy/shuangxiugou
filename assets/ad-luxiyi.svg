@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-label="陆喜依 · 真实双休标杆品牌 · 点击进入天猫旗舰店">
+<!--
+  广告位第 1 张：陆喜依品牌广告设计稿。
+  站点自绘矢量稿（非站长提供的图片素材），不上传外链、不含任何 URL。
+  配色取自品牌 mascot 的蓝红民族帽 + 刺梨果金黄。整张图由广告位外层 <a> 包裹，可整块点击。
+-->
+<defs>
+  <linearGradient id="lx-bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#0a1b47"/>
+    <stop offset="0.52" stop-color="#1d3f9e"/>
+    <stop offset="1" stop-color="#0e2a68"/>
+  </linearGradient>
+  <radialGradient id="lx-glow" cx="0.24" cy="0.46" r="0.66">
+    <stop offset="0" stop-color="#4b7ff0" stop-opacity="0.52"/>
+    <stop offset="1" stop-color="#4b7ff0" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="lx-gold" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#f9df8b"/>
+    <stop offset="1" stop-color="#e5a336"/>
+  </linearGradient>
+  <pattern id="lx-dots" width="28" height="28" patternUnits="userSpaceOnUse">
+    <circle cx="2" cy="2" r="1.4" fill="#ffffff" opacity="0.12"/>
+  </pattern>
+</defs>
+
+<rect width="1200" height="260" fill="url(#lx-bg)"/>
+<rect width="1200" height="260" fill="url(#lx-glow)"/>
+<rect width="1200" height="260" fill="url(#lx-dots)"/>
+
+<!-- 右侧同心弧，给 CTA 区做视觉托底 -->
+<g fill="none" stroke="#ffffff" opacity="0.09" stroke-width="2">
+  <circle cx="1085" cy="240" r="190"/>
+  <circle cx="1085" cy="240" r="150"/>
+  <circle cx="1085" cy="240" r="110"/>
+</g>
+
+<!-- 左侧民族纹样：菱形织带 -->
+<g opacity="0.55" fill="none" stroke="url(#lx-gold)" stroke-width="2">
+  <path d="M14 20 l16 16 -16 16 -16 -16 z"/>
+  <path d="M14 60 l16 16 -16 16 -16 -16 z"/>
+  <path d="M14 100 l16 16 -16 16 -16 -16 z"/>
+  <path d="M14 140 l16 16 -16 16 -16 -16 z"/>
+  <path d="M14 180 l16 16 -16 16 -16 -16 z"/>
+  <path d="M14 220 l16 16 -16 16 -16 -16 z"/>
+</g>
+<g opacity="0.38" fill="#e2534b">
+  <path d="M40 36 l8 0 -4 10 z"/>
+  <path d="M40 76 l8 0 -4 10 z"/>
+  <path d="M40 116 l8 0 -4 10 z"/>
+  <path d="M40 156 l8 0 -4 10 z"/>
+  <path d="M40 196 l8 0 -4 10 z"/>
+  <path d="M40 236 l8 0 -4 10 z"/>
+</g>
+
+<!-- 顶部/底部细金线 -->
+<rect x="64" y="12" width="1072" height="236" rx="14" fill="none" stroke="#f7d774" stroke-opacity="0.28" stroke-width="1.5"/>
+
+<!-- 圆形徽章：抽象刺梨果（金色 + 短刺 + 叶片） -->
+<g transform="translate(148,130)">
+  <circle r="82" fill="#ffffff" opacity="0.08"/>
+  <circle r="70" fill="none" stroke="url(#lx-gold)" stroke-width="3"/>
+  <circle r="38" fill="url(#lx-gold)"/>
+  <circle r="38" fill="none" stroke="#f8dd8a" stroke-width="9" stroke-dasharray="3 11"/>
+  <circle cx="-12" cy="-13" r="8" fill="#ffffff" opacity="0.35"/>
+  <path d="M6 -40 q26 -24 44 -8 q-18 20 -44 8 z" fill="#5fbf83"/>
+  <path d="M2 -36 q22 -12 40 -6" fill="none" stroke="#2e7d55" stroke-width="2"/>
+  <path d="M-30 46 q30 16 60 0" fill="none" stroke="#f7d774" stroke-width="2" opacity="0.7"/>
+</g>
+
+<!-- 主文案 -->
+<text x="252" y="100" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="56" font-weight="700" fill="#ffffff" letter-spacing="4">陆喜依</text>
+<text x="254" y="144" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="23" fill="#cfe0ff" letter-spacing="2">刺梨饮品 · 真实双休标杆品牌</text>
+<text x="254" y="182" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="17" fill="#9db8e8" letter-spacing="1">站长指定 S 级 · 把消费额留给真正双休的企业</text>
+
+<!-- CTA 胶囊 -->
+<g>
+  <rect x="900" y="94" width="268" height="68" rx="34" fill="url(#lx-gold)"/>
+  <text x="1034" y="137" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="24" font-weight="700" fill="#172350">进入天猫旗舰店 →</text>
+</g>
+
+<!-- 角标 -->
+<text x="1120" y="42" text-anchor="end" font-family="Arial,sans-serif" font-size="15" fill="#9db8e8" letter-spacing="4">AD · 01 / 02</text>
+<text x="1120" y="224" text-anchor="end" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="15" fill="#9db8e8" letter-spacing="2">广告位 · 支持真实双休企业</text>
+</svg>

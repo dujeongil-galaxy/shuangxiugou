@@ -1,4 +1,5 @@
 // 【本机专用 · 不挂 CI】依赖本机无头 Edge 绝对路径，CI runner 无此文件；真渲染验收只在本机跑（verify §21o 咬此标记）。
+const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
 // 真渲染验收：评级过滤切换 0.5s 高度模糊闪屏（filter-flash.js）
 // 照 dbg-shot-local-note.cjs / shot-ai-chat.cjs 的 CDP 纪律：
 // 无头 Edge + CDP；先清抖音弹窗 .dyp；点击「A 级」后立刻验 body.sxg-filter-flashing
@@ -33,7 +34,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   const edge = spawn(EDGE, [
     '--headless=new', '--disk-cache-size=1', `--remote-debugging-port=${DBG}`,
     '--no-first-run', '--window-size=1280,900',
-    '--user-data-dir=' + path.join(__dirname, 'edgeprof-ff' + Date.now()),
+    '--user-data-dir=' + path.join(cacheRoot(), 'edgeprof-ff' + Date.now()),
     `http://127.0.0.1:${PORT}/?nocache=${Date.now()}`
   ], { stdio: 'ignore' });
 
@@ -105,6 +106,6 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   console.log('验收状态:', pass ? 'PASS' : 'FAIL');
 
   ws.close(); edge.kill(); server.close();
-  try { fs.rmSync(path.join(__dirname, 'edgeprof-ff' + ''), { recursive: true, force: true }); } catch (e) {}
+  try { fs.rmSync(path.join(cacheRoot(), 'edgeprof-ff' + ''), { recursive: true, force: true }); } catch (e) {}
   process.exit(pass ? 0 : 1);
 })().catch(e => { console.error('ERR', e); process.exit(1); });

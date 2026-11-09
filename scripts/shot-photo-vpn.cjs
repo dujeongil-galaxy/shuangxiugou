@@ -1,4 +1,5 @@
 // 照片彩蛋 VPN 提示真渲染验收：无头 Edge + CDP
+const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
 // 场景：①锁定态可见 gate-vpn-tip 黄底提示卡；
 //       ②限流错误文案里含 VPN 提示（桩 fetch 403 → 消息位）；
 //       ③截图一张（锁定态含提示卡）。
@@ -10,7 +11,7 @@ const { spawn } = require('child_process');
 
 const PORT = 18972;
 const ROOT = path.resolve(__dirname, '..');
-const OUT_DIR = 'C:/Users/dujeo/WorkBuddy/2026-10-20-02-34-17/Star门禁验收截图';
+const OUT_DIR = cacheDir('shots/Star门禁验收截图');
 
 const server = http.createServer((req, res) => {
   let p = path.join(ROOT, decodeURIComponent(req.url.split('?')[0]));
@@ -29,7 +30,7 @@ const server = http.createServer((req, res) => {
   const edge = spawn('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', [
     '--headless=new', `--remote-debugging-port=${PORT + 100}`, '--no-first-run',
     '--window-size=1672,918',
-    '--user-data-dir=' + path.join(ROOT, 'scripts/edgeprof-pvpn'),
+    '--user-data-dir=' + path.join(cacheRoot(), 'edgeprof-pvpn'),
     'about:blank'
   ], { stdio: 'ignore' });
 
@@ -115,6 +116,6 @@ const server = http.createServer((req, res) => {
     && s2.msgShown && s2.msgHasRateLimit && s2.msgHasVPNHint && s2.stillLocked;
   console.log('验收状态:', pass ? 'PASS' : 'FAIL');
   ws.close(); edge.kill(); server.close();
-  try { fs.rmSync(path.join(ROOT, 'scripts/edgeprof-pvpn'), { recursive: true, force: true }); } catch (e) { /* ignore */ }
+  try { fs.rmSync(path.join(cacheRoot(), 'edgeprof-pvpn'), { recursive: true, force: true }); } catch (e) { /* ignore */ }
   process.exit(pass ? 0 : 1);
 })().catch(e => { console.error(e); process.exit(1); });

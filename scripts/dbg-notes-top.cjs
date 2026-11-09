@@ -1,4 +1,5 @@
 // 验证：notes.html 的「TOP」回顶按钮存在，且真实鼠标点击后页面滚回顶部
+const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
 const { execFile } = require('child_process');
 const fs = require('fs');
 const http = require('http');
@@ -41,7 +42,7 @@ async function realClick(ws, sel) {
 
 async function main() {
   execFile('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
-    ['--headless=new', '--disk-cache-size=1', `--remote-debugging-port=${DBG}`, '--user-data-dir=' + path.join(__dirname, 'edgeprof-' + Date.now()), '--window-size=1280,900', `http://127.0.0.1:${PORT}/?nocache=${Date.now()}`]);
+    ['--headless=new', '--disk-cache-size=1', `--remote-debugging-port=${DBG}`, '--user-data-dir=' + path.join(cacheRoot(), 'edgeprof-' + Date.now()), '--window-size=1280,900', `http://127.0.0.1:${PORT}/?nocache=${Date.now()}`]);
   await sleep(5000);
   const list = await (await fetch(`http://127.0.0.1:${DBG}/json`)).json();
   const page = list.find(t => t.type === 'page' && /127\.0\.0\.1/.test(t.url)) || list.find(t => t.type === 'page');

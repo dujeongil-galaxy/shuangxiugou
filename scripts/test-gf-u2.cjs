@@ -1,4 +1,5 @@
 // 【本机专用 · 不挂 CI】依赖本机无头 Edge 绝对路径，CI runner 无此文件；真渲染复现只在本机跑（verify §21o 咬此标记）。
+const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
 // 边界场景：B→U / S→U / U激活后再次点U取消回到全部 / 普通A级过滤仍正常
 const http=require('http'),fs=require('fs'),path=require('path'),{spawn}=require('child_process');
 const PORT=19491,DBG=19591,ROOT=path.resolve(__dirname,'..'),EDGE='C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
@@ -8,7 +9,7 @@ function clickWaitExpr(txt, ms){const t=JSON.stringify(txt);return `(()=>{const 
 const STATE=`(()=>{let n=0; const cs=document.querySelectorAll('div.bg-white.rounded-2xl.border'); const vis={}; for(const c of cs){const h=c.querySelector('h2,h3'); if(!h) continue; const st=getComputedStyle(c); if(st.display!=='none'&&c.offsetParent!==null){n++; const tx=(h.textContent||''); if(tx.includes('三星'))vis.samsung=true; if(tx.includes('宏碁'))vis.acer=true;}} return JSON.stringify({visible:n, samsung:!!vis.samsung, acer:!!vis.acer});})()`;
 (async()=>{
 await new Promise(r=>server.listen(PORT,r));
-const edge=spawn(EDGE,['--headless=new','--disk-cache-size=1',`--remote-debugging-port=${DBG}`,'--no-first-run','--window-size=1280,900','--user-data-dir='+path.join(__dirname,'edgeprof-gu2'+Date.now()),`http://127.0.0.1:${PORT}/?nocache=${Date.now()}`],{stdio:'ignore'});
+const edge=spawn(EDGE,['--headless=new','--disk-cache-size=1',`--remote-debugging-port=${DBG}`,'--no-first-run','--window-size=1280,900','--user-data-dir='+path.join(cacheRoot(), 'edgeprof-gu2'+Date.now()),`http://127.0.0.1:${PORT}/?nocache=${Date.now()}`],{stdio:'ignore'});
 await sleep(7000);
 const list=await (await fetch(`http://127.0.0.1:${DBG}/json`)).json();
 const page=list.find(t=>t.type==='page'&&/127\.0\.0\.1/.test(t.url))||list.find(t=>t.type==='page');
@@ -44,6 +45,6 @@ console.log('U取消→全部:', p3?'PASS':'FAIL');
 console.log('普通A过滤:', p4?'PASS':'FAIL');
 console.log('总体:', (p1&&p2&&p3&&p4)?'ALL PASS':'HAS FAIL');
 ws.close();edge.kill();server.close();
-try{fs.rmSync(path.join(__dirname,'edgeprof-gu2'),{recursive:true,force:true});}catch(e){}
+try{fs.rmSync(path.join(cacheRoot(), 'edgeprof-gu2'),{recursive:true,force:true});}catch(e){}
 process.exit((p1&&p2&&p3&&p4)?0:1);
 })().catch(e=>{console.error('ERR',e);process.exit(1);});

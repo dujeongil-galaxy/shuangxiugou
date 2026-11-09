@@ -7264,6 +7264,86 @@ section('25. 成功案例专题页（QQ奶奶）');
     '刷新率与无障碍口径被改坏 → 按钮乱闪或平滑滚动无法关闭');
 }
 
+// ---------- 29. 滚动广告位可点 / 居中 / 自绘设计稿 + 缓存落 D 盘（2026-11-09 站长深夜） ----------
+// 站长三连问：「天猫链接也点不动啊」「广告位为什么不是居中」「广告位这个你不能设计一下图片吗」，
+// 外加「以后把缓存放在 D 盘，我 C 盘再搞要炸了」。
+// 真因：CTA 提示词是 <div> 没有 href（只有 76px 小图能点）；卡片左对齐且箭头绝对定位
+// 压在招商卡标题上；广告位只是文字块没有设计图；20 个脚本把 Edge profile 写进 C 盘
+// （历史上堆了 523 个目录）。规则不能只写文档，这里配 §29 静态断言 + test-adslot.cjs
+// 真 DOM 测试 + CI 挂接三层强制，故障注入见本轮记账。
+{
+  const ad29 = exists('black-card-adslot.js') ? read('black-card-adslot.js') : '';
+  const rd29 = read('README.md');
+  const idx29 = read('index.html');
+  const wf29 = read('.github/workflows/verify.yml');
+  const helper29 = exists('scripts/_cache-dir.cjs') ? read('scripts/_cache-dir.cjs') : '';
+
+  check(/缓存一律放 D 盘/.test(rd29) && /广告位设计稿是站点自绘矢量图/.test(rd29)
+    && /所有天猫入口必须真可点/.test(rd29) && /广告位内容一律居中/.test(rd29),
+    '§29a README 写死设计稿 / 可点 / 居中 / D 盘缓存四条口径',
+    '规则只挂口头 → 下次又会把 CTA 写成 div、把缓存写回 C 盘');
+
+  check(/D:\/WorkBuddy-Cache\/edge-profiles/.test(helper29)
+    && /function cacheRoot\(\)/.test(helper29)
+    && /SXG_CACHE_DIR/.test(helper29)
+    && /process\.platform === 'win32'/.test(helper29),
+    '§29b 统一缓存根助手 Windows 默认 D 盘、支持 SXG_CACHE_DIR 覆盖、CI 回落系统临时目录');
+
+  const scripts29 = readdirSync(join(ROOT, 'scripts'))
+    .filter((f) => /\.(cjs|mjs|js)$/.test(f) && f !== '_cache-dir.cjs');
+  const dirtyProfile29 = [];
+  const missingImport29 = [];
+  for (const f of scripts29) {
+    const s29 = read('scripts/' + f);
+    for (const ln29 of s29.split('\n')) {
+      if (!/edgeprof|\.edge-adcheck|sxg-u-filter/.test(ln29)) continue;
+      if (/path\.join\(\s*__dirname|path\.join\(\s*ROOT|tmpdir\(\)|[Cc]:[\\/]Users/.test(ln29)) {
+        dirtyProfile29.push(f + ': ' + ln29.trim().slice(0, 110));
+      }
+    }
+    if (/--user-data-dir=/.test(s29) && !/_cache-dir\.cjs/.test(s29)) missingImport29.push(f);
+  }
+  check(scripts29.length > 15 && dirtyProfile29.length === 0,
+    '§29c 无头 Edge profile 一律经 cacheRoot() 落 D 盘（不许写回 scripts/ 或 %TEMP%）',
+    dirtyProfile29.slice(0, 4).join(' | '));
+  check(missingImport29.length === 0,
+    '§29d 每个启动无头 Edge 的脚本都引入了统一缓存根助手（非空集防护）',
+    missingImport29.join(', '));
+
+  const arts29 = ['assets/ad-luxiyi.svg', 'assets/ad-recruit.svg'];
+  check(arts29.every((f) => exists(f)
+      && /<svg[\s\S]*?viewBox="0 0 \d+ \d+"/.test(read(f))
+      && !/https?:\/\//.test(read(f).replace(/xmlns(?::[a-zA-Z]+)?="[^"]*"/g, ''))
+      && !/<image\b/i.test(read(f)))
+    && ad29.indexOf("var ART = './assets/ad-luxiyi.svg'") !== -1
+    && ad29.indexOf("var ART_RECRUIT = './assets/ad-recruit.svg'") !== -1,
+    '§29e 两张站点自绘矢量设计稿存在、有效、无外链，且被广告位引用');
+
+  check(!/<div class="sxg-adslot__cta"/.test(ad29)
+    && /sxg-adslot__cta" href="'\s*\+\s*TMALL/.test(ad29)
+    && /sxg-adslot__banner" href="'\s*\+\s*TMALL/.test(ad29)
+    && /sxg-adslot__name" href="'\s*\+\s*DETAIL/.test(ad29)
+    && /target="_blank" rel="noopener"/.test(ad29),
+    '§29f 天猫 CTA 与整张广告图都是真 <a>（新窗口 + noopener），品牌名仍指站内详情页',
+    'CTA 又变回没 href 的 <div> → 站长「链接点不动」的老问题复发');
+
+  check(/\.sxg-adslot__card\{[^}]*align-items:center[^}]*text-align:center/.test(ad29)
+    && /\.sxg-adslot__meta\{[^}]*justify-content:center/.test(ad29)
+    && /\.sxg-adslot__recruit-copy\{[^}]*text-align:center/.test(ad29)
+    && !/\.sxg-adslot__nav\{[^}]*position:absolute/.test(ad29)
+    && /sxg-adslot__foot/.test(ad29),
+    '§29g 广告位内容水平居中、箭头移到卡片下方导航条（不再压住招商卡标题）');
+
+  const tmall29 = (ad29.match(/var TMALL = '([^']+)'/) || [])[1];
+  check(tmall29 === 'https://' + 'luxiyi.tmall.com/'
+    && ad29.indexOf("var IMG = './assets/luxiyi.jpg'") !== -1,
+    '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
+
+  check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
+    && /black-card-adslot\.js\?v=5/.test(idx29),
+    '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {

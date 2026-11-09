@@ -1,4 +1,5 @@
 // 验证：点击投票弹窗右上角 ✕ 能关闭弹窗（真实鼠标事件）
+const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
 const { execFile } = require('child_process');
 const fs = require('fs');
 const http = require('http');
@@ -42,7 +43,7 @@ async function realClick(ws, sel) {
 
 async function main() {
   execFile('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
-    ['--headless=new', '--disk-cache-size=1', `--remote-debugging-port=${DBG}`, '--user-data-dir=' + path.join(__dirname, 'edgeprof-' + Date.now()), '--window-size=1280,900', `http://127.0.0.1:${PORT}/?nocache=${Date.now()}`]);
+    ['--headless=new', '--disk-cache-size=1', `--remote-debugging-port=${DBG}`, '--user-data-dir=' + path.join(cacheRoot(), 'edgeprof-' + Date.now()), '--window-size=1280,900', `http://127.0.0.1:${PORT}/?nocache=${Date.now()}`]);
   await sleep(5000);
   const list = await (await fetch(`http://127.0.0.1:${DBG}/json`)).json();
   const page = list.find(t => t.type === 'page' && /localhost|127\.0\.0\.1/.test(t.url)) || list.find(t => t.type === 'page');
