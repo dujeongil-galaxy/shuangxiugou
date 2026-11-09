@@ -1,10 +1,11 @@
 /* ==========================================================================
-   首页黑色「全网打工人已转移消费额」卡片 → 预留广告位
+   首页黑色「全网打工人已转移消费额」卡片 → 陆喜依品牌展示位
    --------------------------------------------------------------------------
    站长 2026-11-09 指令（修订）：该黑卡（含 ¥268,490 与「打卡并生成小票」按钮）
-   不保留，但原位不要空着，放一个「广告位预留」占位框；
-   其余页面架构（横幅 / 统计卡片 174·84·31·57 / 导航 / 筛选 / 品牌列表 /
-   海比优广告块 / 良配推广位）一律原样保留，绝不动。
+   不保留，原位放占位框；2026-11-09 晚间补充：陆喜依旗舰店主动提供品牌视觉，
+   占位框升级为「陆喜依品牌展示」（mascot + 品牌名 + 真实双休标杆标签 + 指向
+   品牌详情页的链接），其余页面架构（横幅 / 统计卡片 174·84·31·57 / 导航 / 筛选 /
+   品牌列表 / 海比优广告块 / 良配推广位）一律原样保留，绝不动。
 
    定位锚点：全站唯一文案「全网打工人已转移消费额」。
    该卡片由主站压缩 bundle 异步渲染，且 React 可能在挂载后重渲染/回填文字，
@@ -17,17 +18,25 @@
 
   var SIG = '全网打工人已转移消费额';
 
-  // 占位框样式只注入一次，避免污染全局
+  // 样式只注入一次，避免污染全局
   function injectStyle() {
     if (document.getElementById('sxg-adslot-style')) return;
     var css =
-      '.sxg-adslot-reserved{box-sizing:border-box;min-height:128px;display:flex;' +
-      'align-items:center;justify-content:center;margin:0;padding:18px;' +
-      'border:2px dashed #cbd5e1;border-radius:16px;background:#f8fafc;' +
-      'color:#64748b;font-family:system-ui,-apple-system,"PingFang SC",' +
-      '"Microsoft YaHei",sans-serif;text-align:center;width:100%}' +
-      '.sxg-adslot-reserved__tag{font-size:16px;font-weight:800;letter-spacing:.08em}' +
-      '.sxg-adslot-reserved__sub{margin-top:6px;font-size:12px;color:#94a3b8}';
+      '.sxg-adslot-brand{box-sizing:border-box;display:flex;align-items:center;gap:14px;' +
+      'margin:0;padding:14px 16px;border:1px solid #e2e8f0;border-radius:16px;' +
+      'background:#fff;color:#0f172a;font-family:system-ui,-apple-system,"PingFang SC",' +
+      '"Microsoft YaHei",sans-serif;width:100%;text-decoration:none}' +
+      '.sxg-adslot-brand__logo{flex:0 0 auto;width:76px;height:76px;display:flex;' +
+      'align-items:center;justify-content:center;border-radius:14px;overflow:hidden;' +
+      'background:#fff;box-shadow:0 2px 10px rgba(15,23,42,.1)}' +
+      '.sxg-adslot-brand__logo img{width:100%;height:100%;object-fit:contain;display:block}' +
+      '.sxg-adslot-brand__body{flex:1 1 auto;min-width:0}' +
+      '.sxg-adslot-brand__name{font-size:17px;font-weight:800;letter-spacing:.02em}' +
+      '.sxg-adslot-brand__name a{color:inherit;text-decoration:none}' +
+      '.sxg-adslot-brand__tag{margin-top:3px;font-size:13px;color:#64748b;line-height:1.5}' +
+      '.sxg-adslot-brand__mark{flex:0 0 auto;align-self:flex-start;margin-left:6px;' +
+      'padding:2px 8px;border-radius:999px;background:#f1f5f9;color:#94a3b8;' +
+      'font-size:11px;font-weight:700;white-space:nowrap}';
     var st = document.createElement('style');
     st.id = 'sxg-adslot-style';
     st.textContent = css;
@@ -36,17 +45,29 @@
 
   function buildSlot() {
     var slot = document.createElement('div');
-    slot.className = 'sxg-adslot-reserved';
+    slot.className = 'sxg-adslot-brand';
     slot.setAttribute('data-adslot-reserved', '1');
     slot.innerHTML =
-      '<div class="sxg-adslot-reserved__inner">' +
-      '<div class="sxg-adslot-reserved__tag">广告位预留</div>' +
-      '<div class="sxg-adslot-reserved__sub">招商中 · 欢迎联系投放</div>' +
-      '</div>';
+      '<a class="sxg-adslot-brand__logo" href="./brand/luxiyi.html" rel="noopener" aria-label="陆喜依 品牌详情">' +
+        '<img src="./assets/luxiyi.jpg" alt="陆喜依">' +
+      '</a>' +
+      '<div class="sxg-adslot-brand__body">' +
+        '<div class="sxg-adslot-brand__name"><a href="./brand/luxiyi.html" rel="noopener">陆喜依</a></div>' +
+        '<div class="sxg-adslot-brand__tag">真实双休标杆品牌 · 站长指定 S 级</div>' +
+      '</div>' +
+      '<span class="sxg-adslot-brand__mark">品牌展示</span>';
+    // 图片缺失（如资源未加载）时降级为文字，避免破图
+    var img = slot.querySelector('img');
+    if (img) {
+      img.addEventListener('error', function () {
+        var logo = slot.querySelector('.sxg-adslot-brand__logo');
+        if (logo) { logo.textContent = '陆喜依'; logo.removeAttribute('href'); }
+      });
+    }
     return slot;
   }
 
-  // 找到黑卡就把它换成占位框；已换过的（锚点文字消失）自动跳过
+  // 找到黑卡就把它换成陆喜依品牌展示位；已换过的（锚点文字消失）自动跳过
   function transformCard() {
     var nodes = document.querySelectorAll('div');
     for (var i = 0; i < nodes.length; i++) {
