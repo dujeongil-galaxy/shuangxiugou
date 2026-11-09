@@ -4,6 +4,16 @@
 
 ---
 
+### fix：修 CI #620 红灯 + 提交陆喜依品牌卡 logo（2026-11-09 20:14 · 提交 `b234535`）
+
+- 起因：站长 2026-11-09 晚间指令「去拼音搜索框找陆喜依，提交 logo，就是我之前给你那个图」「别忘了解决 CI 报错（站点一致性）」。
+- **CI 红灯是真回归，不是 flake**：run #620「站点一致性校验」的 pinyin job 挂在 step #36「陆喜依平替与别名直搜测试」。此前 #617/#618 被当成 CDP 端到端时序偶发 flake、提示手动 Re-run，实际根因是提交 `9841c41` 把奶茶／新茶饮类平替清单从 6 家扩到 7 家（补兵立王 `bingliw-card`）、`verify.mjs` §26h/§26o 已同步到 7，但 `scripts/test-luxiyi-alt.cjs` 的钩子断言与夹具仍写死 6 家 → `hook.targets.length === 6` 判红；verify.mjs 静态校验 job 是绿的。
+- CI 修法：`test-luxiyi-alt.cjs` 夹具补 `<div id="bingliw-card">兵立王</div>`，清单/挂块数/链接数/幂等/升 S 护栏/首页阈值全部 6→7 对齐（升 S 那条 5→6），注释同步。本地 27/27 全过；故障注入（删掉兵立王）6 条断言判红验证有效后还原。另把 CI pinyin job 的 34 个测试本地全跑：33 全过，唯一 `test-photo-vault.cjs` 是长期记录的 CDP 时序 flake（「两张照片都拿到 blob src」），单跑 30/30 全过、不改生产代码；step #37「陆喜依证据来源链接测试」此前因 #36 失败被 skip、本轮首次验证通过。
+- **提交 logo**：陆喜依自定义卡此前 `logo: null`，拼音搜索框输「陆喜依」出卡但只有文字回退。改为 `logo: './assets/luxiyi.jpg'`——站长此前给过的民族风少女喝刺梨汁插画，已在仓库、被首页滚动广告位引用（提交 `3624e37` 引入）。按单一真相源复用同一文件，与广告位共用，不重复提交明文素材文件（README §22 素材规则豁免 `assets/` 下品牌 logo，§22c 白名单）。拼音全拼 `luxiyi`/`lxy` 走联想回填是站点既有设计，未擅自改口径。
+- 机器强制：`verify.mjs` §26 新增 §26y–§26ac 六条断言（卡 logo 指向插画 / 文件存在防破图 / 与广告位单一真相源 / 拼音索引可定位 / 行为测试挂 CI）；新增 `scripts/test-luxiyi-logo.cjs`（16 项真 DOM 测试，挂进 verify.yml pinyin job），验证拼音搜索框里那张卡真的挂上 `<img>`、不是文字回退；故障注入（logo 改回 null + 删 CI 挂接）静态层 §26y/§26ac 与真 DOM 层 8 项均判红，已还原。带密码 `verify.mjs` 1578 项全过（较上轮 1572 +6）。
+- 配套：`scripts/cdp-adcheck.cjs` 入库（站长确认），标「本机专用 · 不挂 CI」、修正过时注释为现行滚动广告位轮播；`.gitignore` 屏蔽其产物 `scripts/.edge-adcheck/`、`scripts/sxg-adcheck.png`，避免 §22c 素材红线误判。仓库外回收目录 `edgeprof-trash-2026-11-09/`（523 个 CDP 临时 Edge profile）按站长「若删除不会产生影响，则删除」确认后清理。
+- 未动压缩产物 `assets/index-YthXZ9eP.js`、并行会话在制的 `ai-worker/src/worker.js`。
+
 ### docs：黑卡位置升级为滚动式广告位轮播（2026-11-09 18:50 · 提交 `97823f3`）
 
 - 起因：站长 2026-11-09 晚间指令——广告位应做成独立的滚动式模块（而非嵌在品牌概况卡里），支持手动切换广告卡；陆喜依卡需一句提示词，且点击广告图片跳天猫支持双休企业。
