@@ -4,6 +4,15 @@
 
 ---
 
+### feat：成功案例页加「回到顶部」按钮（2026-11-09 14:40 · 提交 `35ea79b`）
+
+- **站长指令**（2026-11-09）：不加首页导航入口，保持现状；只给成功案例页单独做一个 top 按钮。
+- **改法**：`success-stories.html` 末尾加 `<button class="to-top" id="to-top" aria-label="回到顶部">`（内联 SVG 上箭头，不加素材）。滚过 **480px** 才出现；隐藏态用 `visibility: hidden`（只写 `opacity: 0` 会让看不见的按钮仍留在 Tab 焦点链里）；滚动监听用 `requestAnimationFrame` 合并，抽点阈值比较后才改 class，避免每帧写 DOM；点击走 `scrollTo({behavior:'smooth'})`，命中 `prefers-reduced-motion: reduce` 时退化为瞬时跳转并直接清零 `scrollTop`。
+- **样式**：与站点同款 teal 口径（白底 + `#99f6e4` 边框 + 44px 圆形 + 轻投影），`:focus-visible` 给 2px 焦点环；深色模式换成 `#1e2429` 底 + `#5eead4` 图标；≤520px 缩到 40px、边距 16px。
+- **机器强制**：`verify.mjs` 新增 **§25t**（button + aria-label）、**§25u**（隐藏态必须是 `visibility: hidden`）、**§25v**（阈值 480 + passive 滚动监听 + rAF + reduced-motion）。
+- **验收**：本地 `verify.mjs` 全量通过（exit 0）；`test-verify-self.cjs` 6 项全过；无头 Edge 强制按钮可见态截图复核（右下角圆形按钮、无裁边、与卡片不重叠）。
+- **改了哪些文件**：`success-stories.html`（CSS + 按钮 + 内联脚本）、`scripts/verify.mjs`（§25t–§25v）。压缩产物 `assets/index-*.js` 未动。本批 `feat:`，不触发 §21n。
+
 ### fix：专题页校验节号 29→25，修复「校验脚本自检」主节号跳号判红（2026-11-09 14:17 · 提交 `6978774`）
 
 - **现象**：上一批把专题页校验写成 §29，本地 `verify.mjs` 全绿；push 后 CI run #613 的「拼音搜索测试」job 在第 14 步「校验脚本自检」判红——`主节号连续无跳号 ["24 → 29"]`，后续 20 余个行为测试全部 skipped。
