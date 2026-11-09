@@ -1,7 +1,7 @@
 /* ==========================================================================
    广告位预留补丁（2026-11-09 站长指令）
    --------------------------------------------------------------------------
-   在打卡统计卡片旁边预留广告位，不影响原有功能
+   删掉原来的黑色打卡统计卡片，替换成广告位
    ========================================================================== */
 (function () {
   'use strict';
@@ -21,14 +21,14 @@
     if (!statsCard) return;
     if (document.getElementById('sxg-ad-slot')) return; // 已经加过了
 
-    // 创建广告位容器
+    // 创建广告位容器，替换原来的黑色卡片
     const adContainer = document.createElement('div');
     adContainer.id = 'sxg-ad-slot';
-    adContainer.style.cssText = 'margin: 16px 0; padding: 16px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; min-height: 80px; color: #94a3b8; font-size: 14px;';
-    adContainer.textContent = '广告位预留（1200x90）';
+    adContainer.style.cssText = 'margin: 16px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; min-height: 100px; color: #94a3b8; font-size: 14px;';
+    adContainer.textContent = '广告位预留（1200x100）';
 
-    // 把广告位插到统计卡片前面
-    statsCard.parentNode.insertBefore(adContainer, statsCard);
+    // 用广告位替换原来的黑色卡片
+    statsCard.parentNode.replaceChild(adContainer, statsCard);
   }
 
   if (document.readyState === 'loading') {
