@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>「QQ奶奶」张秀丽：一个人，在 QQ 上守了十八年｜成功案例专题 · 双休购</title>
+    <meta
+      name="description"
+      content="2005 年，郑州退休教师张秀丽为了弄明白孩子为什么往网吧跑，花 100 元在打印店学会了上网。此后十几年，她用 18 个 QQ 号和 1 个企业号，每晚 8 点在屏幕前听十几万个孩子说话；她一手办起的社区四点半课堂，如今还开在小学楼下。成功案例专题页，正文由 AI 依据公开报道整理。"
+    />
+    <meta name="theme-color" content="#0F766E" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 18px 56px;
+        background: #f8fafc;
+        color: #1f2937;
+        font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        line-height: 1.85;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border: 1px solid #99f6e4;
+        border-radius: 999px;
+        background: #f0fdfa;
+        color: #0f766e;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .wrap {
+        width: 100%;
+        max-width: 800px;
+        margin-top: 22px;
+        padding: 30px 30px 34px;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+      }
+      .topic-head {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 6px;
+      }
+      .topic-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 11px;
+        border-radius: 999px;
+        background: #0f766e;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .03em;
+      }
+      .ai-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 11px;
+        border: 1px solid #bfdbfe;
+        border-radius: 999px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .02em;
+      }
+      h1 {
+        margin: 12px 0 4px;
+        font-size: 24px;
+        font-weight: 800;
+        color: #0f766e;
+        line-height: 1.4;
+      }
+      .lead {
+        margin: 6px 0 26px;
+        font-size: 15px;
+        color: #475569;
+      }
+      .lead strong { color: #0f172a; }
+
+      /* —— 数字条 —— */
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin: 0 0 28px;
+      }
+      .stat {
+        padding: 14px 16px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #fdfdfd;
+      }
+      .stat .num {
+        display: block;
+        font-size: 19px;
+        font-weight: 800;
+        color: #0f766e;
+        line-height: 1.4;
+      }
+      .stat .cap {
+        display: block;
+        margin-top: 3px;
+        font-size: 12.5px;
+        color: #64748b;
+        line-height: 1.6;
+      }
+
+      h2 {
+        margin: 34px 0 12px;
+        font-size: 19px;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.45;
+      }
+      h2 .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        margin-right: 8px;
+        border-radius: 999px;
+        background: #0f766e;
+        vertical-align: 2px;
+      }
+      p { margin: 0 0 13px; color: #374151; }
+
+      /* —— 时间线 —— */
+      .timeline {
+        margin: 4px 0 0;
+        padding: 0 0 0 20px;
+        border-left: 2px solid #ccfbf1;
+      }
+      .tl {
+        position: relative;
+        margin: 0 0 18px;
+        padding-left: 6px;
+      }
+      .tl:last-child { margin-bottom: 0; }
+      .tl::before {
+        content: '';
+        position: absolute;
+        left: -27px;
+        top: 6px;
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: #0f766e;
+        box-shadow: 0 0 0 3px #f0fdfa;
+      }
+      .tl-year {
+        font-size: 15px;
+        font-weight: 800;
+        color: #0f766e;
+      }
+      .tl-text {
+        margin: 2px 0 0;
+        font-size: 14px;
+        color: #374151;
+      }
+
+      /* —— 引语 —— */
+      .quote {
+        margin: 16px 0;
+        padding: 14px 18px;
+        border-left: 3px solid #0f766e;
+        border-radius: 0 10px 10px 0;
+        background: #f8fafc;
+        font-size: 15px;
+        color: #0f172a;
+      }
+      .quote span {
+        display: block;
+        margin-top: 6px;
+        font-size: 12.5px;
+        color: #64748b;
+        font-weight: 400;
+      }
+
+      /* —— 结尾感 —— */
+      .why {
+        margin: 16px 0 0;
+        padding: 14px 16px;
+        border-left: 3px solid #99f6e4;
+        background: #f0fdfa;
+        border-radius: 0 10px 10px 0;
+        font-size: 14px;
+        color: #475569;
+      }
+      .why b { color: #0f172a; }
+
+      /* —— 核实纠偏框 —— */
+      .correct {
+        margin: 16px 0 0;
+        padding: 14px 16px;
+        border: 1px solid #fde68a;
+        border-left: 4px solid #f59e0b;
+        background: #fffbeb;
+        border-radius: 0 10px 10px 0;
+        font-size: 13.5px;
+        color: #92400e;
+      }
+      .correct b { color: #78350f; }
+
+      /* —— AI 生成声明框 —— */
+      .ai-note {
+        margin: 16px 0 0;
+        padding: 14px 16px;
+        border: 1px solid #bfdbfe;
+        border-left: 4px solid #3b82f6;
+        background: #eff6ff;
+        border-radius: 0 10px 10px 0;
+        font-size: 13px;
+        color: #1e3a8a;
+      }
+      .ai-note b { color: #1e40af; }
+
+      /* —— 来源列表 —— */
+      .src-title {
+        margin: 22px 0 8px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      ul.src {
+        margin: 0;
+        padding-left: 20px;
+        font-size: 13px;
+        color: #475569;
+      }
+      ul.src li { margin: 0 0 7px; }
+      ul.src a {
+        color: #0f766e;
+        text-decoration: none;
+        border-bottom: 1px solid #99f6e4;
+        word-break: normal;
+        overflow-wrap: break-word;
+      }
+      ul.src a:hover { color: #0d9488; }
+      ul.src .date {
+        display: inline-block;
+        margin-right: 7px;
+        color: #94a3b8;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      ul.src .tag {
+        display: inline-block;
+        margin-left: 4px;
+        padding: 0 7px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        background: #f1f5f9;
+        color: #64748b;
+        white-space: nowrap;
+      }
+
+      .links {
+        margin-top: 30px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+      }
+      .back {
+        display: inline-block;
+        color: #0f766e;
+        font-weight: 600;
+        text-decoration: none;
+        border-bottom: 1px solid #99f6e4;
+        padding-bottom: 2px;
+      }
+      .back:hover { color: #0d9488; }
+
+      @media (prefers-color-scheme: dark) {
+        body { background: #0f172a; color: #e2e8f0; }
+        .wrap { background: #1e2429; border-color: #334155; }
+        .lead { color: #94a3b8; }
+        .lead strong { color: #f1f5f9; }
+        .stat { background: #161d24; border-color: #2b333a; }
+        .stat .num { color: #5eead4; }
+        .stat .cap { color: #94a3b8; }
+        h2 { color: #f1f5f9; }
+        p { color: #cbd5e1; }
+        .timeline { border-left-color: #134e4a; }
+        .tl::before { background: #5eead4; box-shadow: 0 0 0 3px #0f172a; }
+        .tl-year { color: #5eead4; }
+        .tl-text { color: #cbd5e1; }
+        .quote { background: #161d24; border-left-color: #0f766e; color: #e2e8f0; }
+        .quote span { color: #94a3b8; }
+        .why { background: #16251f; border-left-color: #3aa68c; color: #94a3b8; }
+        .why b { color: #e2e8f0; }
+        .correct { background: #2a2410; border-color: #78580f; color: #d6b35e; }
+        .correct b { color: #f0d488; }
+        .ai-badge { background: #111c2e; border-color: #1e40af; color: #93c5fd; }
+        .ai-note { background: #111c2e; border-color: #1e40af; color: #bfdbfe; }
+        .ai-note b { color: #93c5fd; }
+        .src-title { color: #f1f5f9; }
+        ul.src { color: #94a3b8; }
+        .back { color: #5eead4; border-bottom-color: #3aa68c; }
+      }
+
+      @media (max-width: 520px) {
+        .wrap { padding: 24px 20px 28px; }
+        h1 { font-size: 21px; }
+        .stats { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <span class="badge">● 双休购 · ShuangxiuGo</span>
+    <div class="wrap">
+      <div class="topic-head">
+        <span class="topic-tag">成功案例 · 专题</span>
+        <span class="ai-badge">内容由 AI 生成</span>
+      </div>
+
+      <h1>「QQ奶奶」张秀丽：一个人，在 QQ 上守了十八年</h1>
+
+      <p class="lead">
+        这一篇里的人，没有起诉过谁，也没有判决书。
+        她做的事更笨：<strong>用一台电脑、一根网线，陪十几万个孩子说话，一说十几年。</strong>
+        然后这件事被一个社区接住了，一直开到现在——
+        小学楼下的那张桌子，比她本人留得更久。
+      </p>
+
+      <div class="stats">
+        <div class="stat">
+          <span class="num">100 元 · 10 天</span>
+          <span class="cap">2005 年，她给打印店交了 100 元学费，用十天学会上网和拼音打字</span>
+        </div>
+        <div class="stat">
+          <span class="num">18 个 QQ 号 + 1 个企业号</span>
+          <span class="cap">同时在线切换着聊；企业号由腾讯赠送，可容纳 25 万人</span>
+        </div>
+        <div class="stat">
+          <span class="num">13 万 → 18 万</span>
+          <span class="cap">2011 年报道 13 万好友（中青报／央视），2015 年报道 6 个号累计 18 万网友（中新网）</span>
+        </div>
+        <div class="stat">
+          <span class="num">每晚 8 点 · 每天 4 小时以上</span>
+          <span class="cap">固定上线答疑；九十岁前后仍在社区四点半课堂陪孩子写作业</span>
+        </div>
+      </div>
+
+      <h2><span class="dot"></span>她是怎么开始的：先弄懂孩子，再谈教育</h2>
+      <p>
+        2005 年，郑州的退休教师张秀丽发现，社区课堂里的孩子放学不回家，一头扎进网吧。
+        她没有站在门口骂，而是跑去把家附近六七家网吧一家一家看了一遍，自己也上网试——
+        「了解孩子才能教育孩子」，孩子走到哪儿，大人就该跟到哪儿。
+      </p>
+      <p>
+        不会上网，她就去打印店交钱学。中国青年报的报道里是「每天给店主 10 元、学 10 天」，
+        中新网 2015 年的报道里是「交了 100 元学费」——同一笔钱，两种讲法。然后她学会了浏览器、QQ 和拼音打字。
+      </p>
+      <p>
+        第一个网名很朴素，叫「助人为乐」，资料写「70 岁退休教师」，结果没人搭理她。
+        后来她把资料改成「17 岁打工女孩」，一天就来了十几个好友：孩子们愿意对着「姐姐」说心里话。
+        直到有一天她打开视频，屏幕那头的男孩看见「17 岁姐姐」满头白发——
+        从那以后，「QQ奶奶」这个名字慢慢传开了。
+      </p>
+
+      <h2><span class="dot"></span>一条时间线</h2>
+      <div class="timeline">
+        <div class="tl">
+          <div class="tl-year">2005</div>
+          <p class="tl-text">跑遍周边六七家网吧、交学费学上网，申请第一个 QQ 号，开始在网上陪青少年聊天。</p>
+        </div>
+        <div class="tl">
+          <div class="tl-year">2007</div>
+          <p class="tl-text">72 岁考取高级心理咨询师资格证；在关心青少年的志愿者帮助下，成立「QQ奶奶网络教育工作室」。</p>
+        </div>
+        <div class="tl">
+          <div class="tl-year">2011</div>
+          <p class="tl-text">
+            76 岁，对外称有 18 个 QQ 号加 1 个企业号、13 万好友；腾讯为她搭网络课堂，并赠送一个可容纳 25 万人的企业 QQ 号。
+            央视网「中国好人」专题、中国青年报、央广网先后报道。
+          </p>
+        </div>
+        <div class="tl">
+          <div class="tl-year">2015</div>
+          <p class="tl-text">
+            80 岁，6 个 QQ 号累计 18 万网友，其中企业号容纳 17 万人；每天至少花 4 小时答疑；
+            同年已是「全国关心下一代先进工作者」，并把重心转向线上线下的社区公益家长学校。
+          </p>
+        </div>
+        <div class="tl">
+          <div class="tl-year">2018</div>
+          <p class="tl-text">83 岁，仍被请到郑州十一中为民校区给中学生上课，讲她自己怎么跟孩子打交道。</p>
+        </div>
+        <div class="tl">
+          <div class="tl-year">2021</div>
+          <p class="tl-text">
+            85 岁，出现在工人新村党群服务中心的四点半课堂，和高中志愿者一起给双职工家庭的孩子辅导作业。
+          </p>
+        </div>
+        <div class="tl">
+          <div class="tl-year">2023</div>
+          <p class="tl-text">
+            已年过九十。工人新村社区书记在接受大河报采访时说：四点半课堂「一开始就是由张秀丽打造的」，
+            她也是郑州首个社区公益家长学校的创始人；社区后来的两支读书队伍「爱读书的萍姐」「妈妈的下午茶」，
+            都受过她的影响。
+          </p>
+        </div>
+      </div>
+
+      <h2><span class="dot"></span>她说过的话</h2>
+      <div class="quote">
+        「我从来没看到有坏孩子，只看到可怜的、教育缺位的孩子。」
+        <span>—— 中国青年报，2011-08-31</span>
+      </div>
+      <div class="quote">
+        「我的电脑就是我的教室，打开电脑，就像站在教室门口一样。」
+        <span>—— 中国青年报，2011-08-31</span>
+      </div>
+      <div class="quote">
+        「我现在眼不花、耳不聋身体好得很，在教育事业上我会干到我干不动为止。」
+        <span>—— 中新网／人民网转载，2015-09-14</span>
+      </div>
+      <p>
+        也有不体面的时刻。好友太多，问题回不完，有孩子直接问她：「为什么不回复，你死了吗？」
+        她一笑置之，回一句：「我还没死，有事请讲。」
+        这段没有被剪掉，因为它比任何金句都更接近「陪十几万个陌生人」的真实成本。
+      </p>
+
+      <h2><span class="dot"></span>为什么放进「成功案例」</h2>
+      <p>
+        这个页面原本收的是打官司的人：告迪士尼的学生、告铁路局的学生、追问提现手续费的法学生。
+        他们的赢法很锐利——一纸诉状，把一条旧规则撬开一道缝。
+      </p>
+      <p>
+        张秀丽不是这种赢法。她没有原告身份，也没有判决书。
+        她的赢法是另一种：<b>把一件事做久，久到它不再依赖她本人。</b>
+        2005 年那张书桌，今天变成了小学楼下的郑品书舍——放学后孩子们走进去放下书包写作业，
+        社区的人接着做，志愿者接着做。
+      </p>
+      <p class="why">
+        <b>为什么放进这里：</b>双休购常被说「喊两句有什么用」。
+        这一条想说的是——有些改变不需要你赢过谁，只需要你真的做了，而且做得够久，
+        久到别人愿意接过去。一个人掀不起水浪，但一个人可以先挖一条渠。
+      </p>
+
+      <div class="correct">
+        <b>口径说明（这条比正文更要紧）：</b><br />
+        ① <b>「十几万好友」不等于「陪十几万人聊过天」。</b>好友数是账号累计的结果，真正深聊的是其中一部分；
+        她自己也公开说过回不过来。别把数字当成服务人次。<br />
+        ② <b>13 万和 18 万不是同一年的数。</b>2011 年报道 13 万（中青报、央视网），2015 年报道 6 个号累计 18 万（中新网），
+        账号数量本身也在变（18 个 → 6 个 + 1 个企业号）。所以本页并列不同年份的口径，不取一个「总数」。<br />
+        ③ <b>她不是执业心理医生。</b>2007 年考取的是高级心理咨询师资格证，主业是义务陪伴和家庭教育答疑。
+        本页不使用「治愈」「疗效」这类表述，也不把她的事写成心理治疗案例。<br />
+        ④ <b>近况以 2023 年报道为最新公开信息。</b>此后没有权威媒体的近况报道，本站不推测她的身体状况。
+        四点半课堂由社区接续运营，<b>她本人已不再值守</b>；想了解或参与，请走社区渠道，不要打扰老人本人。
+      </div>
+
+      <div class="ai-note">
+        <b>关于本页内容的生成方式：</b>以上正文由本站 <b>AI 依据下列公开报道检索、整理并撰写</b>，
+        未经人工编辑逐句复核，叙述的取舍与措辞由 AI 负责。文中年龄、数字、时间与引述均以文末来源为准，可自行核对；
+        不同报道口径不一致处已在「口径说明」里标出。如发现偏差或表述失当，请通过首页反馈渠道指出，本站会更正并留痕。
+      </div>
+
+      <p class="src-title">来源（均可公开查证）</p>
+      <ul class="src">
+        <li><span class="date">2011-08-31</span><a href="https://zqb.cyol.com/html/2011-08/31/nw.D110000zgqnb_20110831_1-10.htm" target="_blank" rel="noopener noreferrer">中国青年报：「QQ奶奶」与她的 13 万个好友（2005 年学上网、网名演变、企业 QQ 号、心理咨询师考试、原话）</a>
+        </li>
+        <li><span class="date">2012-01-26</span><a href="https://news.cntv.cn/special/special/qqnainai/shouye/index.shtml" target="_blank" rel="noopener noreferrer">央视网「中国好人」专题：76 岁 QQ 奶奶，温暖 13 万好友
+          </a>
+          <span class="tag">专题页</span>
+        </li>
+        <li>
+          <a href="http://china.cnr.cn/ygxw/201201/t20120126_509093305.shtml" target="_blank" rel="noopener noreferrer">
+            央广网（中国之声）：郑州退休教师张秀丽用 QQ 为孩子答疑解惑（本人自述「18 个 QQ 号 + 1 个企业号」）</a>
+        </li>
+        <li><span class="date">2011-07-26</span><a href="http://www.chinanews.com.cn/shipin/2011/07-26/news42309.html" target="_blank" rel="noopener noreferrer">中国新闻网：QQ 奶奶走红网络为万名网友解心忧（紫荆山路社区未成年心理咨询室）</a>
+        </li>
+        <li><span class="date">2015-09-14</span><a href="http://it.people.com.cn/n/2015/0914/c1009-27581541.html" target="_blank" rel="noopener noreferrer">人民网（转中新网）：郑州「QQ奶奶」10 年发展 18 万网友解教育疑难（6 个号 18 万人、企业号 17 万人、2007 年考证、每天 4 小时、原话）</a>
+        </li>
+        <li><span class="date">2018-09-14</span><a href="http://www.zz11z.com/news/11929.html" target="_blank" rel="noopener noreferrer">郑州市第十一中学：「网红」奶奶为民校园上课啦（83 岁、18 万网友）</a>
+        </li>
+        <li><span class="date">2021-03-19</span><a href="http://www.hn-chinnews.com/show-362-93049-1.html" target="_blank" rel="noopener noreferrer">中新河南网：和「QQ」奶奶一起做公益——郑州市第十九高级中学关爱社区儿童志愿服务（85 岁、工人新村四点半课堂）</a>
+        </li>
+        <li><span class="date">2021-03-23</span><a href="http://www.zz19z.cn/gzb/xydt/xnxw/03/76586.shtml" target="_blank" rel="noopener noreferrer">郑州市第十九高级中学：和「QQ奶奶」一起做公益（陇海校区）</a>
+        </li>
+        <li><span class="date">2023-06-16</span><a href="https://news.dahebao.cn/dahe/appcommunity/1895768" target="_blank" rel="noopener noreferrer">大河报·豫视频：探访郑州书香社区（工人新村社区书记讲述四点半课堂由她打造、年过九十、两支读书队伍受她影响）</a>
+          <span class="tag">最新一篇可查的近况报道</span>
+        </li>
+        <li><span class="date">2011-07-22</span><a href="http://hn.cnr.cn/hngbjy/201107/t20110722_508269421.shtml" target="_blank" rel="noopener noreferrer">央广网河南频道：「QQ奶奶」和孩子们网聊倾听心事（早年任教经历与社区心理咨询室）</a>
+        </li>
+      </ul>
+
+      <div class="links">
+        <a class="back" href="./success-stories.html">← 返回成功案例</a>
+        <a class="back" href="./">← 返回双休购首页</a>
+      </div>
+    </div>
+  </body>
+</html>

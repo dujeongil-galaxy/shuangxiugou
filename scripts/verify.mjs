@@ -7152,6 +7152,95 @@ section('24. 白屏兜底与加载态（防用户误退出）');
     '时序被打乱（如洗手间反锁跑到追着问之前）→ 口述纠正失效');
 }
 
+// ---------- 29. 成功案例专题页：「QQ奶奶」张秀丽 ----------
+// 站长 2026-11-09：「在成功案例（不是卡片5）新增一个专题页，单独写一个 html」。
+// 落点：独立页面 qq-nainai.html，入口挂在 success-stories.html「致敬前辈」下方、
+// 案例 #01 之前，**不占案例 #05 序号**。三条纪律同 §21j：
+//   ① AI 整理必须明示（徽章 + 声明框）；
+//   ② 关键事实锚点不许在后续编辑中丢失（2005／100 元／18 个号／13 万→18 万／年过九十）；
+//   ③ 口径差异必须当场厘清——「好友数 ≠ 服务人次」「资格证 ≠ 执业」「近况不推测」。
+section('25. 成功案例专题页（QQ奶奶）');
+{
+  const qq = exists('qq-nainai.html') ? read('qq-nainai.html') : '';
+  check(qq.length > 4000,
+    '§25a qq-nainai.html 存在且是完整长页（非空壳）',
+    '页面缺失或过短 → 专题没落地');
+
+  // ① AI 整理披露
+  check(/class="ai-badge"[^>]*>\s*内容由 AI 生成/.test(qq)
+    && /class="ai-note"/.test(qq) && /AI 依据下列公开报道检索/.test(qq),
+    '§25b 专题页挂「内容由 AI 生成」徽章 + .ai-note 声明框',
+    '缺徽章或声明框 → 与 §21j 同口径的诚实披露失守');
+
+  // ② 关键事实锚点
+  const factsQ = [
+    ['张秀丽', '主人公姓名'],
+    ['2005', '开始用 QQ 的年份（中青报／中新网口径）'],
+    ['100 元', '打印店学费'],
+    ['18 个 QQ 号', '账号数量'],
+    ['企业号', '腾讯赠送的企业 QQ'],
+    ['13 万', '2011 年好友数（中青报／央视网）'],
+    ['18 万', '2015 年网友数（中新网）'],
+    ['年过九十', '2023 年大河网报道的年龄口径'],
+    ['四点半课堂', '社区接续运营的项目'],
+  ];
+  const missQ = factsQ.filter(([s]) => !qq.includes(s)).map(([s, d]) => `${s}（${d}）`);
+  check(missQ.length === 0,
+    `§25c 专题页的 ${factsQ.length} 个关键事实锚点齐全`,
+    missQ.length ? '以下事实锚点丢失，正文可能被改坏：' + missQ.join('； ') : '');
+
+  // ③ 口径厘清（比正文更要紧）
+  check(/class="correct"/.test(qq) && /好友数/.test(qq) && /服务人次/.test(qq),
+    '§25d 纠偏框写明「好友数 ≠ 服务人次」',
+    '删掉这句 → 十几万好友会被读成十几万人接受过陪伴');
+  check(/不是执业心理医生/.test(qq) && /资格证/.test(qq),
+    '§25e 纠偏框写明「资格证 ≠ 执业」，不用疗效表述',
+    '删掉这句 → 义务陪伴被写成心理治疗案例');
+  check(/不推测/.test(qq) && /不要打扰老人本人/.test(qq),
+    '§25f 近况不推测、并提示走社区渠道而非打扰本人',
+    '缺隐私口径 → 会引导访客去联系这位九十岁老人');
+
+  // ④ 来源与素材纪律
+  // 计数口径：<li> 后面 160 字符内出现 http 链接才算一条来源（不重复匹配同一行）
+  const srcQ = (qq.match(/<li>[\s\S]{0,160}?<a href="https?:\/\//g) || []).length;
+  check(srcQ >= 8,
+    `§25g 专题页附 ${srcQ} 条公开来源（要求 ≥8）`,
+    `只有 ${srcQ} 条 → 事实无出处，与本站证据链纪律冲突`);
+  check(!/<img\b/i.test(qq) && !/assets\//.test(qq),
+    '§25h 专题页不引用图片或站内素材（文字页，素材不入库）',
+    '挂了图片/素材 → 违反素材规则');
+
+  // ⑤ 入口与索引
+  const ssQ = read('success-stories.html');
+  check(/class="topic-entry" href="\.\/qq-nainai\.html"/.test(ssQ),
+    '§25i 成功案例页有指向 qq-nainai.html 的专题入口',
+    '没有入口 → 新页面成为孤岛');
+  check(/专题 · 前辈/.test(ssQ) && !/案例 #05/.test(ssQ),
+    '§25j 入口标为「专题 · 前辈」，且没有占用案例 #05 序号',
+    '序号被占用 → 与站长「不是卡片5」的要求冲突');
+  check(/qq-nainai\.html/.test(read('sitemap.xml')),
+    '§25k sitemap.xml 收录专题页',
+    '漏收录 → 爬虫发现不了这一页');
+  check(/qq-nainai\.html/.test(read('scripts/seo/generate-sitemap.py')),
+    '§25l sitemap 生成脚本同样写入专题页（防下次重建时被抹掉）',
+    '只改 sitemap.xml 不改生成器 → 一跑 seo:sitemap 就丢');
+
+  // ⑥ 回归顶部按钮（站长 2026-11-09：成功案例页单独做一个 top 按钮）
+  check(/<button class="to-top" id="to-top" type="button" aria-label="回到顶部"/.test(ssQ),
+    '§25t 成功案例页有回到顶部按钮（button + aria-label，可键盘触发）',
+    '按钮缺失或不是 button 元素 → 键盘/读屏用户无法回到顶部');
+  check(/\.to-top\.is-on\s*\{[^}]*visibility:\s*visible/.test(ssQ)
+    && /\.to-top\s*\{[\s\S]{0,500}?visibility:\s*hidden/.test(ssQ),
+    '§25u 按钮隐藏态用 visibility:hidden（不留在 Tab 焦点链里）',
+    '只写 opacity:0 → 看不见的按钮仍能被 Tab 聚焦');
+  check(/THRESHOLD = 480/.test(ssQ)
+    && /addEventListener\('scroll', onScroll, \{ passive: true \}\)/.test(ssQ)
+    && /requestAnimationFrame\(sync\)/.test(ssQ)
+    && /prefers-reduced-motion/.test(ssQ),
+    '§25v 滚动阈值 480px + rAF 合并滚动事件 + 尊重 reduced-motion',
+    '刷新率与无障碍口径被改坏 → 按钮乱闪或平滑滚动无法关闭');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {
