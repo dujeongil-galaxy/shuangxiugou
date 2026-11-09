@@ -4,6 +4,19 @@
 
 ---
 
+### feat：每张卡详情弹窗加「跳转到证据公示」并完整定位到对应公示条目（2026-11-10 01:38 · 提交 `1ddc240`）
+
+- **起因**：站长 2026-11-10「大改」，截图指出 Patagonia 详情弹窗底部「生成我的投票小票」左侧空位（红框），要求每张卡片打开之后都加一个新按钮，能完整跳转到对应的证据链公示条目；明确「无论清单值是内置还是自定义卡片」。
+- **两类弹窗一视同仁**：真渲染 CDP dump 确认内置 React 弹窗底部是 `div.pt-2.flex.justify-end.gap-2`（「生成我的投票小票」+ 右上 ✕），自定义卡 `custom-card-actions.js::openEvidenceModal` 底部是 `div.sxg-actions.right`（小票按钮 +「关闭」）。新增 `evidence-jump-patch.js`，用同一个锚点按钮定位两种容器、插浅青色「跳转到证据公示」按钮（在小票按钮之前，正是站长红框位置）；`data-sxg-ev-jump` / `data-sxg-ev-jump-root` 幂等 + `MutationObserver` + rAF 兜底 React／自定义弹窗重渲染；`index.html` 挂 `?v=1`。不改压缩 bundle、不改 `custom-card-actions.js`。
+- **「完整跳转」的六步**：点按钮 → 关弹窗（点它自己的 ✕／「关闭」，绝不外部 `removeChild` React 节点）→ 展开默认折叠的公示区（复用 `evidence-collapse.js` 的 `window.__sxgOpenEvidenceBoard`）→ 展开该品牌 `<details id="ev-…">` → 滚到眼前 → 浅青色高亮 4.2 秒 → `history.replaceState` 写可分享 `#ev-…` 锚点。带 `#ev-…` 打开首页会自动展开定位；非首页则带锚点回 `./index.html`。只滚到公示区标题不算完成。
+- **真相源单一，四层解析**：目标从 `#evidence-board details[data-b]` 运行时反查，补丁不硬编码品牌名清单、品牌 id 或任何 URL。① 品牌名归一化（去空白／分隔符、英文小写）命中 168/175 张卡，含「赵一鸣/零食很忙」↔「赵一鸣 / 零食很忙」；② 去括号命中「工商银行」↔「工商银行 (ICBC)」「一点点」↔「一点点 (1点点)」；③ `customCardsConfig` 的 id 去 `-card` 查 `data-b`（防命名分叉）；④ 公司名归一化。174 个公示条目对应 174 张可见卡；「某代工烘焙食品 (虚拟对比黑榜)」等无条目卡如实提示「暂无独立证据链公示条目」并展开总览，不编造证据、不假装命中。
+- **机器强制（三层）**：`scripts/verify.mjs` 新增 §31a–§31h 八断言；行为契约只比对**剥离注释后的纯代码**（首轮故障注入发现 `pt-2`／`scrollIntoView`／提示文案写在注释里会把改坏的实现「救活」判绿，已加固）。新增 `scripts/test-evidence-jump.cjs`（56 项 jsdom 真 DOM：两类弹窗挂载、位置、幂等、重渲染自愈、四层解析、两套点击链路、无条目降级、分享锚点），挂进 `.github/workflows/verify.yml` 的 pinyin job；`README.md` 新增「详情弹窗证据链公示跳转」章节写死五条口径。
+- **故障注入**：一批 8 处互不冲突故障（抹 README 规则／改首页 `?v`／改内置选择器／删 `MutationObserver`／改坏 slug 兜底／删滚动／抹无条目提示／撤 CI 挂接），静态 §31a–§31h **8/8 全判红**、真 DOM 测试同步判红，6 个文件完整还原后复跑全绿。
+- **验收**：带密码 `NOTES_KEY=… node scripts/verify.mjs` **1603/1603 全绿**（较上轮 1595 +8）；CI pinyin job 的 37 个行为测试本地 36/37（`test-photo-vault.cjs` 是已知的 CDP 时序 flake，单跑 30/30 全过，未改生产代码）；`test-verify-self.cjs` 6/6（61 节连续无跳号）。无头 Edge + CDP 真渲染三例全 PASS：Patagonia→`ev-patagonia`、工商银行→`ev-icbc`、赵一鸣/零食很忙→`ev-zhaoyiming`，弹窗卸载、公示区展开、details `open`、高亮、`#ev-…` 锚点全部到位；另验无条目降级与 `#ev-icbc` 分享链接自动定位。三张宽屏截图确认按钮左右并排、无遮挡、公示条目高亮清晰。
+- 本批 `feat:`，不触发 §21n。未动压缩产物 `assets/index-YthXZ9eP.js`、加密随笔正文、并行会话在制的 `ai-worker/src/worker.js`；缓存与截图均落 D 盘。
+
+---
+
 ### docs：比亚迪卡片真挂曝光登记 + 视频下架如实登记（2026-11-10 00:51 · 提交 `0f0a94d`）
 
 - **起因**：站长 2026-11-09 给线索——抖音「BYD直营员工维权」作品指称某直营门店店长要求员工强制加班至晚十点，发布者援引《劳动法》第九十六条作为维权依据；要求登记到比亚迪卡片、曝光该企业，并注明站长随笔相关章节（明确别抄原话、随笔别写成「日记」）。上一批 `c38af84` 只在 `brand/byd.html` 与首页公示区补了证据条目，**渲染出来的比亚迪卡片一个字没改**，站长 2026-11-10 当场指出「这件事你好像还没有完成，卡片未改动」。
