@@ -4,6 +4,17 @@
 
 ---
 
+### fix：广告位天猫链接可点 + 内容居中 + 两张自绘设计图 + 缓存统一落 D 盘（2026-11-09 23:17 · 提交 `5a141b9`）
+
+- 起因：站长 2026-11-09 深夜三连问「天猫链接也点不动啊」「广告位为什么不是居中？」「话说广告位这个你不能设计一下图片吗」，外加「以后把缓存放在 D 盘，我 C 盘再搞要炸了」。
+- **天猫链接点不动的真因**：`black-card-adslot.js` 里那行蓝色 CTA「点此进入天猫旗舰店，支持真实双休企业 →」是 `<div>`、没有 `href`，整张卡只有左侧 76×76 的 mascot 小图是真链接；CDP `elementFromPoint` 另发现首次访问 8 秒锁定的劳动提醒弹窗全屏遮罩也会临时挡住点击（关掉即消失，非主因）。修法：整张广告设计图与 CTA 提示词都改成真 `<a>`（零参数店铺首页 / `target="_blank"` / `rel="noopener"`），品牌名仍指 `./brand/luxiyi.html`；CDP 真点击两处入口均打开天猫新标签页（广告图打开的是零参数店铺首页）。
+- **不居中 / 箭头压字**：卡片左对齐、右侧大片空白；左右箭头 `position:absolute` 绝对定位盖在卡片上，第 2 张「广告位招商中」标题被左侧圆箭头压住。修法：卡片 `align-items:center` + `text-align:center`、信息条 `justify-content:center`、招商文案绝对居中叠在设计图上；箭头移到卡片下方 `.sxg-adslot__foot` 导航条（与圆点同排），不再叠压任何文案；窄屏仍隐藏箭头。
+- **广告位设计图**：新增 `assets/ad-luxiyi.svg`（深蓝渐变 + 金色刺梨徽章 + 民族菱纹织带 + 金色 CTA 胶囊）与 `assets/ad-recruit.svg`（浅色虚线框 + 四角菱形角饰 + 中心印章留白）。均为站点自绘矢量稿、零外链、任意分辨率清晰，不属站长提供的口述素材（README 已写明口径）；`assets/luxiyi.jpg` mascot 仍与搜索结果品牌卡共用单一真相源。`black-card-adslot.js ?v=4→5`。
+- **缓存落 D 盘**：新增 `scripts/_cache-dir.cjs`（Windows 默认 `D:/WorkBuddy-Cache/edge-profiles`、`SXG_CACHE_DIR` 可覆盖、CI / 非 Windows 回落系统临时目录），20 个会写无头 Edge profile 的脚本全部改走 `cacheRoot()`，`shot-*.cjs` 截图输出与 `cdp-adcheck.cjs` 产物也移到 D 盘 `shots/`；README 新增「广告位设计稿与缓存落盘」章节，`.gitignore` 补历史产物兜底。
+- 验收：带密码 `verify.mjs` 1587/1587 全绿（新增 §29a–§29i 九条断言）；`test-adslot.cjs` 33/33 真 DOM 全过并挂进 CI pinyin job；6 处故障注入（CTA 退回 div / 去掉居中 / 删设计图 / 缓存写回 tmpdir / 删 CI 挂接 / 抹 README 规则）静态 6 条 + 行为 3 条判红，已还原；无头 Edge + CDP 真渲染 `elementFromPoint` 命中 `A.sxg-adslot__cta` / `IMG.sxg-adslot__art`，真点击两个入口都开出天猫新标签页，两张卡截图肉眼确认无破图、无遮挡、零 JS 异常。
+
+---
+
 ### fix：修 CI #620 红灯 + 提交陆喜依品牌卡 logo（2026-11-09 20:14 · 提交 `b234535`）
 
 - 起因：站长 2026-11-09 晚间指令「去拼音搜索框找陆喜依，提交 logo，就是我之前给你那个图」「别忘了解决 CI 报错（站点一致性）」。
