@@ -257,7 +257,7 @@
       
       if (starCheck === 'success') {
         title = '✅ GitHub 登录成功';
-        message = `已检测到你 Starred 本仓库，今天是第 ${starDays} 天。\nStar 日期：${starDate}\n\n已达成，可解锁国内高速 AI 服务。`;
+        message = `你给本仓库点的 Star 已经满 ${starDays} 天啦，解锁条件达成 ✅\nStar 日期：${starDate}\n\n国内的高速 AI 服务已经为你开通，直接去用就好。`;
         localStorage.setItem('sxg_github_logged_in', '1');
         localStorage.setItem('sxg_github_has_star', '1');
         localStorage.setItem('sxg_star_days', starDays.toString());
@@ -265,9 +265,9 @@
       } else {
         title = '⏳ 等待解锁';
         if (starDays > 0) {
-          message = `你已 Starred 本仓库，今天是第 ${starDays} 天，还需 ${remainingDays} 天满 7 天。\nStar 日期：${starDate}\n\n满 7 天后即可解锁国内高速 AI 服务。`;
+          message = `你给本仓库点的 Star 到第 ${starDays} 天了，还差 ${remainingDays} 天满 7 天就能解锁国内高速 AI 服务。\nStar 日期：${starDate}`;
         } else {
-          message = '你已成功登录 GitHub，但还没 Starred 本仓库。Starred 后满 7 天即可解锁国内高速 AI 服务。';
+          message = '你 GitHub 已经登录了，但还没给本仓库点 Star。\n点完 Star、攒满 7 天，就能解锁国内的高速 AI 服务。';
         }
         localStorage.setItem('sxg_github_logged_in', '1');
         localStorage.setItem('sxg_github_has_star', '0');
@@ -299,12 +299,12 @@
           
           if (hasStar) {
             if (starDays >= 7) {
-              showModal('✅ 已解锁', `你 Starred 本仓库，今天是第 ${starDays} 天，已达成。\nStar 日期：${starDate}\n\n可使用国内高速 AI 服务。`, '知道了');
+              showModal('✅ 已解锁', `你给本仓库点的 Star 已经满 ${starDays} 天啦，解锁条件达成 ✅\nStar 日期：${starDate}\n\n国内的高速 AI 服务已经为你开通，直接去用就好。`, '知道了');
             } else {
-              showModal('⏳ 等待中', `你 Starred 本仓库，今天是第 ${starDays} 天，还需 ${remainingDays} 天满 7 天。\nStar 日期：${starDate}`, '知道了');
+              showModal('⏳ 等待中', `你给本仓库点的 Star 到第 ${starDays} 天了，还差 ${remainingDays} 天满 7 天就能解锁国内高速 AI 服务。\nStar 日期：${starDate}`, '知道了');
             }
           } else {
-            showModal('⚠️ 未 Starred 仓库', '你已登录 GitHub，但还没 Starred 本仓库。Starred 后满 7 天即可解锁国内高速 AI 服务。', '去 Starred');
+            showModal('⚠️ 未 Starred 仓库', '你 GitHub 已经登录了，但还没给本仓库点 Star。\n点完 Star、攒满 7 天，就能解锁国内的高速 AI 服务。', '去 Starred');
           }
         } else {
           // 没登录的话，先弹 VPN 提示
