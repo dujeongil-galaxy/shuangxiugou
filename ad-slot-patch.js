@@ -1,25 +1,35 @@
 /* ==========================================================================
    广告位预留补丁（2026-11-09 站长指令）
    --------------------------------------------------------------------------
-   删掉原来的黑色打卡统计卡片，替换成广告位
+   精准替换打卡统计卡片，不影响其他内容
    ========================================================================== */
 (function () {
   'use strict';
 
   function buildAdSlot() {
-    // 找到包含"打卡并生成小票"的黑色卡片
-    const allElements = document.querySelectorAll('div');
-    let statsCard = null;
+    if (document.getElementById('sxg-ad-slot')) return; // 已经加过了
+
+    // 找所有按钮，从"打卡并生成小票"按钮往上找父元素
+    const buttons = document.querySelectorAll('button');
+    let checkBtn = null;
     
-    for (const el of allElements) {
-      if (el.textContent.includes('打卡并生成小票') && el.textContent.includes('全网打工人已转移消费额')) {
-        statsCard = el;
+    for (const btn of buttons) {
+      if (btn.textContent.includes('打卡并生成小票')) {
+        checkBtn = btn;
         break;
       }
     }
 
-    if (!statsCard) return;
-    if (document.getElementById('sxg-ad-slot')) return; // 已经加过了
+    if (!checkBtn) return;
+
+    // 往上找 3 层父元素，就是那个黑色卡片
+    let statsCard = checkBtn.parentElement;
+    for (let i = 0; i < 3; i++) {
+      if (statsCard.parentElement) statsCard = statsCard.parentElement;
+    }
+
+    // 确认一下这个卡片里有没有"全网打工人已转移消费额"
+    if (!statsCard.textContent.includes('全网打工人已转移消费额')) return;
 
     // 创建广告位容器，替换原来的黑色卡片
     const adContainer = document.createElement('div');
