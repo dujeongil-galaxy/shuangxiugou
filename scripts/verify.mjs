@@ -7224,6 +7224,21 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(/qq-nainai\.html/.test(read('scripts/seo/generate-sitemap.py')),
     '§25l sitemap 生成脚本同样写入专题页（防下次重建时被抹掉）',
     '只改 sitemap.xml 不改生成器 → 一跑 seo:sitemap 就丢');
+
+  // ⑥ 回归顶部按钮（站长 2026-11-09：成功案例页单独做一个 top 按钮）
+  check(/<button class="to-top" id="to-top" type="button" aria-label="回到顶部"/.test(ssQ),
+    '§25t 成功案例页有回到顶部按钮（button + aria-label，可键盘触发）',
+    '按钮缺失或不是 button 元素 → 键盘/读屏用户无法回到顶部');
+  check(/\.to-top\.is-on\s*\{[^}]*visibility:\s*visible/.test(ssQ)
+    && /\.to-top\s*\{[\s\S]{0,500}?visibility:\s*hidden/.test(ssQ),
+    '§25u 按钮隐藏态用 visibility:hidden（不留在 Tab 焦点链里）',
+    '只写 opacity:0 → 看不见的按钮仍能被 Tab 聚焦');
+  check(/THRESHOLD = 480/.test(ssQ)
+    && /addEventListener\('scroll', onScroll, \{ passive: true \}\)/.test(ssQ)
+    && /requestAnimationFrame\(sync\)/.test(ssQ)
+    && /prefers-reduced-motion/.test(ssQ),
+    '§25v 滚动阈值 480px + rAF 合并滚动事件 + 尊重 reduced-motion',
+    '刷新率与无障碍口径被改坏 → 按钮乱闪或平滑滚动无法关闭');
 }
 
 // ---------- 汇总 ----------
