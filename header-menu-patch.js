@@ -187,6 +187,62 @@
     document.body.appendChild(overlay);
   }
 
+  // VPN 提示弹窗（点击 Login GitHub 时先弹这个）
+  function showVpnWarningModal(loginUrl) {
+    // 遮罩
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    
+    // 弹窗卡片
+    var modal = document.createElement('div');
+    modal.style.cssText = 'background:#fff;border-radius:16px;max-width:400px;width:100%;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
+    
+    // 标题
+    var h3 = document.createElement('h3');
+    h3.style.cssText = 'margin:0 0 12px 0;font-size:16px;font-weight:600;color:#1e293b;';
+    h3.textContent = '⚠️ 提示';
+    modal.appendChild(h3);
+    
+    // 内容
+    var p = document.createElement('p');
+    p.style.cssText = 'margin:0 0 20px 0;font-size:14px;line-height:1.6;color:#475569;white-space:pre-line;';
+    p.innerHTML = 'GitHub 在大陆可能无法直接访问，如遇打不开请先开启 VPN。\n\n站长推荐：<a href="https://47.112.97.173:8000/register?aff=v17mHNYv" target="_blank" style="color:#0F766E;">点此购买</a>';
+    modal.appendChild(p);
+    
+    // 按钮容器
+    var btnContainer = document.createElement('div');
+    btnContainer.style.cssText = 'display:flex;gap:10px;';
+    
+    // 仍然登录按钮
+    var continueBtn = document.createElement('button');
+    continueBtn.style.cssText = 'flex:1;padding:12px;background:#0F766E;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:500;cursor:pointer;';
+    continueBtn.textContent = '仍然登录';
+    continueBtn.onclick = function() {
+      document.body.removeChild(overlay);
+      window.location.href = loginUrl;
+    };
+    btnContainer.appendChild(continueBtn);
+    
+    // 取消按钮
+    var cancelBtn = document.createElement('button');
+    cancelBtn.style.cssText = 'flex:1;padding:12px;background:#f1f5f9;color:#64748b;border:none;border-radius:12px;font-size:15px;font-weight:500;cursor:pointer;';
+    cancelBtn.textContent = '取消';
+    cancelBtn.onclick = function() {
+      document.body.removeChild(overlay);
+    };
+    btnContainer.appendChild(cancelBtn);
+    
+    modal.appendChild(btnContainer);
+    
+    overlay.appendChild(modal);
+    overlay.onclick = function(e) {
+      if (e.target === overlay) {
+        document.body.removeChild(overlay);
+      }
+    };
+    document.body.appendChild(overlay);
+  }
+
   function checkLoginStatusOnLoad() {
     // 检查 URL 参数里的 star_check
     const urlParams = new URLSearchParams(window.location.search);
@@ -250,8 +306,11 @@
           } else {
             showModal('⚠️ 未 Starred 仓库', '你已登录 GitHub，但还没 Starred 本仓库。Starred 后满 7 天即可解锁国内高速 AI 服务。', '去 Starred');
           }
+        } else {
+          // 没登录的话，先弹 VPN 提示
+          e.preventDefault();
+          showVpnWarningModal(newBtn.href);
         }
-        // 没登录的话，正常跳转到授权页
       });
     }
   }
