@@ -7159,17 +7159,17 @@ section('24. 白屏兜底与加载态（防用户误退出）');
 //   ① AI 整理必须明示（徽章 + 声明框）；
 //   ② 关键事实锚点不许在后续编辑中丢失（2005／100 元／18 个号／13 万→18 万／年过九十）；
 //   ③ 口径差异必须当场厘清——「好友数 ≠ 服务人次」「资格证 ≠ 执业」「近况不推测」。
-section('29. 成功案例专题页（QQ奶奶）');
+section('25. 成功案例专题页（QQ奶奶）');
 {
   const qq = exists('qq-nainai.html') ? read('qq-nainai.html') : '';
   check(qq.length > 4000,
-    '§29a qq-nainai.html 存在且是完整长页（非空壳）',
+    '§25a qq-nainai.html 存在且是完整长页（非空壳）',
     '页面缺失或过短 → 专题没落地');
 
   // ① AI 整理披露
   check(/class="ai-badge"[^>]*>\s*内容由 AI 生成/.test(qq)
     && /class="ai-note"/.test(qq) && /AI 依据下列公开报道检索/.test(qq),
-    '§29b 专题页挂「内容由 AI 生成」徽章 + .ai-note 声明框',
+    '§25b 专题页挂「内容由 AI 生成」徽章 + .ai-note 声明框',
     '缺徽章或声明框 → 与 §21j 同口径的诚实披露失守');
 
   // ② 关键事实锚点
@@ -7186,43 +7186,43 @@ section('29. 成功案例专题页（QQ奶奶）');
   ];
   const missQ = factsQ.filter(([s]) => !qq.includes(s)).map(([s, d]) => `${s}（${d}）`);
   check(missQ.length === 0,
-    `§29c 专题页的 ${factsQ.length} 个关键事实锚点齐全`,
+    `§25c 专题页的 ${factsQ.length} 个关键事实锚点齐全`,
     missQ.length ? '以下事实锚点丢失，正文可能被改坏：' + missQ.join('； ') : '');
 
   // ③ 口径厘清（比正文更要紧）
   check(/class="correct"/.test(qq) && /好友数/.test(qq) && /服务人次/.test(qq),
-    '§29d 纠偏框写明「好友数 ≠ 服务人次」',
+    '§25d 纠偏框写明「好友数 ≠ 服务人次」',
     '删掉这句 → 十几万好友会被读成十几万人接受过陪伴');
   check(/不是执业心理医生/.test(qq) && /资格证/.test(qq),
-    '§29e 纠偏框写明「资格证 ≠ 执业」，不用疗效表述',
+    '§25e 纠偏框写明「资格证 ≠ 执业」，不用疗效表述',
     '删掉这句 → 义务陪伴被写成心理治疗案例');
   check(/不推测/.test(qq) && /不要打扰老人本人/.test(qq),
-    '§29f 近况不推测、并提示走社区渠道而非打扰本人',
+    '§25f 近况不推测、并提示走社区渠道而非打扰本人',
     '缺隐私口径 → 会引导访客去联系这位九十岁老人');
 
   // ④ 来源与素材纪律
   // 计数口径：<li> 后面 160 字符内出现 http 链接才算一条来源（不重复匹配同一行）
   const srcQ = (qq.match(/<li>[\s\S]{0,160}?<a href="https?:\/\//g) || []).length;
   check(srcQ >= 8,
-    `§29g 专题页附 ${srcQ} 条公开来源（要求 ≥8）`,
+    `§25g 专题页附 ${srcQ} 条公开来源（要求 ≥8）`,
     `只有 ${srcQ} 条 → 事实无出处，与本站证据链纪律冲突`);
   check(!/<img\b/i.test(qq) && !/assets\//.test(qq),
-    '§29h 专题页不引用图片或站内素材（文字页，素材不入库）',
+    '§25h 专题页不引用图片或站内素材（文字页，素材不入库）',
     '挂了图片/素材 → 违反素材规则');
 
   // ⑤ 入口与索引
   const ssQ = read('success-stories.html');
   check(/class="topic-entry" href="\.\/qq-nainai\.html"/.test(ssQ),
-    '§29i 成功案例页有指向 qq-nainai.html 的专题入口',
+    '§25i 成功案例页有指向 qq-nainai.html 的专题入口',
     '没有入口 → 新页面成为孤岛');
   check(/专题 · 前辈/.test(ssQ) && !/案例 #05/.test(ssQ),
-    '§29j 入口标为「专题 · 前辈」，且没有占用案例 #05 序号',
+    '§25j 入口标为「专题 · 前辈」，且没有占用案例 #05 序号',
     '序号被占用 → 与站长「不是卡片5」的要求冲突');
   check(/qq-nainai\.html/.test(read('sitemap.xml')),
-    '§29k sitemap.xml 收录专题页',
+    '§25k sitemap.xml 收录专题页',
     '漏收录 → 爬虫发现不了这一页');
   check(/qq-nainai\.html/.test(read('scripts/seo/generate-sitemap.py')),
-    '§29l sitemap 生成脚本同样写入专题页（防下次重建时被抹掉）',
+    '§25l sitemap 生成脚本同样写入专题页（防下次重建时被抹掉）',
     '只改 sitemap.xml 不改生成器 → 一跑 seo:sitemap 就丢');
 }
 
