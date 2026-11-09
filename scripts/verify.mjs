@@ -7344,6 +7344,64 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 }
 
+// ---------- 30. 比亚迪卡片曝光登记 + 视频下架如实登记 ----------
+// 站长 2026-11-09 线索：抖音「BYD直营员工维权」指称直营门店强制加班至晚十点，
+// 援引《劳动法》第九十六条；要求登记到比亚迪卡片、曝光，并注明站长随笔第10章。
+// 2026-11-10 补正：视频已被删除、原链接已挂、发布者受到了某种压力，要如实登记。
+// 上一批只在 brand/byd.html 与公示区补了证据条目，**卡片本身没改**（站长当场指出）。
+// 本节锁死：卡片必须真挂出曝光框、死链不许冒充可点来源、随笔引用不抄口述原话。
+{
+  const p30 = exists('byd-expose-patch.js') ? read('byd-expose-patch.js') : '';
+  const idx30 = read('index.html');
+  const byd30 = read('brand/byd.html');
+  const rd30 = read('README.md');
+  const wf30 = read('.github/workflows/verify.yml');
+
+  check(/比亚迪卡片曝光登记/.test(rd30) && /失效链接不得冒充可点来源/.test(rd30)
+    && /卡片必须真挂出曝光说明/.test(rd30) && /如实登记、不作事实认定/.test(rd30),
+    '§30a README 写死比亚迪曝光登记四条口径（卡片真挂载 / 死链不冒充 / 如实登记 / 随笔引用）',
+    '规则只挂口头 → 又会出现「详情页写了、卡片没动」的静默失效');
+
+  check(p30.length > 0 && /<script defer src="\.\/byd-expose-patch\.js\?v=1"><\/script>/.test(idx30)
+    && /不能改 bundle|不能改\s*bundle/.test(p30),
+    '§30b 曝光补丁入库并挂进首页（?v=1），且写明不动压缩 bundle');
+
+  check(/\^BYD\\s\*\\\(比亚迪\\\)/.test(p30) && /data-byd-expose/.test(p30)
+    && /new MutationObserver\(schedule\)/.test(p30)
+    && /requestAnimationFrame/.test(p30)
+    && /div\.p-5\.space-y-3\\\\\.5/.test(p30),
+    '§30c 补丁按标题定位 BYD 卡、幂等标记 + MutationObserver + rAF 兜底重渲染');
+
+  check(/强制加班至晚十点/.test(p30) && /《劳动法》第九十六条/.test(p30)
+    && /该视频现已删除/.test(p30) && /原链接已失效/.test(p30)
+    && /受到了某种压力/.test(p30) && /不对指称内容作事实认定/.test(p30),
+    '§30d 曝光框六条事实齐全（加班至晚十点 / 第96条 / 视频已删 / 链接失效 / 受压 / 不作事实认定）');
+
+  check(/var NOTES_TEXT = '《站长随笔》第10章'/.test(p30)
+    && /var NOTES_HREF = '\.\/notes\.html'/.test(p30)
+    && !/日记/.test(p30) && !/v\.douyin\.com|https?:\/\//.test(p30),
+    '§30e 随笔引用只写「详见《站长随笔》第10章」且指站内 notes.html；不抄口述、不写「日记」、不放死链外链');
+
+  const evByd30 = (idx30.match(/<details id="ev-byd"[\s\S]*?<\/details>/) || [])[0] || '';
+  const liByd30 = (byd30.match(/<li style="margin:0 0 12px"><strong>BYD 直营门店强制加班曝光[\s\S]*?<\/li>/) || [])[0] || '';
+  check(liByd30.length > 0 && /该视频现已删除/.test(liByd30)
+    && /原链接已失效/.test(liByd30) && /受到了某种压力/.test(liByd30)
+    && /不对指称内容作事实认定/.test(liByd30)
+    && !/<a href="https:\/\/v\.douyin\.com\/kKmeU180irU\//.test(byd30)
+    && /v\.douyin\.com\/kKmeU180irU\//.test(liByd30),
+    '§30f 详情页如实登记视频下架，失效抖音短链降级为纯文本、不再冒充可点来源');
+
+  check(/data-n="3" data-l="1"/.test(evByd30)
+    && evByd30.indexOf('该视频现已删除') !== -1
+    && evByd30.indexOf('原链接已失效') !== -1
+    && (evByd30.match(/（本条无可点原始链接/g) || []).length === 2,
+    '§30g 公示区由生成器同步：ev-byd 仍 3 条证据、可点链接如实降为 1、摘要写出视频下架');
+
+  check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
+    && /data-byd-expose/.test(p30),
+    '§30h 真 DOM 测试存在并挂进 CI（三层强制：规则 + 断言 + CI）');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {
