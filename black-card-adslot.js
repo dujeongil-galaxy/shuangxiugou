@@ -36,7 +36,9 @@
       '.sxg-adslot-brand__tag{margin-top:3px;font-size:13px;color:#64748b;line-height:1.5}' +
       '.sxg-adslot-brand__mark{flex:0 0 auto;align-self:flex-start;margin-left:6px;' +
       'padding:2px 8px;border-radius:999px;background:#f1f5f9;color:#94a3b8;' +
-      'font-size:11px;font-weight:700;white-space:nowrap}';
+      'font-size:11px;font-weight:700;white-space:nowrap}' +
+      '.sxg-adslot-brand__recruit{margin-top:4px;font-size:11px;color:#94a3b8;' +
+      'line-height:1.4;letter-spacing:.01em}';
     var st = document.createElement('style');
     st.id = 'sxg-adslot-style';
     st.textContent = css;
@@ -54,6 +56,7 @@
       '<div class="sxg-adslot-brand__body">' +
         '<div class="sxg-adslot-brand__name"><a href="./brand/luxiyi.html" rel="noopener">陆喜依</a></div>' +
         '<div class="sxg-adslot-brand__tag">真实双休标杆品牌 · 站长指定 S 级</div>' +
+        '<div class="sxg-adslot-brand__recruit">广告位招商中</div>' +
       '</div>' +
       '<span class="sxg-adslot-brand__mark">品牌展示</span>';
     // 图片缺失（如资源未加载）时降级为文字，避免破图
