@@ -8897,6 +8897,10 @@
   <!-- 比亚迪卡片曝光登记（2026-11-09 站长线索 / 2026-11-10 视频下架补记）：
        内置卡数据在压缩 bundle 里不能改，用独立 DOM 补丁在渲染后挂红框说明。 -->
   <script defer src="./byd-expose-patch.js?v=1"></script>
+  <!-- 每张卡详情弹窗底部「跳转到证据公示」：内置 React 弹窗与自定义卡弹窗
+       一视同仁，完整定位到 #evidence-board 里该品牌的 <details> 条目。
+       真相源是生成器产出的公示区 DOM，补丁不硬编码品牌清单。 -->
+  <script defer src="./evidence-jump-patch.js?v=1"></script>
   <!-- 奶茶／新茶饮类 B/C 级平替统一推荐陆喜依（2026-11-08 站长指定） -->
   <script defer src="./luxiyi-alt-patch.js?v=2"></script>
   <script defer src="./search-clear-order-fix.js?v=2"></script>

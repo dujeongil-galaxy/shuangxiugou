@@ -7402,6 +7402,76 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§30h 真 DOM 测试存在并挂进 CI（三层强制：规则 + 断言 + CI）');
 }
 
+// ---------- 31. 详情弹窗「跳转到证据公示」：完整定位到对应公示条目 ----------
+// 站长 2026-11-10「大改」：每张卡打开之后，底部「生成我的投票小票」同排
+// 都要加一个新按钮，能完整跳到该品牌对应的证据链公示条目；内置卡与自定义卡
+// 一视同仁。红线：不许只滚到公示区顶部就冒充完成，不许写死品牌清单/URL，
+// 不许给没有条目的卡编造证据。
+{
+  const p31 = exists('evidence-jump-patch.js') ? read('evidence-jump-patch.js') : '';
+  // 只拿纯代码做行为契约校验：文件头的说明注释里也会出现 pt-2 / scrollIntoView
+  // 等字样，若拿全文比对，把真正执行的代码改坏后断言仍会被注释「救活」判绿。
+  const code31 = p31.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  const idx31 = read('index.html');
+  const rd31 = read('README.md');
+  const wf31 = read('.github/workflows/verify.yml');
+
+  check(/详情弹窗证据链公示跳转/.test(rd31)
+    && /无论清单值是内置 React 卡还是自定义卡/.test(rd31)
+    && /完整定位，不是打开页面顶部/.test(rd31)
+    && /真相源单一/.test(rd31)
+    && /不编造证据、不假装命中/.test(rd31),
+    '§31a README 写死本批五条口径（两类弹窗一视同仁 / 完整定位 / 单一真相源 / 无条目如实降级 / 机器强制）',
+    '规则只挂口头 → 又会出现「按钮有、跳过去却停在公示区顶部」的静默失效');
+
+  check(p31.length > 0 && /<script defer src="\.\/evidence-jump-patch\.js\?v=1"><\/script>/.test(idx31)
+    && /不能改 bundle|不能改\s*bundle/.test(p31)
+    && !/https?:\/\//.test(p31)
+    && !/ev-patagonia|ev-icbc|ev-zhaoyiming|ev-byd/.test(p31),
+    '§31b 跳转补丁入库并挂进首页（?v=1）；不动压缩 bundle、不写死品牌 URL / 品牌 id 清单');
+
+  check(code31.indexOf('var isBuiltin =') !== -1
+    && code31.indexOf('pt-2') !== -1 && code31.indexOf('justify-end') !== -1
+    && code31.indexOf('var isCustom =') !== -1 && code31.indexOf('sxg-actions') !== -1
+    && /var ANCHOR_TEXT = '生成我的投票小票'/.test(code31)
+    && /function findFoot\(/.test(code31),
+    '§31c 同一个锚点按钮同时定位内置 React 弹窗（pt-2 flex justify-end）与自定义弹窗（sxg-actions right），不看清单值');
+
+  check(/var BTN_ATTR = 'data-sxg-ev-jump'/.test(code31)
+    && /var ROOT_ATTR = 'data-sxg-ev-jump-root'/.test(code31)
+    && /new MutationObserver\(schedule\)/.test(code31)
+    && /requestAnimationFrame/.test(code31)
+    && /foot\.querySelector\('\[' \+ BTN_ATTR \+ '\]'\)/.test(code31),
+    '§31d 幂等标记 + MutationObserver + rAF 合帧，React / 自定义弹窗重渲染后自动补挂');
+
+  check(/function norm\(/.test(code31) && /function stripParen\(/.test(code31)
+    && /replace\(\/-card\$/.test(code31)
+    && /getAttribute\('data-b'\)/.test(code31)
+    && /summary \.bn/.test(code31) && /summary \.co/.test(code31)
+    && /#evidence-board details\[data-b\]/.test(code31),
+    '§31e 四层解析缺一不可：品牌名归一化 / 去括号 / slug 查 data-b / 公司名；索引只读公示区运行时 DOM');
+
+  check(/function closeModal\(/.test(code31) && /__sxgOpenEvidenceBoard/.test(code31)
+    && /setAttribute\('open', ''\)/.test(code31)
+    && /\.scrollIntoView\(\{/.test(code31)
+    && /var FOCUS_ATTR = 'data-sxg-ev-focus'/.test(code31)
+    && /history\.replaceState/.test(code31)
+    && /function bootFromHash\(/.test(code31)
+    && /\.\/index\.html#/.test(code31),
+    '§31f 完整跳转链路：关弹窗 → 展开折叠区 → 展开目标 details → 滚动 → 高亮 → 可分享锚点 → 带锚点自动定位 + 跨页兜底');
+
+  check(code31.indexOf('暂无独立证据链公示条目') !== -1
+    && code31.indexOf('不编造证据') !== -1
+    && /setHash\('evidence-board'\)/.test(code31)
+    && /var NOTICE_ATTR = 'data-sxg-ev-notice'/.test(code31)
+    && /return null/.test(code31),
+    '§31g 无对应条目时如实提示并展开总览，不编造条目、不假装命中');
+
+  check(exists('scripts/test-evidence-jump.cjs') && /test-evidence-jump\.cjs/.test(wf31)
+    && /window\.__sxgEvidenceJump/.test(code31),
+    '§31h 真 DOM 测试存在并挂进 CI（三层强制：规则 + 断言 + CI）');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {
