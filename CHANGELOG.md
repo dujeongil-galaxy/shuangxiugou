@@ -11,6 +11,7 @@
 - **不居中 / 箭头压字**：卡片左对齐、右侧大片空白；左右箭头 `position:absolute` 绝对定位盖在卡片上，第 2 张「广告位招商中」标题被左侧圆箭头压住。修法：卡片 `align-items:center` + `text-align:center`、信息条 `justify-content:center`、招商文案绝对居中叠在设计图上；箭头移到卡片下方 `.sxg-adslot__foot` 导航条（与圆点同排），不再叠压任何文案；窄屏仍隐藏箭头。
 - **广告位设计图**：新增 `assets/ad-luxiyi.svg`（深蓝渐变 + 金色刺梨徽章 + 民族菱纹织带 + 金色 CTA 胶囊）与 `assets/ad-recruit.svg`（浅色虚线框 + 四角菱形角饰 + 中心印章留白）。均为站点自绘矢量稿、零外链、任意分辨率清晰，不属站长提供的口述素材（README 已写明口径）；`assets/luxiyi.jpg` mascot 仍与搜索结果品牌卡共用单一真相源。`black-card-adslot.js ?v=4→5`。
 - **缓存落 D 盘**：新增 `scripts/_cache-dir.cjs`（Windows 默认 `D:/WorkBuddy-Cache/edge-profiles`、`SXG_CACHE_DIR` 可覆盖、CI / 非 Windows 回落系统临时目录），20 个会写无头 Edge profile 的脚本全部改走 `cacheRoot()`，`shot-*.cjs` 截图输出与 `cdp-adcheck.cjs` 产物也移到 D 盘 `shots/`；README 新增「广告位设计稿与缓存落盘」章节，`.gitignore` 补历史产物兜底。
+- 补漏（同批后续）：`cacheDir()` 原先只做 `path.join` 不建父目录，截图脚本写文件会 ENOENT；改为自动 `mkdirSync` 父目录，并让 `shots/` 落到缓存根的平级子目录（不再塞进 `edge-profiles/`）。本机实测 `cacheDir('shots/_smoke.txt')` 写入成功。
 - 验收：带密码 `verify.mjs` 1587/1587 全绿（新增 §29a–§29i 九条断言）；`test-adslot.cjs` 33/33 真 DOM 全过并挂进 CI pinyin job；6 处故障注入（CTA 退回 div / 去掉居中 / 删设计图 / 缓存写回 tmpdir / 删 CI 挂接 / 抹 README 规则）静态 6 条 + 行为 3 条判红，已还原；无头 Edge + CDP 真渲染 `elementFromPoint` 命中 `A.sxg-adslot__cta` / `IMG.sxg-adslot__art`，真点击两个入口都开出天猫新标签页，两张卡截图肉眼确认无破图、无遮挡、零 JS 异常。
 
 ---

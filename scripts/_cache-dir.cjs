@@ -12,19 +12,32 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const WINDOWS_CACHE = 'D:/WorkBuddy-Cache/edge-profiles';
+const WINDOWS_CACHE = 'D:/WorkBuddy-Cache';
 
-function cacheRoot() {
-  const root = process.env.SXG_CACHE_DIR
+function cacheBase() {
+  return process.env.SXG_CACHE_DIR
     || (process.platform === 'win32'
       ? WINDOWS_CACHE
+      : path.join(os.tmpdir(), 'sxg-cache'));
+}
+
+function cacheRoot() {
+  // Windows 默认 D:/WorkBuddy-Cache/edge-profiles；CI / 非 Windows 用系统临时目录
+  const root = process.env.SXG_CACHE_DIR
+    ? path.join(process.env.SXG_CACHE_DIR, 'edge-profiles')
+    : (process.platform === 'win32'
+      ? 'D:/WorkBuddy-Cache/edge-profiles'
       : path.join(os.tmpdir(), 'sxg-edge-profiles'));
   try { fs.mkdirSync(root, { recursive: true }); } catch (e) { /* 只读环境忽略 */ }
   return root;
 }
 
 function cacheDir(name) {
-  return path.join(cacheRoot(), name);
+  // 截图等产物落在缓存根的平级子目录（shots/），不塞进 edge-profiles/；
+  // 同时自动建父目录，避免 shot-*.cjs / cdp-adcheck.cjs 写文件时报 ENOENT。
+  const p = path.join(cacheBase(), name);
+  try { fs.mkdirSync(path.dirname(p), { recursive: true }); } catch (e) { /* 只读环境忽略 */ }
+  return p;
 }
 
 module.exports = { cacheRoot, cacheDir, WINDOWS_CACHE };
