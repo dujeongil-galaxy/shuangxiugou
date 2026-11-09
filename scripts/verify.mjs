@@ -6863,7 +6863,7 @@ section('24. 白屏兜底与加载态（防用户误退出）');
   const BAD26 = ['spm', 'topIds', 'user_id', 'member_id', 'buyer_id',
     'sellerId', 'nick', 'trackId'].map((k) => k + '=');
   const scan26 = (s) => BAD26.filter((p) => s.indexOf(p) !== -1);
-  const tea26 = ['chabaidao', 'yidiandian', 'molina', 'heytea', 'mixue', 'chagee'];
+  const tea26 = ['chabaidao', 'yidiandian', 'molina', 'heytea', 'mixue', 'chagee', 'bingliw'];
   const idx26 = read('index.html');
   const patch26 = exists('luxiyi-alt-patch.js') ? read('luxiyi-alt-patch.js') : '';
   const lxy26 = read('brand/luxiyi.html');
@@ -6900,8 +6900,8 @@ section('24. 白屏兜底与加载态（防用户误退出）');
       && /不构成商业背书/.test(pg);
     if (ok) teaOk26++;
   }
-  check(teaOk26 === 6, '§26h 六个奶茶／新茶饮类 B/C 品牌详情页都有完整平替块',
-    `通过 ${teaOk26}/6`);
+  check(teaOk26 === 7, '§26h 六个奶茶／新茶饮类 B/C 品牌详情页都有完整平替块',
+    `通过 ${teaOk26}/7`);
   const extra26 = brandHtmlPages.filter((f) => !tea26.includes(f.replace(/\.html$/, ''))
     && /data-luxiyi-alt="1"/.test(read('brand/' + f)));
   check(extra26.length === 0, '§26i 平替块没有外溢到非奶茶类详情页', extra26.join(', '));
@@ -6934,10 +6934,10 @@ section('24. 白屏兜底与加载态（防用户误退出）');
     '§26m 原始带参分类页路径没有回流');
 
   // ④ 首页 DOM 补丁与清单、评级对齐
-  check(/<script defer src="\.\/luxiyi-alt-patch\.js\?v=1"><\/script>/.test(idx26),
+  check(/<script defer src="\.\/luxiyi-alt-patch\.js\?v=\d+"><\/script>/.test(idx26),
     '§26n 首页引入陆喜依平替补丁（漏挂则页面完全不生效）');
   const targets26 = [...patch26.matchAll(/\{ id: '([^']+)', name: '([^']+)', grade: '([^']+)' \}/g)];
-  check(targets26.length === 6, '§26o 补丁清单恰好 6 家奶茶／新茶饮品牌', targets26.length);
+  check(targets26.length === 7, '§26o 补丁清单恰好 7 家奶茶／新茶饮品牌', targets26.length);
   const gradeMismatch26 = [];
   for (const m of targets26) {
     const id = m[1], g = m[3];

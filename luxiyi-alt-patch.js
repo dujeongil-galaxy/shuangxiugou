@@ -31,7 +31,8 @@
     { id: 'molina-card', name: '茉莉奶白', grade: 'C级' },
     { id: 'heytea', name: '喜茶 (HEYTEA)', grade: 'C级' },
     { id: 'mixue', name: '蜜雪冰城 (MIXUE)', grade: 'C级' },
-    { id: 'chagee', name: '霸王茶姬 (CHAGEE)', grade: 'C级' }
+    { id: 'chagee', name: '霸王茶姬 (CHAGEE)', grade: 'C级' },
+    { id: 'bingliw-card', name: '兵立王', grade: 'C级' }
   ];
 
   function isBC(g) { return g === 'B级' || g === 'C级'; }
