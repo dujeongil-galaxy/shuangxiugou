@@ -6369,8 +6369,8 @@ section('21c. 首页滑到底部按钮');
     '§33a2 广告位三张设计图首屏预热，且每张的 ?v 与 black-card-adslot.js 里的常量完全一致',
     '预热 URL 与脚本里的实际 URL 不一致 → 白预热，广告位照样「卡片先出来、图还是空的」');
 
-  check(/<script async src="\.\/black-card-adslot\.js\?v=14"><\/script>/.test(idx)
-    && idx.indexOf('black-card-adslot.js?v=14') < idx.indexOf('</head>')
+  check(/<script async src="\.\/black-card-adslot\.js\?v=15"><\/script>/.test(idx)
+    && idx.indexOf('black-card-adslot.js?v=15') < idx.indexOf('</head>')
     && !/script defer src="\.\/black-card-adslot\.js/.test(idx),
     '§33b 广告位补丁在 head 里 async 加载（不再排在第 40 个 defer，也不必等 692KB body 解析完）',
     '广告位补丁退回 defer 队列尾部 → 慢网又要 15 秒才冒出广告位');
@@ -7494,7 +7494,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
 
   check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
-    && /black-card-adslot\.js\?v=14/.test(idx29),
+    && /black-card-adslot\.js\?v=15/.test(idx29),
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 
   // —— 站长 2026-11-10 晚：胖东来广告卡（首页推荐位） ——
@@ -7532,29 +7532,33 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29k 广告位零视频链接（脚本/海报侧）、胖东来品牌名与头像只链站内，「备注劳动者态度 + 不得挂视频链接」口径写进 README',
     '视频链接进了广告位，或备注/零链接口径没进 README → 站长两条指令失守');
 
-  // —— 站长 2026-11-11 00:46「链接换到这个」 ——
-  // 京东站内搜索撤下，改挂许昌本地宝《胖东来线上商城（附入口）》：该文说明
-  // 官方线上入口是微信小程序与抖音专营店，并非京东/天猫店铺。机器钉死
-  // 「链接单一真相源 + 零参数 + 整图/CTA 共用 + 可见文案同步 + 卡内零商城字样」；
-  // 点击复制与微信提示另由 §36c/§36d 管。旧口径只留在组件的历史注释里。
+  // —— 站长 2026-11-11 01:48「链接不对，替换这个 #小程序://胖东来/zxlej7hK8bNv5Sj」 ——
+  // 00:46 那版介绍文章 URL 整体撤下：要复制的是**微信小程序口令**，不是 URL。
+  // 口令以 # 开头、只有粘贴到微信聊天窗口发送后才渲染成小程序卡片，所以 href
+  // 只是可点载体，点击一律 preventDefault + 复制（§36c）。机器钉死「口令单一
+  // 真相源 + 零参数 + 整图/CTA 共用 + 可见文案改口『口令』 + 组件与 README 零旧
+  // 文章链接」。拼接写法避免本文件的 URL 尾巴被剥注释正则吃掉（§34 老坑）。
+  const PDL_TOKEN29 = '#小程序:' + '//' + '胖东来/zxlej7hK8bNv5Sj';
   const pdlLink29 = (ad29.match(/var PDL_LINK = '([^']+)'/) || [])[1];
   const pdlCardStart29 = ad29.indexOf('sxg-adslot__card--pdl');
   const pdlCardEnd29 = ad29.indexOf('sxg-adslot__card--recruit');
   const pdlCard29 = pdlCardStart29 !== -1 && pdlCardEnd29 > pdlCardStart29
     ? ad29.slice(pdlCardStart29, pdlCardEnd29) : '';
   check(!!pdlLink29
-    && pdlLink29 === 'https://' + 'xc.bendibao.com/xiuxian/20231225/9889.shtm'
+    && pdlLink29 === PDL_TOKEN29
     && pdlLink29.indexOf('?') === -1 && pdlLink29.indexOf('&') === -1
+    && pdlLink29.charAt(0) === '#'
     && (pdlCard29.match(/href="'\s*\+\s*PDL_LINK/g) || []).length >= 2
     && (pdlCard29.match(/target="_blank" rel="noopener"/g) || []).length >= 2
     && (pdlCard29.match(/data-sxg-share="pdl"/g) || []).length >= 2
-    && /点此复制商城入口链接/.test(pdlCard29) && /去微信打开/.test(pdlCard29)
-    && /aria-label="复制胖东来线上商城入口链接/.test(pdlCard29)
-    && !/tmall|taobao|天猫|淘宝|京东|jd\.com/i.test(pdlCard29)
+    && /点此复制小程序口令/.test(pdlCard29) && /去微信打开/.test(pdlCard29)
+    && /aria-label="复制胖东来小程序口令/.test(pdlCard29)
+    && !/tmall|taobao|天猫|淘宝|京东|jd\.com|bendibao/i.test(pdlCard29)
     && !/var PDL_SHOP/.test(ad29)
-    && /胖东来线上商城/.test(rd29) && /复制链接/.test(rd29) && /微信/.test(rd29),
-    '§29l 胖东来入口改挂站长指定的本地宝文章（零参数），整图与 CTA 共用 PDL_LINK、可见文案同步换「复制 / 去微信」、卡内零京东淘宝天猫，README 写死新口径',
-    '只改 href 留旧来源标签 / 链回京东商城 / README 没写新口径 → 站长 00:46 指令失守');
+    && !/bendibao/.test(ad29) && !/bendibao/.test(rd29)
+    && /小程序口令/.test(rd29) && /复制/.test(rd29) && /微信/.test(rd29),
+    '§29l 胖东来入口换成站长指定的小程序口令（# 开头、零参数），整图与 CTA 共用 PDL_LINK、可见文案同步改口「口令」、组件与 README 零旧文章链接',
+    '只换常量留着「链接」字样 / 链回介绍文章 / README 没写新口径 → 站长 01:48 指令失守');
 }
 
 // ---------- 30. 比亚迪卡片曝光登记 + 视频下架如实登记 ----------
@@ -7715,7 +7719,7 @@ section('25. 成功案例专题页（QQ奶奶）');
   check((code32.match(/公益广告位/g) || []).length >= 4
     && !/广告位招商中|品牌展示|>广告位</.test(code32)
     && /data-adslot-kind', 'public-welfare'/.test(code32)
-    && /black-card-adslot\.js\?v=14/.test(idx32),
+    && /black-card-adslot\.js\?v=15/.test(idx32),
     '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 13');
 
   // 站长 2026-11-10 二次纠正「广告图叫你重构，不是让你改成纯文字 / 文字明显重叠」：
@@ -7928,7 +7932,7 @@ section('25. 成功案例专题页（QQ奶奶）');
 
   const preload35 = mob35.every(([f, , ver]) =>
     idx35.indexOf('<link rel="preload" as="image" href="./' + f + '?v=' + ver + '" media="(max-width:480px)" />') !== -1);
-  check(preload35 && /black-card-adslot\.js\?v=14/.test(idx35),
+  check(preload35 && /black-card-adslot\.js\?v=15/.test(idx35),
     '§35c 手机三图带 media 预热、?v 与脚本 *_MOBILE 常量一致，首页脚本已升 13',
     '预热漏 media 或 ?v 不一致 → 慢网首帧先出桌面稿再跳手机稿');
 
@@ -7996,30 +8000,36 @@ section('25. 成功案例专题页（QQ奶奶）');
     && /function tryClipboardApi\(/.test(code36) && /navigator\.clipboard\.writeText/.test(code36)
     && /function copyText\(/.test(code36) && /var syncOk = copySync\(text\)/.test(code36)
     && /function showShareToast\(/.test(code36) && /data-sxg-share-toast/.test(code36)
-    && /已复制链接，请打开微信粘贴后打开/.test(code36)
+    && /已复制小程序口令，请打开微信粘贴后打开/.test(code36)
     && /打开微信 → 粘贴到任意聊天窗口/.test(code36)
+    && /点开刚发的小程序卡片/.test(code36)
     && /sxg-adslot__toast-code/.test(code36) && /copyText\(PDL_LINK\)/.test(code36)
     && /15000/.test(code36) && /function bindShare\(/.test(code36)
     && /bindShare\(root\);/.test(code36) && /e\.preventDefault\(\)/.test(code36)
-    && /isWeChat\(\)/.test(code36) && /data-sxg-share="pdl"/.test(code36)
+    && /data-sxg-share="pdl"/.test(code36)
+    // ⑫ 口令不是 URL：微信内置浏览器里也打不开，一律复制。放行跳转会让
+    // 「点了就自动复制」在微信里静默失效，所以反向钉死不得回潮。
+    && !/isWeChat/.test(ad36) && !/放行默认跳转直接打开/.test(ad36)
+    && !/bendibao/.test(ad36)
     && /\.sxg-adslot__toast\{display:none/.test(ad36),
-    '§36c 点击复制链路：同步 execCommand 趁手势写入 + clipboard API 兜底 + toast 提醒去微信 + 口令可点再复制 + 15 秒不闪退；bindShare 真被调用且微信内放行跳转',
-    '复制被挪进 Promise.then / 去掉 preventDefault / 提示里不写微信 → 站长「点了就自动复制，弹窗提醒用户自己去微信」失守');
+    '§36c 点击复制链路：同步 execCommand 趁手势写入 + clipboard API 兜底 + toast 提示去微信粘贴小程序卡片 + 口令可点再复制 + 15 秒不闪退；bindShare 真被调用，且不再按 UA 放行跳转（口令在微信内也必须复制）',
+    '复制被挪进 Promise.then / 去掉 preventDefault / 又按 UA 放行跳转 / 提示里不写微信 → 站长「点了就自动复制，弹窗提醒用户自己去微信」失守');
 
   const t36 = exists('scripts/test-adslot.cjs') ? read('scripts/test-adslot.cjs') : '';
   const cdp36 = exists('scripts/cdp-pdl-adcheck.cjs') ? read('scripts/cdp-pdl-adcheck.cjs') : '';
   check(!!t36 && !!cdp36 && /test-adslot\.cjs/.test(wf36)
-    && /bendibao/.test(t36) && /sxg-adslot__toast/.test(t36)
+    && /#小程序:\/\/胖东来/.test(t36) && /sxg-adslot__toast/.test(t36)
     && /execCommand/.test(t36) && /defaultPrevented/.test(t36)
-    && /bendibao/.test(cdp36) && /toast/.test(cdp36)
+    && /#小程序:\/\/胖东来/.test(cdp36) && /toast/.test(cdp36)
     && /CHECK '/.test(cdp36),
-    '§36d 复制交互有挂 CI 的 jsdom 真点击测试（验复制调用 / 阻止跳转 / toast）+ 本机 CDP 真点击验收，两处都认新链接',
+    '§36d 复制交互有挂 CI 的 jsdom 真点击测试（验复制调用 / 阻止跳转 / toast）+ 本机 CDP 真点击验收，两处都认站长新给的小程序口令',
     '只写静态断言、没有真点击 → 又是一次「结构 PASS、实际点了没反应」');
 
   check(/不要用同一种风格/.test(rd36) && /两两互异/.test(rd36)
     && /第一张/.test(rd36) && /第二张/.test(rd36)
-    && /胖东来线上商城/.test(rd36) && /复制/.test(rd36) && /微信/.test(rd36),
-    '§36e README 写死「三张海报两两互异 / 第一张不与第二张同风格」与「胖东来链接点击复制 + 去微信」口径',
+    && /小程序口令/.test(rd36) && /复制/.test(rd36) && /微信/.test(rd36)
+    && !/bendibao/.test(rd36),
+    '§36e README 写死「三张海报两两互异 / 第一张不与第二张同风格」与「小程序口令点击复制 + 去微信」口径，且零旧文章链接',
     '规则只挂口头 → 下次又拿两张同风格稿或静默跳转糊弄过去');
 }
 

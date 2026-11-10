@@ -3,9 +3,9 @@
 //   node scripts/cdp-pdl-adcheck.cjs
 // 产物统一落 D:/WorkBuddy-Cache/shots/（见 _cache-dir.cjs）。
 // 顺带机器可读断言：3 卡 3 圆点、胖东来 meta 备注在、品牌名链站内、
-// 整图与 CTA 都挂站长指定的本地宝文章、可见文案写「复制 / 去微信」、
-// 真点击后阻止跳转 + 调用复制 + 弹出 toast（含链接本体与微信提示）、
-// 广告位内零视频链接。⑪ 2026-11-11 00:46 批次同步。
+// 整图与 CTA 都挂站长 01:48 指定的小程序口令、可见文案写「复制口令 / 去微信」、
+// 真点击后阻止跳转 + 调用复制 + 弹出 toast（含口令本体与微信提示）、
+// 广告位内零视频链接。⑫ 2026-11-11 01:48 批次同步。
 // 注：CDP Runtime.evaluate 返回值真实路径是 result.result.value；WebSocket 用全局
 //     + addEventListener + ev.data（require('ws') 的回调拿到 Buffer 会解析失败挂起）。
 const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
@@ -19,7 +19,8 @@ const HTTP_PORT = 8801;
 const DBG_PORT = 9294;
 const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const URL = `http://127.0.0.1:${HTTP_PORT}/`;
-const PDL_LINK = 'https://' + 'xc.bendibao.com/xiuxian/20231225/9889.shtm';
+// 站长 01:48 指定：微信小程序口令（不是 URL，粘贴到微信聊天窗口才会变成卡片）
+const PDL_LINK = '#小程序://胖东来/zxlej7hK8bNv5Sj';
 
 const MIME = { '.html':'text/html', '.js':'application/javascript', '.css':'text/css',
   '.json':'application/json', '.png':'image/png', '.svg':'image/svg+xml', '.ico':'image/x-icon' };
@@ -222,6 +223,8 @@ async function runViewport(ws, label, width, height) {
     const ok = g && g.slot && g.cards === 3 && g.dots === 3
       && g.pdlHref === './brand/pdl.html'
       && g.pdlBannerHref === PDL_LINK && g.pdlCtaHref === PDL_LINK
+      && PDL_LINK.charAt(0) === '#'
+      && /小程序口令/.test(g.pdlCtaText || '')
       && /复制/.test(g.pdlCtaText || '') && /微信/.test(g.pdlCtaText || '')
       && !/天猫|淘宝|京东/.test(g.pdlCtaText || '')
       && g.pdlCardMall === false
@@ -232,6 +235,11 @@ async function runViewport(ws, label, width, height) {
       && s.copyCalls.indexOf('copy') !== -1
       && s.toastShown === true
       && /微信/.test(s.toastText || '')
+      // element.click() 无真实手势时复制可能被拒，toast 走「请复制下方口令」
+      // 兜底分支；两种分支都写「口令」与「小程序卡片」，都不许退回旧「链接」口径。
+      && /口令/.test(s.toastText || '')
+      && /小程序卡片/.test(s.toastText || '')
+      && !/已复制链接/.test(s.toastText || '')
       && s.codeText === PDL_LINK;
     console.log('CHECK ' + label + ': ' + (ok ? 'PASS' : 'FAIL'));
     if (!ok) { fail++; console.log('  SHARE_DETAIL=' + JSON.stringify(s)); }

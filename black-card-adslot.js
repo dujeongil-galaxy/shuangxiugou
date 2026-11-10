@@ -77,25 +77,39 @@
 
    ⑪ 站长 2026-11-11 00:46（原话）：
       「胖东来的广告先改了吧，第一张也不要和第二张广告使用同一种风格
-       https://xc.bendibao.com/xiuxian/20231225/9889.shtm 链接换到这个，
+       （链接原文见 CHANGELOG 00:46 条目）链接换到这个，
        参考良配的广告，点了就自动复制，弹窗提醒用户自己去微信」
-      - **链接**：京东站内搜索撤下，改挂站长指定的许昌本地宝《胖东来线上商城
-        （附入口）》。该文说明胖东来官方线上入口是微信小程序与抖音专营店，
-        并非京东/天猫店铺，因此不再把读者导向任何商城搜索页。
-        链接写进常量 PDL_LINK（零参数），整图与 CTA 共用单一真相源。
+      - **链接**：京东站内搜索撤下，改挂站长指定的介绍文章（原文见记账）。
+        该文说明胖东来官方线上入口是微信小程序与抖音专营店，并非京东/天猫
+        店铺，因此不再把读者导向任何商城搜索页。链接写进常量 PDL_LINK
+        （零参数），整图与 CTA 共用单一真相源。（本段 ⑫ 已整体取代。）
       - **交互**：照 liangpei-ad.js 的成熟做法（不是照抄，独立实现）：
         点击整图/CTA → 同步 execCommand('copy') 趁用户手势写入剪贴板 →
-        navigator.clipboard 异步兜底 → 弹出 toast 提醒「已复制链接，
-        请打开微信粘贴后打开」，并把链接本体放在可点再复制的 <code> 里，
+        navigator.clipboard 异步兜底 → 弹出 toast 提醒去微信粘贴（⑫ 已把
+        「链接」改口为「小程序口令」），并把口令本体放在可点再复制的 <code> 里，
         自动复制万一被浏览器静默拒绝，用户仍有最后一条路。
-        微信内置浏览器里已在微信，放行默认跳转直接打开文章。
-      - **可见文案同步**：CTA 改「点此复制商城入口链接 · 去微信打开」，
-        aria-label 同步，卡内零京东/淘宝/天猫字样（口径按 2026-11-07 教训：
-        改 href 不换可见文案等于没做）。
+        微信内置浏览器里曾在微信时放行默认跳转（本句 ⑫ 已撤销：口令不是
+        URL，微信内也必须复制后粘贴到聊天窗口）。
+      - **可见文案同步**：CTA / aria-label 都写「复制 + 去微信」，卡内零
+        京东/淘宝/天猫字样（口径按 2026-11-07 教训：改 href 不换可见文案
+        等于没做）。具体文案 ⑫ 已改口为「小程序口令」。
       - **风格**：三张海报两两互异。第 1 张陆喜依保持深蓝金字正式稿，
         第 3 张招商保持暖白纸面告示稿，第 2 张胖东来换成第三套
         「砖红纯色 + 米白运单/号外横条 + 橙色装订边 + 粗报头线」，
         桌面稿与手机稿同步（verify §36a/§36b 反向断言）。
+
+   ⑫ 站长 2026-11-11 01:48（原话）：
+      「链接不对，替换这个 #小程序://胖东来/zxlej7hK8bNv5Sj」
+      - 站长看了点击后的 toast 截图：框里躺的是介绍文章 URL，不对。真正要复制的
+        是**微信小程序口令**。⑪ 的文章链接整体撤下，不再出现在组件与 README。
+      - 口令不是可点地址：以 # 开头，只有粘贴到微信聊天窗口并发送后才会渲染成
+        小程序卡片。因此 ⑪ 的「微信内置浏览器里已在微信，放行默认跳转」一并撤销：
+        **任何浏览器里点了都只复制 + 弹窗**，放行跳转既打不开小程序，还会让
+        「点了就自动复制」静默失效。
+      - 口令写进 PDL_LINK（唯一真相源），整图与 CTA 的 href 仍引用它作为可点载体；
+        点击一律 preventDefault，绝不把 #fragment 写进地址栏。
+      - **可见文案同步改口**：CTA「复制小程序口令」、aria-label、toast 标题与
+        操作步骤里所有「链接」字样换成「口令/小程序卡片」，不许只换常量留旧标签。
    ========================================================================== */
 (function () {
   'use strict';
@@ -106,11 +120,12 @@
   var IMG = './assets/luxiyi.jpg';
   var PDL_DETAIL = './brand/pdl.html';
   var PDL_IMG = './assets/pdl.png';
-  /* 站长 2026-11-11 00:46「链接换到这个」：许昌本地宝《胖东来线上商城（附入口）》。
-     文章说明官方线上入口是微信小程序与抖音专营店，不是京东/天猫店铺；
-     按站长指令，整图与 CTA 共用这一个常量，点击时复制它并提示去微信打开。
-     零参数、零追踪（§26k 参数红线），href 保留真链接供微信内放行与无 JS 降级。 */
-  var PDL_LINK = 'https://xc.bendibao.com/xiuxian/20231225/9889.shtm';
+  /* 站长 2026-11-11 01:48「链接不对，替换这个 #小程序://胖东来/zxlej7hK8bNv5Sj」：
+     要复制的不是 URL，而是微信小程序口令——只有粘贴到微信聊天窗口并发送后
+     才会渲染成小程序卡片。口令不是可点地址，所以整图/CTA 的 href 只把它当
+     可点载体，点击一律 preventDefault 后复制并弹窗，绝不把 #fragment 写进
+     地址栏，也不再对微信内置浏览器放行跳转。零参数、零追踪（§26k）。 */
+  var PDL_LINK = '#小程序://胖东来/zxlej7hK8bNv5Sj';
   /* 三张广告设计图。?v 必须与 index.html 里的 <link rel=preload as=image> 完全一致，
      否则浏览器会把它当两个资源（预热的白预了）。改了图就同步升这里和 index.html。 */
   var ART = './assets/ad-luxiyi.svg?v=2';
@@ -129,10 +144,8 @@
      两个实测坑一并继承：① execCommand('copy') 的返回值不可信，必须接管 copy
      事件用 setData 显式写入；② 用户手势只在点击回调的同步执行栈内有效，
      同步复制必须直接调用，不能塞进 Promise.then 里。 */
-  function isWeChat() {
-    return /MicroMessenger/i.test(navigator.userAgent || '');
-  }
-
+  /* ⑫ 不再按 UA 放行跳转：口令在微信内置浏览器里也打不开，必须复制后
+     粘贴到聊天窗口发送才会变成小程序卡片。任何浏览器一律复制 + 弹窗。 */
   function copySync(text) {
     try {
       var onCopy = function (e) {
@@ -178,10 +191,10 @@
     toastEl.innerHTML =
       '<button type="button" class="sxg-adslot__toast-close" aria-label="关闭提示">&times;</button>' +
       '<div class="sxg-adslot__toast-title">' +
-        (ok ? '已复制链接，请打开微信粘贴后打开' : '请复制下方链接，再去微信打开') +
+        (ok ? '已复制小程序口令，请打开微信粘贴后打开' : '请复制下方口令，再去微信打开') +
       '</div>' +
       '<code class="sxg-adslot__toast-code">' + PDL_LINK + '</code>' +
-      '<span class="sxg-adslot__toast-steps">打开微信 → 粘贴到任意聊天窗口或文件传输助手并发送 → 点开刚发的链接查看胖东来线上商城入口</span>';
+      '<span class="sxg-adslot__toast-steps">打开微信 → 粘贴到任意聊天窗口或文件传输助手并发送 → 点开刚发的小程序卡片进入胖东来线上商城</span>';
     void toastEl.offsetWidth;
     toastEl.classList.add('is-show');
     clearTimeout(toastTimer);
@@ -214,8 +227,7 @@
     for (var i = 0; i < links.length; i++) {
       (function (a) {
         a.addEventListener('click', function (e) {
-          if (isWeChat()) return; // 已在微信里，放行默认跳转直接打开文章
-          e.preventDefault();
+          e.preventDefault(); // 口令不是 URL，任何浏览器都只复制、不跳转
           var copied;
           try { copied = copyText(PDL_LINK); } catch (err) { copied = Promise.resolve(false); }
           copied.then(function (ok) { showShareToast(ok); });
@@ -343,12 +355,13 @@
                 '点此进入天猫旗舰店，支持真实双休企业 →</a>' +
             '</div>' +
           '</div>' +
-          /* 胖东来卡（⑪ 2026-11-11 00:46 修订）：劳动者态度与挂广告位的原因都在图里；
-             整图 + CTA 共用 PDL_LINK，点击不跳转而是复制链接 + 弹窗提醒去微信，
-             品牌名与头像只链站内详情页。data-sxg-share 是复制交互的唯一接线点。 */
+          /* 胖东来卡（⑫ 2026-11-11 01:48 修订）：劳动者态度与挂广告位的原因都在图里；
+             整图 + CTA 共用 PDL_LINK（小程序口令），点击一律不跳转而是复制口令 +
+             弹窗提醒去微信粘贴，品牌名与头像只链站内详情页。
+             data-sxg-share 是复制交互的唯一接线点。 */
           '<div class="sxg-adslot__card sxg-adslot__card--pdl">' +
             '<a class="sxg-adslot__banner" data-sxg-share="pdl" href="' + PDL_LINK + '" target="_blank" rel="noopener" ' +
-              'aria-label="复制胖东来线上商城入口链接，打开微信查看">' +
+              'aria-label="复制胖东来小程序口令，打开微信查看">' +
               '<div class="sxg-adslot__art-wrap" data-art-error-text="胖东来 · 善待劳动者">' +
                 '<picture>' +
                   '<source media="(max-width:480px)" srcset="' + ART_PDL_MOBILE + '">' +
@@ -363,7 +376,7 @@
               '<span class="sxg-adslot__mark">公益展示</span>' +
               '<span class="sxg-adslot__tag">善待劳动者 · 货车司机送货也能体会到尊重</span>' +
               '<a class="sxg-adslot__cta" data-sxg-share="pdl" href="' + PDL_LINK + '" target="_blank" rel="noopener">' +
-                '点此复制商城入口链接 · 去微信打开 →</a>' +
+                '点此复制小程序口令 · 去微信打开 →</a>' +
             '</div>' +
           '</div>' +
           '<div class="sxg-adslot__card sxg-adslot__card--recruit">' +

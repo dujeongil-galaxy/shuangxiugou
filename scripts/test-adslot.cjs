@@ -9,8 +9,9 @@ const { JSDOM, VirtualConsole } = require('jsdom');
 const ROOT = path.resolve(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const TMALL = 'https://' + 'luxiyi.tmall.com/'; // 拼接避免本文件被参数红线误扫
-// 站长 2026-11-11 00:46 指定链接：许昌本地宝《胖东来线上商城（附入口）》，零参数
-const PDL_LINK = 'https://' + 'xc.bendibao.com/xiuxian/20231225/9889.shtm';
+// 站长 2026-11-11 01:48「链接不对，替换这个」：微信小程序口令，不是可点 URL。
+// 以 # 开头、零参数；只有粘贴到微信聊天窗口发送后才会渲染成小程序卡片。
+const PDL_LINK = '#小程序://胖东来/zxlej7hK8bNv5Sj';
 const ART_BRAND = './assets/ad-luxiyi.svg?v=2';
 const ART_PDL = './assets/ad-pangdonglai.svg?v=3';
 const ART_RECRUIT = './assets/ad-recruit.svg?v=5';
@@ -108,8 +109,8 @@ function check(label, cond, extra) {
   check('招商卡设计稿引用正确',
     !!arts[2] && arts[2].getAttribute('src') === ART_RECRUIT);
 
-  // ─────────── 1b. 胖东来卡（00:46 修订：去掉「备注」两字 / 本地宝链接 / 点击复制 / 零视频链接） ───────────
-  console.log('\n--- 1b. 胖东来卡：站内链 + 新链接 + 零视频链接 ---');
+  // ─────────── 1b. 胖东来卡（01:48 修订：小程序口令 / 点击复制 / 零视频链接） ───────────
+  console.log('\n--- 1b. 胖东来卡：站内链 + 小程序口令 + 零视频链接 ---');
   const pdlName = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__name');
   const pdlAvatar = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__avatar');
   const pdlTag = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__tag');
@@ -125,18 +126,22 @@ function check(label, cond, extra) {
   const pdlBanner = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__banner');
   const pdlCta = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__cta');
   const pdlCardHtml = slot.querySelector('.sxg-adslot__card--pdl').innerHTML;
-  check('胖东来整张广告图挂站长指定的本地宝文章（真 <a>、新窗口 noopener）',
+  check('胖东来整张广告图挂站长指定的小程序口令（真 <a>、新窗口 noopener）',
     !!pdlBanner && pdlBanner.tagName === 'A' && pdlBanner.getAttribute('href') === PDL_LINK
     && pdlBanner.getAttribute('target') === '_blank'
     && pdlBanner.getAttribute('rel') === 'noopener',
     pdlBanner && pdlBanner.tagName + ':' + pdlBanner.getAttribute('href'));
+  check('复制内容是 # 开头的小程序口令，不是 http 链接（旧文章链接已撤下）',
+    PDL_LINK.charAt(0) === '#' && !/^https?:/.test(PDL_LINK)
+    && !/bendibao/.test(src), PDL_LINK);
   check('胖东来 CTA 是真 <a> 且同挂 PDL_LINK（单一真相源）',
     !!pdlCta && pdlCta.tagName === 'A' && pdlCta.getAttribute('href') === PDL_LINK
     && pdlCta.getAttribute('target') === '_blank'
     && pdlCta.getAttribute('rel') === 'noopener',
     pdlCta && pdlCta.tagName + ':' + pdlCta.getAttribute('href'));
-  check('可见文案同步换「复制 / 去微信」（不许只改 href 留旧来源标签）',
-    !!pdlCta && /复制/.test(pdlCta.textContent) && /微信/.test(pdlCta.textContent)
+  check('可见文案同步换「复制小程序口令 / 去微信」（不许只改常量留旧来源标签）',
+    !!pdlCta && /小程序口令/.test(pdlCta.textContent)
+    && /复制/.test(pdlCta.textContent) && /微信/.test(pdlCta.textContent)
     && !/天猫|淘宝|京东/.test(pdlCta.textContent)
     && !!pdlBanner && /复制/.test(pdlBanner.getAttribute('aria-label') || '')
     && /微信/.test(pdlBanner.getAttribute('aria-label') || '')
@@ -186,15 +191,22 @@ function check(label, cond, extra) {
   const toast = doc.querySelector('[data-sxg-share-toast]');
   check('弹出提示且可见（is-show）', !!toast && toast.classList.contains('is-show'));
   check('提示明确要求用户自己去微信', !!toast && /微信/.test(toast.textContent));
-  check('提示里有操作步骤（粘贴 → 点开）',
-    !!toast && /粘贴/.test(toast.textContent) && /点开/.test(toast.textContent));
+  check('提示标题写「已复制小程序口令」，不再把口令叫链接',
+    !!toast && /已复制小程序口令/.test(toast.textContent)
+    && !/已复制链接/.test(toast.textContent), toast && toast.textContent);
+  check('提示里有操作步骤（粘贴 → 发送 → 点开小程序卡片）',
+    !!toast && /粘贴/.test(toast.textContent) && /点开/.test(toast.textContent)
+    && /小程序卡片/.test(toast.textContent));
   const toastCode = toast && toast.querySelector('.sxg-adslot__toast-code');
-  check('提示里放的是可点再复制的链接本体',
+  check('提示里放的是可点再复制的小程序口令本体',
     !!toastCode && toastCode.textContent === PDL_LINK,
     toastCode && toastCode.textContent);
   const bannerEvt = new window.MouseEvent('click', { bubbles: true, cancelable: true });
   pdlBanner.dispatchEvent(bannerEvt);
   check('整张广告图也绑了同一套复制交互', bannerEvt.defaultPrevented);
+  check('不再按 UA 放行跳转（微信内置浏览器里也必须复制口令）',
+    !/isWeChat/.test(src) && !/MicroMessenger/.test(src)
+    && bannerEvt.defaultPrevented);
   check('提示里的链接可点再复制（code 点击不报错）', (function () {
     if (!toastCode) return false;
     try { toastCode.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); return true; }
