@@ -126,6 +126,13 @@
     <link rel="stylesheet" href="./douyin-prompt.css?v=13">
     <!-- 移动端排版修复（须在主 CSS 之后：靠覆盖生效；改完请把 ?v=N 的 N +1） -->
     <link rel="stylesheet" href="./mobile-fixes.css?v=12">
+  <!-- 黑卡预隐藏（2026-11-10 站长反馈「先加载黑色卡片，然后才出现广告位」）：
+       bundle 渲染的黑卡（class 含唯一子串 rounded-2xl p-5 shadow-xl，全 bundle 仅黑卡用）
+       在 black-card-adslot.js 下载完成并替换之前会先画一帧 → 慢网下肉眼可见闪现。
+       头部内联样式先于 bundle 执行，把黑卡从第一帧起 visibility:hidden（保留占位高度，
+       广告位替换后高度差最小）；补丁替换成功后选择器不再命中任何节点，样式无害常驻。
+       注意：该样式必须与 black-card-adslot.js 共存——若将来下线补丁，须同步删本样式。 -->
+  <style id="sxg-blackcard-prehide">div[class*="rounded-2xl p-5 shadow-xl"]{visibility:hidden}</style>
   <style>.sxg-loading{position:fixed;inset:0;z-index:2147483647;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}.sxg-boot{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:14px;color:#0f766e;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif}.sxg-boot__spinner{width:34px;height:34px;border:3px solid #ccfbf1;border-top-color:#0f766e;border-radius:50%;animation:sxg-spin .8s linear infinite}.sxg-boot__text{margin:0;font-size:14px;font-weight:600;letter-spacing:.04em}@keyframes sxg-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.sxg-boot__spinner{animation-duration:2s}}</style>
   </head>
   <body>

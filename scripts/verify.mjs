@@ -7631,6 +7631,17 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§32b2 招募卡文案层/标题显式 line-height 撑行盒、桌面端「真实双休」副句下移，手机端口径不动',
     'line-height:0 继承一回来，PC 端两行文字又黏在一起');
 
+  // §32b3 黑卡预隐藏：慢网下 bundle 先渲染黑卡、black-card-adslot.js 后替换，
+  // 中间那帧黑卡肉眼可见（站长 2026-11-10：「先加载黑色卡片，然后才出现广告位」）。
+  // 修法是 index.html 头部内联预隐藏样式，先于 bundle 生效；选择器子串
+  // 「rounded-2xl p-5 shadow-xl」在全 bundle 只被黑卡使用（已 grep 确认唯一），
+  // 不会误伤自定义卡按钮 / 评级选中态等其它 bg-slate-900 元素。
+  check(idx32.includes('id="sxg-blackcard-prehide"')
+    && idx32.includes('div[class*="rounded-2xl p-5 shadow-xl"]{visibility:hidden}')
+    && idx32.indexOf('sxg-blackcard-prehide') < idx32.indexOf('</head>'),
+    '§32b3 黑卡预隐藏样式必须内联在头部（body 渲染前已解析，慢网首帧不再闪现旧黑卡）',
+    '预隐藏样式被删或挪出头部，黑卡闪现就会回来');
+
   check(!/<circle\b/.test(rec32) && /rc-plate/.test(rec32)
     && /PUBLIC WELFARE AD/.test(rec32) && /公益广告位/.test(brand32),
     '§32c 招商卡设计稿去掉压字的圆形印章、改横向白底横幅；两张 SVG 角标同步公益命名');
