@@ -272,3 +272,10 @@ jobs:
       # 配套 verify §32。
       - name: 新闻事件登记测试（罗技 / 星宇）
         run: node scripts/test-news-incident.cjs
+
+      # 成功案例页（2026-11-09）：左侧目录树真的建出来（7 条）、无框小火箭真的在
+      # DOM 里、案例 #05 真的落地。用 jsdom 真实跑页面内联脚本——这个站默认静默失
+      # 效方式就是「源码对、渲染出来目录树是空的 / 小火箭没画出来」。
+      # 配套 verify §33。
+      - name: 成功案例页目录树与小火箭测试
+        run: node scripts/test-success-stories.cjs

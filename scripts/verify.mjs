@@ -6259,6 +6259,98 @@ section('21c. 首页滑到底部按钮');
     `只有 ${srcCount3} 条来源 → 事实无出处，与本站证据链纪律冲突`);
 }
 
+// ---------- 33. 成功案例页：案例 #05 + 左侧目录树 + 无框小火箭 + 首页 SW 防旧黑弹窗 ----------
+// 2026-11-09 站长指令四连：
+//   ① 案例 #04 后紧接补「案例 #05」（列五中学现场/家长举手机拍取消早读），与 #04 政策线互补，
+//      抖音两视频作传播源、事实以官媒为准（同 §21j 口径）；
+//   ② 参考站长随笔，成功案例页左侧加目录树（扫 data-toc 自动生成 + 滚动高亮）；
+//   ③ 回到顶部按钮去掉圆形外框，改成无框小火箭；
+//   ④ 首页广告位底层架构优化：sw.js 对导航请求 network-first，旧黑弹窗不再残留。
+{
+  const ss = read('success-stories.html');
+
+  // —— 案例 #05（与 §21j 同口径的诚实披露）——
+  const case05 = (ss.match(/案例 #05[\s\S]*?<\/article>/) || [''])[0];
+  check(case05.length > 1000,
+    '能切出案例 #05 的区块（空集 = 断言失效）',
+    '切出的区块过短或为空 → 正则与版式失配，#05 断言形同虚设');
+  check(/案例 #05/.test(ss), '成功案例页含「案例 #05」', '案例 #05 缺失 → 新增案例没落地');
+  check(/class="ai-badge"[^>]*>\s*内容由 AI 生成/.test(case05),
+    '案例 #05 挂出「内容由 AI 生成」徽章', 'AI 生成徽章缺失 → 诚实披露失守');
+  check(/class="ai-note"/.test(case05) && /AI 依据下列公开报道检索/.test(case05),
+    '案例 #05 保留 AI 生成声明框（.ai-note）', '.ai-note 缺失 → 没做诚实披露');
+  const dy05 = case05.match(/v\.douyin\.com\/(gmIc0vY52p0|8d1jq7RH9Bg)\/[\s\S]{0,240}?<\/li>/g) || [];
+  const dyOk = dy05.filter((s) => /tag douyin/.test(s) && /未核实视频本体/.test(s)).length;
+  check(dyOk === 2,
+    '案例 #05 两条抖音链接都标为传播源（.tag.douyin + 「未核实视频本体」）',
+    `案例 #05 的传播源标注只有 ${dyOk}/2 → 社媒被当事实出处`);
+  const facts05 = ['列五中学', '教育部', '2021 年', '五年', '睡眠管理通知', '取消统一强制早读', '家长举着手机'];
+  const miss05 = facts05.filter((s) => !case05.includes(s));
+  check(miss05.length === 0,
+    `案例 #05 的 ${facts05.length} 个关键事实锚点齐全`,
+    '以下事实锚点丢失：' + miss05.join('； '));
+  const src05 = (case05.match(/<li><a /g) || []).length;
+  check(src05 >= 6, `案例 #05 附 ${src05} 条来源（要求 ≥6）`, `只有 ${src05} 条来源`);
+
+  // —— 左侧目录树（参考站长随笔自动生成）——
+  const tocCount = (ss.match(/data-toc=/g) || []).length;
+  check(tocCount === 7,
+    `成功案例页目录树锚点齐全（7 个 data-toc：致敬前辈/QQ奶奶/#01~#05，实际 ${tocCount}）`,
+    `data-toc 数量不对（${tocCount}）→ 目录树会漏章节`);
+  check(/id="toc-nav"/.test(ss), '成功案例页含目录树容器 #toc-nav', '目录树容器缺失 → 左侧目录树建不出来');
+  check(/class="toc"/.test(ss) && /<summary>目录<\/summary>/.test(ss),
+    '目录树用可折叠 <details class="toc"> 承载（窄屏回落单栏）', '目录树结构缺失或不可折叠');
+  check(/querySelectorAll\('\[data-toc\]'\)/.test(ss),
+    '目录树脚本扫描 [data-toc] 自动生成（参考站长随笔，不手填）', '目录树不是自动生成 → 加章节会漏');
+
+  // —— 无框小火箭（去掉圆形外框）——
+  check(/class="rk-body"/.test(ss) && /class="rk-flame"/.test(ss),
+    '回到顶部按钮是无框小火箭 SVG（含箭体/尾焰路径）', '小火箭 SVG 缺失 → 还是旧箭头/圆形');
+  // .to-top 主样式块不得再有圆形外框特征
+  const toTopCss = (ss.match(/\.to-top\s*\{[\s\S]*?\n      \}/) || [''])[0];
+  check(toTopCss.length > 50 && /border:\s*none/.test(toTopCss) && /background:\s*transparent/.test(toTopCss),
+    '小火箭按钮无边框、无底色方块（border:none + background:transparent）',
+    '.to-top 仍有边框/底色 → 没真正去掉圆形外框');
+  check(!/border-radius:\s*999px/.test(toTopCss),
+    '.to-top 不再有圆形外框（border-radius:999px 已移除）', '圆形外框还在 → 用户要的「无框」没落实');
+  check(!/M12 19V5/.test(ss) && !/M5\.5 11\.5 12 5l6\.5 6\.5/.test(ss),
+    '旧的圆形箭头 SVG 已移除', '旧箭头 SVG 还在 → 不是小火箭');
+
+  // —— 首页 SW 防旧黑弹窗 ——
+  const idx = read('index.html');
+  check(/http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/.test(idx),
+    '首页 head 加了 no-cache 兜底（文档级缓存防御）', '首页缺 no-cache 兜底');
+  check(/navigator\.serviceWorker\.register\(['"]\.\/sw\.js['"]/.test(idx),
+    '首页注册了 sw.js（network-first 导航接管）', '首页没注册 SW → 旧黑弹窗残留问题没解决');
+  check(/params\.has\('no-sw'\)/.test(idx) && /isSecureContext/.test(idx),
+    'SW 注册带安全上下文判断 + ?no-sw 一键卸载开关', '缺安全上下文判断或 no-sw 开关 → 调试/异常环境会炸');
+  const sw = exists('sw.js') ? read('sw.js') : '';
+  check(sw.length > 200, 'sw.js 已落地', 'sw.js 不存在');
+  check(/req\.mode === 'navigate'/.test(sw) && /fresh = await fetch\(req\)/.test(sw),
+    'sw.js 对导航请求做 network-first（在线永远取最新 HTML）', 'sw.js 没做 network-first 导航 → 旧版仍会被缓存顶出');
+  check(/skipWaiting/.test(sw) && /clients\.claim/.test(sw),
+    'sw.js 安装即 skipWaiting + 激活即 clients.claim（缩短部署生效空窗）', '缺 skipWaiting/clients.claim → 新版本接管慢');
+  // 安全红线：只接管 navigate，不得拦截 notes.html 的 .enc 解密 fetch 或任何子资源
+  const rwCount = (sw.match(/event\.respondWith/g) || []).length;
+  check(rwCount === 1 && /if \(req\.mode === 'navigate'\)\s*\{[\s\S]*?event\.respondWith/.test(sw),
+    'sw.js 只有「导航分支内」一处 respondWith，其余请求（含 .enc）一律放行',
+    `sw.js 拦截点数为 ${rwCount}（应恰为 1 且在 navigate 分支内）→ 可能误伤 notes.html 密文拉取`);
+  check(/\.enc/.test(sw),
+    'sw.js 明确处理 notes.html 的 .enc 等非导航请求（注释 + 放行）', 'sw.js 没说明对 .enc 的处理 → 密文解锁链路有隐患');
+
+  // —— 行为回归测试必须存在且已接线 CI ——
+  const tssFile = 'scripts/test-success-stories.cjs';
+  check(exists(tssFile), '存在成功案例页目录树/小火箭的回归测试（jsdom）', '缺测试 → TOC 脚本静默失效无人发现');
+  if (exists(tssFile)) {
+    const tt = read(tssFile);
+    check(/toc-nav/.test(tt) && /data-toc/.test(tt) && /rk-body/.test(tt),
+      '测试真的在查目录树 + 小火箭（不是空壳）', '测试没查 TOC/火箭 → 测了个寂寞');
+    check(/案例 #05/.test(tt), '测试覆盖案例 #05 落地', '测试没查 #05 → 新增案例没人咬');
+  }
+  const wf33 = read('.github/workflows/verify.yml');
+  check(/node scripts\/test-success-stories\.cjs/.test(wf33), 'CI 已接线 test-success-stories.cjs', '测试没挂 CI → 只跑一次');
+}
+
 // ---------- 21k. 评级过滤条必须认得 D/U（bundle 数组写死 S/A/B/C，补丁注入） ----------
 // 2026-11-02 站长截图指出：新增 D 级后评级过滤条仍只有 S/A/B/C —— 选任何具体
 // 档位时 U/D 卡被 React 内存过滤（DOM 上不存在），且无法筛出 D/U。
@@ -7247,12 +7339,15 @@ section('25. 成功案例专题页（QQ奶奶）');
 
   // ⑤ 入口与索引
   const ssQ = read('success-stories.html');
-  check(/class="topic-entry" href="\.\/qq-nainai\.html"/.test(ssQ),
+  check(/class="topic-entry"[^>]*href="\.\/qq-nainai\.html"/.test(ssQ),
     '§25i 成功案例页有指向 qq-nainai.html 的专题入口',
     '没有入口 → 新页面成为孤岛');
-  check(/专题 · 前辈/.test(ssQ) && !/案例 #05/.test(ssQ),
-    '§25j 入口标为「专题 · 前辈」，且没有占用案例 #05 序号',
-    '序号被占用 → 与站长「不是卡片5」的要求冲突');
+  // 2026-11-09 起「案例 #05」是独立真实案例（站长 2026-11-09 指令补在 #04 之后），
+  // 此处只咬「专题入口本身不占用案例序号」——入口块内不得出现「案例 #0X」编号。
+  const entryQ = (ssQ.match(/<a class="topic-entry"[\s\S]*?<\/a>/) || [''])[0];
+  check(/专题 · 前辈/.test(entryQ) && !/案例 #0[0-9]/.test(entryQ),
+    '§25j 入口标为「专题 · 前辈」（不占案例序号），与案例 #05 各自独立',
+    '专题入口被标成案例序号 → 与站长「不是卡片5」的要求冲突');
   check(/qq-nainai\.html/.test(read('sitemap.xml')),
     '§25k sitemap.xml 收录专题页',
     '漏收录 → 爬虫发现不了这一页');
@@ -7269,8 +7364,8 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§25u 按钮隐藏态用 visibility:hidden（不留在 Tab 焦点链里）',
     '只写 opacity:0 → 看不见的按钮仍能被 Tab 聚焦');
   check(/THRESHOLD = 480/.test(ssQ)
-    && /addEventListener\('scroll', onScroll, \{ passive: true \}\)/.test(ssQ)
-    && /requestAnimationFrame\(sync\)/.test(ssQ)
+    && /addEventListener\('scroll', [\w]+, \{ passive: true \}\)/.test(ssQ)
+    && /requestAnimationFrame\(/.test(ssQ)
     && /prefers-reduced-motion/.test(ssQ),
     '§25v 滚动阈值 480px + rAF 合并滚动事件 + 尊重 reduced-motion',
     '刷新率与无障碍口径被改坏 → 按钮乱闪或平滑滚动无法关闭');

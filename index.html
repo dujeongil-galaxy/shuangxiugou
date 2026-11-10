@@ -12,6 +12,13 @@
     <meta name="keywords" content="双休,双休企业,公司双休评级,查公司双休,双休公司,单休,大小周,996,血汗工厂,避雷,企业评级,工时政策,员工实测,双休求职,双休查询,企业双休,sxg,shuangxiugo,shuangxiugou,双休购,真假双休,双休真假,血汗工厂" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="theme-color" content="#0F766E" />
+    <!-- 缓存防御（2026-11-09 站长指令：消除旧黑弹窗残留）：
+         优先靠 sw.js 的 network-first 导航接管拿最新 HTML；
+         这里再补一层文档级 no-cache 作为兜底（GitHub Pages 的 10 分钟 CDN 缓存
+         由 sw.js 在重复访问时覆盖，这一行主要约束浏览器自身对本文档的缓存）。 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <meta name="format-detection" content="telephone=no" />
     <!-- Open Graph：微信/朋友圈/Discord/Telegram 等贴链接时的卡片标题、描述与配图
          （og:image 必须是绝对 URL，位图 PNG —— 这些平台不认 SVG） -->
@@ -9028,6 +9035,38 @@
   <script defer src="./header-menu-patch.js?v=9"></script>
   <!-- 首页黑色「全网打工人已转移消费额」卡片改为「滚动式广告位」（2026-11-09 站长指令升级：黑卡不保留，原位放滚动式广告位轮播——两张站点自绘矢量设计稿，陆喜依广告图与 CTA 提示词都是真链接可点跳天猫支持双休企业；卡片内容居中、箭头移到卡片下方导航条不再压住招商卡标题；支持手动切换与自动轮播；不动其它架构） -->
   <script defer src="./black-card-adslot.js?v=6"></script>
+
+  <!-- 站点级 Service Worker（2026-11-09 站长指令）：network-first 导航接管，
+       保证刚部署的几分钟里用户也拿到最新 index.html，旧黑弹窗不再残留。
+       只在安全上下文（localhost / https）注册；?no-sw 可一键卸载，便于调试。 -->
+  <script>
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+      if (!window.isSecureContext) return; // file:// 或非法上下文不注册，避免无意义报错
+      var params = new URLSearchParams(location.search);
+      if (params.has('no-sw')) {
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          (regs || []).forEach(function (r) { try { r.unregister(); } catch (e) {} });
+        });
+        return;
+      }
+      // 记录注册前是否已有 SW 在控：只有「更新已有 SW」才自动刷新一次——
+      // 首次安装时页面本就是最新，无需重载；否则每次首访都重载，会打断端到端
+      // 测试与正常浏览（sessionStorage 仍防更新场景下的刷新死循环）。
+      var hadController = !!navigator.serviceWorker.controller;
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./sw.js').catch(function (e) {
+          console.warn('[sw] 注册失败（不影响站点正常访问）：', e);
+        });
+      });
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (!hadController) return; // 首次安装不重载，护住 CI 与首访体验
+        if (sessionStorage.getItem('sxg-sw-reloaded')) return;
+        sessionStorage.setItem('sxg-sw-reloaded', '1');
+        location.reload();
+      });
+    })();
+  </script>
 
   </body>
 </html>
