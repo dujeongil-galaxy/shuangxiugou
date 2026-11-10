@@ -39,10 +39,26 @@
       c) 顺带修图片失败态：旧代码 error 时直接 display:none → 卡片退化成纯文字；
          现在兜底成同色系海报底 + 金字（.sxg-adslot__art-wrap[data-art-error]）。
 
-   两张卡：① 陆喜依品牌广告（整图点击跳天猫、品牌名跳站内详情页）；
-   ② 公益广告位虚位以待。支持箭头/圆点手动切换 + 5s 自动轮播（悬停暂停）。
+   三张卡：① 陆喜依品牌广告（整图点击跳天猫、品牌名跳站内详情页）；
+   ② 胖东来（善待劳动者，整图与品牌名都跳站内详情页，备注劳动者态度）；
+   ③ 公益广告位虚位以待。支持箭头/圆点手动切换 + 5s 自动轮播（悬停暂停）。
    定位锚点：全站唯一文案「全网打工人已转移消费额」。沿用三重兜底替换。
    主站 bundle assets/index-*.js 不可改，所有页面微调一律走独立补丁脚本。
+
+   ⑧ 站长 2026-11-10 晚（胖东来广告卡，首页推荐位）：
+      「去给胖东来设计一条广告.....我是说首页推荐位，视频中提到的胖东来对待
+       劳动者的态度，务必备注，这也是为什么挂上广告位的原因，但不得直接把
+       视频链接挂在广告位」——轮播新增胖东来卡（第 2 张）：
+      - assets/ad-pangdonglai.svg 自绘海报（与另两张同一套深蓝+金+挂牌语言，
+        印章「敬」），文案画进图里、三条基线严格递增：「胖东来」/
+        「备注 · 货车司机送货，也能体会到尊重」（对待劳动者的态度，务必备注）/
+        「善待劳动者，正是它登上公益广告位的原因」（挂上广告位的原因）。
+      - 品牌名与头像只链站内 brand/pdl.html + assets/pdl.png。
+      - **广告位零视频链接**：短视频短链不进脚本、不进 SVG、不进 DOM
+        （verify §29j/§29k 有反向断言；注释里也不拼写该域名，防自扫误判）。
+      - 三卡角标改 03 体系（01/03 陆喜依、02/03 胖东来、03/03 虚位以待），
+        两张旧图角标同步、?v 各 bump（ad-luxiyi ?v=2、ad-recruit ?v=4），
+        防缓存里留着「01 / 02」旧角标。
    ========================================================================== */
 (function () {
   'use strict';
@@ -51,10 +67,13 @@
   var TMALL = 'https://luxiyi.tmall.com/';
   var DETAIL = './brand/luxiyi.html';
   var IMG = './assets/luxiyi.jpg';
-  var ART = './assets/ad-luxiyi.svg';
-  /* 虚位以待卡的广告设计图。?v 必须与 index.html 里的 <link rel=preload as=image> 完全一致，
+  var PDL_DETAIL = './brand/pdl.html';
+  var PDL_IMG = './assets/pdl.png';
+  /* 三张广告设计图。?v 必须与 index.html 里的 <link rel=preload as=image> 完全一致，
      否则浏览器会把它当两个资源（预热的白预了）。改了图就同步升这里和 index.html。 */
-  var ART_RECRUIT = './assets/ad-recruit.svg?v=3';
+  var ART = './assets/ad-luxiyi.svg?v=2';
+  var ART_PDL = './assets/ad-pangdonglai.svg?v=1';
+  var ART_RECRUIT = './assets/ad-recruit.svg?v=4';
   var AUTOPLAY_MS = 5000;
 
   function injectStyle() {
@@ -134,8 +153,10 @@
           '<div class="sxg-adslot__card sxg-adslot__card--brand">' +
             '<a class="sxg-adslot__banner" href="' + TMALL + '" target="_blank" rel="noopener" ' +
               'aria-label="进入陆喜依天猫旗舰店，支持真实双休企业">' +
-              '<img class="sxg-adslot__art" src="' + ART + '" ' +
-                'alt="陆喜依 · 真实双休标杆品牌 · 点击进入天猫旗舰店">' +
+              '<div class="sxg-adslot__art-wrap" data-art-error-text="陆喜依 · 真实双休标杆品牌">' +
+                '<img class="sxg-adslot__art" src="' + ART + '" ' +
+                  'alt="陆喜依 · 真实双休标杆品牌 · 点击进入天猫旗舰店">' +
+              '</div>' +
             '</a>' +
             '<div class="sxg-adslot__meta">' +
               '<img class="sxg-adslot__avatar" src="' + IMG + '" alt="陆喜依">' +
@@ -146,8 +167,25 @@
                 '点此进入天猫旗舰店，支持真实双休企业 →</a>' +
             '</div>' +
           '</div>' +
+          /* 胖东来卡（站长 2026-11-10 晚）：备注「对待劳动者的态度」在图里，
+             整图与品牌名都只跳站内详情页；广告位零视频链接。 */
+          '<div class="sxg-adslot__card sxg-adslot__card--pdl">' +
+            '<a class="sxg-adslot__banner" href="' + PDL_DETAIL + '" rel="noopener" ' +
+              'aria-label="查看胖东来详情页：善待劳动者">' +
+              '<div class="sxg-adslot__art-wrap" data-art-error-text="胖东来 · 善待劳动者">' +
+                '<img class="sxg-adslot__art" src="' + ART_PDL + '" ' +
+                  'alt="胖东来 · 善待劳动者 · 货车司机送货也能体会到尊重">' +
+              '</div>' +
+            '</a>' +
+            '<div class="sxg-adslot__meta">' +
+              '<img class="sxg-adslot__avatar" src="' + PDL_IMG + '" alt="胖东来">' +
+              '<a class="sxg-adslot__name" href="' + PDL_DETAIL + '" rel="noopener">胖东来</a>' +
+              '<span class="sxg-adslot__mark">公益展示</span>' +
+              '<span class="sxg-adslot__tag">善待劳动者 · 货车司机送货也能体会到尊重</span>' +
+            '</div>' +
+          '</div>' +
           '<div class="sxg-adslot__card sxg-adslot__card--recruit">' +
-            '<div class="sxg-adslot__art-wrap">' +
+            '<div class="sxg-adslot__art-wrap" data-art-error-text="公益广告位 · 虚位以待">' +
               '<img class="sxg-adslot__art" src="' + ART_RECRUIT + '" ' +
                 'alt="公益广告位 · 虚位以待 · 真实双休标杆品牌可申请免费展示">' +
             '</div>' +
@@ -168,7 +206,7 @@
        旧写法在 <img> 出错时直接 display:none，于是卡片只剩标题栏 + 一行字，
        看上去就是「纯文字广告位」——他在慢网下截到的正是这个状态。
        现在：广告设计图兜底成一个同色系海报底色 + 金字的「广告牌」，
-       至少还是图；品牌头像才降级成文字。 */
+       至少还是图；品牌头像才降级成文字（文字取 img alt，三张卡通用）。 */
     var imgs = root.querySelectorAll('img');
     for (var j = 0; j < imgs.length; j++) {
       (function (img) {
@@ -178,15 +216,14 @@
           var wrap = img.parentNode;
           if (wrap && wrap.className && wrap.className.indexOf('sxg-adslot__art-wrap') !== -1) {
             wrap.setAttribute('data-art-error', '1');
-            wrap.setAttribute('data-art-error-text',
-              wrap.parentNode && (wrap.parentNode.className || '').indexOf('--recruit') !== -1
-                ? '公益广告位 · 虚位以待'
-                : '公益广告位');
+            if (!wrap.getAttribute('data-art-error-text')) {
+              wrap.setAttribute('data-art-error-text', '公益广告位');
+            }
           }
           if (img.className.indexOf('sxg-adslot__avatar') !== -1) {
             var span = document.createElement('span');
             span.className = 'sxg-adslot__name';
-            span.textContent = '陆喜依';
+            span.textContent = img.getAttribute('alt') || '公益展示';
             if (img.parentNode) img.parentNode.insertBefore(span, img.nextSibling);
           }
         });

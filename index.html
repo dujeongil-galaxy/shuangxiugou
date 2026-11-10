@@ -43,11 +43,12 @@
          加 crossorigin 前请勿删——verify §33a 有断言。 -->
     <link rel="preload" as="script" crossorigin href="./assets/index-YthXZ9eP.js?v=50" />
     <link rel="preload" as="style" crossorigin href="./assets/index-BgVofs0W.css" />
-    <!-- 广告位两张设计图在首屏，提前预热：慢网下广告位被补丁插入时图已在缓存里，
+    <!-- 广告位三张设计图在首屏，提前预热：慢网下广告位被补丁插入时图已在缓存里，
          不会出现「卡片出来了图还是空的」那种半截状态（站长 2026-11-10）。
-         ad-recruit 的 ?v 必须与 black-card-adslot.js 里 ART_RECRUIT 一致，verify §33a 有断言。 -->
-    <link rel="preload" as="image" href="./assets/ad-luxiyi.svg" />
-    <link rel="preload" as="image" href="./assets/ad-recruit.svg?v=3" />
+         三张图的 ?v 必须与 black-card-adslot.js 里 ART / ART_PDL / ART_RECRUIT 一致，verify §33a2 有断言。 -->
+    <link rel="preload" as="image" href="./assets/ad-luxiyi.svg?v=2" />
+    <link rel="preload" as="image" href="./assets/ad-pangdonglai.svg?v=1" />
+    <link rel="preload" as="image" href="./assets/ad-recruit.svg?v=4" />
     <link rel="dns-prefetch" href="https://dujeongil-galaxy.github.io" />
     <script type="application/ld+json">
     {
@@ -141,7 +142,7 @@
        广告位替换后高度差最小）；补丁替换成功后选择器不再命中任何节点，样式无害常驻。
        注意：该样式必须与 black-card-adslot.js 共存——若将来下线补丁，须同步删本样式。 -->
   <style id="sxg-blackcard-prehide">div[class*="rounded-2xl p-5 shadow-xl"]{visibility:hidden}</style>
-  <script async src="./black-card-adslot.js?v=9"></script>
+  <script async src="./black-card-adslot.js?v=10"></script>
   <style>.sxg-loading{position:fixed;inset:0;z-index:2147483647;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}.sxg-boot{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:14px;color:#0f766e;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif}.sxg-boot__spinner{width:34px;height:34px;border:3px solid #ccfbf1;border-top-color:#0f766e;border-radius:50%;animation:sxg-spin .8s linear infinite}.sxg-boot__text{margin:0;font-size:14px;font-weight:600;letter-spacing:.04em}@keyframes sxg-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.sxg-boot__spinner{animation-duration:2s}}</style>
   </head>
   <body>

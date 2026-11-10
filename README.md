@@ -164,7 +164,9 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 ## 🖼 广告位设计稿与缓存落盘（2026-11-09 站长明确，长期有效）
 
-- **广告位设计稿是站点自绘矢量图**：`assets/ad-luxiyi.svg`（陆喜依品牌广告）、`assets/ad-recruit.svg`（招商卡衬底）由本项目绘制，不含任何外链与 URL，属站点自带设计素材，**不是站长提供的口述素材**，不适用下节的 `.enc` + blob 规则；`assets/luxiyi.jpg`（站长给的 mascot）是历史存量品牌 logo，按 §22c 白名单沿用，广告位与搜索结果品牌卡共用单一真相源。
+- **广告位设计稿是站点自绘矢量图**：`assets/ad-luxiyi.svg`（陆喜依品牌广告）、`assets/ad-pangdonglai.svg`（胖东来广告）、`assets/ad-recruit.svg`（招商卡衬底）由本项目绘制，不含任何外链与 URL，属站点自带设计素材，**不是站长提供的口述素材**，不适用下节的 `.enc` + blob 规则；`assets/luxiyi.jpg`（站长给的 mascot）是历史存量品牌 logo，按 §22c 白名单沿用，广告位与搜索结果品牌卡共用单一真相源；`assets/pdl.png`（胖东来 logo）同为历史存量品牌 logo，只用于广告卡头像与站内品牌卡。
+- **胖东来广告卡务必备注对待劳动者的态度**（站长 2026-11-10 晚）：广告里必须备注视频提到的胖东来**对待劳动者的态度**（货车司机送货也能体会到尊重），并写明这正是它挂上公益广告位的原因；文案画进 `assets/ad-pangdonglai.svg` 的 `<text>`（三条基线严格递增），HTML meta 只留一行说明，品牌名与头像只链站内 `brand/pdl.html`。
+- **广告位不得挂视频链接**：广告位（脚本、三张 SVG、渲染 DOM）不得直接挂任何短视频链接；视频只作线索来源，广告内容零外链、零视频链接（`scripts/verify.mjs` §29j/§29k + `scripts/test-adslot.cjs` 有反向断言，注释里也不拼写该域名防自扫误判）。
 - **广告位所有天猫入口必须真可点**：整张广告设计图与 CTA 提示词都是 `<a href>`（零参数店铺首页、`target="_blank"`、`rel="noopener"`），品牌名仍指站内详情页；不许再出现「看着像链接其实是 `<div>`」的静默失效。
 - **广告位内容一律居中**：卡片 `align-items:center` + `text-align:center`、信息条 `justify-content:center`；左右箭头放在卡片下方导航条，不得绝对定位盖住招商卡标题。
 - **缓存一律放 D 盘**：站长原话「以后把缓存放在 D 盘，我 C 盘再搞要炸了」。统一缓存根 `D:/WorkBuddy-Cache/`（`edge-profiles/` / `shots/` / `tmp/` / `trash/`），可用 `SXG_CACHE_DIR` 覆盖；所有 `--user-data-dir` 必须经 `scripts/_cache-dir.cjs` 的 `cacheRoot()` 解析，不许再写回 `scripts/` 或 `%TEMP%`（历史上堆过 523 个 Edge profile）。非 Windows / CI 自动回落到系统临时目录。

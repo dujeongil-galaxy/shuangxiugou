@@ -9,8 +9,10 @@ const { JSDOM, VirtualConsole } = require('jsdom');
 const ROOT = path.resolve(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const TMALL = 'https://' + 'luxiyi.tmall.com/'; // 拼接避免本文件被参数红线误扫
-const ART_BRAND = './assets/ad-luxiyi.svg';
-const ART_RECRUIT = './assets/ad-recruit.svg?v=3';
+const ART_BRAND = './assets/ad-luxiyi.svg?v=2';
+const ART_PDL = './assets/ad-pangdonglai.svg?v=1';
+const ART_RECRUIT = './assets/ad-recruit.svg?v=4';
+const PDL_DETAIL = './brand/pdl.html';
 
 let pass = 0, fail = 0;
 const fails = [];
@@ -26,9 +28,10 @@ function check(label, cond, extra) {
   console.log('=== 滚动广告位：可点 / 居中 / 设计图 ===\n');
   const src = read('black-card-adslot.js');
 
-  // ─────────── 0. 两张站点自绘设计稿 ───────────
+  // ─────────── 0. 三张站点自绘设计稿 ───────────
   console.log('--- 0. 广告位专用设计图 ---');
   for (const [f, label] of [['assets/ad-luxiyi.svg', '品牌广告设计稿'],
+                            ['assets/ad-pangdonglai.svg', '胖东来广告设计稿'],
                             ['assets/ad-recruit.svg', '招商卡设计稿']]) {
     const okFile = fs.existsSync(path.join(ROOT, f));
     check(label + '真实存在', okFile, f);
@@ -43,8 +46,9 @@ function check(label, cond, extra) {
         && !/\b(?:xlink:)?href\s*=\s*['"]https?:/i.test(svgNoNs));
     }
   }
-  check('组件引用了两张设计稿（单一真相源）',
+  check('组件引用了三张设计稿（单一真相源）',
     src.indexOf("var ART = '" + ART_BRAND + "'") !== -1
+    && src.indexOf("var ART_PDL = '" + ART_PDL + "'") !== -1
     && src.indexOf("var ART_RECRUIT = '" + ART_RECRUIT + "'") !== -1);
   check('品牌 mascot 仍复用 luxiyi.jpg（不重复入库明文素材）',
     src.indexOf("var IMG = './assets/luxiyi.jpg'") !== -1);
@@ -95,10 +99,50 @@ function check(label, cond, extra) {
   check('品牌卡小头像仍用 mascot 单一真相源',
     !!avatar && avatar.getAttribute('src') === './assets/luxiyi.jpg',
     avatar && avatar.getAttribute('src'));
-  check('两张卡各挂一张设计图', arts.length === 2,
+  check('三张卡各挂一张设计图', arts.length === 3,
     [...arts].map((x) => x.getAttribute('src')));
+  check('胖东来卡设计稿引用正确',
+    !!arts[1] && arts[1].getAttribute('src') === ART_PDL);
   check('招商卡设计稿引用正确',
-    !!arts[1] && arts[1].getAttribute('src') === ART_RECRUIT);
+    !!arts[2] && arts[2].getAttribute('src') === ART_RECRUIT);
+
+  // ─────────── 1b. 胖东来卡（站长 2026-11-10 晚：备注劳动者态度 / 零视频链接） ───────────
+  console.log('\n--- 1b. 胖东来卡：备注 + 站内链 + 零视频链接 ---');
+  const pdlName = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__name');
+  const pdlAvatar = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__avatar');
+  const pdlTag = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__tag');
+  check('胖东来品牌名链站内详情页',
+    !!pdlName && pdlName.getAttribute('href') === PDL_DETAIL,
+    pdlName && pdlName.getAttribute('href'));
+  check('胖东来头像用站内 pdl.png',
+    !!pdlAvatar && pdlAvatar.getAttribute('src') === './assets/pdl.png',
+    pdlAvatar && pdlAvatar.getAttribute('src'));
+  check('胖东来信息行带劳动者态度备注',
+    !!pdlTag && /劳动者/.test(pdlTag.textContent) && /尊重/.test(pdlTag.textContent),
+    pdlTag && pdlTag.textContent);
+  const pdlBanner = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__banner');
+  check('胖东来整张广告图也只跳站内详情页（不挂任何站外/视频链接）',
+    !!pdlBanner && pdlBanner.tagName === 'A' && pdlBanner.getAttribute('href') === PDL_DETAIL,
+    pdlBanner && pdlBanner.getAttribute('href'));
+  // 文案进图里：备注「对待劳动者的态度」+ 挂上广告位的原因，缺一不可。
+  // 关键词只认 <text> 可见文案（aria-label/注释里写满原话也能逃逸断言的坑）。
+  const pdlSvg = read('assets/ad-pangdonglai.svg');
+  const pdlWords = [...pdlSvg.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map((m) => m[1]).join(' ');
+  check('胖东来海报把劳动者态度备注进图里（货车司机送货也能体会到尊重）',
+    /备注/.test(pdlWords) && /货车司机送货/.test(pdlWords) && /尊重/.test(pdlWords));
+  check('胖东来海报写明这正是挂上公益广告位的原因',
+    /公益广告位的原因/.test(pdlWords) && /善待劳动者/.test(pdlWords));
+  // 「但不得直接把视频链接挂在广告位」——脚本 / 三张海报 / 渲染 DOM 三侧都不许出现
+  // 短链域名。按源码原文扫（含注释）：剥注释的 // 正则会把 https:// 当行注释吃掉
+  // URL 尾巴（故障注入实测静默放行）；域名模式带点，避免误伤 douyin-prompt.css。
+  const videoRe = /douyin\.com|b23\.tv/i;
+  check('广告位零视频链接（脚本 / 三张设计图 / 渲染 DOM 都不许挂）',
+    !videoRe.test(src)
+    && !videoRe.test(read('assets/ad-luxiyi.svg'))
+    && !videoRe.test(read('assets/ad-pangdonglai.svg'))
+    && !videoRe.test(read('assets/ad-recruit.svg'))
+    && !videoRe.test(slot.innerHTML),
+    '广告位出现了短视频链接域名');
 
   // ─────────── 2. 居中 & 箭头不再压住文案 ───────────
   console.log('\n--- 2. 内容居中 / 箭头位置 ---');
@@ -117,6 +161,13 @@ function check(label, cond, extra) {
   check('设计图里三条主文案基线严格递增（不叠字）',
     recTexts.length >= 3 && recTexts.every((t, i) => i === 0 || t.y > recTexts[i - 1].y)
     && recTexts[0].size >= 60, JSON.stringify(recTexts));
+  const pdlTexts = [...read('assets/ad-pangdonglai.svg').matchAll(/<text[^>]*?y="(\d+)"[^>]*?font-size="(\d+)"/g)]
+    .map((m) => ({ y: Number(m[1]), size: Number(m[2]) }))
+    .filter((t) => t.y >= 100 && t.y <= 260)
+    .sort((a, b) => a.y - b.y);
+  check('胖东来海报三条主文案基线严格递增（不叠字）',
+    pdlTexts.length >= 3 && pdlTexts.every((t, i) => i === 0 || t.y > pdlTexts[i - 1].y)
+    && pdlTexts[0].size >= 60, JSON.stringify(pdlTexts));
   const tag = slot.querySelector('.sxg-adslot__card--recruit .sxg-adslot__tag');
   check('招商卡信息行仍是正常流文字（手机端可读），不是图片里的小字',
     !!tag && /可申请免费展示/.test(tag.textContent));
@@ -133,17 +184,24 @@ function check(label, cond, extra) {
   // ─────────── 3. 轮播交互没被改坏 ───────────
   console.log('\n--- 3. 手动切换 / 自动轮播 ---');
   const track = slot.querySelector('.sxg-adslot__track');
-  check('共 2 张广告卡', slot.querySelectorAll('.sxg-adslot__card').length === 2);
-  check('2 个圆点且首张高亮',
-    slot.querySelectorAll('.sxg-adslot__dot').length === 2
+  check('共 3 张广告卡', slot.querySelectorAll('.sxg-adslot__card').length === 3);
+  check('3 个圆点且首张高亮',
+    slot.querySelectorAll('.sxg-adslot__dot').length === 3
     && slot.querySelector('.sxg-adslot__dot').className.indexOf('is-active') !== -1);
   check('初始 transform 为 translateX(0%)', /translateX\(0%\)/.test(track.style.transform),
     track.style.transform);
   next.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  check('点「下一张」后滚动到第 2 张', /translateX\(-100%\)/.test(track.style.transform),
+  check('点「下一张」后滚动到第 2 张（胖东来）', /translateX\(-100%\)/.test(track.style.transform),
     track.style.transform);
   const dots = slot.querySelectorAll('.sxg-adslot__dot');
   check('圆点高亮同步到第 2 个', dots[1].className.indexOf('is-active') !== -1);
+  next.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  check('再点「下一张」滚动到第 3 张（虚位以待）', /translateX\(-200%\)/.test(track.style.transform),
+    track.style.transform);
+  check('圆点高亮同步到第 3 个', dots[2].className.indexOf('is-active') !== -1);
+  prev.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  check('点「上一张」回到第 2 张', /translateX\(-100%\)/.test(track.style.transform),
+    track.style.transform);
   prev.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   check('点「上一张」回到第 1 张', /translateX\(0%\)/.test(track.style.transform),
     track.style.transform);
