@@ -40,7 +40,7 @@
          现在兜底成同色系海报底 + 金字（.sxg-adslot__art-wrap[data-art-error]）。
 
    三张卡：① 陆喜依品牌广告（整图点击跳天猫、品牌名跳站内详情页）；
-   ② 胖东来（善待劳动者，整图与品牌名都跳站内详情页，备注劳动者态度）；
+   ② 胖东来（善待劳动者，整图与 CTA 挂京东站内搜索、品牌名跳站内详情页）；
    ③ 公益广告位虚位以待。支持箭头/圆点手动切换 + 5s 自动轮播（悬停暂停）。
    定位锚点：全站唯一文案「全网打工人已转移消费额」。沿用三重兜底替换。
    主站 bundle assets/index-*.js 不可改，所有页面微调一律走独立补丁脚本。
@@ -59,6 +59,19 @@
       - 三卡角标改 03 体系（01/03 陆喜依、02/03 胖东来、03/03 虚位以待），
         两张旧图角标同步、?v 各 bump（ad-luxiyi ?v=2、ad-recruit ?v=4），
         防缓存里留着「01 / 02」旧角标。
+
+   ⑨ 站长 2026-11-10 19:48 追加（原话）：
+      「备注两个字去掉，这次优先挂京东链接，如果找不到，才考虑淘宝天猫的」
+      - 海报第二行去掉「备注 · 」前缀，只留「货车司机送货，也能体会到尊重」；
+        态度与「挂上公益广告位的原因」两条信息一条不少（verify §29j 同时反向
+        钉死「可见文案里不许再出现备注两字」）。
+      - 商城入口**京东优先**：胖东来在京东、淘宝天猫都没有可核实的官方店铺
+        （官方口径只有微信小程序与抖音店；京东站内那个「胖东来官方旗舰店」
+        资质存疑，多篇报道认定是假冒/代购），所以不指向任何具体第三方店铺，
+        改挂京东站内搜索「胖东来」（零追踪参数、真可点）。淘宝天猫只在京东
+        链接找不到时才作为备选，本次未启用。整张广告图 + CTA 都换成京东链接，
+        **可见文案同步换「去京东搜胖东来」**，不许只改 href 留着旧来源标签。
+      - 品牌名与头像仍只链站内 brand/pdl.html + assets/pdl.png。
    ========================================================================== */
 (function () {
   'use strict';
@@ -69,10 +82,16 @@
   var IMG = './assets/luxiyi.jpg';
   var PDL_DETAIL = './brand/pdl.html';
   var PDL_IMG = './assets/pdl.png';
+  /* 站长 2026-11-10 19:48「这次优先挂京东链接，如果找不到，才考虑淘宝天猫的」：
+     胖东来没有可核实的京东/天猫官方店铺链接（官方只认微信小程序与抖音店，
+     京东站内同名店资质存疑），因此挂**京东站内搜索**「胖东来」——真可点、
+     零追踪参数、不把读者导去任何具体第三方店铺。淘宝天猫只作备选，本次不用。
+     keyword 是搜索必需查询词，不含任何账号/来源追踪参数（§26k 参数红线）。 */
+  var PDL_SHOP = 'https://search.jd.com/Search?keyword=%E8%83%96%E4%B8%9C%E6%9D%A5';
   /* 三张广告设计图。?v 必须与 index.html 里的 <link rel=preload as=image> 完全一致，
      否则浏览器会把它当两个资源（预热的白预了）。改了图就同步升这里和 index.html。 */
   var ART = './assets/ad-luxiyi.svg?v=2';
-  var ART_PDL = './assets/ad-pangdonglai.svg?v=1';
+  var ART_PDL = './assets/ad-pangdonglai.svg?v=2';
   var ART_RECRUIT = './assets/ad-recruit.svg?v=4';
   var AUTOPLAY_MS = 5000;
 
@@ -167,11 +186,11 @@
                 '点此进入天猫旗舰店，支持真实双休企业 →</a>' +
             '</div>' +
           '</div>' +
-          /* 胖东来卡（站长 2026-11-10 晚）：备注「对待劳动者的态度」在图里，
-             整图与品牌名都只跳站内详情页；广告位零视频链接。 */
+          /* 胖东来卡（站长 2026-11-10 晚 + 19:48 追加）：劳动者态度与挂广告位的原因
+             都在图里；整图 + CTA 按 ⑨ 挂京东站内搜索，品牌名与头像只链站内详情页。 */
           '<div class="sxg-adslot__card sxg-adslot__card--pdl">' +
-            '<a class="sxg-adslot__banner" href="' + PDL_DETAIL + '" rel="noopener" ' +
-              'aria-label="查看胖东来详情页：善待劳动者">' +
+            '<a class="sxg-adslot__banner" href="' + PDL_SHOP + '" target="_blank" rel="noopener" ' +
+              'aria-label="去京东搜索胖东来，支持善待劳动者的企业">' +
               '<div class="sxg-adslot__art-wrap" data-art-error-text="胖东来 · 善待劳动者">' +
                 '<img class="sxg-adslot__art" src="' + ART_PDL + '" ' +
                   'alt="胖东来 · 善待劳动者 · 货车司机送货也能体会到尊重">' +
@@ -182,6 +201,8 @@
               '<a class="sxg-adslot__name" href="' + PDL_DETAIL + '" rel="noopener">胖东来</a>' +
               '<span class="sxg-adslot__mark">公益展示</span>' +
               '<span class="sxg-adslot__tag">善待劳动者 · 货车司机送货也能体会到尊重</span>' +
+              '<a class="sxg-adslot__cta" href="' + PDL_SHOP + '" target="_blank" rel="noopener">' +
+                '去京东搜胖东来 →</a>' +
             '</div>' +
           '</div>' +
           '<div class="sxg-adslot__card sxg-adslot__card--recruit">' +

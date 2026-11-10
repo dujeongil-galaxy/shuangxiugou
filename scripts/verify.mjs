@@ -6366,8 +6366,8 @@ section('21c. 首页滑到底部按钮');
     '§33a2 广告位三张设计图首屏预热，且每张的 ?v 与 black-card-adslot.js 里的常量完全一致',
     '预热 URL 与脚本里的实际 URL 不一致 → 白预热，广告位照样「卡片先出来、图还是空的」');
 
-  check(/<script async src="\.\/black-card-adslot\.js\?v=10"><\/script>/.test(idx)
-    && idx.indexOf('black-card-adslot.js?v=10') < idx.indexOf('</head>')
+  check(/<script async src="\.\/black-card-adslot\.js\?v=11"><\/script>/.test(idx)
+    && idx.indexOf('black-card-adslot.js?v=11') < idx.indexOf('</head>')
     && !/script defer src="\.\/black-card-adslot\.js/.test(idx),
     '§33b 广告位补丁在 head 里 async 加载（不再排在第 40 个 defer，也不必等 692KB body 解析完）',
     '广告位补丁退回 defer 队列尾部 → 慢网又要 15 秒才冒出广告位');
@@ -7467,7 +7467,7 @@ section('25. 成功案例专题页（QQ奶奶）');
       && !/<image\b/i.test(read(f)))
     && ad29.indexOf("var ART = './assets/ad-luxiyi.svg?v=2'") !== -1
     && ad29.indexOf("var ART_RECRUIT = './assets/ad-recruit.svg?v=4'") !== -1
-    && ad29.indexOf("var ART_PDL = './assets/ad-pangdonglai.svg?v=1'") !== -1,
+    && ad29.indexOf("var ART_PDL = './assets/ad-pangdonglai.svg?v=2'") !== -1,
     '§29e 三张站点自绘矢量设计稿存在、有效、无外链，且被广告位引用（?v 与预热一致）');
 
   check(!/<div class="sxg-adslot__cta"/.test(ad29)
@@ -7491,7 +7491,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
 
   check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
-    && /black-card-adslot\.js\?v=10/.test(idx29),
+    && /black-card-adslot\.js\?v=11/.test(idx29),
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 
   // —— 站长 2026-11-10 晚：胖东来广告卡（首页推荐位） ——
@@ -7508,12 +7508,12 @@ section('25. 成功案例专题页（QQ奶奶）');
   const pdlWords29 = [...pdl29.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map((m) => m[1]).join(' ');
   check(pdlMain29.length >= 3 && pdlMain29.every((t, i) => i === 0 || t.y > pdlMain29[i - 1].y)
     && pdlMain29[0].size >= 60
-    && /胖东来/.test(pdlWords29) && /备注/.test(pdlWords29) && /货车司机送货/.test(pdlWords29)
+    && /胖东来/.test(pdlWords29) && !/备注/.test(pdlWords29) && /货车司机送货/.test(pdlWords29)
     && /尊重/.test(pdlWords29) && /善待劳动者/.test(pdlWords29) && /公益广告位的原因/.test(pdlWords29)
     && /pdl-gold/.test(pdl29) && /pdl-plate/.test(pdl29) && /敬/.test(pdl29)
     && /PUBLIC WELFARE AD/.test(pdlWords29) && /公益广告位/.test(pdlWords29),
-    '§29j 胖东来海报把「对待劳动者的态度」备注进图里（货车司机送货也能体会到尊重）并写明这正是挂上公益广告位的原因；三条基线严格递增不叠字',
-    `图里主线文案基线 ${JSON.stringify(pdlMain29)} 不递增或备注要素缺失`);
+    '§29j 胖东来海报去掉「备注」两字，仍把劳动者态度（货车司机送货也能体会到尊重）与挂上公益广告位的原因写进图里；三条基线严格递增不叠字',
+    `图里主线文案基线 ${JSON.stringify(pdlMain29)} 不递增、出现「备注」两字或态度/原因要素缺失`);
 
   // 视频链接检查必须按**源码原文**扫（含注释）：① 站长口径就是「注释里也不许
   // 拼写该域名」；② 剥注释的 `\/\/[^\n]*` 会把 `https://` 当行注释吃掉整个 URL 尾巴，
@@ -7529,6 +7529,25 @@ section('25. 成功案例专题页（QQ奶奶）');
     && /对待劳动者的态度/.test(rd29) && /不得挂视频链接/.test(rd29),
     '§29k 广告位零视频链接（脚本/海报侧）、胖东来品牌名与头像只链站内，「备注劳动者态度 + 不得挂视频链接」口径写进 README',
     '视频链接进了广告位，或备注/零链接口径没进 README → 站长两条指令失守');
+
+  // —— 站长 2026-11-10 19:48「这次优先挂京东链接，如果找不到，才考虑淘宝天猫的」 ——
+  // 渠道核查：胖东来在京东、淘宝天猫都没有可核实的官方店铺（官方只认微信小程序
+  // 与抖音店，京东站内同名店资质存疑），所以挂**京东站内搜索**而非任何具体第三方
+  // 店铺；淘宝天猫只作备选。机器钉死「链接 + 真可点 + 可见文案 + 备选顺序」四件事。
+  const pdlShop29 = (ad29.match(/var PDL_SHOP = '([^']+)'/) || [])[1];
+  const pdlCardStart29 = ad29.indexOf('sxg-adslot__card--pdl');
+  const pdlCardEnd29 = ad29.indexOf('sxg-adslot__card--recruit');
+  const pdlCard29 = pdlCardStart29 !== -1 && pdlCardEnd29 > pdlCardStart29
+    ? ad29.slice(pdlCardStart29, pdlCardEnd29) : '';
+  check(!!pdlShop29 && /^https:\/\/search\.jd\.com\/Search\?keyword=/.test(pdlShop29)
+    && (pdlCard29.match(/href="'\s*\+\s*PDL_SHOP/g) || []).length >= 2
+    && (pdlCard29.match(/target="_blank" rel="noopener"/g) || []).length >= 2
+    && /去京东搜胖东来/.test(pdlCard29)
+    && /aria-label="去京东搜索胖东来/.test(pdlCard29)
+    && !/tmall|taobao|天猫|淘宝/i.test(pdlCard29)
+    && /京东优先/.test(rd29) && /找不到/.test(rd29) && /淘宝天猫/.test(rd29),
+    '§29l 商城入口京东优先（找不到才考虑淘宝天猫）：胖东来整图与 CTA 都是京东站内搜索链接且真可点，可见文案同步换「京东」、卡里零淘宝天猫，README 写死优先级与诚实口径',
+    '只改 href 不换可见文案 / 链回天猫 / 优先级口径没进 README → 站长 19:48 指令失守');
 }
 
 // ---------- 30. 比亚迪卡片曝光登记 + 视频下架如实登记 ----------
@@ -7689,8 +7708,8 @@ section('25. 成功案例专题页（QQ奶奶）');
   check((code32.match(/公益广告位/g) || []).length >= 4
     && !/广告位招商中|品牌展示|>广告位</.test(code32)
     && /data-adslot-kind', 'public-welfare'/.test(code32)
-    && /black-card-adslot\.js\?v=10/.test(idx32),
-    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 10');
+    && /black-card-adslot\.js\?v=11/.test(idx32),
+    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 11');
 
   // 站长 2026-11-10 二次纠正「广告图叫你重构，不是让你改成纯文字 / 文字明显重叠」：
   // 文案已全部画进 ad-recruit.svg 的 <text>（与图同坐标系同缩放，结构上不可能叠字），

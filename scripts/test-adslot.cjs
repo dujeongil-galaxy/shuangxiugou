@@ -9,8 +9,9 @@ const { JSDOM, VirtualConsole } = require('jsdom');
 const ROOT = path.resolve(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const TMALL = 'https://' + 'luxiyi.tmall.com/'; // 拼接避免本文件被参数红线误扫
+const JD = 'https://' + 'search.jd.com/Search?keyword=%E8%83%96%E4%B8%9C%E6%9D%A5';
 const ART_BRAND = './assets/ad-luxiyi.svg?v=2';
-const ART_PDL = './assets/ad-pangdonglai.svg?v=1';
+const ART_PDL = './assets/ad-pangdonglai.svg?v=2';
 const ART_RECRUIT = './assets/ad-recruit.svg?v=4';
 const PDL_DETAIL = './brand/pdl.html';
 
@@ -106,7 +107,7 @@ function check(label, cond, extra) {
   check('招商卡设计稿引用正确',
     !!arts[2] && arts[2].getAttribute('src') === ART_RECRUIT);
 
-  // ─────────── 1b. 胖东来卡（站长 2026-11-10 晚：备注劳动者态度 / 零视频链接） ───────────
+  // ─────────── 1b. 胖东来卡（19:48 追加：去掉「备注」两字 / 京东优先 / 零视频链接） ───────────
   console.log('\n--- 1b. 胖东来卡：备注 + 站内链 + 零视频链接 ---');
   const pdlName = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__name');
   const pdlAvatar = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__avatar');
@@ -121,15 +122,33 @@ function check(label, cond, extra) {
     !!pdlTag && /劳动者/.test(pdlTag.textContent) && /尊重/.test(pdlTag.textContent),
     pdlTag && pdlTag.textContent);
   const pdlBanner = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__banner');
-  check('胖东来整张广告图也只跳站内详情页（不挂任何站外/视频链接）',
-    !!pdlBanner && pdlBanner.tagName === 'A' && pdlBanner.getAttribute('href') === PDL_DETAIL,
-    pdlBanner && pdlBanner.getAttribute('href'));
-  // 文案进图里：备注「对待劳动者的态度」+ 挂上广告位的原因，缺一不可。
-  // 关键词只认 <text> 可见文案（aria-label/注释里写满原话也能逃逸断言的坑）。
+  const pdlCta = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__cta');
+  const pdlCardHtml = slot.querySelector('.sxg-adslot__card--pdl').innerHTML;
+  check('胖东来整张广告图挂京东站内搜索链接（京东优先、真 <a>、新窗口 noopener）',
+    !!pdlBanner && pdlBanner.tagName === 'A' && pdlBanner.getAttribute('href') === JD
+    && pdlBanner.getAttribute('target') === '_blank'
+    && pdlBanner.getAttribute('rel') === 'noopener',
+    pdlBanner && pdlBanner.tagName + ':' + pdlBanner.getAttribute('href'));
+  check('胖东来 CTA 是真 <a> 且同挂京东链接',
+    !!pdlCta && pdlCta.tagName === 'A' && pdlCta.getAttribute('href') === JD
+    && pdlCta.getAttribute('target') === '_blank'
+    && pdlCta.getAttribute('rel') === 'noopener',
+    pdlCta && pdlCta.tagName + ':' + pdlCta.getAttribute('href'));
+  check('可见文案同步换成「京东」（不许只改 href 留着旧来源标签）',
+    !!pdlCta && /京东/.test(pdlCta.textContent) && !/天猫|淘宝/.test(pdlCta.textContent)
+    && !!pdlBanner && /京东/.test(pdlBanner.getAttribute('aria-label') || '')
+    && !/天猫|淘宝/.test(pdlBanner.getAttribute('aria-label') || ''),
+    pdlCta && pdlCta.textContent);
+  check('胖东来卡零淘宝天猫链接与来源标签（淘宝天猫只在京东找不到时才考虑）',
+    !/tmall|taobao|天猫|淘宝/i.test(pdlCardHtml));
+  // 文案进图里：劳动者态度（站长 19:48「备注两个字去掉」，可见文案不许再带该前缀）
+  // + 挂上广告位的原因，缺一不可。关键词只认 <text> 可见文案
+  //（aria-label/注释里写满原话也能逃逸断言的坑）。
   const pdlSvg = read('assets/ad-pangdonglai.svg');
   const pdlWords = [...pdlSvg.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map((m) => m[1]).join(' ');
-  check('胖东来海报把劳动者态度备注进图里（货车司机送货也能体会到尊重）',
-    /备注/.test(pdlWords) && /货车司机送货/.test(pdlWords) && /尊重/.test(pdlWords));
+  check('胖东来海报去掉「备注」两字，劳动者态度仍写进图里',
+    !/备注/.test(pdlWords) && /货车司机送货/.test(pdlWords) && /尊重/.test(pdlWords),
+    pdlWords);
   check('胖东来海报写明这正是挂上公益广告位的原因',
     /公益广告位的原因/.test(pdlWords) && /善待劳动者/.test(pdlWords));
   // 「但不得直接把视频链接挂在广告位」——脚本 / 三张海报 / 渲染 DOM 三侧都不许出现

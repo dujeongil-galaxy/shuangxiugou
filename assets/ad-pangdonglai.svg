@@ -4,9 +4,10 @@
   站长 2026-11-10 晚指令：「去给胖东来设计一条广告.....我是说首页推荐位，视频中提到的
   胖东来对待劳动者的态度，务必备注，这也是为什么挂上广告位的原因，但不得直接把视频
   链接挂在广告位」。本图据此定稿：
-    ① 备注进图里：「备注 · 货车司机送货，也能体会到尊重」——视频提到的对待劳动者的
-       态度，原样备注在主文案第二行；第三行写明「善待劳动者，正是它登上公益广告位的
-       原因」，即挂上广告位的原因。
+    ① 态度写进图里：「货车司机送货，也能体会到尊重」——视频提到的对待劳动者的
+       态度，落在主文案第二行；第三行写明「善待劳动者，正是它登上公益广告位的
+       原因」，即挂上广告位的原因。站长 2026-11-10 19:48 追加「备注两个字去掉」，
+       第二行因此不带任何「备注」前缀。
     ② 与第 1/3 张同一套视觉语言（深蓝底 + 金色挂牌 + 印章 + 同心弧 + 聚光），
        文案全部是 <text>，三条主文案基线 y 严格递增（140 → 192 → 230），
        与图同坐标系同缩放，结构上不可能叠字/穿模。
@@ -88,9 +89,9 @@
 </g>
 
 <!-- 文案（全部画进图里，与图同比例缩放，永不叠字/穿模）：
-     第 2 行 = 站长要求的备注（对待劳动者的态度）；第 3 行 = 挂上公益广告位的原因 -->
+     第 2 行 = 站长要求的劳动者态度（不带「备注」两字）；第 3 行 = 挂上公益广告位的原因 -->
 <text x="616" y="140" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="84" font-weight="700" fill="#1d3f9e" letter-spacing="10">胖东来</text>
-<text x="616" y="192" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="26" fill="#3b5488" letter-spacing="1">备注 · 货车司机送货，也能体会到尊重</text>
+<text x="616" y="192" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="26" fill="#3b5488" letter-spacing="1">货车司机送货，也能体会到尊重</text>
 <text x="616" y="230" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="18" fill="#7b8db3" letter-spacing="1">善待劳动者，正是它登上公益广告位的原因</text>
 
 <!-- 角标 -->

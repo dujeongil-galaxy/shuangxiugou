@@ -2,7 +2,8 @@
 // 本地起静态服务 + 无头 Edge CDP，桌面 / 手机双视口各把三张卡截一遍：
 //   node scripts/cdp-pdl-adcheck.cjs
 // 产物统一落 D:/WorkBuddy-Cache/shots/（见 _cache-dir.cjs）。
-// 顺带机器可读断言：3 卡 3 圆点、胖东来 meta 备注在、品牌链站内、整页零视频链接。
+// 顺带机器可读断言：3 卡 3 圆点、胖东来 meta 备注在、品牌名链站内、
+// 整图与 CTA 都挂京东站内搜索且可见文案是「京东」、广告位内零视频链接。
 // 注：CDP Runtime.evaluate 返回值真实路径是 result.result.value；WebSocket 用全局
 //     + addEventListener + ev.data（require('ws') 的回调拿到 Buffer 会解析失败挂起）。
 const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
@@ -16,6 +17,7 @@ const HTTP_PORT = 8801;
 const DBG_PORT = 9294;
 const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const URL = `http://127.0.0.1:${HTTP_PORT}/`;
+const JD = 'https://' + 'search.jd.com/Search?keyword=%E8%83%96%E4%B8%9C%E6%9D%A5';
 
 const MIME = { '.html':'text/html', '.js':'application/javascript', '.css':'text/css',
   '.json':'application/json', '.png':'image/png', '.svg':'image/svg+xml', '.ico':'image/x-icon' };
@@ -110,12 +112,17 @@ async function runViewport(ws, label, width, height) {
     var pdlName=slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__name');
     var pdlTag=slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__tag');
     var pdlBanner=slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__banner');
+    var pdlCard=slot.querySelector('.sxg-adslot__card--pdl');
+    var pdlCta=pdlCard.querySelector('.sxg-adslot__cta');
     var arts=[].map.call(slot.querySelectorAll('img.sxg-adslot__art'),function(x){return x.getAttribute('src');});
     return {
       slot:true, cards:cards.length, dots:dots.length,
       pdlName:pdlName?pdlName.textContent:null,
       pdlHref:pdlName?pdlName.getAttribute('href'):null,
       pdlBannerHref:pdlBanner?pdlBanner.getAttribute('href'):null,
+      pdlCtaHref:pdlCta?pdlCta.getAttribute('href'):null,
+      pdlCtaText:pdlCta?pdlCta.textContent:null,
+      pdlCardTmall:/tmall|taobao|天猫|淘宝/i.test(pdlCard.innerHTML),
       pdlTag:pdlTag?pdlTag.textContent:null,
       arts:arts,
       // 红线范围是「广告位不得挂视频链接」：只查广告位 DOM（整页其它位置的抖音
@@ -182,7 +189,10 @@ async function runViewport(ws, label, width, height) {
   let fail = 0;
   for (const [label, g] of [['desktop', d], ['mobile', m]]) {
     const ok = g && g.slot && g.cards === 3 && g.dots === 3
-      && g.pdlHref === './brand/pdl.html' && g.pdlBannerHref === './brand/pdl.html'
+      && g.pdlHref === './brand/pdl.html'
+      && g.pdlBannerHref === JD && g.pdlCtaHref === JD
+      && /京东/.test(g.pdlCtaText || '') && !/天猫|淘宝/.test(g.pdlCtaText || '')
+      && g.pdlCardTmall === false
       && /劳动者/.test(g.pdlTag || '') && /尊重/.test(g.pdlTag || '')
       && g.videoLink === false
       && Array.isArray(g.arts) && g.arts.length === 3;
