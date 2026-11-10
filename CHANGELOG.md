@@ -4,6 +4,14 @@
 
 ---
 
+### fix：广告位第 2 张卡文案穿模——照上游黑卡 flex 正常流重排，废绝对定位叠层（2026-11-10 16:44 · 提交 `0c93719`）
+
+- **起因**：站长 2026-11-10「穿模了，所以手机端那边也会显示异常」。第 2 张卡文案层是固定字号 `position:absolute;inset:0` 叠在随宽度缩放的 SVG 白板上——SVG viewBox 1200×260、白板仅 148 单位高，手机端 358px 宽时白板缩到 44px，装不下 66px+ 的标题+副句（副句还换行），上下穿出白板压住金线。真渲染截图实锤。
+- **上游对照**：被替换的黑卡（bundle 内 `bg-slate-900 text-white rounded-2xl p-5 shadow-xl flex flex-col sm:flex-row` 那张）是纯 flex 正常流——文字在流里排版、盒子随文字长高，任何宽度都不可能穿模。照搬该思路：文案移出 art-wrap 改正常流 CSS 白板（margin/padding/圆角/浅底），SVG 写死的白板与 `rc-plate` 渐变一并撤掉（`ad-recruit.svg ?v=2` 防缓存），装饰框/网格/角标保留；`black-card-adslot.js ?v=8`。
+- **验收**：双视口真渲染（桌面 720px / 手机 390px）两卡截图零穿模；探针 `position=static`、`scrollHeight-clientHeight=0`（文字全装进盒子）。断言跟上：§32c 改为「SVG 不画死衬底 + 文案层禁止 absolute」、§29e 资源路径钉 `?v=2`、§29i/§32b 升 `?v=8`、test-adslot 同步 33/33。故障注入（文案层改回 absolute）§32c 判红后还原复绿，全量 1647 项通过。
+
+---
+
 ### fix：首页旧黑卡首帧闪现——头部内联预隐藏样式先于 bundle 生效（2026-11-10 16:15 · 提交 `46d9ce5`）
 
 - **起因**：站长 2026-11-10 反馈「打开网站，先加载的黑色卡片，然后才出现的是现在的广告位」。黑卡由 React bundle 渲染，`black-card-adslot.js` 是 `defer` 外部补丁——慢网下补丁未下载完，bundle 已先渲染并画出一帧黑卡，替换前肉眼可见闪现。
