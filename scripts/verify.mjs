@@ -6369,8 +6369,8 @@ section('21c. 首页滑到底部按钮');
     '§33a2 广告位三张设计图首屏预热，且每张的 ?v 与 black-card-adslot.js 里的常量完全一致',
     '预热 URL 与脚本里的实际 URL 不一致 → 白预热，广告位照样「卡片先出来、图还是空的」');
 
-  check(/<script async src="\.\/black-card-adslot\.js\?v=13"><\/script>/.test(idx)
-    && idx.indexOf('black-card-adslot.js?v=13') < idx.indexOf('</head>')
+  check(/<script async src="\.\/black-card-adslot\.js\?v=14"><\/script>/.test(idx)
+    && idx.indexOf('black-card-adslot.js?v=14') < idx.indexOf('</head>')
     && !/script defer src="\.\/black-card-adslot\.js/.test(idx),
     '§33b 广告位补丁在 head 里 async 加载（不再排在第 40 个 defer，也不必等 692KB body 解析完）',
     '广告位补丁退回 defer 队列尾部 → 慢网又要 15 秒才冒出广告位');
@@ -7470,7 +7470,7 @@ section('25. 成功案例专题页（QQ奶奶）');
       && !/<image\b/i.test(read(f)))
     && ad29.indexOf("var ART = './assets/ad-luxiyi.svg?v=2'") !== -1
     && ad29.indexOf("var ART_RECRUIT = './assets/ad-recruit.svg?v=5'") !== -1
-    && ad29.indexOf("var ART_PDL = './assets/ad-pangdonglai.svg?v=2'") !== -1,
+    && ad29.indexOf("var ART_PDL = './assets/ad-pangdonglai.svg?v=3'") !== -1,
     '§29e 三张站点自绘矢量设计稿存在、有效、无外链，且被广告位引用（?v 与预热一致）');
 
   check(!/<div class="sxg-adslot__cta"/.test(ad29)
@@ -7494,7 +7494,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
 
   check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
-    && /black-card-adslot\.js\?v=13/.test(idx29),
+    && /black-card-adslot\.js\?v=14/.test(idx29),
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 
   // —— 站长 2026-11-10 晚：胖东来广告卡（首页推荐位） ——
@@ -7513,9 +7513,8 @@ section('25. 成功案例专题页（QQ奶奶）');
     && pdlMain29[0].size >= 60
     && /胖东来/.test(pdlWords29) && !/备注/.test(pdlWords29) && /货车司机送货/.test(pdlWords29)
     && /尊重/.test(pdlWords29) && /善待劳动者/.test(pdlWords29) && /公益广告位的原因/.test(pdlWords29)
-    && /pdl-gold/.test(pdl29) && /pdl-plate/.test(pdl29) && /敬/.test(pdl29)
     && /PUBLIC WELFARE AD/.test(pdlWords29) && /公益广告位/.test(pdlWords29),
-    '§29j 胖东来海报去掉「备注」两字，仍把劳动者态度（货车司机送货也能体会到尊重）与挂上公益广告位的原因写进图里；三条基线严格递增不叠字',
+    '§29j 胖东来海报去掉「备注」两字，仍把劳动者态度（货车司机送货也能体会到尊重）与挂上公益广告位的原因写进图里；三条基线严格递增不叠字（风格互异由 §36a 管）',
     `图里主线文案基线 ${JSON.stringify(pdlMain29)} 不递增、出现「备注」两字或态度/原因要素缺失`);
 
   // 视频链接检查必须按**源码原文**扫（含注释）：① 站长口径就是「注释里也不许
@@ -7533,24 +7532,29 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29k 广告位零视频链接（脚本/海报侧）、胖东来品牌名与头像只链站内，「备注劳动者态度 + 不得挂视频链接」口径写进 README',
     '视频链接进了广告位，或备注/零链接口径没进 README → 站长两条指令失守');
 
-  // —— 站长 2026-11-10 19:48「这次优先挂京东链接，如果找不到，才考虑淘宝天猫的」 ——
-  // 渠道核查：胖东来在京东、淘宝天猫都没有可核实的官方店铺（官方只认微信小程序
-  // 与抖音店，京东站内同名店资质存疑），所以挂**京东站内搜索**而非任何具体第三方
-  // 店铺；淘宝天猫只作备选。机器钉死「链接 + 真可点 + 可见文案 + 备选顺序」四件事。
-  const pdlShop29 = (ad29.match(/var PDL_SHOP = '([^']+)'/) || [])[1];
+  // —— 站长 2026-11-11 00:46「链接换到这个」 ——
+  // 京东站内搜索撤下，改挂许昌本地宝《胖东来线上商城（附入口）》：该文说明
+  // 官方线上入口是微信小程序与抖音专营店，并非京东/天猫店铺。机器钉死
+  // 「链接单一真相源 + 零参数 + 整图/CTA 共用 + 可见文案同步 + 卡内零商城字样」；
+  // 点击复制与微信提示另由 §36c/§36d 管。旧口径只留在组件的历史注释里。
+  const pdlLink29 = (ad29.match(/var PDL_LINK = '([^']+)'/) || [])[1];
   const pdlCardStart29 = ad29.indexOf('sxg-adslot__card--pdl');
   const pdlCardEnd29 = ad29.indexOf('sxg-adslot__card--recruit');
   const pdlCard29 = pdlCardStart29 !== -1 && pdlCardEnd29 > pdlCardStart29
     ? ad29.slice(pdlCardStart29, pdlCardEnd29) : '';
-  check(!!pdlShop29 && /^https:\/\/search\.jd\.com\/Search\?keyword=/.test(pdlShop29)
-    && (pdlCard29.match(/href="'\s*\+\s*PDL_SHOP/g) || []).length >= 2
+  check(!!pdlLink29
+    && pdlLink29 === 'https://' + 'xc.bendibao.com/xiuxian/20231225/9889.shtm'
+    && pdlLink29.indexOf('?') === -1 && pdlLink29.indexOf('&') === -1
+    && (pdlCard29.match(/href="'\s*\+\s*PDL_LINK/g) || []).length >= 2
     && (pdlCard29.match(/target="_blank" rel="noopener"/g) || []).length >= 2
-    && /去京东搜胖东来/.test(pdlCard29)
-    && /aria-label="去京东搜索胖东来/.test(pdlCard29)
-    && !/tmall|taobao|天猫|淘宝/i.test(pdlCard29)
-    && /京东优先/.test(rd29) && /找不到/.test(rd29) && /淘宝天猫/.test(rd29),
-    '§29l 商城入口京东优先（找不到才考虑淘宝天猫）：胖东来整图与 CTA 都是京东站内搜索链接且真可点，可见文案同步换「京东」、卡里零淘宝天猫，README 写死优先级与诚实口径',
-    '只改 href 不换可见文案 / 链回天猫 / 优先级口径没进 README → 站长 19:48 指令失守');
+    && (pdlCard29.match(/data-sxg-share="pdl"/g) || []).length >= 2
+    && /点此复制商城入口链接/.test(pdlCard29) && /去微信打开/.test(pdlCard29)
+    && /aria-label="复制胖东来线上商城入口链接/.test(pdlCard29)
+    && !/tmall|taobao|天猫|淘宝|京东|jd\.com/i.test(pdlCard29)
+    && !/var PDL_SHOP/.test(ad29)
+    && /胖东来线上商城/.test(rd29) && /复制链接/.test(rd29) && /微信/.test(rd29),
+    '§29l 胖东来入口改挂站长指定的本地宝文章（零参数），整图与 CTA 共用 PDL_LINK、可见文案同步换「复制 / 去微信」、卡内零京东淘宝天猫，README 写死新口径',
+    '只改 href 留旧来源标签 / 链回京东商城 / README 没写新口径 → 站长 00:46 指令失守');
 }
 
 // ---------- 30. 比亚迪卡片曝光登记 + 视频下架如实登记 ----------
@@ -7711,7 +7715,7 @@ section('25. 成功案例专题页（QQ奶奶）');
   check((code32.match(/公益广告位/g) || []).length >= 4
     && !/广告位招商中|品牌展示|>广告位</.test(code32)
     && /data-adslot-kind', 'public-welfare'/.test(code32)
-    && /black-card-adslot\.js\?v=13/.test(idx32),
+    && /black-card-adslot\.js\?v=14/.test(idx32),
     '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 13');
 
   // 站长 2026-11-10 二次纠正「广告图叫你重构，不是让你改成纯文字 / 文字明显重叠」：
@@ -7745,7 +7749,8 @@ section('25. 成功案例专题页（QQ奶奶）');
   const recGrowing = recMain.length >= 3 && recMain.every((t, i) => i === 0 || t.y > recMain[i - 1].y);
   // 站长 2026-11-10 20:44「胖东来和广告位招商不要用同一种风格的图片，好吗？」：
   // 招商稿换成暖白纸面 + 虚线空位框 + 描边大字的「留白告示」风格，
-  // 与两张品牌广告（深蓝渐变 / 金色挂牌 / 圆印章 / 同心弧 / 聚光）彻底区分。
+  // 与第 1 张陆喜依（深蓝渐变 / 金色挂牌 / 圆印章 / 同心弧 / 聚光）、
+  // 第 2 张胖东来（2026-11-11 改砖红号外稿）都彻底区分；三稿两两互异见 §36a/§36b。
   // 反向断言只查**剥掉注释后的图本体**（注释里要解释「刻意不用了什么」，
   // 拿全文比对会让说明文字自己把断言判红）。
   const recCode32 = rec32.replace(/<!--[\s\S]*?-->/g, '');
@@ -7762,7 +7767,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     && !/text-anchor="end"[^>]*>公益广告位 · 真实双休品牌招募/.test(recCode32)
     && /<rect x="962" y="58"/.test(recCode32)
     && !styleClash32
-    && /pdl-gold/.test(read('assets/ad-pangdonglai.svg'))
+    && /nd-ink/.test(read('assets/ad-pangdonglai.svg'))
     && /虚位以待/.test(rec32) && /可申请免费展示/.test(rec32)
     && /PUBLIC WELFARE AD/.test(rec32) && /公益广告位/.test(brand32)
     && /不要用同一种风格/.test(rd32),
@@ -7884,10 +7889,12 @@ section('25. 成功案例专题页（QQ奶奶）');
   const idx35 = read('index.html');
   const rd35 = read('README.md');
   const wf35 = read('.github/workflows/verify.yml');
+  // 第三列是各自 ?v：⑪ 只改了胖东来手机稿（升 2），其余仍是 1。
+  // 早先这里写死 '?v=1'，一改其中一张就会被「版本不一致」误红。
   const mob35 = [
-    ['assets/ad-luxiyi-mobile.svg', 'ART_MOBILE'],
-    ['assets/ad-pangdonglai-mobile.svg', 'ART_PDL_MOBILE'],
-    ['assets/ad-recruit-mobile.svg', 'ART_RECRUIT_MOBILE']
+    ['assets/ad-luxiyi-mobile.svg', 'ART_MOBILE', 1],
+    ['assets/ad-pangdonglai-mobile.svg', 'ART_PDL_MOBILE', 2],
+    ['assets/ad-recruit-mobile.svg', 'ART_RECRUIT_MOBILE', 1]
   ];
   const svgOk35 = mob35.every(([f]) => {
     if (!exists(f)) return false;
@@ -7908,8 +7915,8 @@ section('25. 成功案例专题页（QQ奶奶）');
   // 数节点必须看剥注释后的纯代码：注释里也写着「用 <picture> 切换」，
   // 全文计数会把注释算进去（本批实测注释多出 2 处，假红）。
   const code35 = ad35.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
-  const constOk35 = mob35.every(([f, name]) => {
-    const src35 = './' + f + '?v=1';
+  const constOk35 = mob35.every(([f, name, ver]) => {
+    const src35 = './' + f + '?v=' + ver;
     return ad35.indexOf("var " + name + " = '" + src35 + "'") !== -1
       && (code35.match(new RegExp('\\b' + name + '\\b', 'g')) || []).length >= 2;
   });
@@ -7919,9 +7926,9 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§35b 三张卡都用 <picture> 在窄屏切手机稿，桌面三张原稿与 ?v 一字不动',
     '只写了手机图没接 <source> → 手机上仍加载桌面稿，断言白写');
 
-  const preload35 = mob35.every(([f]) =>
-    idx35.indexOf('<link rel="preload" as="image" href="./' + f + '?v=1" media="(max-width:480px)" />') !== -1);
-  check(preload35 && /black-card-adslot\.js\?v=13/.test(idx35),
+  const preload35 = mob35.every(([f, , ver]) =>
+    idx35.indexOf('<link rel="preload" as="image" href="./' + f + '?v=' + ver + '" media="(max-width:480px)" />') !== -1);
+  check(preload35 && /black-card-adslot\.js\?v=14/.test(idx35),
     '§35c 手机三图带 media 预热、?v 与脚本 *_MOBILE 常量一致，首页脚本已升 13',
     '预热漏 media 或 ?v 不一致 → 慢网首帧先出桌面稿再跳手机稿');
 
@@ -7945,6 +7952,75 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(/手机端/.test(rd35) && /手机专用/.test(rd35) && /悬浮/.test(rd35),
     '§35f README 写死「手机端必须单独验收海报可读性与悬浮层遮挡」口径',
     '规则只挂口头 → 下次还是拿桌面双视口 PASS 糊弄过去');
+}
+
+// ---------- 站长 2026-11-11 00:46「第一张也不要和第二张广告使用同一种风格」+「参考良配的广告，点了就自动复制，弹窗提醒用户自己去微信」 ----------
+// ① 三张海报两两互异（桌面 + 手机各查一遍，只认剥注释后的图本体，
+//    否则注释里解释「刻意不用了什么」会自己把断言判红/救活）；
+// ② 复制交互照良配的两级复制，但同步 execCommand 必须留在点击手势栈内；
+// ③ 真点击验收：挂 CI 的 jsdom + 本机无头 Edge，两处都认新链接与 toast。
+{
+  const ad36 = read('black-card-adslot.js');
+  const rd36 = read('README.md');
+  const wf36 = read('.github/workflows/verify.yml');
+  const strip36 = (s) => s.replace(/<!--[\s\S]*?-->/g, '');
+  const lx36 = strip36(read('assets/ad-luxiyi.svg'));
+  const pdl36 = strip36(read('assets/ad-pangdonglai.svg'));
+  const rec36 = strip36(read('assets/ad-recruit.svg'));
+  const lxm36 = strip36(read('assets/ad-luxiyi-mobile.svg'));
+  const pdlm36 = strip36(read('assets/ad-pangdonglai-mobile.svg'));
+  const recm36 = strip36(read('assets/ad-recruit-mobile.svg'));
+  // 三套风格特征：品牌稿（深蓝渐变+金）/ 招商稿（暖白网格+虚线+方章）/
+  // 号外稿（砖红纯色+米白运单条+橙装订边）。任一稿混入另两套特征即判红。
+  const brandMark36 = /linearGradient|radialGradient|lx-gold|lx-glow|pdl-gold|pdl-plate|#f9df8b|#e5a336|#0a1b47|#1d3f9e/;
+  // stroke-dasharray 不能当招商稿专属：陆喜依桌面稿的金色圆徽章也有
+  // stroke-dasharray="3 11"（本批实测把 §36a 判红）。只认招商稿的精确值 14 10。
+  const recruitMark36 = /rw-grid|rw-hatch|rwm-grid|rwm-hatch|stroke-dasharray="14 10"|VACANCY|#fbf7ee/;
+  const dispatchMark36 = /nd-ink|#8f3325|#f7efe0|#e9a45c/;
+  check(dispatchMark36.test(pdl36)
+    && !brandMark36.test(pdl36) && !recruitMark36.test(pdl36)
+    && brandMark36.test(lx36) && !dispatchMark36.test(lx36) && !recruitMark36.test(lx36)
+    && recruitMark36.test(rec36) && !brandMark36.test(rec36) && !dispatchMark36.test(rec36),
+    '§36a 三张桌面海报两两互异：陆喜依深蓝金字 / 胖东来砖红号外运单 / 招商暖白网格虚线框；第一张不再与第二张同风格',
+    '胖东来稿退回深蓝金字或暖白网格 → 站长 00:46「第一张也不要和第二张广告使用同一种风格」失守');
+
+  check(dispatchMark36.test(pdlm36)
+    && !brandMark36.test(pdlm36) && !recruitMark36.test(pdlm36)
+    && brandMark36.test(lxm36) && !dispatchMark36.test(lxm36) && !recruitMark36.test(lxm36)
+    && recruitMark36.test(recm36) && !brandMark36.test(recm36) && !dispatchMark36.test(recm36),
+    '§36b 三张手机专用海报同样两两互异（手机端不能只改桌面稿就交差）',
+    '桌面改了风格、手机稿还是老一套 → 手机上第 1/2 张照样撞脸');
+
+  const code36 = ad36.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  check(/function copySync\(/.test(code36) && /document\.execCommand\('copy'\)/.test(code36)
+    && /function tryClipboardApi\(/.test(code36) && /navigator\.clipboard\.writeText/.test(code36)
+    && /function copyText\(/.test(code36) && /var syncOk = copySync\(text\)/.test(code36)
+    && /function showShareToast\(/.test(code36) && /data-sxg-share-toast/.test(code36)
+    && /已复制链接，请打开微信粘贴后打开/.test(code36)
+    && /打开微信 → 粘贴到任意聊天窗口/.test(code36)
+    && /sxg-adslot__toast-code/.test(code36) && /copyText\(PDL_LINK\)/.test(code36)
+    && /15000/.test(code36) && /function bindShare\(/.test(code36)
+    && /bindShare\(root\);/.test(code36) && /e\.preventDefault\(\)/.test(code36)
+    && /isWeChat\(\)/.test(code36) && /data-sxg-share="pdl"/.test(code36)
+    && /\.sxg-adslot__toast\{display:none/.test(ad36),
+    '§36c 点击复制链路：同步 execCommand 趁手势写入 + clipboard API 兜底 + toast 提醒去微信 + 口令可点再复制 + 15 秒不闪退；bindShare 真被调用且微信内放行跳转',
+    '复制被挪进 Promise.then / 去掉 preventDefault / 提示里不写微信 → 站长「点了就自动复制，弹窗提醒用户自己去微信」失守');
+
+  const t36 = exists('scripts/test-adslot.cjs') ? read('scripts/test-adslot.cjs') : '';
+  const cdp36 = exists('scripts/cdp-pdl-adcheck.cjs') ? read('scripts/cdp-pdl-adcheck.cjs') : '';
+  check(!!t36 && !!cdp36 && /test-adslot\.cjs/.test(wf36)
+    && /bendibao/.test(t36) && /sxg-adslot__toast/.test(t36)
+    && /execCommand/.test(t36) && /defaultPrevented/.test(t36)
+    && /bendibao/.test(cdp36) && /toast/.test(cdp36)
+    && /CHECK '/.test(cdp36),
+    '§36d 复制交互有挂 CI 的 jsdom 真点击测试（验复制调用 / 阻止跳转 / toast）+ 本机 CDP 真点击验收，两处都认新链接',
+    '只写静态断言、没有真点击 → 又是一次「结构 PASS、实际点了没反应」');
+
+  check(/不要用同一种风格/.test(rd36) && /两两互异/.test(rd36)
+    && /第一张/.test(rd36) && /第二张/.test(rd36)
+    && /胖东来线上商城/.test(rd36) && /复制/.test(rd36) && /微信/.test(rd36),
+    '§36e README 写死「三张海报两两互异 / 第一张不与第二张同风格」与「胖东来链接点击复制 + 去微信」口径',
+    '规则只挂口头 → 下次又拿两张同风格稿或静默跳转糊弄过去');
 }
 
 // ---------- 汇总 ----------

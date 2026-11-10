@@ -1,29 +1,47 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="400" height="240" viewBox="0 0 400 240" role="img" aria-label="胖东来 善待劳动者 货车司机送货也能体会到尊重 公益广告位">
 <!--
   公益广告位第 2 张「胖东来」**手机专用设计稿**（站点自绘矢量）。
-  与桌面稿同口径：劳动者态度（货车司机送货，也能体会到尊重）+ 挂上
-  公益广告位的原因（善待劳动者，正是它登上公益广告位的原因），
-  「备注」两字按站长 2026-11-10 19:48 指令不出现。
-  400×240 / 主标题 40 / 副句 18 / 说明 15，基线 106 → 158 → 200 严格递增。
-  深蓝底 + 白挂牌 + 金色「敬」印章，与招商稿暖白纸面明确区分。
-  零外链（xmlns 是命名空间）、文案全部在 <text> 里、不含任何 URL。
+  站长 2026-11-11 00:46「第一张也不要和第二张广告使用同一种风格」：
+  手机端三张稿同样两两互异——
+    第 1 张 陆喜依手机稿 = 深蓝底 + 白挂牌 + 金色圆印章
+    第 2 张 本稿        = 砖红纯色底 + 米白「运单/号外」横条 + 橙色装订边 + 粗报头线
+    第 3 张 招商手机稿  = 暖白纸面 + 虚线空位框 + 描边大字
+  刻意不用：深蓝、金色、渐变、圆印章、同心弧、聚光、网格、虚线框、方章、加号圆。
+  400×240 / 主标题 40 / 副句 18 / 说明 14，基线 100 → 150 → 194 严格递增；
+  刊头 y=28、页脚 y=226 都避开主线基线区间（100~220），不混进基线断言。
+  劳动者态度（货车司机送货，也能体会到尊重）+ 挂上公益广告位的原因一条不少，
+  「备注」两字不出现。零外链（xmlns 是命名空间）、文案全部在 <text> 里。
 -->
-<rect width="400" height="240" fill="#0a1b47"/>
-<circle cx="250" cy="-40" r="190" fill="none" stroke="#2a55b8" stroke-width="1.5" opacity="0.55"/>
-<circle cx="250" cy="-40" r="230" fill="none" stroke="#2a55b8" stroke-width="1.5" opacity="0.35"/>
+<rect width="400" height="240" fill="#8f3325"/>
 
-<!-- 左侧「敬」圆印章：x 16~76 / y 74~134，在白挂牌外 -->
-<circle cx="46" cy="104" r="30" fill="none" stroke="#e5a336" stroke-width="2"/>
-<circle cx="46" cy="104" r="24" fill="#e5a336" opacity="0.14"/>
-<text x="46" y="113" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC',sans-serif" font-size="25" fill="#f9df8b">敬</text>
+<!-- 上下粗报头线 -->
+<rect x="0" y="9" width="400" height="5" fill="#f7efe0"/>
+<rect x="0" y="230" width="400" height="5" fill="#f7efe0"/>
 
-<text x="382" y="28" text-anchor="end" font-family="Arial,sans-serif" font-size="10" letter-spacing="1" fill="#f9df8b">PUBLIC WELFARE AD · 02 / 03</text>
+<!-- 左右侧栏粗横杠（纯几何装饰，不是印章） -->
+<g fill="#f7efe0" opacity="0.85">
+  <rect x="8" y="68" width="16" height="5"/>
+  <rect x="8" y="116" width="16" height="5"/>
+  <rect x="8" y="164" width="16" height="5"/>
+  <rect x="376" y="68" width="16" height="5"/>
+  <rect x="376" y="116" width="16" height="5"/>
+  <rect x="376" y="164" width="16" height="5"/>
+</g>
 
-<!-- 白挂牌：x 88~378 / y 60~218，三条文案都在牌内，边框不穿字 -->
-<rect x="88" y="60" width="290" height="158" rx="14" fill="#ffffff" stroke="#e5a336" stroke-width="3"/>
-<text x="233" y="106" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="40" font-weight="700" fill="#1d3f9e" letter-spacing="4">胖东来</text>
-<text x="233" y="158" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="18" fill="#334155" letter-spacing="1">货车司机送货，也能体会到尊重</text>
-<text x="233" y="200" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="15" fill="#64748b" letter-spacing="0">善待劳动者，正是它登上公益广告位的原因</text>
+<!-- 米白运单条 + 橙色装订边 -->
+<rect x="30" y="40" width="340" height="172" rx="6" fill="#3a1d18" opacity="0.22" transform="translate(0,3)"/>
+<rect x="30" y="40" width="340" height="172" rx="6" fill="#f7efe0"/>
+<rect x="30" y="40" width="9" height="172" rx="6" fill="#e9a45c"/>
 
-<text x="382" y="232" text-anchor="end" font-family="'Microsoft YaHei','PingFang SC',sans-serif" font-size="11" fill="#8fa8e8">公益广告位 · 公益展示</text>
+<!-- 标题与副句之间的砖红分隔线（不压字） -->
+<rect x="70" y="122" width="260" height="2.5" fill="#8f3325" opacity="0.5"/>
+
+<!-- 三条主文案 -->
+<text x="204" y="100" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="40" font-weight="700" fill="#8f3325" letter-spacing="4">胖东来</text>
+<text x="204" y="150" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="18" fill="#3a1d18" letter-spacing="0.5">货车司机送货，也能体会到尊重</text>
+<text x="204" y="194" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="14" fill="#7a5248" letter-spacing="0">善待劳动者，正是它登上公益广告位的原因</text>
+
+<!-- 刊头 / 页脚 -->
+<text x="388" y="28" text-anchor="end" font-family="Arial,sans-serif" font-size="9" letter-spacing="1" fill="#f7efe0">PUBLIC WELFARE AD · 02 / 03</text>
+<text x="388" y="226" text-anchor="end" font-family="'Microsoft YaHei','PingFang SC',sans-serif" font-size="11" fill="#f7efe0">公益广告位 · 善待劳动者</text>
 </svg>

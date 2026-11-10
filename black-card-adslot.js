@@ -71,7 +71,31 @@
         改挂京东站内搜索「胖东来」（零追踪参数、真可点）。淘宝天猫只在京东
         链接找不到时才作为备选，本次未启用。整张广告图 + CTA 都换成京东链接，
         **可见文案同步换「去京东搜胖东来」**，不许只改 href 留着旧来源标签。
+        （本条 ⑪ 2026-11-11 00:46 已整体取代：链接换成站长指定的本地宝文章、
+          点击复制 + 微信提示；保留在此仅作决策沿革，不是现行口径。）
       - 品牌名与头像仍只链站内 brand/pdl.html + assets/pdl.png。
+
+   ⑪ 站长 2026-11-11 00:46（原话）：
+      「胖东来的广告先改了吧，第一张也不要和第二张广告使用同一种风格
+       https://xc.bendibao.com/xiuxian/20231225/9889.shtm 链接换到这个，
+       参考良配的广告，点了就自动复制，弹窗提醒用户自己去微信」
+      - **链接**：京东站内搜索撤下，改挂站长指定的许昌本地宝《胖东来线上商城
+        （附入口）》。该文说明胖东来官方线上入口是微信小程序与抖音专营店，
+        并非京东/天猫店铺，因此不再把读者导向任何商城搜索页。
+        链接写进常量 PDL_LINK（零参数），整图与 CTA 共用单一真相源。
+      - **交互**：照 liangpei-ad.js 的成熟做法（不是照抄，独立实现）：
+        点击整图/CTA → 同步 execCommand('copy') 趁用户手势写入剪贴板 →
+        navigator.clipboard 异步兜底 → 弹出 toast 提醒「已复制链接，
+        请打开微信粘贴后打开」，并把链接本体放在可点再复制的 <code> 里，
+        自动复制万一被浏览器静默拒绝，用户仍有最后一条路。
+        微信内置浏览器里已在微信，放行默认跳转直接打开文章。
+      - **可见文案同步**：CTA 改「点此复制商城入口链接 · 去微信打开」，
+        aria-label 同步，卡内零京东/淘宝/天猫字样（口径按 2026-11-07 教训：
+        改 href 不换可见文案等于没做）。
+      - **风格**：三张海报两两互异。第 1 张陆喜依保持深蓝金字正式稿，
+        第 3 张招商保持暖白纸面告示稿，第 2 张胖东来换成第三套
+        「砖红纯色 + 米白运单/号外横条 + 橙色装订边 + 粗报头线」，
+        桌面稿与手机稿同步（verify §36a/§36b 反向断言）。
    ========================================================================== */
 (function () {
   'use strict';
@@ -82,25 +106,123 @@
   var IMG = './assets/luxiyi.jpg';
   var PDL_DETAIL = './brand/pdl.html';
   var PDL_IMG = './assets/pdl.png';
-  /* 站长 2026-11-10 19:48「这次优先挂京东链接，如果找不到，才考虑淘宝天猫的」：
-     胖东来没有可核实的京东/天猫官方店铺链接（官方只认微信小程序与抖音店，
-     京东站内同名店资质存疑），因此挂**京东站内搜索**「胖东来」——真可点、
-     零追踪参数、不把读者导去任何具体第三方店铺。淘宝天猫只作备选，本次不用。
-     keyword 是搜索必需查询词，不含任何账号/来源追踪参数（§26k 参数红线）。 */
-  var PDL_SHOP = 'https://search.jd.com/Search?keyword=%E8%83%96%E4%B8%9C%E6%9D%A5';
+  /* 站长 2026-11-11 00:46「链接换到这个」：许昌本地宝《胖东来线上商城（附入口）》。
+     文章说明官方线上入口是微信小程序与抖音专营店，不是京东/天猫店铺；
+     按站长指令，整图与 CTA 共用这一个常量，点击时复制它并提示去微信打开。
+     零参数、零追踪（§26k 参数红线），href 保留真链接供微信内放行与无 JS 降级。 */
+  var PDL_LINK = 'https://xc.bendibao.com/xiuxian/20231225/9889.shtm';
   /* 三张广告设计图。?v 必须与 index.html 里的 <link rel=preload as=image> 完全一致，
      否则浏览器会把它当两个资源（预热的白预了）。改了图就同步升这里和 index.html。 */
   var ART = './assets/ad-luxiyi.svg?v=2';
-  var ART_PDL = './assets/ad-pangdonglai.svg?v=2';
+  var ART_PDL = './assets/ad-pangdonglai.svg?v=3';
   var ART_RECRUIT = './assets/ad-recruit.svg?v=5';
   /* ⑩ 站长 2026-11-10 23:40「手机端你检查了吗？新建的公益广告位，都穿模了」：
      桌面稿 1200×300 等比压到 356px 宽后，14~26px 的小字只剩 4~8px，糊成一团。
      窄屏改用 400×240 的手机专用稿（字号放大 2 倍以上、三条基线重新排开），
-     用 <picture> 的 media 切换，桌面三张原稿与 ?v 一个字不动。 */
+     用 <picture> 的 media 切换。⑪ 胖东来两稿换风格，?v 同时升 3 / 2。 */
   var ART_MOBILE = './assets/ad-luxiyi-mobile.svg?v=1';
-  var ART_PDL_MOBILE = './assets/ad-pangdonglai-mobile.svg?v=1';
+  var ART_PDL_MOBILE = './assets/ad-pangdonglai-mobile.svg?v=2';
   var ART_RECRUIT_MOBILE = './assets/ad-recruit-mobile.svg?v=1';
   var AUTOPLAY_MS = 5000;
+
+  /* ⑪ 点击复制 + 去微信提示（参考 liangpei-ad.js 的成熟做法，独立实现、独立类名）。
+     两个实测坑一并继承：① execCommand('copy') 的返回值不可信，必须接管 copy
+     事件用 setData 显式写入；② 用户手势只在点击回调的同步执行栈内有效，
+     同步复制必须直接调用，不能塞进 Promise.then 里。 */
+  function isWeChat() {
+    return /MicroMessenger/i.test(navigator.userAgent || '');
+  }
+
+  function copySync(text) {
+    try {
+      var onCopy = function (e) {
+        if (!e.clipboardData) return;
+        e.clipboardData.setData('text/plain', text);
+        e.preventDefault();
+      };
+      document.addEventListener('copy', onCopy);
+      var ok = document.execCommand('copy');
+      document.removeEventListener('copy', onCopy);
+      return !!ok;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function tryClipboardApi(text) {
+    if (!navigator.clipboard || !navigator.clipboard.writeText) {
+      return Promise.reject(new Error('clipboard api unavailable'));
+    }
+    return navigator.clipboard.writeText(text);
+  }
+
+  function copyText(text) {
+    var syncOk = copySync(text); // 必须留在点击回调的同步栈里
+    return tryClipboardApi(text)
+      .then(function () { return true; })
+      .catch(function () { return syncOk; });
+  }
+
+  var toastEl = null;
+  var toastTimer = null;
+
+  function showShareToast(ok) {
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      toastEl.className = 'sxg-adslot__toast';
+      toastEl.setAttribute('role', 'status');
+      toastEl.setAttribute('aria-live', 'polite');
+      toastEl.setAttribute('data-sxg-share-toast', '1');
+      document.body.appendChild(toastEl);
+    }
+    toastEl.innerHTML =
+      '<button type="button" class="sxg-adslot__toast-close" aria-label="关闭提示">&times;</button>' +
+      '<div class="sxg-adslot__toast-title">' +
+        (ok ? '已复制链接，请打开微信粘贴后打开' : '请复制下方链接，再去微信打开') +
+      '</div>' +
+      '<code class="sxg-adslot__toast-code">' + PDL_LINK + '</code>' +
+      '<span class="sxg-adslot__toast-steps">打开微信 → 粘贴到任意聊天窗口或文件传输助手并发送 → 点开刚发的链接查看胖东来线上商城入口</span>';
+    void toastEl.offsetWidth;
+    toastEl.classList.add('is-show');
+    clearTimeout(toastTimer);
+    // 15 秒：切到微信、找聊天窗口、粘贴都要时间，别一闪就没
+    toastTimer = setTimeout(function () {
+      if (toastEl) toastEl.classList.remove('is-show');
+    }, 15000);
+
+    var close = toastEl.querySelector('.sxg-adslot__toast-close');
+    if (close) {
+      close.addEventListener('click', function () {
+        toastEl.classList.remove('is-show');
+      });
+    }
+    // 自动复制被浏览器静默拒绝时的最后一条路：点链接本体再复制一次
+    var code = toastEl.querySelector('.sxg-adslot__toast-code');
+    if (code) {
+      code.addEventListener('click', function () {
+        copyText(PDL_LINK);
+        code.textContent = PDL_LINK + ' ✓';
+        setTimeout(function () {
+          if (code.isConnected) code.textContent = PDL_LINK;
+        }, 1400);
+      });
+    }
+  }
+
+  function bindShare(root) {
+    var links = root.querySelectorAll('[data-sxg-share]');
+    for (var i = 0; i < links.length; i++) {
+      (function (a) {
+        a.addEventListener('click', function (e) {
+          if (isWeChat()) return; // 已在微信里，放行默认跳转直接打开文章
+          e.preventDefault();
+          var copied;
+          try { copied = copyText(PDL_LINK); } catch (err) { copied = Promise.resolve(false); }
+          copied.then(function (ok) { showShareToast(ok); });
+        });
+      })(links[i]);
+    }
+  }
 
   function injectStyle() {
     if (document.getElementById('sxg-adslot-style')) return;
@@ -164,7 +286,26 @@
          只隐藏「与广告位几何相交」的那几个，离开视口立刻恢复，不动站内其它交互。 */
       '@media (max-width:480px){.sxg-adslot__nav{display:none}' +
       '.sxg-adslot__cta{font-size:12px}.sxg-adslot__meta{gap:5px 8px}' +
-      'html.sxg-adslot-near [data-sxg-adslot-avoid]{visibility:hidden!important;pointer-events:none!important}}';
+      'html.sxg-adslot-near [data-sxg-adslot-avoid]{visibility:hidden!important;pointer-events:none!important}}' +
+      /* ⑪ 点击胖东来广告后的「复制 + 去微信」提示：形态照良配 toast，独立实现、
+         独立类名。默认 display:none 不占几何，z=100010 高于提醒弹窗也不被
+         keepClear() 当成要避让的悬浮圆钮（它只管 1000~9994）。 */
+      '.sxg-adslot__toast{display:none;position:fixed;left:50%;bottom:28px;' +
+      'transform:translateX(-50%);box-sizing:border-box;width:min(92vw,440px);' +
+      'padding:16px 20px 15px;border-radius:14px;background:#2b1a17;color:#f7efe0;' +
+      'box-shadow:0 14px 42px rgba(0,0,0,.38);z-index:100010;' +
+      'font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;' +
+      'font-size:14px;line-height:1.6;text-align:center}' +
+      '.sxg-adslot__toast.is-show{display:block}' +
+      '.sxg-adslot__toast-title{font-weight:700;font-size:15px;margin:0 22px 6px}' +
+      '.sxg-adslot__toast-close{position:absolute;top:6px;right:10px;width:26px;height:26px;' +
+      'border:none;background:transparent;color:#f7efe0;font-size:20px;line-height:1;cursor:pointer}' +
+      '.sxg-adslot__toast-code{display:block;margin:8px 0 6px;padding:8px 10px;' +
+      'border-radius:8px;background:rgba(247,239,224,.14);font-family:ui-monospace,Menlo,Consolas,monospace;' +
+      'font-size:12px;line-height:1.45;word-break:break-all;cursor:pointer;user-select:all}' +
+      '.sxg-adslot__toast-steps{display:block;font-size:12px;opacity:.82;line-height:1.6}' +
+      '@media (max-width:480px){.sxg-adslot__toast{bottom:18px;padding:14px 16px 13px;font-size:13px}' +
+      '.sxg-adslot__toast-code{font-size:11px}}';
     var st = document.createElement('style');
     st.id = 'sxg-adslot-style';
     st.textContent = css;
@@ -202,11 +343,12 @@
                 '点此进入天猫旗舰店，支持真实双休企业 →</a>' +
             '</div>' +
           '</div>' +
-          /* 胖东来卡（站长 2026-11-10 晚 + 19:48 追加）：劳动者态度与挂广告位的原因
-             都在图里；整图 + CTA 按 ⑨ 挂京东站内搜索，品牌名与头像只链站内详情页。 */
+          /* 胖东来卡（⑪ 2026-11-11 00:46 修订）：劳动者态度与挂广告位的原因都在图里；
+             整图 + CTA 共用 PDL_LINK，点击不跳转而是复制链接 + 弹窗提醒去微信，
+             品牌名与头像只链站内详情页。data-sxg-share 是复制交互的唯一接线点。 */
           '<div class="sxg-adslot__card sxg-adslot__card--pdl">' +
-            '<a class="sxg-adslot__banner" href="' + PDL_SHOP + '" target="_blank" rel="noopener" ' +
-              'aria-label="去京东搜索胖东来，支持善待劳动者的企业">' +
+            '<a class="sxg-adslot__banner" data-sxg-share="pdl" href="' + PDL_LINK + '" target="_blank" rel="noopener" ' +
+              'aria-label="复制胖东来线上商城入口链接，打开微信查看">' +
               '<div class="sxg-adslot__art-wrap" data-art-error-text="胖东来 · 善待劳动者">' +
                 '<picture>' +
                   '<source media="(max-width:480px)" srcset="' + ART_PDL_MOBILE + '">' +
@@ -220,8 +362,8 @@
               '<a class="sxg-adslot__name" href="' + PDL_DETAIL + '" rel="noopener">胖东来</a>' +
               '<span class="sxg-adslot__mark">公益展示</span>' +
               '<span class="sxg-adslot__tag">善待劳动者 · 货车司机送货也能体会到尊重</span>' +
-              '<a class="sxg-adslot__cta" href="' + PDL_SHOP + '" target="_blank" rel="noopener">' +
-                '去京东搜胖东来 →</a>' +
+              '<a class="sxg-adslot__cta" data-sxg-share="pdl" href="' + PDL_LINK + '" target="_blank" rel="noopener">' +
+                '点此复制商城入口链接 · 去微信打开 →</a>' +
             '</div>' +
           '</div>' +
           '<div class="sxg-adslot__card sxg-adslot__card--recruit">' +
@@ -245,6 +387,8 @@
         '<button type="button" class="sxg-adslot__nav sxg-adslot__next" aria-label="下一张">›</button>' +
       '</div>';
     initCarousel(root);
+    // ⑪ 胖东来整图 + CTA 的「点击复制 + 去微信」交互，只绑带 data-sxg-share 的两个 <a>
+    bindShare(root);
     /* 图片缺失兜底（站长 2026-11-10「还不是纯文字吗」）：
        旧写法在 <img> 出错时直接 display:none，于是卡片只剩标题栏 + 一行字，
        看上去就是「纯文字广告位」——他在慢网下截到的正是这个状态。

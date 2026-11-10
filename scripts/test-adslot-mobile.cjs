@@ -9,10 +9,11 @@ const { JSDOM, VirtualConsole } = require('jsdom');
 
 const ROOT = path.resolve(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
+// 第三列是各自 ?v：⑪ 只重画了胖东来手机稿（升 2），其余仍是 1。
 const MOBILE = [
-  ['assets/ad-luxiyi-mobile.svg', 'ART_MOBILE'],
-  ['assets/ad-pangdonglai-mobile.svg', 'ART_PDL_MOBILE'],
-  ['assets/ad-recruit-mobile.svg', 'ART_RECRUIT_MOBILE']
+  ['assets/ad-luxiyi-mobile.svg', 'ART_MOBILE', 1],
+  ['assets/ad-pangdonglai-mobile.svg', 'ART_PDL_MOBILE', 2],
+  ['assets/ad-recruit-mobile.svg', 'ART_RECRUIT_MOBILE', 1]
 ];
 
 let pass = 0, fail = 0;
@@ -27,7 +28,7 @@ function check(label, cond, extra) {
   const idx = read('index.html');
 
   console.log('--- 0. 三张手机专用设计稿 ---');
-  for (const [f, name] of MOBILE) {
+  for (const [f, name, ver] of MOBILE) {
     const okFile = fs.existsSync(path.join(ROOT, f));
     check(f + ' 真实存在', okFile);
     if (!okFile) continue;
@@ -44,11 +45,27 @@ function check(label, cond, extra) {
       main.length >= 3 && main.every((t, i) => i === 0 || t.y > main[i - 1].y)
       && main[0].size >= 38 && Math.min(...main.map((t) => t.size)) >= 14, main);
     check(f + ' 脚本里有对应 *_MOBILE 常量',
-      src.indexOf("var " + name + " = './" + f + "?v=1'") !== -1);
+      src.indexOf("var " + name + " = './" + f + "?v=" + ver + "'") !== -1);
     check(f + ' 首页带 media 预热且 ?v 一致',
       idx.indexOf('<link rel="preload" as="image" href="./' + f +
-        '?v=1" media="(max-width:480px)" />') !== -1);
+        '?v=' + ver + '" media="(max-width:480px)" />') !== -1);
   }
+
+  // 站长 2026-11-11 00:46「第一张也不要和第二张广告使用同一种风格」：
+  // 手机端三稿同样两两互异，只认剥注释后的图本体。
+  console.log('\n--- 0b. 手机三稿风格两两互异 ---');
+  const strip = (s) => s.replace(/<!--[\s\S]*?-->/g, '');
+  const brandMark = /linearGradient|#e5a336|#f9df8b|#0a1b47|#1d3f9e/;
+  // 用招商稿的精确虚线值：泛化的 stroke-dasharray 会误伤别的稿的装饰圆点
+  const recruitMark = /rwm-grid|rwm-hatch|stroke-dasharray="9 7"|VACANCY|#fbf7ee/;
+  const dispatchMark = /#8f3325|#f7efe0|#e9a45c|nd-ink/;
+  const [artA, artB, artC] = MOBILE.map(([f]) => strip(read(f)));
+  check('手机稿：第 1 张仍是深蓝金字，不含另两套特征',
+    brandMark.test(artA) && !dispatchMark.test(artA) && !recruitMark.test(artA));
+  check('手机稿：第 2 张是砖红号外稿，不与第 1 张同风格',
+    dispatchMark.test(artB) && !brandMark.test(artB) && !recruitMark.test(artB));
+  check('手机稿：第 3 张仍是暖白网格虚线稿，不含另两套特征',
+    recruitMark.test(artC) && !brandMark.test(artC) && !dispatchMark.test(artC));
 
   console.log('\n--- 1. 真 DOM：<picture> 真的接上三张卡 ---');
   const errors = [];
@@ -78,12 +95,12 @@ function check(label, cond, extra) {
   check('三张桌面原稿仍然挂在 <img src> 上（桌面不受影响）',
     arts.length === 3
     && arts[0].getAttribute('src') === './assets/ad-luxiyi.svg?v=2'
-    && arts[1].getAttribute('src') === './assets/ad-pangdonglai.svg?v=2'
+    && arts[1].getAttribute('src') === './assets/ad-pangdonglai.svg?v=3'
     && arts[2].getAttribute('src') === './assets/ad-recruit.svg?v=5',
     [...arts].map((x) => x.getAttribute('src')));
   check('三个 <source> 分别指向对应手机稿',
     sources[0] && sources[0].getAttribute('srcset') === './assets/ad-luxiyi-mobile.svg?v=1'
-    && sources[1] && sources[1].getAttribute('srcset') === './assets/ad-pangdonglai-mobile.svg?v=1'
+    && sources[1] && sources[1].getAttribute('srcset') === './assets/ad-pangdonglai-mobile.svg?v=2'
     && sources[2] && sources[2].getAttribute('srcset') === './assets/ad-recruit-mobile.svg?v=1',
     [...sources].map((x) => x.getAttribute('srcset')));
   check('海报 <img> 的父节点是 <picture>（结构没退化）',

@@ -9,9 +9,10 @@ const { JSDOM, VirtualConsole } = require('jsdom');
 const ROOT = path.resolve(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const TMALL = 'https://' + 'luxiyi.tmall.com/'; // 拼接避免本文件被参数红线误扫
-const JD = 'https://' + 'search.jd.com/Search?keyword=%E8%83%96%E4%B8%9C%E6%9D%A5';
+// 站长 2026-11-11 00:46 指定链接：许昌本地宝《胖东来线上商城（附入口）》，零参数
+const PDL_LINK = 'https://' + 'xc.bendibao.com/xiuxian/20231225/9889.shtm';
 const ART_BRAND = './assets/ad-luxiyi.svg?v=2';
-const ART_PDL = './assets/ad-pangdonglai.svg?v=2';
+const ART_PDL = './assets/ad-pangdonglai.svg?v=3';
 const ART_RECRUIT = './assets/ad-recruit.svg?v=5';
 const PDL_DETAIL = './brand/pdl.html';
 
@@ -107,8 +108,8 @@ function check(label, cond, extra) {
   check('招商卡设计稿引用正确',
     !!arts[2] && arts[2].getAttribute('src') === ART_RECRUIT);
 
-  // ─────────── 1b. 胖东来卡（19:48 追加：去掉「备注」两字 / 京东优先 / 零视频链接） ───────────
-  console.log('\n--- 1b. 胖东来卡：备注 + 站内链 + 零视频链接 ---');
+  // ─────────── 1b. 胖东来卡（00:46 修订：去掉「备注」两字 / 本地宝链接 / 点击复制 / 零视频链接） ───────────
+  console.log('\n--- 1b. 胖东来卡：站内链 + 新链接 + 零视频链接 ---');
   const pdlName = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__name');
   const pdlAvatar = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__avatar');
   const pdlTag = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__tag');
@@ -124,23 +125,28 @@ function check(label, cond, extra) {
   const pdlBanner = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__banner');
   const pdlCta = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__cta');
   const pdlCardHtml = slot.querySelector('.sxg-adslot__card--pdl').innerHTML;
-  check('胖东来整张广告图挂京东站内搜索链接（京东优先、真 <a>、新窗口 noopener）',
-    !!pdlBanner && pdlBanner.tagName === 'A' && pdlBanner.getAttribute('href') === JD
+  check('胖东来整张广告图挂站长指定的本地宝文章（真 <a>、新窗口 noopener）',
+    !!pdlBanner && pdlBanner.tagName === 'A' && pdlBanner.getAttribute('href') === PDL_LINK
     && pdlBanner.getAttribute('target') === '_blank'
     && pdlBanner.getAttribute('rel') === 'noopener',
     pdlBanner && pdlBanner.tagName + ':' + pdlBanner.getAttribute('href'));
-  check('胖东来 CTA 是真 <a> 且同挂京东链接',
-    !!pdlCta && pdlCta.tagName === 'A' && pdlCta.getAttribute('href') === JD
+  check('胖东来 CTA 是真 <a> 且同挂 PDL_LINK（单一真相源）',
+    !!pdlCta && pdlCta.tagName === 'A' && pdlCta.getAttribute('href') === PDL_LINK
     && pdlCta.getAttribute('target') === '_blank'
     && pdlCta.getAttribute('rel') === 'noopener',
     pdlCta && pdlCta.tagName + ':' + pdlCta.getAttribute('href'));
-  check('可见文案同步换成「京东」（不许只改 href 留着旧来源标签）',
-    !!pdlCta && /京东/.test(pdlCta.textContent) && !/天猫|淘宝/.test(pdlCta.textContent)
-    && !!pdlBanner && /京东/.test(pdlBanner.getAttribute('aria-label') || '')
-    && !/天猫|淘宝/.test(pdlBanner.getAttribute('aria-label') || ''),
+  check('可见文案同步换「复制 / 去微信」（不许只改 href 留旧来源标签）',
+    !!pdlCta && /复制/.test(pdlCta.textContent) && /微信/.test(pdlCta.textContent)
+    && !/天猫|淘宝|京东/.test(pdlCta.textContent)
+    && !!pdlBanner && /复制/.test(pdlBanner.getAttribute('aria-label') || '')
+    && /微信/.test(pdlBanner.getAttribute('aria-label') || '')
+    && !/天猫|淘宝|京东/.test(pdlBanner.getAttribute('aria-label') || ''),
     pdlCta && pdlCta.textContent);
-  check('胖东来卡零淘宝天猫链接与来源标签（淘宝天猫只在京东找不到时才考虑）',
-    !/tmall|taobao|天猫|淘宝/i.test(pdlCardHtml));
+  check('整图与 CTA 都带 data-sxg-share 接线点',
+    !!pdlBanner && pdlBanner.getAttribute('data-sxg-share') === 'pdl'
+    && !!pdlCta && pdlCta.getAttribute('data-sxg-share') === 'pdl');
+  check('胖东来卡零京东 / 淘宝 / 天猫链接与来源标签',
+    !/tmall|taobao|天猫|淘宝|京东|jd\.com/i.test(pdlCardHtml));
   // 文案进图里：劳动者态度（站长 19:48「备注两个字去掉」，可见文案不许再带该前缀）
   // + 挂上广告位的原因，缺一不可。关键词只认 <text> 可见文案
   //（aria-label/注释里写满原话也能逃逸断言的坑）。
@@ -162,6 +168,38 @@ function check(label, cond, extra) {
     && !videoRe.test(read('assets/ad-recruit.svg'))
     && !videoRe.test(slot.innerHTML),
     '广告位出现了短视频链接域名');
+
+  // ─────────── 1c. 点击复制 + 微信提示（真点击，不是只比对字符串） ───────────
+  // 站长 2026-11-11 00:46「参考良配的广告，点了就自动复制，弹窗提醒用户自己去微信」。
+  // jsdom 没有 execCommand / clipboard，先补一个记录调用的桩，再真派发 click，
+  // 检查：阻止默认跳转、同步复制被调用、toast 可见且写着微信与链接本体。
+  console.log('\n--- 1c. 点击胖东来广告：自动复制 + 弹窗提醒去微信 ---');
+  const copyCalls = [];
+  doc.execCommand = function (cmd) { copyCalls.push(cmd); return true; };
+  const clickEvt = new window.MouseEvent('click', { bubbles: true, cancelable: true });
+  pdlCta.dispatchEvent(clickEvt);
+  check('点击 CTA 阻止默认跳转（点了不直接打开链接）', clickEvt.defaultPrevented);
+  check('点击时同步调用 execCommand copy（趁用户手势栈）',
+    copyCalls.indexOf('copy') !== -1, copyCalls);
+  // toast 在 copyText 的 Promise 链末端出现，放掉整个微任务队列再查
+  await new Promise((r) => setTimeout(r, 0));
+  const toast = doc.querySelector('[data-sxg-share-toast]');
+  check('弹出提示且可见（is-show）', !!toast && toast.classList.contains('is-show'));
+  check('提示明确要求用户自己去微信', !!toast && /微信/.test(toast.textContent));
+  check('提示里有操作步骤（粘贴 → 点开）',
+    !!toast && /粘贴/.test(toast.textContent) && /点开/.test(toast.textContent));
+  const toastCode = toast && toast.querySelector('.sxg-adslot__toast-code');
+  check('提示里放的是可点再复制的链接本体',
+    !!toastCode && toastCode.textContent === PDL_LINK,
+    toastCode && toastCode.textContent);
+  const bannerEvt = new window.MouseEvent('click', { bubbles: true, cancelable: true });
+  pdlBanner.dispatchEvent(bannerEvt);
+  check('整张广告图也绑了同一套复制交互', bannerEvt.defaultPrevented);
+  check('提示里的链接可点再复制（code 点击不报错）', (function () {
+    if (!toastCode) return false;
+    try { toastCode.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); return true; }
+    catch (e) { return false; }
+  })());
 
   // ─────────── 2. 居中 & 箭头不再压住文案 ───────────
   console.log('\n--- 2. 内容居中 / 箭头位置 ---');

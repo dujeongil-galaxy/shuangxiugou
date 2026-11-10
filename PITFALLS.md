@@ -2716,3 +2716,19 @@ HEAD 不是补提交，只是正文里引用了一下标记，同样被跳过。
 - 新增 `*_MOBILE` 常量让 §33a2 的 `/var ART[_A-Z]* = .../` 从 3 个变 6 个 → 旧断言误红；按 `-mobile.svg` 过滤，手机预热交给 §35c 单独管。
 - 临时静态服务把 `ROOT` 写成正斜杠字符串，而 `path.join` 返回反斜杠，`fp.startsWith(ROOT)` 恒 false → 所有请求 404、页面一片白（诊断白跑了两次）。仓库根一律 `path.resolve(...)`。
 - `ps -ef | grep -c "[m]sedge"` 无匹配时**退出码是 1**，用 `&&` 串后续命令会把主脚本短路，看起来像「脚本失败」其实根本没跑。用 `;` 或补 `|| true`。
+
+## 第三十八章：风格断言用泛化特征词把自己判红；`element.click()` 不等于真点击，弹窗还会接走手势（2026-11-11 00:46 胖东来广告改版）
+
+**现象**：站长要求「第一张也不要和第二张广告使用同一种风格」「链接换到这个，参考良配的广告，点了就自动复制，弹窗提醒用户自己去微信」。新增 §36a「三稿两两互异」断言写好就判红，明明三张稿长得完全不一样。
+
+**假红根因**：把 `stroke-dasharray` 当成招商稿（虚线空位框）的专属特征，可**陆喜依桌面稿的金色圆徽章也用了 `stroke-dasharray="3 11"`**。风格特征词必须挑真正独有的：渐变 id 前缀、专用配色值、具名 defs；泛化的 SVG 属性（虚线、圆角、pattern）几乎必然在别的稿里出现。改法：只认招商稿的精确值 `stroke-dasharray="14 10"`（手机稿 `9 7`），并把「剥掉 `<!-- -->` 注释后只扫图本体」保留下来——注释里写着「刻意不用了什么」，全文比对会自己把自己判红。
+
+**只改其中一张的 `?v` 会让写死版本号的断言误红**：本轮只重画了胖东来桌面稿（2→3）与手机稿（1→2），§35b/§35c 早先硬编码 `'?v=1'`。改成 `mob35` 数组第三列带各自版本，别再假设三张永远同版。同理 §29e/§33a2 的 `ART_PDL` 也要同步。
+
+**`element.click()` 与真鼠标手势不等价（最坑）**：`cdp-pdl-adcheck.cjs` 用 `cta.dispatchEvent(new MouseEvent('click'))` 验到 `prevented:true`、`execCommand('copy')` 被调用、toast 出现，但提示却是「请复制下方链接」而不是「已复制链接」——说明自动复制其实**失败**了。原因是没有真实用户手势，`navigator.clipboard.writeText` 被拒、`execCommand` 返回 false，代码正确走了兜底分支。要验「点了就自动复制」必须用 `Input.dispatchMouseEvent`（mouseMoved → mousePressed → mouseReleased）+ `Browser.grantPermissions` 给 `clipboardReadWrite`，再 `navigator.clipboard.readText()` 回读。补跑后才拿到 `execRet:[["copy",true]]`、剪贴板等于完整链接、toast 走「已复制」分支 = 真 PASS。
+
+**弹窗会接走真点击**：第一次真点击脚本 `execRet:[]`、`toastShown:false`。`document.elementFromPoint(x,y)` 打出来命中 `DIV.dyp__panel`，不是 `A.sxg-adslot__cta`——首次访问的全屏劳动提醒弹窗（z=100000）盖在 CTA 上。关掉弹窗后命中 A，复制才生效。这是站内既有设计（用户点 × 即消失），不是本轮引入，但**任何真点击验收都必须先处理弹窗**，否则会把「被遮挡」误判成「功能没接上」。
+
+**历史注释里的旧口径会污染全文断言**：组件头部还留着 19:48「京东优先 / 去京东搜胖东来」的决策沿革注释。写「脚本全文零京东」这类断言必然误红；正确做法是只扫渲染出来的卡片片段（`pdlCardStart29 → pdlCardEnd29`）与渲染后 DOM，历史注释保留作决策沿革。同理，换链接时**可见文案与 `aria-label` 必须同步**（2026-11-07 老坑），这次 CTA 改「点此复制商城入口链接 · 去微信打开」、aria-label 改「复制胖东来线上商城入口链接，打开微信查看」，卡内零京东/淘宝/天猫。
+
+**验收组合**：静态故障 11 处一次注入 → verify 判红 9 条（§29e/§29l/§33a2/§35b/§36a~§36e）、jsdom 判红 10 / 4 条；行为故障注释掉 `bindShare(root);` → 真浏览器桌面/手机 `CHECK FAIL`、`exit 1`。还原后 verify 1668 全绿、四测试 61/34/14/6 全过、`MOBILE PASS`（15 组 issues 全空）、双视口 PASS、`PAGEERRORS=[]`。

@@ -3,7 +3,9 @@
 //   node scripts/cdp-pdl-adcheck.cjs
 // 产物统一落 D:/WorkBuddy-Cache/shots/（见 _cache-dir.cjs）。
 // 顺带机器可读断言：3 卡 3 圆点、胖东来 meta 备注在、品牌名链站内、
-// 整图与 CTA 都挂京东站内搜索且可见文案是「京东」、广告位内零视频链接。
+// 整图与 CTA 都挂站长指定的本地宝文章、可见文案写「复制 / 去微信」、
+// 真点击后阻止跳转 + 调用复制 + 弹出 toast（含链接本体与微信提示）、
+// 广告位内零视频链接。⑪ 2026-11-11 00:46 批次同步。
 // 注：CDP Runtime.evaluate 返回值真实路径是 result.result.value；WebSocket 用全局
 //     + addEventListener + ev.data（require('ws') 的回调拿到 Buffer 会解析失败挂起）。
 const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
@@ -17,7 +19,7 @@ const HTTP_PORT = 8801;
 const DBG_PORT = 9294;
 const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const URL = `http://127.0.0.1:${HTTP_PORT}/`;
-const JD = 'https://' + 'search.jd.com/Search?keyword=%E8%83%96%E4%B8%9C%E6%9D%A5';
+const PDL_LINK = 'https://' + 'xc.bendibao.com/xiuxian/20231225/9889.shtm';
 
 const MIME = { '.html':'text/html', '.js':'application/javascript', '.css':'text/css',
   '.json':'application/json', '.png':'image/png', '.svg':'image/svg+xml', '.ico':'image/x-icon' };
@@ -122,7 +124,7 @@ async function runViewport(ws, label, width, height) {
       pdlBannerHref:pdlBanner?pdlBanner.getAttribute('href'):null,
       pdlCtaHref:pdlCta?pdlCta.getAttribute('href'):null,
       pdlCtaText:pdlCta?pdlCta.textContent:null,
-      pdlCardTmall:/tmall|taobao|天猫|淘宝/i.test(pdlCard.innerHTML),
+      pdlCardMall:/tmall|taobao|天猫|淘宝|京东|jd\.com/i.test(pdlCard.innerHTML),
       pdlTag:pdlTag?pdlTag.textContent:null,
       arts:arts,
       // 红线范围是「广告位不得挂视频链接」：只查广告位 DOM（整页其它位置的抖音
@@ -143,7 +145,33 @@ async function runViewport(ws, label, width, height) {
     await new Promise(r => setTimeout(r, 900));
     await shotSlot(ws, cacheDir('shots/sxg-pdl-' + label + '-' + cardTags[i] + '.png'));
   }
-  return diag;
+
+  // ⑪ 真点击验收：点胖东来 CTA 应拦住跳转、同步调用复制、弹出 toast 提醒去微信。
+  // 放在三张截图之后，避免 toast 盖住海报。
+  await evalVal(ws, `(function(){
+    var cta=document.querySelector('.sxg-adslot__card--pdl .sxg-adslot__cta');
+    if(!cta) return false;
+    window.__sxgCopyCalls=[];
+    var orig=document.execCommand;
+    document.execCommand=function(cmd){window.__sxgCopyCalls.push(cmd);return orig?orig.apply(document,arguments):true;};
+    window.__sxgShareEvt=new MouseEvent('click',{bubbles:true,cancelable:true});
+    cta.dispatchEvent(window.__sxgShareEvt);
+    return true;
+  })()`);
+  await new Promise(r => setTimeout(r, 500));
+  const share = await evalVal(ws, `(function(){
+    var toast=document.querySelector('[data-sxg-share-toast]');
+    var code=toast&&toast.querySelector('.sxg-adslot__toast-code');
+    return {
+      prevented: !!window.__sxgShareEvt && window.__sxgShareEvt.defaultPrevented,
+      copyCalls: window.__sxgCopyCalls || [],
+      toastShown: !!(toast && toast.classList.contains('is-show')),
+      toastText: toast ? toast.textContent : '',
+      codeText: code ? code.textContent : ''
+    };
+  })()`);
+  console.log(label + '_SHARE=' + JSON.stringify(share));
+  return Object.assign({}, diag, { share: share });
 }
 
 (async () => {
@@ -190,16 +218,23 @@ async function runViewport(ws, label, width, height) {
 
   let fail = 0;
   for (const [label, g] of [['desktop', d], ['mobile', m]]) {
+    const s = g && g.share;
     const ok = g && g.slot && g.cards === 3 && g.dots === 3
       && g.pdlHref === './brand/pdl.html'
-      && g.pdlBannerHref === JD && g.pdlCtaHref === JD
-      && /京东/.test(g.pdlCtaText || '') && !/天猫|淘宝/.test(g.pdlCtaText || '')
-      && g.pdlCardTmall === false
+      && g.pdlBannerHref === PDL_LINK && g.pdlCtaHref === PDL_LINK
+      && /复制/.test(g.pdlCtaText || '') && /微信/.test(g.pdlCtaText || '')
+      && !/天猫|淘宝|京东/.test(g.pdlCtaText || '')
+      && g.pdlCardMall === false
       && /劳动者/.test(g.pdlTag || '') && /尊重/.test(g.pdlTag || '')
       && g.videoLink === false
-      && Array.isArray(g.arts) && g.arts.length === 3;
+      && Array.isArray(g.arts) && g.arts.length === 3
+      && !!s && s.prevented === true
+      && s.copyCalls.indexOf('copy') !== -1
+      && s.toastShown === true
+      && /微信/.test(s.toastText || '')
+      && s.codeText === PDL_LINK;
     console.log('CHECK ' + label + ': ' + (ok ? 'PASS' : 'FAIL'));
-    if (!ok) fail++;
+    if (!ok) { fail++; console.log('  SHARE_DETAIL=' + JSON.stringify(s)); }
   }
   console.log('PAGEERRORS=' + JSON.stringify(errors.slice(0, 3)));
   try { ws.close(); } catch (e) {}
