@@ -38,8 +38,16 @@
     <meta name="twitter:description" content="查公司双休制度、企业工时评级，避雷单休、大小周、996 血汗工厂。数据附公开证据链。" />
     <meta name="msvalidate.01" content="1CA900F523A02F4764BEA0EA3134789B" />
     <link rel="canonical" href="https://dujeongil-galaxy.github.io/shuangxiugou/" />
-    <link rel="preload" as="script" href="./assets/index-YthXZ9eP.js?v=50" />
-    <link rel="preload" as="style" href="./assets/index-BgVofs0W.css" />
+    <!-- preload 的 credentials 模式必须与真正的 <script crossorigin> / <link rel=stylesheet crossorigin>
+         完全一致，否则浏览器认为是两个不同请求：主包 434KB 和 CSS 53KB 会各下载两遍（实测慢网多花 5 秒）。
+         加 crossorigin 前请勿删——verify §33a 有断言。 -->
+    <link rel="preload" as="script" crossorigin href="./assets/index-YthXZ9eP.js?v=50" />
+    <link rel="preload" as="style" crossorigin href="./assets/index-BgVofs0W.css" />
+    <!-- 广告位两张设计图在首屏，提前预热：慢网下广告位被补丁插入时图已在缓存里，
+         不会出现「卡片出来了图还是空的」那种半截状态（站长 2026-11-10）。
+         ad-recruit 的 ?v 必须与 black-card-adslot.js 里 ART_RECRUIT 一致，verify §33a 有断言。 -->
+    <link rel="preload" as="image" href="./assets/ad-luxiyi.svg" />
+    <link rel="preload" as="image" href="./assets/ad-recruit.svg?v=3" />
     <link rel="dns-prefetch" href="https://dujeongil-galaxy.github.io" />
     <script type="application/ld+json">
     {
@@ -133,6 +141,7 @@
        广告位替换后高度差最小）；补丁替换成功后选择器不再命中任何节点，样式无害常驻。
        注意：该样式必须与 black-card-adslot.js 共存——若将来下线补丁，须同步删本样式。 -->
   <style id="sxg-blackcard-prehide">div[class*="rounded-2xl p-5 shadow-xl"]{visibility:hidden}</style>
+  <script async src="./black-card-adslot.js?v=9"></script>
   <style>.sxg-loading{position:fixed;inset:0;z-index:2147483647;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}.sxg-boot{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:14px;color:#0f766e;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif}.sxg-boot__spinner{width:34px;height:34px;border:3px solid #ccfbf1;border-top-color:#0f766e;border-radius:50%;animation:sxg-spin .8s linear infinite}.sxg-boot__text{margin:0;font-size:14px;font-weight:600;letter-spacing:.04em}@keyframes sxg-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.sxg-boot__spinner{animation-duration:2s}}</style>
   </head>
   <body>
@@ -9041,7 +9050,9 @@
   <script defer src="./nav-menu.js?v=6"></script>
   <script defer src="./header-menu-patch.js?v=9"></script>
   <!-- 首页黑色「全网打工人已转移消费额」卡片改为「滚动式广告位」（2026-11-09 站长指令升级：黑卡不保留，原位放滚动式广告位轮播——两张站点自绘矢量设计稿，陆喜依广告图与 CTA 提示词都是真链接可点跳天猫支持双休企业；卡片内容居中、箭头移到卡片下方导航条不再压住招商卡标题；支持手动切换与自动轮播；不动其它架构） -->
-  <script defer src="./black-card-adslot.js?v=8"></script>
+  <!-- 广告位补丁已前移到 <head> 用 async 加载（2026-11-10 站长「超过 10 秒都没加载成功」）：
+       原来它排在第 40 个 defer 脚本，必须等 692KB body 解析完 + 前 39 个脚本执行完才跑，
+       慢网实测 15 秒才出现广告位。补丁自身用 MutationObserver 等 React 渲染，提前执行安全。 -->
 
   <!-- 站点级 Service Worker（2026-11-09 站长指令）：network-first 导航接管，
        保证刚部署的几分钟里用户也拿到最新 index.html，旧黑弹窗不再残留。

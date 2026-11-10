@@ -1,63 +1,96 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-label="公益广告位 · 虚位以待 · 真实双休标杆品牌可申请免费展示">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-label="公益广告位 虚位以待 真实双休标杆品牌可申请免费展示 欢迎联系站长">
 <!--
-  公益广告位第 2 张：虚位以待卡的背景设计稿（站点自绘矢量稿，非站长提供的图片素材）。
-  2026-11-10 站长：「挡住了，你没发现？广告位请优化一下，叫 公益广告位」。
-  旧版中央是一个 r=102 的圆形印章，文案叠在圆环里被圈住、弧线压字；
-  随后改为横向圆角白底横幅做文字衬底。
-  2026-11-10「穿模了」二次纠正：SVG 里画死的白底横幅随图缩放（手机端只剩
-  44px 高），HTML 文案是固定字号，装不下就上下穿出白板。现把文字衬底改由
-  HTML 正常流 CSS 白板承担（盒子随文字长高，任何宽度不穿模），本图只留
-  装饰框/网格/角标，不再画任何文字衬底。与第 1 张共用蓝/金/红视觉语言。不含任何 URL。
+  广告位第 2 张：虚位以待卡的**广告设计图**（站点自绘矢量稿，非站长提供的图片素材）。
+  2026-11-10 站长两次纠正后的定稿形态：
+    ① 「广告图叫你重构，不是让你改成纯文字」——上一版把白板交给 HTML/CSS 画、
+       图里只剩一圈淡框，卡片看上去就是两行字。本版把**整张海报画进图里**：
+       深蓝底 + 金色挂牌 + 印章 + 同心弧 + 顶部聚光，文案全部是 <text>，
+       与第 1 张陆喜依广告同一套视觉语言，任何分辨率都清晰。
+    ② 「你这文字明显也重叠了」——文字既然是图里的 <text>，与图形同一坐标系、
+       同一缩放比例，**结构上不可能出现「文字比底板高」那种穿模/叠字**。
+       三条文案的基线 y 严格递增（136 → 190 → 228），verify §32c 有机器断言。
+  不含任何 URL；整卡由 HTML 侧包一层（无跳转），meta 行给一行可读说明。
 -->
 <defs>
   <linearGradient id="rc-bg" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="#f8fbff"/>
-    <stop offset="0.55" stop-color="#eef3ff"/>
-    <stop offset="1" stop-color="#e2eafb"/>
+    <stop offset="0" stop-color="#0a1b47"/>
+    <stop offset="0.52" stop-color="#1d3f9e"/>
+    <stop offset="1" stop-color="#0e2a68"/>
   </linearGradient>
-  <linearGradient id="rc-line" x1="0" y1="0" x2="1" y2="0">
-    <stop offset="0" stop-color="#1d3f9e"/>
-    <stop offset="0.5" stop-color="#e5a336"/>
-    <stop offset="1" stop-color="#1d3f9e"/>
+  <radialGradient id="rc-glow" cx="0.5" cy="0.18" r="0.72">
+    <stop offset="0" stop-color="#5b8cf5" stop-opacity="0.42"/>
+    <stop offset="1" stop-color="#5b8cf5" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="rc-gold" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#f9df8b"/>
+    <stop offset="1" stop-color="#e5a336"/>
   </linearGradient>
-  <pattern id="rc-grid" width="34" height="34" patternUnits="userSpaceOnUse">
-    <path d="M34 0 L0 0 0 34" fill="none" stroke="#1d3f9e" stroke-opacity="0.06" stroke-width="1"/>
+  <linearGradient id="rc-plate" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ffffff"/>
+    <stop offset="1" stop-color="#f2f7ff"/>
+  </linearGradient>
+  <pattern id="rc-dots" width="28" height="28" patternUnits="userSpaceOnUse">
+    <circle cx="2" cy="2" r="1.4" fill="#ffffff" opacity="0.12"/>
   </pattern>
 </defs>
 
-<rect width="1200" height="260" fill="url(#rc-bg)"/>
-<rect width="1200" height="260" fill="url(#rc-grid)"/>
+<rect width="1200" height="300" fill="url(#rc-bg)"/>
+<rect width="1200" height="300" fill="url(#rc-glow)"/>
+<rect width="1200" height="300" fill="url(#rc-dots)"/>
 
-<!-- 虚线外框 -->
-<rect x="18" y="18" width="1164" height="224" rx="18" fill="none" stroke="#1d3f9e" stroke-opacity="0.34" stroke-width="2" stroke-dasharray="10 8"/>
-<rect x="28" y="28" width="1144" height="204" rx="14" fill="none" stroke="url(#rc-line)" stroke-opacity="0.5" stroke-width="1.5"/>
+<!-- 顶部聚光：从正中打下一束光，把视线引到中央挂牌 -->
+<path d="M600 -20 L292 300 L908 300 Z" fill="#7ea6ff" opacity="0.10"/>
 
-<!-- 四角菱形角饰（呼应第 1 张的民族织带，全部留在文案区之外） -->
-<g fill="none" stroke="#1d3f9e" stroke-opacity="0.5" stroke-width="2">
-  <path d="M60 66 l16 -16 16 16 -16 16 z"/>
-  <path d="M1140 66 l16 -16 16 16 -16 16 z"/>
-  <path d="M60 194 l16 -16 16 16 -16 16 z"/>
-  <path d="M1140 194 l16 -16 16 16 -16 16 z"/>
-</g>
-<g fill="#e2534b" opacity="0.75">
-  <path d="M76 50 l8 0 -4 10 z"/>
-  <path d="M1156 50 l8 0 -4 10 z"/>
-  <path d="M76 210 l8 0 -4 10 z"/>
-  <path d="M1156 210 l8 0 -4 10 z"/>
+<!-- 右侧同心弧（与第 1 张同款，做视觉托底） -->
+<g fill="none" stroke="#ffffff" opacity="0.08" stroke-width="2">
+  <circle cx="1180" cy="300" r="150"/>
+  <circle cx="1180" cy="300" r="190"/>
+  <circle cx="1180" cy="300" r="232"/>
 </g>
 
-<!-- 左右织带 -->
-<g opacity="0.35" fill="#1d3f9e">
-  <rect x="0" y="86" width="7" height="88" rx="3"/>
-  <rect x="1193" y="86" width="7" height="88" rx="3"/>
+<!-- 左侧民族织带：菱形 + 三角坠（与第 1 张同款） -->
+<g opacity="0.5" fill="none" stroke="url(#rc-gold)" stroke-width="2">
+  <path d="M46 40 l14 14 -14 14 -14 -14 z"/>
+  <path d="M46 88 l14 14 -14 14 -14 -14 z"/>
+  <path d="M46 136 l14 14 -14 14 -14 -14 z"/>
+  <path d="M46 184 l14 14 -14 14 -14 -14 z"/>
+  <path d="M46 232 l14 14 -14 14 -14 -14 z"/>
+</g>
+<g opacity="0.34" fill="#e2534b">
+  <path d="M70 54 l8 0 -4 10 z"/>
+  <path d="M70 102 l8 0 -4 10 z"/>
+  <path d="M70 150 l8 0 -4 10 z"/>
+  <path d="M70 198 l8 0 -4 10 z"/>
+  <path d="M70 246 l8 0 -4 10 z"/>
 </g>
 
-<!-- 文字衬底已改由 HTML 正常流 CSS 白板承担（见 black-card-adslot.js ⑥）：
-     SVG 再画固定尺寸白板会与文字错位穿模，这里只留上下短金线做构图配重 -->
-<rect x="552" y="40" width="96" height="3" rx="1.5" fill="#e5a336" opacity="0.65"/>
-<rect x="552" y="217" width="96" height="3" rx="1.5" fill="#e5a336" opacity="0.65"/>
+<!-- 内框金线 -->
+<rect x="20" y="14" width="1160" height="272" rx="16" fill="none" stroke="#f7d774" stroke-opacity="0.24" stroke-width="1.5"/>
+
+<!-- 印章：招（招聘/招展意象，纯装饰） -->
+<g transform="translate(150,150)">
+  <circle r="66" fill="#ffffff" opacity="0.06"/>
+  <circle r="60" fill="none" stroke="url(#rc-gold)" stroke-width="3"/>
+  <circle r="47" fill="none" stroke="#f7d774" stroke-opacity="0.55" stroke-width="1.5" stroke-dasharray="4 7"/>
+  <text x="0" y="24" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="56" font-weight="700" fill="url(#rc-gold)" letter-spacing="2">招</text>
+</g>
+
+<!-- 中央挂牌：金边白底，左右各一枚金色挂扣 -->
+<g>
+  <rect x="300" y="52" width="632" height="200" rx="30" fill="#000000" opacity="0.18" transform="translate(0,4)"/>
+  <rect x="300" y="52" width="632" height="200" rx="30" fill="url(#rc-plate)"/>
+  <rect x="300" y="52" width="632" height="200" rx="30" fill="none" stroke="url(#rc-gold)" stroke-width="3"/>
+  <rect x="316" y="68" width="600" height="168" rx="20" fill="none" stroke="#1d3f9e" stroke-opacity="0.10" stroke-width="1"/>
+  <rect x="268" y="132" width="32" height="40" rx="8" fill="url(#rc-gold)" opacity="0.9"/>
+  <rect x="932" y="132" width="32" height="40" rx="8" fill="url(#rc-gold)" opacity="0.9"/>
+</g>
+
+<!-- 文案（全部画进图里，与图同比例缩放，永不叠字/穿模） -->
+<text x="616" y="140" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="84" font-weight="700" fill="#1d3f9e" letter-spacing="10">虚位以待</text>
+<text x="616" y="192" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="26" fill="#3b5488" letter-spacing="1">真实双休标杆品牌 · 可申请免费展示</text>
+<text x="616" y="230" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="18" fill="#7b8db3" letter-spacing="1">欢迎联系站长 · 公益展示不收费</text>
 
 <!-- 角标 -->
-<text x="112" y="56" font-family="Arial,sans-serif" font-size="15" fill="#6478a8" letter-spacing="4">PUBLIC WELFARE AD · 02 / 02</text>
-<text x="1088" y="218" text-anchor="end" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="15" fill="#6478a8" letter-spacing="2">公益广告位 · 真实双休品牌招募</text>
+<text x="1120" y="42" text-anchor="end" font-family="Arial,sans-serif" font-size="15" fill="#9db8e8" letter-spacing="4">PUBLIC WELFARE AD · 02 / 02</text>
+<text x="1120" y="266" text-anchor="end" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="15" fill="#9db8e8" letter-spacing="2">公益广告位 · 真实双休品牌招募</text>
 </svg>

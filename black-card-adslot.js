@@ -27,6 +27,18 @@
       art-wrap、改正常流 CSS 白板（随文字长高），SVG 写死的白板撤掉
       （ad-recruit.svg ?v=2），装饰框/角标保留。任何宽度不再穿模。
 
+   ⑦ 站长 2026-11-10 二次纠正（两件事，一次解决）：
+      a) 「广告图叫你重构，不是让你改成纯文字」——前一轮为了消灭穿模，把图里的
+         白板交给 HTML/CSS 去画，结果卡片看上去就是两行字。本版**整张海报回到图里**：
+         assets/ad-recruit.svg 重画（深蓝底 + 金色挂牌 + 印章 + 同心弧 + 聚光，
+         1200×300），标题/副句/说明全部是 SVG <text>，与第 1 张陆喜依广告同语言。
+      b) 「你这文字明显也重叠了」——他把「图没加载出来、只剩 HTML 文案」那个中间态
+         看成了叠字。真正的修法是让文案不再有两个来源：**文案只在图里**，
+         HTML 侧只留一行正常流 meta 说明。文字与图形同一坐标系、同一缩放比例，
+         结构上不可能穿模/叠字（verify §32c 机器断言三条基线递增）。
+      c) 顺带修图片失败态：旧代码 error 时直接 display:none → 卡片退化成纯文字；
+         现在兜底成同色系海报底 + 金字（.sxg-adslot__art-wrap[data-art-error]）。
+
    两张卡：① 陆喜依品牌广告（整图点击跳天猫、品牌名跳站内详情页）；
    ② 公益广告位虚位以待。支持箭头/圆点手动切换 + 5s 自动轮播（悬停暂停）。
    定位锚点：全站唯一文案「全网打工人已转移消费额」。沿用三重兜底替换。
@@ -40,7 +52,9 @@
   var DETAIL = './brand/luxiyi.html';
   var IMG = './assets/luxiyi.jpg';
   var ART = './assets/ad-luxiyi.svg';
-  var ART_RECRUIT = './assets/ad-recruit.svg?v=2';
+  /* 虚位以待卡的广告设计图。?v 必须与 index.html 里的 <link rel=preload as=image> 完全一致，
+     否则浏览器会把它当两个资源（预热的白预了）。改了图就同步升这里和 index.html。 */
+  var ART_RECRUIT = './assets/ad-recruit.svg?v=3';
   var AUTOPLAY_MS = 5000;
 
   function injectStyle() {
@@ -59,6 +73,12 @@
       'align-items:center;justify-content:center;text-align:center;color:#0f172a}' +
       '.sxg-adslot__art-wrap{position:relative;width:100%;line-height:0}' +
       '.sxg-adslot__art{display:block;width:100%;height:auto}' +
+      /* 广告设计图加载失败时的兜底海报：同色系底 + 金字，绝不再退回「纯文字」 */
+      '.sxg-adslot__art-wrap[data-art-error]{min-height:132px;line-height:1.5;display:flex;' +
+      'align-items:center;justify-content:center;border-radius:12px;' +
+      'background:linear-gradient(135deg,#0a1b47,#1d3f9e 52%,#0e2a68)}' +
+      '.sxg-adslot__art-wrap[data-art-error]::after{content:attr(data-art-error-text);' +
+      'color:#f7d774;font-size:16px;font-weight:700;letter-spacing:.12em}' +
       '.sxg-adslot__banner{display:block;width:100%;line-height:0;text-decoration:none;cursor:pointer}' +
       '.sxg-adslot__banner:hover .sxg-adslot__art{filter:brightness(1.06)}' +
       '.sxg-adslot__meta{box-sizing:border-box;width:100%;min-height:46px;display:flex;' +
@@ -75,20 +95,13 @@
       'text-decoration:none;cursor:pointer}' +
       '.sxg-adslot__cta:hover{text-decoration:underline}' +
       '.sxg-adslot__hint{font-size:12px;color:#94a3b8;line-height:1.5}' +
-      /* 站长 2026-11-10「穿模了，所以手机端那边也会显示异常」：文案层原是
-         position:absolute;inset:0 固定字号叠在随宽度缩放的 SVG 白板上——
-         手机端白板缩到 44px 高、文案要 66px+（副句还换行），上下穿出白板。
-         对照上游被替换的黑卡（React bundle 里 bg-slate-900 那张）的写法：
-         纯 flex 正常流（flex-col / sm:flex-row + p-5 + gap-4），文字在流里
-         排版、盒子随文字长高，任何宽度都不可能穿模。这里照搬该思路：
-         文案出 art-wrap、改正常流 CSS 白板（高度随文字），SVG 写死的白板
-         同步撤掉（防双板错位），装饰框/角标保留。 */
-      '.sxg-adslot__recruit-copy{display:flex;flex-direction:column;' +
-      'align-items:center;justify-content:center;gap:6px;text-align:center;' +
-      'box-sizing:border-box;margin:10px 14px 0;padding:14px 18px;' +
-      'background:#f8fbff;border:1px solid #dbe4f2;border-radius:14px}' +
-      '.sxg-adslot__recruit-title{font-size:25px;font-weight:800;color:#0f172a;letter-spacing:.06em}' +
-      '.sxg-adslot__recruit-sub{font-size:14px;font-weight:600;color:#475569;line-height:1.5}' +
+      /* 站长 2026-11-10 二次纠正「广告图叫你重构，不是让你改成纯文字 / 文字明显重叠」：
+         前两版都在跟「HTML 文案压在图上」这个结构较劲（绝对叠层 → 正常流白板），
+         只要文案还在图外，就永远要跟图的缩放对账。本版直接换结构：
+         **文案全部画进 ad-recruit.svg 的 <text> 里**，与图形同一坐标系、同一缩放
+         比例 —— 结构上不可能再出现「文字比底板高」的穿模或叠字。
+         所以这里不再有 recruit-copy / recruit-title / recruit-sub 三个类，
+         HTML 只保留一行正常流的 meta 说明（手机端可读，字号见下方媒体查询）。 */
       '.sxg-adslot__foot{display:flex;align-items:center;justify-content:center;gap:12px;' +
       'padding:7px 0 14px;border-top:1px solid #f1f5f9}' +
       '.sxg-adslot__nav{width:26px;height:26px;border:none;border-radius:50%;' +
@@ -99,14 +112,7 @@
       '.sxg-adslot__dot{width:7px;height:7px;border-radius:50%;background:#cbd5e1;' +
       'cursor:pointer;transition:background .2s}' +
       '.sxg-adslot__dot.is-active{background:#1d3f9e}' +
-      /* 桌面端（≥481px）保留显式 line-height / 副句下移 8px：行盒与行距
-         白纸黑字写死，不依赖任何继承（此前 line-height:0 从 art-wrap 继承
-         压过一次字，见 §32b2）。手机端（≤480px）站长说正常，原样不动。 */
-      '@media (min-width:481px){.sxg-adslot__recruit-copy{line-height:1.5}' +
-      '.sxg-adslot__recruit-title{line-height:1.25}' +
-      '.sxg-adslot__recruit-sub{margin-top:8px}}' +
       '@media (max-width:480px){.sxg-adslot__nav{display:none}' +
-      '.sxg-adslot__recruit-title{font-size:18px}.sxg-adslot__recruit-sub{font-size:12px}' +
       '.sxg-adslot__cta{font-size:12px}.sxg-adslot__meta{gap:5px 8px}}';
     var st = document.createElement('style');
     st.id = 'sxg-adslot-style';
@@ -145,12 +151,9 @@
               '<img class="sxg-adslot__art" src="' + ART_RECRUIT + '" ' +
                 'alt="公益广告位 · 虚位以待 · 真实双休标杆品牌可申请免费展示">' +
             '</div>' +
-            '<div class="sxg-adslot__recruit-copy">' +
-              '<div class="sxg-adslot__recruit-title">公益广告位 · 虚位以待</div>' +
-              '<div class="sxg-adslot__recruit-sub">真实双休标杆品牌可申请免费展示，欢迎联系站长</div>' +
-            '</div>' +
             '<div class="sxg-adslot__meta">' +
-              '<span class="sxg-adslot__hint">← 左右箭头 / 圆点切换公益广告卡 · 自动轮播 5 秒 →</span>' +
+              '<span class="sxg-adslot__tag">真实双休标杆品牌可申请免费展示 · 欢迎联系站长</span>' +
+              '<span class="sxg-adslot__hint">左右箭头 / 圆点切换 · 自动轮播 5 秒</span>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -161,13 +164,25 @@
         '<button type="button" class="sxg-adslot__nav sxg-adslot__next" aria-label="下一张">›</button>' +
       '</div>';
     initCarousel(root);
-    // 图片缺失时降级为文字，避免破图（站点默认静默失效方式）
+    /* 图片缺失兜底（站长 2026-11-10「还不是纯文字吗」）：
+       旧写法在 <img> 出错时直接 display:none，于是卡片只剩标题栏 + 一行字，
+       看上去就是「纯文字广告位」——他在慢网下截到的正是这个状态。
+       现在：广告设计图兜底成一个同色系海报底色 + 金字的「广告牌」，
+       至少还是图；品牌头像才降级成文字。 */
     var imgs = root.querySelectorAll('img');
     for (var j = 0; j < imgs.length; j++) {
       (function (img) {
         img.addEventListener('error', function () {
           img.setAttribute('data-adslot-img-error', '1');
           img.style.display = 'none';
+          var wrap = img.parentNode;
+          if (wrap && wrap.className && wrap.className.indexOf('sxg-adslot__art-wrap') !== -1) {
+            wrap.setAttribute('data-art-error', '1');
+            wrap.setAttribute('data-art-error-text',
+              wrap.parentNode && (wrap.parentNode.className || '').indexOf('--recruit') !== -1
+                ? '公益广告位 · 虚位以待'
+                : '公益广告位');
+          }
           if (img.className.indexOf('sxg-adslot__avatar') !== -1) {
             var span = document.createElement('span');
             span.className = 'sxg-adslot__name';

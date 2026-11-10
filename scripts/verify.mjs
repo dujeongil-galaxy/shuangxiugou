@@ -6330,13 +6330,47 @@ section('21c. 首页滑到底部按钮');
     'sw.js 对导航请求做 network-first（在线永远取最新 HTML）', 'sw.js 没做 network-first 导航 → 旧版仍会被缓存顶出');
   check(/skipWaiting/.test(sw) && /clients\.claim/.test(sw),
     'sw.js 安装即 skipWaiting + 激活即 clients.claim（缩短部署生效空窗）', '缺 skipWaiting/clients.claim → 新版本接管慢');
-  // 安全红线：只接管 navigate，不得拦截 notes.html 的 .enc 解密 fetch 或任何子资源
+  // 安全红线：拦截点只允许两处 —— ① navigate（network-first）② 不可变资源（cache-first）。
+  // 「不可变」限定为「带 ?v=」或「/assets/ 内容哈希文件名」两种，绝不按裸扩展名放宽：
+  // notes.html 的 .enc 密文两者都不满足，永远走放行路径。
   const rwCount = (sw.match(/event\.respondWith/g) || []).length;
-  check(rwCount === 1 && /if \(req\.mode === 'navigate'\)\s*\{[\s\S]*?event\.respondWith/.test(sw),
-    'sw.js 只有「导航分支内」一处 respondWith，其余请求（含 .enc）一律放行',
-    `sw.js 拦截点数为 ${rwCount}（应恰为 1 且在 navigate 分支内）→ 可能误伤 notes.html 密文拉取`);
+  const vBranchRaw = (sw.match(/if \(url\.searchParams\.has\('v'\)[\s\S]{0,200}?\{([\s\S]*?)\n  \}/) || [])[1] || '';
+  const hasImmutableRule = sw.includes('[A-Za-z0-9_.-]+-[A-Za-z0-9_-]{8,}');
+  check(rwCount === 2
+    && /if \(req\.mode === 'navigate'\)\s*\{[\s\S]*?event\.respondWith/.test(sw)
+    && vBranchRaw.length > 100 && /event\.respondWith/.test(vBranchRaw)
+    && hasImmutableRule
+    && !/\.enc/.test(vBranchRaw),
+    'sw.js 拦截点恰为两处：navigate（network-first）+ 不可变资源（仅 ?v= 或内容哈希文件名，cache-first），.enc 永不被接管',
+    `sw.js 拦截点 ${rwCount}（应恰为 2：navigate + 不可变资源分支，且该分支内不得出现 .enc）→ 可能误伤 notes.html 密文拉取`);
   check(/\.enc/.test(sw),
     'sw.js 明确处理 notes.html 的 .enc 等非导航请求（注释 + 放行）', 'sw.js 没说明对 .enc 的处理 → 密文解锁链路有隐患');
+
+  // —— 首屏加载性能（站长 2026-11-10「超过了 10 秒都没有加载成功，代码必须优化」）——
+  // 本地按 ~1.5Mbps / 300ms RTT 节流实测：51 个资源、1587KB，主包 434KB 与 CSS 53KB
+  // 各下载两遍（preload 缺 crossorigin，credentials 模式与标签不一致被当成两个请求），
+  // 广告位补丁排在第 40 个 defer，要等 692KB body 解析完 → 15 秒才出现广告位。
+  // 三处结构性修法各钉一条，任何一条被改回去，慢网都会退回「十几秒白屏」。
+  const preJs = idx.match(/<link rel="preload" as="script"[^>]*href="\.\/assets\/index-[^"]+"/);
+  const preCss = idx.match(/<link rel="preload" as="style"[^>]*href="\.\/assets\/index-[^"]+\.css"/);
+  check(preJs && /crossorigin/.test(preJs[0]) && preCss && /crossorigin/.test(preCss[0])
+    && /<script type="module" crossorigin src="\.\/assets\/index-/.test(idx)
+    && /<link rel="stylesheet" crossorigin href="\.\/assets\/index-/.test(idx),
+    '§33a preload 的 credentials 模式与 module / stylesheet 标签一致（都带 crossorigin），主包与 CSS 不再各下两遍',
+    'preload 少了 crossorigin → 浏览器当成两个不同资源，434KB 主包 + 53KB CSS 全下两遍');
+
+  const vRec33 = (read('black-card-adslot.js').match(/ad-recruit\.svg\?v=(\d+)/) || [])[1];
+  check(vRec33
+    && idx.includes('./assets/ad-recruit.svg?v=' + vRec33)
+    && /<link rel="preload" as="image" href="\.\/assets\/ad-luxiyi\.svg"/.test(idx),
+    '§33a2 广告位两张设计图首屏预热，且 ad-recruit 的 ?v 与 black-card-adslot.js 里的 ART_RECRUIT 完全一致',
+    '预热 URL 与脚本里的实际 URL 不一致 → 白预热，广告位照样「卡片先出来、图还是空的」');
+
+  check(/<script async src="\.\/black-card-adslot\.js\?v=9"><\/script>/.test(idx)
+    && idx.indexOf('black-card-adslot.js?v=9') < idx.indexOf('</head>')
+    && !/script defer src="\.\/black-card-adslot\.js/.test(idx),
+    '§33b 广告位补丁在 head 里 async 加载（不再排在第 40 个 defer，也不必等 692KB body 解析完）',
+    '广告位补丁退回 defer 队列尾部 → 慢网又要 15 秒才冒出广告位');
 
   // —— 行为回归测试必须存在且已接线 CI ——
   const tssFile = 'scripts/test-success-stories.cjs';
@@ -7432,7 +7466,7 @@ section('25. 成功案例专题页（QQ奶奶）');
       && !/https?:\/\//.test(read(f).replace(/xmlns(?::[a-zA-Z]+)?="[^"]*"/g, ''))
       && !/<image\b/i.test(read(f)))
     && ad29.indexOf("var ART = './assets/ad-luxiyi.svg'") !== -1
-    && ad29.indexOf("var ART_RECRUIT = './assets/ad-recruit.svg?v=2'") !== -1,
+    && ad29.indexOf("var ART_RECRUIT = './assets/ad-recruit.svg?v=3'") !== -1,
     '§29e 两张站点自绘矢量设计稿存在、有效、无外链，且被广告位引用');
 
   check(!/<div class="sxg-adslot__cta"/.test(ad29)
@@ -7445,10 +7479,10 @@ section('25. 成功案例专题页（QQ奶奶）');
 
   check(/\.sxg-adslot__card\{[^}]*align-items:center[^}]*text-align:center/.test(ad29)
     && /\.sxg-adslot__meta\{[^}]*justify-content:center/.test(ad29)
-    && /\.sxg-adslot__recruit-copy\{[^}]*text-align:center/.test(ad29)
+    && /\.sxg-adslot__art\{display:block;width:100%;height:auto\}/.test(ad29)
     && !/\.sxg-adslot__nav\{[^}]*position:absolute/.test(ad29)
     && /sxg-adslot__foot/.test(ad29),
-    '§29g 广告位内容水平居中、箭头移到卡片下方导航条（不再压住招商卡标题）');
+    '§29g 广告位内容水平居中、广告图满宽自适应、箭头在卡片下方导航条（不再压住招商卡标题）');
 
   const tmall29 = (ad29.match(/var TMALL = '([^']+)'/) || [])[1];
   check(tmall29 === 'https://' + 'luxiyi.tmall.com/'
@@ -7456,7 +7490,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
 
   check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
-    && /black-card-adslot\.js\?v=8/.test(idx29),
+    && /black-card-adslot\.js\?v=9/.test(idx29),
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 }
 
@@ -7618,18 +7652,19 @@ section('25. 成功案例专题页（QQ奶奶）');
   check((code32.match(/公益广告位/g) || []).length >= 4
     && !/广告位招商中|品牌展示|>广告位</.test(code32)
     && /data-adslot-kind', 'public-welfare'/.test(code32)
-    && /black-card-adslot\.js\?v=8/.test(idx32),
-    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 8');
+    && /black-card-adslot\.js\?v=9/.test(idx32),
+    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 9');
 
-  // 站长 2026-11-10「真实双休，这句话再下去点，PC端还是异常」：文案层继承 art-wrap 的
-  // line-height:0 致标题行盒塌缩、字形与副句黏连。桌面端显式 line-height 撑开行盒 + 副句
-  // margin-top 下移；手机端（≤480px）不动。断言查纯代码（§32b 已剥注释）。
-  check(/@media \(min-width:481px\)\{\.sxg-adslot__recruit-copy\{line-height:[\d.]+\}/.test(code32)
-    && /\.sxg-adslot__recruit-title\{line-height:[\d.]+\}/.test(code32)
-    && /\.sxg-adslot__recruit-sub\{margin-top:\d+px\}/.test(code32)
-    && /@media \(max-width:480px\)/.test(code32),
-    '§32b2 招募卡文案层/标题显式 line-height 撑行盒、桌面端「真实双休」副句下移，手机端口径不动',
-    'line-height:0 继承一回来，PC 端两行文字又黏在一起');
+  // 站长 2026-11-10 二次纠正「广告图叫你重构，不是让你改成纯文字 / 文字明显重叠」：
+  // 文案已全部画进 ad-recruit.svg 的 <text>（与图同坐标系同缩放，结构上不可能叠字），
+  // HTML 侧只留一行正常流 meta。这里把「两套文案并存」钉死：三个旧类名一律不许回归，
+  // 否则又会出现「图里一份 + DOM 一份」的叠字现场。
+  // 注意：断言查纯代码 code32（已剥注释），else 里写清楚的来龙去脉不会污染断言。
+  check(!/sxg-adslot__recruit-copy|sxg-adslot__recruit-title|sxg-adslot__recruit-sub/.test(code32)
+    && !/sxg-adslot__recruit-copy/.test(ad32)
+    && /@media \(max-width:480px\)\{\.sxg-adslot__nav\{display:none\}/.test(code32),
+    '§32b2 招募卡不再有 HTML 文案层（recruit-copy/title/sub 清零），文案只在 SVG 里；手机端导航条折叠口径保留',
+    'recruit-copy 之类的 HTML 文案层一回来，就和图里的文案撞成「叠字」');
 
   // §32b3 黑卡预隐藏：慢网下 bundle 先渲染黑卡、black-card-adslot.js 后替换，
   // 中间那帧黑卡肉眼可见（站长 2026-11-10：「先加载黑色卡片，然后才出现广告位」）。
@@ -7642,12 +7677,21 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§32b3 黑卡预隐藏样式必须内联在头部（body 渲染前已解析，慢网首帧不再闪现旧黑卡）',
     '预隐藏样式被删或挪出头部，黑卡闪现就会回来');
 
-  check(!/<circle\b/.test(rec32) && !/rc-plate/.test(rec32)
-    && /PUBLIC WELFARE AD/.test(rec32) && /公益广告位/.test(brand32)
-    && /\.sxg-adslot__recruit-copy\{display:flex/.test(code32)
-    && !/\.sxg-adslot__recruit-copy\{position:absolute/.test(code32),
-    '§32c 招商卡设计稿不画死文字衬底（SVG 白板已撤，衬底=HTML 正常流 CSS 白板、随文字长高）；无圆形印章；角标同步公益命名',
-    'SVG 写死白板或文案退回绝对定位叠层，手机端「穿模」就会回来');
+  // 站长 2026-11-10「文字明显也重叠了」的根治口径：文案在图里，三条 <text> 基线必须
+  // 严格递增（136/192/228 那一套），且必须有实体图形（挂牌/印章/聚光），不能只剩白底。
+  // 这是「叠字」唯一能机器判红的抓手——光看类名挡不住。
+  const recTexts = [...rec32.matchAll(/<text[^>]*?y="(\d+)"[^>]*?font-size="(\d+)"/g)]
+    .map((m) => ({ y: Number(m[1]), size: Number(m[2]) }));
+  const recMain = recTexts.filter((t) => t.y >= 100 && t.y <= 260).sort((a, b) => a.y - b.y);
+  const recGrowing = recMain.length >= 3 && recMain.every((t, i) => i === 0 || t.y > recMain[i - 1].y);
+  check(recGrowing
+    && recMain.length >= 3 && recMain[0].size >= 60
+    && !/\.sxg-adslot__recruit-copy\{position:absolute/.test(code32)
+    && /rc-plate/.test(rec32) && /rc-gold/.test(rec32)
+    && /虚位以待/.test(rec32) && /可申请免费展示/.test(rec32)
+    && /PUBLIC WELFARE AD/.test(rec32) && /公益广告位/.test(brand32),
+    '§32c 招商卡是「广告设计图」：文案画进图里且三条基线严格递增（不可能叠字），挂牌/金线/印章实体在，角标同步公益命名',
+    `图里主线文案基线 ${JSON.stringify(recMain)} 不递增或缺失 → 叠字/穿模会回来`);
 
   check(/z-index:9995/.test(ad32) && /padding:7px 0 14px/.test(ad32)
     && /background: rgba\(24, 20, 16, 0\.22\)/.test(dyp32)

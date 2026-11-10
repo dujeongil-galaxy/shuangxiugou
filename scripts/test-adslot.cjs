@@ -10,7 +10,7 @@ const ROOT = path.resolve(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const TMALL = 'https://' + 'luxiyi.tmall.com/'; // 拼接避免本文件被参数红线误扫
 const ART_BRAND = './assets/ad-luxiyi.svg';
-const ART_RECRUIT = './assets/ad-recruit.svg?v=2';
+const ART_RECRUIT = './assets/ad-recruit.svg?v=3';
 
 let pass = 0, fail = 0;
 const fails = [];
@@ -106,11 +106,20 @@ function check(label, cond, extra) {
     /\.sxg-adslot__card\{[^}]*align-items:center[^}]*text-align:center/.test(src));
   check('信息条 justify-content:center',
     /\.sxg-adslot__meta\{[^}]*justify-content:center/.test(src));
-  check('招商卡文案正常流白板（居中；禁止 absolute 叠回设计图——手机端穿模根源）',
-    /\.sxg-adslot__recruit-copy\{[^}]*align-items:center[^}]*justify-content:center[^}]*text-align:center/.test(src)
-    && !/\.sxg-adslot__recruit-copy\{[^}]*position:absolute/.test(src));
-  const gcs = window.getComputedStyle(slot.querySelector('.sxg-adslot__recruit-copy'));
-  check('真 DOM 计算样式：招商文案 textAlign=center', gcs.textAlign === 'center', gcs.textAlign);
+  check('招商卡不再有 HTML 文案层（文案只画在设计图里，杜绝两套文案叠字）',
+    !/sxg-adslot__recruit-copy|sxg-adslot__recruit-title|sxg-adslot__recruit-sub/.test(src)
+    && !slot.querySelector('.sxg-adslot__recruit-copy'));
+  // 文案在图里 → 直接看 SVG 里三条主文案的基线是否严格递增（叠字唯一能机器判红的抓手）
+  const recTexts = [...read('assets/ad-recruit.svg').matchAll(/<text[^>]*?y="(\d+)"[^>]*?font-size="(\d+)"/g)]
+    .map((m) => ({ y: Number(m[1]), size: Number(m[2]) }))
+    .filter((t) => t.y >= 100 && t.y <= 260)
+    .sort((a, b) => a.y - b.y);
+  check('设计图里三条主文案基线严格递增（不叠字）',
+    recTexts.length >= 3 && recTexts.every((t, i) => i === 0 || t.y > recTexts[i - 1].y)
+    && recTexts[0].size >= 60, JSON.stringify(recTexts));
+  const tag = slot.querySelector('.sxg-adslot__card--recruit .sxg-adslot__tag');
+  check('招商卡信息行仍是正常流文字（手机端可读），不是图片里的小字',
+    !!tag && /可申请免费展示/.test(tag.textContent));
   const foot = slot.querySelector('.sxg-adslot__foot');
   const prev = slot.querySelector('.sxg-adslot__prev');
   const next = slot.querySelector('.sxg-adslot__next');
@@ -118,8 +127,8 @@ function check(label, cond, extra) {
     !!foot && !!prev && !!next && foot.contains(prev) && foot.contains(next));
   check('箭头 CSS 已无 position:absolute',
     !/\.sxg-adslot__nav\{[^}]*position:absolute/.test(src));
-  check('招商卡标题与副标题仍在 DOM 里（未被图片吞掉）',
-    /公益广告位 · 虚位以待/.test(slot.textContent) && /欢迎联系站长/.test(slot.textContent));
+  check('招商卡的信息行与切换提示仍在 DOM 里（未被图片吞掉）',
+    /可申请免费展示/.test(slot.textContent) && /欢迎联系站长|自动轮播/.test(slot.textContent));
 
   // ─────────── 3. 轮播交互没被改坏 ───────────
   console.log('\n--- 3. 手动切换 / 自动轮播 ---');
