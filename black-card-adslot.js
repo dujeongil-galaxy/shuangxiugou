@@ -92,7 +92,7 @@
      否则浏览器会把它当两个资源（预热的白预了）。改了图就同步升这里和 index.html。 */
   var ART = './assets/ad-luxiyi.svg?v=2';
   var ART_PDL = './assets/ad-pangdonglai.svg?v=2';
-  var ART_RECRUIT = './assets/ad-recruit.svg?v=4';
+  var ART_RECRUIT = './assets/ad-recruit.svg?v=5';
   var AUTOPLAY_MS = 5000;
 
   function injectStyle() {

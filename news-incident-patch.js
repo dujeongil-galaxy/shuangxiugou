@@ -24,6 +24,17 @@
  *     这才是「吃新闻流量」的正确落点）；卡片只链站内详情页。
  *  ④ 事实来自中国经济网／光明网／中新经纬／南方+／中国新闻周刊／
  *     封面新闻／中国能源网等公开报道，日期与主体逐条对齐，不编造、不夸大。
+ *
+ * 2026-11-10 全站检查补记（站长：「让你写一个常州星宇，你把所有自定义卡片
+ * 都写了？」「罗技的也是，到处乱飞」）：
+ *   自定义卡是 index.html 用 templateCard.cloneNode(true) 从内置卡克隆的，
+ *   A 级模板 = 罗技卡、C 级模板 = 星宇卡，于是本补丁插在模板上的登记框被
+ *   整块复制进了 103 张无关自定义卡。两层修复：
+ *     ① 克隆侧（根本）：index.html 克隆后统一剥离所有品牌专属注入节点；
+ *     ② 本补丁侧（自愈兜底）：每次运行都按「卡片标题归属」清理——
+ *        凡是标题不匹配的卡里的登记框一律删除，只在自己的卡上保留一份。
+ *   只插不清是这类补丁的通病：DOM 节点被复用／克隆后，补丁留在旧节点上，
+ *   内容就跟着别的品牌跑了。verify §34b 钉死这段自愈逻辑。
  */
 (function () {
   'use strict';
@@ -54,6 +65,8 @@
       tone: 'red'
     }
   ];
+
+  var MARK = 'data-sxg-news';
 
   var TONES = {
     blue: {
@@ -92,6 +105,47 @@
     return null;
   }
 
+  /** 从任意注入节点向上找到它所在的卡片根（与 findCard 同一套判据）。 */
+  function cardRootOf(el) {
+    var cur = el && el.parentElement;
+    for (var d = 0; cur && d < 8 && cur !== document.body; d++) {
+      if (isCardRoot(cur)) return cur;
+      cur = cur.parentElement;
+    }
+    return null;
+  }
+
+  /** 卡片自己的品牌标题（自定义卡克隆后 h2/h3 会被改成新品牌名）。 */
+  function cardTitle(card) {
+    var h = card && card.querySelector('h2, h3');
+    return h ? (h.textContent || '').trim() : '';
+  }
+
+  /**
+   * 品牌绑定自愈：只准在自己的卡上留登记框。
+   * 克隆模板 / React 复用 DOM 节点时，本补丁插进去的框会跟着节点跑到
+   * 别的品牌下（这次 65 个罗技框 + 40 个星宇框就是这么来的）。每轮先清后插，
+   * 挂错卡的框一律删除；找不到卡片根的孤儿节点也删。
+   */
+  function cleanupMisplaced(item) {
+    var boxes = document.querySelectorAll('[' + MARK + '="' + item.key + '"]');
+    for (var i = 0; i < boxes.length; i++) {
+      var box = boxes[i];
+      var card = cardRootOf(box);
+      if (!card || !item.title.test(cardTitle(card))) {
+        if (box.parentNode) box.parentNode.removeChild(box);
+      }
+    }
+  }
+
+  /** 同一张卡上历史残留的重复框只留一份（幂等的补强）。 */
+  function dedupeOn(card, item) {
+    var boxes = card.querySelectorAll('[' + MARK + '="' + item.key + '"]');
+    for (var i = boxes.length - 1; i > 0; i--) {
+      if (boxes[i].parentNode) boxes[i].parentNode.removeChild(boxes[i]);
+    }
+  }
+
   function buildBox(item) {
     var style = TONES[item.tone] || TONES.blue;
     var box = document.createElement('div');
@@ -123,7 +177,7 @@
   }
 
   function patchCard(card, item) {
-    if (card.querySelector('[data-sxg-news="' + item.key + '"]')) return true; // 幂等
+    if (card.querySelector('[' + MARK + '="' + item.key + '"]')) return true; // 幂等
     var inner = card.querySelector('div.p-5.space-y-3\\.5');
     var host = inner || card;
     var anchor = inner && inner.children.length > 1 ? inner.children[1] : null;
@@ -140,9 +194,15 @@
   function patchOnce() {
     for (var i = 0; i < ITEMS.length; i++) {
       var item = ITEMS[i];
+      try { cleanupMisplaced(item); } catch (e) {
+        console.error('[双休购] 新闻事件登记清理失败：', item.key, e);
+      }
       var card = findCard(item.title);
       if (card) {
-        try { patchCard(card, item); } catch (e) {
+        try {
+          dedupeOn(card, item);
+          patchCard(card, item);
+        } catch (e) {
           console.error('[双休购] 新闻事件登记补丁执行失败：', item.key, e);
         }
       }

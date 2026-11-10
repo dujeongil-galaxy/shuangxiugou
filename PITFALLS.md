@@ -2683,3 +2683,17 @@ HEAD 不是补提交，只是正文里引用了一下标记，同样被跳过。
 **修复**：改成 `!/tmall|taobao|天猫|淘宝/i.test(pdlCardHtml)`，中英文一起扫；故障注入复跑该断言判红，还原后复绿。同类断言（零视频链接、零追踪参数）也别只盯 URL 字面量：可见文案、`aria-label`、注释各按口径划清扫描范围——但注意第三十四章的另一半教训，URL 类证据必须按源码原文扫，别用会吃掉 `https://` 的清洗正则。
 
 **运维坑**：CI #634 的「照片解密与灯箱测试」判红，与本批改动无关，是已知的 CDP 时序 flake（端口 30s 未就绪 / blob src 未拿到）。本地 `node scripts/test-photo-vault.cjs` 单跑 30/30 过即可确认，**不要改生产代码、也不要推空提交刷绿**。本机 `node fetch` 到 `api.github.com` 被网络沙箱拦（fetch failed），`curl` 直连又有 Windows TLS 吊销检查坑；可用 `git credential fill` 取凭据 + `curl --ssl-no-revoke -X POST .../actions/runs/<id>/rerun-failed-jobs`（HTTP 201）只重跑失败 job，不产生新提交。
+
+---
+
+## 第三十六章：`cloneNode(true)` 把品牌专属补丁复制到 103 张卡；函数声明冒充调用、固定 Edge profile 缓存导致两次假绿（2026-11-10 20:44 全站检查）
+
+**现象**：站长截图质问「让你写一个常州星宇，你把所有自定义卡片都写了？」「罗技的也是，到处乱飞」。全站审计实测：罗技登记框 **65 份**、星宇登记框 **40 份**，散落在 103 张无关自定义卡（阿里巴巴 / 蚂蚁 / 百度 / 零食有鸣……），每张卡恰好 1 份。
+
+**根因**：`index.html` 造自定义卡用的是 `templateCard.cloneNode(true)`，模板从全场卡片里按评级挑——A 级模板恰好是 `Logitech (罗技)`、C 级模板恰好是 `常州星宇股份`。`news-incident-patch.js` 先给这两张内置卡插了登记框，克隆时整块复制；更糟的是已经带框的自定义卡又会被当成下一张卡的模板，越滚越多。这不是「写错文案」，是**克隆只该继承骨架、却继承了别人的内容**。两层修复：① 克隆后按 `SXG_CLONE_STRIP_NODES` / `SXG_CLONE_STRIP_ATTRS` 剥离全部品牌专属注入节点与「已处理」标记属性（只有 class 没有 data 属性的 `.sxg-localnote` 要单独剥，否则清了幂等标记、节点还在，会被补挂成两行重复提示）；② 补丁每轮按卡片标题归属自愈，挂错卡的框一律删除。verify §34a~§34d + `test-news-scope.cjs` + `cdp-fullsite-audit.cjs` 三层强制。
+
+**假绿坑 1（静态断言）**：把 `cleanupMisplaced(item);` 调用注释掉，断言仍绿——因为 `function cleanupMisplaced(item) {` 这个**函数声明本身就匹配** `cleanupMisplaced\(item\)`。改成只认带分号的调用 `/cleanupMisplaced\(item\)\s*;/`（且先剥注释），故障注入才判红。写「函数是否被调用」的正则时，永远问一句：函数声明会不会也匹配上？
+
+**假绿坑 2（真渲染）**：故障注入关掉两层防护后，CDP 审计居然仍报 PASS；改了 SVG 也截到旧图。根因是 `cdp-*.cjs` 用**固定** `--user-data-dir`，而 `sw.js` 对带 `?v=` 的资源是 cache-first——上次的补丁/设计图被缓存住，源码改了浏览器根本没加载。两个脚本都改成 `Date.now()` 独立 profile 后，双层故障立刻判红（103 处串卡 / 65 / 40），改后的 SVG 也终于截到正确版本。**本机验收脚本一律用独立 Edge profile**，否则「改了没生效」和「故障注入假绿」都查不出来。
+
+**另一条**：故障注入前把文件备份到仓库外（本轮 `D:/WorkBuddy-Cache/tmp/fault-backup/`），还原用 `cp` 而不是逐处反向编辑；长时故障态留在仓库里最危险。

@@ -48,7 +48,7 @@
          三张图的 ?v 必须与 black-card-adslot.js 里 ART / ART_PDL / ART_RECRUIT 一致，verify §33a2 有断言。 -->
     <link rel="preload" as="image" href="./assets/ad-luxiyi.svg?v=2" />
     <link rel="preload" as="image" href="./assets/ad-pangdonglai.svg?v=2" />
-    <link rel="preload" as="image" href="./assets/ad-recruit.svg?v=4" />
+    <link rel="preload" as="image" href="./assets/ad-recruit.svg?v=5" />
     <link rel="dns-prefetch" href="https://dujeongil-galaxy.github.io" />
     <script type="application/ld+json">
     {
@@ -142,7 +142,7 @@
        广告位替换后高度差最小）；补丁替换成功后选择器不再命中任何节点，样式无害常驻。
        注意：该样式必须与 black-card-adslot.js 共存——若将来下线补丁，须同步删本样式。 -->
   <style id="sxg-blackcard-prehide">div[class*="rounded-2xl p-5 shadow-xl"]{visibility:hidden}</style>
-  <script async src="./black-card-adslot.js?v=11"></script>
+  <script async src="./black-card-adslot.js?v=12"></script>
   <style>.sxg-loading{position:fixed;inset:0;z-index:2147483647;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}.sxg-boot{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:14px;color:#0f766e;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif}.sxg-boot__spinner{width:34px;height:34px;border:3px solid #ccfbf1;border-top-color:#0f766e;border-radius:50%;animation:sxg-spin .8s linear infinite}.sxg-boot__text{margin:0;font-size:14px;font-weight:600;letter-spacing:.04em}@keyframes sxg-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.sxg-boot__spinner{animation-duration:2s}}</style>
   </head>
   <body>
@@ -7712,6 +7712,52 @@
           var newCard = templateCard.cloneNode(true);
           newCard.id = config.id;
 
+          // 2026-11-10 全站检查（站长：「让你写一个常州星宇，你把所有自定义卡片都写了？」
+          // 「罗技的也是，到处乱飞」）：
+          // 这里的模板卡是 React 渲染出来的**内置卡**，而站内一堆 DOM 补丁
+          // （新闻登记 / 曝光 / 核实提示 / 平替推荐……）都会往内置卡里插
+          // 「只属于某一家企业」的内容。A 级模板恰好是 Logitech (罗技) 卡、
+          // C 级模板恰好是常州星宇股份卡，于是 cloneNode(true) 把两张卡上的
+          // 登记框整块复制进了 103 张自定义卡。更糟的是模板是从全场卡片里
+          // 挑的，已经带框的自定义卡又会被当成下一张卡的模板，越滚越多。
+          // 规矩：克隆只继承骨架，**绝不继承别人的内容**。下面统一剥离
+          //   ① 补丁注入的整块节点（NODES 表）
+          //   ② 补丁写在骨架元素/卡片根上的标记属性（ATTRS 表；不清会让后续补丁
+          //      误判「这张卡已经处理过」，或把模板的档位/标题修正当成事实继承）
+          // 新增品牌专属补丁时，必须把它的标记加进这两张表，verify §34a 会
+          // 反查所有补丁文件里的 setAttribute('data-…') 逐一核对，漏一个就判红。
+          var SXG_CLONE_STRIP_NODES = [
+            'data-sxg-news', 'data-byd-expose', 'data-luckin-note',
+            'data-luxiyi-alt', 'data-ai-notice', 'data-rate-note',
+            'data-sxg-ubadge', 'data-sxg-dbadge', 'data-sxg-dnote'
+          ];
+          var SXG_CLONE_STRIP_ATTRS = [
+            'data-luckin-policy', 'data-rate-patched', 'data-sxg-localnote',
+            'data-sxg-tier', 'data-h2-fixed'
+          ];
+          for (var sn = 0; sn < SXG_CLONE_STRIP_NODES.length; sn++) {
+            var sxgStripNodes = newCard.querySelectorAll('[' + SXG_CLONE_STRIP_NODES[sn] + ']');
+            for (var sn2 = 0; sn2 < sxgStripNodes.length; sn2++) {
+              var sxgStripNode = sxgStripNodes[sn2];
+              if (sxgStripNode.parentNode) sxgStripNode.parentNode.removeChild(sxgStripNode);
+            }
+          }
+          var sxgStripRoots = [newCard].concat([].slice.call(newCard.querySelectorAll('*')));
+          for (var sr = 0; sr < sxgStripRoots.length; sr++) {
+            for (var sa = 0; sa < SXG_CLONE_STRIP_ATTRS.length; sa++) {
+              sxgStripRoots[sr].removeAttribute(SXG_CLONE_STRIP_ATTRS[sa]);
+            }
+          }
+          // custom-card-actions.js 的「投票仅存本地」说明只有 class、没有 data 属性：
+          // 上面的 ATTRS 清掉了幂等标记，若节点留着，补丁会再挂一行 → 卡片底部
+          // 出现两行一模一样的提示。这类 class 型注入节点也要一并剥离。
+          var sxgLocalNotes = newCard.querySelectorAll('.sxg-localnote');
+          for (var sl = 0; sl < sxgLocalNotes.length; sl++) {
+            if (sxgLocalNotes[sl].parentNode) {
+              sxgLocalNotes[sl].parentNode.removeChild(sxgLocalNotes[sl]);
+            }
+          }
+
           // 校正评级徽章（兼容徽章里的 "X级 · 描述" 结构）
           var badgeSpan = newCard.querySelector('span.inline-flex');
           var gLetter = String(config.grade).replace('级', '').trim();
@@ -8952,7 +8998,7 @@
        内置卡数据在压缩 bundle 里不能改，用独立 DOM 补丁在渲染后挂红框说明。 -->
   <script defer src="./byd-expose-patch.js?v=1"></script>
   <!-- 2026-11-10 新闻事件登记：罗技授权店铺侮辱消费者广告 / 星宇股份后续进展，内置卡渲染后 DOM 补丁 -->
-  <script defer src="./news-incident-patch.js?v=1"></script>
+  <script defer src="./news-incident-patch.js?v=2"></script>
   <!-- 每张卡详情弹窗底部「跳转到证据公示」：内置 React 弹窗与自定义卡弹窗
        一视同仁，完整定位到 #evidence-board 里该品牌的 <details> 条目。
        真相源是生成器产出的公示区 DOM，补丁不硬编码品牌清单。 -->

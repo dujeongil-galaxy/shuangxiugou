@@ -12,7 +12,7 @@ const TMALL = 'https://' + 'luxiyi.tmall.com/'; // 拼接避免本文件被参�
 const JD = 'https://' + 'search.jd.com/Search?keyword=%E8%83%96%E4%B8%9C%E6%9D%A5';
 const ART_BRAND = './assets/ad-luxiyi.svg?v=2';
 const ART_PDL = './assets/ad-pangdonglai.svg?v=2';
-const ART_RECRUIT = './assets/ad-recruit.svg?v=4';
+const ART_RECRUIT = './assets/ad-recruit.svg?v=5';
 const PDL_DETAIL = './brand/pdl.html';
 
 let pass = 0, fail = 0;

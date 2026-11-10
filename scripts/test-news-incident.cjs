@@ -35,7 +35,7 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
 
   check('新闻登记补丁文件存在', exists('news-incident-patch.js'));
   check('首页挂了新闻登记补丁（?v=1 防缓存）',
-    /<script defer src="\.\/news-incident-patch\.js\?v=1"><\/script>/.test(html));
+    /<script defer src="\.\/news-incident-patch\.js\?v=2"><\/script>/.test(html));
   check('真 DOM 测试挂进 CI 的 pinyin job', /test-news-incident\.cjs/.test(wf));
   check('README 写死新闻登记口径',
     /新闻事件登记/.test(rd) && /不作因果认定|不写「报应」/.test(rd));

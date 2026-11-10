@@ -6366,8 +6366,8 @@ section('21c. 首页滑到底部按钮');
     '§33a2 广告位三张设计图首屏预热，且每张的 ?v 与 black-card-adslot.js 里的常量完全一致',
     '预热 URL 与脚本里的实际 URL 不一致 → 白预热，广告位照样「卡片先出来、图还是空的」');
 
-  check(/<script async src="\.\/black-card-adslot\.js\?v=11"><\/script>/.test(idx)
-    && idx.indexOf('black-card-adslot.js?v=11') < idx.indexOf('</head>')
+  check(/<script async src="\.\/black-card-adslot\.js\?v=12"><\/script>/.test(idx)
+    && idx.indexOf('black-card-adslot.js?v=12') < idx.indexOf('</head>')
     && !/script defer src="\.\/black-card-adslot\.js/.test(idx),
     '§33b 广告位补丁在 head 里 async 加载（不再排在第 40 个 defer，也不必等 692KB body 解析完）',
     '广告位补丁退回 defer 队列尾部 → 慢网又要 15 秒才冒出广告位');
@@ -7466,7 +7466,7 @@ section('25. 成功案例专题页（QQ奶奶）');
       && !/https?:\/\//.test(read(f).replace(/xmlns(?::[a-zA-Z]+)?="[^"]*"/g, ''))
       && !/<image\b/i.test(read(f)))
     && ad29.indexOf("var ART = './assets/ad-luxiyi.svg?v=2'") !== -1
-    && ad29.indexOf("var ART_RECRUIT = './assets/ad-recruit.svg?v=4'") !== -1
+    && ad29.indexOf("var ART_RECRUIT = './assets/ad-recruit.svg?v=5'") !== -1
     && ad29.indexOf("var ART_PDL = './assets/ad-pangdonglai.svg?v=2'") !== -1,
     '§29e 三张站点自绘矢量设计稿存在、有效、无外链，且被广告位引用（?v 与预热一致）');
 
@@ -7491,7 +7491,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
 
   check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
-    && /black-card-adslot\.js\?v=11/.test(idx29),
+    && /black-card-adslot\.js\?v=12/.test(idx29),
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 
   // —— 站长 2026-11-10 晚：胖东来广告卡（首页推荐位） ——
@@ -7708,8 +7708,8 @@ section('25. 成功案例专题页（QQ奶奶）');
   check((code32.match(/公益广告位/g) || []).length >= 4
     && !/广告位招商中|品牌展示|>广告位</.test(code32)
     && /data-adslot-kind', 'public-welfare'/.test(code32)
-    && /black-card-adslot\.js\?v=11/.test(idx32),
-    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 11');
+    && /black-card-adslot\.js\?v=12/.test(idx32),
+    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 12');
 
   // 站长 2026-11-10 二次纠正「广告图叫你重构，不是让你改成纯文字 / 文字明显重叠」：
   // 文案已全部画进 ad-recruit.svg 的 <text>（与图同坐标系同缩放，结构上不可能叠字），
@@ -7740,14 +7740,31 @@ section('25. 成功案例专题页（QQ奶奶）');
     .map((m) => ({ y: Number(m[1]), size: Number(m[2]) }));
   const recMain = recTexts.filter((t) => t.y >= 100 && t.y <= 260).sort((a, b) => a.y - b.y);
   const recGrowing = recMain.length >= 3 && recMain.every((t, i) => i === 0 || t.y > recMain[i - 1].y);
+  // 站长 2026-11-10 20:44「胖东来和广告位招商不要用同一种风格的图片，好吗？」：
+  // 招商稿换成暖白纸面 + 虚线空位框 + 描边大字的「留白告示」风格，
+  // 与两张品牌广告（深蓝渐变 / 金色挂牌 / 圆印章 / 同心弧 / 聚光）彻底区分。
+  // 反向断言只查**剥掉注释后的图本体**（注释里要解释「刻意不用了什么」，
+  // 拿全文比对会让说明文字自己把断言判红）。
+  const recCode32 = rec32.replace(/<!--[\s\S]*?-->/g, '');
+  const styleClash32 = /linearGradient|radialGradient|rc-plate|rc-gold|rc-bg|印章|同心弧|聚光/
+    .test(recCode32) || /#0a1b47|#1d3f9e|#f9df8b|#e5a336/.test(recCode32);
   check(recGrowing
     && recMain.length >= 3 && recMain[0].size >= 60
     && !/\.sxg-adslot__recruit-copy\{position:absolute/.test(code32)
-    && /rc-plate/.test(rec32) && /rc-gold/.test(rec32)
+    && /rw-grid/.test(recCode32) && /rw-hatch/.test(recCode32)
+    && /stroke-dasharray/.test(recCode32) && /VACANCY/.test(recCode32)
+    // 刊头与 VACANCY 方章必须分开，且右下不许再挂会被虚线穿过的说明文字
+    && /x="60" y="76" text-anchor="start"[^>]*>PUBLIC WELFARE AD/.test(recCode32)
+    && /x="60" y="98" text-anchor="start"[^>]*>公益广告位 · 真实双休品牌招募/.test(recCode32)
+    && !/text-anchor="end"[^>]*>公益广告位 · 真实双休品牌招募/.test(recCode32)
+    && /<rect x="962" y="58"/.test(recCode32)
+    && !styleClash32
+    && /pdl-gold/.test(read('assets/ad-pangdonglai.svg'))
     && /虚位以待/.test(rec32) && /可申请免费展示/.test(rec32)
-    && /PUBLIC WELFARE AD/.test(rec32) && /公益广告位/.test(brand32),
-    '§32c 招商卡是「广告设计图」：文案画进图里且三条基线严格递增（不可能叠字），挂牌/金线/印章实体在，角标同步公益命名',
-    `图里主线文案基线 ${JSON.stringify(recMain)} 不递增或缺失 → 叠字/穿模会回来`);
+    && /PUBLIC WELFARE AD/.test(rec32) && /公益广告位/.test(brand32)
+    && /不要用同一种风格/.test(rd32),
+    '§32c 招商卡是「广告设计图」且风格与胖东来/陆喜依明确互异（暖白纸面+虚线空位框，零深蓝渐变/金挂牌/圆印章）；三条基线严格递增不叠字，README 写死风格互异口径',
+    `图里主线文案基线 ${JSON.stringify(recMain)} 不递增、或招商稿退回品牌稿的深蓝金字风格`);
 
   check(/z-index:9995/.test(ad32) && /padding:7px 0 14px/.test(ad32)
     && /background: rgba\(24, 20, 16, 0\.22\)/.test(dyp32)
@@ -7764,7 +7781,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§32e 搜索删空强制 6 秒 + 倒计时 + 硬 deadline；两侧契约同改、缓存号都 bump');
 
   check(news32.length > 0
-    && /<script defer src="\.\/news-incident-patch\.js\?v=1"><\/script>/.test(idx32)
+    && /<script defer src="\.\/news-incident-patch\.js\?v=2"><\/script>/.test(idx32)
     && /var ITEMS = \[/.test(news32) && /key: 'logitech'/.test(news32) && /key: 'xingyu'/.test(news32)
     && /new MutationObserver\(schedule\)/.test(news32)
     && /不能改 bundle/.test(news32)
@@ -7793,6 +7810,66 @@ section('25. 成功案例专题页（QQ奶奶）');
     && /test-adslot\.cjs/.test(wf32) && /test-notes-agree\.cjs/.test(wf32)
     && /陆喜依/.test(read('scripts/test-evidence-jump.cjs')),
     '§32j 真 DOM 测试挂进 CI；陆喜依精准定位已固化进跳转测试');
+}
+
+// ---------- 34. 品牌专属内容不串卡（2026-11-10 站长「现在做一次全站检查」） ----------
+// 实测现场：罗技登记框 65 份、星宇登记框 40 份散落 103 张自定义卡。根因是
+// index.html 的 templateCard.cloneNode(true) 把模板卡上的补丁节点整块复制。
+// 两层强制：① 克隆侧剥离表覆盖所有品牌专属补丁标记；② 补丁侧品牌绑定自愈。
+{
+  const idx34 = read('index.html');
+  const news34 = read('news-incident-patch.js');
+  const rd34 = read('README.md');
+  const wf34 = read('.github/workflows/verify.yml');
+  const scope34 = exists('scripts/test-news-scope.cjs') ? read('scripts/test-news-scope.cjs') : '';
+  const audit34 = exists('scripts/cdp-fullsite-audit.cjs') ? read('scripts/cdp-fullsite-audit.cjs') : '';
+
+  const nodes34 = (idx34.match(/var SXG_CLONE_STRIP_NODES = \[([\s\S]*?)\];/) || [])[1] || '';
+  const attrs34 = (idx34.match(/var SXG_CLONE_STRIP_ATTRS = \[([\s\S]*?)\];/) || [])[1] || '';
+  const stripAll34 = nodes34 + attrs34;
+  // 品牌专属补丁 → 它注入时用的标记。逐条反查「标记确实还在这个补丁里」且
+  // 「标记确实进了剥离表」，新增补丁忘了登记就判红（这条是防串卡回潮的主钉子）。
+  const brandPatches34 = [
+    ['news-incident-patch.js', 'data-sxg-news'],
+    ['byd-expose-patch.js', 'data-byd-expose'],
+    ['luckin-note-patch.js', 'data-luckin-note'],
+    ['luckin-note-patch.js', 'data-luckin-policy'],
+    ['luxiyi-alt-patch.js', 'data-luxiyi-alt'],
+    ['ai-notice-patch.js', 'data-ai-notice'],
+    ['rate-note-patch.js', 'data-rate-note'],
+    ['rate-note-patch.js', 'data-rate-patched'],
+    ['custom-card-actions.js', 'data-sxg-localnote'],
+    ['u-grade-patch.js', 'data-sxg-tier']
+  ];
+  const uncovered34 = brandPatches34.filter(([f, m]) =>
+    !read(f).includes(m) || !stripAll34.includes(m));
+  check(!!nodes34 && !!attrs34
+    && idx34.indexOf('SXG_CLONE_STRIP_NODES') > idx34.indexOf('cloneNode(true)')
+    && uncovered34.length === 0
+    && /newCard\.querySelectorAll\('\.sxg-localnote'\)/.test(idx34),
+    '§34a 自定义卡 cloneNode(true) 后剥离表覆盖全部品牌专属补丁标记（含 class 型 .sxg-localnote），新增补丁漏登记即判红',
+    '漏登记的标记 = 下一轮又把某一家的内容复制到几十张卡上；漏项：' + JSON.stringify(uncovered34));
+
+  // 只认剥注释后的纯代码：把调用注释掉、函数体还在，全文比对会假绿
+  // （与 §31「注释救活改坏的实现」同一类坑）。本文件无任何 URL，剥注释安全。
+  const newsCode34 = news34.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  check(/function cleanupMisplaced\(/.test(newsCode34) && /function dedupeOn\(/.test(newsCode34)
+    && /function cardTitle\(/.test(newsCode34) && /cleanupMisplaced\(item\)\s*;/.test(newsCode34)
+    && /!item\.title\.test\(cardTitle\(card\)\)/.test(newsCode34)
+    && /new MutationObserver\(schedule\)/.test(newsCode34),
+    '§34b 新闻登记补丁有品牌绑定自愈：标题不匹配的卡里的框一律删除，只留自己那一份',
+    '只插不清的补丁在 DOM 节点被克隆/复用后必然把内容带到别的品牌名下');
+
+  check(!!scope34 && /test-news-scope\.cjs/.test(wf34)
+    && /cloneNode\(true\)/.test(scope34) && /cleanupMisplaced/.test(scope34)
+    && !!audit34 && /FULLSITE /.test(audit34) && /mismatchCount/.test(audit34),
+    '§34c 串卡回归测试挂进 CI，且全站真渲染审计脚本会按串卡数量判红（不是只打印）',
+    '测试没挂 CI / 审计脚本不判红 → 下次还是靠站长截图才发现');
+
+  check(/品牌专属内容不串卡/.test(rd34) && /克隆只继承骨架，不继承内容/.test(rd34)
+    && /品牌绑定自愈/.test(rd34) && /不要用同一种风格/.test(rd34),
+    '§34d README 写死「只写一家企业就只许出现在那家卡上」与克隆剥离/自愈/风格互异口径',
+    '规则只挂口头 → 下次新增补丁照样漏登记');
 }
 
 // ---------- 汇总 ----------

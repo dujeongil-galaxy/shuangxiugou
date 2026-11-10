@@ -150,7 +150,9 @@ async function runViewport(ws, label, width, height) {
   await new Promise((r) => server.listen(HTTP_PORT, r));
   const edge = spawn(EDGE, [
     '--headless=new', `--remote-debugging-port=${DBG_PORT}`,
-    '--user-data-dir=' + path.join(cacheRoot(), '.edge-pdl-adcheck'),
+    // 每次用独立 profile：sw.js 对 ?v= 资源是 cache-first，固定 profile 会缓存
+    // 上一次的设计图，改了 SVG 也截到旧稿（全站审计脚本已踩过同款坑）。
+    '--user-data-dir=' + path.join(cacheRoot(), '.edge-pdl-adcheck-' + Date.now()),
     '--no-proxy-server', '--disable-gpu', 'about:blank'
   ], { stdio: 'ignore' });
 
