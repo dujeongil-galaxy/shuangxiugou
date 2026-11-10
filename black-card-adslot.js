@@ -93,6 +93,13 @@
   var ART = './assets/ad-luxiyi.svg?v=2';
   var ART_PDL = './assets/ad-pangdonglai.svg?v=2';
   var ART_RECRUIT = './assets/ad-recruit.svg?v=5';
+  /* ⑩ 站长 2026-11-10 23:40「手机端你检查了吗？新建的公益广告位，都穿模了」：
+     桌面稿 1200×300 等比压到 356px 宽后，14~26px 的小字只剩 4~8px，糊成一团。
+     窄屏改用 400×240 的手机专用稿（字号放大 2 倍以上、三条基线重新排开），
+     用 <picture> 的 media 切换，桌面三张原稿与 ?v 一个字不动。 */
+  var ART_MOBILE = './assets/ad-luxiyi-mobile.svg?v=1';
+  var ART_PDL_MOBILE = './assets/ad-pangdonglai-mobile.svg?v=1';
+  var ART_RECRUIT_MOBILE = './assets/ad-recruit-mobile.svg?v=1';
   var AUTOPLAY_MS = 5000;
 
   function injectStyle() {
@@ -110,6 +117,7 @@
       '.sxg-adslot__card{flex:0 0 100%;box-sizing:border-box;display:flex;flex-direction:column;' +
       'align-items:center;justify-content:center;text-align:center;color:#0f172a}' +
       '.sxg-adslot__art-wrap{position:relative;width:100%;line-height:0}' +
+      '.sxg-adslot__art-wrap picture{display:block;line-height:0}' +
       '.sxg-adslot__art{display:block;width:100%;height:auto}' +
       /* 广告设计图加载失败时的兜底海报：同色系底 + 金字，绝不再退回「纯文字」 */
       '.sxg-adslot__art-wrap[data-art-error]{min-height:132px;line-height:1.5;display:flex;' +
@@ -150,8 +158,13 @@
       '.sxg-adslot__dot{width:7px;height:7px;border-radius:50%;background:#cbd5e1;' +
       'cursor:pointer;transition:background .2s}' +
       '.sxg-adslot__dot.is-active{background:#1d3f9e}' +
+      /* 手机端：广告位进入视口时，压在卡片上的 fixed 悬浮圆钮临时避让
+         （真渲染量出 z-index 9000 的两个按钮与卡片边界相交 47×46，
+           被卡片 z-index 9995 切掉一半，看着就是「穿模的半个圆」）。
+         只隐藏「与广告位几何相交」的那几个，离开视口立刻恢复，不动站内其它交互。 */
       '@media (max-width:480px){.sxg-adslot__nav{display:none}' +
-      '.sxg-adslot__cta{font-size:12px}.sxg-adslot__meta{gap:5px 8px}}';
+      '.sxg-adslot__cta{font-size:12px}.sxg-adslot__meta{gap:5px 8px}' +
+      'html.sxg-adslot-near [data-sxg-adslot-avoid]{visibility:hidden!important;pointer-events:none!important}}';
     var st = document.createElement('style');
     st.id = 'sxg-adslot-style';
     st.textContent = css;
@@ -173,8 +186,11 @@
             '<a class="sxg-adslot__banner" href="' + TMALL + '" target="_blank" rel="noopener" ' +
               'aria-label="进入陆喜依天猫旗舰店，支持真实双休企业">' +
               '<div class="sxg-adslot__art-wrap" data-art-error-text="陆喜依 · 真实双休标杆品牌">' +
-                '<img class="sxg-adslot__art" src="' + ART + '" ' +
-                  'alt="陆喜依 · 真实双休标杆品牌 · 点击进入天猫旗舰店">' +
+                '<picture>' +
+                  '<source media="(max-width:480px)" srcset="' + ART_MOBILE + '">' +
+                  '<img class="sxg-adslot__art" src="' + ART + '" ' +
+                    'alt="陆喜依 · 真实双休标杆品牌 · 点击进入天猫旗舰店">' +
+                '</picture>' +
               '</div>' +
             '</a>' +
             '<div class="sxg-adslot__meta">' +
@@ -192,8 +208,11 @@
             '<a class="sxg-adslot__banner" href="' + PDL_SHOP + '" target="_blank" rel="noopener" ' +
               'aria-label="去京东搜索胖东来，支持善待劳动者的企业">' +
               '<div class="sxg-adslot__art-wrap" data-art-error-text="胖东来 · 善待劳动者">' +
-                '<img class="sxg-adslot__art" src="' + ART_PDL + '" ' +
-                  'alt="胖东来 · 善待劳动者 · 货车司机送货也能体会到尊重">' +
+                '<picture>' +
+                  '<source media="(max-width:480px)" srcset="' + ART_PDL_MOBILE + '">' +
+                  '<img class="sxg-adslot__art" src="' + ART_PDL + '" ' +
+                    'alt="胖东来 · 善待劳动者 · 货车司机送货也能体会到尊重">' +
+                '</picture>' +
               '</div>' +
             '</a>' +
             '<div class="sxg-adslot__meta">' +
@@ -207,8 +226,11 @@
           '</div>' +
           '<div class="sxg-adslot__card sxg-adslot__card--recruit">' +
             '<div class="sxg-adslot__art-wrap" data-art-error-text="公益广告位 · 虚位以待">' +
-              '<img class="sxg-adslot__art" src="' + ART_RECRUIT + '" ' +
-                'alt="公益广告位 · 虚位以待 · 真实双休标杆品牌可申请免费展示">' +
+              '<picture>' +
+                '<source media="(max-width:480px)" srcset="' + ART_RECRUIT_MOBILE + '">' +
+                '<img class="sxg-adslot__art" src="' + ART_RECRUIT + '" ' +
+                  'alt="公益广告位 · 虚位以待 · 真实双休标杆品牌可申请免费展示">' +
+              '</picture>' +
             '</div>' +
             '<div class="sxg-adslot__meta">' +
               '<span class="sxg-adslot__tag">真实双休标杆品牌可申请免费展示 · 欢迎联系站长</span>' +
@@ -234,7 +256,9 @@
         img.addEventListener('error', function () {
           img.setAttribute('data-adslot-img-error', '1');
           img.style.display = 'none';
-          var wrap = img.parentNode;
+          /* 海报 img 现在包在 <picture> 里，父节点不再是 art-wrap；
+             closest 才能拿到真正要降级的容器（否则图片失败兜底会静默失效）。 */
+          var wrap = img.closest ? img.closest('.sxg-adslot__art-wrap') : img.parentNode;
           if (wrap && wrap.className && wrap.className.indexOf('sxg-adslot__art-wrap') !== -1) {
             wrap.setAttribute('data-art-error', '1');
             if (!wrap.getAttribute('data-art-error-text')) {
@@ -251,6 +275,56 @@
       })(imgs[j]);
     }
     return root;
+  }
+
+  /* 手机端悬浮圆钮避让（站长 2026-11-10 23:40「新建的公益广告位，都穿模了」）：
+     真渲染量出两个 z-index:9000 的 fixed 悬浮按钮与广告位卡片边界相交约 47×46，
+     被 z-index:9995 的卡片切掉一半，看着就是「半个圆贴在卡片边上」。
+     广告位进入视口时只把几何相交的那几个临时隐藏、离开立刻恢复；
+     不碰首次访问提醒弹窗（z-index 100000），也不改站内任何交互逻辑。 */
+  function keepClear(root) {
+    if (typeof IntersectionObserver === 'undefined' || !document.body ||
+        !window.matchMedia || !window.matchMedia('(max-width:480px)').matches) return;
+    var avoided = [];
+    function restore() {
+      for (var i = 0; i < avoided.length; i++) {
+        avoided[i].removeAttribute('data-sxg-adslot-avoid');
+      }
+      avoided = [];
+    }
+    function scan(active) {
+      restore();
+      var html = document.documentElement;
+      if (!active) { html.classList.remove('sxg-adslot-near'); return; }
+      html.classList.add('sxg-adslot-near');
+      var sr = root.getBoundingClientRect();
+      var nodes = document.body.querySelectorAll('*');
+      for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        if (root.contains(n) || n.contains(root)) continue;
+        var s = getComputedStyle(n);
+        if (!s || (s.position !== 'fixed' && s.position !== 'absolute')) continue;
+        var z = parseInt(s.zIndex, 10);
+        if (!(z >= 1000 && z < 9995)) continue;
+        var r = n.getBoundingClientRect();
+        if (r.width < 2 || r.height < 2) continue;
+        var ox = Math.min(sr.right, r.right) - Math.max(sr.left, r.left);
+        var oy = Math.min(sr.bottom, r.bottom) - Math.max(sr.top, r.top);
+        if (ox > 4 && oy > 4) {
+          n.setAttribute('data-sxg-adslot-avoid', '1');
+          avoided.push(n);
+        }
+      }
+    }
+    var io = new IntersectionObserver(function (entries) {
+      scan(entries[0].isIntersecting);
+    }, { threshold: 0 });
+    io.observe(root);
+    // React 异步渲染的悬浮按钮可能晚于首次观察，3 秒后按当前可见性补扫一次
+    setTimeout(function () {
+      var r = root.getBoundingClientRect();
+      scan(r.bottom > 0 && r.top < window.innerHeight);
+    }, 3000);
   }
 
   function initCarousel(root) {
@@ -319,6 +393,8 @@
         } else {
           el.replaceWith(slot);
         }
+        // 只在替换进 DOM 之后才观察，IntersectionObserver 才拿得到真实包围盒
+        keepClear(slot);
         return true;
       }
     }

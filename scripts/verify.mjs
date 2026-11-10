@@ -6359,15 +6359,18 @@ section('21c. 首页滑到底部按钮');
     '§33a preload 的 credentials 模式与 module / stylesheet 标签一致（都带 crossorigin），主包与 CSS 不再各下两遍',
     'preload 少了 crossorigin → 浏览器当成两个不同资源，434KB 主包 + 53KB CSS 全下两遍');
 
+  // 手机专用三张由 §35c 单独管（带 media 的预热）；这里只数桌面三张原稿，
+  // 否则新增 *_MOBILE 常量会把「三张」撑成 6 张，旧断言误红。
   const artUrls33 = [...read('black-card-adslot.js')
-    .matchAll(/var ART[_A-Z]* = '(\.\/assets\/[^']+)'/g)].map((m) => m[1]);
+    .matchAll(/var ART[_A-Z]* = '(\.\/assets\/[^']+)'/g)].map((m) => m[1])
+    .filter((u) => u.indexOf('-mobile.svg') === -1);
   check(artUrls33.length === 3
     && artUrls33.every((u) => idx.includes('<link rel="preload" as="image" href="' + u + '"')),
     '§33a2 广告位三张设计图首屏预热，且每张的 ?v 与 black-card-adslot.js 里的常量完全一致',
     '预热 URL 与脚本里的实际 URL 不一致 → 白预热，广告位照样「卡片先出来、图还是空的」');
 
-  check(/<script async src="\.\/black-card-adslot\.js\?v=12"><\/script>/.test(idx)
-    && idx.indexOf('black-card-adslot.js?v=12') < idx.indexOf('</head>')
+  check(/<script async src="\.\/black-card-adslot\.js\?v=13"><\/script>/.test(idx)
+    && idx.indexOf('black-card-adslot.js?v=13') < idx.indexOf('</head>')
     && !/script defer src="\.\/black-card-adslot\.js/.test(idx),
     '§33b 广告位补丁在 head 里 async 加载（不再排在第 40 个 defer，也不必等 692KB body 解析完）',
     '广告位补丁退回 defer 队列尾部 → 慢网又要 15 秒才冒出广告位');
@@ -7491,7 +7494,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
 
   check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
-    && /black-card-adslot\.js\?v=12/.test(idx29),
+    && /black-card-adslot\.js\?v=13/.test(idx29),
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 
   // —— 站长 2026-11-10 晚：胖东来广告卡（首页推荐位） ——
@@ -7708,8 +7711,8 @@ section('25. 成功案例专题页（QQ奶奶）');
   check((code32.match(/公益广告位/g) || []).length >= 4
     && !/广告位招商中|品牌展示|>广告位</.test(code32)
     && /data-adslot-kind', 'public-welfare'/.test(code32)
-    && /black-card-adslot\.js\?v=12/.test(idx32),
-    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 12');
+    && /black-card-adslot\.js\?v=13/.test(idx32),
+    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 13');
 
   // 站长 2026-11-10 二次纠正「广告图叫你重构，不是让你改成纯文字 / 文字明显重叠」：
   // 文案已全部画进 ad-recruit.svg 的 <text>（与图同坐标系同缩放，结构上不可能叠字），
@@ -7870,6 +7873,78 @@ section('25. 成功案例专题页（QQ奶奶）');
     && /品牌绑定自愈/.test(rd34) && /不要用同一种风格/.test(rd34),
     '§34d README 写死「只写一家企业就只许出现在那家卡上」与克隆剥离/自愈/风格互异口径',
     '规则只挂口头 → 下次新增补丁照样漏登记');
+}
+
+// ---------- 站长 2026-11-10 23:40「手机端你检查了吗？新建的公益广告位，都穿模了」 ----------
+// 旧 cdp-pdl-adcheck.cjs 只查结构、截图前还把所有浮层隐藏，所谓「双视口 PASS」
+// 是假绿：真机 320~414 宽度下 fixed 悬浮圆钮被卡片切掉一半，桌面稿的小字
+// 等比缩到 5~8px 糊成一片。本批把手机端口径钉成静态 + 真渲染两层断言。
+{
+  const ad35 = read('black-card-adslot.js');
+  const idx35 = read('index.html');
+  const rd35 = read('README.md');
+  const wf35 = read('.github/workflows/verify.yml');
+  const mob35 = [
+    ['assets/ad-luxiyi-mobile.svg', 'ART_MOBILE'],
+    ['assets/ad-pangdonglai-mobile.svg', 'ART_PDL_MOBILE'],
+    ['assets/ad-recruit-mobile.svg', 'ART_RECRUIT_MOBILE']
+  ];
+  const svgOk35 = mob35.every(([f]) => {
+    if (!exists(f)) return false;
+    const s = read(f);
+    if (!/<svg[\s\S]*?viewBox="0 0 400 240"/.test(s)) return false;
+    const body35 = s.replace(/xmlns(?::[a-zA-Z]+)?="[^"]*"/g, '');
+    if (/https?:\/\//.test(body35) || /<image\b/i.test(s)) return false;
+    const texts35 = [...s.matchAll(/<text[^>]*?y="(\d+)"[^>]*?font-size="(\d+)"[^>]*>/g)]
+      .map((m) => ({ y: Number(m[1]), size: Number(m[2]) }));
+    const main35 = texts35.filter((t) => t.y >= 100 && t.y <= 220).sort((a, b) => a.y - b.y);
+    return main35.length >= 3 && main35.every((t, i) => i === 0 || t.y > main35[i - 1].y)
+      && main35[0].size >= 38 && Math.min(...main35.map((t) => t.size)) >= 14;
+  });
+  check(svgOk35,
+    '§35a 三张手机专用海报（400×240）存在、零外链、三条主文案基线严格递增且字号 ≥14（桌面稿压到 356px 只剩 5px 小字）',
+    '手机稿缺一 / 字号退回桌面比例 → 手机端又是一片糊字');
+
+  // 数节点必须看剥注释后的纯代码：注释里也写着「用 <picture> 切换」，
+  // 全文计数会把注释算进去（本批实测注释多出 2 处，假红）。
+  const code35 = ad35.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  const constOk35 = mob35.every(([f, name]) => {
+    const src35 = './' + f + '?v=1';
+    return ad35.indexOf("var " + name + " = '" + src35 + "'") !== -1
+      && (code35.match(new RegExp('\\b' + name + '\\b', 'g')) || []).length >= 2;
+  });
+  check(constOk35 && (code35.match(/<source media="\(max-width:480px\)"/g) || []).length === 3
+    && (code35.match(/<picture>/g) || []).length === 3
+    && /\.sxg-adslot__art-wrap picture\{display:block/.test(ad35),
+    '§35b 三张卡都用 <picture> 在窄屏切手机稿，桌面三张原稿与 ?v 一字不动',
+    '只写了手机图没接 <source> → 手机上仍加载桌面稿，断言白写');
+
+  const preload35 = mob35.every(([f]) =>
+    idx35.indexOf('<link rel="preload" as="image" href="./' + f + '?v=1" media="(max-width:480px)" />') !== -1);
+  check(preload35 && /black-card-adslot\.js\?v=13/.test(idx35),
+    '§35c 手机三图带 media 预热、?v 与脚本 *_MOBILE 常量一致，首页脚本已升 13',
+    '预热漏 media 或 ?v 不一致 → 慢网首帧先出桌面稿再跳手机稿');
+
+  check(/function keepClear\(/.test(code35) && /keepClear\(slot\);/.test(code35)
+    && /new IntersectionObserver\(/.test(code35) && /z < 9995/.test(code35)
+    && /data-sxg-adslot-avoid/.test(code35)
+    && /html\.sxg-adslot-near \[data-sxg-adslot-avoid\]\{visibility:hidden!important/.test(ad35),
+    '§35d 手机端广告位进入视口时让相交的 fixed 悬浮圆钮临时避让（不碰 100000 级弹窗），离开即恢复',
+    '半个圆又被切在卡片边上 = 站长说的「都穿模了」');
+
+  const audit35 = exists('scripts/cdp-adslot-mobile-audit.cjs') ? read('scripts/cdp-adslot-mobile-audit.cjs') : '';
+  const t35 = exists('scripts/test-adslot-mobile.cjs') ? read('scripts/test-adslot-mobile.cjs') : '';
+  check(!!audit35 && !!t35 && /test-adslot-mobile\.cjs/.test(wf35)
+    && /process\.exit\(fail \? 1 : 0\)/.test(t35)
+    && /MOBILE /.test(audit35) && /process\.exit\(fail \? 1 : 0\)/.test(audit35)
+    && /currentSrc/.test(audit35) && /320/.test(audit35) && /414/.test(audit35)
+    && !/display='none'/.test(audit35),
+    '§35e jsdom 手机端回归挂 CI；本机真渲染审计覆盖 320~414 五档、查 currentSrc 与几何遮挡、判红退出 1，且不再隐藏任何浮层',
+    '又回到「只查结构 + 把遮罩隐藏后再截图的假绿」');
+
+  check(/手机端/.test(rd35) && /手机专用/.test(rd35) && /悬浮/.test(rd35),
+    '§35f README 写死「手机端必须单独验收海报可读性与悬浮层遮挡」口径',
+    '规则只挂口头 → 下次还是拿桌面双视口 PASS 糊弄过去');
 }
 
 // ---------- 汇总 ----------

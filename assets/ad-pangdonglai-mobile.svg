@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="240" viewBox="0 0 400 240" role="img" aria-label="胖东来 善待劳动者 货车司机送货也能体会到尊重 公益广告位">
+<!--
+  公益广告位第 2 张「胖东来」**手机专用设计稿**（站点自绘矢量）。
+  与桌面稿同口径：劳动者态度（货车司机送货，也能体会到尊重）+ 挂上
+  公益广告位的原因（善待劳动者，正是它登上公益广告位的原因），
+  「备注」两字按站长 2026-11-10 19:48 指令不出现。
+  400×240 / 主标题 40 / 副句 18 / 说明 15，基线 106 → 158 → 200 严格递增。
+  深蓝底 + 白挂牌 + 金色「敬」印章，与招商稿暖白纸面明确区分。
+  零外链（xmlns 是命名空间）、文案全部在 <text> 里、不含任何 URL。
+-->
+<rect width="400" height="240" fill="#0a1b47"/>
+<circle cx="250" cy="-40" r="190" fill="none" stroke="#2a55b8" stroke-width="1.5" opacity="0.55"/>
+<circle cx="250" cy="-40" r="230" fill="none" stroke="#2a55b8" stroke-width="1.5" opacity="0.35"/>
+
+<!-- 左侧「敬」圆印章：x 16~76 / y 74~134，在白挂牌外 -->
+<circle cx="46" cy="104" r="30" fill="none" stroke="#e5a336" stroke-width="2"/>
+<circle cx="46" cy="104" r="24" fill="#e5a336" opacity="0.14"/>
+<text x="46" y="113" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC',sans-serif" font-size="25" fill="#f9df8b">敬</text>
+
+<text x="382" y="28" text-anchor="end" font-family="Arial,sans-serif" font-size="10" letter-spacing="1" fill="#f9df8b">PUBLIC WELFARE AD · 02 / 03</text>
+
+<!-- 白挂牌：x 88~378 / y 60~218，三条文案都在牌内，边框不穿字 -->
+<rect x="88" y="60" width="290" height="158" rx="14" fill="#ffffff" stroke="#e5a336" stroke-width="3"/>
+<text x="233" y="106" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="40" font-weight="700" fill="#1d3f9e" letter-spacing="4">胖东来</text>
+<text x="233" y="158" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="18" fill="#334155" letter-spacing="1">货车司机送货，也能体会到尊重</text>
+<text x="233" y="200" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="15" fill="#64748b" letter-spacing="0">善待劳动者，正是它登上公益广告位的原因</text>
+
+<text x="382" y="232" text-anchor="end" font-family="'Microsoft YaHei','PingFang SC',sans-serif" font-size="11" fill="#8fa8e8">公益广告位 · 公益展示</text>
+</svg>

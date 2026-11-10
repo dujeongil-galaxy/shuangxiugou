@@ -251,6 +251,13 @@ jobs:
       - name: 滚动广告位可点与居中测试
         run: node scripts/test-adslot.cjs
 
+      # 站长 2026-11-10 23:40「手机端你检查了吗？新建的公益广告位，都穿模了」：
+      # 手机专用海报必须真的被 <picture> 接上、图片失败兜底不因多一层 picture 而失效、
+      # 悬浮层避让规则写死在组件里。真几何由本机 cdp-adslot-mobile-audit.cjs 审计。
+      # 配套 verify §35。
+      - name: 公益广告位手机端海报与避让测试
+        run: node scripts/test-adslot-mobile.cjs
+
       # 站长「登记到比亚迪卡片，曝光他 / 详见站长随笔第10章」+ 2026-11-10 补正
       # 「视频被删除了，如实登记、作者受到了某种压力、链接已经挂了」：
       # 真 DOM 断言 BYD 卡上真的挂出曝光框（幂等 + 重渲染自愈），死链不再冒充

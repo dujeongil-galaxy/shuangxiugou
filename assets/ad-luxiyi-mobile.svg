@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="240" viewBox="0 0 400 240" role="img" aria-label="陆喜依 真实双休标杆品牌 公益广告位">
+<!--
+  公益广告位第 1 张「陆喜依」**手机专用设计稿**（站点自绘矢量，非站长提供的素材）。
+  2026-11-10 23:40 站长：「手机端你检查了吗？新建的公益广告位，都穿模了」。
+  桌面稿 1200×300 在 356px 宽手机上等比缩到 0.3 倍，14~26px 的小字只剩
+  4~8px，糊成一团。本稿改 400×240（缩到 356 宽约 0.89 倍），字号按手机重排：
+  主标题 42 / 副句 19 / 说明 15 / 角标 11，三条主文案基线 110 → 164 → 206
+  严格递增且间距 ≥42，装饰（金印章、角标）与文字盒子互不相交。
+  风格沿用品牌稿：深蓝底 + 金色 + 圆印章；与招商稿的暖白纸面明确区分。
+  零外链（xmlns 是命名空间）、文案全部在 <text> 里、不含任何 URL。
+-->
+<defs>
+  <linearGradient id="lxmbg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#0a1b47"/>
+    <stop offset="1" stop-color="#1d3f9e"/>
+  </linearGradient>
+</defs>
+<rect width="400" height="240" fill="url(#lxmbg)"/>
+
+<!-- 左侧金色圆印章：x 22~82 / y 76~132，与中间三条文案的盒子互不相交 -->
+<circle cx="52" cy="104" r="30" fill="none" stroke="#e5a336" stroke-width="2"/>
+<circle cx="52" cy="104" r="24" fill="#e5a336" opacity="0.16"/>
+<text x="52" y="113" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC',sans-serif" font-size="25" fill="#f9df8b">休</text>
+
+<!-- 右上刊头 -->
+<text x="382" y="28" text-anchor="end" font-family="Arial,sans-serif" font-size="11" letter-spacing="2" fill="#f9df8b">AD · 01 / 03</text>
+
+<!-- 三条主文案：基线递增、字号按手机放大 -->
+<text x="212" y="110" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="42" font-weight="700" fill="#ffffff" letter-spacing="4">陆喜依</text>
+<text x="212" y="164" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="19" fill="#f9df8b" letter-spacing="1">刺梨饮品 · 真实双休标杆品牌</text>
+<text x="212" y="206" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="15" fill="#c9d8ff" letter-spacing="1">站长指定 S 级 · 支持真实双休企业</text>
+
+<text x="382" y="230" text-anchor="end" font-family="'Microsoft YaHei','PingFang SC',sans-serif" font-size="11" fill="#8fa8e8">公益广告位 · 公益展示</text>
+</svg>

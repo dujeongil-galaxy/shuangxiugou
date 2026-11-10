@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="240" viewBox="0 0 400 240" role="img" aria-label="公益广告位 虚位以待 真实双休标杆品牌可申请免费展示 欢迎联系站长">
+<!--
+  公益广告位第 3 张「虚位以待」**手机专用设计稿**（站点自绘矢量）。
+  2026-11-10 20:44 站长：「胖东来和广告位招商不要用同一种风格的图片，好吗？」
+  本稿保持暖白纸面 + 细网格 + 虚线空位框 + 描边大字 + 加号空位圆 + VACANCY
+  方章的留白告示语言，与两张深蓝金字品牌广告彻底区分：
+  零渐变 / 零金色 / 零深蓝 / 零同心弧 / 零聚光，defs 一律 rwm- 前缀。
+  400×240 / 主标题 40 / 副句 18 / 说明 15，基线 116 → 164 → 202 严格递增。
+  加号圆 x 28~76 / y 86~134 与大字（x 119~309）、副句（y 164）都不相交；
+  虚线框边线 y=18/222 不穿任何文字。零外链（xmlns 是命名空间）。
+-->
+<defs>
+  <pattern id="rwm-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+    <path d="M20 0 L0 0 0 20" fill="none" stroke="#e7ddc9" stroke-width="1"/>
+  </pattern>
+  <pattern id="rwm-hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+    <path d="M0 0 L0 10" fill="none" stroke="#c2704f" stroke-width="1.5" opacity="0.30"/>
+  </pattern>
+</defs>
+<rect width="400" height="240" fill="#fbf7ee"/>
+<rect width="400" height="240" fill="url(#rwm-grid)"/>
+<rect x="0" y="0" width="400" height="7" fill="url(#rwm-hatch)"/>
+<rect x="0" y="233" width="400" height="7" fill="url(#rwm-hatch)"/>
+<rect x="18" y="18" width="364" height="204" rx="5" fill="none" stroke="#1f4d42" stroke-width="2" stroke-dasharray="9 7" opacity="0.58"/>
+
+<!-- 左上刊头两行；方章在右上，与刊头水平不相交 -->
+<text x="32" y="44" text-anchor="start" font-family="Arial,sans-serif" font-size="11" letter-spacing="2" fill="#4f7a68">PUBLIC WELFARE AD · 03 / 03</text>
+<text x="32" y="64" text-anchor="start" font-family="'Microsoft YaHei','PingFang SC',sans-serif" font-size="13" letter-spacing="1" fill="#8b9a8d">公益广告位 · 真实双休品牌招募</text>
+<g>
+  <rect x="310" y="30" width="62" height="26" rx="3" fill="none" stroke="#1f4d42" stroke-width="1.5"/>
+  <text x="341" y="48" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#1f4d42" letter-spacing="2">VACANCY</text>
+</g>
+
+<!-- 加号空位圆：位置避开三条主文案 -->
+<g transform="translate(52,110)">
+  <circle r="23" fill="#ffffff" opacity="0.75"/>
+  <circle r="21" fill="none" stroke="#c2704f" stroke-width="2" stroke-dasharray="4 5"/>
+  <path d="M-10 0 H10 M0 -10 V10" stroke="#c2704f" stroke-width="3.5" stroke-linecap="round"/>
+</g>
+
+<!-- 三条主文案：基线递增、字号按手机放大 -->
+<text x="214" y="116" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="40" font-weight="700" fill="#1f4d42" letter-spacing="5">虚位以待</text>
+<text x="214" y="164" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="18" fill="#4f7a68" letter-spacing="0">真实双休标杆品牌 · 可申请免费展示</text>
+<text x="214" y="202" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="15" fill="#8b9a8d" letter-spacing="0">欢迎联系站长 · 公益展示不收费</text>
+</svg>
