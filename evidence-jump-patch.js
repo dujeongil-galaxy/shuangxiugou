@@ -2,7 +2,7 @@
    evidence-jump-patch.js
    --------------------------------------------------------------------------
    站长 2026-11-10「大改」：每张品牌卡打开后的详情弹窗，底部「生成我的投票
-   小票」那一排都要加一个「跳转到证据公示」按钮，点下去要**完整跳到该品牌
+   小票」那一排都要加一个「跳转到证据链公示」按钮，点下去要**完整跳到该品牌
    对应的证据链公示条目**——不是只打开公示区顶部，而是展开对应 <details>、
    滚到眼前、可见高亮。内置卡（压缩 bundle 里的 React 弹窗）与自定义卡
    （custom-card-actions.js 的 .sxg-layer 弹窗）一视同仁，不看清单值。
@@ -34,7 +34,7 @@
 (function () {
   'use strict';
 
-  var BTN_TEXT = '跳转到证据公示';
+  var BTN_TEXT = '跳转到证据链公示';
   var BTN_ATTR = 'data-sxg-ev-jump';
   var ROOT_ATTR = 'data-sxg-ev-jump-root';
   var FOCUS_ATTR = 'data-sxg-ev-focus';

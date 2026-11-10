@@ -7447,7 +7447,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
 
   check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
-    && /black-card-adslot\.js\?v=6/.test(idx29),
+    && /black-card-adslot\.js\?v=7/.test(idx29),
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 }
 
@@ -7531,7 +7531,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§31a README 写死本批五条口径（两类弹窗一视同仁 / 完整定位 / 单一真相源 / 无条目如实降级 / 机器强制）',
     '规则只挂口头 → 又会出现「按钮有、跳过去却停在公示区顶部」的静默失效');
 
-  check(p31.length > 0 && /<script defer src="\.\/evidence-jump-patch\.js\?v=1"><\/script>/.test(idx31)
+  check(p31.length > 0 && /<script defer src="\.\/evidence-jump-patch\.js\?v=2"><\/script>/.test(idx31)
     && /不能改 bundle|不能改\s*bundle/.test(p31)
     && !/https?:\/\//.test(p31)
     && !/ev-patagonia|ev-icbc|ev-zhaoyiming|ev-byd/.test(p31),
@@ -7609,8 +7609,18 @@ section('25. 成功案例专题页（QQ奶奶）');
   check((code32.match(/公益广告位/g) || []).length >= 4
     && !/广告位招商中|品牌展示|>广告位</.test(code32)
     && /data-adslot-kind', 'public-welfare'/.test(code32)
-    && /black-card-adslot\.js\?v=6/.test(idx32),
-    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 6');
+    && /black-card-adslot\.js\?v=7/.test(idx32),
+    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 7');
+
+  // 站长 2026-11-10「真实双休，这句话再下去点，PC端还是异常」：文案层继承 art-wrap 的
+  // line-height:0 致标题行盒塌缩、字形与副句黏连。桌面端显式 line-height 撑开行盒 + 副句
+  // margin-top 下移；手机端（≤480px）不动。断言查纯代码（§32b 已剥注释）。
+  check(/@media \(min-width:481px\)\{\.sxg-adslot__recruit-copy\{line-height:[\d.]+\}/.test(code32)
+    && /\.sxg-adslot__recruit-title\{line-height:[\d.]+\}/.test(code32)
+    && /\.sxg-adslot__recruit-sub\{margin-top:\d+px\}/.test(code32)
+    && /@media \(max-width:480px\)/.test(code32),
+    '§32b2 招募卡文案层/标题显式 line-height 撑行盒、桌面端「真实双休」副句下移，手机端口径不动',
+    'line-height:0 继承一回来，PC 端两行文字又黏在一起');
 
   check(!/<circle\b/.test(rec32) && /rc-plate/.test(rec32)
     && /PUBLIC WELFARE AD/.test(rec32) && /公益广告位/.test(brand32),

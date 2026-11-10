@@ -84,6 +84,14 @@
       '.sxg-adslot__dot{width:7px;height:7px;border-radius:50%;background:#cbd5e1;' +
       'cursor:pointer;transition:background .2s}' +
       '.sxg-adslot__dot.is-active{background:#1d3f9e}' +
+      /* 站长 2026-11-10：PC 端「真实双休」副句紧贴大标题（几乎压字）且整块偏上。
+         根因：.sxg-adslot__art-wrap{line-height:0} 被文案层继承，标题行盒塌成 0、
+         字形溢出行盒，gap 从塌缩盒起算 → 视觉上两行黏在一起。
+         桌面端（≥481px）给文案层/标题显式 line-height 撑开行盒，并把副句再下移 8px；
+         手机端（≤480px）站长说正常，保持原样不动。 */
+      '@media (min-width:481px){.sxg-adslot__recruit-copy{line-height:1.5}' +
+      '.sxg-adslot__recruit-title{line-height:1.25}' +
+      '.sxg-adslot__recruit-sub{margin-top:8px}}' +
       '@media (max-width:480px){.sxg-adslot__nav{display:none}' +
       '.sxg-adslot__recruit-title{font-size:18px}.sxg-adslot__recruit-sub{font-size:12px}' +
       '.sxg-adslot__cta{font-size:12px}.sxg-adslot__meta{gap:5px 8px}}';

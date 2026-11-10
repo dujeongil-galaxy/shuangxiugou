@@ -1,4 +1,4 @@
-// 2026-11-10 站长「大改」回归：每张卡详情弹窗都要有「跳转到证据公示」，
+// 2026-11-10 站长「大改」回归：每张卡详情弹窗都要有「跳转到证据链公示」，
 // 且必须**完整定位到该品牌对应的公示条目**（不是只打开公示区顶部）。
 // 真 DOM 验证（jsdom 加载 evidence-jump-patch.js）：内置 React 弹窗与自定义
 // .sxg-layer 弹窗各点一次，命中/无条目/幂等/重渲染/分享锚点全覆盖。
@@ -115,7 +115,7 @@ function makeDom(hash) {
 }
 
 (async () => {
-  console.log('=== 详情弹窗「跳转到证据公示」：完整定位到对应公示条目 ===\n');
+  console.log('=== 详情弹窗「跳转到证据链公示」：完整定位到对应公示条目 ===\n');
 
   // ─────────── 0. 静态接线（三层强制的第三层） ───────────
   console.log('--- 0. 文件与接线 ---');
@@ -124,8 +124,8 @@ function makeDom(hash) {
   const wf = read('.github/workflows/verify.yml');
   const rd = read('README.md');
   check('跳转补丁文件存在', exists('evidence-jump-patch.js'));
-  check('首页挂了跳转补丁（?v=1 防缓存）',
-    /<script defer src="\.\/evidence-jump-patch\.js\?v=1"><\/script>/.test(html));
+  check('首页挂了跳转补丁（?v=2 防缓存）',
+    /<script defer src="\.\/evidence-jump-patch\.js\?v=2"><\/script>/.test(html));
   check('真 DOM 测试挂进 CI 的 pinyin job', /test-evidence-jump\.cjs/.test(wf));
   check('README 写死两类弹窗一视同仁 + 完整定位口径',
     /详情弹窗证据链公示跳转/.test(rd) && /完整定位/.test(rd) && /内置.*自定义/.test(rd));
@@ -147,8 +147,8 @@ function makeDom(hash) {
     && /justify-end/.test(bBuiltin.parentElement.className));
   check('自定义弹窗按钮挂在 sxg-actions right 那一排',
     !!bCustom && /sxg-actions/.test(bCustom.parentElement.className));
-  check('两个按钮文案一致「跳转到证据公示」',
-    !!btns.length && btns.every((b) => b.textContent.trim() === '跳转到证据公示'));
+  check('两个按钮文案一致「跳转到证据链公示」',
+    !!btns.length && btns.every((b) => b.textContent.trim() === '跳转到证据链公示'));
   check('按钮是 type=button 且有 aria-label / title',
     btns.every((b) => b.type === 'button' && b.getAttribute('aria-label') && b.getAttribute('title')));
   check('按钮插在「生成我的投票小票」之前（截图红框位置）',
