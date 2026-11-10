@@ -6369,8 +6369,8 @@ section('21c. 首页滑到底部按钮');
     '§33a2 广告位三张设计图首屏预热，且每张的 ?v 与 black-card-adslot.js 里的常量完全一致',
     '预热 URL 与脚本里的实际 URL 不一致 → 白预热，广告位照样「卡片先出来、图还是空的」');
 
-  check(/<script async src="\.\/black-card-adslot\.js\?v=15"><\/script>/.test(idx)
-    && idx.indexOf('black-card-adslot.js?v=15') < idx.indexOf('</head>')
+  check(/<script async src="\.\/black-card-adslot\.js\?v=16"><\/script>/.test(idx)
+    && idx.indexOf('black-card-adslot.js?v=16') < idx.indexOf('</head>')
     && !/script defer src="\.\/black-card-adslot\.js/.test(idx),
     '§33b 广告位补丁在 head 里 async 加载（不再排在第 40 个 defer，也不必等 692KB body 解析完）',
     '广告位补丁退回 defer 队列尾部 → 慢网又要 15 秒才冒出广告位');
@@ -7494,7 +7494,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
 
   check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
-    && /black-card-adslot\.js\?v=15/.test(idx29),
+    && /black-card-adslot\.js\?v=16/.test(idx29),
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 
   // —— 站长 2026-11-10 晚：胖东来广告卡（首页推荐位） ——
@@ -7719,7 +7719,7 @@ section('25. 成功案例专题页（QQ奶奶）');
   check((code32.match(/公益广告位/g) || []).length >= 4
     && !/广告位招商中|品牌展示|>广告位</.test(code32)
     && /data-adslot-kind', 'public-welfare'/.test(code32)
-    && /black-card-adslot\.js\?v=15/.test(idx32),
+    && /black-card-adslot\.js\?v=16/.test(idx32),
     '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 13');
 
   // 站长 2026-11-10 二次纠正「广告图叫你重构，不是让你改成纯文字 / 文字明显重叠」：
@@ -7932,7 +7932,7 @@ section('25. 成功案例专题页（QQ奶奶）');
 
   const preload35 = mob35.every(([f, , ver]) =>
     idx35.indexOf('<link rel="preload" as="image" href="./' + f + '?v=' + ver + '" media="(max-width:480px)" />') !== -1);
-  check(preload35 && /black-card-adslot\.js\?v=15/.test(idx35),
+  check(preload35 && /black-card-adslot\.js\?v=16/.test(idx35),
     '§35c 手机三图带 media 预热、?v 与脚本 *_MOBILE 常量一致，首页脚本已升 13',
     '预热漏 media 或 ?v 不一致 → 慢网首帧先出桌面稿再跳手机稿');
 
@@ -8031,6 +8031,44 @@ section('25. 成功案例专题页（QQ奶奶）');
     && !/bendibao/.test(rd36),
     '§36e README 写死「三张海报两两互异 / 第一张不与第二张同风格」与「小程序口令点击复制 + 去微信」口径，且零旧文章链接',
     '规则只挂口头 → 下次又拿两张同风格稿或静默跳转糊弄过去');
+}
+
+// ---------- 36f. 公益广告位标注「排名不分先后」+ 友链新增 JEV 双休筛选插件（2026-11-11 站长） ----------
+// 站长三件事：① 公益广告位标题加「排名不分先后」（注意空格）；
+// ② 给 littlewindy123/jev-weekend-shopping-chrome 做个友链（对方已在 Issue 回复，未开 Website 不要求互挂）；
+// ③ 筛选摘要挂友链区（作为该友链描述）。
+// 规则不能只写文档，这里用静态断言钉死，故障注入判红见本轮记账。
+{
+  const ad36f = exists('black-card-adslot.js') ? read('black-card-adslot.js') : '';
+  const flf36f = exists('friend-links-footer.js') ? read('friend-links-footer.js') : '';
+  const idx36f = read('index.html');
+
+  // ① 标题文案：装饰圆点靠 flex gap 与文字分隔，文案内只用单空格，不塞多余字符
+  check(ad36f.indexOf('sxg-adslot__head">公益广告位 排名不分先后<') !== -1,
+    '§36f 公益广告位标题标注「排名不分先后」（文案内单空格，装饰圆点靠 flex gap 分隔）',
+    '标题没加「排名不分先后」或空格不对 → 站长要求失守');
+
+  // ② 友链区新增 JEV 仓库链接 + 筛选摘要描述（边逛边猜工作制、疑似非双休盖 PASS）
+  check(flf36f.indexOf('https://github.com/littlewindy123/jev-weekend-shopping-chrome') !== -1
+    && flf36f.indexOf('JEV') !== -1
+    && /边逛|盖章|双休筛选|PASS/.test(flf36f),
+    '§36f 友链区新增 JEV 双休筛选浏览器插件链接 + 筛选摘要描述',
+    '友链没加 JEV 仓库 / 描述不是筛选摘要 → 站长「给他做个友链 + 筛选摘要挂友链区」失守');
+
+  // ③ 该友链为单向（对方无 Website，不要求互挂）；JEV 条目本身不写互惠/互挂口径。
+  //    注意：friend-links-footer.js 第 83 行有一段历史注释「互惠链接」（解释源码块为何单放，
+  //    与本站单向友链政策一致，不是互挂口径），所以只扫描 JEV 条目自身窗口，不扫全文件。
+  const jevIdx36f = flf36f.indexOf('jev-weekend-shopping-chrome');
+  const jevBlock36f = jevIdx36f === -1 ? '' : flf36f.slice(Math.max(0, jevIdx36f - 400), jevIdx36f + 400);
+  check(!/互挂|互惠|reciprocal/i.test(jevBlock36f),
+    '§36f 友链为单向（对方无 Website，不要求互挂），JEV 条目不写互惠口径',
+    'JEV 条目写成互惠/互挂 → 与「不要求互挂」矛盾');
+
+  // ④ 两个脚本在 index.html 的 ?v 随内容变更 bump，否则浏览器缓存旧脚本
+  check(/black-card-adslot\.js\?v=16/.test(idx36f)
+    && /friend-links-footer\.js\?v=16/.test(idx36f),
+    '§36f 两个脚本在 index.html 的 ?v 已随内容变更 bump 到 16',
+    '?v 没 bump → 浏览器缓存旧脚本，新文案 / 新友链不生效');
 }
 
 // ---------- 汇总 ----------

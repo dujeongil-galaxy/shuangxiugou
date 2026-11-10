@@ -332,7 +332,7 @@
     root.setAttribute('data-adslot-kind', 'public-welfare');
     root.setAttribute('aria-label', '公益广告位');
     root.innerHTML =
-      '<div class="sxg-adslot__head">公益广告位</div>' +
+      '<div class="sxg-adslot__head">公益广告位 排名不分先后</div>' +
       '<div class="sxg-adslot__viewport">' +
         '<div class="sxg-adslot__track">' +
           '<div class="sxg-adslot__card sxg-adslot__card--brand">' +

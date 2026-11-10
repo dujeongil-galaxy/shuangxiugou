@@ -21,6 +21,13 @@
       text: '各行业双休公司',
       desc: '按行业分类的双休企业名录，可与本站的品牌评级交叉比对',
     },
+    {
+      // 站长 2026-11-11：对方已在 Issue 下回复，给个单向友链（对方未开通 Website，无需对方回链）。
+      // 「筛选摘要」作为该友链的描述挂在本站友链区：边逛边用 AI 猜工作制、疑似非双休盖 PASS。
+      href: 'https://github.com/littlewindy123/jev-weekend-shopping-chrome',
+      text: 'JEV 双休购 · Chrome 插件',
+      desc: '边逛淘宝、京东时实时猜工作制、疑似非双休直接在商品图上盖 PASS 的浏览器插件；与本站人工评级互补，作者已回应本站的数据共建提议。',
+    },
   ];
 
   var FOOTER_ID = 'related-sites-footer';
