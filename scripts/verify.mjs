@@ -7432,7 +7432,7 @@ section('25. 成功案例专题页（QQ奶奶）');
       && !/https?:\/\//.test(read(f).replace(/xmlns(?::[a-zA-Z]+)?="[^"]*"/g, ''))
       && !/<image\b/i.test(read(f)))
     && ad29.indexOf("var ART = './assets/ad-luxiyi.svg'") !== -1
-    && ad29.indexOf("var ART_RECRUIT = './assets/ad-recruit.svg'") !== -1,
+    && ad29.indexOf("var ART_RECRUIT = './assets/ad-recruit.svg?v=2'") !== -1,
     '§29e 两张站点自绘矢量设计稿存在、有效、无外链，且被广告位引用');
 
   check(!/<div class="sxg-adslot__cta"/.test(ad29)
@@ -7456,7 +7456,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
 
   check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
-    && /black-card-adslot\.js\?v=7/.test(idx29),
+    && /black-card-adslot\.js\?v=8/.test(idx29),
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 }
 
@@ -7618,8 +7618,8 @@ section('25. 成功案例专题页（QQ奶奶）');
   check((code32.match(/公益广告位/g) || []).length >= 4
     && !/广告位招商中|品牌展示|>广告位</.test(code32)
     && /data-adslot-kind', 'public-welfare'/.test(code32)
-    && /black-card-adslot\.js\?v=7/.test(idx32),
-    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 7');
+    && /black-card-adslot\.js\?v=8/.test(idx32),
+    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 8');
 
   // 站长 2026-11-10「真实双休，这句话再下去点，PC端还是异常」：文案层继承 art-wrap 的
   // line-height:0 致标题行盒塌缩、字形与副句黏连。桌面端显式 line-height 撑开行盒 + 副句
@@ -7642,9 +7642,12 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§32b3 黑卡预隐藏样式必须内联在头部（body 渲染前已解析，慢网首帧不再闪现旧黑卡）',
     '预隐藏样式被删或挪出头部，黑卡闪现就会回来');
 
-  check(!/<circle\b/.test(rec32) && /rc-plate/.test(rec32)
-    && /PUBLIC WELFARE AD/.test(rec32) && /公益广告位/.test(brand32),
-    '§32c 招商卡设计稿去掉压字的圆形印章、改横向白底横幅；两张 SVG 角标同步公益命名');
+  check(!/<circle\b/.test(rec32) && !/rc-plate/.test(rec32)
+    && /PUBLIC WELFARE AD/.test(rec32) && /公益广告位/.test(brand32)
+    && /\.sxg-adslot__recruit-copy\{display:flex/.test(code32)
+    && !/\.sxg-adslot__recruit-copy\{position:absolute/.test(code32),
+    '§32c 招商卡设计稿不画死文字衬底（SVG 白板已撤，衬底=HTML 正常流 CSS 白板、随文字长高）；无圆形印章；角标同步公益命名',
+    'SVG 写死白板或文案退回绝对定位叠层，手机端「穿模」就会回来');
 
   check(/z-index:9995/.test(ad32) && /padding:7px 0 14px/.test(ad32)
     && /background: rgba\(24, 20, 16, 0\.22\)/.test(dyp32)

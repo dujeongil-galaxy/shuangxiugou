@@ -3,9 +3,11 @@
   公益广告位第 2 张：虚位以待卡的背景设计稿（站点自绘矢量稿，非站长提供的图片素材）。
   2026-11-10 站长：「挡住了，你没发现？广告位请优化一下，叫 公益广告位」。
   旧版中央是一个 r=102 的圆形印章，文案叠在圆环里被圈住、弧线压字；
-  这里改为**横向圆角白底横幅**做干净的文字衬底，四角装饰全部退到文案区之外，
-  中心区域不放任何线条，HTML 文案绝对可读、不与图形相交。
-  与第 1 张品牌广告共用同一套蓝/金/红视觉语言。不含任何 URL。
+  随后改为横向圆角白底横幅做文字衬底。
+  2026-11-10「穿模了」二次纠正：SVG 里画死的白底横幅随图缩放（手机端只剩
+  44px 高），HTML 文案是固定字号，装不下就上下穿出白板。现把文字衬底改由
+  HTML 正常流 CSS 白板承担（盒子随文字长高，任何宽度不穿模），本图只留
+  装饰框/网格/角标，不再画任何文字衬底。与第 1 张共用蓝/金/红视觉语言。不含任何 URL。
 -->
 <defs>
   <linearGradient id="rc-bg" x1="0" y1="0" x2="1" y2="1">
@@ -17,10 +19,6 @@
     <stop offset="0" stop-color="#1d3f9e"/>
     <stop offset="0.5" stop-color="#e5a336"/>
     <stop offset="1" stop-color="#1d3f9e"/>
-  </linearGradient>
-  <linearGradient id="rc-plate" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#ffffff"/>
-    <stop offset="1" stop-color="#f4f8ff"/>
   </linearGradient>
   <pattern id="rc-grid" width="34" height="34" patternUnits="userSpaceOnUse">
     <path d="M34 0 L0 0 0 34" fill="none" stroke="#1d3f9e" stroke-opacity="0.06" stroke-width="1"/>
@@ -54,11 +52,8 @@
   <rect x="1193" y="86" width="7" height="88" rx="3"/>
 </g>
 
-<!-- 文案衬底：横向圆角白底横幅，中心区域无任何线条穿过文字 -->
-<rect x="300" y="56" width="600" height="148" rx="24" fill="url(#rc-plate)" opacity="0.94"/>
-<rect x="300" y="56" width="600" height="148" rx="24" fill="none" stroke="#e5a336" stroke-opacity="0.45" stroke-width="2"/>
-<rect x="316" y="72" width="568" height="116" rx="16" fill="none" stroke="#1d3f9e" stroke-opacity="0.12" stroke-width="1"/>
-<!-- 上下两条短金线，只做装饰不进入文字区 -->
+<!-- 文字衬底已改由 HTML 正常流 CSS 白板承担（见 black-card-adslot.js ⑥）：
+     SVG 再画固定尺寸白板会与文字错位穿模，这里只留上下短金线做构图配重 -->
 <rect x="552" y="40" width="96" height="3" rx="1.5" fill="#e5a336" opacity="0.65"/>
 <rect x="552" y="217" width="96" height="3" rx="1.5" fill="#e5a336" opacity="0.65"/>
 

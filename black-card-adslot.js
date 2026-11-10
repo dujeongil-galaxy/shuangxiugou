@@ -10,7 +10,7 @@
       assets/ad-luxiyi.svg（品牌广告）/ assets/ad-recruit.svg（虚位以待衬底），
       与品牌 mascot 共用蓝红民族纹样 + 刺梨金黄配色，任意分辨率清晰。
 
-   站长 2026-11-10 批次（两处）：
+   站长 2026-11-10 批次（三处）：
    ④ 「挡住了，你没发现？」——真渲染量出两类遮挡：
       a) 招商卡设计稿中央那个 r=102 的圆形印章把 HTML 文案圈在里面、弧线压字；
          现改为横向圆角白底横幅，文案区不放任何线条，副标题对比度加深。
@@ -21,6 +21,11 @@
    ⑤ 「广告位请优化一下，叫 公益广告位」——全站可见文案统一改为「公益广告位」，
       第二张卡由「广告位招商中」改为「公益广告位 · 虚位以待」，明确免费展示、
       非商业招商；品牌卡标记「公益展示」。两张 SVG 角标文案同步。
+   ⑥ 「穿模了，所以手机端那边也会显示异常」——第二张卡文案层原是固定字号
+      绝对定位叠在随宽度缩放的 SVG 白板上，手机端白板 44px 高装不下 66px+
+      文案，上下穿出。照上游被替换黑卡的 flex 正常流写法重排：文案出
+      art-wrap、改正常流 CSS 白板（随文字长高），SVG 写死的白板撤掉
+      （ad-recruit.svg ?v=2），装饰框/角标保留。任何宽度不再穿模。
 
    两张卡：① 陆喜依品牌广告（整图点击跳天猫、品牌名跳站内详情页）；
    ② 公益广告位虚位以待。支持箭头/圆点手动切换 + 5s 自动轮播（悬停暂停）。
@@ -35,7 +40,7 @@
   var DETAIL = './brand/luxiyi.html';
   var IMG = './assets/luxiyi.jpg';
   var ART = './assets/ad-luxiyi.svg';
-  var ART_RECRUIT = './assets/ad-recruit.svg';
+  var ART_RECRUIT = './assets/ad-recruit.svg?v=2';
   var AUTOPLAY_MS = 5000;
 
   function injectStyle() {
@@ -70,8 +75,18 @@
       'text-decoration:none;cursor:pointer}' +
       '.sxg-adslot__cta:hover{text-decoration:underline}' +
       '.sxg-adslot__hint{font-size:12px;color:#94a3b8;line-height:1.5}' +
-      '.sxg-adslot__recruit-copy{position:absolute;inset:0;display:flex;flex-direction:column;' +
-      'align-items:center;justify-content:center;gap:6px;text-align:center;pointer-events:none}' +
+      /* 站长 2026-11-10「穿模了，所以手机端那边也会显示异常」：文案层原是
+         position:absolute;inset:0 固定字号叠在随宽度缩放的 SVG 白板上——
+         手机端白板缩到 44px 高、文案要 66px+（副句还换行），上下穿出白板。
+         对照上游被替换的黑卡（React bundle 里 bg-slate-900 那张）的写法：
+         纯 flex 正常流（flex-col / sm:flex-row + p-5 + gap-4），文字在流里
+         排版、盒子随文字长高，任何宽度都不可能穿模。这里照搬该思路：
+         文案出 art-wrap、改正常流 CSS 白板（高度随文字），SVG 写死的白板
+         同步撤掉（防双板错位），装饰框/角标保留。 */
+      '.sxg-adslot__recruit-copy{display:flex;flex-direction:column;' +
+      'align-items:center;justify-content:center;gap:6px;text-align:center;' +
+      'box-sizing:border-box;margin:10px 14px 0;padding:14px 18px;' +
+      'background:#f8fbff;border:1px solid #dbe4f2;border-radius:14px}' +
       '.sxg-adslot__recruit-title{font-size:25px;font-weight:800;color:#0f172a;letter-spacing:.06em}' +
       '.sxg-adslot__recruit-sub{font-size:14px;font-weight:600;color:#475569;line-height:1.5}' +
       '.sxg-adslot__foot{display:flex;align-items:center;justify-content:center;gap:12px;' +
@@ -84,11 +99,9 @@
       '.sxg-adslot__dot{width:7px;height:7px;border-radius:50%;background:#cbd5e1;' +
       'cursor:pointer;transition:background .2s}' +
       '.sxg-adslot__dot.is-active{background:#1d3f9e}' +
-      /* 站长 2026-11-10：PC 端「真实双休」副句紧贴大标题（几乎压字）且整块偏上。
-         根因：.sxg-adslot__art-wrap{line-height:0} 被文案层继承，标题行盒塌成 0、
-         字形溢出行盒，gap 从塌缩盒起算 → 视觉上两行黏在一起。
-         桌面端（≥481px）给文案层/标题显式 line-height 撑开行盒，并把副句再下移 8px；
-         手机端（≤480px）站长说正常，保持原样不动。 */
+      /* 桌面端（≥481px）保留显式 line-height / 副句下移 8px：行盒与行距
+         白纸黑字写死，不依赖任何继承（此前 line-height:0 从 art-wrap 继承
+         压过一次字，见 §32b2）。手机端（≤480px）站长说正常，原样不动。 */
       '@media (min-width:481px){.sxg-adslot__recruit-copy{line-height:1.5}' +
       '.sxg-adslot__recruit-title{line-height:1.25}' +
       '.sxg-adslot__recruit-sub{margin-top:8px}}' +
@@ -131,10 +144,10 @@
             '<div class="sxg-adslot__art-wrap">' +
               '<img class="sxg-adslot__art" src="' + ART_RECRUIT + '" ' +
                 'alt="公益广告位 · 虚位以待 · 真实双休标杆品牌可申请免费展示">' +
-              '<div class="sxg-adslot__recruit-copy">' +
-                '<div class="sxg-adslot__recruit-title">公益广告位 · 虚位以待</div>' +
-                '<div class="sxg-adslot__recruit-sub">真实双休标杆品牌可申请免费展示，欢迎联系站长</div>' +
-              '</div>' +
+            '</div>' +
+            '<div class="sxg-adslot__recruit-copy">' +
+              '<div class="sxg-adslot__recruit-title">公益广告位 · 虚位以待</div>' +
+              '<div class="sxg-adslot__recruit-sub">真实双休标杆品牌可申请免费展示，欢迎联系站长</div>' +
             '</div>' +
             '<div class="sxg-adslot__meta">' +
               '<span class="sxg-adslot__hint">← 左右箭头 / 圆点切换公益广告卡 · 自动轮播 5 秒 →</span>' +

@@ -10,7 +10,7 @@ const ROOT = path.resolve(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const TMALL = 'https://' + 'luxiyi.tmall.com/'; // 拼接避免本文件被参数红线误扫
 const ART_BRAND = './assets/ad-luxiyi.svg';
-const ART_RECRUIT = './assets/ad-recruit.svg';
+const ART_RECRUIT = './assets/ad-recruit.svg?v=2';
 
 let pass = 0, fail = 0;
 const fails = [];
@@ -106,8 +106,9 @@ function check(label, cond, extra) {
     /\.sxg-adslot__card\{[^}]*align-items:center[^}]*text-align:center/.test(src));
   check('信息条 justify-content:center',
     /\.sxg-adslot__meta\{[^}]*justify-content:center/.test(src));
-  check('招商卡文案 padding/居中（absolute 叠在设计图上、水平垂直都居中）',
-    /\.sxg-adslot__recruit-copy\{[^}]*align-items:center[^}]*justify-content:center[^}]*text-align:center/.test(src));
+  check('招商卡文案正常流白板（居中；禁止 absolute 叠回设计图——手机端穿模根源）',
+    /\.sxg-adslot__recruit-copy\{[^}]*align-items:center[^}]*justify-content:center[^}]*text-align:center/.test(src)
+    && !/\.sxg-adslot__recruit-copy\{[^}]*position:absolute/.test(src));
   const gcs = window.getComputedStyle(slot.querySelector('.sxg-adslot__recruit-copy'));
   check('真 DOM 计算样式：招商文案 textAlign=center', gcs.textAlign === 'center', gcs.textAlign);
   const foot = slot.querySelector('.sxg-adslot__foot');
