@@ -160,12 +160,17 @@
   /* 选「我不同意」：红色系，暗色主题走 --hl / --hl-bg */
   .agree-opt--no.is-on { border-color: var(--hl); background: var(--hl-bg); color: var(--hl); }
   .agree-opt--no.is-on .agree-box::after { content: '❌'; }
-  .lock__agree-hint {
-    color: var(--hl);
-    font-size: 0.75rem;
-    line-height: 1.7;
-    max-width: 24rem;
-    margin: 0.6rem auto 0;
+  /* 2026-11-10 站长：锁屏上所有红色提示语一律删除，统一为一条「年内上线」公告。
+     改用中性墨色 + 青色左边框，不再用 --hl 红，免得把上线公告读成警告。
+     --hl 仍保留给「我不同意」选中态与 AI 习作高亮，不动那两处。 */
+  .lock__launch-note {
+    color: var(--ink-2);
+    font-size: 0.8rem;
+    line-height: 1.8;
+    max-width: 26rem;
+    margin: 0.75rem auto 0;
+    padding: 0.1rem 0 0.1rem 0.9rem;
+    border-left: 3px solid var(--accent);
     text-align: left;
   }
   /* ⚠️ 必须加 !important。
@@ -372,7 +377,7 @@
         <button type="submit">打开</button>
       </form>
       <p class="err" id="err" role="alert"></p>
-      <!-- 「我同意 / 我不同意」二选一勾选 + 红色公告 -->
+      <!-- 「我同意 / 我不同意」二选一勾选 + 统一的「年内上线」公告（2026-11-10 起不再放红色提示语） -->
       <div class="lock__agree" role="radiogroup" aria-label="声明确认">
         <button type="button" class="agree-opt" id="agreeYes" role="radio" aria-checked="false">
           <span class="agree-box" aria-hidden="true"></span>我同意
@@ -381,9 +386,8 @@
           <span class="agree-box" aria-hidden="true"></span>我不同意
         </button>
       </div>
-      <p class="lock__agree-hint">公告：继续访问即视为你已阅读并同意 —— 站长随笔只是站长的个人情绪记录，
-      本站始终保持中立，不对没有证据链支撑的企业或个人做任何评级。</p>
-      <p class="lock__agree-hint">公告：随笔将于年内正式上线，届时完全公开，无需密码即可阅读。</p>
+      <p class="lock__launch-note">随笔年内上线，还有不少故事在写；定稿后取消密码、公开全文。<br>
+      访问按 GitHub Star 的持有天数放行：现在给项目点 Star，上线当天直接进；届时才点，天数不足会被挡在门外。</p>
       <p class="lock__desc">这一页还没写完，我不想拿半成品糊弄你。写好了会自己上线，
       到时候你再来看。</p>
     </div>

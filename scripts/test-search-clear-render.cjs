@@ -180,8 +180,14 @@ const server = http.createServer((req, res) => {
   console.log('截图来源:', realFrame ? '真实清空触发帧' : '闪屏态摆拍（真实触发由上方 DOM 断言验证）');
   console.log('闪屏中截图:', OUT);
 
-  // 回放（1200ms）+ release 宽限（450ms）之后收日志，取页内 40ms 时间线
-  await sleep(2600);
+  // 2026-11-10：搜索清空改为强制 6 秒 + 每秒倒计时。旧版等「回放 1200ms +
+  // 宽限 450ms」（合计 2.6s）就收时间线，现在必须等满 6 秒硬 deadline，
+  // 否则后面「自动撤除 / 预加载层恢复 / 品类卡不闪」三条都会误判红。
+  const tipAt = () => ev(`(()=>{var n=document.querySelector('#sxg-flash-mask .sxg-flash-tip');return n?n.textContent:'';})()`);
+  const tipEarly = await tipAt();
+  await sleep(3000);
+  const tipMid = await tipAt();
+  await sleep(3500);
   await ev(`(()=>{clearInterval(window.__flashTimer);return 'stopped';})()`);
   const tl = JSON.parse(await ev(`JSON.stringify({clearedAt:window.__clearedAt,log:window.__flashLog})`));
   const afterClear = tl.log.filter(x => x.t >= tl.clearedAt);
@@ -206,9 +212,16 @@ const server = http.createServer((req, res) => {
     afterClear.some(x => x.t >= tl.clearedAt + 600 && x.flashing) &&
     afterClear.some(x => x.t >= tl.clearedAt + 1200 && x.flashing),
     { at600: afterClear.find(x => x.t >= tl.clearedAt + 600), at1200: afterClear.find(x => x.t >= tl.clearedAt + 1200) });
+  check('★ 遮罩内是站长指定的「正在加载缓存，请稍后x秒」倒计时',
+    /正在加载缓存，请稍后\d+秒/.test(tipEarly), tipEarly);
+  check('★ 倒计时数字确实递减（不是静态文案）',
+    /正在加载缓存，请稍后\d+秒/.test(tipMid) && tipMid !== tipEarly, { tipEarly, tipMid });
+  check('★★ 强制 6 秒：t≥3000ms 仍在高度模糊（旧版 1.6s 就撤了）',
+    afterClear.some(x => x.t >= tl.clearedAt + 3000 && x.flashing),
+    { at3000: afterClear.find(x => x.t >= tl.clearedAt + 3000) });
 
   const after = await snap();
-  check('★ 回放结束 + 宽限期后闪屏自动撤除（class / mask / 卡片模糊全清）',
+  check('★ 强制 6 秒到期后闪屏自动撤除（class / mask / 卡片模糊全清）',
     !after.flashing && after.mask.display === 'none' && !/blur/.test(after.cardFilter), after);
   check('★ 撤遮罩时搜索框留空白（值已为空，不是回填态）', after.value === '', after.value);
   check('★ 撤遮罩后结果已是全量最终态（>170 张卡）', after.cards > 170, after.cards);

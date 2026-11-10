@@ -8,7 +8,7 @@
 //   4. 勾了「我同意」→ 门禁放行（走到解密环节；jsdom 无 WebCrypto，
 //      必然落到「密码不对。」，这恰好证明请求穿透了门禁）
 //   5. 二选一互斥：从「不同意」切到「同意」时前者自动取消；再点一次可取消
-//   6. 红色公告在锁屏上（含「不对没有证据链支撑」）
+//   6. 锁屏统一公告（2026-11-10 起：不再有红色提示语，只有一条「年内上线」）
 //   7. 故障注入自检：把门禁条件挖掉（if (agreeState !== 'yes') → if (false)）
 //      后，同样的操作不再出现「请先勾选」—— 证明上面的断言真的在测门禁，
 //      而不是永远为真的空断言
@@ -62,9 +62,16 @@ await (async () => {
   check('按钮文案正确', yes.textContent.includes('我同意') && no.textContent.includes('我不同意'));
   check('初始 aria-checked 均为 false',
     yes.getAttribute('aria-checked') === 'false' && no.getAttribute('aria-checked') === 'false');
-  check('红色公告在锁屏上且含「不对没有证据链支撑」',
-    d.querySelector('.lock__agree-hint') !== null &&
-    d.querySelector('.lock__agree-hint').textContent.includes('不对没有证据链支撑'));
+  const launchNote = d.querySelector('.lock__launch-note');
+  check('★ 锁屏所有红色提示语已删除（.lock__agree-hint 一处不留）',
+    d.querySelector('.lock__agree-hint') === null && !HTML.includes('lock__agree-hint'));
+  check('★ 统一公告写明「年内上线」且说明故事还在写',
+    !!launchNote && /年内上线/.test(launchNote.textContent) && /还有不少故事在写/.test(launchNote.textContent));
+  check('★ 统一公告写清 GitHub Star 持有天数与访问限制（不抄站长原话）',
+    !!launchNote && /GitHub Star/.test(launchNote.textContent)
+    && /持有天数/.test(launchNote.textContent) && /天数不足/.test(launchNote.textContent));
+  check('统一公告用中性色 class，不再挂红色 --hl 样式',
+    !!launchNote && !/var\(--hl\)/.test(launchNote.getAttribute('style') || ''));
   dom.window.close();
 })();
 

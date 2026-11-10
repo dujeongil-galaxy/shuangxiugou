@@ -1,5 +1,5 @@
 /* ==========================================================================
-   首页黑色「全网打工人已转移消费额」卡片 → 滚动式广告位（轮播）
+   首页黑色「全网打工人已转移消费额」卡片 → 滚动式「公益广告位」（轮播）
    --------------------------------------------------------------------------
    站长 2026-11-09 深夜指令（三处修正）：
    ① 「天猫链接也点不动啊」——CTA 提示词原先是 <div> 没有 href，只有左边 76px
@@ -7,10 +7,23 @@
    ② 「广告位为什么不是居中」——卡片内容一律水平居中；左右箭头从「绝对定位盖在
       卡片上」移到卡片下方导航条，彻底消除招商卡标题被箭头压住的问题。
    ③ 「广告位这个你不能设计一下图片吗」——新增两张站点自绘矢量设计稿：
-      assets/ad-luxiyi.svg（品牌广告）/ assets/ad-recruit.svg（招商卡衬底），
+      assets/ad-luxiyi.svg（品牌广告）/ assets/ad-recruit.svg（虚位以待衬底），
       与品牌 mascot 共用蓝红民族纹样 + 刺梨金黄配色，任意分辨率清晰。
+
+   站长 2026-11-10 批次（两处）：
+   ④ 「挡住了，你没发现？」——真渲染量出两类遮挡：
+      a) 招商卡设计稿中央那个 r=102 的圆形印章把 HTML 文案圈在里面、弧线压字；
+         现改为横向圆角白底横幅，文案区不放任何线条，副标题对比度加深。
+      b) 右侧限时推广浮层 / 底部吸底条 / 悬浮按钮（z-index 9990、9000）在窄屏下
+         会压住广告位；现给 .sxg-adslot 独立层级 9995，导航条底部留白 14px。
+         全屏劳工提醒弹窗 .dyp（100000）的遮罩另在 douyin-prompt.css 里减淡，
+         弹窗打开时广告位仍可辨认，不再是一片模糊。
+   ⑤ 「广告位请优化一下，叫 公益广告位」——全站可见文案统一改为「公益广告位」，
+      第二张卡由「广告位招商中」改为「公益广告位 · 虚位以待」，明确免费展示、
+      非商业招商；品牌卡标记「公益展示」。两张 SVG 角标文案同步。
+
    两张卡：① 陆喜依品牌广告（整图点击跳天猫、品牌名跳站内详情页）；
-   ② 广告位招商中。支持箭头/圆点手动切换 + 5s 自动轮播（悬停暂停）。
+   ② 公益广告位虚位以待。支持箭头/圆点手动切换 + 5s 自动轮播（悬停暂停）。
    定位锚点：全站唯一文案「全网打工人已转移消费额」。沿用三重兜底替换。
    主站 bundle assets/index-*.js 不可改，所有页面微调一律走独立补丁脚本。
    ========================================================================== */
@@ -28,7 +41,7 @@
   function injectStyle() {
     if (document.getElementById('sxg-adslot-style')) return;
     var css =
-      '.sxg-adslot{box-sizing:border-box;position:relative;margin:0;padding:0;' +
+      '.sxg-adslot{box-sizing:border-box;position:relative;z-index:9995;margin:0;padding:0;' +
       'border:1px solid #e2e8f0;border-radius:16px;background:#fff;overflow:hidden;' +
       'font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;width:100%}' +
       '.sxg-adslot__head{display:flex;align-items:center;justify-content:center;gap:6px;' +
@@ -60,9 +73,9 @@
       '.sxg-adslot__recruit-copy{position:absolute;inset:0;display:flex;flex-direction:column;' +
       'align-items:center;justify-content:center;gap:6px;text-align:center;pointer-events:none}' +
       '.sxg-adslot__recruit-title{font-size:25px;font-weight:800;color:#0f172a;letter-spacing:.06em}' +
-      '.sxg-adslot__recruit-sub{font-size:14px;color:#64748b;line-height:1.5}' +
+      '.sxg-adslot__recruit-sub{font-size:14px;font-weight:600;color:#475569;line-height:1.5}' +
       '.sxg-adslot__foot{display:flex;align-items:center;justify-content:center;gap:12px;' +
-      'padding:7px 0 9px;border-top:1px solid #f1f5f9}' +
+      'padding:7px 0 14px;border-top:1px solid #f1f5f9}' +
       '.sxg-adslot__nav{width:26px;height:26px;border:none;border-radius:50%;' +
       'background:#e2e8f0;color:#334155;font-size:17px;line-height:1;cursor:pointer;' +
       'display:flex;align-items:center;justify-content:center;padding:0}' +
@@ -85,8 +98,10 @@
     root.className = 'sxg-adslot';
     root.setAttribute('data-adslot', '1');
     root.setAttribute('data-adslot-reserved', '1'); // 兼容 cdp-adcheck 验收
+    root.setAttribute('data-adslot-kind', 'public-welfare');
+    root.setAttribute('aria-label', '公益广告位');
     root.innerHTML =
-      '<div class="sxg-adslot__head">广告位</div>' +
+      '<div class="sxg-adslot__head">公益广告位</div>' +
       '<div class="sxg-adslot__viewport">' +
         '<div class="sxg-adslot__track">' +
           '<div class="sxg-adslot__card sxg-adslot__card--brand">' +
@@ -98,7 +113,7 @@
             '<div class="sxg-adslot__meta">' +
               '<img class="sxg-adslot__avatar" src="' + IMG + '" alt="陆喜依">' +
               '<a class="sxg-adslot__name" href="' + DETAIL + '" rel="noopener">陆喜依</a>' +
-              '<span class="sxg-adslot__mark">品牌展示</span>' +
+              '<span class="sxg-adslot__mark">公益展示</span>' +
               '<span class="sxg-adslot__tag">真实双休标杆品牌 · 站长指定 S 级</span>' +
               '<a class="sxg-adslot__cta" href="' + TMALL + '" target="_blank" rel="noopener">' +
                 '点此进入天猫旗舰店，支持真实双休企业 →</a>' +
@@ -107,14 +122,14 @@
           '<div class="sxg-adslot__card sxg-adslot__card--recruit">' +
             '<div class="sxg-adslot__art-wrap">' +
               '<img class="sxg-adslot__art" src="' + ART_RECRUIT + '" ' +
-                'alt="广告位招商中 · 真实双休标杆品牌长期招募，欢迎联系站长">' +
+                'alt="公益广告位 · 虚位以待 · 真实双休标杆品牌可申请免费展示">' +
               '<div class="sxg-adslot__recruit-copy">' +
-                '<div class="sxg-adslot__recruit-title">广告位招商中</div>' +
-                '<div class="sxg-adslot__recruit-sub">真实双休标杆品牌长期招募，欢迎联系站长</div>' +
+                '<div class="sxg-adslot__recruit-title">公益广告位 · 虚位以待</div>' +
+                '<div class="sxg-adslot__recruit-sub">真实双休标杆品牌可申请免费展示，欢迎联系站长</div>' +
               '</div>' +
             '</div>' +
             '<div class="sxg-adslot__meta">' +
-              '<span class="sxg-adslot__hint">← 左右箭头 / 圆点切换广告卡 · 自动轮播 5 秒 →</span>' +
+              '<span class="sxg-adslot__hint">← 左右箭头 / 圆点切换公益广告卡 · 自动轮播 5 秒 →</span>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -194,7 +209,7 @@
     restart();
   }
 
-  // 找到黑卡就把它换成滚动式广告位；已换过的（锚点文字消失）自动跳过
+  // 找到黑卡就把它换成滚动式公益广告位；已换过的（锚点文字消失）自动跳过
   function transformCard() {
     var nodes = document.querySelectorAll('div');
     for (var i = 0; i < nodes.length; i++) {

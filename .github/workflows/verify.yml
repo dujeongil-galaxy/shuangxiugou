@@ -265,3 +265,10 @@ jobs:
       # 配套 verify §31a–§31h。
       - name: 详情弹窗证据链公示跳转测试
         run: node scripts/test-evidence-jump.cjs
+
+      # 站长 2026-11-10 批次：罗技辱骂消费者事件、星宇股份后续进展
+      # 必须真挂到两张内置卡上，详情页与首页公示区同步登记权威媒体来源。
+      # 真 DOM 断言幂等 / 重渲染自愈 / 卡片零外链 / 口径不作因果认定。
+      # 配套 verify §32。
+      - name: 新闻事件登记测试（罗技 / 星宇）
+        run: node scripts/test-news-incident.cjs

@@ -80,5 +80,5 @@
 
 <!-- 角标 -->
 <text x="1120" y="42" text-anchor="end" font-family="Arial,sans-serif" font-size="15" fill="#9db8e8" letter-spacing="4">AD · 01 / 02</text>
-<text x="1120" y="224" text-anchor="end" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="15" fill="#9db8e8" letter-spacing="2">广告位 · 支持真实双休企业</text>
+<text x="1120" y="224" text-anchor="end" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="15" fill="#9db8e8" letter-spacing="2">公益广告位 · 支持真实双休企业</text>
 </svg>

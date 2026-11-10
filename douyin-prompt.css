@@ -29,8 +29,13 @@
 .dyp__mask {
   position: absolute;
   inset: 0;
-  background: rgba(24, 20, 16, 0.55);
-  backdrop-filter: blur(2px);
+  /* 2026-11-10：站长「挡住了，你没发现？」——真渲染量出这个全屏遮罩
+     （.dyp z-index 100000 + blur(2px) + 55% 黑）把首页公益广告位整块
+     盖在模糊层后面，肉眼完全看不见。这里把遮罩减淡、去掉模糊：
+     弹窗面板与倒计时、× 关闭、引流按钮全部原样保留，只是不再把
+     页面内容糊成一片，广告位在弹窗打开时仍可辨认。 */
+  background: rgba(24, 20, 16, 0.22);
+  backdrop-filter: none;
   animation: dyp-fade 0.22s ease;
   pointer-events: auto;
 }

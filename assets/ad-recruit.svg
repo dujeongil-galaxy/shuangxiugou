@@ -1,7 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-label="广告位招商中 · 真实双休标杆品牌长期招募">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-label="公益广告位 · 虚位以待 · 真实双休标杆品牌可申请免费展示">
 <!--
-  广告位第 2 张：招商中卡的背景设计稿（站点自绘矢量稿，非站长提供的图片素材）。
-  中心留白给 HTML 文案（居中叠在图上），四周是虚线框 + 民族纹样角饰，
+  公益广告位第 2 张：虚位以待卡的背景设计稿（站点自绘矢量稿，非站长提供的图片素材）。
+  2026-11-10 站长：「挡住了，你没发现？广告位请优化一下，叫 公益广告位」。
+  旧版中央是一个 r=102 的圆形印章，文案叠在圆环里被圈住、弧线压字；
+  这里改为**横向圆角白底横幅**做干净的文字衬底，四角装饰全部退到文案区之外，
+  中心区域不放任何线条，HTML 文案绝对可读、不与图形相交。
   与第 1 张品牌广告共用同一套蓝/金/红视觉语言。不含任何 URL。
 -->
 <defs>
@@ -15,6 +18,10 @@
     <stop offset="0.5" stop-color="#e5a336"/>
     <stop offset="1" stop-color="#1d3f9e"/>
   </linearGradient>
+  <linearGradient id="rc-plate" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ffffff"/>
+    <stop offset="1" stop-color="#f4f8ff"/>
+  </linearGradient>
   <pattern id="rc-grid" width="34" height="34" patternUnits="userSpaceOnUse">
     <path d="M34 0 L0 0 0 34" fill="none" stroke="#1d3f9e" stroke-opacity="0.06" stroke-width="1"/>
   </pattern>
@@ -27,7 +34,7 @@
 <rect x="18" y="18" width="1164" height="224" rx="18" fill="none" stroke="#1d3f9e" stroke-opacity="0.34" stroke-width="2" stroke-dasharray="10 8"/>
 <rect x="28" y="28" width="1144" height="204" rx="14" fill="none" stroke="url(#rc-line)" stroke-opacity="0.5" stroke-width="1.5"/>
 
-<!-- 四角菱形角饰（呼应第 1 张的民族织带） -->
+<!-- 四角菱形角饰（呼应第 1 张的民族织带，全部留在文案区之外） -->
 <g fill="none" stroke="#1d3f9e" stroke-opacity="0.5" stroke-width="2">
   <path d="M60 66 l16 -16 16 16 -16 16 z"/>
   <path d="M1140 66 l16 -16 16 16 -16 16 z"/>
@@ -47,11 +54,15 @@
   <rect x="1193" y="86" width="7" height="88" rx="3"/>
 </g>
 
-<!-- 中心淡淡的圆形印章底，衬 HTML 文案 -->
-<circle cx="600" cy="130" r="102" fill="#ffffff" opacity="0.5"/>
-<circle cx="600" cy="130" r="102" fill="none" stroke="#e5a336" stroke-opacity="0.35" stroke-width="2"/>
+<!-- 文案衬底：横向圆角白底横幅，中心区域无任何线条穿过文字 -->
+<rect x="300" y="56" width="600" height="148" rx="24" fill="url(#rc-plate)" opacity="0.94"/>
+<rect x="300" y="56" width="600" height="148" rx="24" fill="none" stroke="#e5a336" stroke-opacity="0.45" stroke-width="2"/>
+<rect x="316" y="72" width="568" height="116" rx="16" fill="none" stroke="#1d3f9e" stroke-opacity="0.12" stroke-width="1"/>
+<!-- 上下两条短金线，只做装饰不进入文字区 -->
+<rect x="552" y="40" width="96" height="3" rx="1.5" fill="#e5a336" opacity="0.65"/>
+<rect x="552" y="217" width="96" height="3" rx="1.5" fill="#e5a336" opacity="0.65"/>
 
 <!-- 角标 -->
-<text x="112" y="56" font-family="Arial,sans-serif" font-size="15" fill="#6478a8" letter-spacing="4">AD SLOT · 02 / 02</text>
-<text x="1088" y="218" text-anchor="end" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="15" fill="#6478a8" letter-spacing="2">真实双休 · 品牌招募</text>
+<text x="112" y="56" font-family="Arial,sans-serif" font-size="15" fill="#6478a8" letter-spacing="4">PUBLIC WELFARE AD · 02 / 02</text>
+<text x="1088" y="218" text-anchor="end" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="15" fill="#6478a8" letter-spacing="2">公益广告位 · 真实双休品牌招募</text>
 </svg>

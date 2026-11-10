@@ -4503,19 +4503,19 @@ if (exists('filter-flash.js')) {
   const htmlFF = read('index.html');
 
   check(ff.length > 1500, 'filter-flash.js 非空集（防空文件把下面断言全变成假通过）');
-  check(/<script defer src="\.\/filter-flash\.js\?v=6"><\/script>/.test(htmlFF),
-    'index.html 引入了 filter-flash.js?v=6（改脚本必须 bump 缓存号）');
+  check(/<script defer src="\.\/filter-flash\.js\?v=7"><\/script>/.test(htmlFF),
+    'index.html 引入了 filter-flash.js?v=7（改脚本必须 bump 缓存号）');
   check(/sxg-flash-spin/.test(ff) && /sxg-flash-tip/.test(ff) && /加载中/.test(ff),
     '★ 闪屏遮罩内带转圈 + 「加载中…」明确加载态（近白磨砂不再被误认成卡死/白屏而退出）');
   check(/@keyframes sxg-flash-spin/.test(ff) && /prefers-reduced-motion:reduce/.test(ff),
     '加载动画有 keyframes 且尊重 prefers-reduced-motion（减弱动效降级）');
   check(/m\.appendChild\(box\)/.test(ff) && /function getMask\(\)/.test(ff),
     '加载动画挂在共用遮罩节点内（评级切换与搜索清空两种闪屏都显示）');
-  check(/function flash\(top\)/.test(ff) && /flash\(btn\.getBoundingClientRect\(\)\.bottom \+ 4\)/.test(ff),
+  check(/function flash\(top, mode\)/.test(ff) && /flash\(btn\.getBoundingClientRect\(\)\.bottom \+ 4\)/.test(ff),
     '评级切换走共用 flash()，几何仍是按钮底边 +4（工具条保持清晰）');
-  check(/flash\(0\)/.test(ff) && !/flash\(ratingBarBottom\(\)\)/.test(ff) &&
+  check(/flash\(0, 'search'\)/.test(ff) && !/flash\(ratingBarBottom\(\)\)/.test(ff) &&
         !/function ratingBarBottom\(\)/.test(ff),
-    '★ 搜索清空改整屏 flash(0)：搜索框与联想面板一起糊，回放回填的词看不见');
+    '★ 搜索清空改整屏 flash(0, search)：搜索框与联想面板一起糊，回放回填的词看不见');
   check(/addEventListener\('beforeinput'/.test(ff) && /addEventListener\('input'/.test(ff),
     '搜索分支挂了 beforeinput + input 两道捕获监听');
   check(/was !== null && was !== '' && now === ''/.test(ff),
@@ -4555,6 +4555,18 @@ if (exists('filter-flash.js')) {
     'click 监听仍只有评级按钮那一处（没有偷偷扩到品类卡点击）');
   check(!/fetch\(|XMLHttpRequest|location\.reload/.test(ff),
     '闪屏补丁纯 DOM 层，不发请求、不刷新页面');
+  check(/var SEARCH_DURATION = 6000/.test(ff) && /var TICK_MS = 1000/.test(ff)
+    && /SEARCH_TIP_HEAD = '正在加载缓存，请稍后'/.test(ff)
+    && /function startCountdown\(\)/.test(ff) && /function renderCountdown\(\)/.test(ff),
+    '★ 2026-11-10 搜索删空强制 6 秒 + 每秒倒计时「正在加载缓存，请稍后x秒」');
+  check(/var forcedUntil = 0/.test(ff) && /var left = forcedUntil - Date\.now\(\)/.test(ff)
+    && /Date\.now\(\) < forcedUntil/.test(ff) && /timer = setTimeout\(dismiss, isSearch \? SEARCH_DURATION : DURATION\)/.test(ff),
+    '★ forcedUntil 硬 deadline：hold/release、评级点击、重复输入都不得提前撤除 6 秒遮罩');
+  check(/var DURATION = 500/.test(ff) && /var RATING_TIP = '加载中…'/.test(ff),
+    '评级切换仍是 500ms + 「加载中…」，搜索 6 秒口径没有扩大到评级切换');
+  check(/契约|两侧必须同改/.test(read('search-clear-order-fix.js'))
+    && /forcedUntil/.test(read('search-clear-order-fix.js')),
+    '★ 顺序复位脚本的注释同步写明 6 秒强制契约（两侧同改，勿单侧删除）');
 } else {
   warn('filter-flash.js 不存在，跳过结果区闪屏检查');
 }
@@ -4570,9 +4582,9 @@ if (exists('search-clear-order-fix.js')) {
   const scf = read('search-clear-order-fix.js');
   const idx = read('index.html');
 
-  check(/search-clear-order-fix\.js\?v=2/.test(idx) &&
-    (idx.match(/search-clear-order-fix\.js\?v=2/g) || []).length >= 2,
-    'index.html 引用 search-clear-order-fix.js?v=2（preload + script 两处，改脚本须 bump）');
+  check(/search-clear-order-fix\.js\?v=3/.test(idx) &&
+    (idx.match(/search-clear-order-fix\.js\?v=3/g) || []).length >= 2,
+    'index.html 引用 search-clear-order-fix.js?v=3（preload + script 两处，改脚本须 bump）');
 
   check(/.bg-white\.rounded-2xl\.border/.test(scf) && /cardTitles|offsetParent/.test(scf),
     '修复脚本用同样的卡片选择器重建顺序基准，与全站口径一致');
@@ -7340,7 +7352,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
 
   check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
-    && /black-card-adslot\.js\?v=5/.test(idx29),
+    && /black-card-adslot\.js\?v=6/.test(idx29),
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 }
 
@@ -7470,6 +7482,89 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(exists('scripts/test-evidence-jump.cjs') && /test-evidence-jump\.cjs/.test(wf31)
     && /window\.__sxgEvidenceJump/.test(code31),
     '§31h 真 DOM 测试存在并挂进 CI（三层强制：规则 + 断言 + CI）');
+}
+
+// ---------- 32. 2026-11-10 批次：公益广告位 / 6 秒倒计时 / 新闻登记 / 随笔年内上线 ----------
+// 站长本批一口气提了六件事，其中「挡住了，你没发现？」是真渲染才量出来的：
+// .dyp 全屏遮罩把广告位整块糊掉，招商卡 SVG 的圆形印章又压住文案。
+// 规则只写 README 会重演，这里把可观测的落点全部钉死。
+{
+  const ad32 = exists('black-card-adslot.js') ? read('black-card-adslot.js') : '';
+  // 只拿纯代码判「旧文案清零」：文件头注释里会引用旧文案说明改了什么，
+  // 拿全文比对会误判红（§31 已吃过「注释救活改坏的实现」的亏，这里是反向同理）。
+  const code32 = ad32.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  const rec32 = read('assets/ad-recruit.svg');
+  const brand32 = read('assets/ad-luxiyi.svg');
+  const dyp32 = read('douyin-prompt.css');
+  const ff32 = read('filter-flash.js');
+  const scof32 = read('search-clear-order-fix.js');
+  const news32 = exists('news-incident-patch.js') ? read('news-incident-patch.js') : '';
+  const nt32 = read('notes.html');
+  const idx32 = read('index.html');
+  const rd32 = read('README.md');
+  const wf32 = read('.github/workflows/verify.yml');
+  const logi32 = read('brand/logitech.html');
+  const xing32 = read('brand/xingyu.html');
+
+  check(/公益广告位/.test(rd32) && /不作因果认定|不写「报应」/.test(rd32)
+    && /6 秒/.test(rd32) && /年内上线/.test(rd32),
+    '§32a README 写死本批四条口径（公益广告位 / 6 秒倒计时 / 新闻登记 / 随笔年内上线）',
+    '规则只挂口头 → 下次又把广告位做成「广告位招商中」、把 6 秒改回 500ms');
+
+  check((code32.match(/公益广告位/g) || []).length >= 4
+    && !/广告位招商中|品牌展示|>广告位</.test(code32)
+    && /data-adslot-kind', 'public-welfare'/.test(code32)
+    && /black-card-adslot\.js\?v=6/.test(idx32),
+    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 6');
+
+  check(!/<circle\b/.test(rec32) && /rc-plate/.test(rec32)
+    && /PUBLIC WELFARE AD/.test(rec32) && /公益广告位/.test(brand32),
+    '§32c 招商卡设计稿去掉压字的圆形印章、改横向白底横幅；两张 SVG 角标同步公益命名');
+
+  check(/z-index:9995/.test(ad32) && /padding:7px 0 14px/.test(ad32)
+    && /background: rgba\(24, 20, 16, 0\.22\)/.test(dyp32)
+    && /backdrop-filter: none/.test(dyp32)
+    && /douyin-prompt\.css\?v=13/.test(idx32),
+    '§32d 广告位层级 9995 / 底部留白 14px；.dyp 遮罩减淡去模糊，弹窗引流功能原样保留');
+
+  check(/var SEARCH_DURATION = 6000/.test(ff32)
+    && /正在加载缓存，请稍后/.test(ff32)
+    && /forcedUntil/.test(ff32) && /startCountdown/.test(ff32)
+    && /filter-flash\.js\?v=7/.test(idx32)
+    && /forcedUntil/.test(scof32)
+    && /search-clear-order-fix\.js\?v=3/.test(idx32),
+    '§32e 搜索删空强制 6 秒 + 倒计时 + 硬 deadline；两侧契约同改、缓存号都 bump');
+
+  check(news32.length > 0
+    && /<script defer src="\.\/news-incident-patch\.js\?v=1"><\/script>/.test(idx32)
+    && /var ITEMS = \[/.test(news32) && /key: 'logitech'/.test(news32) && /key: 'xingyu'/.test(news32)
+    && /new MutationObserver\(schedule\)/.test(news32)
+    && /不能改 bundle/.test(news32)
+    && !/https?:\/\//.test(news32),
+    '§32f 新闻登记补丁配置驱动两张内置卡，幂等 + 重渲染兜底，卡片零外链、不碰 bundle');
+
+  check(/罗技中国就授权店铺侮辱消费者广告致歉/.test(logi32)
+    && /总经理扣薪 12 个月、人力资源总监免职/.test(xing32)
+    && /m\.gmw\.cn/.test(logi32) && /m\.chinanews\.com/.test(logi32)
+    && /cnenergynews\.cn/.test(xing32) && /nfnews\.com/.test(xing32) && /inewsweek\.cn/.test(xing32)
+    && !/报应/.test(xing32),
+    '§32g 两条新闻的权威媒体原始链接落在详情页，口径中立不写「报应」');
+
+  const ebLogi32 = (idx32.match(/<details id="ev-logitech"[\s\S]*?<\/details>/) || [])[0] || '';
+  const ebXing32 = (idx32.match(/<details id="ev-xingyu"[\s\S]*?<\/details>/) || [])[0] || '';
+  check(/data-n="3" data-l="2"/.test(ebLogi32) && /data-n="5" data-l="5"/.test(ebXing32),
+    '§32h 首页公示区计数由生成器托管同步（罗技 1→3、星宇 2→5），未手改计数');
+
+  check(!/lock__agree-hint/.test(nt32) && /lock__launch-note/.test(nt32)
+    && /年内上线/.test(nt32) && /GitHub Star/.test(nt32) && /持有天数/.test(nt32)
+    && /var PAYLOAD = /.test(nt32),
+    '§32i 随笔红色提示语清零、统一年内上线公告（含 Star 持有天数），加密正文 PAYLOAD 未动');
+
+  check(/test-news-incident\.cjs/.test(wf32) && exists('scripts/test-news-incident.cjs')
+    && /test-search-clear-flash\.cjs/.test(wf32)
+    && /test-adslot\.cjs/.test(wf32) && /test-notes-agree\.cjs/.test(wf32)
+    && /陆喜依/.test(read('scripts/test-evidence-jump.cjs')),
+    '§32j 真 DOM 测试挂进 CI；陆喜依精准定位已固化进跳转测试');
 }
 
 // ---------- 汇总 ----------

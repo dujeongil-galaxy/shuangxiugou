@@ -118,7 +118,7 @@ function check(label, cond, extra) {
   check('箭头 CSS 已无 position:absolute',
     !/\.sxg-adslot__nav\{[^}]*position:absolute/.test(src));
   check('招商卡标题与副标题仍在 DOM 里（未被图片吞掉）',
-    /广告位招商中/.test(slot.textContent) && /欢迎联系站长/.test(slot.textContent));
+    /公益广告位 · 虚位以待/.test(slot.textContent) && /欢迎联系站长/.test(slot.textContent));
 
   // ─────────── 3. 轮播交互没被改坏 ───────────
   console.log('\n--- 3. 手动切换 / 自动轮播 ---');

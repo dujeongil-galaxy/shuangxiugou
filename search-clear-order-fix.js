@@ -33,8 +33,13 @@
 //      （scripts/test-search-clear-render.cjs 曾稳定判红）。因此两次回放事件
 //      都带 __sxgScofReplay 标记，flash 侧显式跳过。
 //   ② 本脚本在决定回放时派发 sxg-scof-hold、回放清空后派发 sxg-scof-release；
-//      flash 侧 hold 期间不撤遮罩，release 后再留 450ms 让 React 空态落地。
+//      flash 侧 hold 期间不撤遮罩，非强制期 release 后再留 450ms 让 React 空态落地。
 //      这样搜索框回填的词不会露出来（站长：「删除后留空白，也做高度模糊」）。
+//   ③ 2026-11-10 站长把「拼音搜索后删除」的返回动画强制为 6 秒并显示倒计时
+//      （提示词「正在加载缓存，请稍后x秒」）：flash 侧改用 forcedUntil 硬 deadline，
+//      搜索清空的强制期内 hold/release 都不再提前撤除；本脚本 RESET_DELAY=1200
+//      的回放完整落在 6 秒窗口内，事件照旧派发、合成 input 照旧带标记，
+//      两侧时序参数都不用改。改契约必须两边同步，勿单侧删除。
 // ============================================================
 (function () {
   'use strict';

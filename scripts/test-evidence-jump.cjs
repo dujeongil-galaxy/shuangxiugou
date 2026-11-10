@@ -37,6 +37,7 @@ const PAGE = `<!doctype html><html><head></head><body>
       <details id="ev-abc" data-b="abc"><summary><span class="bn">农业银行 (ABC)</span><span class="co">中国农业银行股份有限公司</span></summary><div class="ev-body">2 条证据</div></details>
       <details id="ev-yidiandian" data-b="yidiandian"><summary><span class="bn">一点点 (1点点)</span><span class="co">生根餐饮</span></summary><div class="ev-body">3 条证据</div></details>
       <details id="ev-customx" data-b="customx"><summary><span class="bn">完全不同的公示名</span><span class="co">某公司</span></summary><div class="ev-body">1 条证据</div></details>
+      <details id="ev-luxiyi" data-b="luxiyi"><summary><span class="bn">陆喜依</span><span class="co">陆喜依</span></summary><div class="ev-body">5 条证据</div></details>
     </div>
   </div>
 </section>
@@ -193,6 +194,12 @@ function makeDom(hash) {
     J.resolve('某张卡', 'customx-card')?.id === 'ev-customx');
   check('④ 公司名归一化：中国农业银行股份有限公司 → ev-abc',
     J.resolve('中国农业银行股份有限公司')?.id === 'ev-abc');
+  // 站长 2026-11-10 点名复核：拼音搜索框搜「陆喜依」→ 点新按钮要精准落到 ev-luxiyi。
+  // 这一条已用无头 Edge + CDP 真渲染验收（D:/WorkBuddy-Cache/_luxiyi_verify.cjs）。
+  check('★ 站长点名：陆喜依（S 级自定义卡）→ ev-luxiyi',
+    J.resolve('陆喜依', 'luxiyi-card')?.id === 'ev-luxiyi');
+  check('★ 真实首页公示区存在 ev-luxiyi 条目（精准定位的真相源）',
+    /<details id="ev-luxiyi" data-b="luxiyi"/.test(read('index.html')));
   check('无条目（虚拟对比黑榜）返回 null，不编造',
     J.resolve('某代工烘焙食品 (虚拟对比黑榜)') === null);
   check('cfgIdByName 能从 customCardsConfig 反查 slug',
