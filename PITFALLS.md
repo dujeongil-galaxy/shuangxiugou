@@ -2811,3 +2811,29 @@ HEAD 不是补提交，只是正文里引用了一下标记，同样被跳过。
 **连带坑：故障注入打出「假绿」**。做故障注入时用 `s.replace('人工核实','人工过目')`——但 `String.prototype.replace` 传字符串只替换**第一处**，而脚本上方的 CSS 注释里正好也有一句「站长人工核实」，于是注释被改、被测的 DOM 文案原封不动，verify 依旧全绿，看起来「断言失效」。改用 `s.split('人工核实').join('人工过目')` 全量替换后立刻判红（1633）。**结论：故障注入必须 `split().join()` 全量替换**，且注入后先 `grep -c` 确认目标词剩 0 处，再跑校验。
 
 **教训一句话**：站长口述/草稿是**素材**，进页面前要判「这句是给我看的，还是给访客看的」；机器强制要钉**要素**而不是钉**字面**，否则规则会反过来锁死正常迭代。
+
+---
+
+## 第四十五章：证据是「单一真相源 + 生成器」产物，手改 index.html 必被判漂移；首页公示区默认折叠（2026-11-11 19:45 §36o BYD 证据链新增澎湃报道）
+
+**现象**：往 `brand/byd.html` 的「证据来源」加了一条证据后，verify 一口气红了 6 条——`公示区逐家 data 契约与 brand/ 详情页完全一致`、`汇总「证据总条数」= 真相源（427 = 428）`、`汇总「带原始链接」（380 = 381）`、`公示区可点原始链接数`、`原始链接逐条等于详情页`、`公告栏数字与 brand/ 真相源一致`。想直接手改 `index.html` 的 `#ev-byd` 块补齐，又会撞上「公示区由生成器同步」这条断言。
+
+**根因（两条纪律）**：
+1. **证据只有一个真相源：`brand/*.html`**。首页公示区（`#evidence-board`）与顶部公告栏的「174 家 / 428 条 / 381 链接」全是 `scripts/gen-evidence-board.py` 的**产物**。改证据只能改 `brand/`，然后重跑生成器：
+   ```
+   python scripts/gen-evidence-board.py          # 生成并写回 index.html
+   python scripts/gen-evidence-board.py --check  # 只比对（CI 用，有漂移 exit 1）
+   ```
+   手改 index.html 公示区 = 改产物，下次生成就被覆盖，且当场被 `--check` 判漂移。
+2. **生成器解析有硬格式**，`brand/` 里的证据条目必须长这样，否则解析不到或被当成无标题：
+   - 整条 `<li style="margin:0 0 12px">…</li>`（style 必须一字不差）；
+   - 标题放**第一个** `<strong>…</strong>`；
+   - 日期与类型写在 `<span style="color:#6b7280;font-size:13px">（2026-11-11 · 媒体报道）</span>` 里，用 `·` 分隔——**第一段当日期、最后一段当类型**；
+   - 类型字面必须落在 `KIND_MAP` 的别名集合内（如 `媒体报道` → 「媒体报道/调查」），否则公示区显示「未归类（xxx）」；
+   - 第一个 `<a href="…">` 被当原始链接，没有则判「无可点原始链接」。
+
+**连带两个截图坑（本次真渲染踩到）**：
+- **首页公示区默认折叠**：`evidence-collapse.js` 把 `#evidence-board` 的 h2 当把手，未点击时内部 `<details>` 的 `getBoundingClientRect().height = 0`、`scrollIntoView` 无效。截图前必须 `document.querySelector('#evidence-board h2').click()` 展开，再等 1.2s 重新量位置。
+- **React 挂载期滚动会被重置**：页面 `load` 后立刻 `window.scrollTo` 会被 React 渲染整体高度变化（本例 `scrollHeight` 从 3k 跳到 38k）打回 0，量出来的 rect 全是 0。正确姿势是**先等 `document.documentElement.scrollHeight` 连续两次相同**（本次约 8s 稳定）再测量；要截视口外的区块，直接用 `Page.captureScreenshot({captureBeyondViewport:true, clip:{x,y,width,height}})` 按绝对坐标裁，比滚动可靠。
+
+**教训一句话**：凡「首页公示 / 汇总数字」这类由生成器维护的东西，只改源文件、重跑生成器、跑 `--check`；断言也别写「全页不得出现某关键词」——新证据本来就该出现在首页公示区，限定到具体元素/句子才不会自我矛盾（§36o 首版就栽在这）。
