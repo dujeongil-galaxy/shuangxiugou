@@ -8086,8 +8086,8 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(ruleOk,
     '§36g 手机端 [data-ai-notice]（AI 开通公告）改块级，右列 76px 由 body 统一预留（§36j 上移）',
     '公告仍是居中 inline-block 且无处预留右列宽 → 窄屏右缘压在右侧悬浮钮上（站长截图）');
-  check(/mobile-fixes\.css\?v=15/.test(idx36g),
-    '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 15',
+  check(/mobile-fixes\.css\?v=16/.test(idx36g),
+    '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 16',
     '?v 没 bump → 浏览器缓存旧 CSS，预留列宽不生效');
 }
 
@@ -8217,23 +8217,50 @@ section('25. 成功案例专题页（QQ奶奶）');
     '窄屏没给右侧 FAB 列留列宽 → hero/卡片/统计滚动经过时仍被悬浮钮压住；或又把吸底条收窄导致文案竖排');
 }
 
-// ---------- 36p. 窄屏左下两枚悬浮圆钮并入右侧 76px 留白列（2026-11-12 站长） ----------
+// ---------- 36q. 悬浮层收口：六枚圆钮统一进 #sxg-fab-dock（2026-11-12 站长「按你的建议执行」） ----------
+// 取代 §36p 的逐点补丁。原写法是 6 个脚本各自 fixed + 各写死一个 bottom，
+// 每加一枚 / 换屏高就要重算；现在由唯一容器 + flex 自动排布，且低频 4 枚
+// 收进「更多」折叠层（功能不删，只换入口）。断言钉「架构契约」而非六个魔数。
 {
-  const mf36p = exists('mobile-fixes.css') ? stripCssComments(read('mobile-fixes.css')) : '';
-  const idx36p = read('index.html');
-  // §36j 只留了右列，左下角 #sxg-ai-fab / #sxg-nav 仍压住品牌卡与证据公示区正文。
-  // 不能靠「整页再左留白」解决：真渲染实测内容 390-76-70=244px / 缩钮后 270px，
-  // 品牌卡深色块内文字被挤成竖排。故两枚并入右列，内容仍 314px 满宽。
-  const aiOk = /#sxg-ai-fab\s*\{[^}]*left:\s*auto\s*!important[^}]*right:\s*14px\s*!important[^}]*bottom:\s*calc\([^}]*210px/.test(mf36p);
-  const navOk = /#sxg-nav\s*\{[^}]*left:\s*auto\s*!important[^}]*right:\s*14px\s*!important[^}]*bottom:\s*calc\([^}]*335px/.test(mf36p);
-  const panelOk = /#sxg-ai-panel\s*\{[^}]*276px/.test(mf36p)
-    && /#sxg-nav-panel\s*\{[^}]*right:\s*0\s*!important/.test(mf36p);
-  check(aiOk && navOk && panelOk && !/body\s*\{[^}]*padding-left/.test(mf36p),
-    '§36p 窄屏左下两枚圆钮并入右侧 76px 留白列（AI +210 / 菜单 +335），面板同步右锚定，整页不再左侧扣宽',
-    '左钮仍在 left:14px 或又整页左留白 → 品牌卡正文被压 / 内容被夹成 244–270px 窄条');
-  check(/mobile-fixes\.css\?v=15/.test(idx36p),
-    '§36p mobile-fixes.css 的 ?v 已 bump 到 15（左钮并入右列靠新 CSS 生效）',
-    '?v 没 bump → 浏览器缓存旧 CSS，左钮仍在左下角压内容');
+  const mf36q = exists('mobile-fixes.css') ? stripCssComments(read('mobile-fixes.css')) : '';
+  const dock36q = exists('fab-dock.js') ? read('fab-dock.js') : '';
+  const idx36q = read('index.html');
+
+  // ① CSS：容器只写一次定位；容器子项把源脚本注入的 fixed/bottom 整体清成 relative。
+  const dockCssOk = /#sxg-fab-dock\s*\{[^}]*position:\s*fixed[^}]*flex-direction:\s*column[^}]*gap:\s*8px/.test(mf36q)
+    && /#sxg-fab-dock\s*>\s*\*,\s*#sxg-fab-dock\s*\.sxg-fab-dock__extra\s*>\s*\*\s*\{[^}]*position:\s*relative\s*!important[^}]*bottom:\s*auto\s*!important/.test(mf36q)
+    && /#sxg-fab-dock\s*\{[^}]*pointer-events:\s*none/.test(mf36q);
+  // ② 面板与高度：AI 面板跟随 --sxg-dock-h，导航面板右锚定；绝不再出现逐点魔数。
+  const panelOk = /#sxg-ai-panel\s*\{[^}]*var\(--sxg-dock-h/.test(mf36q)
+    && /#sxg-nav-panel\s*\{[^}]*right:\s*0\s*!important/.test(mf36q)
+    && !/\+\s*(210|272|276|335)px/.test(mf36q)
+    && !/body\s*\{[^}]*padding-left/.test(mf36q);
+  check(dockCssOk && panelOk,
+    '§36q 悬浮层收口：唯一 #sxg-fab-dock 容器（flex 自动排布 / 空隙不吃点击），子项清掉各自 fixed+bottom，AI 面板跟随 --sxg-dock-h，旧魔数清零',
+    '又回到六枚各自 fixed 写死 bottom / 面板写死 +276px → 加第 7 枚或换屏高必然再穿模');
+
+  // ③ JS：注册清单覆盖六枚、常驻两枚 + 折叠四枚，且能双向搬迁（桌面还原）。
+  const listOk = /var\s+PRIMARY\s*=\s*\[[^\]]*sxg-ai-fab[^\]]*sxg-top-btn/.test(dock36q)
+    && /var\s+EXTRA\s*=\s*\[[^\]]*sxg-nav[^\]]*sxg-remind-btn[^\]]*sxg-video-btn[^\]]*sxg-bottom-btn/.test(dock36q)
+    && /var\s+ALL\s*=\s*PRIMARY\.concat\(EXTRA\)/.test(dock36q);
+  const archOk = /max-width:\s*640px/.test(dock36q)
+    && /--sxg-dock-h/.test(dock36q)
+    && /function\s+disable\(\)[\s\S]{0,500}?document\.body\.appendChild/.test(dock36q)
+    && /MutationObserver/.test(dock36q);
+  check(exists('fab-dock.js') && listOk && archOk,
+    '§36q fab-dock.js 收编六枚（常驻 AI/TOP + 折叠 导航/提醒/视频/到底），高度写 --sxg-dock-h，仅 ≤640px 启用且可还原桌面',
+    '收编清单缺项 / 桌面端也被搬走 / 不能还原 → 悬浮层又变成两套布局各自为政');
+  check(/is-expanded/.test(dock36q) && /aria-expanded/.test(dock36q) && /\.sxg-fab-dock__extra\[hidden\]/.test(mf36q),
+    '§36q 低频功能进「更多」折叠层（可展开、可用、带 aria 状态），不是直接删掉按钮',
+    '折叠层没有可点开关或缺 aria → 低频功能等于被静默删除');
+
+  // ④ 挂载顺序：dock 脚本必须排在所有悬浮脚本之后（defer + DOMContentLoaded 监听顺序）。
+  const mountOk = /<script defer src="\.\/fab-dock\.js\?v=1"><\/script>/.test(idx36q)
+    && idx36q.indexOf('fab-dock.js?v=1') > idx36q.indexOf('nav-menu.js?v=6')
+    && /mobile-fixes\.css\?v=16/.test(idx36q);
+  check(mountOk,
+    '§36q index.html 已挂载 fab-dock.js?v=1 且排在所有悬浮脚本之后，mobile-fixes.css ?v 同步 bump 16',
+    '挂载顺序错了 → dock 执行时按钮还没建好，收编为空；?v 没 bump → 浏览器缓存旧 CSS');
 }
 
 // ---------- 汇总 ----------

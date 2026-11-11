@@ -408,40 +408,92 @@
 }
 
 /* --------------------------------------------------------------------------
-   2026-11-12 §36p：窄屏左下角两枚悬浮圆钮并入右侧 76px 留白列
+   2026-11-12 §36q：悬浮层收口 —— 六枚圆钮统一进 #sxg-fab-dock（取代 §36p）
    --------------------------------------------------------------------------
-   §36j 只给右侧四枚钮留了列宽，左下角的 #sxg-ai-fab（56×56）与
-   #sxg-nav（46×46）仍 fixed 在 left:14px / y≈571–683，滚动到品牌卡、
-   证据公示区时压住正文（站长 2026-11-12 截图）。
-   三种候选都做了真渲染对比：
-     a) 整页左留白 70px  → 内容只剩 244px，说明文字一行 12 字；
-     b) 左留白 44px + 两枚缩到 40px → 内容 270px，品牌卡深色块内
-        「员工投票 / 打卡」被挤成竖排，明显劣化；
-     c) 两枚并入右侧已有 76px 留白列 → 内容仍是 314px，零损失。
-   故取 c：所有悬浮圆钮统一锚定同一条「内容不进入」的右列，规则只有一条。
-   纵向按现有四枚的 bottom 空位排布（390×844、bar-h=113 实测）：
-     视频 +48 / TOP +96 / 下载 +154 / AI +210 / 提醒 +272 / 菜单 +335
-   → 6 枚落在 y350–683，两两不重叠；吸底条 y731 起，也不相交。
-   AI 面板与导航面板同步改右锚定，避免按钮移走后面板长到屏幕外。
-   桌面端（>640px）完全不受影响，AI 挂件仍在左下角（2026-11-05 站长拍板）。
-   注意：ai-chat.js / nav-menu.js 的样式是运行时注入 <style>，出现在本 CSS
-   之后，同特异性下会赢 —— 所以这里每条都必须 !important。
+   旧写法（§36p 及更早）：6 个脚本各自 appendChild 到 body，各自注入
+     position:fixed; right:14px; bottom:calc(bar + Npx)
+   六个 N 靠人手错开（+48/+96/+154/+210/+272/+335）。每加一枚、每换屏高、
+   吸底条一变高就得重算，然后大概率又穿模一次 —— §35→§36g→§36h→§36j→§36p
+   全是逐点补丁，补丁本身成了新的历史债务。
+
+   现写法：fab-dock.js 在窄屏把六枚搬进唯一容器，容器只写一次 right/bottom/gap，
+   纵向由 flex 自动排开；下面这条「容器直接子项 + 折叠组直接子项」规则把源脚本
+   注入的 fixed / left / right / top / bottom 一次性清成 relative。
+   选择器带 #sxg-fab-dock（两个 id 特异性）+ !important，能压过源脚本运行时
+   注入的 <style>（它们在 head 里排在本 CSS 之后）。
+   以后加第 7 枚：只改 fab-dock.js 的 PRIMARY / EXTRA 数组，无需再算 bottom。
+
+   留白列仍是 76px（§36j 的 body padding-right 不动）：现在它不是为「六枚错开」
+   留的，而是为「更多」展开态里最宽的「▶视频」预留的；常驻只有 3 枚。
+   桌面端 >640px 完全不启用 dock，六枚仍按原脚本定位（fab-dock.js 只在窄屏收编）。
    -------------------------------------------------------------------------- */
 @media (max-width: 640px) {
-  #sxg-ai-fab {
-    left: auto !important;
-    right: 14px !important;
-    bottom: calc(var(--sxg-bar-h, 0px) + 210px + env(safe-area-inset-bottom, 0px)) !important;
+  #sxg-fab-dock {
+    position: fixed;
+    right: 14px;
+    bottom: calc(var(--sxg-bar-h, 0px) + 14px + env(safe-area-inset-bottom, 0px));
+    z-index: 9000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    /* 容器不吃点击：76px 留白列的空隙必须能点到下面的内容 */
+    pointer-events: none;
   }
+  #sxg-fab-dock > *,
+  #sxg-fab-dock .sxg-fab-dock__extra > * {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    flex: none;
+    pointer-events: auto;
+  }
+  #sxg-fab-dock .sxg-fab-dock__extra {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  #sxg-fab-dock .sxg-fab-dock__extra[hidden] {
+    display: none !important;
+  }
+  /* 折叠开关：与「提醒 / TOP」同族的白底绿边圆钮，展开后填深绿表示状态 */
+  #sxg-fab-dock .sxg-fab-dock__more-btn {
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    border: 1.5px solid #0F766E;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #0F766E;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(15,118,110,.22);
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color .18s, color .18s, transform .18s;
+  }
+  #sxg-fab-dock .sxg-fab-dock__more-btn:active { transform: scale(.94); }
+  #sxg-fab-dock.is-expanded .sxg-fab-dock__more-btn {
+    background: #0F766E;
+    color: #ffffff;
+  }
+
+  /* AI 面板不进 dock（它是宽面板，仍 fixed 在 body）。bottom 改引用
+     --sxg-dock-h（由 fab-dock.js 用 ResizeObserver 实时写），展开 / 折叠 /
+     换屏高时自动跟随，不再有「+276px」这种随按钮数量漂移的魔数。 */
   #sxg-ai-panel {
-    bottom: calc(var(--sxg-bar-h, 0px) + 276px + env(safe-area-inset-bottom, 0px)) !important;
-    max-height: min(480px, calc(100vh - var(--sxg-bar-h, 0px) - 336px)) !important;
-  }
-  #sxg-nav {
-    left: auto !important;
+    left: 14px !important;
     right: 14px !important;
-    bottom: calc(var(--sxg-bar-h, 0px) + 335px + env(safe-area-inset-bottom, 0px)) !important;
+    width: auto !important;
+    bottom: calc(var(--sxg-bar-h, 0px) + var(--sxg-dock-h, 180px) + 24px + env(safe-area-inset-bottom, 0px)) !important;
+    max-height: min(480px, calc(100vh - var(--sxg-bar-h, 0px) - var(--sxg-dock-h, 180px) - 120px)) !important;
   }
+  /* #sxg-nav 进 dock 后变 relative，面板 absolute 的基准随之变成那枚 46px
+     圆钮；必须右锚定，否则从 x≈330 向右撑开会跑出屏幕。 */
   #sxg-nav-panel {
     left: auto !important;
     right: 0 !important;
