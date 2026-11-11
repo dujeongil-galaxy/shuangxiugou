@@ -279,6 +279,18 @@
       'text-decoration:none;cursor:pointer}' +
       '.sxg-adslot__cta:hover{text-decoration:underline}' +
       '.sxg-adslot__hint{font-size:12px;color:#94a3b8;line-height:1.5}' +
+      /* 站长 2026-11-11 新增：整块公益广告位的免责脚注（AI 生成图 + 站长人工核实 +
+         申请上刊方式）。作为 .sxg-adslot 的最后一个子元素，紧贴 foot 下方，做成
+         占满整卡宽度的小字浅灰脚注；不进任何一张海报 SVG（那是 §32 锁死的「文案只在图里」）。
+         视觉上仍是同一张白卡，与 foot 各带一条 border-top 自然分层（导航层 / 说明层）。 */
+      '.sxg-adslot__disclaimer{box-sizing:border-box;width:100%;padding:10px 16px 14px;' +
+      'border-top:1px solid #f1f5f9;font-size:11px;line-height:1.7;color:#94a3b8;' +
+      'text-align:left;letter-spacing:.01em}' +
+      '.sxg-adslot__issue{color:#2563eb;text-decoration:none;font-weight:700}' +
+      '.sxg-adslot__issue:hover{text-decoration:underline}' +
+      /* 执行日期整句不折行：否则在 718px 卡宽下会被拆成「…起」/「执行。」，
+         末行只剩两个字，读着像被截断。 */
+      '.sxg-adslot__date{white-space:nowrap}' +
       /* 站长 2026-11-10 二次纠正「广告图叫你重构，不是让你改成纯文字 / 文字明显重叠」：
          前两版都在跟「HTML 文案压在图上」这个结构较劲（绝对叠层 → 正常流白板），
          只要文案还在图外，就永远要跟图的缩放对账。本版直接换结构：
@@ -302,6 +314,7 @@
          只隐藏「与广告位几何相交」的那几个，离开视口立刻恢复，不动站内其它交互。 */
       '@media (max-width:480px){' +
       '.sxg-adslot__cta{font-size:12px}.sxg-adslot__meta{gap:5px 8px}' +
+      '.sxg-adslot__disclaimer{font-size:10.5px;padding:9px 14px 12px}' +
       'html.sxg-adslot-near [data-sxg-adslot-avoid]{visibility:hidden!important;pointer-events:none!important}}' +
       /* ⑪ 点击胖东来广告后的「复制 + 去微信」提示：形态照良配 toast，独立实现、
          独立类名。默认 display:none 不占几何，z=100010 高于提醒弹窗也不被
@@ -402,7 +415,8 @@
         '<button type="button" class="sxg-adslot__nav sxg-adslot__prev" aria-label="上一张">‹</button>' +
         '<div class="sxg-adslot__dots"></div>' +
         '<button type="button" class="sxg-adslot__nav sxg-adslot__next" aria-label="下一张">›</button>' +
-      '</div>';
+      '</div>' +
+      '<div class="sxg-adslot__disclaimer">公益广告位图片由 AI 绘制；企业信息全部由站长人工核实——线上自营、线下门店，只要有一条产线做不到双休，就上不了这一栏。核实结论来自站长亲自查证，不是联网搜一句「是否双休」得出的。想让自家企业上首页，请到 <a class="sxg-adslot__issue" href="https://github.com/dujeongil-galaxy/shuangxiugou/issues/new" target="_blank" rel="noopener">issue</a> 递交实证材料。<span class="sxg-adslot__date">本政策自 2026-11-11 起执行。</span></div>';
     initCarousel(root);
     // ⑪ 胖东来整图 + CTA 的「点击复制 + 去微信」交互，只绑带 data-sxg-share 的两个 <a>
     bindShare(root);
