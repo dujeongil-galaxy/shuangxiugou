@@ -2853,3 +2853,23 @@ HEAD 不是补提交，只是正文里引用了一下标记，同样被跳过。
 - **改布局前先量几何，再决定谁该退**：吸底条与 FAB 纵向不重叠，就不该跟着收窄；判据是 `getBoundingClientRect()` 的实际交叠，不是「都叫 fixed 就一起处理」。
 
 **连带一条**：`Edit` 工具写入 CRLF 文件时会沿用文件原行尾（本次 25 增 1 删、无行尾混杂），但 `node -e` 里手写 `\n` 拼字符串会破坏；改完用 `(s.match(/\r\n/g)||[]).length` 与 bare `\n` 计数各查一次最稳。
+
+---
+
+## 第四十七章：新增品牌卡是「六处计数联动」，一处漏改就整批红；克隆出的仓库不装 jsdom，47 组 test 全是假红（2026-11-11 20:39 新增吉利 C 级卡 + 理想 B 级卡）
+
+**现象四连**：
+1. 空克隆（`--depth 1`）下来的仓库**没有 `node_modules`**，47 组 `test-*.cjs` 首轮几乎全部 `MODULE_NOT_FOUND`。这不是代码坏了，是缺 jsdom。先 `npm install jsdom@^25.0.0 --no-save --no-package-lock`（206 个包，`node_modules` 已在 `.gitignore`），再判红绿。
+2. 提交信息用 `Out-File -Encoding utf8` 写，`git log` 首行变成 `﻿feat(...)`——**BOM 进了提交对象**。改法：`[IO.File]::WriteAllText($p,$s,(New-Object Text.UTF8Encoding($false))` 重写文件后 `git commit --amend -F`。`--no-verify=false` 是语法错误（`no-verify` 不取值），不要照着写。
+3. `git push` 被拒（`fetch first`）：克隆之后远端又进了 6 个提交。必须 `git fetch` + `git rebase origin/main`，**不要 `push --force`**，否则会把站长那批广告位/证据链提交抹掉。
+4. rebase 冲突全落在**证据板自动生成区块**（`#evidence-notice`、`EVIDENCE-BOARD-START` 的 174/428/381、四格家数）。手工拼数字必然算错，正确姿势是冲突块**一律取 upstream 一侧**，解决完再 `python scripts/gen-evidence-board.py` 整体重生成（合并后实际是 175 家 / 438 条 / 391 条带链接）。
+
+**规则五条**：
+- **新增一张品牌卡的计数联动是六处**：① bundle 顶部 `children:174`（等长数字常量替换，改完 `node --check`）；② `index.html` noscript 两份清单 + 「共 N 家」；③ `customCardsConfig` 数组本身；④ `rating-stats-patch.js` 的 `CORRECTIONS`（避雷 57→58）；⑤ `scripts/test-stat-filter.cjs` 里的可见/总数/hidden（**hidden 是 `total - 可见`，总数 +1 时它也要 +1，别只改可见数**）；⑥ `scripts/verify.mjs` 的 `IMPORTED_CARD_COUNT` 与分级断言。漏任何一处，verify 或 test 必红。
+- **生成器产物永远重生成，不改字**：`pinyin-index.js`、首页证据板都从 `brand/*.html` 与 `index.html` 汇总，rebase 后要整块重跑，不要 `Edit` 单个数字。
+- **远端自己带红要先认领再修**：本次 rebase 后 `test-byd-expose.cjs` 报「公示区 ev-byd 仍 3 条证据」，核对 upstream 的 `index.html` 发现它本来就是 `data-n="4" data-l="2"`（远端 `0374e86` 加了澎湃报道却漏改断言）。这种**改断言对齐事实**，不是改数据迁就断言。
+- **PowerShell 回显偶发为空**：`git log -1 --pretty=...`、`git status --short` 直接回显时 stdout 可能整段丢失（exit 0），先把结果重定向到文件再 `Read`，不要以为命令没跑。
+- **提交粒度**：`git add` 逐个列文件名，绝不 `git add .`；`node_modules`、测试截图 PNG（`scripts/shot-*.png`）、`*.txt` 中间产物一律不进库。
+
+**另记一条口径**：吉利判 C、理想判 B 都按「月休天数」本站规则——吉利集团加班打卡制（日均约 2h、双休需工作日工时抵扣）+ 子公司上六休一 → 月休不足 6 天；理想职能岗 9:00–18:00 刷脸打卡、节点周末补班 → 月休 6–8 天，但 CEO 公开表态智驾团队「大部分周六周日都在工作」，故页面显式标注「智驾条线例外，只按该条线指向 C 级」。两页的双休率与下班时间留空写「未核实 / —」，不以估算或招聘单方口径填充。
+
