@@ -132,7 +132,7 @@
     <link rel="preload" href="./search-clear-order-fix.js?v=3" as="script">
     <link rel="preload" href="./logo-vault.js?v=1" as="script">
     <link rel="preload" href="./stat-filter.js?v=9" as="script">
-    <link rel="preload" href="./pinyin-index.js?v=13" as="script">
+    <link rel="preload" href="./pinyin-index.js?v=14" as="script">
     <link rel="preload" href="./nav-menu.js?v=6" as="script">
     <!-- 良配 · 限时推广广告位（独立文件，改文案/样式不必动主页面；改完请把 ?v=N 的 N +1 防缓存） -->
     <link rel="stylesheet" href="./liangpei-ad.css?v=13">
@@ -181,7 +181,7 @@
            display:none 的那一半不进无障碍树，名字会随状态自己变；
            写死 aria-label 反而一直是「展开」，收起后就读错了。 -->
       <input type="checkbox" id="notice-more" class="notice-more-cb">
-      <span id="evidence-notice">本站全部数据均附公开证据链：175 家企业 441 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 5 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice -->
+      <span id="evidence-notice">本站全部数据均附公开证据链：177 家企业 453 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 5 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice -->
       <label for="notice-more" class="notice-more-lbl"><span class="t-more">展开</span><span class="t-less">收起</span></label>
     </div>
     <!-- 版本号唯一真相源（2026-11-02 第五轮，站长：「版本号不要写这里了，加入三横菜单吧」）
@@ -209,7 +209,7 @@
      本区块由 scripts/gen-evidence-board.py 自动生成，请勿手改。
      改证据请改 brand/*.html 详情页，然后重跑：python scripts/gen-evidence-board.py
      单一真相源在 brand/ 页；scripts/verify.mjs 有防漂移断言逐条比对。
-     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：175 家企业 / 441 条证据 / 394 条带原始链接 / 5 家证据薄弱。 -->
+     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：177 家企业 / 453 条证据 / 406 条带原始链接 / 5 家证据薄弱。 -->
 <style>#evidence-board{max-width:960px;margin:0 auto;padding:28px 16px 40px;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.75;color:#1f2937;font-size:14px}
 #evidence-board h2{font-size:20px;font-weight:700;margin:0 0 6px;color:#0f172a;line-height:1.4}
 #evidence-board a{color:#0f766e}
@@ -258,15 +258,15 @@
 #evidence-board .ev-more{margin-top:10px;font-size:12px}
 #evidence-board .ev-foot{margin:16px 0 0;font-size:12.5px;color:#64748b}
 @media(max-width:640px){#evidence-board{padding:20px 12px 32px}#evidence-board .ev-stat{flex:1 1 44%}#evidence-board .ct{margin-left:0;width:100%}}</style>
-<section id="evidence-board" data-ev-brands="175" data-ev-total="441" data-ev-linked="394" data-ev-weak="5">
-  <h2>全站证据链公示（175 家企业 · 441 条证据）</h2>
+<section id="evidence-board" data-ev-brands="177" data-ev-total="453" data-ev-linked="406" data-ev-weak="5">
+  <h2>全站证据链公示（177 家企业 · 453 条证据）</h2>
   <p class="ev-lead">站长要求「证据链必须首页完整公示，口说无凭」——以下是站内每一条评级的取证清单，含证据类型、取证日期、文书编号与可点击的原始来源链接。数据由各品牌详情页（<code>brand/*.html</code>）自动汇总生成，两处不一致会被 <code>scripts/verify.mjs</code> 判红。</p>
   <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">其中 <strong>41 家</strong>目前仅有一条来源（第三方榜单聚合，2026-07-11，二手、未抓原文），属<strong>榜单口径换算</strong>而非实测：这些企业的真实双休率未核实，详情页已逐家公示「证据链」——来源、日期、原话、以及尚缺哪几类证据。补齐任一类证据后即重新核实改档。</p>
   <div class="ev-stats">
-    <div class="ev-stat"><b style="color:#0f766e">441</b><i>证据总条数</i></div>
-    <div class="ev-stat"><b style="color:#1d4ed8">394</b><i>带原始链接</i></div>
+    <div class="ev-stat"><b style="color:#0f766e">453</b><i>证据总条数</i></div>
+    <div class="ev-stat"><b style="color:#1d4ed8">406</b><i>带原始链接</i></div>
     <div class="ev-stat"><b style="color:#b45309">47</b><i>无可点链接</i></div>
-    <div class="ev-stat"><b style="color:#475569">7/77/32/56/1</b><i>S/A/B/C/D 家数</i></div>
+    <div class="ev-stat"><b style="color:#475569">7/79/32/56/1</b><i>S/A/B/C/D 家数</i></div>
     <div class="ev-stat"><b style="color:#450a0a">1 家</b><i>D 级（站长强制降级）</i></div>
     <div class="ev-stat"><b style="color:#64748b">2 家</b><i>U 级（证据不足）</i></div>
     <div class="ev-stat"><b style="color:#be123c">5 家</b><i>证据薄弱企业</i></div>
@@ -278,13 +278,13 @@
     <div class="ev-pills">
       <span class="ev-pill" style="border-color:#7c3aed;color:#7c3aed">司法裁判 <b>7</b></span>
       <span class="ev-pill" style="border-color:#be123c;color:#be123c">官方处罚/通报 <b>5</b></span>
-      <span class="ev-pill" style="border-color:#0f766e;color:#0f766e">官方公示/备案 <b>24</b></span>
-      <span class="ev-pill" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述 <b>11</b></span>
+      <span class="ev-pill" style="border-color:#0f766e;color:#0f766e">官方公示/备案 <b>27</b></span>
+      <span class="ev-pill" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述 <b>13</b></span>
       <span class="ev-pill" style="border-color:#0369a1;color:#0369a1">ESG/审计报告 <b>9</b></span>
       <span class="ev-pill" style="border-color:#b45309;color:#b45309">媒体报道/调查 <b>62</b></span>
-      <span class="ev-pill" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径 <b>21</b></span>
+      <span class="ev-pill" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径 <b>26</b></span>
       <span class="ev-pill" style="border-color:#c2410c;color:#c2410c">站长一手实测 <b>3</b></span>
-      <span class="ev-pill" style="border-color:#57534e;color:#57534e">员工/社群反馈 <b>76</b></span>
+      <span class="ev-pill" style="border-color:#57534e;color:#57534e">员工/社群反馈 <b>78</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">旁证/二手汇总 <b>128</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（field_verification） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（third_party） <b>1</b></span>
@@ -325,7 +325,7 @@
     </ul>
   </div>
   <div class="ev-list">
-    <div class="ev-listhead">按档位排列 · 点击企业名展开该企业的全部证据条目（共 175 家）</div>
+    <div class="ev-listhead">按档位排列 · 点击企业名展开该企业的全部证据条目（共 177 家）</div>
     <details id="ev-luxiyi" data-b="luxiyi" data-g="S" data-n="5" data-l="5">
       <summary><span class="g" style="background:#7c3aed">S</span><span class="bn">陆喜依</span><span class="co">陆喜依</span><span class="ct">5 条证据</span></summary>
       <div class="ev-body">
@@ -446,6 +446,94 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/volvo.html">查看 Volvo (沃尔沃汽车) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-tianfu" data-b="tianfu" data-g="A" data-n="6" data-l="6">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">四川天府银行</span><span class="co">四川天府银行股份有限公司</span><span class="ct">6 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">德阳市政务服务网：人民银行德阳市分行征信服务网点分布，四川天府银行德阳分行营业部周六至周日 9:00-16:00</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：official_notice</span> <span class="d">2025-02-21</span></div>
+            <div class="s">表中「服务时间」列写「周一至周五 9:00-17:00；周六至周日（节假日）9:00-16:00」，服务内容为个人信用报告自助查询——政府网站口径，可直接证明该网点周末对外服务。</div>
+            <div class="u"><a href="http://dys.sczwfw.gov.cn/art/2025/2/21/art_16126_280192.html" rel="nofollow noopener" target="_blank">dys.sczwfw.gov.cn/art/2025/2/21/art_16126_280192.html</a></div>
+          </li>
+          <li>
+            <div class="t">城市吧网点库：四川天府银行成都分行营业部周六至周日对私 09:00-15:30；锦江支行周六日 09:00-16:00</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">第三方网点库</span></div>
+            <div class="s">两个网点的周末对私营业时间为 09:00-15:30 与 09:00-16:00，说明周末柜台是常规安排而非偶发。</div>
+            <div class="u"><a href="https://ditu.city8.com/cd/financial/7w0egh78enlnbcc4e5" rel="nofollow noopener" target="_blank">ditu.city8.com/cd/financial/7w0egh78enlnbcc4e5</a></div>
+          </li>
+          <li>
+            <div class="t">四川电子机械职业技术学院就业网：四川天府银行绵阳分行「银行门柜人员」，职位福利含「周末双休」</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2024-04-24</span></div>
+            <div class="s">职位福利栏列「五险、交通补助、周末双休、餐补、话补、住房公积金、节日福利……」——分行直招门柜岗按五天工作制表述。</div>
+            <div class="u"><a href="https://www.scemvtc.edu.cn/subweb/jy/content/?1107.html" rel="nofollow noopener" target="_blank">scemvtc.edu.cn/subweb/jy/content/?1107.html</a></div>
+          </li>
+          <li>
+            <div class="t">智联招聘：京北方「天府银行【文职岗】」7×24 轮班、每周轮休 2 天、三班次 08:30-18:00 / 10:00-20:00 / 13:30-22:00</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-03-24</span></div>
+            <div class="s">该岗为外包客服条线，班次与轮休写得很具体：每周轮休 2 天，与「月休不足 6 天」的单休口径不符。</div>
+            <div class="u"><a href="https://m.zhaopin.com/jobs/CC315847110J40833442707.htm" rel="nofollow noopener" target="_blank">m.zhaopin.com/jobs/CC315847110J40833442707.htm</a></div>
+          </li>
+          <li>
+            <div class="t">四川天府银行官网「人才招聘」：柜员岗位要求与「六险二金」福利，未披露统一休息制度</div>
+            <div class="m"><span class="k" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述</span> <span class="raw">原标注：company_site</span> <span class="d">2026-11-06</span></div>
+            <div class="s">柜员岗只列「统招本科及以上、形象气质佳、服务意识」，福利写「六险二金（含补充医疗保险、企业年金）」——官方口径既无「双休」也无「单休」表述。</div>
+            <div class="u"><a href="https://www.tf.cn/tfyh/rczp.html" rel="nofollow noopener" target="_blank">tf.cn/tfyh/rczp.html</a></div>
+          </li>
+          <li>
+            <div class="t">四川天府银行 2025 年度报告摘要：121 家营业网点、在岗人员约 2200 人（用于双休率推算的分母口径）</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：company_notice</span> <span class="d">2025 年度</span></div>
+            <div class="s">年报摘要写明「共设立 121 家营业网点」，官网「我行简介」补充在岗人员 2200 人——网点岗占比高，是「双休率」按岗位结构推算的依据。</div>
+            <div class="u"><a href="https://www.tf.cn/upload/1/code/20260515/2055139368038637568.pdf" rel="nofollow noopener" target="_blank">tf.cn/upload/1/code/20260515/2055139368038637568.pdf</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/tianfu.html">查看 四川天府银行 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-guangfa" data-b="guangfa" data-g="A" data-n="6" data-l="6">
+      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">广发银行 (CGB)</span><span class="co">广发银行股份有限公司</span><span class="ct">6 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">广发银行官网公告（2026-08-01）：佛山分行调整周六营业网点，周六办业务需移步周六营业网点</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：company_notice</span> <span class="d">官网公告</span></div>
+            <div class="s">「因业务规划调整，自 2026 年 8 月 1 日起，佛山分行对周六营业的网点进行调整。如有周六办理业务的需要，请您移步到周六营业的网点办理」——周六柜台服务仍开放，需轮值覆盖。</div>
+            <div class="u"><a href="https://www.cgbchina.com.cn/Info/27652224" rel="nofollow noopener" target="_blank">cgbchina.com.cn/Info/27652224</a></div>
+          </li>
+          <li>
+            <div class="t">广发信用卡中心网点页：济宁分行个人业务周一至周日 9:00-17:00；中山网点周六 10:00-16:00；北京多家网点周六日不营业</div>
+            <div class="m"><span class="k" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述</span> <span class="raw">原标注：company_site</span> <span class="d">官网网点页</span></div>
+            <div class="s">各分行周末营业安排不一致：整周营业、只开周六、周六日全休三种并存，说明以轮班而非统一双休覆盖。</div>
+            <div class="u"><a href="https://card.cgbchina.com.cn/subsite//201511/20194900/jn.html" rel="nofollow noopener" target="_blank">card.cgbchina.com.cn/subsite//201511/20194900/jn.html</a></div>
+          </li>
+          <li>
+            <div class="t">猎聘：广发银行深圳分行公司页企业标签含「周末双休」</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-10 检索</span></div>
+            <div class="s">分行公司主页把「周末双休」列为企业福利标签之一，属招聘方自述口径，可作旁证但不单独定档。</div>
+            <div class="u"><a href="https://m.liepin.com/company-jobs/2024717/jc-N03/" rel="nofollow noopener" target="_blank">m.liepin.com/company-jobs/2024717/jc-N03/</a></div>
+          </li>
+          <li>
+            <div class="t">香山直聘：广发银行直聘营业员「5 天 8 小时，六险一金」，福利含周末双休</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-05 更新</span></div>
+            <div class="s">岗位标题直接写「5 天 8 小时」，福利栏列「周末双休、加班补助」——营业员这一类前线岗按五天工作制排班。</div>
+            <div class="u"><a href="https://job.x3cn.com/seekwap/job/43050" rel="nofollow noopener" target="_blank">job.x3cn.com/seekwap/job/43050</a></div>
+          </li>
+          <li>
+            <div class="t">智联招聘：佛山「银行远程柜员（双休+五险一金）」，客户公司为广发银行信用卡中心</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-11-10 检索</span></div>
+            <div class="s">远程柜员属排班岗，标题即写「双休」，与网点轮班的「周休 2 天」吻合。</div>
+            <div class="u"><a href="https://www.zhaopin.com/jobs/?jl=768" rel="nofollow noopener" target="_blank">zhaopin.com/jobs/?jl=768</a></div>
+          </li>
+          <li>
+            <div class="t">牛客网广发银行讨论区：前员工称「双休基本是空话，天天加班，新人培训完也不能走，得坐到八点」</div>
+            <div class="m"><span class="k" style="border-color:#57534e;color:#57534e">员工/社群反馈</span> <span class="raw">原标注：crowdsource</span> <span class="d">员工社区</span></div>
+            <div class="s">负面反馈集中在信用卡与营销条线，样本量小；用于标注「加班明显」这一岗位差异，不用于推翻网点岗的轮班周休 2 天。</div>
+            <div class="u"><a href="https://www.nowcoder.com/enterprise/995/discussion" rel="nofollow noopener" target="_blank">nowcoder.com/enterprise/995/discussion</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/guangfa.html">查看 广发银行 (CGB) 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-chengdubank" data-b="chengdubank" data-g="A" data-n="6" data-l="6">
@@ -4439,7 +4527,7 @@
           <strong>U 级（证据不足）</strong>：已尽合理检索仍无可采信证据时使用，卡面标「U级 · 证据不足」。它不评级、不猜测，<strong>不以「查不到」代替「没有」</strong>；单独列示、不并入上方四格统计，且必须附证据缺失说明（该企业查过哪些渠道、缺哪一类证据）。企业公开披露休息制度后即可重新核实改档。
         </p>
 
-        <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">已收录企业双休评级与平均下班时间（共 175 家）</h2>
+        <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">已收录企业双休评级与平均下班时间（共 177 家）</h2>
         <p style="margin:0 0 8px">
           下表按评级与真实双休率列出。判定口径是「每周能完整休满两天的员工占比」；
           平均下班时间取员工实际离岗点的众数，连锁门店取晚班打烊／交班点，不以门店营业时间代替。
@@ -4513,6 +4601,8 @@
           <li><strong><a href="./brand/boc.html">中国银行 (BOC)</a></strong>：A 级 · 真实双休率 85%（推算） · 平均下班 —</li> <a href="./brand/boc.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/abc.html">农业银行 (ABC)</a></strong>：A 级 · 真实双休率 85%（推算） · 平均下班 —</li> <a href="./brand/abc.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/chengdubank.html">成都银行 (BOCD)</a></strong>：A 级 · 真实双休率 85%（推算） · 平均下班 —</li> <a href="./brand/chengdubank.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/guangfa.html">广发银行 (CGB)</a></strong>：A 级 · 真实双休率 80%（推算） · 平均下班 —</li> <a href="./brand/guangfa.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/tianfu.html">四川天府银行</a></strong>：A 级 · 真实双休率 75%（推算） · 平均下班 —</li> <a href="./brand/tianfu.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/meiyijia.html">美宜佳</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/meiyijia.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/molina.html">茉莉奶白</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/molina.html" style="color:#0F766E">详细→</a>
         </ul>
@@ -4576,7 +4666,7 @@
           按证据强度分项标注。本站数据仅供个人择业与消费偏好参考，不构成商业背书或法律定性。
         </p>
 
-                <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">全部品牌详细页（175 个）</h2>
+                <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">全部品牌详细页（177 个）</h2>
         <p style="margin:0 0 8px">每个品牌都有独立页面，含完整评级说明、判定依据与证据来源链接：</p>
         <ul style="margin:0 0 16px;padding-left:22px">
           <li><a href="./brand/patagonia.html">Patagonia (巴塔哥尼亚)</a> —— S 级 · 双休率 98% · 平均下班 17:45</li>
@@ -4645,6 +4735,8 @@
           <li><a href="./brand/boc.html">中国银行 (BOC)</a> —— A 级 · 双休率 85%（推算） · 平均下班 —</li>
           <li><a href="./brand/abc.html">农业银行 (ABC)</a> —— A 级 · 双休率 85%（推算） · 平均下班 —</li>
           <li><a href="./brand/chengdubank.html">成都银行 (BOCD)</a> —— A 级 · 双休率 85%（推算） · 平均下班 —</li>
+          <li><a href="./brand/guangfa.html">广发银行 (CGB)</a> —— A 级 · 双休率 80%（推算） · 平均下班 —</li>
+          <li><a href="./brand/tianfu.html">四川天府银行</a> —— A 级 · 双休率 75%（推算） · 平均下班 —</li>
           <li><a href="./brand/meiyijia.html">美宜佳</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 —</li>
           <li><a href="./brand/molina.html">茉莉奶白</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 —</li>
           <li><a href="./brand/unicom.html">中国联通</a> —— B 级 · 双休率 30%（推算） · 平均下班 —</li>
@@ -5227,6 +5319,63 @@
           recommendColor: 'green',
           insertAfter: '农业银行', // 插到 abc 卡后面（h3 关键词）
           keywords: ['成都银行', 'BOCD', '成都市商业银行', '城商行', '银行双休', '网点轮休', 'bocd'],
+          category: '金融银行',
+          grade: 'A级'
+        },
+        // ── 广发银行（2026-11-12 站长指令新增·A 级）──
+        // 判据：官网 2026-08-01 佛山分行「周六营业网点调整」公告（周六柜台仍开）
+        //      + 信用卡中心网点页（济宁分行个人业务周一至周日 9:00-17:00、中山周六 10:00-16:00、
+        //        北京多家网点周六日不营业 → 各分行周末安排不一、靠轮班覆盖）
+        //      + 香山直聘「广发银行直聘营业员」5 天 8 小时/周末双休、猎聘深圳分行标签「周末双休」
+        //      + 牛客网前员工「双休基本是空话，天天加班…坐到八点」（信用卡/营销条线，岗位差异）
+        // 口径：网点轮班周休 2 天 ≈ 月休 8.6 天 ≥ 8 天线 → A 级；下班时间无考勤一手证据 → null
+        {
+          id: 'guangfa-card',
+          name: '广发银行',
+          company: '广发银行股份有限公司',
+          logo: './assets/logo/guangfa.png?v=1',
+          logoAlt: '广发银行',
+          workPolicy: '网点轮班（部分分行周六照常营业，北京等网点周六日不营业）；直营营业员岗 5 天 8 小时',
+          overtime: '网点周末轮值；信用卡/营销条线加班被员工点名为常态',
+          doubleRestRate: '80',
+          offWorkTime: null,
+          voteCount: '0',
+          desc: '"2026-11-12 新增：官网 2026-08-01《关于广发银行佛山分行周六营业网点调整的公告》明示「周六办理业务请移步周六营业的网点」；信用卡中心网点页显示济宁分行个人业务周一至周日 9:00-17:00、中山网点周六 10:00-16:00、北京多家网点周六日不营业（各分行周末安排不一、靠轮班覆盖）；香山直聘「广发银行直聘营业员」标 5 天 8 小时、周末双休，猎聘广发银行深圳分行公司页标签「周末双休」；牛客网前员工反馈「双休基本是空话，天天加班…得坐到八点」指向信用卡/营销条线，属岗位差异。网点轮班周休 2 天（≈月休 8.6 天），按站长月休口径判 A 级；站长备注：本人持 52 开头万事达卡，绑定支付宝后每月自动到账 5 元立减金（个人持卡经验、非全量权益，不作评级依据）"；2026-11-12 补：双休率 80%（推算）（网点轮值 + 直营营业员 5 天 8 小时，扣除周末轮值与营销条线加班）',
+          tags: ['股份制银行', '广发银行', '金融银行', 'CGB', '网点轮班'],
+          likeCount: '0',
+          dislikeCount: '0',
+          recommendText: '✅ A 级 · 网点轮班周休 2 天（≈月休 8.6 天）；周六营业网点轮值',
+          recommendColor: 'green',
+          insertAfter: 'chengdubank-card', // 插到成都银行卡后面（id 链式锚点，避免与美宜佳共名互抢）
+          keywords: ['广发银行', 'CGB', '广发', '广发信用卡', '股份制银行', '银行双休', '网点轮班', 'guangfa'],
+          category: '金融银行',
+          grade: 'A级'
+        },
+        // ── 四川天府银行（2026-11-12 站长指令新增·A 级）──
+        // 判据：德阳市政务服务网（人行德阳分行征信网点表）列德阳分行营业部周六至周日 9:00-16:00
+        //      + 网点库：成都分行营业部周六日对私 09:00-15:30、锦江支行周六日 09:00-16:00
+        //      + 四川电子机械职院就业网：绵阳分行「银行门柜人员」福利含「周末双休」
+        //      + 京北方外包客服「7×24 轮班、每周轮休 2 天」；官网招聘柜员未披露休息制度（无单休口径）
+        // 口径：网点轮班周休 2 天 ≈ 月休 8.6 天 → A 级；下班时间无一手考勤 → null
+        {
+          id: 'tianfu-card',
+          name: '四川天府银行',
+          company: '四川天府银行股份有限公司',
+          logo: './assets/logo/tianfu.png?v=1',
+          logoAlt: '四川天府银行',
+          workPolicy: '网点轮班（成都/德阳等网点周六日照常对私营业）+ 部分分行门柜岗周末双休',
+          overtime: '网点周末轮值；三四线网点人员配置紧，柜面岗兼营销与自助设备引导',
+          doubleRestRate: '75',
+          offWorkTime: null,
+          voteCount: '0',
+          desc: '"2026-11-12 新增：德阳市政务服务网公布的《人民银行德阳市分行征信服务网点分布》列天府银行德阳分行营业部服务时间「周一至周五 9:00-17:00、周六至周日（节假日）9:00-16:00」；网点库显示成都分行营业部周六至周日对私 09:00-15:30、锦江支行周六日 09:00-16:00；四川电子机械职院就业网挂出的绵阳分行「银行门柜人员」职位福利含「周末双休」；京北方外包客服岗「7×24 轮班、每周轮休 2 天」；官网「人才招聘」柜员岗只写学历与服务意识、福利六险二金，未披露统一休息制度。网点轮班周休 2 天（≈月休 8.6 天），按站长月休口径判 A 级；站长备注：个别三四线网点以「新客户观察期」为由前 6 个月只给开二类户，这类门槛是网点自设的（同一家银行只能有一个一类户，并无「新客户须等 6 个月」的统一规定），遇此可当面要求按一类户办理并明确将向金融监管部门（原银保监会，现国家金融监督管理总局）投诉该网点，多数情况会改办，但仍需提供有效居住证明（个人开户经验，非全量网点，不作评级依据）"；2026-11-12 补：双休率 75%（推算）（网点周末对私营业需轮值 + 部分分行门柜岗写明周末双休）',
+          tags: ['城商行', '四川天府银行', '金融银行', '熊猫银行', '网点轮班'],
+          likeCount: '0',
+          dislikeCount: '0',
+          recommendText: '✅ A 级 · 网点轮班周休 2 天（≈月休 8.6 天）；门柜岗招聘标双休',
+          recommendColor: 'green',
+          insertAfter: 'guangfa-card', // 插到广发银行卡后面（id 链式锚点）
+          keywords: ['四川天府银行', '天府银行', '熊猫银行', '南充市商业银行', '城商行', '银行双休', '网点轮班', 'tianfu'],
           category: '金融银行',
           grade: 'A级'
         },
@@ -9128,7 +9277,7 @@
   <!-- 奶茶／新茶饮类 B/C 级平替统一推荐陆喜依（2026-11-08 站长指定） -->
   <script defer src="./luxiyi-alt-patch.js?v=2"></script>
   <script defer src="./search-clear-order-fix.js?v=3"></script>
-  <script defer src="./rating-stats-patch.js?v=6"></script>
+  <script defer src="./rating-stats-patch.js?v=7"></script>
   <script defer src="./ai-notice-patch.js?v=1"></script>
   <script defer src="./ad-text-width-fix.js?v=1"></script>
   <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
@@ -9140,7 +9289,7 @@
        所以这里只做「输入联想 + 回填」：给出候选，用户点了回填中文名，
        后续过滤仍走 React 原生搜索路径，渲染逻辑零改动。
        索引数据在 pinyin-index.js，必须先于本脚本加载。 -->
-  <script defer src="./pinyin-index.js?v=13"></script>
+  <script defer src="./pinyin-index.js?v=14"></script>
   <script defer src="./pinyin-search.js?v=6"></script>
 
   <!-- 彻底禁用数字搜索。2026-10-17 用户反馈：输入「1」「2」会搜出一堆无关卡片。

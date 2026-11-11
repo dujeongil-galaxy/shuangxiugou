@@ -585,8 +585,8 @@ check(virtual2e === 1, '虚拟对比卡恰 1 张（口径排除依据，id 变�
 // 这个数不是「随便写死」：它同时被 §2e 的四格统计、brand/ 页数、公告栏数字三处引用，
 // 任何一处生成器漏跑都会在这里对不上，所以必须保留为硬断言。
 const IMPORTED_CARD_COUNT = 106;
-check(customPairs2e.length === 17 + IMPORTED_CARD_COUNT,
-  `能解析全部自定义卡（${17 + IMPORTED_CARD_COUNT} 张 = 17 张手工卡含联通 + ${IMPORTED_CARD_COUNT} 张导入卡（104 榜单 + 2 独立来源））`,
+check(customPairs2e.length === 19 + IMPORTED_CARD_COUNT,
+  `能解析全部自定义卡（${19 + IMPORTED_CARD_COUNT} 张 = 19 张手工卡含联通 + ${IMPORTED_CARD_COUNT} 张导入卡（104 榜单 + 2 独立来源））`,
   '实际 ' + customPairs2e.length);
 check(headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') === statTotal,
   '顶部「收录品牌」= 实名企业卡总数', '页面 ' + headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') + ' / 计算 ' + statTotal + '（改 bundle 顶部统计常数）');
@@ -633,21 +633,23 @@ const EXPECT_GRADE_2E = {
   'unicom-card': 'B级',
   // 2026-11-05 新增：小米 B→A（爱企查公开知识条目「公司普遍每周双休」；原有线下销售岗单休备注保留）。
   'xiaomi-card': 'A级',
+  // 2026-11-12 新增：广发银行 / 四川天府银行 A 级（站长指令建卡，网点轮班周休 2 天，见 brand/guangfa.html、brand/tianfu.html）。
+  'guangfa-card': 'A级', 'tianfu-card': 'A级',
 };
 const locked2e = customPairs2e.filter((c) => EXPECT_GRADE_2E[c.id]);
 const relockedU2e = locked2e
   .filter((c) => c.grade !== EXPECT_GRADE_2E[c.id])
   .map((c) => c.id + '=' + c.grade + '（应 ' + EXPECT_GRADE_2E[c.id] + '）');
 check(relockedU2e.length === 0,
-  '5 家银行 A 级（工/建/中/成都/农行）+ 小米 A 级 + 淘宝闪购 C 级 + BOSS直聘 D 级（锁定，不得回退）',
+  '7 家银行 A 级（工/建/中/成都/农行/广发/天府）+ 小米 A 级 + 淘宝闪购 C 级 + BOSS直聘 D 级（锁定，不得回退）',
   relockedU2e.length ? relockedU2e.join(', ') : '锁定生效');
-check(locked2e.length === 9,
-  '9 张锁定卡全部存在（删卡判红）', '实际 ' + locked2e.length);
+check(locked2e.length === 11,
+  '11 张锁定卡全部存在（删卡判红）', '实际 ' + locked2e.length);
 // 2026-11-02 起：A 级 / C 级计数含榜单导入卡（A 58 张、C 29 张）。
 // 断言仍然写成「基准 + 导入数」的算式，导入批次调整时改 IMPORTED_CARD_COUNT 一处即可，
 // 但两个基准值（4 / 11）必须保持 —— 那是手工卡的既有口径，动了就等于偷偷改档。
-check(byGrade2e('A级') === 6 + 58,
-  '自定义卡 A 级共 64 张（工/建/中/成都/农行银行 5 张 + 小米 2026-11-05 B→A + 榜单导入 58 张）',
+check(byGrade2e('A级') === 8 + 58,
+  '自定义卡 A 级共 66 张（工/建/中/成都/农行 5 家银行 + 小米 2026-11-05 B→A + 2026-11-12 广发银行/四川天府银行 2 家 + 榜单导入 58 张）',
   '实际 ' + byGrade2e('A级'));
 check(byGrade2e('C级') === 10 + 29,
   '自定义卡 C 级共 39 张（手工 10 张 + 榜单导入 29 张；农行 2026-11-04 由 C 转 A；BOSS直聘 2026-11-03 转入 D 级；2026-11-11 新增吉利汽车 C 级）',
@@ -853,7 +855,7 @@ check(html.includes('轮休制周休 2 天（做五休二）属双休、判 A �
   'index.html 口径区写明「轮休制周休 2 天属双休判 A」（废除 AI 自拟的周末限定口径）');
 check(!html.includes('查不到直雇统一双休证据即视为无双休'),
   'index.html 已无「查不到直雇统一双休证据即视为无双休」自拟旧口径（活文案）');
-const BANK_PAGE_TIER = { icbc: 'A', ccb: 'A', boc: 'A', chengdubank: 'A', abc: 'A' };
+const BANK_PAGE_TIER = { icbc: 'A', ccb: 'A', boc: 'A', chengdubank: 'A', abc: 'A', guangfa: 'A', tianfu: 'A' };
 const badBankPage = [];
 for (const [slug, tier] of Object.entries(BANK_PAGE_TIER)) {
   const page = join('brand', slug + '.html');
@@ -1361,8 +1363,8 @@ if (cfgBlock) {
   }
 }
 const CUSTOM_COUNT = customCards.length;
-check(CUSTOM_COUNT === 17 + IMPORTED_CARD_COUNT,
-  `自定义卡 ${CUSTOM_COUNT} 张（17 张手工 + ${IMPORTED_CARD_COUNT} 张导入；2026-11-02 批量导入，2026-11-03 增联通 B 级，2026-11-08 增陆喜依 S 级）`);
+check(CUSTOM_COUNT === 19 + IMPORTED_CARD_COUNT,
+  `自定义卡 ${CUSTOM_COUNT} 张（19 张手工 + ${IMPORTED_CARD_COUNT} 张导入；2026-11-02 批量导入，2026-11-03 增联通 B 级，2026-11-08 增陆喜依 S 级，2026-11-12 增广发银行/四川天府银行 A 级）`);
 
 // null 规则：双休率 / 下班时间不得为占位 0，也不得是字符串 '未知'
 customCards.forEach((c) => {
@@ -6985,8 +6987,8 @@ section('24. 白屏兜底与加载态（防用户误退出）');
   check(/grade: 'S级'/.test(card25) && /doubleRestRate: null/.test(card25),
     '§25k 首页卡为 S 级且真实双休率留空 null（不估填）');
   check(/华龙网转载极目新闻/.test(card25), '§25l 卡面可见文案写明真实来源');
-  check(/\/brand\/luxiyi\.html/.test(idx25) && /全部品牌详细页（175 个）/.test(idx25),
-    '§25m noscript 清单含陆喜依且标题数字同步 175');
+  check(/\/brand\/luxiyi\.html/.test(idx25) && /全部品牌详细页（177 个）/.test(idx25),
+    '§25m noscript 清单含陆喜依且标题数字同步 177');
   check(/\/brand\/luxiyi\.html/.test(read('projects.html')), '§25n projects.html 索引含陆喜依');
   check(/\/brand\/luxiyi\.html/.test(read('sitemap.xml')), '§25o sitemap.xml 含陆喜依详情页');
   const ebStart = idx25.indexOf('id="evidence-board"');
@@ -6997,8 +6999,8 @@ section('24. 白屏兜底与加载态（防用户误退出）');
   check(/--only/.test(impPy25) && /def guard_full_rebuild/.test(impPy25)
     && /重新生成已存在的卡片配置/.test(impPy25),
     '§25r 导入脚本有增量模式 + 全量重建保护 + 已存在卡可重新生成');
-  check(/'双休红榜':\s*84/.test(read('rating-stats-patch.js')),
-    '§25s 四格红榜补丁同步为 84（S 级 +1）');
+  check(/'双休红榜':\s*86/.test(read('rating-stats-patch.js')),
+    '§25s 四格红榜补丁同步为 86（S/A 级 +2：广发/天府）');
 }
 
 // ---------- 26. 淘宝评论补充说明 / 奶茶类 B/C 平替陆喜依 / 天猫链接隐私 / 别名直搜 ----------
