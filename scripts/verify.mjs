@@ -8133,6 +8133,24 @@ section('25. 成功案例专题页（QQ奶奶）');
     '说明段又被手写断行 → text-align:center 下每行各自居中，必然断在词中断句');
 }
 
+// ---------- 36m. 首页视频弹窗：BOSS直聘 视频标记已失效（保留痕迹）+ 新增《磨囚》（2026-11-11 站长） ----------
+{
+  const fd = exists('featured-douyin.js') ? read('featured-douyin.js') : '';
+  const idx36m = read('index.html');
+  // 站长：首页视频区（弹窗）里 BOSS直聘 那条抖音链接挂了，打「已失效」标记但保留不删，
+  // 并在其下新增《磨囚》。dead 条目渲染时打红标、禁用跳转（链接已失效）。
+  const bossBlock = (fd.match(/\{[\s\S]*?uEMZRkt73Jg\/[\s\S]*?\}/) || [''])[0];
+  check(bossBlock.length > 0 && /dead\s*:\s*true/.test(bossBlock),
+    '§36m 首页视频弹窗：BOSS直聘 视频条目标记 dead:true（链接挂了，保留痕迹、打已失效红标、禁用跳转）',
+    'BOSS直聘 视频没打 dead 标记 → 失效链接仍可被点开、继续跳 404');
+  check(/《磨囚》/.test(fd) && /v\.douyin\.com\/1hItX481VuQ\//.test(fd),
+    '§36m 首页视频弹窗新增《磨囚》视频（标题 + 抖音短链均就位）',
+    '《磨囚》新视频没进 VIDEOS 数组 → 首页视频区看不到这条');
+  check(/featured-douyin\.js\?v=5/.test(idx36m),
+    '§36m featured-douyin.js 的 ?v 已 bump 到 5（浏览器缓存旧脚本会吃掉本次改动）',
+    '?v 没 bump → 旧脚本仍按旧 VIDEOS 渲染，dead 标记与《磨囚》都不生效');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {

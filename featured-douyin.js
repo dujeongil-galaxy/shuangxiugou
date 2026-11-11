@@ -50,7 +50,13 @@
     {
       share: 'https://v.douyin.com/uEMZRkt73Jg/',
       title: 'BOSS直聘等招聘网站的骗局套路大全',
-      sub: '诈骗犯在BOSS直聘等招聘网站设下了无数骗局和套路，防不胜防。# BOSS直聘 # boss直聘被骗 # 招聘网站 # 诈骗 # 套路'
+      sub: '诈骗犯在BOSS直聘等招聘网站设下了无数骗局和套路，防不胜防。# BOSS直聘 # boss直聘被骗 # 招聘网站 # 诈骗 # 套路',
+      dead: true
+    },
+    {
+      share: 'https://v.douyin.com/1hItX481VuQ/',
+      title: '《磨囚》',
+      sub: '拼命内卷的人，以为赢了同伴，殊不知规则早就不属于底层。# 寓言故事 # 人性 # 小故事大道理 # 原创动画'
     }
   ];
 
@@ -132,6 +138,16 @@
         'font-size:13px;font-weight:700;padding:7px 13px;border-radius:999px;' +
       '}' +
       '.sxg-vd-open:hover{filter:brightness(1.06)}' +
+      // ---- 已失效条目（链接挂了，保留痕迹、禁用跳转、打红标）----
+      '.sxg-vd-item--dead{opacity:.62;filter:grayscale(.35)}' +
+      '.sxg-vd-dead{' +
+        'display:inline-block;margin-left:8px;font-size:11px;font-weight:700;line-height:1;' +
+        'color:#fff;background:#dc2626;border-radius:6px;padding:3px 7px;' +
+        'vertical-align:middle;letter-spacing:.02em;' +
+      '}' +
+      '.sxg-vd-open--dead{' +
+        'background:#e2e8f0;color:#94a3b8;cursor:not-allowed;pointer-events:none' +
+      '}' +
       '.sxg-vd-ok{' +
         'display:block;width:100%;margin-top:14px;padding:10px 0;border:none;border-radius:10px;' +
         'background:#eef2f6;color:#475569;' +
@@ -146,6 +162,8 @@
         '.sxg-vd-name{color:#f1f5f9}' +
         '.sxg-vd-sub{color:#94a3b8}' +
         '.sxg-vd-ok{background:#2b333a;color:#cbd5e1}' +
+        '.sxg-vd-item--dead{opacity:.6}' +
+        '.sxg-vd-open--dead{background:#2b333a;color:#64748b}' +
       '}';
     document.head.appendChild(s);
   }
@@ -208,9 +226,26 @@
       var items = modal.querySelectorAll('.sxg-vd-item');
       for (var i = 0; i < items.length && i < VIDEOS.length; i++) {
         var v = VIDEOS[i];
-        items[i].querySelector('.sxg-vd-name').textContent = v.title;
-        items[i].querySelector('.sxg-vd-sub').textContent = v.sub;
-        items[i].querySelector('.sxg-vd-open').href = v.share;
+        var itemEl = items[i];
+        var nameEl = itemEl.querySelector('.sxg-vd-name');
+        var subEl = itemEl.querySelector('.sxg-vd-sub');
+        var openEl = itemEl.querySelector('.sxg-vd-open');
+        nameEl.textContent = v.title;
+        subEl.textContent = v.sub;
+        if (v.dead) {
+          // 已失效：保留条目作痕迹，打红标、禁用跳转（链接已挂）
+          itemEl.classList.add('sxg-vd-item--dead');
+          var badge = document.createElement('span');
+          badge.className = 'sxg-vd-dead';
+          badge.textContent = '已失效';
+          nameEl.appendChild(badge);
+          openEl.textContent = '链接已失效';
+          openEl.removeAttribute('href');
+          openEl.classList.add('sxg-vd-open--dead');
+        } else {
+          openEl.textContent = '在抖音打开 ↗';
+          openEl.href = v.share;
+        }
       }
       modal.addEventListener('click', function (e) {
         if (e.target === modal) closeModal();
