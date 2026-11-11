@@ -6369,8 +6369,8 @@ section('21c. 首页滑到底部按钮');
     '§33a2 广告位三张设计图首屏预热，且每张的 ?v 与 black-card-adslot.js 里的常量完全一致',
     '预热 URL 与脚本里的实际 URL 不一致 → 白预热，广告位照样「卡片先出来、图还是空的」');
 
-  check(/<script async src="\.\/black-card-adslot\.js\?v=18"><\/script>/.test(idx)
-    && idx.indexOf('black-card-adslot.js?v=18') < idx.indexOf('</head>')
+  check(/<script async src="\.\/black-card-adslot\.js\?v=17"><\/script>/.test(idx)
+    && idx.indexOf('black-card-adslot.js?v=17') < idx.indexOf('</head>')
     && !/script defer src="\.\/black-card-adslot\.js/.test(idx),
     '§33b 广告位补丁在 head 里 async 加载（不再排在第 40 个 defer，也不必等 692KB body 解析完）',
     '广告位补丁退回 defer 队列尾部 → 慢网又要 15 秒才冒出广告位');
@@ -7494,7 +7494,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
 
   check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
-    && /black-card-adslot\.js\?v=18/.test(idx29),
+    && /black-card-adslot\.js\?v=17/.test(idx29),
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 
   // —— 站长 2026-11-10 晚：胖东来广告卡（首页推荐位） ——
@@ -7719,7 +7719,7 @@ section('25. 成功案例专题页（QQ奶奶）');
   check((code32.match(/公益广告位/g) || []).length >= 4
     && !/广告位招商中|品牌展示|>广告位</.test(code32)
     && /data-adslot-kind', 'public-welfare'/.test(code32)
-    && /black-card-adslot\.js\?v=18/.test(idx32),
+    && /black-card-adslot\.js\?v=17/.test(idx32),
     '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 13');
 
   // 站长 2026-11-10 二次纠正「广告图叫你重构，不是让你改成纯文字 / 文字明显重叠」：
@@ -7728,8 +7728,9 @@ section('25. 成功案例专题页（QQ奶奶）');
   // 否则又会出现「图里一份 + DOM 一份」的叠字现场。
   // 注意：断言查纯代码 code32（已剥注释），else 里写清楚的来龙去脉不会污染断言。
   check(!/sxg-adslot__recruit-copy|sxg-adslot__recruit-title|sxg-adslot__recruit-sub/.test(code32)
-    && !/sxg-adslot__recruit-copy/.test(ad32),
-    '§32b2 招募卡不再有 HTML 文案层（recruit-copy/title/sub 清零），文案只在 SVG 里（手机端左右翻页箭头改由 §36k 钉死）',
+    && !/sxg-adslot__recruit-copy/.test(ad32)
+    && /@media \(max-width:480px\)\{\.sxg-adslot__nav\{display:none\}/.test(code32),
+    '§32b2 招募卡不再有 HTML 文案层（recruit-copy/title/sub 清零），文案只在 SVG 里；手机端导航条折叠口径保留',
     'recruit-copy 之类的 HTML 文案层一回来，就和图里的文案撞成「叠字」');
 
   // §32b3 黑卡预隐藏：慢网下 bundle 先渲染黑卡、black-card-adslot.js 后替换，
@@ -7931,7 +7932,7 @@ section('25. 成功案例专题页（QQ奶奶）');
 
   const preload35 = mob35.every(([f, , ver]) =>
     idx35.indexOf('<link rel="preload" as="image" href="./' + f + '?v=' + ver + '" media="(max-width:480px)" />') !== -1);
-  check(preload35 && /black-card-adslot\.js\?v=18/.test(idx35),
+  check(preload35 && /black-card-adslot\.js\?v=17/.test(idx35),
     '§35c 手机三图带 media 预热、?v 与脚本 *_MOBILE 常量一致，首页脚本已升 13',
     '预热漏 media 或 ?v 不一致 → 慢网首帧先出桌面稿再跳手机稿');
 
@@ -8064,7 +8065,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     'JEV 条目写成互惠/互挂 → 与「不要求互挂」矛盾');
 
   // ④ 两个脚本在 index.html 的 ?v 随内容变更 bump，否则浏览器缓存旧脚本
-  check(/black-card-adslot\.js\?v=18/.test(idx36f)
+  check(/black-card-adslot\.js\?v=17/.test(idx36f)
     && /friend-links-footer\.js\?v=16/.test(idx36f),
     '§36f 两个脚本在 index.html 的 ?v 已随内容变更 bump 到 16',
     '?v 没 bump → 浏览器缓存旧脚本，新文案 / 新友链不生效');
@@ -8100,23 +8101,9 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(/n\.id\s*===\s*['"]sxg-flash-mask['"]/.test(ad36h),
     '§36h keepClear 按 id 排除闪屏遮罩 #sxg-flash-mask（不被当悬浮钮隐藏、整页磨砂不破洞）',
     'keepClear 漏排除闪屏遮罩 → 广告位相交时遮罩被隐藏、磨砂破洞、广告位穿模');
-  check(/black-card-adslot\.js\?v=18/.test(idx36h),
-    '§36h black-card-adslot.js 的 ?v 已 bump 到 18（浏览器缓存旧脚本会吃掉本次修复）',
+  check(/black-card-adslot\.js\?v=17/.test(idx36h),
+    '§36h black-card-adslot.js 的 ?v 已 bump 到 17（浏览器缓存旧脚本会吃掉本次修复）',
     '?v 没 bump → 旧脚本仍带 z-index:9995，修复不生效');
-}
-
-// ---------- 36k. 手机端放出公益广告位左右翻页箭头（照 AI 参考图，圆形浅灰底带浅阴影，2026-11-11 站长） ----------
-{
-  const ad36k = exists('black-card-adslot.js') ? read('black-card-adslot.js') : '';
-  const idx36k = read('index.html');
-  // 原 ≤480px 媒体查询把 .sxg-adslot__nav 设 display:none，手机端只看到圆点、看不到左右箭头；
-  // 站长对照 AI 参考图要求手机端也放出 prev/next。反向钉死：移动端媒体查询不得再隐藏 nav。
-  check(!/@media \(max-width:480px\)\{\.sxg-adslot__nav\{display:none\}/.test(ad36k),
-    '§36k 手机端（≤480px）不再隐藏公益广告位左右翻页箭头（放出 prev/next 按钮）',
-    '移动端媒体查询又把 .sxg-adslot__nav 设 display:none → 手机上看不到左右翻页箭头');
-  check(/black-card-adslot\.js\?v=18/.test(idx36k),
-    '§36k black-card-adslot.js 的 ?v 已 bump 到 18（浏览器缓存旧脚本会吃掉本次改动）',
-    '?v 没 bump → 旧脚本仍隐藏手机端箭头，改动不生效');
 }
 
 // ---------- 36l. 随笔锁屏说明段源文不得手写换行（居中排版会断在词中，2026-11-11 站长） ----------
