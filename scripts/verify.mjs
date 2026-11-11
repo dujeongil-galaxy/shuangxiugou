@@ -573,12 +573,13 @@ const headerStat = (label, cls) => {
 };
 check(virtual2e === 1, '虚拟对比卡恰 1 张（口径排除依据，id 变更需同步本节）', '实际 ' + virtual2e);
 // 2026-11-02 批量导入 104 张榜单卡（data/imported-brands.json 生成）后，16 → 120；
-// 2026-11-08 新增「陆喜依」（独立公开来源，非榜单导入）→ 121 张导入卡。
+// 2026-11-08 新增「陆喜依」（独立公开来源，非榜单导入）→ 121 张导入卡；
+// 2026-11-11 新增「吉利汽车」（站长指令建卡，独立公开来源）→ 122 张导入卡。
 // 这个数不是「随便写死」：它同时被 §2e 的四格统计、brand/ 页数、公告栏数字三处引用，
 // 任何一处生成器漏跑都会在这里对不上，所以必须保留为硬断言。
-const IMPORTED_CARD_COUNT = 105;
+const IMPORTED_CARD_COUNT = 106;
 check(customPairs2e.length === 17 + IMPORTED_CARD_COUNT,
-  `能解析全部自定义卡（${17 + IMPORTED_CARD_COUNT} 张 = 17 张手工卡含联通 + ${IMPORTED_CARD_COUNT} 张导入卡（104 榜单 + 1 独立来源））`,
+  `能解析全部自定义卡（${17 + IMPORTED_CARD_COUNT} 张 = 17 张手工卡含联通 + ${IMPORTED_CARD_COUNT} 张导入卡（104 榜单 + 2 独立来源））`,
   '实际 ' + customPairs2e.length);
 check(headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') === statTotal,
   '顶部「收录品牌」= 实名企业卡总数', '页面 ' + headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') + ' / 计算 ' + statTotal + '（改 bundle 顶部统计常数）');
@@ -641,8 +642,8 @@ check(locked2e.length === 9,
 check(byGrade2e('A级') === 6 + 58,
   '自定义卡 A 级共 64 张（工/建/中/成都/农行银行 5 张 + 小米 2026-11-05 B→A + 榜单导入 58 张）',
   '实际 ' + byGrade2e('A级'));
-check(byGrade2e('C级') === 9 + 29,
-  '自定义卡 C 级共 38 张（手工 9 张 + 榜单导入 29 张；农行 2026-11-04 由 C 转 A；BOSS直聘 2026-11-03 转入 D 级）',
+check(byGrade2e('C级') === 10 + 29,
+  '自定义卡 C 级共 39 张（手工 10 张 + 榜单导入 29 张；农行 2026-11-04 由 C 转 A；BOSS直聘 2026-11-03 转入 D 级；2026-11-11 新增吉利汽车 C 级）',
   '实际 ' + byGrade2e('C级'));
 // D 级自定义卡：2026-11-03 起只有 BOSS直聘 一张（平台类目例外）。多一张或少一张都要判红 ——
 // 这一档是「人的结论」，被悄悄批量加卡就等于把站长的判断稀释成普通档位。
@@ -6975,8 +6976,8 @@ section('24. 白屏兜底与加载态（防用户误退出）');
   check(/grade: 'S级'/.test(card25) && /doubleRestRate: null/.test(card25),
     '§25k 首页卡为 S 级且真实双休率留空 null（不估填）');
   check(/华龙网转载极目新闻/.test(card25), '§25l 卡面可见文案写明真实来源');
-  check(/\/brand\/luxiyi\.html/.test(idx25) && /全部品牌详细页（174 个）/.test(idx25),
-    '§25m noscript 清单含陆喜依且标题数字同步 174');
+  check(/\/brand\/luxiyi\.html/.test(idx25) && /全部品牌详细页（175 个）/.test(idx25),
+    '§25m noscript 清单含陆喜依且标题数字同步 175');
   check(/\/brand\/luxiyi\.html/.test(read('projects.html')), '§25n projects.html 索引含陆喜依');
   check(/\/brand\/luxiyi\.html/.test(read('sitemap.xml')), '§25o sitemap.xml 含陆喜依详情页');
   const ebStart = idx25.indexOf('id="evidence-board"');
@@ -7793,12 +7794,13 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§32e 搜索删空强制 6 秒 + 倒计时 + 硬 deadline；两侧契约同改、缓存号都 bump');
 
   check(news32.length > 0
-    && /<script defer src="\.\/news-incident-patch\.js\?v=2"><\/script>/.test(idx32)
+    && /<script defer src="\.\/news-incident-patch\.js\?v=3"><\/script>/.test(idx32)
     && /var ITEMS = \[/.test(news32) && /key: 'logitech'/.test(news32) && /key: 'xingyu'/.test(news32)
+    && /key: 'geely'/.test(news32) && /key: 'lixiang'/.test(news32)
     && /new MutationObserver\(schedule\)/.test(news32)
     && /不能改 bundle/.test(news32)
     && !/https?:\/\//.test(news32),
-    '§32f 新闻登记补丁配置驱动两张内置卡，幂等 + 重渲染兜底，卡片零外链、不碰 bundle');
+    '§32f 新闻登记补丁配置驱动两张内置卡 + 两张车企卡（吉利/理想），幂等 + 重渲染兜底，卡片零外链、不碰 bundle');
 
   check(/罗技中国就授权店铺侮辱消费者广告致歉/.test(logi32)
     && /总经理扣薪 12 个月、人力资源总监免职/.test(xing32)
