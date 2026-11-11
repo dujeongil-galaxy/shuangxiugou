@@ -117,6 +117,16 @@
        所以这里间距压小，否则提示句会离密码框太远。 */
     margin: 0.4rem auto 0;
   }
+  /* 红字提示：放在「我同意 / 我不同意」正上方那条红线上。
+     用 --hl（暗色下自动提亮），加粗但不放大字号，避免盖过密码框主操作。 */
+  .lock__warn {
+    color: var(--hl);
+    font-weight: 700;
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    max-width: 26rem;
+    margin: 0.15rem auto 0;
+  }
   .err { color: #b91c1c; min-height: 1.4em; margin: 0.8rem 0 0; font-size: 0.875rem; }
   /* ---- 「我同意 / 我不同意」点击式勾选 ----
      二选一：默认都不选；点中的一项在方框里显示 ✅/❌ 并高亮。
@@ -380,6 +390,9 @@
         <button type="submit">打开</button>
       </form>
       <p class="err" id="err" role="alert"></p>
+      <!-- 红字提示（2026-11-11 站长要求）：只写「本页做了什么防护 + 引用该守什么规矩」，
+           不写情绪化措辞；页面确实拦了 F12 单键、Ctrl/Alt/Meta 组合键与右键菜单（见页尾脚本）。 -->
+      <p class="lock__warn">本页锁定 F12 等快捷键；<br>截图请勿断章取义，引用请连上下文。</p>
       <!-- 「我同意 / 我不同意」二选一勾选 + 统一的「年内上线」公告（2026-11-10 起不再放红色提示语） -->
       <div class="lock__agree" role="radiogroup" aria-label="声明确认">
         <button type="button" class="agree-opt" id="agreeYes" role="radio" aria-checked="false">
