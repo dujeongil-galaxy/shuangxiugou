@@ -2906,3 +2906,21 @@ HEAD 不是补提交，只是正文里引用了一下标记，同样被跳过。
 **顺带纠正一处误判**：顶部绿色「菜单▼」是 `header-menu-patch.js` 折叠的 header 四按钮，≡ 是 `nav-menu.js` 的右下导航（证据链公示 / 同类项目导航 / 成功案例 / 版本号），内容不同，**不是重复功能**。B 方案实际做的是把四个低频悬浮功能收进 dock 自带的折叠层，而不是删重复；把「看着像」当成「查过了」，是这轮分析里最该避免的错。
 
 **教训一句话**：反复出现的穿模不是「还有一处没避让」，而是「悬浮层没有唯一所有者」。补丁打到第六层时该停下来问：能不能让所有按钮住进同一个容器，把六份定位规则删成一份。
+
+## 第五十章：下游 DOM 补丁的四条静默失效路径；设备判定只改视口会假真（2026-11-12 06:06 §36r 申诉弹窗 + 访问帮助）
+
+这轮新增 `github-access-help.js`（下游收编层）时，有四类「代码看着对、实际不生效且不报错」的坑，逐个写死在这里。
+
+**① 晚到的手机端入口会被隐藏规则吃掉，且没人再把它搬进菜单。** `header-menu-patch.js` 在窄屏用 `.sxg-header-btn{display:none !important}` 隐藏顶栏按钮，再把它们搬进 `#sxg-header-menu`；但它的 `build()` 开头是 `if (document.getElementById(TOGGLE_ID)) return`，第二次 / 第三次定时调用会直接返回。所以**任何晚于首次 build 才插入、又带 `sxg-header-btn` class 的新入口，既不会被搬走、又会被 CSS 隐藏**，页面上看不见、控制台也没错。修法：窄屏分支自己 `document.getElementById('sxg-header-menu').appendChild(trigger)`，不依赖上游搬运。
+
+**② 二级菜单不能插进 `#sxg-header-menu`。** 该菜单的 CSS 是 `#sxg-header-menu a{...white-space:nowrap !important}`，浮层里的长 URL 会直接撑破卡片 / 撑出屏幕。用 `position:fixed` 挂到 `document.body`，按 `trigger.getBoundingClientRect()` 算位置并夹在视口内；这样既不继承菜单样式，也不受菜单 `overflow:hidden` 裁切。
+
+**③ 设备判定必须用 UA，CDP 验收必须同时 override UA 与触控。** 站长要「判定用户设备是 PC 还是手机平板」，`matchMedia('(max-width:640px)')` 只能判视口，**判不了设备**（桌面把窗口缩窄、平板横屏都会误判）。`isDesktop()` 以 UA 为主，再用 `navigator.maxTouchPoints` 修 iPadOS 13+ 伪装 `Macintosh` 的情况；触屏笔记本 UA 仍报桌面、按 PC 处理。验收时若只用 `Emulation.setDeviceMetricsOverride({width:390})`，无头 Edge 的 UA 仍是桌面 Windows，`isDesktop()` 返回 true，手机截图会显示 PC 方案而量测数据全绿——**典型假绿**。必须补 `Emulation.setUserAgentOverride` + `Emulation.setTouchEmulationEnabled({maxTouchPoints:5})` 再 reload。
+
+**④ `w.close()` 之后 jsdom 仍会派发一次 MutationObserver 回调。** 此时 `document` 已销毁，注入层的 `buildStyle()` 读 `document.getElementById` 会抛 `Uncaught TypeError`；测试 `process.exit(0)` 照样是 0（断言全过），但输出被异常污染，CI 里容易被当成 flake。`appeal-policy.js` 的 `sweep()` 早有 try/catch，新写的下游组件必须照抄：`try { buildStyle(); sweepSlots(); ensureTrigger(); } catch(e){}`，注入层绝不能因为宿主状态异常而抛错。
+
+**⑤ 链接规整要「单一真相源 + 兜底路径」一起改。** 分享全平台都读 `info().url`，改 `info()` 就够；但 `shareBtn` 在 `share-modal.js` 未加载时还有一条 `ta.value = location.href` 的兜底复制。只改好路径、漏掉兜底，用户仍会复制到带 `sponsor.html` 的链接。故障注入第 6 组专门钉这条。
+
+**顺带一条口径**：站长草稿里的括号批注（「别抄原话」「站长推荐的vpn」「直接url链接」）是**给我的指令**，不是给访客看的文案——§36n 已经踩过一次，这次在 §36r 加了反向断言，任何位置出现这三串都判红。移动端分支只**复用** Login GitHub 弹窗已有的那个入口 URL（断言要求两者字面相等），不新造推广链接、不新增「点此购买 / 站长推荐」话术；PC 分支换成合规开源工具官网。
+
+**教训一句话**：下游补丁的失效几乎都是静默的——先问「这个节点此刻到底在哪个父容器里、被哪条 CSS 命中、哪个脚本已经跑完了」，再问「代码写对没有」；设备相关的验收，模拟设备而不是模拟宽度。

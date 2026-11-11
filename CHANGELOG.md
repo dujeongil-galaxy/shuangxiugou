@@ -4,6 +4,21 @@
 
 ---
 
+### feat：申诉弹窗补规则句 + GitHub 访问帮助设备分流 + Star 二级菜单 + 打赏页链接规整（§36r）（2026-11-12 06:06 · 提交 `edcc7ff`）
+
+站长一轮给了四件事：申诉弹窗再加一句规则；照 Login GitHub 的样子补 GitHub 打不开的提示；Star on GitHub 做二级菜单、PC 挂 Steam++ 官网且不推荐 VPN、手机平板仍给原有入口并写设备判定；打赏页所有按钮生成的链接去掉 `sponsor.html`。
+
+- **① 申诉弹窗补规则**（`appeal-policy.js`）：按站内语气重写，**不逐字照抄口述草稿**；括号里的批注（「别抄原话」「站长推荐的vpn」「直接url链接」）一律不上页面（§36n 第四十四章教训）。新增句：「诉求请就事论事：夹带侮辱、人身攻击的提交一律不予审核，同一事项也请勿重复投递。若你正遇上劳动争议，建议先走劳动监察、仲裁等法定渠道维护权益，本站评级复核不能替代法律程序。」另补一句 GitHub 访问提示 + `[data-sxg-gh-help]` 容器。
+- **② 设备分流的访问帮助**（新增 `github-access-help.js`）：`isDesktop()` 以 UA 为主、`maxTouchPoints` 修 iPadOS 13+ 伪装 Macintosh，触屏笔记本按 PC。PC 分支挂 Watt Toolkit（原 Steam++，GPLv3 开源）`https://steampp.net/` 并提示「网络加速中勾选 GitHub」，**不新增 VPN 推广话术**；手机 / 平板沿用 `header-menu-patch.js` 里 Login GitHub 弹窗**同一个站点原有入口 URL**，不新造推广链接。两处帮助内容共用 `helpHtml()` 单一真相源。
+- **③ Star on GitHub 二级菜单**：桌面贴 Star 挂 🌐 小圆钮；≤640px 直接 append 进 `#sxg-header-menu`（避开 `.sxg-header-btn{display:none}`，也避开 header-menu-patch 的 `build()` 提前 return 导致入口没被搬走）；点击出 `position:fixed` 浮层，**不插进菜单 DOM**（否则继承 `#sxg-header-menu a` 的 `white-space:nowrap !important` 把长 URL 撑爆）。点空白 / ESC 收起，断点切换重建入口。
+- **④ 打赏页链接规整**（`share-modal.js` + `sponsor.html`）：`info()` 新增 `shareUrl()`，把路径末尾 `sponsor.html`（含其后 query / hash）剥成站点根；分享全平台（微博 / X / Telegram / LINE / WhatsApp / 复制链接）都读 `info().url`，改一处全生效；`shareBtn` 未加载 share-modal 时的兜底复制同步剥一次。改完 `sponsor.html` 里已无任何带 `sponsor.html` 的实际链接。
+- 挂载：`index.html` 新增 `github-access-help.js?v=1`（排在 appeal-policy 之后）、`appeal-policy.js?v=2→3`、`share-modal.js?v=4→5`；`sponsor.html` 同步 `?v=5`。
+- 校验：`scripts/verify.mjs` 新增 §36r 七断言（**只钉要素不钉逐字文案**，且只扫 `body.textContent` 真实数组防注释救绿）；新增 `scripts/test-github-access-help.cjs`（28 项 jsdom：7 种 UA / 两端内容互斥 / populate 幂等 / Star 浮层 / shareUrl 五种形态 / info() 全平台），并挂进 `.github/workflows/verify.yml`（§21o 要求）。**1653 全绿**，申诉弹窗旧测试 34/0。
+- 故障注入 6 组（删规则要素 / 官网改成别处 / 丢 `maxTouchPoints` / 分享 URL 回潮 / `?v` 回退 2 / 兜底复制回潮）全部判红，还原复绿。
+- 真渲染（1440×900 + 390×844 串行 CDP）：桌面 `isDesktop=true`、触发钮 `x970–1000`、浮层 `340×233` 在屏内且只有 Steam++ 链接；手机 `isDesktop=false`（CDP 必须同时 `setUserAgentOverride` + `setTouchEmulationEnabled`，只改视口会假真）、入口进 `#sxg-header-menu`、浮层 `x12–352 / y334–567` 完整在屏内、长 URL 靠 `word-break:break-all` 换行不溢出、`scrollWidth=390`；申诉弹窗两端都显示新规则句 + 按设备分流的帮助块；打赏页分享弹窗 `info().url` 与微博 `url=` 参数均不含 `sponsor.html`。
+
+---
+
 ### feat：悬浮层收口 #sxg-fab-dock —— 六枚圆钮统一容器 + 低频收进「更多」折叠层（§36q）（2026-11-12 05:31 · 提交 `800d859`）
 
 站长看手机端截图质疑「必须这样？否则就永远有 bug 或历史遗留问题？」—— 上一轮 §36p 把六枚圆钮全塞进右侧 76px 留白列，虽治住了穿模，却留下一堵按钮墙和「每加一枚按钮就要重算六个数」的架构债。站长拍板「按你的建议执行」＝ A 统一容器 + B 收拢低频。
