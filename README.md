@@ -438,6 +438,12 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 - 改法：遮罩内加转圈 + 「加载中…」小卡（评级切换与搜索清空共用，尊重 `prefers-reduced-motion`）；新增 `white-screen-guard.js`，`MutationObserver` 盯 `#root`，挂载过之后被卸载就显示「重新加载页面」恢复卡片，`booted` 门槛防首屏误报、`shown` 幂等、重新挂载自动移除。纯 DOM 补丁，压缩产物零改动；`filter-flash.js` 的 `?v` 按 §21h 从 5 bump 到 6。
 - 机器强制：`verify.mjs` §17b 加 3 条加载态断言、新增 §24 十条兜底断言；`test-search-clear-flash.cjs` 加 4 条、新增 `test-white-screen-guard.cjs` 并挂进 CI（§21o）。13 项故障注入全部判红并还原，正向 1489 项全绿；37/37 组回归全过；无头 Edge 真渲染截图肉眼复核通过。
 
+### 近期 bug 根因（fix）：16 张内置卡 LOGO 扩展名与真实格式不符，页面上退化成文字（提交 `c03f058`）
+
+- 现象：站长报「很多 LOGO 缺失」。实测苹果、索尼、瑞幸三张卡的头像框是空的，只剩品牌文字。逐字节检查发现 `assets/apple.png` / `assets/sony.png` / `assets/luckin.png` 的真实文件头是 ICO（`00 00 01 00`），另有 12 个 `.png` 实为 JPEG、`assets/luxiyi.jpg` 与 `assets/snack-logo.png` 实为 WebP。GitHub Pages 按扩展名下发 `Content-Type: image/png`，浏览器按 PNG 解码失败即触发 `logoImg.onerror` 文字降级，视觉上就是「这张卡没有 LOGO」。
+- 改法：16 个文件就地转成真格式（`sharp` 转 PNG / JPEG，白底压平避免深色卡出现黑块），苹果 / 索尼 / 瑞幸换抓清晰真标；同时把 49 个自定义卡从 `assets/logo/<slug>.svg`（品牌色圆角块 + 白色文字，看着像占位）换成 128px 真 LOGO PNG，并删掉 104 个占位 SVG。
+- 机器强制：`index.html` 49 处 `logo: './assets/logo/<slug>.png?v=1'` 路径全部存在；新加口径「引用图逐字节比对魔数与扩展名」，`index.html` 引用的 116 张图零不一致；verify 1651 项全绿。
+
 ### 近期 bug 根因（fix）：AI 挂件网络异常文案缺失 + max_tokens 断言漂移（提交 `b11f8b1`）
 
 - `ai-chat.js` 网络异常 catch 文案被 a15aef1 改 VPN 文案时误删「网络异常」四字，导致 `test-ai-chat.cjs` ⑧ 判红；`worker.js` 已为 GLM-4.7-flash 推理模型把 `max_tokens` 调到 2000，但 `test-ai-worker.cjs` 的断言仍停在 ≤600，导致该测试判红。两处均为 a15aef1 那批 VPN/模型改动的遗留漂移，本次按 WRFFMB「判红立即修」补回（文案补「网络异常」、断言改为 ===2000），并补 `ai-chat.js` 的 `?v` 缓存号 bump（§21h 纪律）。CI run #575 的红色与此前推送的 2018 章节无关。
