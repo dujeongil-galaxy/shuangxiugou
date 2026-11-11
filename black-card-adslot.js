@@ -15,9 +15,13 @@
       a) 招商卡设计稿中央那个 r=102 的圆形印章把 HTML 文案圈在里面、弧线压字；
          现改为横向圆角白底横幅，文案区不放任何线条，副标题对比度加深。
       b) 右侧限时推广浮层 / 底部吸底条 / 悬浮按钮（z-index 9990、9000）在窄屏下
-         会压住广告位；现给 .sxg-adslot 独立层级 9995，导航条底部留白 14px。
-         全屏劳工提醒弹窗 .dyp（100000）的遮罩另在 douyin-prompt.css 里减淡，
-         弹窗打开时广告位仍可辨认，不再是一片模糊。
+         会压住广告位；广告位是正常文档流内容，不抢 z-index——窄屏用
+         keepClear() 在相交时临时隐藏这几个 fixed 圆钮（离开视口立即恢复），
+         绝不高于全站固定的 frosted 闪屏遮罩（#sxg-flash-mask，z 8000）与
+         首次访问劳工提醒弹窗 .dyp（z 100000）。2026-11-11 站长报障：广告位
+         z-index 9995 高于闪屏遮罩 8000，搜索删空整屏模糊时广告位穿透磨砂
+         露出尖角；现已把广告位降回文档流（无独立 z-index），闪屏 / FAB 自然
+         盖在它之上，keepClear 也不再误伤闪屏遮罩（按 id 排除）。
    ⑤ 「广告位请优化一下，叫 公益广告位」——全站可见文案统一改为「公益广告位」，
       第二张卡由「广告位招商中」改为「公益广告位 · 虚位以待」，明确免费展示、
       非商业招商；品牌卡标记「公益展示」。两张 SVG 角标文案同步。
@@ -239,7 +243,7 @@
   function injectStyle() {
     if (document.getElementById('sxg-adslot-style')) return;
     var css =
-      '.sxg-adslot{box-sizing:border-box;position:relative;z-index:9995;margin:0;padding:0;' +
+      '.sxg-adslot{box-sizing:border-box;position:relative;margin:0;padding:0;' +
       'border:1px solid #e2e8f0;border-radius:16px;background:#fff;overflow:hidden;' +
       'font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;width:100%}' +
       '.sxg-adslot__head{display:flex;align-items:center;justify-content:center;gap:6px;' +
@@ -461,6 +465,11 @@
         if (root.contains(n) || n.contains(root)) continue;
         var s = getComputedStyle(n);
         if (!s || (s.position !== 'fixed' && s.position !== 'absolute')) continue;
+        // 排除全站固定的 frosted 闪屏遮罩：它 z-index=8000 落在本函数
+        // [1000,9995) 的避让区间内，但它是「搜索删空整屏模糊」的覆盖层，
+        // 必须盖在所有内容（含广告位）之上。若误把它当悬浮钮隐藏，整页磨砂
+        // 会破洞、广告位穿透露出尖角（站长 2026-11-11 报障）。按 id 精确排除。
+        if (n.id === 'sxg-flash-mask') continue;
         var z = parseInt(s.zIndex, 10);
         if (!(z >= 1000 && z < 9995)) continue;
         var r = n.getBoundingClientRect();
