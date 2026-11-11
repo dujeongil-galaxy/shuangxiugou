@@ -41,7 +41,7 @@
     <!-- preload 的 credentials 模式必须与真正的 <script crossorigin> / <link rel=stylesheet crossorigin>
          完全一致，否则浏览器认为是两个不同请求：主包 434KB 和 CSS 53KB 会各下载两遍（实测慢网多花 5 秒）。
          加 crossorigin 前请勿删——verify §33a 有断言。 -->
-    <link rel="preload" as="script" crossorigin href="./assets/index-YthXZ9eP.js?v=50" />
+    <link rel="preload" as="script" crossorigin href="./assets/index-YthXZ9eP.js?v=51" />
     <link rel="preload" as="style" crossorigin href="./assets/index-BgVofs0W.css" />
     <!-- 广告位三张设计图在首屏，提前预热：慢网下广告位被补丁插入时图已在缓存里，
          不会出现「卡片出来了图还是空的」那种半截状态（站长 2026-11-10）。
@@ -124,7 +124,7 @@
   ]
 }
     </script>
-    <script type="module" crossorigin src="./assets/index-YthXZ9eP.js?v=50"></script>
+    <script type="module" crossorigin src="./assets/index-YthXZ9eP.js?v=51"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-BgVofs0W.css">
     <!-- 预加载关键补丁脚本（与 HTML 解析并行下载，减少隐私窗口无缓存时 RTT 等待） -->
     <link rel="preload" href="./custom-card-actions.js?v=24" as="script">
@@ -181,7 +181,7 @@
            display:none 的那一半不进无障碍树，名字会随状态自己变；
            写死 aria-label 反而一直是「展开」，收起后就读错了。 -->
       <input type="checkbox" id="notice-more" class="notice-more-cb">
-      <span id="evidence-notice">本站全部数据均附公开证据链：175 家企业 438 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 5 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice -->
+      <span id="evidence-notice">本站全部数据均附公开证据链：175 家企业 441 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 5 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice -->
       <label for="notice-more" class="notice-more-lbl"><span class="t-more">展开</span><span class="t-less">收起</span></label>
     </div>
     <!-- 版本号唯一真相源（2026-11-02 第五轮，站长：「版本号不要写这里了，加入三横菜单吧」）
@@ -191,7 +191,7 @@
          这个锚点回写与校验，删节点等于让每日版本号同步静默失效。
          用 hidden 而不是删掉：hidden 只影响渲染，textContent 照样可读，
          nav-menu.js 运行时读它，菜单里不另存哈希（两份数据没有比对源，必然漂）。 -->
-    <span id="site-version" hidden><span class="notice-ver">当前版本号 800d859</span></span>
+    <span id="site-version" hidden><span class="notice-ver">当前版本号 23ebcf2</span></span>
     <div id="root">
       <!-- 首屏占位：React 大包解析期间先显示「加载中」，避免 #root 为空把下方证据链区块
            甩到视口顶部造成白屏闪烁（FOUC）。React 挂载后自动替换本节点。 -->
@@ -209,7 +209,7 @@
      本区块由 scripts/gen-evidence-board.py 自动生成，请勿手改。
      改证据请改 brand/*.html 详情页，然后重跑：python scripts/gen-evidence-board.py
      单一真相源在 brand/ 页；scripts/verify.mjs 有防漂移断言逐条比对。
-     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：175 家企业 / 438 条证据 / 391 条带原始链接 / 5 家证据薄弱。 -->
+     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：175 家企业 / 441 条证据 / 394 条带原始链接 / 5 家证据薄弱。 -->
 <style>#evidence-board{max-width:960px;margin:0 auto;padding:28px 16px 40px;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.75;color:#1f2937;font-size:14px}
 #evidence-board h2{font-size:20px;font-weight:700;margin:0 0 6px;color:#0f172a;line-height:1.4}
 #evidence-board a{color:#0f766e}
@@ -258,15 +258,15 @@
 #evidence-board .ev-more{margin-top:10px;font-size:12px}
 #evidence-board .ev-foot{margin:16px 0 0;font-size:12.5px;color:#64748b}
 @media(max-width:640px){#evidence-board{padding:20px 12px 32px}#evidence-board .ev-stat{flex:1 1 44%}#evidence-board .ct{margin-left:0;width:100%}}</style>
-<section id="evidence-board" data-ev-brands="175" data-ev-total="438" data-ev-linked="391" data-ev-weak="5">
-  <h2>全站证据链公示（175 家企业 · 438 条证据）</h2>
+<section id="evidence-board" data-ev-brands="175" data-ev-total="441" data-ev-linked="394" data-ev-weak="5">
+  <h2>全站证据链公示（175 家企业 · 441 条证据）</h2>
   <p class="ev-lead">站长要求「证据链必须首页完整公示，口说无凭」——以下是站内每一条评级的取证清单，含证据类型、取证日期、文书编号与可点击的原始来源链接。数据由各品牌详情页（<code>brand/*.html</code>）自动汇总生成，两处不一致会被 <code>scripts/verify.mjs</code> 判红。</p>
   <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">其中 <strong>41 家</strong>目前仅有一条来源（第三方榜单聚合，2026-07-11，二手、未抓原文），属<strong>榜单口径换算</strong>而非实测：这些企业的真实双休率未核实，详情页已逐家公示「证据链」——来源、日期、原话、以及尚缺哪几类证据。补齐任一类证据后即重新核实改档。</p>
   <div class="ev-stats">
-    <div class="ev-stat"><b style="color:#0f766e">438</b><i>证据总条数</i></div>
-    <div class="ev-stat"><b style="color:#1d4ed8">391</b><i>带原始链接</i></div>
+    <div class="ev-stat"><b style="color:#0f766e">441</b><i>证据总条数</i></div>
+    <div class="ev-stat"><b style="color:#1d4ed8">394</b><i>带原始链接</i></div>
     <div class="ev-stat"><b style="color:#b45309">47</b><i>无可点链接</i></div>
-    <div class="ev-stat"><b style="color:#475569">7/77/31/57/1</b><i>S/A/B/C/D 家数</i></div>
+    <div class="ev-stat"><b style="color:#475569">7/77/32/56/1</b><i>S/A/B/C/D 家数</i></div>
     <div class="ev-stat"><b style="color:#450a0a">1 家</b><i>D 级（站长强制降级）</i></div>
     <div class="ev-stat"><b style="color:#64748b">2 家</b><i>U 级（证据不足）</i></div>
     <div class="ev-stat"><b style="color:#be123c">5 家</b><i>证据薄弱企业</i></div>
@@ -282,16 +282,18 @@
       <span class="ev-pill" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述 <b>11</b></span>
       <span class="ev-pill" style="border-color:#0369a1;color:#0369a1">ESG/审计报告 <b>9</b></span>
       <span class="ev-pill" style="border-color:#b45309;color:#b45309">媒体报道/调查 <b>62</b></span>
-      <span class="ev-pill" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径 <b>20</b></span>
+      <span class="ev-pill" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径 <b>21</b></span>
       <span class="ev-pill" style="border-color:#c2410c;color:#c2410c">站长一手实测 <b>3</b></span>
       <span class="ev-pill" style="border-color:#57534e;color:#57534e">员工/社群反馈 <b>76</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">旁证/二手汇总 <b>128</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（field_verification） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（third_party） <b>1</b></span>
+      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（上市公司年报（高置信）） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（员工/社群反馈） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体报道（含员工爆料，二手）） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体评论（附法条对照）） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体评论） <b>1</b></span>
+      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（官方媒体报道（员工采访）） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径） <b>86</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（暗访） <b>1</b></span>
     </div>
@@ -2364,6 +2366,62 @@
         <div class="ev-more"><a href="./brand/bee-flower.html">查看 蜂花 (Bee &amp; Flower) 完整详情页 →</a></div>
       </div>
     </details>
+    <details id="ev-gwm" data-b="gwm" data-g="B" data-n="8" data-l="8">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">长城汽车 (GWM)</span><span class="co">长城汽车股份有限公司</span><span class="ct">8 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">中国经济网（大河报）：长城汽车正式取消大小周、2026 年全面落实双休，覆盖全体员工</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：官方媒体报道（官宣级）</span> <span class="d">2026-01-08</span></div>
+            <div class="s">「长城汽车此次双休调整于 2026 年正式落地，覆盖全体员工」；休假制度完成第四次迭代；伴随调整取消 10 天高温假（其中 5 天抵扣年假）；含 2026 年工作日历「周末已更新为…</div>
+            <div class="u"><a href="http://m.ce.cn/qc/gd/202601/t20260108_2690049.shtml" rel="nofollow noopener" target="_blank">m.ce.cn/qc/gd/202601/t20260108_2690049.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">长城汽车大冶分公司 2026-10 校招/社招 JD：产线仍为「单双休工作制、月休 6 天」及「做六休一、两班倒」</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：招聘公告级（多源互证）</span> <span class="d">2026-10-09</span></div>
+            <div class="s">应届生求职网转载大冶分公司设备技术员校招 JD：「工作时间：单双休工作制，每天正常工作 8 小时，根据生产情况安排加班」，加班费「平时 1.5 倍、周末 2 倍、法定节假日 3 倍…</div>
+            <div class="u"><a href="https://www.yingjiesheng.com/job-008-108-441.html" rel="nofollow noopener" target="_blank">yingjiesheng.com/job-008-108-441.html</a></div>
+          </li>
+          <li>
+            <div class="t">智联招聘 / 超级简历：天津整车正式工 JD「7:50-17:00，8 小时以外记加班，每周固定单双休」</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：招聘公告级</span> <span class="d">2026-07-30 / 2026-11-11</span></div>
+            <div class="s">「工作时间:7:50-17:00，8 小时工作制，8 小时以外记加班」「每周固定单双休」；超级简历转载储备干部 JD：「长白班，早 8 点到下午 5 点，额外会加班，正常加班 1-…</div>
+            <div class="u"><a href="https://m.zhaopin.com/jobs/CC459533920J40894836313.htm" rel="nofollow noopener" target="_blank">m.zhaopin.com/jobs/CC459533920J40894836313.htm</a></div>
+          </li>
+          <li>
+            <div class="t">长城汽车 2025 年年度报告：在职员工 97,600 人，生产人员 47,441 人（占 48.6%）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（上市公司年报（高置信））</span> <span class="raw">原标注：上市公司年报（高置信）</span> <span class="d">2026-03-28</span></div>
+            <div class="s">「在职员工的数量合计 97,600」「生产人员 47,441」「销售人员 10,860」「技术人员 27,097」「财务人员 2,099」「行政人员 5,052」「其他人员 5,0…</div>
+            <div class="u"><a href="https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?stockid=601633&amp;id=12031773" rel="nofollow noopener" target="_blank">money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?…</a></div>
+          </li>
+          <li>
+            <div class="t">界面新闻：长城汽车取消大小周后未统一宣贯，工作日历已调整</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（官方媒体报道（员工采访））</span> <span class="raw">原标注：官方媒体报道（员工采访）</span> <span class="d">2026-01-15</span></div>
+            <div class="s">「长城汽车在今年初正式取消了维持多年的“大小周”工作制度（隔周单休）。公司并未就此向全体员工进行统一宣贯，但工作日历的调整已在内部悄然完成」「一位长城汽车员工向界面新闻表示，相关变…</div>
+            <div class="u"><a href="https://m.jiemian.com/article/13886049.html" rel="nofollow noopener" target="_blank">m.jiemian.com/article/13886049.html</a></div>
+          </li>
+          <li>
+            <div class="t">公开汇总「双休公司推荐名单 2026（270+ 家）」：长城汽车 2026 年完整双休政策</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">汇总文将长城汽车列为 2026 年完整双休政策；原文自述为按企业、行业、做法汇总的二手信息，并明确提醒「部门差异和二手信息风险」。本条为官宣报道之前的早期线索，保留备查。 （点此前…</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+          <li>
+            <div class="t">同类项目社区清单（tdwc.luomor.com）：长城汽车「已取消大小周，2026 年起全年 52 个完整双休」</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：社区清单（二手）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「已取消大小周，2026 年起全年 52 个完整双休」。与后续官宣报道方向一致，保留备查。</div>
+            <div class="u"><a href="https://tdwc.luomor.com/" rel="nofollow noopener" target="_blank">tdwc.luomor.com/</a></div>
+          </li>
+          <li>
+            <div class="t">姊妹站 shuangxiugou-guide 数据库：长城汽车登记为 reported 档并自注无企业通知级来源</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：开源项目记录（线索登记）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「公开汇总所述的 2026 年完整双休政策」「未找到与汇总文字同级的企业通知，生产线与销售端需单独核对」。2026-10-20 官宣级报道与产线 JD 已补齐，本条历史记录保留。</div>
+            <div class="u"><a href="https://github.com/dujeongil-galaxy/shuangxiugou-guide" rel="nofollow noopener" target="_blank">github.com/dujeongil-galaxy/shuangxiugou-guide</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/gwm.html">查看 长城汽车 (GWM) 完整详情页 →</a></div>
+      </div>
+    </details>
     <details id="ev-lixiang" data-b="lixiang" data-g="B" data-n="6" data-l="6">
       <summary><span class="g" style="background:#b45309">B</span><span class="bn">理想汽车</span><span class="co">理想汽车</span><span class="ct">6 条证据</span></summary>
       <div class="ev-body">
@@ -3448,44 +3506,6 @@
         <div class="ev-more"><a href="./brand/xingyu.html">查看 常州星宇股份 (车灯及汽车消费品) 完整详情页 →</a></div>
       </div>
     </details>
-    <details id="ev-gwm" data-b="gwm" data-g="C" data-n="5" data-l="5">
-      <summary><span class="g" style="background:#be123c">C</span><span class="bn">长城汽车 (GWM)</span><span class="co">长城汽车股份有限公司</span><span class="ct">5 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">中国经济网（大河报）：长城汽车正式取消大小周、2026 年全面落实双休，覆盖全体员工</div>
-            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：官方媒体报道（官宣级）</span> <span class="d">2026-01-08</span></div>
-            <div class="s">「长城汽车此次双休调整于 2026 年正式落地，覆盖全体员工」；休假制度完成第四次迭代；伴随调整取消 10 天高温假（其中 5 天抵扣年假）；含 2026 年工作日历「周末已更新为…</div>
-            <div class="u"><a href="http://m.ce.cn/qc/gd/202601/t20260108_2690049.shtml" rel="nofollow noopener" target="_blank">m.ce.cn/qc/gd/202601/t20260108_2690049.shtml</a></div>
-          </li>
-          <li>
-            <div class="t">长城汽车大冶分公司 2026-10 校招/社招 JD：产线仍为「单双休工作制、月休 6 天」及「做六休一、两班倒」</div>
-            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：招聘公告级（多源互证）</span> <span class="d">2026-10-09</span></div>
-            <div class="s">应届生求职网转载大冶分公司设备技术员校招 JD：「工作时间：单双休工作制，每天正常工作 8 小时，根据生产情况安排加班」，加班费「平时 1.5 倍、周末 2 倍、法定节假日 3 倍…</div>
-            <div class="u"><a href="https://www.yingjiesheng.com/job-008-108-441.html" rel="nofollow noopener" target="_blank">yingjiesheng.com/job-008-108-441.html</a></div>
-          </li>
-          <li>
-            <div class="t">公开汇总「双休公司推荐名单 2026（270+ 家）」：长城汽车 2026 年完整双休政策</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">汇总文将长城汽车列为 2026 年完整双休政策；原文自述为按企业、行业、做法汇总的二手信息，并明确提醒「部门差异和二手信息风险」。本条为官宣报道之前的早期线索，保留备查。 （点此前…</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-          <li>
-            <div class="t">同类项目社区清单（tdwc.luomor.com）：长城汽车「已取消大小周，2026 年起全年 52 个完整双休」</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：社区清单（二手）</span> <span class="d">2026-10-17 检索</span></div>
-            <div class="s">「已取消大小周，2026 年起全年 52 个完整双休」。与后续官宣报道方向一致，保留备查。</div>
-            <div class="u"><a href="https://tdwc.luomor.com/" rel="nofollow noopener" target="_blank">tdwc.luomor.com/</a></div>
-          </li>
-          <li>
-            <div class="t">姊妹站 shuangxiugou-guide 数据库：长城汽车登记为 reported 档并自注无企业通知级来源</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：开源项目记录（线索登记）</span> <span class="d">2026-10-17 检索</span></div>
-            <div class="s">「公开汇总所述的 2026 年完整双休政策」「未找到与汇总文字同级的企业通知，生产线与销售端需单独核对」。2026-10-20 官宣级报道与产线 JD 已补齐，本条历史记录保留。</div>
-            <div class="u"><a href="https://github.com/dujeongil-galaxy/shuangxiugou-guide" rel="nofollow noopener" target="_blank">github.com/dujeongil-galaxy/shuangxiugou-guide</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/gwm.html">查看 长城汽车 (GWM) 完整详情页 →</a></div>
-      </div>
-    </details>
     <details id="ev-byd" data-b="byd" data-g="C" data-n="4" data-l="2">
       <summary><span class="g" style="background:#be123c">C</span><span class="bn">BYD (比亚迪)</span><span class="co">比亚迪股份有限公司</span><span class="ct">4 条证据</span></summary>
       <div class="ev-body">
@@ -4440,14 +4460,14 @@
           <li><strong><a href="./brand/sap.html">SAP (思爱普中国)</a></strong>：S 级 · 真实双休率 95% · 平均下班 18:00</li> <a href="./brand/sap.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/vivo.html">vivo (维沃移动)</a></strong>：B 级 · 真实双休率 60% · 平均下班 19:30</li> <a href="./brand/vivo.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/haier.html">海尔 (Haier)</a></strong>：B 级 · 真实双休率 50% · 平均下班 19:40</li> <a href="./brand/haier.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/gree.html">格力 (GREE)</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 17:30</li> <a href="./brand/gree.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/gree.html">格力 (GREE)</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 17:30</li> <a href="./brand/gree.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/midea.html">美的 (Midea)</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/midea.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/heytea.html">喜茶 (HEYTEA)</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/heytea.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/catl.html">宁德时代 (CATL)</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/catl.html" style="color:#0F766E">详细→</a>
-<li><strong><a href="./brand/kenyue.html">肯悦咖啡 (KCOFFEE)</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/kenyue.html" style="color:#0F766E">详细→</a>
-<li><strong><a href="./brand/cotti.html">库迪咖啡 (COTTI COFFEE)</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/cotti.html" style="color:#0F766E">详细→</a>
-<li><strong><a href="./brand/mixue.html">蜜雪冰城 (MIXUE)</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/mixue.html" style="color:#0F766E">详细→</a>
-<li><strong><a href="./brand/chagee.html">霸王茶姬 (CHAGEE)</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/chagee.html" style="color:#0F766E">详细→</a>
+<li><strong><a href="./brand/kenyue.html">肯悦咖啡 (KCOFFEE)</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/kenyue.html" style="color:#0F766E">详细→</a>
+<li><strong><a href="./brand/cotti.html">库迪咖啡 (COTTI COFFEE)</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/cotti.html" style="color:#0F766E">详细→</a>
+<li><strong><a href="./brand/mixue.html">蜜雪冰城 (MIXUE)</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/mixue.html" style="color:#0F766E">详细→</a>
+<li><strong><a href="./brand/chagee.html">霸王茶姬 (CHAGEE)</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/chagee.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/haidilao.html">海底捞</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 22:45</li> <a href="./brand/haidilao.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/hema.html">盒马 (Freshippo)</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/hema.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/acer.html">宏碁 (Acer)</a></strong>：U 级（证据不足） · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/acer.html" style="color:#0F766E">详细→</a>
@@ -4460,41 +4480,41 @@
           <li><strong><a href="./brand/pinduoduo.html">拼多多 (PDD)</a></strong>：C 级 · 真实双休率 12% · 平均下班 22:00</li> <a href="./brand/pinduoduo.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/master-kong.html">康师傅 (Master Kong)</a></strong>：B 级 · 真实双休率 30% · 平均下班 19:40</li> <a href="./brand/master-kong.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/byd.html">BYD (比亚迪)</a></strong>：C 级 · 真实双休率 15% · 平均下班 20:00</li> <a href="./brand/byd.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/gwm.html">长城汽车 (GWM)</a></strong>：C 级（避雷预警） · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/gwm.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/gwm.html">长城汽车 (GWM)</a></strong>：B 级（双休不稳） · 真实双休率 51%（口径换算） · 平均下班 18:30</li> <a href="./brand/gwm.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/chery.html">奇瑞汽车 (CHERY)</a></strong>：C 级（避雷预警） · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/chery.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/geely.html">吉利汽车</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/geely.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/geely.html">吉利汽车</a></strong>：C 级 · 真实双休率 25%（推算） · 平均下班 22:30</li> <a href="./brand/geely.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/volvo.html">Volvo (沃尔沃汽车)</a></strong>：S 级 · 真实双休率 92% · 平均下班 18:05</li> <a href="./brand/volvo.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/huawei.html">华为终端 (Huawei)</a></strong>：C 级 · 真实双休率 35% · 平均下班 20:30</li> <a href="./brand/huawei.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/unicom.html">中国联通</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/unicom.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/unicom.html">中国联通</a></strong>：B 级 · 真实双休率 30%（推算） · 平均下班 —</li> <a href="./brand/unicom.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/apple.html">Apple (苹果中国)</a></strong>：S 级 · 真实双休率 92%（总部口径）· 平均下班 18:00</li> <a href="./brand/apple.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/sony.html">Sony (索尼中国)</a></strong>：A 级 · 真实双休率 90% · 平均下班 18:00</li> <a href="./brand/sony.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/dji.html">大疆 DJI</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 21:00</li> <a href="./brand/dji.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/luckin.html">瑞幸咖啡 (Luckin Coffee)</a></strong>：C 级 · 真实双休率 40% · 平均下班 21:30</li> <a href="./brand/luckin.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/starbucks.html">Starbucks (星巴克中国)</a></strong>：A 级 · 真实双休率 98% · 平均下班 22:30</li> <a href="./brand/starbucks.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/tencent.html">Tencent (腾讯)</a></strong>：B 级 · 真实双休率 82% · 平均下班 20:30</li> <a href="./brand/tencent.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/mihoyo.html">米哈游 (miHoYo)</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 18:00</li> <a href="./brand/mihoyo.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/ctrip.html">携程 (Ctrip)</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/ctrip.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/taobao-shanguang.html">淘宝闪购 (饿了么)</a></strong>：C 级 · 真实双休率 未核实（按无双休判） · 平均下班 —</li> <a href="./brand/taobao-shanguang.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/mihoyo.html">米哈游 (miHoYo)</a></strong>：B 级 · 真实双休率 85%（推算） · 平均下班 18:00</li> <a href="./brand/mihoyo.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/ctrip.html">携程 (Ctrip)</a></strong>：A 级 · 真实双休率 85%（推算） · 平均下班 —</li> <a href="./brand/ctrip.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/taobao-shanguang.html">淘宝闪购 (饿了么)</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/taobao-shanguang.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/meituan.html">Meituan (美团)</a></strong>：C 级 · 真实双休率 25% · 平均下班 21:00</li> <a href="./brand/meituan.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/bytedance.html">字节跳动 (ByteDance)</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 19:00</li> <a href="./brand/bytedance.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/kuaishou.html">快手 (Kuaishou)</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/kuaishou.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/xiaohongshu.html">小红书 (REDnote)</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/xiaohongshu.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/bytedance.html">字节跳动 (ByteDance)</a></strong>：B 级 · 真实双休率 80%（推算） · 平均下班 19:00</li> <a href="./brand/bytedance.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/kuaishou.html">快手 (Kuaishou)</a></strong>：B 级 · 真实双休率 80%（推算） · 平均下班 —</li> <a href="./brand/kuaishou.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/xiaohongshu.html">小红书 (REDnote)</a></strong>：B 级 · 真实双休率 80%（推算） · 平均下班 —</li> <a href="./brand/xiaohongshu.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/uniqlo.html">Uniqlo (优衣库)</a></strong>：A 级 · 真实双休率 82% · 平均下班 23:00</li> <a href="./brand/uniqlo.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/miniso.html">名创优品 (MINISO)</a></strong>：C 级（避雷预警） · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/miniso.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/zhaoyiming.html">赵一鸣 / 零食很忙</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 22:30</li> <a href="./brand/zhaoyiming.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/lingshiyouming.html">零食有鸣</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 22:30</li> <a href="./brand/lingshiyouming.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/chabaidao.html">茶百道</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/chabaidao.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/bingliw.html">兵立王</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/bingliw.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/yidiandian.html">一点点</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/yidiandian.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/zhaoyiming.html">赵一鸣 / 零食很忙</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 22:30</li> <a href="./brand/zhaoyiming.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/lingshiyouming.html">零食有鸣</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 22:30</li> <a href="./brand/lingshiyouming.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/chabaidao.html">茶百道</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/chabaidao.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/bingliw.html">兵立王</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/bingliw.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/yidiandian.html">一点点</a></strong>：C 级 · 真实双休率 50%（推算） · 平均下班 —</li> <a href="./brand/yidiandian.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/xiaomi.html">小米</a></strong>：A 级 · 真实双休率 53% · 平均下班 20:30</li> <a href="./brand/xiaomi.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/kfc.html">肯德基</a></strong>：C 级 · 真实双休率 10% · 平均下班 23:00</li> <a href="./brand/kfc.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/icbc.html">工商银行 (ICBC)</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/icbc.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/ccb.html">建设银行 (CCB)</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/ccb.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/boc.html">中国银行 (BOC)</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/boc.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/abc.html">农业银行 (ABC)</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/abc.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/chengdubank.html">成都银行 (BOCD)</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/chengdubank.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/meiyijia.html">美宜佳</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/meiyijia.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/molina.html">茉莉奶白</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/molina.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/icbc.html">工商银行 (ICBC)</a></strong>：A 级 · 真实双休率 85%（推算） · 平均下班 —</li> <a href="./brand/icbc.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/ccb.html">建设银行 (CCB)</a></strong>：A 级 · 真实双休率 85%（推算） · 平均下班 —</li> <a href="./brand/ccb.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/boc.html">中国银行 (BOC)</a></strong>：A 级 · 真实双休率 85%（推算） · 平均下班 —</li> <a href="./brand/boc.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/abc.html">农业银行 (ABC)</a></strong>：A 级 · 真实双休率 85%（推算） · 平均下班 —</li> <a href="./brand/abc.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/chengdubank.html">成都银行 (BOCD)</a></strong>：A 级 · 真实双休率 85%（推算） · 平均下班 —</li> <a href="./brand/chengdubank.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/meiyijia.html">美宜佳</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/meiyijia.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/molina.html">茉莉奶白</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/molina.html" style="color:#0F766E">详细→</a>
         </ul>
 
         <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">常见问题</h2>
@@ -4573,14 +4593,14 @@
           <li><a href="./brand/sap.html">SAP (思爱普中国)</a> —— S 级 · 双休率 95% · 平均下班 18:00</li>
           <li><a href="./brand/vivo.html">vivo (维沃移动)</a> —— B 级 · 双休率 60% · 平均下班 19:30</li>
           <li><a href="./brand/haier.html">海尔 (Haier)</a> —— B 级 · 双休率 50% · 平均下班 19:40</li>
-          <li><a href="./brand/gree.html">格力 (GREE)</a> —— A 级 · 双休率 未核实 · 平均下班 17:30</li>
+          <li><a href="./brand/gree.html">格力 (GREE)</a> —— A 级 · 双休率 90%（推算） · 平均下班 17:30</li>
           <li><a href="./brand/midea.html">美的 (Midea)</a> —— B 级 · 双休率 未核实 · 平均下班 —</li>
           <li><a href="./brand/heytea.html">喜茶 (HEYTEA)</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 —</li>
           <li><a href="./brand/catl.html">宁德时代 (CATL)</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 —</li>
-<li><a href="./brand/kenyue.html">肯悦咖啡 (KCOFFEE)</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
-<li><a href="./brand/cotti.html">库迪咖啡 (COTTI COFFEE)</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
-<li><a href="./brand/mixue.html">蜜雪冰城 (MIXUE)</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
-<li><a href="./brand/chagee.html">霸王茶姬 (CHAGEE)</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
+<li><a href="./brand/kenyue.html">肯悦咖啡 (KCOFFEE)</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 —</li>
+<li><a href="./brand/cotti.html">库迪咖啡 (COTTI COFFEE)</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 —</li>
+<li><a href="./brand/mixue.html">蜜雪冰城 (MIXUE)</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 —</li>
+<li><a href="./brand/chagee.html">霸王茶姬 (CHAGEE)</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 —</li>
           <li><a href="./brand/haidilao.html">海底捞</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 22:45</li>
           <li><a href="./brand/hema.html">盒马 (Freshippo)</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 —</li>
           <li><a href="./brand/acer.html">宏碁 (Acer)</a> —— U 级（证据不足） · 双休率 未核实 · 平均下班 —</li>
@@ -4593,9 +4613,9 @@
           <li><a href="./brand/pinduoduo.html">拼多多 (PDD)</a> —— C 级 · 双休率 12% · 平均下班 22:00</li>
           <li><a href="./brand/master-kong.html">康师傅 (Master Kong)</a> —— B 级 · 双休率 30% · 平均下班 19:40</li>
           <li><a href="./brand/byd.html">BYD (比亚迪)</a> —— C 级 · 双休率 15% · 平均下班 20:00</li>
-          <li><a href="./brand/gwm.html">长城汽车 (GWM)</a> —— C 级（避雷预警） · 双休率 0%（口径换算） · 平均下班 —</li>
+          <li><a href="./brand/gwm.html">长城汽车 (GWM)</a> —— B 级（双休不稳） · 双休率 51%（口径换算） · 平均下班 18:30</li>
           <li><a href="./brand/chery.html">奇瑞汽车 (CHERY)</a> —— C 级（避雷预警） · 双休率 0%（口径换算） · 平均下班 —</li>
-          <li><a href="./brand/geely.html">吉利汽车</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
+          <li><a href="./brand/geely.html">吉利汽车</a> —— C 级 · 双休率 25%（推算） · 平均下班 22:30</li>
           <li><a href="./brand/volvo.html">Volvo (沃尔沃汽车)</a> —— S 级 · 双休率 92% · 平均下班 18:05</li>
           <li><a href="./brand/huawei.html">华为终端 (Huawei)</a> —— C 级 · 双休率 35% · 平均下班 20:30</li>
           <li><a href="./brand/apple.html">Apple (苹果中国)</a> —— S 级 · 双休率 92%（总部口径）· 平均下班 18:00</li>
@@ -4604,136 +4624,136 @@
           <li><a href="./brand/luckin.html">瑞幸咖啡 (Luckin Coffee)</a> —— C 级 · 双休率 40% · 平均下班 21:30</li>
           <li><a href="./brand/starbucks.html">Starbucks (星巴克中国)</a> —— A 级 · 双休率 98% · 平均下班 22:30</li>
           <li><a href="./brand/tencent.html">Tencent (腾讯)</a> —— B 级 · 双休率 82% · 平均下班 20:30</li>
-          <li><a href="./brand/mihoyo.html">米哈游 (miHoYo)</a> —— B 级 · 双休率 未核实 · 平均下班 18:00</li>
-          <li><a href="./brand/ctrip.html">携程 (Ctrip)</a> —— A 级 · 双休率 未核实 · 平均下班 —</li>
-          <li><a href="./brand/taobao-shanguang.html">淘宝闪购 (饿了么)</a> —— C 级 · 双休率 未核实（按无双休判） · 平均下班 —</li>
+          <li><a href="./brand/mihoyo.html">米哈游 (miHoYo)</a> —— B 级 · 双休率 85%（推算） · 平均下班 18:00</li>
+          <li><a href="./brand/ctrip.html">携程 (Ctrip)</a> —— A 级 · 双休率 85%（推算） · 平均下班 —</li>
+          <li><a href="./brand/taobao-shanguang.html">淘宝闪购 (饿了么)</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 —</li>
 <li><a href="./brand/meituan.html">Meituan (美团)</a> —— C 级 · 双休率 25% · 平均下班 21:00</li>
-          <li><a href="./brand/bytedance.html">字节跳动 (ByteDance)</a> —— B 级 · 双休率 未核实 · 平均下班 19:00</li>
-          <li><a href="./brand/kuaishou.html">快手 (Kuaishou)</a> —— B 级 · 双休率 未核实 · 平均下班 —</li>
-          <li><a href="./brand/xiaohongshu.html">小红书 (REDnote)</a> —— B 级 · 双休率 未核实 · 平均下班 —</li>
+          <li><a href="./brand/bytedance.html">字节跳动 (ByteDance)</a> —— B 级 · 双休率 80%（推算） · 平均下班 19:00</li>
+          <li><a href="./brand/kuaishou.html">快手 (Kuaishou)</a> —— B 级 · 双休率 80%（推算） · 平均下班 —</li>
+          <li><a href="./brand/xiaohongshu.html">小红书 (REDnote)</a> —— B 级 · 双休率 80%（推算） · 平均下班 —</li>
           <li><a href="./brand/uniqlo.html">Uniqlo (优衣库)</a> —— A 级 · 双休率 82% · 平均下班 23:00</li>
           <li><a href="./brand/miniso.html">名创优品 (MINISO)</a> —— C 级（避雷预警） · 双休率 0%（口径换算） · 平均下班 —</li>
-          <li><a href="./brand/zhaoyiming.html">赵一鸣 / 零食很忙</a> —— C 级 · 双休率 未核实 · 平均下班 22:30</li>
-          <li><a href="./brand/lingshiyouming.html">零食有鸣</a> —— C 级 · 双休率 未核实 · 平均下班 22:30</li>
-          <li><a href="./brand/chabaidao.html">茶百道</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
-          <li><a href="./brand/bingliw.html">兵立王</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
-          <li><a href="./brand/yidiandian.html">一点点</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
+          <li><a href="./brand/zhaoyiming.html">赵一鸣 / 零食很忙</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 22:30</li>
+          <li><a href="./brand/lingshiyouming.html">零食有鸣</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 22:30</li>
+          <li><a href="./brand/chabaidao.html">茶百道</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 —</li>
+          <li><a href="./brand/bingliw.html">兵立王</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 —</li>
+          <li><a href="./brand/yidiandian.html">一点点</a> —— C 级 · 双休率 50%（推算） · 平均下班 —</li>
           <li><a href="./brand/xiaomi.html">小米</a> —— A 级 · 双休率 53% · 平均下班 20:30</li>
           <li><a href="./brand/kfc.html">肯德基</a> —— C 级 · 双休率 10% · 平均下班 23:00</li>
-          <li><a href="./brand/icbc.html">工商银行 (ICBC)</a> —— A 级 · 双休率 未核实 · 平均下班 —</li>
-          <li><a href="./brand/ccb.html">建设银行 (CCB)</a> —— A 级 · 双休率 未核实 · 平均下班 —</li>
-          <li><a href="./brand/boc.html">中国银行 (BOC)</a> —— A 级 · 双休率 未核实 · 平均下班 —</li>
-          <li><a href="./brand/abc.html">农业银行 (ABC)</a> —— A 级 · 双休率 未核实 · 平均下班 —</li>
-          <li><a href="./brand/chengdubank.html">成都银行 (BOCD)</a> —— A 级 · 双休率 未核实 · 平均下班 —</li>
-          <li><a href="./brand/meiyijia.html">美宜佳</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
-          <li><a href="./brand/molina.html">茉莉奶白</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
-          <li><a href="./brand/unicom.html">中国联通</a> —— B 级 · 双休率 未核实 · 平均下班 —</li>
+          <li><a href="./brand/icbc.html">工商银行 (ICBC)</a> —— A 级 · 双休率 85%（推算） · 平均下班 —</li>
+          <li><a href="./brand/ccb.html">建设银行 (CCB)</a> —— A 级 · 双休率 85%（推算） · 平均下班 —</li>
+          <li><a href="./brand/boc.html">中国银行 (BOC)</a> —— A 级 · 双休率 85%（推算） · 平均下班 —</li>
+          <li><a href="./brand/abc.html">农业银行 (ABC)</a> —— A 级 · 双休率 85%（推算） · 平均下班 —</li>
+          <li><a href="./brand/chengdubank.html">成都银行 (BOCD)</a> —— A 级 · 双休率 85%（推算） · 平均下班 —</li>
+          <li><a href="./brand/meiyijia.html">美宜佳</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 —</li>
+          <li><a href="./brand/molina.html">茉莉奶白</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 —</li>
+          <li><a href="./brand/unicom.html">中国联通</a> —— B 级 · 双休率 30%（推算） · 平均下班 —</li>
           <li><a href="./brand/bosszhipin.html">BOSS直聘</a> —— D 级（站长人工介入 · 平台类目例外） · 双休率 不适用（平台类目） · 平均下班 —</li>
         <!-- IMPORTED-NOSCRIPT-START -->
-          <li><strong><a href="./brand/alibaba.html">阿里巴巴</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/alibaba.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/ant.html">蚂蚁集团</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/ant.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/baidu.html">百度</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/baidu.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/netease.html">网易</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/netease.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/jd.html">京东</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/jd.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/dewu.html">得物</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/dewu.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/bilibili.html">哔哩哔哩</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/bilibili.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/lilith.html">莉莉丝游戏</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/lilith.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/xindong.html">心动网络</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/xindong.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/google.html">谷歌</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/google.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/nvidia.html">英伟达</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/nvidia.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/intel.html">英特尔</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/intel.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/ibm.html">IBM</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/ibm.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/aws.html">亚马逊云科技</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/aws.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/wps.html">金山办公</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/wps.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/lenovo.html">联想</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/lenovo.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/honor.html">荣耀</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/honor.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/transmion.html">传音控股</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/transmion.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/insta360.html">影石 Insta360</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/insta360.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/anker.html">安克创新</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/anker.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/ugreen.html">绿联</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/ugreen.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/ecovacs.html">科沃斯</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/ecovacs.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/xgimi.html">极米科技</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/xgimi.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/naura.html">北方华创</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/naura.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/will.html">韦尔股份</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/will.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/tianma.html">天马微电子</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/tianma.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/genki.html">元气森林</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/genki.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/yili.html">伊利</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/yili.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/tongyi.html">统一</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/tongyi.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/coke.html">可口可乐</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/coke.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/qiaqia.html">洽洽食品</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/qiaqia.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/liangpin.html">良品铺子</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/liangpin.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/bright.html">光明乳业</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/bright.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/mcd.html">麦当劳</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/mcd.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/proya.html">珀莱雅</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/proya.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/bluemoon.html">蓝月亮</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/bluemoon.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/jahwa.html">上海家化</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/jahwa.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/maogeping.html">毛戈平</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/maogeping.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/lining.html">李宁</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/lining.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/361du.html">361 度</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/361du.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/semir.html">森马</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/semir.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/bosideng.html">波司登</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/bosideng.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/supor.html">苏泊尔</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/supor.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/bull.html">公牛集团</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/bull.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/goodbaby.html">好孩子</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/goodbaby.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/musie.html">慕思股份</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/musie.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/oppein.html">欧派家居</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/oppein.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/sofia.html">索菲亚</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/sofia.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/pingan.html">中国平安</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/pingan.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/chinalife.html">中国人寿</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/chinalife.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/eastmoney.html">东方财富</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/eastmoney.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/htsec.html">华泰证券</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/htsec.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/unionpay.html">中国银联</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/unionpay.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/tenpay.html">财付通</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/tenpay.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/hengrui.html">恒瑞医药</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/hengrui.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/yunnanbaiyao.html">云南白药</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/yunnanbaiyao.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/tongrentang.html">同仁堂</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/tongrentang.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/pianzihuang.html">片仔癀</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/pianzihuang.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/baiyunshan.html">白云山</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/baiyunshan.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/sinopharm.html">国药控股</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/sinopharm.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/jzt.html">九州通</a></strong>：A 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/jzt.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/hikvision.html">海康威视</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/hikvision.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/dahua.html">大华股份</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/dahua.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/lixiang.html">理想汽车</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/lixiang.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/nio.html">蔚来</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/nio.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/anta.html">安踏</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/anta.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/wuxiapptec.html">药明康德</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/wuxiapptec.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/yatsen.html">逸仙电商</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/yatsen.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/robam.html">老板电器</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/robam.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/joyoung.html">九阳</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/joyoung.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/hisense.html">海信</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/hisense.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/junlebao.html">君乐宝</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/junlebao.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/haitian.html">海天味业</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/haitian.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/tsingtao.html">青岛啤酒</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/tsingtao.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/snowbeer.html">华润雪花</a></strong>：B 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/snowbeer.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/dreame.html">追觅科技</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/dreame.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/wentai.html">闻泰科技</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/wentai.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/luxshare.html">立讯精密</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/luxshare.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/foxconn.html">富士康</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/foxconn.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/lens.html">蓝思科技</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/lens.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/goertek.html">歌尔股份</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/goertek.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/smic.html">中芯国际</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/smic.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/ymttc.html">长江存储</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/ymttc.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/boe.html">京东方</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/boe.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/csot.html">TCL 华星</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/csot.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/kuka.html">顾家家居</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/kuka.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/hla.html">海澜之家</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/hla.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/taipingniao.html">太平鸟</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/taipingniao.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/xibei.html">西贝餐饮</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/xibei.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/taier.html">太二酸菜鱼</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/taier.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/laoxiangji.html">老乡鸡</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/laoxiangji.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/xiabu.html">呷哺呷哺</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/xiabu.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/wallace.html">华莱士</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/wallace.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/xijiade.html">喜家德</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/xijiade.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/banana.html">巴奴毛肚火锅</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/banana.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/wumart.html">物美</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/wumart.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/cicc.html">中金公司</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/cicc.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/citicsec.html">中信证券</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/citicsec.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/gtja.html">国泰海通</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/gtja.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/cmb.html">招商银行</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/cmb.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/xtep.html">特步</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/xtep.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/foto.html">方太</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/foto.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/jdb.html">加多宝</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/jdb.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/jml.html">今麦郎</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/jml.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/alibaba.html">阿里巴巴</a></strong>：A 级 · 真实双休率 75%（推算） · 平均下班 20:00</li> <a href="./brand/alibaba.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/ant.html">蚂蚁集团</a></strong>：A 级 · 真实双休率 70%（推算） · 平均下班 —</li> <a href="./brand/ant.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/baidu.html">百度</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 19:00</li> <a href="./brand/baidu.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/netease.html">网易</a></strong>：A 级 · 真实双休率 70%（推算） · 平均下班 —</li> <a href="./brand/netease.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/jd.html">京东</a></strong>：A 级 · 真实双休率 70%（推算） · 平均下班 —</li> <a href="./brand/jd.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/dewu.html">得物</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/dewu.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/bilibili.html">哔哩哔哩</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/bilibili.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/lilith.html">莉莉丝游戏</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/lilith.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/xindong.html">心动网络</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/xindong.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/google.html">谷歌</a></strong>：A 级 · 真实双休率 95%（推算） · 平均下班 —</li> <a href="./brand/google.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/nvidia.html">英伟达</a></strong>：A 级 · 真实双休率 95%（推算） · 平均下班 —</li> <a href="./brand/nvidia.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/intel.html">英特尔</a></strong>：A 级 · 真实双休率 95%（推算） · 平均下班 —</li> <a href="./brand/intel.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/ibm.html">IBM</a></strong>：A 级 · 真实双休率 95%（推算） · 平均下班 —</li> <a href="./brand/ibm.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/aws.html">亚马逊云科技</a></strong>：A 级 · 真实双休率 95%（推算） · 平均下班 —</li> <a href="./brand/aws.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/wps.html">金山办公</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/wps.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/lenovo.html">联想</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/lenovo.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/honor.html">荣耀</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/honor.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/transmion.html">传音控股</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/transmion.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/insta360.html">影石 Insta360</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/insta360.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/anker.html">安克创新</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/anker.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/ugreen.html">绿联</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/ugreen.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/ecovacs.html">科沃斯</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/ecovacs.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/xgimi.html">极米科技</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/xgimi.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/naura.html">北方华创</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/naura.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/will.html">韦尔股份</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/will.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/tianma.html">天马微电子</a></strong>：A 级 · 真实双休率 75%（推算） · 平均下班 —</li> <a href="./brand/tianma.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/genki.html">元气森林</a></strong>：A 级 · 真实双休率 75%（推算） · 平均下班 —</li> <a href="./brand/genki.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/yili.html">伊利</a></strong>：A 级 · 真实双休率 75%（推算） · 平均下班 17:30</li> <a href="./brand/yili.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/tongyi.html">统一</a></strong>：B 级 · 真实双休率 75%（推算） · 平均下班 17:30</li> <a href="./brand/tongyi.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/coke.html">可口可乐</a></strong>：A 级 · 真实双休率 75%（推算） · 平均下班 —</li> <a href="./brand/coke.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/qiaqia.html">洽洽食品</a></strong>：A 级 · 真实双休率 85%（推算） · 平均下班 —</li> <a href="./brand/qiaqia.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/liangpin.html">良品铺子</a></strong>：B 级 · 真实双休率 40%（推算） · 平均下班 —</li> <a href="./brand/liangpin.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/bright.html">光明乳业</a></strong>：A 级 · 真实双休率 85%（推算） · 平均下班 —</li> <a href="./brand/bright.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/mcd.html">麦当劳</a></strong>：A 级 · 真实双休率 85%（推算） · 平均下班 —</li> <a href="./brand/mcd.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/proya.html">珀莱雅</a></strong>：A 级 · 真实双休率 80%（推算） · 平均下班 —</li> <a href="./brand/proya.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/bluemoon.html">蓝月亮</a></strong>：A 级 · 真实双休率 75%（推算） · 平均下班 —</li> <a href="./brand/bluemoon.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/jahwa.html">上海家化</a></strong>：A 级 · 真实双休率 75%（推算） · 平均下班 —</li> <a href="./brand/jahwa.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/maogeping.html">毛戈平</a></strong>：A 级 · 真实双休率 75%（推算） · 平均下班 —</li> <a href="./brand/maogeping.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/lining.html">李宁</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/lining.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/361du.html">361 度</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/361du.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/semir.html">森马</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/semir.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/bosideng.html">波司登</a></strong>：B 级 · 真实双休率 45%（推算） · 平均下班 —</li> <a href="./brand/bosideng.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/supor.html">苏泊尔</a></strong>：A 级 · 真实双休率 85%（推算） · 平均下班 —</li> <a href="./brand/supor.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/bull.html">公牛集团</a></strong>：A 级 · 真实双休率 85%（推算） · 平均下班 —</li> <a href="./brand/bull.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/goodbaby.html">好孩子</a></strong>：A 级 · 真实双休率 85%（推算） · 平均下班 —</li> <a href="./brand/goodbaby.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/musie.html">慕思股份</a></strong>：A 级 · 真实双休率 75%（推算） · 平均下班 —</li> <a href="./brand/musie.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/oppein.html">欧派家居</a></strong>：A 级 · 真实双休率 75%（推算） · 平均下班 —</li> <a href="./brand/oppein.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/sofia.html">索菲亚</a></strong>：A 级 · 真实双休率 75%（推算） · 平均下班 —</li> <a href="./brand/sofia.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/pingan.html">中国平安</a></strong>：A 级 · 真实双休率 75%（推算） · 平均下班 —</li> <a href="./brand/pingan.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/chinalife.html">中国人寿</a></strong>：A 级 · 真实双休率 75%（推算） · 平均下班 —</li> <a href="./brand/chinalife.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/eastmoney.html">东方财富</a></strong>：A 级 · 真实双休率 75%（推算） · 平均下班 —</li> <a href="./brand/eastmoney.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/htsec.html">华泰证券</a></strong>：A 级 · 真实双休率 75%（推算） · 平均下班 —</li> <a href="./brand/htsec.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/unionpay.html">中国银联</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/unionpay.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/tenpay.html">财付通</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/tenpay.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/hengrui.html">恒瑞医药</a></strong>：A 级 · 真实双休率 75%（推算） · 平均下班 —</li> <a href="./brand/hengrui.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/yunnanbaiyao.html">云南白药</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/yunnanbaiyao.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/tongrentang.html">同仁堂</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/tongrentang.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/pianzihuang.html">片仔癀</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/pianzihuang.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/baiyunshan.html">白云山</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/baiyunshan.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/sinopharm.html">国药控股</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/sinopharm.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/jzt.html">九州通</a></strong>：A 级 · 真实双休率 90%（推算） · 平均下班 —</li> <a href="./brand/jzt.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/hikvision.html">海康威视</a></strong>：B 级 · 真实双休率 0%（口径换算） · 平均下班 21:30</li> <a href="./brand/hikvision.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/dahua.html">大华股份</a></strong>：B 级 · 真实双休率 0%（口径换算） · 平均下班 21:30</li> <a href="./brand/dahua.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/lixiang.html">理想汽车</a></strong>：B 级 · 真实双休率 30%（推算） · 平均下班 —</li> <a href="./brand/lixiang.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/nio.html">蔚来</a></strong>：B 级 · 真实双休率 30%（推算） · 平均下班 —</li> <a href="./brand/nio.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/anta.html">安踏</a></strong>：B 级 · 真实双休率 50%（推算） · 平均下班 —</li> <a href="./brand/anta.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/wuxiapptec.html">药明康德</a></strong>：B 级 · 真实双休率 0%（口径换算） · 平均下班 21:30</li> <a href="./brand/wuxiapptec.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/yatsen.html">逸仙电商</a></strong>：B 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/yatsen.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/robam.html">老板电器</a></strong>：B 级 · 真实双休率 5%（推算） · 平均下班 —</li> <a href="./brand/robam.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/joyoung.html">九阳</a></strong>：B 级 · 真实双休率 5%（推算） · 平均下班 —</li> <a href="./brand/joyoung.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/hisense.html">海信</a></strong>：B 级 · 真实双休率 5%（推算） · 平均下班 —</li> <a href="./brand/hisense.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/junlebao.html">君乐宝</a></strong>：B 级 · 真实双休率 5%（推算） · 平均下班 —</li> <a href="./brand/junlebao.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/haitian.html">海天味业</a></strong>：B 级 · 真实双休率 5%（推算） · 平均下班 —</li> <a href="./brand/haitian.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/tsingtao.html">青岛啤酒</a></strong>：B 级 · 真实双休率 5%（推算） · 平均下班 —</li> <a href="./brand/tsingtao.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/snowbeer.html">华润雪花</a></strong>：B 级 · 真实双休率 5%（推算） · 平均下班 —</li> <a href="./brand/snowbeer.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/dreame.html">追觅科技</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/dreame.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/wentai.html">闻泰科技</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/wentai.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/luxshare.html">立讯精密</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/luxshare.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/foxconn.html">富士康</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/foxconn.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/lens.html">蓝思科技</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/lens.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/goertek.html">歌尔股份</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/goertek.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/smic.html">中芯国际</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 20:00</li> <a href="./brand/smic.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/ymttc.html">长江存储</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 20:00</li> <a href="./brand/ymttc.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/boe.html">京东方</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 20:00</li> <a href="./brand/boe.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/csot.html">TCL 华星</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 20:00</li> <a href="./brand/csot.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/kuka.html">顾家家居</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/kuka.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/hla.html">海澜之家</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/hla.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/taipingniao.html">太平鸟</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/taipingniao.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/xibei.html">西贝餐饮</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 21:00</li> <a href="./brand/xibei.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/taier.html">太二酸菜鱼</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 21:00</li> <a href="./brand/taier.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/laoxiangji.html">老乡鸡</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 21:00</li> <a href="./brand/laoxiangji.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/xiabu.html">呷哺呷哺</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 21:00</li> <a href="./brand/xiabu.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/wallace.html">华莱士</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/wallace.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/xijiade.html">喜家德</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/xijiade.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/banana.html">巴奴毛肚火锅</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/banana.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/wumart.html">物美</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/wumart.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/cicc.html">中金公司</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 00:00</li> <a href="./brand/cicc.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/citicsec.html">中信证券</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 00:00</li> <a href="./brand/citicsec.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/gtja.html">国泰海通</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 00:00</li> <a href="./brand/gtja.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/cmb.html">招商银行</a></strong>：C 级 · 真实双休率 40%（推算） · 平均下班 —</li> <a href="./brand/cmb.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/xtep.html">特步</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/xtep.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/foto.html">方太</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/foto.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/jdb.html">加多宝</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/jdb.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/jml.html">今麦郎</a></strong>：C 级 · 真实双休率 25%（推算） · 平均下班 —</li> <a href="./brand/jml.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/luxiyi.html">陆喜依</a></strong>：S 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/luxiyi.html" style="color:#0F766E">详细→</a>
 <!-- IMPORTED-NOSCRIPT-END -->
         </ul>
@@ -4947,10 +4967,10 @@
           logoAlt: '零食很忙',
           workPolicy: '门店差异大：月休2天为主（部分门店4天）/ 两班倒',
           overtime: '每月8号需加班 / 晚班至22:00-24:00',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: '22:30',
           voteCount: '0',
-          desc: '"公开招聘与一线反馈主流月休2天（部分门店4天），两班倒、每周轮班，月休日避开活动日/周末/到货日，每月8号需加班，晚班普遍22:30-24:00下班（2026-08~10 多城招聘+员工反馈）。注意：零食有鸣为另一独立品牌，与本品牌无关"',
+          desc: '"公开招聘与一线反馈主流月休2天（部分门店4天），两班倒、每周轮班，月休日避开活动日/周末/到货日，每月8号需加班，晚班普遍22:30-24:00下班（2026-08~10 多城招聘+员工反馈）。注意：零食有鸣为另一独立品牌，与本品牌无关"；2026-11-12 补：双休率 0%（口径换算）（门店月休 2 天为主、两班倒，晚班打烊后离岗）、平均下班 22:30（门店月休 2 天为主、两班倒，晚班打烊后离岗）',
           tags: ['零食量贩', '赵一鸣零食', '连锁门店', '鸣鸣很忙'],
           likeCount: '0',
           dislikeCount: '0',
@@ -4969,10 +4989,10 @@
           logoAlt: '零食有鸣',
           workPolicy: '门店差异大：月休2天与4天并存 / 两班倒',
           overtime: '每天9小时 / 晚班至22:30-23:00（个别门店00:00）',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: '22:30',
           voteCount: '0',
-          desc: '"公开招聘与媒体报道口径：门店月休2天（成都部分门店4天），每天在岗9小时、两班倒，晚班普遍22:30-23:00（琼海店至00:00）；2026-09 内江店「月休2天、休满扣300元全勤」上热搜，律师称月休2天约定明显违法（2026-09~10 多城招聘+封面新闻）。与零食很忙/赵一鸣（鸣鸣很忙集团）无关，为独立品牌"',
+          desc: '"公开招聘与媒体报道口径：门店月休2天（成都部分门店4天），每天在岗9小时、两班倒，晚班普遍22:30-23:00（琼海店至00:00）；2026-09 内江店「月休2天、休满扣300元全勤」上热搜，律师称月休2天约定明显违法（2026-09~10 多城招聘+封面新闻）。与零食很忙/赵一鸣（鸣鸣很忙集团）无关，为独立品牌"；2026-11-12 补：双休率 0%（口径换算）（门店月休 2 天与 4 天并存、两班倒，晚班打烊后离岗）、平均下班 22:30（门店月休 2 天与 4 天并存、两班倒，晚班打烊后离岗）',
           tags: ['零食量贩', '零食有鸣', '独立品牌'],
           likeCount: '0',
           dislikeCount: '0',
@@ -4991,10 +5011,10 @@
           logoAlt: '茶百道',
           workPolicy: '月休不足4天',
           overtime: '旺季高峰需连轴顶班',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '"门店店员匿名反馈：月休不足4天（单休都算不上），旺季用工紧张需连轴顶班（线下一手·匿名）"',
+          desc: '"门店店员匿名反馈：月休不足4天（单休都算不上），旺季用工紧张需连轴顶班（线下一手·匿名）"；2026-11-12 补：双休率 0%（口径换算）（门店月休不足 4 天）',
           tags: ['新茶饮', '奶茶连锁', '加盟门店'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5013,10 +5033,10 @@
           logoAlt: '兵立王',
           workPolicy: '月休不足4天',
           overtime: '节假日加班常见',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '"门店员工匿名反馈：月休不足4天（线下一手·匿名）"',
+          desc: '"门店员工匿名反馈：月休不足4天（线下一手·匿名）"；2026-11-12 补：双休率 0%（口径换算）（门店月休不足 4 天）',
           tags: ['新茶饮', '奶茶连锁', '军旅茶饮'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5079,10 +5099,10 @@
           logoAlt: '一点点',
           workPolicy: '淡季月休8天 / 旺季月休4天（季节波动，非大小周）',
           overtime: '旺季高峰排班密集 / 晚班至打烊',
-          doubleRestRate: null,
+          doubleRestRate: '50',
           offWorkTime: null,
           voteCount: '0',
-          desc: '"站长 2026-10-18 线下核实（大学城附近门店员工实录）：淡季月休 8 天、旺季月休 4 天，季节波动、非大小周；公开招聘多城口径主流为月休 4 天（佛山/兰州/黄山/杭州，东台直聘标单休）（线下一手+公开招聘交叉验证）"',
+          desc: '"站长 2026-10-18 线下核实（大学城附近门店员工实录）：淡季月休 8 天、旺季月休 4 天，季节波动、非大小周；公开招聘多城口径主流为月休 4 天（佛山/兰州/黄山/杭州，东台直聘标单休）（线下一手+公开招聘交叉验证）"；2026-11-12 补：双休率 50%（推算）（淡季月休 8 天 / 旺季月休 4 天，按两季各半折中）',
           tags: ['新茶饮', '奶茶连锁', '加盟门店'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5108,10 +5128,10 @@
           logoAlt: '工商银行',
           workPolicy: '轮休制 / 做五休二（休息日非固定周末）',
           overtime: '网点轮值；客户经理营销压力大、常需培训或上班',
-          doubleRestRate: null,
+          doubleRestRate: '85',
           offWorkTime: null,
           voteCount: '0',
-          desc: '"公开招聘口径多标「双休/做五休二」，但多为外包派遣岗（今日招聘、地方人才网均标注「该职位信息待核验」）；员工社群反馈网点为轮休制、做五休二而休息日非固定周末，客户经理受营销指标压力周末常需培训或上班。网点轮休制下柜员仍为周休 2 天（≈月休 8.6 天），按站长口径「月休 8 天以上判 A 级」定 A 级；休息日不固定为轮休制固有形态，不影响每周休两天的实质（公开招聘页 + 员工社群交叉核实，2026-10 核实）"',
+          desc: '"公开招聘口径多标「双休/做五休二」，但多为外包派遣岗（今日招聘、地方人才网均标注「该职位信息待核验」）；员工社群反馈网点为轮休制、做五休二而休息日非固定周末，客户经理受营销指标压力周末常需培训或上班。网点轮休制下柜员仍为周休 2 天（≈月休 8.6 天），按站长口径「月休 8 天以上判 A 级」定 A 级；休息日不固定为轮休制固有形态，不影响每周休两天的实质（公开招聘页 + 员工社群交叉核实，2026-10 核实）"；2026-11-12 补：双休率 85%（推算）（网点轮休制、做五休二（每周休满 2 天，休息日非固定周末））',
           tags: ['国有银行', '工商银行', '金融银行', 'ICBC', '网点轮休'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5130,10 +5150,10 @@
           logoAlt: '建设银行',
           workPolicy: '轮休制 / 做五休二（非固定周末双休）',
           overtime: '网点周末轮值；客服/后台有双休岗但多为外包派驻',
-          doubleRestRate: null,
+          doubleRestRate: '85',
           offWorkTime: null,
           voteCount: '0',
-          desc: '"官网网点营业时间显示对私周六部分营业、周日休息，系轮班；招聘平台与脉脉帖标「周末双休/上五休二」，但牛客网员工帖称「双休但不连着周六周日，周四和周六休」——周休 2 天（≈月休 8.6 天），休息日拆开但不减量。按站长口径「月休 8 天以上判 A 级」定 A 级（官网营业时间 + 招聘页 + 员工社群交叉核实，2026-10 核实）"',
+          desc: '"官网网点营业时间显示对私周六部分营业、周日休息，系轮班；招聘平台与脉脉帖标「周末双休/上五休二」，但牛客网员工帖称「双休但不连着周六周日，周四和周六休」——周休 2 天（≈月休 8.6 天），休息日拆开但不减量。按站长口径「月休 8 天以上判 A 级」定 A 级（官网营业时间 + 招聘页 + 员工社群交叉核实，2026-10 核实）"；2026-11-12 补：双休率 85%（推算）（网点轮休制、做五休二（每周休满 2 天，休息日非固定周末））',
           tags: ['国有银行', '建设银行', '金融银行', 'CCB', '网点轮班'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5152,10 +5172,10 @@
           logoAlt: '中国银行',
           workPolicy: '轮休制 / 网点错峰（非固定周末双休）',
           overtime: '网点轮值；客服/外包派驻岗有双休但主体非直雇',
-          doubleRestRate: null,
+          doubleRestRate: '85',
           offWorkTime: null,
           voteCount: '0',
-          desc: '"公开招聘聚合口径多标「双休/周末双休」，但多为外包派驻、派遣岗（智联标「单双休」、quanzhi/地方人才网岗位标注「待核验」）；官网网点公示与分行公告显示网点为轮休制、相邻网点错峰上班。网点错峰轮休下柜员仍为周休 2 天（≈月休 8.6 天），按站长口径「月休 8 天以上判 A 级」定 A 级（官网网点公示 + 招聘页 + 分行公告交叉核实，2026-10 核实）"',
+          desc: '"公开招聘聚合口径多标「双休/周末双休」，但多为外包派驻、派遣岗（智联标「单双休」、quanzhi/地方人才网岗位标注「待核验」）；官网网点公示与分行公告显示网点为轮休制、相邻网点错峰上班。网点错峰轮休下柜员仍为周休 2 天（≈月休 8.6 天），按站长口径「月休 8 天以上判 A 级」定 A 级（官网网点公示 + 招聘页 + 分行公告交叉核实，2026-10 核实）"；2026-11-12 补：双休率 85%（推算）（网点轮休制、做五休二（休息日非固定周末））',
           tags: ['国有银行', '中国银行', '金融银行', 'BOC', '网点轮休'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5174,10 +5194,10 @@
           logoAlt: '农业银行',
           workPolicy: '轮流双休 / 做五休二（各网点每周关门一天，具体哪天不固定；员工轮换休息）',
           overtime: '各网点每周关门一天（具体哪天不固定）；员工周休 2 天、休息日按排班',
-          doubleRestRate: null,
+          doubleRestRate: '85',
           offWorkTime: null,
           voteCount: '0',
-          desc: '"站长 2026-11-04 复核：农行各网点每周关门一天（具体哪天不固定），员工实行轮流双休（做五休二、周休 2 天、休息日按排班不固定），符合「轮休制周休 2 天 = 双休 = 判 A」口径。与工/建/中/成都四行同类（周休 2 天 ≈ 月休 8.6 天，判 A 级）。此前「单休网点占比 61%」早年口径已被本次复核修正（站长线下复核 + 最新调查，2026-11-04 重新评级）"',
+          desc: '"站长 2026-11-04 复核：农行各网点每周关门一天（具体哪天不固定），员工实行轮流双休（做五休二、周休 2 天、休息日按排班不固定），符合「轮休制周休 2 天 = 双休 = 判 A」口径。与工/建/中/成都四行同类（周休 2 天 ≈ 月休 8.6 天，判 A 级）。此前「单休网点占比 61%」早年口径已被本次复核修正（站长线下复核 + 最新调查，2026-11-04 重新评级）"；2026-11-12 补：双休率 85%（推算）（网点固定关门日 + 员工轮流双休（每周休满 2 天））',
           tags: ['国有银行', '农业银行', '金融银行', 'ABC', '网点轮休'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5196,10 +5216,10 @@
           logoAlt: '成都银行',
           workPolicy: '部分网点周末轮休 / 网点排班（非统一固定周末双休）',
           overtime: '网点周末轮值；外包大堂/对公助理岗标「周末双休」但主体为外包公司',
-          doubleRestRate: null,
+          doubleRestRate: '85',
           offWorkTime: null,
           voteCount: '0',
-          desc: '"成都银行官网 2026-04-13 公告「部分网点实行周末暂停营业」，明示「周末轮休期间」相邻网点正常营业；第三方网点库显示大量网点周六周日 09:00-16:00 营业、部分周末不开现金柜；智联/四川人才网「周末双休」岗的招聘主体均为徽通金融等外包公司且标注「待核验」；员工社群反馈「支行零售/柜员：网点轮班，周末轮休」。柜员网点轮班仍为周休 2 天（≈月休 8.6 天），按站长口径「月休 8 天以上判 A 级」定 A 级（官网公告 + 网点库 + 招聘页 + 员工社群交叉核实，2026-10 核实）"',
+          desc: '"成都银行官网 2026-04-13 公告「部分网点实行周末暂停营业」，明示「周末轮休期间」相邻网点正常营业；第三方网点库显示大量网点周六周日 09:00-16:00 营业、部分周末不开现金柜；智联/四川人才网「周末双休」岗的招聘主体均为徽通金融等外包公司且标注「待核验」；员工社群反馈「支行零售/柜员：网点轮班，周末轮休」。柜员网点轮班仍为周休 2 天（≈月休 8.6 天），按站长口径「月休 8 天以上判 A 级」定 A 级（官网公告 + 网点库 + 招聘页 + 员工社群交叉核实，2026-10 核实）"；2026-11-12 补：双休率 85%（推算）（网点周末轮休、排班（每周休满 2 天））',
           tags: ['城商行', '成都银行', '金融银行', 'BOCD', '网点轮休'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5225,10 +5245,10 @@
           logoAlt: '美宜佳',
           workPolicy: '轮班制 / 两班倒·三班制（无统一双休）',
           overtime: '早中晚班轮值；公开招聘口径月休 2-4 天',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '"便利店连锁（全国 4 万+ 门店）。公开招聘多标两班倒/三班制、月休 2-4 天，无统一双休；站长（双休Go）西南两地线下核实：无月休（双休）、轮班。按站内口径「单休归为 C 级」定级（2026-10-30，评级理由详见详情页）"',
+          desc: '"便利店连锁（全国 4 万+ 门店）。公开招聘多标两班倒/三班制、月休 2-4 天，无统一双休；站长（双休Go）西南两地线下核实：无月休（双休）、轮班。按站内口径「单休归为 C 级」定级（2026-10-30，评级理由详见详情页）"；2026-11-12 补：双休率 0%（口径换算）（轮班制、两班/三班制，无统一双休）',
           tags: ['便利店', '连锁零售', '美宜佳', '轮班', '两班倒'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5253,10 +5273,10 @@
           logoAlt: '茉莉奶白',
           workPolicy: '门店排班制（站长线下核实到月休 4 天·单休形态）',
           overtime: '门店排班为主；总部岗位以公开招聘口径为准',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '"新茶饮品牌（花香茶饮，2021 年深圳首店，全国门店 3000+）。站长（双休Go）线下核实到门店「月休 4 天」（单休形态），按站内口径「单休归为 C 级」定级（2026-10-30，评级理由详见详情页）"',
+          desc: '"新茶饮品牌（花香茶饮，2021 年深圳首店，全国门店 3000+）。站长（双休Go）线下核实到门店「月休 4 天」（单休形态），按站内口径「单休归为 C 级」定级（2026-10-30，评级理由详见详情页）"；2026-11-12 补：双休率 0%（口径换算）（门店排班制，站长线下核实月休 4 天）',
           tags: ['新茶饮', '奶茶', '茉莉奶白', '门店排班', '月休4天'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5279,10 +5299,10 @@
           logoAlt: '中国联通',
           workPolicy: '未核实（本页证据不涉及工时）',
           overtime: '未核实',
-          doubleRestRate: null,
+          doubleRestRate: '30',
           offWorkTime: null,
           voteCount: '0',
-          desc: '"通信运营商（中国联合网络通信集团有限公司，三大运营商之一）。站长 2026-11-03 线下核实一个城市线下营业厅，确认月休 6-8 天，按站点口径判 B 级（外包与线上营销团队单休，月休 4 天，不计入本 B 级口径）。此前 2026-11-02 有求职者反映招聘不符问题，但经线下核实月休天数后，评级从 C 级调整为 B 级（详见详情页）"',
+          desc: '"通信运营商（中国联合网络通信集团有限公司，三大运营商之一）。站长 2026-11-03 线下核实一个城市线下营业厅，确认月休 6-8 天，按站点口径判 B 级（外包与线上营销团队单休，月休 4 天，不计入本 B 级口径）。此前 2026-11-02 有求职者反映招聘不符问题，但经线下核实月休天数后，评级从 C 级调整为 B 级（详见详情页）"；2026-11-12 补：双休率 30%（推算）（线下营业厅月休 6-8 天，约为隔周单休形态）',
           tags: ['中国联通', '联通', '通信运营商', '储备干部', '招聘避雷', 'unicom'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5305,10 +5325,10 @@
           logoAlt: '淘宝闪购',
           workPolicy: '客服拒不披露双休口径（按无双休判）',
           overtime: '外卖配送行业特性：午晚高峰全周运转，骑手/站点无固定周末',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '"即时零售与外卖配送平台（淘宝闪购 2025-08 由淘宝买菜升级上线，整合饿了么运力；运营主体拉扎斯网络科技（上海）有限公司）。2026-10-31 站长亲自联系客服询问双休安排，客服拒不作答；按站内新口径「官方拒不披露=无双休」定 C 级。配送行业高峰全周运转，站点排班与骑手抢单制均无固定周末双休（站长实测客服口径 + 行业公开排班形态，2026-10-31 核实）"',
+          desc: '"即时零售与外卖配送平台（淘宝闪购 2025-08 由淘宝买菜升级上线，整合饿了么运力；运营主体拉扎斯网络科技（上海）有限公司）。2026-10-31 站长亲自联系客服询问双休安排，客服拒不作答；按站内新口径「官方拒不披露=无双休」定 C 级。配送行业高峰全周运转，站点排班与骑手抢单制均无固定周末双休（站长实测客服口径 + 行业公开排班形态，2026-10-31 核实）"；2026-11-12 补：双休率 0%（口径换算）（客服拒不披露双休口径，按站内「拒不披露按无双休」判）',
           tags: ['即时零售', '外卖平台', '淘宝闪购', '饿了么', '配送'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5351,10 +5371,10 @@
           logoAlt: '阿里巴巴',
           workPolicy: '名义双休 / 强度看部门',
           overtime: '工作日长，项目期加班',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '75',
+          offWorkTime: '20:00',
           voteCount: '0',
-          desc: '阿里 / 蚂蚁（淘宝/支付宝/高德/钉钉）：名义双休，强度看部门。榜单口径：名义双休 / 强度看部门；工作日长，项目期加班。代表产品／业务：淘宝 / 闲鱼 / 高德 / 钉钉。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '阿里 / 蚂蚁（淘宝/支付宝/高德/钉钉）：名义双休，强度看部门。榜单口径：名义双休 / 强度看部门；工作日长，项目期加班。代表产品／业务：淘宝 / 闲鱼 / 高德 / 钉钉。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 75%（推算）（名义双休、强度看部门（淘天等核心业务 22 点后下班为常态，职能/国际站 JD 早九晚六））、平均下班 20:00（名义双休、强度看部门（淘天等核心业务 22 点后下班为常态，职能/国际站 JD 早九晚六））',
           tags: ['互联网软件', '阿里巴巴', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5384,10 +5404,10 @@
           logoAlt: '蚂蚁集团',
           workPolicy: '名义双休 / 强度看部门',
           overtime: '工作日长，项目期加班',
-          doubleRestRate: null,
+          doubleRestRate: '70',
           offWorkTime: null,
           voteCount: '0',
-          desc: '阿里 / 蚂蚁：名义双休，强度看部门。榜单口径：名义双休 / 强度看部门；工作日长，项目期加班。代表产品／业务：支付宝 / 余额宝。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '阿里 / 蚂蚁：名义双休，强度看部门。榜单口径：名义双休 / 强度看部门；工作日长，项目期加班。代表产品／业务：支付宝 / 余额宝。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 70%（推算）（名义双休、强度看部门）',
           tags: ['互联网软件', '蚂蚁集团', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5406,10 +5426,10 @@
           logoAlt: '百度',
           workPolicy: '名义双休 / 强度看部门',
           overtime: '项目期加班',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '90',
+          offWorkTime: '19:00',
           voteCount: '0',
-          desc: '百度（文心/百度地图/网盘）：名义双休，强度看部门。榜单口径：名义双休 / 强度看部门；项目期加班。代表产品／业务：文心一言 / 百度地图 / 百度网盘。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '百度（文心/百度地图/网盘）：名义双休，强度看部门。榜单口径：名义双休 / 强度看部门；项目期加班。代表产品／业务：文心一言 / 百度地图 / 百度网盘。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（正编 JD 9:00-18:00 固定周末双休 + 员工自述 18-19 点下班）、平均下班 19:00（正编 JD 9:00-18:00 固定周末双休 + 员工自述 18-19 点下班）',
           tags: ['互联网软件', '百度', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5428,10 +5448,10 @@
           logoAlt: '网易',
           workPolicy: '名义双休 / 强度看部门',
           overtime: '项目期加班',
-          doubleRestRate: null,
+          doubleRestRate: '70',
           offWorkTime: null,
           voteCount: '0',
-          desc: '网易（云音乐/有道/严选）：名义双休，强度看部门。榜单口径：名义双休 / 强度看部门；项目期加班。代表产品／业务：网易云音乐 / 网易严选 / 有道。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '网易（云音乐/有道/严选）：名义双休，强度看部门。榜单口径：名义双休 / 强度看部门；项目期加班。代表产品／业务：网易云音乐 / 网易严选 / 有道。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 70%（推算）（名义双休、强度看部门）',
           tags: ['互联网软件', '网易', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5450,10 +5470,10 @@
           logoAlt: '京东',
           workPolicy: '名义双休 / 强度看部门',
           overtime: '大促期加班',
-          doubleRestRate: null,
+          doubleRestRate: '70',
           offWorkTime: null,
           voteCount: '0',
-          desc: '京东：名义双休，强度看部门。榜单口径：名义双休 / 强度看部门；大促期加班。代表产品／业务：京东商城 / 京东物流。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '京东：名义双休，强度看部门。榜单口径：名义双休 / 强度看部门；大促期加班。代表产品／业务：京东商城 / 京东物流。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 70%（推算）（名义双休、强度看部门）',
           tags: ['互联网服务', '京东', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5472,10 +5492,10 @@
           logoAlt: '得物',
           workPolicy: '双休（2022 年废大小周）',
           overtime: '大促期加班',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '得物（2022 废大小周）：双休，反内卷口碑较好。榜单口径：双休（2022 年废大小周）；大促期加班。代表产品／业务：得物 App。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '得物（2022 废大小周）：双休，反内卷口碑较好。榜单口径：双休（2022 年废大小周）；大促期加班。代表产品／业务：得物 App。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（2022 年已废大小周，双休）',
           tags: ['互联网软件', '得物', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5494,10 +5514,10 @@
           logoAlt: '哔哩哔哩',
           workPolicy: '双休',
           overtime: '项目期加班',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: 'B站：双休，反内卷口碑较好。榜单口径：双休；项目期加班。代表产品／业务：B 站 / 番剧。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: 'B站：双休，反内卷口碑较好。榜单口径：双休；项目期加班。代表产品／业务：B 站 / 番剧。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休）',
           tags: ['互联网软件', '哔哩哔哩', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5516,10 +5536,10 @@
           logoAlt: '莉莉丝游戏',
           workPolicy: '多数双休',
           overtime: '项目期加班',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '米哈游 / 莉莉丝 / 网易游戏 / 腾讯游戏 / 心动网络：多数双休，项目期加班。榜单口径：多数双休；项目期加班。代表产品／业务：剑与远征 / 万国觉醒。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '米哈游 / 莉莉丝 / 网易游戏 / 腾讯游戏 / 心动网络：多数双休，项目期加班。榜单口径：多数双休；项目期加班。代表产品／业务：剑与远征 / 万国觉醒。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（多数双休）',
           tags: ['互联网软件', '莉莉丝游戏', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5538,10 +5558,10 @@
           logoAlt: '心动网络',
           workPolicy: '多数双休',
           overtime: '项目期加班',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '心动网络（TapTap）：多数双休，项目期加班。榜单口径：多数双休；项目期加班。代表产品／业务：TapTap / 心动游戏。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '心动网络（TapTap）：多数双休，项目期加班。榜单口径：多数双休；项目期加班。代表产品／业务：TapTap / 心动游戏。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（多数双休）',
           tags: ['互联网软件', '心动网络', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5560,10 +5580,10 @@
           logoAlt: '谷歌',
           workPolicy: '955 / 严格双休',
           overtime: '加班少，招聘规模小',
-          doubleRestRate: null,
+          doubleRestRate: '95',
           offWorkTime: null,
           voteCount: '0',
-          desc: '外企标杆：微软、谷歌、英伟达、苹果、SAP、Intel、IBM、亚马逊/AWS —— 普遍 955、双休、加班少（招得少）。榜单口径：955 / 严格双休；加班少，招聘规模小。代表产品／业务：Google 搜索 / Android。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '外企标杆：微软、谷歌、英伟达、苹果、SAP、Intel、IBM、亚马逊/AWS —— 普遍 955、双休、加班少（招得少）。榜单口径：955 / 严格双休；加班少，招聘规模小。代表产品／业务：Google 搜索 / Android。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 95%（推算）（955、严格双休）',
           tags: ['互联网软件', '谷歌', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5582,10 +5602,10 @@
           logoAlt: '英伟达',
           workPolicy: '955 / 严格双休',
           overtime: '加班少，招聘规模小',
-          doubleRestRate: null,
+          doubleRestRate: '95',
           offWorkTime: null,
           voteCount: '0',
-          desc: '外企标杆：普遍 955、双休、加班少。榜单口径：955 / 严格双休；加班少，招聘规模小。代表产品／业务：GPU / 显卡。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '外企标杆：普遍 955、双休、加班少。榜单口径：955 / 严格双休；加班少，招聘规模小。代表产品／业务：GPU / 显卡。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 95%（推算）（955、严格双休）',
           tags: ['数码3C', '英伟达', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5604,10 +5624,10 @@
           logoAlt: '英特尔',
           workPolicy: '955 / 严格双休',
           overtime: '加班少，招聘规模小',
-          doubleRestRate: null,
+          doubleRestRate: '95',
           offWorkTime: null,
           voteCount: '0',
-          desc: '外企标杆：普遍 955、双休、加班少。榜单口径：955 / 严格双休；加班少，招聘规模小。代表产品／业务：CPU / 芯片。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '外企标杆：普遍 955、双休、加班少。榜单口径：955 / 严格双休；加班少，招聘规模小。代表产品／业务：CPU / 芯片。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 95%（推算）（955、严格双休）',
           tags: ['数码3C', '英特尔', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5626,10 +5646,10 @@
           logoAlt: 'IBM',
           workPolicy: '955 / 严格双休',
           overtime: '加班少，招聘规模小',
-          doubleRestRate: null,
+          doubleRestRate: '95',
           offWorkTime: null,
           voteCount: '0',
-          desc: '外企标杆：普遍 955、双休、加班少。榜单口径：955 / 严格双休；加班少，招聘规模小。代表产品／业务：企业级 IT 服务。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '外企标杆：普遍 955、双休、加班少。榜单口径：955 / 严格双休；加班少，招聘规模小。代表产品／业务：企业级 IT 服务。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 95%（推算）（955、严格双休）',
           tags: ['互联网服务', 'IBM', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5648,10 +5668,10 @@
           logoAlt: '亚马逊云科技',
           workPolicy: '955 / 严格双休',
           overtime: '加班少，招聘规模小',
-          doubleRestRate: null,
+          doubleRestRate: '95',
           offWorkTime: null,
           voteCount: '0',
-          desc: '外企标杆：亚马逊/AWS —— 普遍 955、双休、加班少。榜单口径：955 / 严格双休；加班少，招聘规模小。代表产品／业务：AWS 云服务。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '外企标杆：亚马逊/AWS —— 普遍 955、双休、加班少。榜单口径：955 / 严格双休；加班少，招聘规模小。代表产品／业务：AWS 云服务。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 95%（推算）（955、严格双休）',
           tags: ['互联网服务', '亚马逊云科技', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5670,10 +5690,10 @@
           logoAlt: '金山办公',
           workPolicy: '双休为主',
           overtime: '版本期加班',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '金山办公 WPS、联想：双休为主。榜单口径：双休为主；版本期加班。代表产品／业务：WPS Office。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '金山办公 WPS、联想：双休为主。榜单口径：双休为主；版本期加班。代表产品／业务：WPS Office。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休为主）',
           tags: ['互联网软件', '金山办公', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5692,10 +5712,10 @@
           logoAlt: '联想',
           workPolicy: '双休为主',
           overtime: '大促期加班',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '金山办公 WPS、联想（ThinkPad/拯救者/moto）：双休为主。榜单口径：双休为主；大促期加班。代表产品／业务：ThinkPad / 拯救者 / moto。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '金山办公 WPS、联想（ThinkPad/拯救者/moto）：双休为主。榜单口径：双休为主；大促期加班。代表产品／业务：ThinkPad / 拯救者 / moto。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休为主）',
           tags: ['数码3C', '联想', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5714,10 +5734,10 @@
           logoAlt: '荣耀',
           workPolicy: '双休',
           overtime: '核心研发项目期偏忙',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '荣耀（Magic 手机）：双休，核心研发项目期偏忙。榜单口径：双休；核心研发项目期偏忙。代表产品／业务：Magic 系列手机。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '荣耀（Magic 手机）：双休，核心研发项目期偏忙。榜单口径：双休；核心研发项目期偏忙。代表产品／业务：Magic 系列手机。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休）',
           tags: ['数码3C', '荣耀', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5736,10 +5756,10 @@
           logoAlt: '传音控股',
           workPolicy: '双休',
           overtime: '项目期偏忙',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '传音（Tecno/Infinix）：双休，核心研发项目期偏忙。榜单口径：双休；项目期偏忙。代表产品／业务：Tecno / Infinix。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '传音（Tecno/Infinix）：双休，核心研发项目期偏忙。榜单口径：双休；项目期偏忙。代表产品／业务：Tecno / Infinix。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休）',
           tags: ['数码3C', '传音控股', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5758,10 +5778,10 @@
           logoAlt: '影石 Insta360',
           workPolicy: '双休',
           overtime: '新品项目期偏忙',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '影石 Insta360（全景/运动相机）：双休，核心研发项目期偏忙。榜单口径：双休；新品项目期偏忙。代表产品／业务：全景相机 / 运动相机。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '影石 Insta360（全景/运动相机）：双休，核心研发项目期偏忙。榜单口径：双休；新品项目期偏忙。代表产品／业务：全景相机 / 运动相机。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休）',
           tags: ['数码3C', '影石 Insta360', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5780,10 +5800,10 @@
           logoAlt: '安克创新',
           workPolicy: '双休',
           overtime: '旺季项目期偏忙',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '安克 Anker（充电器/eufy/soundcore）：双休，核心研发项目期偏忙。榜单口径：双休；旺季项目期偏忙。代表产品／业务：Anker / eufy / soundcore。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '安克 Anker（充电器/eufy/soundcore）：双休，核心研发项目期偏忙。榜单口径：双休；旺季项目期偏忙。代表产品／业务：Anker / eufy / soundcore。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休）',
           tags: ['数码3C', '安克创新', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5802,10 +5822,10 @@
           logoAlt: '绿联',
           workPolicy: '双休',
           overtime: '项目期偏忙',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '绿联 UGREEN（充电/NAS）：双休，核心研发项目期偏忙。榜单口径：双休；项目期偏忙。代表产品／业务：充电器 / NAS / 扩展坞。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '绿联 UGREEN（充电/NAS）：双休，核心研发项目期偏忙。榜单口径：双休；项目期偏忙。代表产品／业务：充电器 / NAS / 扩展坞。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休）',
           tags: ['数码3C', '绿联', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5824,10 +5844,10 @@
           logoAlt: '科沃斯',
           workPolicy: '双休',
           overtime: '新品项目期偏忙',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '科沃斯（扫地机）：双休，核心研发项目期偏忙。榜单口径：双休；新品项目期偏忙。代表产品／业务：扫地机器人 / 擦窗机器人。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '科沃斯（扫地机）：双休，核心研发项目期偏忙。榜单口径：双休；新品项目期偏忙。代表产品／业务：扫地机器人 / 擦窗机器人。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休）',
           tags: ['家电数码', '科沃斯', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5846,10 +5866,10 @@
           logoAlt: '极米科技',
           workPolicy: '双休',
           overtime: '新品项目期偏忙',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '极米（投影仪）：双休，核心研发项目期偏忙。榜单口径：双休；新品项目期偏忙。代表产品／业务：智能投影仪。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '极米（投影仪）：双休，核心研发项目期偏忙。榜单口径：双休；新品项目期偏忙。代表产品／业务：智能投影仪。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休）',
           tags: ['家电数码', '极米科技', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5868,10 +5888,10 @@
           logoAlt: '北方华创',
           workPolicy: '双休为主',
           overtime: '产线交付期偏忙',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '北方华创（半导体设备）：双休为主。榜单口径：双休为主；产线交付期偏忙。代表产品／业务：半导体设备。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '北方华创（半导体设备）：双休为主。榜单口径：双休为主；产线交付期偏忙。代表产品／业务：半导体设备。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休为主）',
           tags: ['半导体制造', '北方华创', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5890,10 +5910,10 @@
           logoAlt: '韦尔股份',
           workPolicy: '双休为主',
           overtime: '交付期偏忙',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '韦尔/豪威（图像传感器）：双休为主。榜单口径：双休为主；交付期偏忙。代表产品／业务：图像传感器（豪威）。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '韦尔/豪威（图像传感器）：双休为主。榜单口径：双休为主；交付期偏忙。代表产品／业务：图像传感器（豪威）。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休为主）',
           tags: ['半导体制造', '韦尔股份', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5912,10 +5932,10 @@
           logoAlt: '天马微电子',
           workPolicy: '职能岗双休',
           overtime: '产线倒班另计',
-          doubleRestRate: null,
+          doubleRestRate: '75',
           offWorkTime: null,
           voteCount: '0',
-          desc: '天马微电子（职能岗）：双休为主。榜单口径：职能岗双休；产线倒班另计。代表产品／业务：中小尺寸面板。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '天马微电子（职能岗）：双休为主。榜单口径：职能岗双休；产线倒班另计。代表产品／业务：中小尺寸面板。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 75%（推算）（职能岗双休，产线倒班岗另计）',
           tags: ['半导体制造', '天马微电子', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5934,10 +5954,10 @@
           logoAlt: '元气森林',
           workPolicy: '职能岗双休',
           overtime: '旺季销售岗周六出勤',
-          doubleRestRate: null,
+          doubleRestRate: '75',
           offWorkTime: null,
           voteCount: '0',
-          desc: '元气森林（气泡水/外星人电解质水/燃茶）：职能岗双休，销售岗周六常出勤。榜单口径：职能岗双休；旺季销售岗周六出勤。代表产品／业务：气泡水 / 外星人电解质水。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '元气森林（气泡水/外星人电解质水/燃茶）：职能岗双休，销售岗周六常出勤。榜单口径：职能岗双休；旺季销售岗周六出勤。代表产品／业务：气泡水 / 外星人电解质水。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 75%（推算）（职能岗双休，一线销售另计）',
           tags: ['食品饮品', '元气森林', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5956,10 +5976,10 @@
           logoAlt: '伊利',
           workPolicy: '职能岗双休',
           overtime: '销售岗周六常出勤',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '75',
+          offWorkTime: '17:30',
           voteCount: '0',
-          desc: '伊利（金典/安慕希/巧乐兹）：职能岗双休，销售岗周六常出勤。榜单口径：职能岗双休；销售岗周六常出勤。代表产品／业务：金典 / 安慕希 / 巧乐兹。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '伊利（金典/安慕希/巧乐兹）：职能岗双休，销售岗周六常出勤。榜单口径：职能岗双休；销售岗周六常出勤。代表产品／业务：金典 / 安慕希 / 巧乐兹。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 75%（推算）（职能岗双休（8:30-17:30、双休 JD 口径）、销售岗周六常出勤）、平均下班 17:30（职能岗双休（8:30-17:30、双休 JD 口径）、销售岗周六常出勤）',
           tags: ['食品饮品', '伊利', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -5978,10 +5998,10 @@
           logoAlt: '统一',
           workPolicy: '职能岗双休 / 销售岗周六常出勤',
           overtime: '销售岗周六出勤，旺季推广加班',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '75',
+          offWorkTime: '17:30',
           voteCount: '0',
-          desc: '统一（老坛酸菜面/阿萨姆奶茶/小茗同学）：职能岗双休，销售岗周六常出勤。榜单口径：职能岗双休 / 销售岗周六常出勤；销售岗周六出勤，旺季推广加班。代表产品／业务：老坛酸菜面 / 阿萨姆奶茶 / 小茗同学。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '统一（老坛酸菜面/阿萨姆奶茶/小茗同学）：职能岗双休，销售岗周六常出勤。榜单口径：职能岗双休 / 销售岗周六常出勤；销售岗周六出勤，旺季推广加班。代表产品／业务：老坛酸菜面 / 阿萨姆奶茶 / 小茗同学。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 75%（推算）（职能岗双休（8:30-17:30、周末双休 JD 口径）、销售岗周六常出勤）、平均下班 17:30（职能岗双休（8:30-17:30、周末双休 JD 口径）、销售岗周六常出勤）',
           tags: ['食品饮品', '统一', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6000,10 +6020,10 @@
           logoAlt: '可口可乐',
           workPolicy: '职能岗双休',
           overtime: '销售岗周六常出勤',
-          doubleRestRate: null,
+          doubleRestRate: '75',
           offWorkTime: null,
           voteCount: '0',
-          desc: '可口可乐（可乐/雪碧/美汁源/COSTA）：职能岗双休，销售岗周六常出勤。榜单口径：职能岗双休；销售岗周六常出勤。代表产品／业务：可口可乐 / 雪碧 / 美汁源 / COSTA。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '可口可乐（可乐/雪碧/美汁源/COSTA）：职能岗双休，销售岗周六常出勤。榜单口径：职能岗双休；销售岗周六常出勤。代表产品／业务：可口可乐 / 雪碧 / 美汁源 / COSTA。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 75%（推算）（职能岗双休，一线销售另计）',
           tags: ['食品饮品', '可口可乐', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6022,10 +6042,10 @@
           logoAlt: '洽洽食品',
           workPolicy: '办公岗双休',
           overtime: '旺季生产排班另计',
-          doubleRestRate: null,
+          doubleRestRate: '85',
           offWorkTime: null,
           voteCount: '0',
-          desc: '洽洽（瓜子/小黄袋每日坚果）：办公岗双休。榜单口径：办公岗双休；旺季生产排班另计。代表产品／业务：洽洽瓜子 / 小黄袋每日坚果。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '洽洽（瓜子/小黄袋每日坚果）：办公岗双休。榜单口径：办公岗双休；旺季生产排班另计。代表产品／业务：洽洽瓜子 / 小黄袋每日坚果。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 85%（推算）（办公岗双休、基本准点）',
           tags: ['零食饮料', '洽洽食品', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6044,10 +6064,10 @@
           logoAlt: '良品铺子',
           workPolicy: '纸面双休 / 实际加班多',
           overtime: '被曝纸面双休、加班较多',
-          doubleRestRate: null,
+          doubleRestRate: '40',
           offWorkTime: null,
           voteCount: '0',
-          desc: '良品铺子：办公岗双休（良品被曝纸面双休、加班多）。榜单口径：纸面双休 / 实际加班多；被曝纸面双休、加班较多。代表产品／业务：良品铺子零食。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '良品铺子：办公岗双休（良品被曝纸面双休、加班多）。榜单口径：纸面双休 / 实际加班多；被曝纸面双休、加班较多。代表产品／业务：良品铺子零食。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 40%（推算）（纸面双休、实际加班多）',
           tags: ['零食饮料', '良品铺子', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6066,10 +6086,10 @@
           logoAlt: '光明乳业',
           workPolicy: '办公岗双休',
           overtime: '冷链与销售岗排班另计',
-          doubleRestRate: null,
+          doubleRestRate: '85',
           offWorkTime: null,
           voteCount: '0',
-          desc: '光明乳业（莫斯利安/优倍）：办公岗双休。榜单口径：办公岗双休；冷链与销售岗排班另计。代表产品／业务：莫斯利安 / 优倍。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '光明乳业（莫斯利安/优倍）：办公岗双休。榜单口径：办公岗双休；冷链与销售岗排班另计。代表产品／业务：莫斯利安 / 优倍。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 85%（推算）（办公岗双休）',
           tags: ['食品饮品', '光明乳业', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6088,10 +6108,10 @@
           logoAlt: '麦当劳',
           workPolicy: '全职周休二天 / 门店轮班',
           overtime: '门店轮班，有加班费',
-          doubleRestRate: null,
+          doubleRestRate: '85',
           offWorkTime: null,
           voteCount: '0',
-          desc: '麦当劳（全职周休二/有加班费）：总部/全职双休，门店轮班。榜单口径：全职周休二天 / 门店轮班；门店轮班，有加班费。代表产品／业务：麦当劳中国门店。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '麦当劳（全职周休二/有加班费）：总部/全职双休，门店轮班。榜单口径：全职周休二天 / 门店轮班；门店轮班，有加班费。代表产品／业务：麦当劳中国门店。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 85%（推算）（全职周休二天、门店轮班）',
           tags: ['餐饮连锁', '麦当劳', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6110,10 +6130,10 @@
           logoAlt: '珀莱雅',
           workPolicy: '设每月最长工时 / 拒绝规模内卷',
           overtime: '大促期加班',
-          doubleRestRate: null,
+          doubleRestRate: '80',
           offWorkTime: null,
           voteCount: '0',
-          desc: '珀莱雅（珀莱雅/彩棠）：官方称设每月最长工时、『拒绝规模内卷』。榜单口径：设每月最长工时 / 拒绝规模内卷；大促期加班。代表产品／业务：珀莱雅 / 彩棠。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '珀莱雅（珀莱雅/彩棠）：官方称设每月最长工时、『拒绝规模内卷』。榜单口径：设每月最长工时 / 拒绝规模内卷；大促期加班。代表产品／业务：珀莱雅 / 彩棠。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 80%（推算）（设每月最长工时、拒绝规模内卷）',
           tags: ['美妆日化', '珀莱雅', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6132,10 +6152,10 @@
           logoAlt: '蓝月亮',
           workPolicy: '职能岗双休',
           overtime: '大促与旺季加班',
-          doubleRestRate: null,
+          doubleRestRate: '75',
           offWorkTime: null,
           voteCount: '0',
-          desc: '蓝月亮（洗衣液）：职能岗双休。榜单口径：职能岗双休；大促与旺季加班。代表产品／业务：洗衣液 / 洗手液。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '蓝月亮（洗衣液）：职能岗双休。榜单口径：职能岗双休；大促与旺季加班。代表产品／业务：洗衣液 / 洗手液。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 75%（推算）（职能岗双休，一线销售另计）',
           tags: ['美妆日化', '蓝月亮', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6154,10 +6174,10 @@
           logoAlt: '上海家化',
           workPolicy: '职能岗双休',
           overtime: '大促期加班',
-          doubleRestRate: null,
+          doubleRestRate: '75',
           offWorkTime: null,
           voteCount: '0',
-          desc: '上海家化（六神/佰草集/玉泽）：职能岗双休。榜单口径：职能岗双休；大促期加班。代表产品／业务：六神 / 佰草集 / 玉泽。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '上海家化（六神/佰草集/玉泽）：职能岗双休。榜单口径：职能岗双休；大促期加班。代表产品／业务：六神 / 佰草集 / 玉泽。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 75%（推算）（职能岗双休，一线销售另计）',
           tags: ['美妆日化', '上海家化', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6176,10 +6196,10 @@
           logoAlt: '毛戈平',
           workPolicy: '总部双休',
           overtime: '门店与直播岗另计',
-          doubleRestRate: null,
+          doubleRestRate: '75',
           offWorkTime: null,
           voteCount: '0',
-          desc: '毛戈平（总部）：职能岗双休。榜单口径：总部双休；门店与直播岗另计。代表产品／业务：毛戈平彩妆。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '毛戈平（总部）：职能岗双休。榜单口径：总部双休；门店与直播岗另计。代表产品／业务：毛戈平彩妆。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 75%（推算）（总部双休，门店另计）',
           tags: ['美妆日化', '毛戈平', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6198,10 +6218,10 @@
           logoAlt: '李宁',
           workPolicy: '双休为主',
           overtime: '门店与电商岗另计',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '李宁（李宁/中国李宁）：双休为主，门店/电商另计。榜单口径：双休为主；门店与电商岗另计。代表产品／业务：李宁 / 中国李宁。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '李宁（李宁/中国李宁）：双休为主，门店/电商另计。榜单口径：双休为主；门店与电商岗另计。代表产品／业务：李宁 / 中国李宁。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休为主）',
           tags: ['运动服饰', '李宁', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6220,10 +6240,10 @@
           logoAlt: '361 度',
           workPolicy: '双休为主',
           overtime: '门店与电商岗另计',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '361度：双休为主，门店/电商另计。榜单口径：双休为主；门店与电商岗另计。代表产品／业务：361° 运动鞋服。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '361度：双休为主，门店/电商另计。榜单口径：双休为主；门店与电商岗另计。代表产品／业务：361° 运动鞋服。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休为主）',
           tags: ['运动服饰', '361 度', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6242,10 +6262,10 @@
           logoAlt: '森马',
           workPolicy: '双休为主',
           overtime: '门店与电商大促另计',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '森马/巴拉巴拉：双休为主，门店/电商另计。榜单口径：双休为主；门店与电商大促另计。代表产品／业务：森马 / 巴拉巴拉。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '森马/巴拉巴拉：双休为主，门店/电商另计。榜单口径：双休为主；门店与电商大促另计。代表产品／业务：森马 / 巴拉巴拉。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休为主）',
           tags: ['服装饰品', '森马', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6264,10 +6284,10 @@
           logoAlt: '波司登',
           workPolicy: '招聘写双休 / 员工称加班多',
           overtime: '羽绒旺季加班多',
-          doubleRestRate: null,
+          doubleRestRate: '45',
           offWorkTime: null,
           voteCount: '0',
-          desc: '波司登（招聘写双休，员工称加班多）：双休为主，门店/电商另计。榜单口径：招聘写双休 / 员工称加班多；羽绒旺季加班多。代表产品／业务：波司登羽绒服。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '波司登（招聘写双休，员工称加班多）：双休为主，门店/电商另计。榜单口径：招聘写双休 / 员工称加班多；羽绒旺季加班多。代表产品／业务：波司登羽绒服。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 45%（推算）（招聘写双休、员工称加班多）',
           tags: ['服装饰品', '波司登', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6286,10 +6306,10 @@
           logoAlt: '苏泊尔',
           workPolicy: '办公岗双休 / 基本准点',
           overtime: '旺季生产排班另计',
-          doubleRestRate: null,
+          doubleRestRate: '85',
           offWorkTime: null,
           voteCount: '0',
-          desc: '苏泊尔（炊具/电饭煲）：办公岗双休、基本准点。榜单口径：办公岗双休 / 基本准点；旺季生产排班另计。代表产品／业务：炊具 / 电饭煲。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '苏泊尔（炊具/电饭煲）：办公岗双休、基本准点。榜单口径：办公岗双休 / 基本准点；旺季生产排班另计。代表产品／业务：炊具 / 电饭煲。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 85%（推算）（办公岗双休、基本准点）',
           tags: ['家电数码', '苏泊尔', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6308,10 +6328,10 @@
           logoAlt: '公牛集团',
           workPolicy: '办公岗双休 / 基本准点',
           overtime: '产线旺季排班另计',
-          doubleRestRate: null,
+          doubleRestRate: '85',
           offWorkTime: null,
           voteCount: '0',
-          desc: '公牛（开关插座）：办公岗双休、基本准点。榜单口径：办公岗双休 / 基本准点；产线旺季排班另计。代表产品／业务：开关插座。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '公牛（开关插座）：办公岗双休、基本准点。榜单口径：办公岗双休 / 基本准点；产线旺季排班另计。代表产品／业务：开关插座。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 85%（推算）（办公岗双休、基本准点）',
           tags: ['家电数码', '公牛集团', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6330,10 +6350,10 @@
           logoAlt: '好孩子',
           workPolicy: '办公岗双休 / 基本准点',
           overtime: '旺季排班另计',
-          doubleRestRate: null,
+          doubleRestRate: '85',
           offWorkTime: null,
           voteCount: '0',
-          desc: '好孩子/Babycare（母婴）：办公岗双休、基本准点。榜单口径：办公岗双休 / 基本准点；旺季排班另计。代表产品／业务：好孩子 / Babycare 母婴。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '好孩子/Babycare（母婴）：办公岗双休、基本准点。榜单口径：办公岗双休 / 基本准点；旺季排班另计。代表产品／业务：好孩子 / Babycare 母婴。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 85%（推算）（办公岗双休、基本准点）',
           tags: ['母婴用品', '好孩子', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6352,10 +6372,10 @@
           logoAlt: '慕思股份',
           workPolicy: '总部双休',
           overtime: '门店与营销岗另计',
-          doubleRestRate: null,
+          doubleRestRate: '75',
           offWorkTime: null,
           voteCount: '0',
-          desc: '慕思（床垫）：总部双休。榜单口径：总部双休；门店与营销岗另计。代表产品／业务：慕思床垫。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '慕思（床垫）：总部双休。榜单口径：总部双休；门店与营销岗另计。代表产品／业务：慕思床垫。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 75%（推算）（总部双休，门店另计）',
           tags: ['家居建材', '慕思股份', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6374,10 +6394,10 @@
           logoAlt: '欧派家居',
           workPolicy: '总部双休',
           overtime: '营销岗另计',
-          doubleRestRate: null,
+          doubleRestRate: '75',
           offWorkTime: null,
           voteCount: '0',
-          desc: '欧派/索菲亚（定制家居，营销岗另计）：总部双休。榜单口径：总部双休；营销岗另计。代表产品／业务：欧派定制家居。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '欧派/索菲亚（定制家居，营销岗另计）：总部双休。榜单口径：总部双休；营销岗另计。代表产品／业务：欧派定制家居。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 75%（推算）（总部双休，门店另计）',
           tags: ['家居建材', '欧派家居', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6396,10 +6416,10 @@
           logoAlt: '索菲亚',
           workPolicy: '总部双休',
           overtime: '营销岗另计',
-          doubleRestRate: null,
+          doubleRestRate: '75',
           offWorkTime: null,
           voteCount: '0',
-          desc: '欧派/索菲亚（定制家居，营销岗另计）：总部双休。榜单口径：总部双休；营销岗另计。代表产品／业务：索菲亚定制家居。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '欧派/索菲亚（定制家居，营销岗另计）：总部双休。榜单口径：总部双休；营销岗另计。代表产品／业务：索菲亚定制家居。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 75%（推算）（总部双休，门店另计）',
           tags: ['家居建材', '索菲亚', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6418,10 +6438,10 @@
           logoAlt: '中国平安',
           workPolicy: '内勤双休',
           overtime: '外勤与销售岗另计',
-          doubleRestRate: null,
+          doubleRestRate: '75',
           offWorkTime: null,
           voteCount: '0',
-          desc: '中国平安、中国人寿（内勤）：双休为主。榜单口径：内勤双休；外勤与销售岗另计。代表产品／业务：平安保险 / 银行 / 陆金所。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '中国平安、中国人寿（内勤）：双休为主。榜单口径：内勤双休；外勤与销售岗另计。代表产品／业务：平安保险 / 银行 / 陆金所。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 75%（推算）（内勤双休，销售代理另计）',
           tags: ['金融保险', '中国平安', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6440,10 +6460,10 @@
           logoAlt: '中国人寿',
           workPolicy: '内勤双休',
           overtime: '外勤与销售岗另计',
-          doubleRestRate: null,
+          doubleRestRate: '75',
           offWorkTime: null,
           voteCount: '0',
-          desc: '中国平安、中国人寿（内勤）：双休为主。榜单口径：内勤双休；外勤与销售岗另计。代表产品／业务：中国人寿保险。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '中国平安、中国人寿（内勤）：双休为主。榜单口径：内勤双休；外勤与销售岗另计。代表产品／业务：中国人寿保险。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 75%（推算）（内勤双休，销售代理另计）',
           tags: ['金融保险', '中国人寿', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6462,10 +6482,10 @@
           logoAlt: '东方财富',
           workPolicy: '部分岗位双休',
           overtime: '行情与活动期加班',
-          doubleRestRate: null,
+          doubleRestRate: '75',
           offWorkTime: null,
           voteCount: '0',
-          desc: '东方财富、华泰证券、中国银联、财付通、招银（部分岗）：双休为主。榜单口径：部分岗位双休；行情与活动期加班。代表产品／业务：东方财富 / 天天基金。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '东方财富、华泰证券、中国银联、财付通、招银（部分岗）：双休为主。榜单口径：部分岗位双休；行情与活动期加班。代表产品／业务：东方财富 / 天天基金。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 75%（推算）（部分岗位双休）',
           tags: ['金融保险', '东方财富', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6484,10 +6504,10 @@
           logoAlt: '华泰证券',
           workPolicy: '部分岗位双休',
           overtime: '投行与研究所另计',
-          doubleRestRate: null,
+          doubleRestRate: '75',
           offWorkTime: null,
           voteCount: '0',
-          desc: '东方财富、华泰证券、中国银联、财付通、招银（部分岗）：双休为主。榜单口径：部分岗位双休；投行与研究所另计。代表产品／业务：华泰证券 / 涨乐财富通。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '东方财富、华泰证券、中国银联、财付通、招银（部分岗）：双休为主。榜单口径：部分岗位双休；投行与研究所另计。代表产品／业务：华泰证券 / 涨乐财富通。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 75%（推算）（部分岗位双休）',
           tags: ['金融保险', '华泰证券', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6506,10 +6526,10 @@
           logoAlt: '中国银联',
           workPolicy: '双休为主',
           overtime: '清算值班另计',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '中国银联（部分岗）：双休为主。榜单口径：双休为主；清算值班另计。代表产品／业务：银联卡 / 云闪付。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '中国银联（部分岗）：双休为主。榜单口径：双休为主；清算值班另计。代表产品／业务：银联卡 / 云闪付。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休为主）',
           tags: ['金融保险', '中国银联', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6528,10 +6548,10 @@
           logoAlt: '财付通',
           workPolicy: '双休为主',
           overtime: '项目期加班',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '财付通（部分岗）：双休为主。榜单口径：双休为主；项目期加班。代表产品／业务：微信支付。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '财付通（部分岗）：双休为主。榜单口径：双休为主；项目期加班。代表产品／业务：微信支付。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休为主）',
           tags: ['金融保险', '财付通', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6550,10 +6570,10 @@
           logoAlt: '恒瑞医药',
           workPolicy: '销售岗双休',
           overtime: '指标冲刺期加班',
-          doubleRestRate: null,
+          doubleRestRate: '75',
           offWorkTime: null,
           voteCount: '0',
-          desc: '恒瑞医药（销售岗）：双休为主。榜单口径：销售岗双休；指标冲刺期加班。代表产品／业务：恒瑞医药。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '恒瑞医药（销售岗）：双休为主。榜单口径：销售岗双休；指标冲刺期加班。代表产品／业务：恒瑞医药。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 75%（推算）（销售岗双休，生产/职能另计）',
           tags: ['医药健康', '恒瑞医药', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6572,10 +6592,10 @@
           logoAlt: '云南白药',
           workPolicy: '双休为主',
           overtime: '旺季生产排班另计',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主。榜单口径：双休为主；旺季生产排班另计。代表产品／业务：云南白药牙膏 / 气雾剂。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主。榜单口径：双休为主；旺季生产排班另计。代表产品／业务：云南白药牙膏 / 气雾剂。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休为主）',
           tags: ['医药健康', '云南白药', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6594,10 +6614,10 @@
           logoAlt: '同仁堂',
           workPolicy: '双休为主',
           overtime: '门店排班另计',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主。榜单口径：双休为主；门店排班另计。代表产品／业务：同仁堂中成药。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主。榜单口径：双休为主；门店排班另计。代表产品／业务：同仁堂中成药。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休为主）',
           tags: ['医药健康', '同仁堂', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6616,10 +6636,10 @@
           logoAlt: '片仔癀',
           workPolicy: '双休为主',
           overtime: '门店排班另计',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主。榜单口径：双休为主；门店排班另计。代表产品／业务：片仔癀。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主。榜单口径：双休为主；门店排班另计。代表产品／业务：片仔癀。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休为主）',
           tags: ['医药健康', '片仔癀', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6638,10 +6658,10 @@
           logoAlt: '白云山',
           workPolicy: '双休为主',
           overtime: '旺季生产排班另计',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主。榜单口径：双休为主；旺季生产排班另计。代表产品／业务：白云山 / 王老吉。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '云南白药/同仁堂/片仔癀/白云山（中药国企）：双休为主。榜单口径：双休为主；旺季生产排班另计。代表产品／业务：白云山 / 王老吉。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休为主）',
           tags: ['医药健康', '白云山', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6660,10 +6680,10 @@
           logoAlt: '国药控股',
           workPolicy: '双休为主',
           overtime: '配送与仓储排班另计',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '国药控股/九州通（医药流通）：双休为主。榜单口径：双休为主；配送与仓储排班另计。代表产品／业务：医药流通。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '国药控股/九州通（医药流通）：双休为主。榜单口径：双休为主；配送与仓储排班另计。代表产品／业务：医药流通。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休为主）',
           tags: ['医药健康', '国药控股', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6682,10 +6702,10 @@
           logoAlt: '九州通',
           workPolicy: '双休为主',
           overtime: '配送与仓储排班另计',
-          doubleRestRate: null,
+          doubleRestRate: '90',
           offWorkTime: null,
           voteCount: '0',
-          desc: '国药控股/九州通（医药流通）：双休为主。榜单口径：双休为主；配送与仓储排班另计。代表产品／业务：医药流通。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '国药控股/九州通（医药流通）：双休为主。榜单口径：双休为主；配送与仓储排班另计。代表产品／业务：医药流通。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 90%（推算）（双休为主）',
           tags: ['医药健康', '九州通', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6704,10 +6724,10 @@
           logoAlt: '海康威视',
           workPolicy: '大小周（长期 995.5）',
           overtime: '小周无加班费，多次传取消未落地',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '0',
+          offWorkTime: '21:30',
           voteCount: '0',
-          desc: '海康威视 / 大华：大小周，长期 995.5、小周无加班费，多次传取消未落地。榜单口径：大小周（长期 995.5）；小周无加班费，多次传取消未落地。代表产品／业务：安防摄像头 / 视频监控。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '海康威视 / 大华：大小周，长期 995.5、小周无加班费，多次传取消未落地。榜单口径：大小周（长期 995.5）；小周无加班费，多次传取消未落地。代表产品／业务：安防摄像头 / 视频监控。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（大小周、长期 995.5（9:00-21:30））、平均下班 21:30（大小周、长期 995.5（9:00-21:30））',
           tags: ['安防监控', '海康威视', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6726,10 +6746,10 @@
           logoAlt: '大华股份',
           workPolicy: '大小周（长期 995.5）',
           overtime: '小周无加班费',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '0',
+          offWorkTime: '21:30',
           voteCount: '0',
-          desc: '海康威视 / 大华：大小周，长期 995.5、小周无加班费。榜单口径：大小周（长期 995.5）；小周无加班费。代表产品／业务：安防摄像头 / 视频监控。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '海康威视 / 大华：大小周，长期 995.5、小周无加班费。榜单口径：大小周（长期 995.5）；小周无加班费。代表产品／业务：安防摄像头 / 视频监控。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（大小周、长期 995.5（9:00-21:30））、平均下班 21:30（大小周、长期 995.5（9:00-21:30））',
           tags: ['安防监控', '大华股份', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6748,10 +6768,10 @@
           logoAlt: '理想汽车',
           workPolicy: '职能岗名义双休（9:00-18:00 刷脸打卡）/ 智驾条线无周末',
           overtime: '节点与上市期周末补班 / 周末加班无加班费',
-          doubleRestRate: null,
+          doubleRestRate: '30',
           offWorkTime: null,
           voteCount: '0',
-          desc: '职能岗名义双休：员工自述 9:00-18:00、刷脸打卡、无弹性，节点与上市期周末补班（牛客 2024-03 / 脉脉 2024-12）；自动驾驶条线按 CEO 公开表态「大部分周六周日都在工作」、加班到 24 点属常态（36氪 2022-10-25）；2021 年多家媒体记录周末加班无加班费。按本站月休天数口径判 B 级（月休 6-8 天、双休不稳），智驾条线例外。真实双休率、平均离岗时点无可加权公开数据，留空未核实',
+          desc: '职能岗名义双休：员工自述 9:00-18:00、刷脸打卡、无弹性，节点与上市期周末补班（牛客 2024-03 / 脉脉 2024-12）；自动驾驶条线按 CEO 公开表态「大部分周六周日都在工作」、加班到 24 点属常态（36氪 2022-10-25）；2021 年多家媒体记录周末加班无加班费。按本站月休天数口径判 B 级（月休 6-8 天、双休不稳），智驾条线例外。真实双休率、平均离岗时点无可加权公开数据，留空未核实；2026-11-12 补：双休率 30%（推算）（名义双休但月加班 70-100 小时）',
           tags: ['新能源车', '理想汽车', '智驾条线例外'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6769,10 +6789,10 @@
           logoAlt: '吉利汽车',
           workPolicy: '集团加班打卡换双休 / 子公司上六休一',
           overtime: '日均加班约 2h / 子公司强制加班至 22:30',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '25',
+          offWorkTime: '22:30',
           voteCount: '0',
-          desc: '集团层面执行加班打卡要求：日均约 2 小时加班，工作日累计工时后才安排周末双休，未完成需周末补班（界面新闻 2026-01-15）；制造子公司公开招聘与员工反映「上六休一」、强制加班至 22:30、在岗 14 小时，上饶经开区劳动监察 2026-02-05 回复已受理在办（问政江西）；员工自述月加班 90h（牛客 2025-04）。2026-10-31 另登记：银河星舰7 车机芯片口径争议，官方说明承认 2025 款全系 E02，车机延保 5 年 + 1 万元置换券（不计入工时评级）。真实双休率、平均离岗时点无可加权公开数据，留空未核实',
+          desc: '集团层面执行加班打卡要求：日均约 2 小时加班，工作日累计工时后才安排周末双休，未完成需周末补班（界面新闻 2026-01-15）；制造子公司公开招聘与员工反映「上六休一」、强制加班至 22:30、在岗 14 小时，上饶经开区劳动监察 2026-02-05 回复已受理在办（问政江西）；员工自述月加班 90h（牛客 2025-04）。2026-10-31 另登记：银河星舰7 车机芯片口径争议，官方说明承认 2025 款全系 E02，车机延保 5 年 + 1 万元置换券（不计入工时评级）。真实双休率、平均离岗时点无可加权公开数据，留空未核实；2026-11-12 补：双休率 25%（集团层面以加班打卡（日均约 2 小时）换周末双休（界面新闻 2026-01-15），制造子公司「上六休一」且强制加班至 22:30（问政江西劳动监察在办回复）；按「集团工时换休 + 子公司单休」的岗位结构折中 25%，22:30 取子公司强制加班时点）、平均下班 22:30（集团层面以加班打卡（日均约 2 小时）换周末双休（界面新闻 2026-01-15），制造子公司「上六休一」且强制加班至 22:30（问政江西劳动监察在办回复）；按「集团工时换休 + 子公司单休」的岗位结构折中 25%，22:30 取子公司强制加班时点）',
           tags: ['新能源车', '吉利汽车', '银河星舰7', '单休'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6791,10 +6811,10 @@
           logoAlt: '蔚来',
           workPolicy: '名义双休但加班重',
           overtime: '新势力月均加班 70-100h',
-          doubleRestRate: null,
+          doubleRestRate: '30',
           offWorkTime: null,
           voteCount: '0',
-          desc: '理想 / 蔚来 / 比亚迪：名义双休但加班重，新势力月均加班 70-100h。榜单口径：名义双休但加班重；新势力月均加班 70-100h。代表产品／业务：蔚来 ES/ET 系列。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '理想 / 蔚来 / 比亚迪：名义双休但加班重，新势力月均加班 70-100h。榜单口径：名义双休但加班重；新势力月均加班 70-100h。代表产品／业务：蔚来 ES/ET 系列。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 30%（推算）（名义双休但月加班 70-100 小时）',
           tags: ['新能源车', '蔚来', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6813,10 +6833,10 @@
           logoAlt: '安踏',
           workPolicy: '名义双休',
           overtime: '周末带电脑加班',
-          doubleRestRate: null,
+          doubleRestRate: '50',
           offWorkTime: null,
           voteCount: '0',
-          desc: '安踏 / 特步：名义双休/单休，安踏周末带电脑加班。榜单口径：名义双休；周末带电脑加班。代表产品／业务：安踏 / FILA 中国。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '安踏 / 特步：名义双休/单休，安踏周末带电脑加班。榜单口径：名义双休；周末带电脑加班。代表产品／业务：安踏 / FILA 中国。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 50%（推算）（名义双休、周末带电脑加班为常态）',
           tags: ['运动服饰', '安踏', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6835,10 +6855,10 @@
           logoAlt: '药明康德',
           workPolicy: '大小周',
           overtime: '每周六天、常加班到 21:30，无加班费仅餐补',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '0',
+          offWorkTime: '21:30',
           voteCount: '0',
-          desc: '药明康德：大小周，每周六天、常加班到 21:30，无加班费仅餐补。榜单口径：大小周；每周六天、常加班到 21:30，无加班费仅餐补。代表产品／业务：CRO / CDMO 服务。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '药明康德：大小周，每周六天、常加班到 21:30，无加班费仅餐补。榜单口径：大小周；每周六天、常加班到 21:30，无加班费仅餐补。代表产品／业务：CRO / CDMO 服务。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（周六上班、常加班到 21:30）、平均下班 21:30（周六上班、常加班到 21:30）',
           tags: ['医药健康', '药明康德', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6857,10 +6877,10 @@
           logoAlt: '逸仙电商',
           workPolicy: '大小周',
           overtime: '广州总部大小周、节假日变单休',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '逸仙电商（完美日记）：大小周，广州总部大小周、节假日变单休。榜单口径：大小周；广州总部大小周、节假日变单休。代表产品／业务：完美日记。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '逸仙电商（完美日记）：大小周，广州总部大小周、节假日变单休。榜单口径：大小周；广州总部大小周、节假日变单休。代表产品／业务：完美日记。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（大小周）',
           tags: ['美妆日化', '逸仙电商', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6879,10 +6899,10 @@
           logoAlt: '老板电器',
           workPolicy: '名义双休实为大小周',
           overtime: '周六常加班',
-          doubleRestRate: null,
+          doubleRestRate: '5',
           offWorkTime: null,
           voteCount: '0',
-          desc: '老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：名义双休实为大小周，周六常加班。榜单口径：名义双休实为大小周；周六常加班。代表产品／业务：老板油烟机 / 灶具。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：名义双休实为大小周，周六常加班。榜单口径：名义双休实为大小周；周六常加班。代表产品／业务：老板油烟机 / 灶具。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 5%（推算）（名义双休实为大小周）',
           tags: ['家电数码', '老板电器', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6901,10 +6921,10 @@
           logoAlt: '九阳',
           workPolicy: '名义双休实为大小周',
           overtime: '周六常加班',
-          doubleRestRate: null,
+          doubleRestRate: '5',
           offWorkTime: null,
           voteCount: '0',
-          desc: '老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：大小周，周六常加班。榜单口径：名义双休实为大小周；周六常加班。代表产品／业务：豆浆机 / 破壁机。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：大小周，周六常加班。榜单口径：名义双休实为大小周；周六常加班。代表产品／业务：豆浆机 / 破壁机。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 5%（推算）（名义双休实为大小周）',
           tags: ['家电数码', '九阳', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6923,10 +6943,10 @@
           logoAlt: '海信',
           workPolicy: '名义双休实为大小周',
           overtime: '周六常加班',
-          doubleRestRate: null,
+          doubleRestRate: '5',
           offWorkTime: null,
           voteCount: '0',
-          desc: '老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：大小周，周六常加班。榜单口径：名义双休实为大小周；周六常加班。代表产品／业务：海信电视 / 空调。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：大小周，周六常加班。榜单口径：名义双休实为大小周；周六常加班。代表产品／业务：海信电视 / 空调。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 5%（推算）（名义双休实为大小周）',
           tags: ['家电数码', '海信', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6945,10 +6965,10 @@
           logoAlt: '君乐宝',
           workPolicy: '名义双休实为大小周',
           overtime: '周六常加班',
-          doubleRestRate: null,
+          doubleRestRate: '5',
           offWorkTime: null,
           voteCount: '0',
-          desc: '老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：大小周，周六常加班。榜单口径：名义双休实为大小周；周六常加班。代表产品／业务：君乐宝奶粉 / 酸奶。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：大小周，周六常加班。榜单口径：名义双休实为大小周；周六常加班。代表产品／业务：君乐宝奶粉 / 酸奶。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 5%（推算）（名义双休实为大小周）',
           tags: ['食品饮品', '君乐宝', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6967,10 +6987,10 @@
           logoAlt: '海天味业',
           workPolicy: '名义双休实为大小周',
           overtime: '周六常加班',
-          doubleRestRate: null,
+          doubleRestRate: '5',
           offWorkTime: null,
           voteCount: '0',
-          desc: '老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：大小周，周六常加班。榜单口径：名义双休实为大小周；周六常加班。代表产品／业务：海天酱油 / 蚝油。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：大小周，周六常加班。榜单口径：名义双休实为大小周；周六常加班。代表产品／业务：海天酱油 / 蚝油。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 5%（推算）（名义双休实为大小周）',
           tags: ['食品饮品', '海天味业', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -6989,10 +7009,10 @@
           logoAlt: '青岛啤酒',
           workPolicy: '名义双休实为大小周',
           overtime: '周六常加班',
-          doubleRestRate: null,
+          doubleRestRate: '5',
           offWorkTime: null,
           voteCount: '0',
-          desc: '老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：大小周，周六常加班。榜单口径：名义双休实为大小周；周六常加班。代表产品／业务：青岛啤酒。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：大小周，周六常加班。榜单口径：名义双休实为大小周；周六常加班。代表产品／业务：青岛啤酒。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 5%（推算）（名义双休实为大小周）',
           tags: ['食品饮品', '青岛啤酒', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7011,10 +7031,10 @@
           logoAlt: '华润雪花',
           workPolicy: '名义双休实为大小周',
           overtime: '周六常加班',
-          doubleRestRate: null,
+          doubleRestRate: '5',
           offWorkTime: null,
           voteCount: '0',
-          desc: '老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：大小周，周六常加班。榜单口径：名义双休实为大小周；周六常加班。代表产品／业务：雪花啤酒 / 勇闯天涯。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '老板电器 / 九阳 / 海信 / 君乐宝 / 海天 / 青岛啤酒 / 华润雪花：大小周，周六常加班。榜单口径：名义双休实为大小周；周六常加班。代表产品／业务：雪花啤酒 / 勇闯天涯。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 5%（推算）（名义双休实为大小周）',
           tags: ['食品饮品', '华润雪花', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7033,10 +7053,10 @@
           logoAlt: '追觅科技',
           workPolicy: '单休',
           overtime: '2025 被曝要求月工时 240h、批『8 点下班太早』',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '追觅：单休，2025 被曝要求月工时 240h、批『8 点下班太早』。榜单口径：单休；2025 被曝要求月工时 240h、批『8 点下班太早』。代表产品／业务：扫地机 / 吹风机。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '追觅：单休，2025 被曝要求月工时 240h、批『8 点下班太早』。榜单口径：单休；2025 被曝要求月工时 240h、批『8 点下班太早』。代表产品／业务：扫地机 / 吹风机。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（单休）',
           tags: ['家电数码', '追觅科技', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7055,10 +7075,10 @@
           logoAlt: '闻泰科技',
           workPolicy: '单休 / 倒班',
           overtime: '产线月工时 120-350h',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '闻泰 / 立讯 / 富士康 / 蓝思 / 歌尔：单休/倒班，产线月工时 120-350h。榜单口径：单休 / 倒班；产线月工时 120-350h。代表产品／业务：手机 ODM / 半导体。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '闻泰 / 立讯 / 富士康 / 蓝思 / 歌尔：单休/倒班，产线月工时 120-350h。榜单口径：单休 / 倒班；产线月工时 120-350h。代表产品／业务：手机 ODM / 半导体。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（单休 + 产线倒班）',
           tags: ['精密制造', '闻泰科技', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7077,10 +7097,10 @@
           logoAlt: '立讯精密',
           workPolicy: '单休 / 倒班',
           overtime: '产线月工时 120-350h',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '闻泰 / 立讯 / 富士康 / 蓝思 / 歌尔：单休/倒班，产线月工时 120-350h。榜单口径：单休 / 倒班；产线月工时 120-350h。代表产品／业务：连接器 / 代工组装。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '闻泰 / 立讯 / 富士康 / 蓝思 / 歌尔：单休/倒班，产线月工时 120-350h。榜单口径：单休 / 倒班；产线月工时 120-350h。代表产品／业务：连接器 / 代工组装。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（单休 + 产线倒班）',
           tags: ['精密制造', '立讯精密', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7099,10 +7119,10 @@
           logoAlt: '富士康',
           workPolicy: '单休 / 倒班',
           overtime: '产线月工时 120-350h',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '闻泰 / 立讯 / 富士康 / 蓝思 / 歌尔：单休/倒班，产线月工时 120-350h。榜单口径：单休 / 倒班；产线月工时 120-350h。代表产品／业务：iPhone 等代工组装。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '闻泰 / 立讯 / 富士康 / 蓝思 / 歌尔：单休/倒班，产线月工时 120-350h。榜单口径：单休 / 倒班；产线月工时 120-350h。代表产品／业务：iPhone 等代工组装。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（单休 + 产线倒班）',
           tags: ['精密制造', '富士康', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7121,10 +7141,10 @@
           logoAlt: '蓝思科技',
           workPolicy: '单休 / 倒班',
           overtime: '产线月工时 120-350h',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '闻泰 / 立讯 / 富士康 / 蓝思 / 歌尔：单休/倒班，产线月工时 120-350h。榜单口径：单休 / 倒班；产线月工时 120-350h。代表产品／业务：手机玻璃盖板。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '闻泰 / 立讯 / 富士康 / 蓝思 / 歌尔：单休/倒班，产线月工时 120-350h。榜单口径：单休 / 倒班；产线月工时 120-350h。代表产品／业务：手机玻璃盖板。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（单休 + 产线倒班）',
           tags: ['精密制造', '蓝思科技', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7143,10 +7163,10 @@
           logoAlt: '歌尔股份',
           workPolicy: '单休 / 倒班',
           overtime: '产线月工时 120-350h',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '闻泰 / 立讯 / 富士康 / 蓝思 / 歌尔：单休/倒班，产线月工时 120-350h。榜单口径：单休 / 倒班；产线月工时 120-350h。代表产品／业务：声学器件 / VR 代工。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '闻泰 / 立讯 / 富士康 / 蓝思 / 歌尔：单休/倒班，产线月工时 120-350h。榜单口径：单休 / 倒班；产线月工时 120-350h。代表产品／业务：声学器件 / VR 代工。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（单休 + 产线倒班）',
           tags: ['精密制造', '歌尔股份', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7165,10 +7185,10 @@
           logoAlt: '中芯国际',
           workPolicy: '四休二 12 小时倒班',
           overtime: '核心产线倒班',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '0',
+          offWorkTime: '20:00',
           voteCount: '0',
-          desc: '中芯国际 / 长江存储 / 京东方 / 华星：倒班，核心产线四休二 12h 倒班。榜单口径：四休二 12 小时倒班；核心产线倒班。代表产品／业务：晶圆代工。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '中芯国际 / 长江存储 / 京东方 / 华星：倒班，核心产线四休二 12h 倒班。榜单口径：四休二 12 小时倒班；核心产线倒班。代表产品／业务：晶圆代工。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（四休二、12 小时倒班（8:00-20:00 班次））、平均下班 20:00（四休二、12 小时倒班（8:00-20:00 班次））',
           tags: ['半导体制造', '中芯国际', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7187,10 +7207,10 @@
           logoAlt: '长江存储',
           workPolicy: '四休二 12 小时倒班',
           overtime: '核心产线倒班',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '0',
+          offWorkTime: '20:00',
           voteCount: '0',
-          desc: '中芯国际 / 长江存储 / 京东方 / 华星：倒班，核心产线四休二 12h 倒班。榜单口径：四休二 12 小时倒班；核心产线倒班。代表产品／业务：NAND 闪存。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '中芯国际 / 长江存储 / 京东方 / 华星：倒班，核心产线四休二 12h 倒班。榜单口径：四休二 12 小时倒班；核心产线倒班。代表产品／业务：NAND 闪存。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（四休二、12 小时倒班（8:00-20:00 班次））、平均下班 20:00（四休二、12 小时倒班（8:00-20:00 班次））',
           tags: ['半导体制造', '长江存储', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7209,10 +7229,10 @@
           logoAlt: '京东方',
           workPolicy: '四休二 12 小时倒班',
           overtime: '核心产线倒班',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '0',
+          offWorkTime: '20:00',
           voteCount: '0',
-          desc: '中芯国际 / 长江存储 / 京东方 / 华星：倒班，核心产线四休二 12h 倒班。榜单口径：四休二 12 小时倒班；核心产线倒班。代表产品／业务：液晶面板 / OLED。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '中芯国际 / 长江存储 / 京东方 / 华星：倒班，核心产线四休二 12h 倒班。榜单口径：四休二 12 小时倒班；核心产线倒班。代表产品／业务：液晶面板 / OLED。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（四休二、12 小时倒班（8:00-20:00 班次））、平均下班 20:00（四休二、12 小时倒班（8:00-20:00 班次））',
           tags: ['半导体制造', '京东方', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7231,10 +7251,10 @@
           logoAlt: 'TCL 华星',
           workPolicy: '四休二 12 小时倒班',
           overtime: '核心产线倒班',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '0',
+          offWorkTime: '20:00',
           voteCount: '0',
-          desc: '中芯国际 / 长江存储 / 京东方 / 华星：倒班，核心产线四休二 12h 倒班。榜单口径：四休二 12 小时倒班；核心产线倒班。代表产品／业务：液晶面板 / OLED。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '中芯国际 / 长江存储 / 京东方 / 华星：倒班，核心产线四休二 12h 倒班。榜单口径：四休二 12 小时倒班；核心产线倒班。代表产品／业务：液晶面板 / OLED。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（四休二、12 小时倒班（8:00-20:00 班次））、平均下班 20:00（四休二、12 小时倒班（8:00-20:00 班次））',
           tags: ['半导体制造', 'TCL 华星', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7253,10 +7273,10 @@
           logoAlt: '顾家家居',
           workPolicy: '单休',
           overtime: '门店/总部部分岗月休 4 天',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '顾家家居 / 海澜之家 / 太平鸟：单休，门店/总部部分岗月休 4 天。榜单口径：单休；门店/总部部分岗月休 4 天。代表产品／业务：顾家沙发 / 床垫。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '顾家家居 / 海澜之家 / 太平鸟：单休，门店/总部部分岗月休 4 天。榜单口径：单休；门店/总部部分岗月休 4 天。代表产品／业务：顾家沙发 / 床垫。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（单休）',
           tags: ['家居建材', '顾家家居', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7275,10 +7295,10 @@
           logoAlt: '海澜之家',
           workPolicy: '单休',
           overtime: '门店/总部部分岗月休 4 天',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '顾家家居 / 海澜之家 / 太平鸟：单休，门店/总部部分岗月休 4 天。榜单口径：单休；门店/总部部分岗月休 4 天。代表产品／业务：海澜之家男装。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '顾家家居 / 海澜之家 / 太平鸟：单休，门店/总部部分岗月休 4 天。榜单口径：单休；门店/总部部分岗月休 4 天。代表产品／业务：海澜之家男装。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（单休）',
           tags: ['服装饰品', '海澜之家', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7297,10 +7317,10 @@
           logoAlt: '太平鸟',
           workPolicy: '单休',
           overtime: '门店/总部部分岗月休 4 天',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '顾家家居 / 海澜之家 / 太平鸟：单休，门店/总部部分岗月休 4 天。榜单口径：单休；门店/总部部分岗月休 4 天。代表产品／业务：太平鸟服饰。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '顾家家居 / 海澜之家 / 太平鸟：单休，门店/总部部分岗月休 4 天。榜单口径：单休；门店/总部部分岗月休 4 天。代表产品／业务：太平鸟服饰。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（单休）',
           tags: ['服装饰品', '太平鸟', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7319,10 +7339,10 @@
           logoAlt: '西贝餐饮',
           workPolicy: '单休 / 排班',
           overtime: '月休 4 天、日工作 10-11h（总部『715』）',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '0',
+          offWorkTime: '21:00',
           voteCount: '0',
-          desc: '海底捞 / 西贝 / 太二 / 老乡鸡 / 呷哺：单休/排班，月休 4 天、日工作 10-11h（西贝总部『715』）。榜单口径：单休 / 排班；月休 4 天、日工作 10-11h（总部『715』）。代表产品／业务：西贝莜面村。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '海底捞 / 西贝 / 太二 / 老乡鸡 / 呷哺：单休/排班，月休 4 天、日工作 10-11h（西贝总部『715』）。榜单口径：单休 / 排班；月休 4 天、日工作 10-11h（总部『715』）。代表产品／业务：西贝莜面村。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（门店单休、日工作 10-11 小时排班）、平均下班 21:00（门店单休、日工作 10-11 小时排班）',
           tags: ['餐饮连锁', '西贝餐饮', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7341,10 +7361,10 @@
           logoAlt: '太二酸菜鱼',
           workPolicy: '单休 / 排班',
           overtime: '月休 4 天、日工作 10-11h',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '0',
+          offWorkTime: '21:00',
           voteCount: '0',
-          desc: '海底捞 / 西贝 / 太二 / 老乡鸡 / 呷哺：单休/排班，月休 4 天、日工作 10-11h。榜单口径：单休 / 排班；月休 4 天、日工作 10-11h。代表产品／业务：太二酸菜鱼。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '海底捞 / 西贝 / 太二 / 老乡鸡 / 呷哺：单休/排班，月休 4 天、日工作 10-11h。榜单口径：单休 / 排班；月休 4 天、日工作 10-11h。代表产品／业务：太二酸菜鱼。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（门店单休、日工作 10-11 小时排班）、平均下班 21:00（门店单休、日工作 10-11 小时排班）',
           tags: ['餐饮连锁', '太二酸菜鱼', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7363,10 +7383,10 @@
           logoAlt: '老乡鸡',
           workPolicy: '单休 / 排班',
           overtime: '月休 4 天、日工作 10-11h',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '0',
+          offWorkTime: '21:00',
           voteCount: '0',
-          desc: '海底捞 / 西贝 / 太二 / 老乡鸡 / 呷哺：单休/排班，月休 4 天、日工作 10-11h。榜单口径：单休 / 排班；月休 4 天、日工作 10-11h。代表产品／业务：老乡鸡快餐。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '海底捞 / 西贝 / 太二 / 老乡鸡 / 呷哺：单休/排班，月休 4 天、日工作 10-11h。榜单口径：单休 / 排班；月休 4 天、日工作 10-11h。代表产品／业务：老乡鸡快餐。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（门店单休、日工作 10-11 小时排班）、平均下班 21:00（门店单休、日工作 10-11 小时排班）',
           tags: ['餐饮连锁', '老乡鸡', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7385,10 +7405,10 @@
           logoAlt: '呷哺呷哺',
           workPolicy: '单休 / 排班',
           overtime: '月休 4 天、日工作 10-11h',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '0',
+          offWorkTime: '21:00',
           voteCount: '0',
-          desc: '海底捞 / 西贝 / 太二 / 老乡鸡 / 呷哺：单休/排班，月休 4 天、日工作 10-11h。榜单口径：单休 / 排班；月休 4 天、日工作 10-11h。代表产品／业务：呷哺呷哺火锅。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '海底捞 / 西贝 / 太二 / 老乡鸡 / 呷哺：单休/排班，月休 4 天、日工作 10-11h。榜单口径：单休 / 排班；月休 4 天、日工作 10-11h。代表产品／业务：呷哺呷哺火锅。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（门店单休、日工作 10-11 小时排班）、平均下班 21:00（门店单休、日工作 10-11 小时排班）',
           tags: ['餐饮连锁', '呷哺呷哺', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7407,10 +7427,10 @@
           logoAlt: '华莱士',
           workPolicy: '单休 / 三班倒',
           overtime: '多为月休 3-4 天',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '肯德基 / 华莱士 / 喜家德 / 巴奴：单休/排班，三班倒，多为月休 3-4 天。榜单口径：单休 / 三班倒；多为月休 3-4 天。代表产品／业务：华莱士炸鸡。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '肯德基 / 华莱士 / 喜家德 / 巴奴：单休/排班，三班倒，多为月休 3-4 天。榜单口径：单休 / 三班倒；多为月休 3-4 天。代表产品／业务：华莱士炸鸡。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（门店单休、三班倒）',
           tags: ['餐饮连锁', '华莱士', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7429,10 +7449,10 @@
           logoAlt: '喜家德',
           workPolicy: '单休 / 三班倒',
           overtime: '多为月休 3-4 天',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '肯德基 / 华莱士 / 喜家德 / 巴奴：单休/排班，三班倒，多为月休 3-4 天。榜单口径：单休 / 三班倒；多为月休 3-4 天。代表产品／业务：喜家德水饺。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '肯德基 / 华莱士 / 喜家德 / 巴奴：单休/排班，三班倒，多为月休 3-4 天。榜单口径：单休 / 三班倒；多为月休 3-4 天。代表产品／业务：喜家德水饺。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（门店单休、三班倒）',
           tags: ['餐饮连锁', '喜家德', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7451,10 +7471,10 @@
           logoAlt: '巴奴毛肚火锅',
           workPolicy: '单休 / 排班（已改时薪制）',
           overtime: '多为月休 3-4 天',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '肯德基 / 华莱士 / 喜家德 / 巴奴：单休/排班，三班倒，多为月休 3-4 天（巴奴改时薪制）。榜单口径：单休 / 排班（已改时薪制）；多为月休 3-4 天。代表产品／业务：巴奴毛肚火锅。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '肯德基 / 华莱士 / 喜家德 / 巴奴：单休/排班，三班倒，多为月休 3-4 天（巴奴改时薪制）。榜单口径：单休 / 排班（已改时薪制）；多为月休 3-4 天。代表产品／业务：巴奴毛肚火锅。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（门店单休、排班制（已改时薪制））',
           tags: ['餐饮连锁', '巴奴毛肚火锅', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7473,10 +7493,10 @@
           logoAlt: '物美',
           workPolicy: '单休 / 一线排班',
           overtime: '活动期加班，多为月休 4 天',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '名创优品（门店）/ 海底捞 / 盒马 / 物美：单休/排班，一线排班、活动期加班，多为月休 4 天。榜单口径：单休 / 一线排班；活动期加班，多为月休 4 天。代表产品／业务：物美超市 / 多点。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '名创优品（门店）/ 海底捞 / 盒马 / 物美：单休/排班，一线排班、活动期加班，多为月休 4 天。榜单口径：单休 / 一线排班；活动期加班，多为月休 4 天。代表产品／业务：物美超市 / 多点。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（一线单休排班）',
           tags: ['商超零售', '物美', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7495,10 +7515,10 @@
           logoAlt: '中金公司',
           workPolicy: '单休 / 超长待机',
           overtime: '投行 10 点到凌晨、周末工作约一天半',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '0',
+          offWorkTime: '00:00',
           voteCount: '0',
-          desc: '中金 / 中信证券 / 国泰海通：单休/超长待机，投行 10 点到凌晨、周末工作约一天半。榜单口径：单休 / 超长待机；投行 10 点到凌晨、周末工作约一天半。代表产品／业务：投行 / 研究。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '中金 / 中信证券 / 国泰海通：单休/超长待机，投行 10 点到凌晨、周末工作约一天半。榜单口径：单休 / 超长待机；投行 10 点到凌晨、周末工作约一天半。代表产品／业务：投行 / 研究。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（投行 10 点到凌晨的超长待机）、平均下班 00:00（投行 10 点到凌晨的超长待机）',
           tags: ['金融保险', '中金公司', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7517,10 +7537,10 @@
           logoAlt: '中信证券',
           workPolicy: '单休 / 超长待机',
           overtime: '投行 10 点到凌晨、周末工作约一天半',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '0',
+          offWorkTime: '00:00',
           voteCount: '0',
-          desc: '中金 / 中信证券 / 国泰海通：单休/超长待机，投行 10 点到凌晨、周末工作约一天半。榜单口径：单休 / 超长待机；投行 10 点到凌晨、周末工作约一天半。代表产品／业务：投行 / 研究。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '中金 / 中信证券 / 国泰海通：单休/超长待机，投行 10 点到凌晨、周末工作约一天半。榜单口径：单休 / 超长待机；投行 10 点到凌晨、周末工作约一天半。代表产品／业务：投行 / 研究。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（投行 10 点到凌晨的超长待机）、平均下班 00:00（投行 10 点到凌晨的超长待机）',
           tags: ['金融保险', '中信证券', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7539,10 +7559,10 @@
           logoAlt: '国泰海通',
           workPolicy: '单休 / 超长待机',
           overtime: '投行 10 点到凌晨、周末工作约一天半',
-          doubleRestRate: null,
-          offWorkTime: null,
+          doubleRestRate: '0',
+          offWorkTime: '00:00',
           voteCount: '0',
-          desc: '中金 / 中信证券 / 国泰海通：单休/超长待机，投行 10 点到凌晨、周末工作约一天半。榜单口径：单休 / 超长待机；投行 10 点到凌晨、周末工作约一天半。代表产品／业务：投行 / 研究。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '中金 / 中信证券 / 国泰海通：单休/超长待机，投行 10 点到凌晨、周末工作约一天半。榜单口径：单休 / 超长待机；投行 10 点到凌晨、周末工作约一天半。代表产品／业务：投行 / 研究。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（投行 10 点到凌晨的超长待机）、平均下班 00:00（投行 10 点到凌晨的超长待机）',
           tags: ['金融保险', '国泰海通', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7561,10 +7581,10 @@
           logoAlt: '招商银行',
           workPolicy: '加班文化重',
           overtime: '2026 董事长称『加班是护城河』『很少准点下班』',
-          doubleRestRate: null,
+          doubleRestRate: '40',
           offWorkTime: null,
           voteCount: '0',
-          desc: '招商银行：加班文化重，2026 董事长称『加班是护城河』『很少准点下班』。榜单口径：加班文化重；2026 董事长称『加班是护城河』『很少准点下班』。代表产品／业务：零售银行 / 信用卡。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '招商银行：加班文化重，2026 董事长称『加班是护城河』『很少准点下班』。榜单口径：加班文化重；2026 董事长称『加班是护城河』『很少准点下班』。代表产品／业务：零售银行 / 信用卡。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 40%（推算）（加班文化重、很少准点下班，按「名义双休但常态加班」折中）',
           tags: ['金融保险', '招商银行', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7583,10 +7603,10 @@
           logoAlt: '特步',
           workPolicy: '6 天工作制',
           overtime: '周六正常上班',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '安踏 / 特步：名义双休/单休，特步 6 天工作制。榜单口径：6 天工作制；周六正常上班。代表产品／业务：特步跑鞋 / 服饰。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '安踏 / 特步：名义双休/单休，特步 6 天工作制。榜单口径：6 天工作制；周六正常上班。代表产品／业务：特步跑鞋 / 服饰。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（六天工作制）',
           tags: ['运动服饰', '特步', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7605,10 +7625,10 @@
           logoAlt: '方太',
           workPolicy: '六天工作 / 月休 4 天为主',
           overtime: '周六上班',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '方太 / 加多宝 / 海澜之家 / 顾家：单休，六天工作/月休 4 天为主。榜单口径：六天工作 / 月休 4 天为主；周六上班。代表产品／业务：方太烟机 / 灶具。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '方太 / 加多宝 / 海澜之家 / 顾家：单休，六天工作/月休 4 天为主。榜单口径：六天工作 / 月休 4 天为主；周六上班。代表产品／业务：方太烟机 / 灶具。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（六天工作、月休 4 天为主）',
           tags: ['家电数码', '方太', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7627,10 +7647,10 @@
           logoAlt: '加多宝',
           workPolicy: '六天工作 / 月休 4 天为主',
           overtime: '周六上班',
-          doubleRestRate: null,
+          doubleRestRate: '0',
           offWorkTime: null,
           voteCount: '0',
-          desc: '方太 / 加多宝 / 海澜之家 / 顾家：单休，六天工作/月休 4 天为主。榜单口径：六天工作 / 月休 4 天为主；周六上班。代表产品／业务：加多宝凉茶。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '方太 / 加多宝 / 海澜之家 / 顾家：单休，六天工作/月休 4 天为主。榜单口径：六天工作 / 月休 4 天为主；周六上班。代表产品／业务：加多宝凉茶。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 0%（口径换算）（六天工作、月休 4 天为主）',
           tags: ['食品饮品', '加多宝', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -7649,10 +7669,10 @@
           logoAlt: '今麦郎',
           workPolicy: '一线 12 小时两班倒、月休 2-4 天 / 职能岗双休',
           overtime: '生产一线月休 4 天为主，天长厂月休 2-3 天；销售管培生单休',
-          doubleRestRate: null,
+          doubleRestRate: '25',
           offWorkTime: null,
           voteCount: '0',
-          desc: '生产一线（普工/操作工）：月休 4 天为主；今麦郎饮品天长分公司 12 小时两班倒、月休 2-3 天；面品管培生单休。榜单口径：一线 12 小时两班倒、月休 2-4 天 / 职能岗双休；生产一线月休 4 天为主，天长厂月休 2-3 天；销售管培生单休。代表产品／业务：1 桶半 / 老范家 / 拉面范。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）',
+          desc: '生产一线（普工/操作工）：月休 4 天为主；今麦郎饮品天长分公司 12 小时两班倒、月休 2-3 天；面品管培生单休。榜单口径：一线 12 小时两班倒、月休 2-4 天 / 职能岗双休；生产一线月休 4 天为主，天长厂月休 2-3 天；销售管培生单休。代表产品／业务：1 桶半 / 老范家 / 拉面范。（来源：双休公司推荐名单 2026，媒体聚合口径，本站未独立实测；真实双休率未核实）；2026-11-12 补：双休率 25%（推算）（一线 12 小时两班倒月休 2-4 天、职能岗双休，按岗位结构折中）',
           tags: ['食品饮品', '今麦郎', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
@@ -9108,7 +9128,7 @@
   <!-- 奶茶／新茶饮类 B/C 级平替统一推荐陆喜依（2026-11-08 站长指定） -->
   <script defer src="./luxiyi-alt-patch.js?v=2"></script>
   <script defer src="./search-clear-order-fix.js?v=3"></script>
-  <script defer src="./rating-stats-patch.js?v=5"></script>
+  <script defer src="./rating-stats-patch.js?v=6"></script>
   <script defer src="./ai-notice-patch.js?v=1"></script>
   <script defer src="./ad-text-width-fix.js?v=1"></script>
   <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
