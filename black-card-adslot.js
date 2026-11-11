@@ -288,7 +288,7 @@
          HTML 只保留一行正常流的 meta 说明（手机端可读，字号见下方媒体查询）。 */
       '.sxg-adslot__foot{display:flex;align-items:center;justify-content:center;gap:12px;' +
       'padding:7px 0 14px;border-top:1px solid #f1f5f9}' +
-      '.sxg-adslot__nav{width:26px;height:26px;border:none;border-radius:50%;' +
+      '.sxg-adslot__nav{width:26px;height:26px;border:none;border-radius:50%;box-shadow:0 1px 3px rgba(15,23,42,.18);' +
       'background:#e2e8f0;color:#334155;font-size:17px;line-height:1;cursor:pointer;' +
       'display:flex;align-items:center;justify-content:center;padding:0}' +
       '.sxg-adslot__nav:hover{background:#1d3f9e;color:#fff}' +
@@ -300,7 +300,7 @@
          （真渲染量出 z-index 9000 的两个按钮与卡片边界相交 47×46，
            被卡片 z-index 9995 切掉一半，看着就是「穿模的半个圆」）。
          只隐藏「与广告位几何相交」的那几个，离开视口立刻恢复，不动站内其它交互。 */
-      '@media (max-width:480px){.sxg-adslot__nav{display:none}' +
+      '@media (max-width:480px){' +
       '.sxg-adslot__cta{font-size:12px}.sxg-adslot__meta{gap:5px 8px}' +
       'html.sxg-adslot-near [data-sxg-adslot-avoid]{visibility:hidden!important;pointer-events:none!important}}' +
       /* ⑪ 点击胖东来广告后的「复制 + 去微信」提示：形态照良配 toast，独立实现、
