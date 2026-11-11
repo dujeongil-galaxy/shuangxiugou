@@ -22,6 +22,14 @@
      请提交客观佐证材料，我们将人工核验材料后重新运行评级流程。
      所有申诉线索严格脱敏保护，不会泄露提交者隐私。
 
+   2026-11-12 站长追加两条（按站内语气重写，不逐字照抄口述草稿，
+   括号批注绝不上页面）：
+     · 诉求不得含侮辱 / 人身攻击，否则不予审核；勿重复提交；劳动争议优先法律途径
+     · GitHub 访问提示 + 按设备分流的帮助块
+   帮助块只留一个 [data-sxg-gh-help] 空容器，内容由 github-access-help.js
+   单一真相源填充（PC → Watt Toolkit；手机 / 平板 → 站点原有入口），
+   本文件不维护第二份 URL、不写死设备判断。
+
    幂等：dataset.sxgAppealBound 标记；弹层节点按 id 判重复用。
    不动 bundle、不删原生链接节点（只接管 click）。
    ========================================================================== */
@@ -80,7 +88,9 @@
     body.textContent = [
       '本项目评级由AI依据GitHub仓库公示的判定规则自动计算得出。',
       '申诉仅受理证据过时、信息不实、个案误判、规则发生变更类复核申请；仅对评级结果不满意、无有效佐证材料的申诉不予受理。',
-      '请提交客观佐证材料，我们将人工核验材料后重新运行评级流程。所有申诉线索严格脱敏保护，不会泄露提交者隐私。'
+      '请提交客观佐证材料，我们将人工核验材料后重新运行评级流程。所有申诉线索严格脱敏保护，不会泄露提交者隐私。',
+      '诉求请就事论事：夹带侮辱、人身攻击的提交一律不予审核，同一事项也请勿重复投递。若你正遇上劳动争议，建议先走劳动监察、仲裁等法定渠道维护权益，本站评级复核不能替代法律程序。',
+      '另外，申诉、Star 与登录都要走 GitHub，大陆部分网络环境下可能无法直连；打不开时可按下方按设备给出的办法试一下。'
     ].join('\n');
 
     var btnRow = document.createElement('div');
@@ -106,10 +116,17 @@
       'font-size:13.5px', 'font-weight:600', 'font-family:inherit'
     ].join(';');
 
+    /* 2026-11-12：访问帮助容器。内容由 github-access-help.js 的
+       sweepSlots() 填充（脚本未加载时只是空块，不影响政策确认主流程）。 */
+    var helpSlot = document.createElement('div');
+    helpSlot.setAttribute('data-sxg-gh-help', '1');
+    helpSlot.style.cssText = 'margin-top:14px;padding-top:12px;border-top:1px solid #f1f5f9';
+
     btnRow.appendChild(no);
     btnRow.appendChild(yes);
     card.appendChild(title);
     card.appendChild(body);
+    card.appendChild(helpSlot);
     card.appendChild(btnRow);
     mask.appendChild(card);
     document.body.appendChild(mask);

@@ -9113,7 +9113,7 @@
        1) 顶部「打卡并生成小票」改为弹窗，引导去品牌档案卡打卡（原来默认给第一家品牌打卡，会误导）
        2) 自定义品牌卡（DOM 克隆）没有 React onClick，补上「打卡」「详情证据」功能 -->
   <script defer src="./custom-card-actions.js?v=24"></script>
-  <script defer src="./share-modal.js?v=4"></script>
+  <script defer src="./share-modal.js?v=5"></script>
   <script defer src="./u-grade-patch.js?v=17"></script>
   <script defer src="./luckin-note-patch.js?v=1"></script>
   <!-- 比亚迪卡片曝光登记（2026-11-09 站长线索 / 2026-11-10 视频下架补记）：
@@ -9202,7 +9202,12 @@
   <!-- 申诉政策确认弹窗（2026-10-25 站长要求）：申诉入口点击先弹政策，
        同意并跳转 / 拒绝并关闭。目标链接从页面既有 a[href] 现场读取，
        本文件不维护第二份 issueUrl。 -->
-  <script defer src="./appeal-policy.js?v=2"></script>
+  <script defer src="./appeal-policy.js?v=3"></script>
+  <!-- GitHub 访问帮助（2026-11-12 站长指令）：申诉弹窗底部 [data-sxg-gh-help]
+       容器 + Star on GitHub 二级菜单，共用同一份设备判定（PC → Watt Toolkit /
+       手机平板 → 站点原有入口）。排在 appeal-policy.js 之后，便于 DOMContentLoaded
+       时立刻填充；脚本自带重试 + MutationObserver，不依赖挂载顺序。 -->
+  <script defer src="./github-access-help.js?v=1"></script>
   <!-- 虚拟对比黑榜卡下线（2026-10-26 站长指令）：bundle 不能动，
        DOM 层移除该卡 + noscript 清单同步删行 + MutationObserver
        兜底 React 重渲染（搜索/筛选/切标签会把卡挂回来）。 -->

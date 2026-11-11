@@ -292,3 +292,10 @@ jobs:
       # 配套 verify §33。
       - name: 成功案例页目录树与小火箭测试
         run: node scripts/test-success-stories.cjs
+
+      # 2026-11-12「申诉弹窗补规则 + GitHub 访问帮助按设备分流 + 打赏页链接规整」：
+      # jsdom 真跑 isDesktop()（PC / Android / iPhone / iPad / iPadOS 伪装 Mac /
+      # 触屏笔记本）、helpHtml() 两端互斥、Star 二级菜单浮层、shareUrl() 剥
+      # sponsor.html 与 info() 全平台共用。配套 verify §36r。
+      - name: GitHub 访问帮助与分享链接规整测试
+        run: node scripts/test-github-access-help.cjs

@@ -105,8 +105,16 @@
     (document.head || document.documentElement).appendChild(s);
   }
 
+  /* 2026-11-12 站长要求：打赏页所有按钮生成 / 复制出去的链接都不许带
+     sponsor.html。分享弹窗（微博 / X / Telegram / LINE / WhatsApp / 复制链接）
+     全部读 info().url，所以只在这一处规整，全平台一起生效。
+     只剥路径末尾的 sponsor.html（连同其后的 query / hash），其它页面 URL 原样保留。 */
+  function shareUrl(href) {
+    return String(href || '').replace(/sponsor\.html(?:[?#].*)?$/, '');
+  }
+
   function info() {
-    var url = location.href;
+    var url = shareUrl(location.href);
     var title = document.title || '双休购 ShuangxiuGo';
     var og = document.querySelector('meta[property="og:title"]');
     if (og && og.getAttribute('content')) title = og.getAttribute('content');
@@ -275,7 +283,7 @@
     document.body.style.overflow = '';
   }
 
-  window.SXGShare = { open: open, close: close };
+  window.SXGShare = { open: open, close: close, info: info, shareUrl: shareUrl };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () { injectStyle(); });

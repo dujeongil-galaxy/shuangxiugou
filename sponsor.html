@@ -482,7 +482,7 @@
     </div>
 
     <!-- 分享弹窗：由 share-modal.js 注入（国内圆形图标 + 海外清单 + 复制链接） -->
-    <script src="./share-modal.js?v=4" defer></script>
+    <script src="./share-modal.js?v=5" defer></script>
 
     <script>
     (function() {
@@ -492,9 +492,11 @@
         if (window.SXGShare) {
           window.SXGShare.open();
         } else {
-          // 兜底：share-modal.js 未加载时退化为复制当前链接
+          // 兜底：share-modal.js 未加载时退化为复制当前链接。
+          // 2026-11-12 站长要求：本页所有按钮生成的链接都不带 sponsor.html，
+          // 兜底路径也要剥一次，不能只改 share-modal.js 的好路径。
           var ta = document.createElement('textarea');
-          ta.value = location.href;
+          ta.value = location.href.replace(/sponsor\.html(?:[?#].*)?$/, '');
           document.body.appendChild(ta);
           ta.select();
           try { document.execCommand('copy'); } catch (e) {}

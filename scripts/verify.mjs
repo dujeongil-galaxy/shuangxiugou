@@ -8272,6 +8272,82 @@ section('25. 成功案例专题页（QQ奶奶）');
     '挂载顺序错了 → dock 执行时按钮还没建好，收编为空；?v 没 bump → 浏览器缓存旧 CSS');
 }
 
+// ---------- 36r. 申诉弹窗补规则 + GitHub 访问帮助设备分流 + sponsor 链接规整（2026-11-12 站长） ----------
+{
+  const ap36r = read('appeal-policy.js');
+  const gh36r = exists('github-access-help.js') ? read('github-access-help.js') : '';
+  const sm36r = read('share-modal.js');
+  const sp36r = read('sponsor.html');
+  const idx36r = read('index.html');
+  const hp36r = read('header-menu-patch.js');
+
+  // ① 追加规则：只取 body.textContent 的真实数组，注释救不了绿；只钉要素不钉原句。
+  //    PITFALLS 第四十四章：站长口述是素材，逐字钉死会让「改文案」与「过校验」互斥；
+  //    括号里的批注（别抄原话 / 站长推荐的vpn / 直接url链接）任何位置都不许上页面。
+  const body36r = (ap36r.match(/body\.textContent\s*=\s*\[([\s\S]*?)\]\.join\('\\n'\)/) || ['', ''])[1];
+  const ruleOk = /侮辱/.test(body36r) && /人身攻击/.test(body36r) && /不予审核/.test(body36r)
+    && /重复/.test(body36r) && /劳动争议|劳动法/.test(body36r)
+    && /法定渠道|法律途径|仲裁/.test(body36r)
+    && !/别抄原话|站长推荐的vpn|直接url链接/.test(ap36r + gh36r);
+  check(ruleOk && /setAttribute\('data-sxg-gh-help'/.test(ap36r),
+    '§36r 申诉弹窗补一条站内语气规则（侮辱/人身攻击不予审核 · 勿重复投递 · 劳动争议优先法定渠道）+ 访问帮助容器；草稿批注未上页面',
+    '规则要素缺失，或把站长括号批注当正文贴到公开弹窗 → 2026-11-11 §36n 同款事故');
+
+  // ② 设备判定：UA 为主 + iPadOS 伪装 Mac 的触控修正，PC / 手机平板分得开。
+  const devOk = /function\s+isDesktop\(\)/.test(gh36r)
+    && /Android\|iPhone\|iPod\|iPad/.test(gh36r)
+    && /maxTouchPoints/.test(gh36r)
+    && /Macintosh/.test(gh36r)
+    && /function\s+isNarrow\(\)/.test(gh36r);
+  check(devOk,
+    '§36r 设备判定代码就位（UA + maxTouchPoints + iPadOS 伪装 Mac 修正），区分 PC 与手机 / 平板',
+    '没判定代码 → PC 与手机看到同一套方案，Steam++ 桌面方案会推给手机用户');
+
+  // ③ PC 分支：只挂合规开源工具官网，不推荐 VPN；提示「网络加速中勾选 GitHub」。
+  const pcOk = /STEAMPP_URL\s*=\s*'https:\/\/steampp\.net\/'/.test(gh36r)
+    && /网络加速/.test(gh36r) && /勾选/.test(gh36r)
+    && /isDesktop\(\)/.test(gh36r)
+    && !/点此购买|站长推荐/.test(gh36r);
+  check(pcOk,
+    '§36r PC 分支挂 Watt Toolkit（原 Steam++）官网并提示「网络加速中勾选 GitHub」，不新增 VPN 推广话术',
+    'PC 分支写回 VPN 推广或漏掉「勾选 GitHub」→ 与站长本次口径不符');
+
+  // ④ 移动分支：沿用站点 Login GitHub 弹窗已有的那个入口，不新造链接。
+  const mob36r = (gh36r.match(/MOBILE_ENTRY\s*=\s*'([^']+)'/) || ['', ''])[1];
+  const hpEntry = (hp36r.match(/https:\/\/47\.112\.97\.173:8000\/register\?aff=[A-Za-z0-9]+/) || [''])[0];
+  check(mob36r !== '' && hpEntry !== '' && mob36r === hpEntry
+    && /手机\s*\/\s*平板/.test(gh36r),
+    '§36r 手机 / 平板分支沿用 Login GitHub 弹窗的站点原有入口（同一 URL，不新造推广链接）',
+    '移动端另起一条新推广链接 → 等于借本次改动扩大 VPN 推广面');
+
+  // ⑤ Star on GitHub 二级菜单：找到 Star 按钮 + 手机端挂进既有下拉 + fixed 浮层。
+  const menuOk = /TRIGGER_ID/.test(gh36r) && /findStar\(\)/.test(gh36r)
+    && /Star on GitHub/.test(gh36r) && /sxg-header-menu/.test(gh36r)
+    && /position:fixed/.test(gh36r) && /FLY_ID/.test(gh36r);
+  check(menuOk,
+    '§36r Star on GitHub 二级菜单：桌面贴 Star 挂触发入口、手机并入「菜单▼」，浮层不继承菜单 white-space:nowrap',
+    '二级菜单没挂上或把浮层塞进 #sxg-header-menu → 长 URL 撑爆手机下拉');
+
+  // ⑥ 打赏页所有按钮生成的链接剥掉 sponsor.html：分享单一真相源 + 兜底复制都要改。
+  const normOk = sm36r.indexOf('function shareUrl(') !== -1
+    && sm36r.indexOf('var url = shareUrl(location.href)') !== -1
+    && sm36r.indexOf('sponsor\\.html(?:[?#].*)?$') !== -1
+    && sp36r.indexOf('ta.value = location.href.replace(/sponsor\\.html(?:[?#].*)?$/, \'\')') !== -1
+    && !/ta\.value = location\.href;/.test(sp36r);
+  check(normOk,
+    '§36r sponsor.html 的分享 / 复制链接统一在 share-modal.js 的 info() 剥掉 sponsor.html，兜底复制同步处理',
+    '只改好路径漏了兜底复制 → 脚本未加载时复制出去的仍是带 sponsor.html 的链接');
+
+  // ⑦ 挂载与 ?v 钉子（§21h 纪律），以及 jsdom 行为测试存在。
+  check(/<script defer src="\.\/github-access-help\.js\?v=1"><\/script>/.test(idx36r)
+    && /appeal-policy\.js\?v=3/.test(idx36r)
+    && /share-modal\.js\?v=5/.test(idx36r)
+    && /share-modal\.js\?v=5/.test(sp36r)
+    && exists('scripts/test-github-access-help.cjs'),
+    '§36r index.html 挂载 github-access-help.js?v=1，两个改动脚本 ?v 同步 bump，配套 jsdom 行为测试存在',
+    '?v 没 bump → 浏览器/CDN 命中旧脚本，新文案与链接规整都不生效');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {
