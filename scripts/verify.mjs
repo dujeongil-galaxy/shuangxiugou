@@ -1355,7 +1355,9 @@ if (cfgBlock) {
     const off = chunk.match(/offWorkTime:\s*([^,\n]+)/)?.[1]?.trim() ?? '(缺失)';
     const insertAfter = chunk.match(/insertAfter:\s*'([^']+)'/)?.[1] ?? '(缺失)';
     const logo = chunk.match(/logo:\s*'([^']+)'/)?.[1] ?? '';
-    customCards.push({ id, name, rate, off, insertAfter, logo });
+    // 2026-11-12：自定义卡也允许 0%，但必须自带「口径换算」字样（算术换算而非实测）
+    const derived = chunk.includes('口径换算');
+    customCards.push({ id, name, rate, off, insertAfter, logo, derived });
   }
 }
 const CUSTOM_COUNT = customCards.length;
@@ -1364,9 +1366,9 @@ check(CUSTOM_COUNT === 17 + IMPORTED_CARD_COUNT,
 
 // null 规则：双休率 / 下班时间不得为占位 0，也不得是字符串 '未知'
 customCards.forEach((c) => {
-  check(c.rate !== '0' && c.rate !== "'0'",
+  check((c.rate !== '0' && c.rate !== "'0'") || c.derived,
     `自定义卡「${c.name}」双休率未使用占位 0（当前 ${c.rate}）`,
-    c.rate === '0' || c.rate === "'0'" ? '未核实应填 null，页面会显示「—」' : '');
+    c.rate === '0' || c.rate === "'0'" ? '未核实应填 null；0% 若是排班口径算术换算，须在 desc 写「（口径换算）」' : '');
   check(c.off !== "'未知'",
     `自定义卡「${c.name}」下班时间未使用「未知」字符串（当前 ${c.off}）`,
     c.off === "'未知'" ? '应改为 null，由 statText() 渲染成「—」' : '');
