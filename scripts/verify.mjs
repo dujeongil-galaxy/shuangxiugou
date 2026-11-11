@@ -8071,6 +8071,22 @@ section('25. 成功案例专题页（QQ奶奶）');
     '?v 没 bump → 浏览器缓存旧脚本，新文案 / 新友链不生效');
 }
 
+// ---------- 36g. 手机端：内容避让右侧悬浮按钮组（穿模规则写死，2026-11-11 站长） ----------
+{
+  const mfc36g = exists('mobile-fixes.css') ? stripCssComments(read('mobile-fixes.css')) : '';
+  const idx36g = read('index.html');
+  // 右侧 FAB 列锚定区：right:14px + 单枚最宽 ~62px → 右 76px。规则必须给内容预留这一列宽。
+  const ruleOk = /@media\s*\(max-width:\s*640px\)/.test(mfc36g)
+    && /\[data-ai-notice\][^{]*\{[^}]*display:\s*block\s*!important/.test(mfc36g)
+    && /\[data-ai-notice\][^{]*\{[^}]*max-width:\s*calc\(100%\s*-\s*76px\)/.test(mfc36g);
+  check(ruleOk,
+    '§36g 手机端 [data-ai-notice]（AI 开通公告）改块级 + 预留右 76px 列宽，避让右侧 FAB 列（穿模规则写死）',
+    '公告仍是居中 inline-block 无右列宽 → 窄屏右缘压在右侧悬浮钮上（站长截图）');
+  check(/mobile-fixes\.css\?v=13/.test(idx36g),
+    '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 13',
+    '?v 没 bump → 浏览器缓存旧 CSS，预留列宽不生效');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {
