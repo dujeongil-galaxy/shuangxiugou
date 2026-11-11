@@ -2782,3 +2782,17 @@ HEAD 不是补提交，只是正文里引用了一下标记，同样被跳过。
 **结论**：「穿模」这类问题，根解是「内容回到文档流、不抢 fixed-UI 层级；需要避让的 fixed 圆钮由 keepClear 按相交隐藏、需要盖住内容的 fixed 遮罩绝不进 keepClear 的避让区间」——写成通用规则 + verify 钉子，而不是给每张卡/每条公告/每个广告位各写一个 `z-index`。
 
 **验收**：§36f 故障注入 4 组（标题缺字 / 删整条友链 / 条目内写「互挂」/ `?v` 回退）逐一判红，还原后 verify 1621 全绿。
+
+## 第四十三章：无头 Edge 探针用 `ws.on('message')` 拿到的数据是 Buffer，CDP 命令静默挂死（2026-11-11 16:57 §36k 手机端放出广告位箭头）
+
+**现象**：自写的 CDP 验收探针（`require('ws')` + 自己写 `cdp()` 发命令、用 `ws.on('message', h)` 收响应）一跑就空输出被 SIGTERM——没有异常、没有超时日志，像进程被悄悄杀掉。逐段加日志后定位：卡死在 `ws` 连上之后、`Page.enable` 那一步，即第一条 CDP 命令发出去后再也没收到任何响应。
+
+**根因**：`require('ws')` 库用 `ws.on('message', cb)` 回调时，传给 `cb` 的参数是 **Buffer**（不是字符串）。本探针的 handler 里 `try{mm=JSON.parse(ev.data);}catch(e){return;}` 把异常吞了——`return` 后这个 id 的 Promise 永远不 resolve，`await cdp(...)` 永久挂起，直到外层硬超时（Bash 120s）把进程杀掉。仓库 `scripts/cdp-pdl-adcheck.cjs` 的注释早就点过这个坑（「ws 回包是 Buffer」），但自己写新探针时又踩了一次。
+
+**修法**：CDP 的 message 监听一律用 `ws.addEventListener('message', h)`（或 `ws.on('message', ev => { const s = ev.data.toString(); ... })` 显式转字符串），不要用 `ws.on('message', h)` 直接拿 `ev.data` 当字符串去 `JSON.parse`。
+
+**连带环境坑（本轮也踩了，与 Buffer 无关）**：
+- 探针 `server.listen` 若端口被之前的 headless Edge 占着（孤儿进程 + TIME_WAIT），会静默抛错导致空输出退出；先清理带 `WorkBuddy-Cache` 参数的 Edge 进程、换新端口再跑（用 PowerShell `Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*WorkBuddy-Cache*' } | Stop-Process -Force`，**别用 Git Bash 的 `taskkill /F`**——Git Bash 把 `/F` 当路径导致静默失败）。
+- 探针 `console.log` 结果要放在清理逻辑之前，且别用会卡死的 `execSync(powershell cleanup)`；更稳的是把结果先 `writeFileSync` 到 D 盘临时文件，Bash 再 `cat` 读。
+
+**结论**：本站所有无头 Edge 验收脚本（含本次的 `probe-adslot-nav.cjs`）的 CDP 消息处理必须用 `addEventListener` 拿字符串，这是第四十一章「两端口分离」之外第二个必须写进每个探针的硬规则。
