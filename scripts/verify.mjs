@@ -8084,8 +8084,8 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(ruleOk,
     '§36g 手机端 [data-ai-notice]（AI 开通公告）改块级，右列 76px 由 body 统一预留（§36j 上移）',
     '公告仍是居中 inline-block 且无处预留右列宽 → 窄屏右缘压在右侧悬浮钮上（站长截图）');
-  check(/mobile-fixes\.css\?v=14/.test(idx36g),
-    '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 14',
+  check(/mobile-fixes\.css\?v=15/.test(idx36g),
+    '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 15',
     '?v 没 bump → 浏览器缓存旧 CSS，预留列宽不生效');
 }
 
@@ -8213,6 +8213,25 @@ section('25. 成功案例专题页（QQ奶奶）');
     !/\.lp-ad \{[^}]*right: 76px/.test(mf36j),
     '§36j 窄屏（≤640px）整页内容右留 76px（body）；吸底条保持满宽（与 FAB 纵向不重叠，收右缘会把文案压成竖排）',
     '窄屏没给右侧 FAB 列留列宽 → hero/卡片/统计滚动经过时仍被悬浮钮压住；或又把吸底条收窄导致文案竖排');
+}
+
+// ---------- 36p. 窄屏左下两枚悬浮圆钮并入右侧 76px 留白列（2026-11-12 站长） ----------
+{
+  const mf36p = exists('mobile-fixes.css') ? stripCssComments(read('mobile-fixes.css')) : '';
+  const idx36p = read('index.html');
+  // §36j 只留了右列，左下角 #sxg-ai-fab / #sxg-nav 仍压住品牌卡与证据公示区正文。
+  // 不能靠「整页再左留白」解决：真渲染实测内容 390-76-70=244px / 缩钮后 270px，
+  // 品牌卡深色块内文字被挤成竖排。故两枚并入右列，内容仍 314px 满宽。
+  const aiOk = /#sxg-ai-fab\s*\{[^}]*left:\s*auto\s*!important[^}]*right:\s*14px\s*!important[^}]*bottom:\s*calc\([^}]*210px/.test(mf36p);
+  const navOk = /#sxg-nav\s*\{[^}]*left:\s*auto\s*!important[^}]*right:\s*14px\s*!important[^}]*bottom:\s*calc\([^}]*335px/.test(mf36p);
+  const panelOk = /#sxg-ai-panel\s*\{[^}]*276px/.test(mf36p)
+    && /#sxg-nav-panel\s*\{[^}]*right:\s*0\s*!important/.test(mf36p);
+  check(aiOk && navOk && panelOk && !/body\s*\{[^}]*padding-left/.test(mf36p),
+    '§36p 窄屏左下两枚圆钮并入右侧 76px 留白列（AI +210 / 菜单 +335），面板同步右锚定，整页不再左侧扣宽',
+    '左钮仍在 left:14px 或又整页左留白 → 品牌卡正文被压 / 内容被夹成 244–270px 窄条');
+  check(/mobile-fixes\.css\?v=15/.test(idx36p),
+    '§36p mobile-fixes.css 的 ?v 已 bump 到 15（左钮并入右列靠新 CSS 生效）',
+    '?v 没 bump → 浏览器缓存旧 CSS，左钮仍在左下角压内容');
 }
 
 // ---------- 汇总 ----------

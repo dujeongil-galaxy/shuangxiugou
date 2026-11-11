@@ -406,3 +406,44 @@
     padding-right: 76px;
   }
 }
+
+/* --------------------------------------------------------------------------
+   2026-11-12 §36p：窄屏左下角两枚悬浮圆钮并入右侧 76px 留白列
+   --------------------------------------------------------------------------
+   §36j 只给右侧四枚钮留了列宽，左下角的 #sxg-ai-fab（56×56）与
+   #sxg-nav（46×46）仍 fixed 在 left:14px / y≈571–683，滚动到品牌卡、
+   证据公示区时压住正文（站长 2026-11-12 截图）。
+   三种候选都做了真渲染对比：
+     a) 整页左留白 70px  → 内容只剩 244px，说明文字一行 12 字；
+     b) 左留白 44px + 两枚缩到 40px → 内容 270px，品牌卡深色块内
+        「员工投票 / 打卡」被挤成竖排，明显劣化；
+     c) 两枚并入右侧已有 76px 留白列 → 内容仍是 314px，零损失。
+   故取 c：所有悬浮圆钮统一锚定同一条「内容不进入」的右列，规则只有一条。
+   纵向按现有四枚的 bottom 空位排布（390×844、bar-h=113 实测）：
+     视频 +48 / TOP +96 / 下载 +154 / AI +210 / 提醒 +272 / 菜单 +335
+   → 6 枚落在 y350–683，两两不重叠；吸底条 y731 起，也不相交。
+   AI 面板与导航面板同步改右锚定，避免按钮移走后面板长到屏幕外。
+   桌面端（>640px）完全不受影响，AI 挂件仍在左下角（2026-11-05 站长拍板）。
+   注意：ai-chat.js / nav-menu.js 的样式是运行时注入 <style>，出现在本 CSS
+   之后，同特异性下会赢 —— 所以这里每条都必须 !important。
+   -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  #sxg-ai-fab {
+    left: auto !important;
+    right: 14px !important;
+    bottom: calc(var(--sxg-bar-h, 0px) + 210px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  #sxg-ai-panel {
+    bottom: calc(var(--sxg-bar-h, 0px) + 276px + env(safe-area-inset-bottom, 0px)) !important;
+    max-height: min(480px, calc(100vh - var(--sxg-bar-h, 0px) - 336px)) !important;
+  }
+  #sxg-nav {
+    left: auto !important;
+    right: 14px !important;
+    bottom: calc(var(--sxg-bar-h, 0px) + 335px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  #sxg-nav-panel {
+    left: auto !important;
+    right: 0 !important;
+  }
+}
