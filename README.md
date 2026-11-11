@@ -159,7 +159,6 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
    （早期按「下一个 function 声明」切，新增平行函数后直接把两个函数体粘在一起、
    eval 语法错误）—— 往这两个函数后面再加新函数时，别再改回脆弱定位方式。
 
-
 ---
 
 ## 🖼 广告位设计稿与缓存落盘（2026-11-09 站长明确，长期有效）
@@ -277,6 +276,12 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 **改动历史**：2026-11-01 先试过「`#root` 内加载占位」方案（提交 `e9f5ac0`）——站长实测仍闪（证据链区块在 `#root` 之外，占位盖不住）；同轮改为全屏遮罩（提交 `ca414e9`）根治。完整改动见 [CHANGELOG.md](./CHANGELOG.md)。
 
 **别动它**：删除遮罩或退回「`#root` 内占位」会让 FOUC 复发。若想让转圈更短，给 bundle 加 `<link rel="preload">` 提前拉取即可，不要改结构。
+
+### 近期 bug 根因（fix）：16 个内置 LOGO 文件扩展名与真实格式不符，页面上退化成文字（2026-11-12 06:33 · 提交 `c03f058`）
+
+- 现象：站长报「很多 LOGO 缺失」。实测苹果、索尼、瑞幸三张卡的头像框是空的，只剩品牌文字。逐字节检查发现 `assets/apple.png` / `assets/sony.png` / `assets/luckin.png` 的真实文件头是 ICO（`00 00 01 00`），另有 12 个 `.png` 实为 JPEG、`assets/luxiyi.jpg` 与 `assets/snack-logo.png` 实为 WebP。GitHub Pages 按扩展名下发 `Content-Type: image/png`，浏览器按 PNG 解码失败即触发 `logoImg.onerror` 文字降级，视觉上就是「这张卡没有 LOGO」。
+- 改法：16 个文件就地转成真格式（`sharp` 转 PNG / JPEG，白底压平避免深色卡出现黑块），苹果 / 索尼 / 瑞幸换抓清晰真标；同时把 49 处 `assets/logo/<slug>.svg`（品牌色圆角块 + 白色文字，看着像占位）换成 128px 真 LOGO PNG，并删掉那批占位 SVG。
+- 机器强制：`index.html` 49 处 `logo: './assets/logo/<slug>.png?v=1'` 路径全部存在；新加口径「引用图逐字节比对魔数与扩展名」，`index.html` 引用的 116 张图零不一致；verify 1651 项全绿。
 
 ### 近期 bug 根因（fix）：手机端公益广告位左右翻页箭头被窄屏媒体查询整组藏掉（2026-11-11 17:08 · 提交 `8face4c`）
 
@@ -437,12 +442,6 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 - 站长 18:4x 报「删除搜索结果后整站白屏，为了防止用户误退出做一个加载动画」，确认指的是**拼音搜索框删空**（不是视频）。`filter-flash.js` 的整屏磨砂底色接近纯白，删空后最长覆盖约 1.7s（顺序复位回放期间挂起撤除），肉眼就是一片白；站点 React 又没有错误边界，真渲染抛错会直接卸载整棵 `#root` 变成永久白屏。CDP 复现两条删除路径都没触发 React 卸载，故主因是近白遮罩被误判成卡死。
 - 改法：遮罩内加转圈 + 「加载中…」小卡（评级切换与搜索清空共用，尊重 `prefers-reduced-motion`）；新增 `white-screen-guard.js`，`MutationObserver` 盯 `#root`，挂载过之后被卸载就显示「重新加载页面」恢复卡片，`booted` 门槛防首屏误报、`shown` 幂等、重新挂载自动移除。纯 DOM 补丁，压缩产物零改动；`filter-flash.js` 的 `?v` 按 §21h 从 5 bump 到 6。
 - 机器强制：`verify.mjs` §17b 加 3 条加载态断言、新增 §24 十条兜底断言；`test-search-clear-flash.cjs` 加 4 条、新增 `test-white-screen-guard.cjs` 并挂进 CI（§21o）。13 项故障注入全部判红并还原，正向 1489 项全绿；37/37 组回归全过；无头 Edge 真渲染截图肉眼复核通过。
-
-### 近期 bug 根因（fix）：16 张内置卡 LOGO 扩展名与真实格式不符，页面上退化成文字（提交 `c03f058`）
-
-- 现象：站长报「很多 LOGO 缺失」。实测苹果、索尼、瑞幸三张卡的头像框是空的，只剩品牌文字。逐字节检查发现 `assets/apple.png` / `assets/sony.png` / `assets/luckin.png` 的真实文件头是 ICO（`00 00 01 00`），另有 12 个 `.png` 实为 JPEG、`assets/luxiyi.jpg` 与 `assets/snack-logo.png` 实为 WebP。GitHub Pages 按扩展名下发 `Content-Type: image/png`，浏览器按 PNG 解码失败即触发 `logoImg.onerror` 文字降级，视觉上就是「这张卡没有 LOGO」。
-- 改法：16 个文件就地转成真格式（`sharp` 转 PNG / JPEG，白底压平避免深色卡出现黑块），苹果 / 索尼 / 瑞幸换抓清晰真标；同时把 49 个自定义卡从 `assets/logo/<slug>.svg`（品牌色圆角块 + 白色文字，看着像占位）换成 128px 真 LOGO PNG，并删掉 104 个占位 SVG。
-- 机器强制：`index.html` 49 处 `logo: './assets/logo/<slug>.png?v=1'` 路径全部存在；新加口径「引用图逐字节比对魔数与扩展名」，`index.html` 引用的 116 张图零不一致；verify 1651 项全绿。
 
 ### 近期 bug 根因（fix）：AI 挂件网络异常文案缺失 + max_tokens 断言漂移（提交 `b11f8b1`）
 
@@ -727,7 +726,6 @@ U 级 = **证据缺失级**：仅当已尽合理检索（招聘平台 / 媒体�
 - **2026-11-06 及更早**：逐条见 **[最近更新.md](./最近更新.md)**。
 
 **完整逐条记录（含根因、改了哪些文件、怎么验证、提交哈希）见 [最近更新.md](./最近更新.md)。**
-
 
 ---
 
