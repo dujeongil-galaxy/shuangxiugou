@@ -31,6 +31,20 @@
 
 export default {
   async fetch(request, env) {
+    const url = new URL(request.url);
+    const path = url.pathname;
+
+    // ---------- GitHub OAuth 路由（页面跳转，不走 CORS） ----------
+    if (path === '/auth/github') {
+      return handleGitHubLogin(env);
+    }
+    if (path === '/auth/github/callback') {
+      return handleGitHubCallback(request, env, url);
+    }
+    if (path === '/api/check-star') {
+      return handleCheckStar(request, env, url);
+    }
+
     // ---------- CORS 预检 ----------
     // 匹配规则：精确白名单 + 模糊匹配 github.io 域名（兼容手机端各种浏览器差异）
     const ALLOWED_ORIGINS = [
@@ -41,7 +55,7 @@ export default {
     const originAllowed = ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.github.io') || origin === 'https://dujeongil-galaxy.github.io';
     const corsHeaders = {
       'Access-Control-Allow-Origin': originAllowed ? origin : '',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
       'Access-Control-Allow-Headers': 'Content-Type',
       'Access-Control-Max-Age': '86400',
     };
@@ -149,4 +163,124 @@ function json(obj, status, cors) {
     status,
     headers: { 'Content-Type': 'application/json; charset=utf-8', ...cors },
   });
+}
+
+// ---------- GitHub OAuth 相关 ----------
+const GITHUB_OWNER = 'dujeongil-galaxy';
+const GITHUB_REPO = 'shuangxiugou';
+const STAR_MIN_DAYS = 7; // Star 满 7 天才放行
+
+// 跳转到 GitHub 授权页
+async function handleGitHubLogin(env) {
+  const clientId = 'Ov23liCgZ4zBj9LQXHhH'; // 硬编码正确的 Client ID（小写 L 开头）
+  const redirectUri = 'https://shuangxiugou-ai-worker.ovpj01-hk.workers.dev/auth/github/callback';
+  const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=public_repo`;
+  return Response.redirect(githubAuthUrl, 302);
+}
+
+// OAuth 回调：用 code 换 access token，检测 Star 状态
+async function handleGitHubCallback(request, env, url) {
+  const code = url.searchParams.get('code');
+  if (!code) {
+    return new Response('缺少 code 参数', { status: 400 });
+  }
+
+  // Client ID 是公开标识，可以入库；Client Secret 必须走 Worker secret，
+  // 源码里绝不落明文——本仓库是公开的，一旦提交就永久留在公开历史里。
+  const clientId = 'Ov23liCgZ4zBj9LQXHhH';
+  const clientSecret = env.GITHUB_CLIENT_SECRET;
+  if (!clientSecret) {
+    return new Response('服务端未配置 GITHUB_CLIENT_SECRET', { status: 500 });
+  }
+
+  // 用 code 换 access token
+  const tokenResp = await fetch('https://github.com/login/oauth/access_token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify({
+      client_id: clientId,
+      client_secret: clientSecret,
+      code: code,
+    }),
+  });
+  const tokenData = await tokenResp.json();
+  const accessToken = tokenData.access_token;
+  if (!accessToken) {
+    return new Response('获取 access token 失败: ' + JSON.stringify(tokenData), { status: 400 });
+  }
+
+  // 检测用户是否 Star 了仓库，以及 Star 时间
+  let hasStar = false;
+  let starDays = 0;
+  let starredAtDate = '';
+  
+  // 第一步：先快速检测是否 Star
+  const starCheckResp = await fetch(`https://api.github.com/user/starred/${GITHUB_OWNER}/${GITHUB_REPO}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `token ${accessToken}`,
+      'User-Agent': 'shuangxiugou-ai-worker',
+    },
+  });
+
+  if (starCheckResp.status === 204) {
+    hasStar = true;
+    
+    // 第二步：获取 Star 时间（调用 stargazers 接口）
+    try {
+      // 先拿当前用户的用户名
+      const userResp = await fetch('https://api.github.com/user', {
+        headers: {
+          'Authorization': `token ${accessToken}`,
+          'User-Agent': 'shuangxiugou-ai-worker',
+        },
+      });
+      const userData = await userResp.json();
+      const username = userData.login;
+      
+      // 获取 stargazers 列表（带 starred_at 字段）
+      const stargazersResp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/stargazers?per_page=100`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `token ${accessToken}`,
+          'User-Agent': 'shuangxiugou-ai-worker',
+          'Accept': 'application/vnd.github.star+json', // 这个 header 才能返回 starred_at
+        },
+      });
+      const stargazers = await stargazersResp.json();
+      
+      // 在 stargazers 列表里找当前用户
+      const me = stargazers.find(s => s.user && s.user.login === username);
+      if (me && me.starred_at) {
+        const starredAt = new Date(me.starred_at);
+        starredAtDate = starredAt.toISOString().split('T')[0]; // YYYY-MM-DD 格式
+        const now = new Date();
+        const diffMs = now - starredAt;
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        starDays = diffDays;
+      }
+    } catch (e) {
+      console.log('获取 star 时间失败:', e.message);
+      // 出错了就默认按已满 7 天算，别让用户报错
+      starDays = 7;
+      starredAtDate = '未知';
+    }
+  }
+
+  const meetsRequirement = hasStar && starDays >= STAR_MIN_DAYS;
+
+  // 重定向回首页，带上结果
+  const redirectUrl = `https://dujeongil-galaxy.github.io/shuangxiugou/?star_check=${meetsRequirement ? 'success' : 'failed'}&star_days=${starDays}&star_date=${encodeURIComponent(starredAtDate)}`;
+  return Response.redirect(redirectUrl, 302);
+}
+
+// 前端检测当前用户 Star 状态
+async function handleCheckStar(request, env, url) {
+  return json({
+    hasStar: false,
+    message: '功能开发中',
+  }, 200);
 }
