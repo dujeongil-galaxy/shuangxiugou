@@ -243,8 +243,13 @@
   function injectStyle() {
     if (document.getElementById('sxg-adslot-style')) return;
     var css =
+      /* 2026-11-11 §36i：外观令牌对齐站点品牌卡（bundle 里的
+         rounded-2xl + border-slate-200/80 + shadow-xs）。
+         站长「广告位应该写在原有框架内」——只统一观感令牌（边框半透明、加 1px 浅阴影），
+         内部结构一律不动：三张海报仍满宽出血、顶栏/导航/脚注分层照旧。 */
       '.sxg-adslot{box-sizing:border-box;position:relative;margin:0;padding:0;' +
-      'border:1px solid #e2e8f0;border-radius:16px;background:#fff;overflow:hidden;' +
+      'border:1px solid rgba(226,232,240,.8);border-radius:16px;background:#fff;overflow:hidden;' +
+      'box-shadow:0 1px 2px 0 rgba(0,0,0,.05);' +
       'font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;width:100%}' +
       '.sxg-adslot__head{display:flex;align-items:center;justify-content:center;gap:6px;' +
       'padding:9px 16px;font-size:12px;font-weight:700;color:#94a3b8;letter-spacing:.12em;' +

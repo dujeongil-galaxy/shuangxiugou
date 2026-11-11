@@ -6369,8 +6369,8 @@ section('21c. 首页滑到底部按钮');
     '§33a2 广告位三张设计图首屏预热，且每张的 ?v 与 black-card-adslot.js 里的常量完全一致',
     '预热 URL 与脚本里的实际 URL 不一致 → 白预热，广告位照样「卡片先出来、图还是空的」');
 
-  check(/<script async src="\.\/black-card-adslot\.js\?v=19"><\/script>/.test(idx)
-    && idx.indexOf('black-card-adslot.js?v=19') < idx.indexOf('</head>')
+  check(/<script async src="\.\/black-card-adslot\.js\?v=20"><\/script>/.test(idx)
+    && idx.indexOf('black-card-adslot.js?v=20') < idx.indexOf('</head>')
     && !/script defer src="\.\/black-card-adslot\.js/.test(idx),
     '§33b 广告位补丁在 head 里 async 加载（不再排在第 40 个 defer，也不必等 692KB body 解析完）',
     '广告位补丁退回 defer 队列尾部 → 慢网又要 15 秒才冒出广告位');
@@ -7494,7 +7494,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
 
   check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
-    && /black-card-adslot\.js\?v=19/.test(idx29),
+    && /black-card-adslot\.js\?v=20/.test(idx29),
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 
   // —— 站长 2026-11-10 晚：胖东来广告卡（首页推荐位） ——
@@ -7720,7 +7720,7 @@ section('25. 成功案例专题页（QQ奶奶）');
   check((code32.match(/公益广告位/g) || []).length >= 4
     && !/广告位招商中|品牌展示|>广告位</.test(code32)
     && /data-adslot-kind', 'public-welfare'/.test(code32)
-    && /black-card-adslot\.js\?v=19/.test(idx32),
+    && /black-card-adslot\.js\?v=20/.test(idx32),
     '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 13');
 
   // 站长 2026-11-10 二次纠正「广告图叫你重构，不是让你改成纯文字 / 文字明显重叠」：
@@ -7932,7 +7932,7 @@ section('25. 成功案例专题页（QQ奶奶）');
 
   const preload35 = mob35.every(([f, , ver]) =>
     idx35.indexOf('<link rel="preload" as="image" href="./' + f + '?v=' + ver + '" media="(max-width:480px)" />') !== -1);
-  check(preload35 && /black-card-adslot\.js\?v=19/.test(idx35),
+  check(preload35 && /black-card-adslot\.js\?v=20/.test(idx35),
     '§35c 手机三图带 media 预热、?v 与脚本 *_MOBILE 常量一致，首页脚本已升 13',
     '预热漏 media 或 ?v 不一致 → 慢网首帧先出桌面稿再跳手机稿');
 
@@ -8065,7 +8065,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     'JEV 条目写成互惠/互挂 → 与「不要求互挂」矛盾');
 
   // ④ 两个脚本在 index.html 的 ?v 随内容变更 bump，否则浏览器缓存旧脚本
-  check(/black-card-adslot\.js\?v=19/.test(idx36f)
+  check(/black-card-adslot\.js\?v=20/.test(idx36f)
     && /friend-links-footer\.js\?v=16/.test(idx36f),
     '§36f 两个脚本在 index.html 的 ?v 已随内容变更 bump 到 16',
     '?v 没 bump → 浏览器缓存旧脚本，新文案 / 新友链不生效');
@@ -8076,14 +8076,16 @@ section('25. 成功案例专题页（QQ奶奶）');
   const mfc36g = exists('mobile-fixes.css') ? stripCssComments(read('mobile-fixes.css')) : '';
   const idx36g = read('index.html');
   // 右侧 FAB 列锚定区：right:14px + 单枚最宽 ~62px → 右 76px。规则必须给内容预留这一列宽。
+  // 2026-11-11 §36j 起：这一列宽由 body 统一预留（padding-right:76px），
+  // 公告不再自己写 calc(100% - 76px)——那样会双重扣减，390 宽下被压成竖排窄条。
   const ruleOk = /@media\s*\(max-width:\s*640px\)/.test(mfc36g)
     && /\[data-ai-notice\][^{]*\{[^}]*display:\s*block\s*!important/.test(mfc36g)
-    && /\[data-ai-notice\][^{]*\{[^}]*max-width:\s*calc\(100%\s*-\s*76px\)/.test(mfc36g);
+    && /body\s*\{[^}]*padding-right:\s*76px/.test(mfc36g);
   check(ruleOk,
-    '§36g 手机端 [data-ai-notice]（AI 开通公告）改块级 + 预留右 76px 列宽，避让右侧 FAB 列（穿模规则写死）',
-    '公告仍是居中 inline-block 无右列宽 → 窄屏右缘压在右侧悬浮钮上（站长截图）');
-  check(/mobile-fixes\.css\?v=13/.test(idx36g),
-    '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 13',
+    '§36g 手机端 [data-ai-notice]（AI 开通公告）改块级，右列 76px 由 body 统一预留（§36j 上移）',
+    '公告仍是居中 inline-block 且无处预留右列宽 → 窄屏右缘压在右侧悬浮钮上（站长截图）');
+  check(/mobile-fixes\.css\?v=14/.test(idx36g),
+    '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 14',
     '?v 没 bump → 浏览器缓存旧 CSS，预留列宽不生效');
 }
 
@@ -8101,7 +8103,7 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(/n\.id\s*===\s*['"]sxg-flash-mask['"]/.test(ad36h),
     '§36h keepClear 按 id 排除闪屏遮罩 #sxg-flash-mask（不被当悬浮钮隐藏、整页磨砂不破洞）',
     'keepClear 漏排除闪屏遮罩 → 广告位相交时遮罩被隐藏、磨砂破洞、广告位穿模');
-  check(/black-card-adslot\.js\?v=19/.test(idx36h),
+  check(/black-card-adslot\.js\?v=20/.test(idx36h),
     '§36h black-card-adslot.js 的 ?v 已 bump 到 18（浏览器缓存旧脚本会吃掉本次修复）',
     '?v 没 bump → 旧脚本仍带 z-index:9995，修复不生效');
 }
@@ -8115,7 +8117,7 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(!/@media \(max-width:480px\)\{\.sxg-adslot__nav\{display:none\}/.test(ad36k),
     '§36k 手机端（≤480px）不再隐藏公益广告位左右翻页箭头（放出 prev/next 按钮）',
     '移动端媒体查询又把 .sxg-adslot__nav 设 display:none → 手机上看不到左右翻页箭头');
-  check(/black-card-adslot\.js\?v=19/.test(idx36k),
+  check(/black-card-adslot\.js\?v=20/.test(idx36k),
     '§36k black-card-adslot.js 的 ?v 已 bump 到 18（浏览器缓存旧脚本会吃掉本次改动）',
     '?v 没 bump → 旧脚本仍隐藏手机端箭头，改动不生效');
 }
@@ -8170,7 +8172,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     /2026-11-11\s*起执行/.test(ad36n),
     '§36n 公益广告位底部免责脚注（AI 生成图 + 站长人工核实产线须双休 + 不靠联网 + issue 递交实证申请上刊 + 2026-11-11 起执行）',
     '脚注文案缺失 → 访客无法得知图片是 AI 生成、企业信息由站长人工核实、如何申请上刊');
-  check(/black-card-adslot\.js\?v=19/.test(idx36n),
+  check(/black-card-adslot\.js\?v=20/.test(idx36n),
     '§36n black-card-adslot.js 的 ?v 已 bump 到 19（浏览器缓存旧脚本会吃掉本次脚注）',
     '?v 没 bump → 旧脚本无脚注、本次改动不生效');
 }
@@ -8193,6 +8195,24 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(note36o.length > 0 && !/轮毂|装反|抖音/.test(note36o),
     '§36o 首页 BYD 卡片备注保持原样（仍是「名义双休但加班重…」，未被本次视频污染）',
     '首页卡备注被改写 → 违反站长「不要在首页卡片更改备注」');
+}
+
+// ---------- 36i/36j. 广告位令牌对齐品牌卡；窄屏整页右留 76px（2026-11-11 站长「接着做」） ----------
+// 站长拍板：§36i 只对齐观感令牌（不动内部结构 / 不删第三张招商卡）；
+// §36j 整页统一右留 76px，吸底条一起纳入。
+{
+  const ad36i = exists('black-card-adslot.js') ? read('black-card-adslot.js') : '';
+  check(/\.sxg-adslot\{[\s\S]{0,400}?rgba\(226,232,240,\.8\)/.test(ad36i) &&
+    /\.sxg-adslot\{[\s\S]{0,400}?box-shadow:0 1px 2px 0 rgba\(0,0,0,\.05\)/.test(ad36i),
+    '§36i 广告位外观令牌对齐站点品牌卡（border-slate-200/80 + shadow-xs），内部结构与三张海报未动',
+    '广告位仍是实色边框 / 无阴影 → 与品牌卡令牌不一致，看着像外挂的一块');
+
+  // 与 §36g 一致剥掉 CSS 注释再断言：注释里也会出现「body padding-right:76px」这类说明文字
+  const mf36j = exists('mobile-fixes.css') ? stripCssComments(read('mobile-fixes.css')) : '';
+  check(/body \{[\s\S]{0,80}?padding-right: 76px/.test(mf36j) &&
+    !/\.lp-ad \{[^}]*right: 76px/.test(mf36j),
+    '§36j 窄屏（≤640px）整页内容右留 76px（body）；吸底条保持满宽（与 FAB 纵向不重叠，收右缘会把文案压成竖排）',
+    '窄屏没给右侧 FAB 列留列宽 → hero/卡片/统计滚动经过时仍被悬浮钮压住；或又把吸底条收窄导致文案竖排');
 }
 
 // ---------- 汇总 ----------
