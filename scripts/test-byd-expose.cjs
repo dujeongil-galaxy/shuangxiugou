@@ -59,8 +59,8 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   check('失效短链不再冒充可点原始链接（无 <a href>）',
     !/<a href="https:\/\/v\.douyin\.com\/kKmeU180irU\//.test(detail));
   const ebByd = (html.match(/<details id="ev-byd"[\s\S]*?<\/details>/) || [])[0] || '';
-  check('公示区 ev-byd 仍 3 条证据、可点链接降为 1（死链不计）',
-    /data-n="3" data-l="1"/.test(ebByd), ebByd.slice(0, 120));
+  check('公示区 ev-byd 4 条证据、可点链接 2 条（死链不计；2026-11-11 澎湃轮毂装反报道 +1 条带链）',
+    /data-n="4" data-l="2"/.test(ebByd), ebByd.slice(0, 120));
   check('公示区摘要如实写出视频已删除 / 链接已失效',
     ebByd.indexOf('该视频现已删除') !== -1 && ebByd.indexOf('原链接已失效') !== -1);
   check('公示区该条标注「无可点原始链接」',
