@@ -4,6 +4,21 @@
 
 ---
 
+### feat：匿名邮箱入口 + 访问告知弹窗 + 手机悬浮按钮全部撑开 + 顶栏断点双向还原（§36s）（2026-11-12 07:39 · 提交 `f4906e6`）
+
+站长一轮两件事：右上角新增「匿名邮箱」按钮（`https://m.kuku.lu/cn.php`），点击**先弹窗**明确告知没有 VPN 就无法访问，弹窗里备注站长最新匿名邮箱 `mantoopea@exdonuts.com`；手机端自行处理。并追问「我觉得上一轮你没做好，既然右边已经隔离了，为什么不干脆按钮全部撑开？」
+
+- **① 新增 `anon-mail.js`**（下游 DOM 补丁，不改压缩 bundle、不改六个悬浮脚本）：桌面顶栏第 5 枚 `.sxg-header-btn`，外观基线写死为常量 —— 现场读 Star 的 class 是坑，手机端 `header-menu-patch.js` 会把它的 class 整个摘掉，断点切回桌面时现场读到空串、按钮退化成 14px 裸链接（真渲染实测）。首次点击 `preventDefault()` + `openModal()`，目标 URL 只出现在弹窗「仍要前往」的 `target="_blank" rel="noopener noreferrer"` 出口；弹窗给「复制邮箱」（`navigator.clipboard.writeText` + `execCommand` 兜底）与 × / 先不去 / ESC / 点遮罩四条关闭路径，重复点击不叠加。≤640px 不进顶栏、也不进「菜单▼」，直接挂进 `#sxg-fab-dock` 首位，避开 `.sxg-header-btn{display:none !important}` 把晚到入口静默吃掉（第五十章 ①）。
+- **② 右列按钮全部撑开**：`fab-dock.js` 撤掉 `PRIMARY` / `EXTRA` 与「⋯ 更多」折叠（含 `is-expanded` / `sxg-fab-more` / `sxg-fab-dock-extra`），改单一 `ORDER` 数组 + `LABELS` 短标签映射，六枚悬浮按钮 + 客居的邮箱按钮共 7 枚全部常显；`GUESTS` 里的邮箱按钮在 `disable()` 时先还给 body，不随 `dock.remove()` 一起没，再由 `anon-mail.js` 安置回顶栏。`mobile-fixes.css` 把 dock 设为 `width:68px; right:8px; align-items:stretch`（左缘正好 vw-76，与 §36j 内容右缘严丝合缝），每枚撑成 68×36 圆角宽条，`::after` 读 `data-sxg-dock-label` 补中文短标签；源脚本的「TOP」/「AI」/ 纯 SVG / 视频三角一律收起，避免 68px 内折行。容器 `pointer-events:none`、子项 `auto`；`--sxg-dock-h` 仍由 ResizeObserver 实时写，AI 面板跟随。桌面 >640px 完全不启用 dock。
+- **③ 顶栏折叠补成双向**：`header-menu-patch.js` 以前只做「进窄屏折叠」，手机端载入后拉宽，四个顶栏按钮仍留在下拉容器里竖着堆在右侧（本次 CDP 真渲染截图实测）。拆出 `collapse()` / `restore()`，用 `records` 记住每个按钮的原父节点 / class / style，matchMedia 变化时双向搬迁；下拉容器宽屏 `display:none !important`、窄屏展开用 `display:flex !important` 压过它。登录状态提示 / VPN 弹窗 / Login 拦截逻辑一行未动。
+- **④ 挂载与版本**：`index.html` 新增 `anon-mail.js?v=1`（排在 `fab-dock.js?v=2` 之后，dock 已存在时一次安置到位），`fab-dock.js?v=1→2`、`mobile-fixes.css?v=16→17`、`header-menu-patch.js?v=9→10`；§36g 的 `?v` 钉子同步到 17。
+- **⑤ 校验**：`scripts/verify.mjs` 把 §36q 改成「唯一所有者 + 自动排布 + 可还原桌面」契约（删掉折叠断言、加反向禁止 `is-expanded` / `PRIMARY` / `EXTRA` 回潮），新增 §36s 五断言：事实要素（URL / 邮箱 / 无 VPN 无法访问 / 草稿批注不上页面）、拦截与唯一出口（只扫 `card.innerHTML` 真实拼接防注释救绿）、68px 撑开与禁止折叠、断点双向还原、`?v` + jsdom 测试挂 CI。新增 `scripts/test-anon-mail.cjs` 38 项（桌面 / 手机落位、pending 兜底、点击先弹窗、复制、五条关闭路径、断点往返、顶栏四按钮还原）挂进 `.github/workflows/verify.yml`。
+- **⑥ 顺带对齐两条过期断言**（PITFALLS 第四十七章「改断言对齐事实，不改数据迁就断言」）：`test-molina-card.cjs` 的 bundle `?v=50`→`51`、茉莉奶白 `doubleRestRate:null`→`'0'`（11-12 补录双休率 0%）；`test-stat-filter.cjs` 按 `rating-stats-patch.js` 的 11-12 长城 C→B 修正为 B 32 / C 56 / 避雷 57。二者在**干净 HEAD 工作树**上复跑同样判红，属远端自带的存量红，与本次功能改动无关。
+- **验证**：verify **1657 全绿**；43 组非 CDP 行为测试全通过（`test-photo-vault.cjs` 已知偶发单跑即过）；故障注入 7 组（邮箱写错 / 去掉 `preventDefault` / 宽条退回 46px / 折叠层回潮 / `?v` 回退 16 / 只留单向折叠 / 测试漏挂 CI）全部判红并还原复绿，其中 3 组同时让 jsdom 测试判红。
+- **真渲染**：1440×900 与 390×844 串行无头 Edge + CDP。手机 dock `x314 / 68×288`、7 枚各 68×36 零重叠、`scrollWidth=390`；真鼠标点「匿名邮箱」→ 弹窗 `z-index=10050` 且未跳走，文案含「没有 VPN（或代理）就无法访问」与最新邮箱，`grantPermissions(clipboardReadWrite)` 后 `readText()` 回读 `mantoopea@exdonuts.com`、按钮变「已复制」；`elementFromPoint` 确认遮罩盖住 dock；桌面顶栏 5 枚横排（1440 / 768 / 660 三档均无横向溢出）；手机→桌面→手机断点往返，按钮不丢、四枚顶栏按钮还原成横排、下拉容器宽屏隐藏。
+
+---
+
 ### feat：申诉弹窗补规则句 + GitHub 访问帮助设备分流 + Star 二级菜单 + 打赏页链接规整（§36r）（2026-11-12 06:06 · 提交 `edcc7ff`）
 
 站长一轮给了四件事：申诉弹窗再加一句规则；照 Login GitHub 的样子补 GitHub 打不开的提示；Star on GitHub 做二级菜单、PC 挂 Steam++ 官网且不推荐 VPN、手机平板仍给原有入口并写设备判定；打赏页所有按钮生成的链接去掉 `sponsor.html`。
