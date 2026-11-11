@@ -255,7 +255,10 @@ const badDerived = derivedCards.filter((c, i) => {
   const chunk = bundle.slice(c.pos, end);
   // 2026-10-17：合法换算依据扩展为三类（官方公示 / 媒体调查 / 招聘与员工爆料折中），
   // 都要求卡片内存在可追溯的 ev- 证据 id（下一行断言）。
-  const LEGIT_BASIS = ['derived_from_official_disclosure', 'derived_from_investigation_reports', 'derived_from_recruiting_and_worker_reports'];
+  // 2026-11-12：新增第四类「岗位人数结构加权」——当企业有年报/ESG 披露的分岗位员工人数，
+  // 且两类岗位排班口径分别有公开证据时，按人数结构加权换算（长城汽车即此类）。
+  const LEGIT_BASIS = ['derived_from_official_disclosure', 'derived_from_investigation_reports',
+    'derived_from_recruiting_and_worker_reports', 'derived_from_headcount_structure'];
   if (!LEGIT_BASIS.some((x) => chunk.includes('rateBasis:`' + x + '`'))) return true;
   // 换算依据必须能对应到一条真实存在的证据 id
   const ids = [...chunk.matchAll(/id:`(ev-[a-z0-9-]+)`/g)].map((x) => x[1]);
@@ -515,10 +518,14 @@ check(genTool.includes("'U级': 'u'") || genTool.includes('"U级": "u"'),
 
 // 2026-10-20 长城/名创改档 C 级 0%（口径换算）。这是站长拍板的数据结论，
 // 加防回退断言：若有人把这两张卡改回 U 或删掉 derived 标注，verify 必须判红。
-section('2f. 改档锁定（长城/名创 C 级 0% 口径换算）');
+// 2026-11-12 站长指令：长城汽车 C→B（官宣全员双休已落地办公岗、产线仍单双休），
+// 双休率改为按 2025 年报岗位人数结构加权换算的 51%，平均下班 18:30（招聘口径）。
+section('2f. 改档锁定（长城 B 级 51% / 名创 C 级 0% 口径换算）');
 const lockedCards = [
-  { id: 'gwm', name: '长城汽车', policy: 'alternate' },
-  { id: 'miniso', name: '名创优品', policy: 'single' },
+  { id: 'gwm', name: '长城汽车', policy: 'alternate', tier: 'B', rate: 51,
+    basis: 'derived_from_headcount_structure', minEv: 7 },
+  { id: 'miniso', name: '名创优品', policy: 'single', tier: 'C', rate: 0,
+    basis: 'derived_from_recruiting_and_worker_reports', minEv: 5 },
 ];
 const badLocked = [];
 for (const lc of lockedCards) {
@@ -527,17 +534,17 @@ for (const lc of lockedCards) {
   const end = idx + 1 < brandCards.length ? brandCards[idx + 1].pos : bundle.length;
   const chunk = bundle.slice(brandCards[idx].pos, end);
   const problems = [];
-  if (!chunk.includes('tier:`C`')) problems.push('档位不是 C');
-  if (!chunk.includes('realDoubleWeekendRate:0')) problems.push('双休率不是 0');
+  if (!chunk.includes('tier:`' + lc.tier + '`')) problems.push('档位不是 ' + lc.tier);
+  if (!chunk.includes('realDoubleWeekendRate:' + lc.rate)) problems.push('双休率不是 ' + lc.rate);
   if (!chunk.includes('rateSource:`derived`')) problems.push('缺 rateSource:derived');
-  if (!chunk.includes('rateBasis:`derived_from_recruiting_and_worker_reports`')) problems.push('rateBasis 不符');
+  if (!chunk.includes('rateBasis:`' + lc.basis + '`')) problems.push('rateBasis 不符');
   if (!chunk.includes('weekendPolicy:`' + lc.policy + '`')) problems.push('weekendPolicy 不符');
   const evIds = [...chunk.matchAll(/id:`(ev-[a-z0-9-]+)`/g)].map((x) => x[1]);
-  if (evIds.length < 5) problems.push('证据 id 不足 5 条（改档证据链被删？）');
+  if (evIds.length < lc.minEv) problems.push('证据 id 不足 ' + lc.minEv + ' 条（改档证据链被删？）');
   if (problems.length) badLocked.push(lc.name + '：' + problems.join('、'));
 }
 check(badLocked.length === 0,
-  '长城/名创维持 C 级 0%（口径换算）且证据链完整（2026-10-20 改档锁定）',
+  '长城 B 级 51% / 名创 C 级 0%（口径换算）且证据链完整（2026-11-12 长城改档锁定）',
   badLocked.join(', ') || '锁定生效');
 
 section('2e. 统计计数一致性（顶部四格 + 页脚清单）');

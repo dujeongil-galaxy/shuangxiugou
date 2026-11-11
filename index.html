@@ -41,7 +41,7 @@
     <!-- preload 的 credentials 模式必须与真正的 <script crossorigin> / <link rel=stylesheet crossorigin>
          完全一致，否则浏览器认为是两个不同请求：主包 434KB 和 CSS 53KB 会各下载两遍（实测慢网多花 5 秒）。
          加 crossorigin 前请勿删——verify §33a 有断言。 -->
-    <link rel="preload" as="script" crossorigin href="./assets/index-YthXZ9eP.js?v=50" />
+    <link rel="preload" as="script" crossorigin href="./assets/index-YthXZ9eP.js?v=51" />
     <link rel="preload" as="style" crossorigin href="./assets/index-BgVofs0W.css" />
     <!-- 广告位三张设计图在首屏，提前预热：慢网下广告位被补丁插入时图已在缓存里，
          不会出现「卡片出来了图还是空的」那种半截状态（站长 2026-11-10）。
@@ -124,7 +124,7 @@
   ]
 }
     </script>
-    <script type="module" crossorigin src="./assets/index-YthXZ9eP.js?v=50"></script>
+    <script type="module" crossorigin src="./assets/index-YthXZ9eP.js?v=51"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-BgVofs0W.css">
     <!-- 预加载关键补丁脚本（与 HTML 解析并行下载，减少隐私窗口无缓存时 RTT 等待） -->
     <link rel="preload" href="./custom-card-actions.js?v=24" as="script">
@@ -181,7 +181,7 @@
            display:none 的那一半不进无障碍树，名字会随状态自己变；
            写死 aria-label 反而一直是「展开」，收起后就读错了。 -->
       <input type="checkbox" id="notice-more" class="notice-more-cb">
-      <span id="evidence-notice">本站全部数据均附公开证据链：175 家企业 438 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 5 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice -->
+      <span id="evidence-notice">本站全部数据均附公开证据链：175 家企业 441 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 5 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice -->
       <label for="notice-more" class="notice-more-lbl"><span class="t-more">展开</span><span class="t-less">收起</span></label>
     </div>
     <!-- 版本号唯一真相源（2026-11-02 第五轮，站长：「版本号不要写这里了，加入三横菜单吧」）
@@ -209,7 +209,7 @@
      本区块由 scripts/gen-evidence-board.py 自动生成，请勿手改。
      改证据请改 brand/*.html 详情页，然后重跑：python scripts/gen-evidence-board.py
      单一真相源在 brand/ 页；scripts/verify.mjs 有防漂移断言逐条比对。
-     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：175 家企业 / 438 条证据 / 391 条带原始链接 / 5 家证据薄弱。 -->
+     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：175 家企业 / 441 条证据 / 394 条带原始链接 / 5 家证据薄弱。 -->
 <style>#evidence-board{max-width:960px;margin:0 auto;padding:28px 16px 40px;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.75;color:#1f2937;font-size:14px}
 #evidence-board h2{font-size:20px;font-weight:700;margin:0 0 6px;color:#0f172a;line-height:1.4}
 #evidence-board a{color:#0f766e}
@@ -258,15 +258,15 @@
 #evidence-board .ev-more{margin-top:10px;font-size:12px}
 #evidence-board .ev-foot{margin:16px 0 0;font-size:12.5px;color:#64748b}
 @media(max-width:640px){#evidence-board{padding:20px 12px 32px}#evidence-board .ev-stat{flex:1 1 44%}#evidence-board .ct{margin-left:0;width:100%}}</style>
-<section id="evidence-board" data-ev-brands="175" data-ev-total="438" data-ev-linked="391" data-ev-weak="5">
-  <h2>全站证据链公示（175 家企业 · 438 条证据）</h2>
+<section id="evidence-board" data-ev-brands="175" data-ev-total="441" data-ev-linked="394" data-ev-weak="5">
+  <h2>全站证据链公示（175 家企业 · 441 条证据）</h2>
   <p class="ev-lead">站长要求「证据链必须首页完整公示，口说无凭」——以下是站内每一条评级的取证清单，含证据类型、取证日期、文书编号与可点击的原始来源链接。数据由各品牌详情页（<code>brand/*.html</code>）自动汇总生成，两处不一致会被 <code>scripts/verify.mjs</code> 判红。</p>
   <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">其中 <strong>41 家</strong>目前仅有一条来源（第三方榜单聚合，2026-07-11，二手、未抓原文），属<strong>榜单口径换算</strong>而非实测：这些企业的真实双休率未核实，详情页已逐家公示「证据链」——来源、日期、原话、以及尚缺哪几类证据。补齐任一类证据后即重新核实改档。</p>
   <div class="ev-stats">
-    <div class="ev-stat"><b style="color:#0f766e">438</b><i>证据总条数</i></div>
-    <div class="ev-stat"><b style="color:#1d4ed8">391</b><i>带原始链接</i></div>
+    <div class="ev-stat"><b style="color:#0f766e">441</b><i>证据总条数</i></div>
+    <div class="ev-stat"><b style="color:#1d4ed8">394</b><i>带原始链接</i></div>
     <div class="ev-stat"><b style="color:#b45309">47</b><i>无可点链接</i></div>
-    <div class="ev-stat"><b style="color:#475569">7/77/31/57/1</b><i>S/A/B/C/D 家数</i></div>
+    <div class="ev-stat"><b style="color:#475569">7/77/32/56/1</b><i>S/A/B/C/D 家数</i></div>
     <div class="ev-stat"><b style="color:#450a0a">1 家</b><i>D 级（站长强制降级）</i></div>
     <div class="ev-stat"><b style="color:#64748b">2 家</b><i>U 级（证据不足）</i></div>
     <div class="ev-stat"><b style="color:#be123c">5 家</b><i>证据薄弱企业</i></div>
@@ -282,16 +282,18 @@
       <span class="ev-pill" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述 <b>11</b></span>
       <span class="ev-pill" style="border-color:#0369a1;color:#0369a1">ESG/审计报告 <b>9</b></span>
       <span class="ev-pill" style="border-color:#b45309;color:#b45309">媒体报道/调查 <b>62</b></span>
-      <span class="ev-pill" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径 <b>20</b></span>
+      <span class="ev-pill" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径 <b>21</b></span>
       <span class="ev-pill" style="border-color:#c2410c;color:#c2410c">站长一手实测 <b>3</b></span>
       <span class="ev-pill" style="border-color:#57534e;color:#57534e">员工/社群反馈 <b>76</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">旁证/二手汇总 <b>128</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（field_verification） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（third_party） <b>1</b></span>
+      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（上市公司年报（高置信）） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（员工/社群反馈） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体报道（含员工爆料，二手）） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体评论（附法条对照）） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体评论） <b>1</b></span>
+      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（官方媒体报道（员工采访）） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径） <b>86</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（暗访） <b>1</b></span>
     </div>
@@ -2364,6 +2366,62 @@
         <div class="ev-more"><a href="./brand/bee-flower.html">查看 蜂花 (Bee &amp; Flower) 完整详情页 →</a></div>
       </div>
     </details>
+    <details id="ev-gwm" data-b="gwm" data-g="B" data-n="8" data-l="8">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">长城汽车 (GWM)</span><span class="co">长城汽车股份有限公司</span><span class="ct">8 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">中国经济网（大河报）：长城汽车正式取消大小周、2026 年全面落实双休，覆盖全体员工</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：官方媒体报道（官宣级）</span> <span class="d">2026-01-08</span></div>
+            <div class="s">「长城汽车此次双休调整于 2026 年正式落地，覆盖全体员工」；休假制度完成第四次迭代；伴随调整取消 10 天高温假（其中 5 天抵扣年假）；含 2026 年工作日历「周末已更新为…</div>
+            <div class="u"><a href="http://m.ce.cn/qc/gd/202601/t20260108_2690049.shtml" rel="nofollow noopener" target="_blank">m.ce.cn/qc/gd/202601/t20260108_2690049.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">长城汽车大冶分公司 2026-10 校招/社招 JD：产线仍为「单双休工作制、月休 6 天」及「做六休一、两班倒」</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：招聘公告级（多源互证）</span> <span class="d">2026-10-09</span></div>
+            <div class="s">应届生求职网转载大冶分公司设备技术员校招 JD：「工作时间：单双休工作制，每天正常工作 8 小时，根据生产情况安排加班」，加班费「平时 1.5 倍、周末 2 倍、法定节假日 3 倍…</div>
+            <div class="u"><a href="https://www.yingjiesheng.com/job-008-108-441.html" rel="nofollow noopener" target="_blank">yingjiesheng.com/job-008-108-441.html</a></div>
+          </li>
+          <li>
+            <div class="t">智联招聘 / 超级简历：天津整车正式工 JD「7:50-17:00，8 小时以外记加班，每周固定单双休」</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：招聘公告级</span> <span class="d">2026-07-30 / 2026-11-11</span></div>
+            <div class="s">「工作时间:7:50-17:00，8 小时工作制，8 小时以外记加班」「每周固定单双休」；超级简历转载储备干部 JD：「长白班，早 8 点到下午 5 点，额外会加班，正常加班 1-…</div>
+            <div class="u"><a href="https://m.zhaopin.com/jobs/CC459533920J40894836313.htm" rel="nofollow noopener" target="_blank">m.zhaopin.com/jobs/CC459533920J40894836313.htm</a></div>
+          </li>
+          <li>
+            <div class="t">长城汽车 2025 年年度报告：在职员工 97,600 人，生产人员 47,441 人（占 48.6%）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（上市公司年报（高置信））</span> <span class="raw">原标注：上市公司年报（高置信）</span> <span class="d">2026-03-28</span></div>
+            <div class="s">「在职员工的数量合计 97,600」「生产人员 47,441」「销售人员 10,860」「技术人员 27,097」「财务人员 2,099」「行政人员 5,052」「其他人员 5,0…</div>
+            <div class="u"><a href="https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?stockid=601633&amp;id=12031773" rel="nofollow noopener" target="_blank">money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?…</a></div>
+          </li>
+          <li>
+            <div class="t">界面新闻：长城汽车取消大小周后未统一宣贯，工作日历已调整</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（官方媒体报道（员工采访））</span> <span class="raw">原标注：官方媒体报道（员工采访）</span> <span class="d">2026-01-15</span></div>
+            <div class="s">「长城汽车在今年初正式取消了维持多年的“大小周”工作制度（隔周单休）。公司并未就此向全体员工进行统一宣贯，但工作日历的调整已在内部悄然完成」「一位长城汽车员工向界面新闻表示，相关变…</div>
+            <div class="u"><a href="https://m.jiemian.com/article/13886049.html" rel="nofollow noopener" target="_blank">m.jiemian.com/article/13886049.html</a></div>
+          </li>
+          <li>
+            <div class="t">公开汇总「双休公司推荐名单 2026（270+ 家）」：长城汽车 2026 年完整双休政策</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
+            <div class="s">汇总文将长城汽车列为 2026 年完整双休政策；原文自述为按企业、行业、做法汇总的二手信息，并明确提醒「部门差异和二手信息风险」。本条为官宣报道之前的早期线索，保留备查。 （点此前…</div>
+            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
+          </li>
+          <li>
+            <div class="t">同类项目社区清单（tdwc.luomor.com）：长城汽车「已取消大小周，2026 年起全年 52 个完整双休」</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：社区清单（二手）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「已取消大小周，2026 年起全年 52 个完整双休」。与后续官宣报道方向一致，保留备查。</div>
+            <div class="u"><a href="https://tdwc.luomor.com/" rel="nofollow noopener" target="_blank">tdwc.luomor.com/</a></div>
+          </li>
+          <li>
+            <div class="t">姊妹站 shuangxiugou-guide 数据库：长城汽车登记为 reported 档并自注无企业通知级来源</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：开源项目记录（线索登记）</span> <span class="d">2026-10-17 检索</span></div>
+            <div class="s">「公开汇总所述的 2026 年完整双休政策」「未找到与汇总文字同级的企业通知，生产线与销售端需单独核对」。2026-10-20 官宣级报道与产线 JD 已补齐，本条历史记录保留。</div>
+            <div class="u"><a href="https://github.com/dujeongil-galaxy/shuangxiugou-guide" rel="nofollow noopener" target="_blank">github.com/dujeongil-galaxy/shuangxiugou-guide</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/gwm.html">查看 长城汽车 (GWM) 完整详情页 →</a></div>
+      </div>
+    </details>
     <details id="ev-lixiang" data-b="lixiang" data-g="B" data-n="6" data-l="6">
       <summary><span class="g" style="background:#b45309">B</span><span class="bn">理想汽车</span><span class="co">理想汽车</span><span class="ct">6 条证据</span></summary>
       <div class="ev-body">
@@ -3448,44 +3506,6 @@
         <div class="ev-more"><a href="./brand/xingyu.html">查看 常州星宇股份 (车灯及汽车消费品) 完整详情页 →</a></div>
       </div>
     </details>
-    <details id="ev-gwm" data-b="gwm" data-g="C" data-n="5" data-l="5">
-      <summary><span class="g" style="background:#be123c">C</span><span class="bn">长城汽车 (GWM)</span><span class="co">长城汽车股份有限公司</span><span class="ct">5 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">中国经济网（大河报）：长城汽车正式取消大小周、2026 年全面落实双休，覆盖全体员工</div>
-            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：官方媒体报道（官宣级）</span> <span class="d">2026-01-08</span></div>
-            <div class="s">「长城汽车此次双休调整于 2026 年正式落地，覆盖全体员工」；休假制度完成第四次迭代；伴随调整取消 10 天高温假（其中 5 天抵扣年假）；含 2026 年工作日历「周末已更新为…</div>
-            <div class="u"><a href="http://m.ce.cn/qc/gd/202601/t20260108_2690049.shtml" rel="nofollow noopener" target="_blank">m.ce.cn/qc/gd/202601/t20260108_2690049.shtml</a></div>
-          </li>
-          <li>
-            <div class="t">长城汽车大冶分公司 2026-10 校招/社招 JD：产线仍为「单双休工作制、月休 6 天」及「做六休一、两班倒」</div>
-            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：招聘公告级（多源互证）</span> <span class="d">2026-10-09</span></div>
-            <div class="s">应届生求职网转载大冶分公司设备技术员校招 JD：「工作时间：单双休工作制，每天正常工作 8 小时，根据生产情况安排加班」，加班费「平时 1.5 倍、周末 2 倍、法定节假日 3 倍…</div>
-            <div class="u"><a href="https://www.yingjiesheng.com/job-008-108-441.html" rel="nofollow noopener" target="_blank">yingjiesheng.com/job-008-108-441.html</a></div>
-          </li>
-          <li>
-            <div class="t">公开汇总「双休公司推荐名单 2026（270+ 家）」：长城汽车 2026 年完整双休政策</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-07-11</span></div>
-            <div class="s">汇总文将长城汽车列为 2026 年完整双休政策；原文自述为按企业、行业、做法汇总的二手信息，并明确提醒「部门差异和二手信息风险」。本条为官宣报道之前的早期线索，保留备查。 （点此前…</div>
-            <div class="u"><a href="https://interviewasssistant.com/zh/blog/company-work-schedule-2026" rel="nofollow noopener" target="_blank">interviewasssistant.com/zh/blog/company-work-schedule-2026</a></div>
-          </li>
-          <li>
-            <div class="t">同类项目社区清单（tdwc.luomor.com）：长城汽车「已取消大小周，2026 年起全年 52 个完整双休」</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：社区清单（二手）</span> <span class="d">2026-10-17 检索</span></div>
-            <div class="s">「已取消大小周，2026 年起全年 52 个完整双休」。与后续官宣报道方向一致，保留备查。</div>
-            <div class="u"><a href="https://tdwc.luomor.com/" rel="nofollow noopener" target="_blank">tdwc.luomor.com/</a></div>
-          </li>
-          <li>
-            <div class="t">姊妹站 shuangxiugou-guide 数据库：长城汽车登记为 reported 档并自注无企业通知级来源</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：开源项目记录（线索登记）</span> <span class="d">2026-10-17 检索</span></div>
-            <div class="s">「公开汇总所述的 2026 年完整双休政策」「未找到与汇总文字同级的企业通知，生产线与销售端需单独核对」。2026-10-20 官宣级报道与产线 JD 已补齐，本条历史记录保留。</div>
-            <div class="u"><a href="https://github.com/dujeongil-galaxy/shuangxiugou-guide" rel="nofollow noopener" target="_blank">github.com/dujeongil-galaxy/shuangxiugou-guide</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/gwm.html">查看 长城汽车 (GWM) 完整详情页 →</a></div>
-      </div>
-    </details>
     <details id="ev-byd" data-b="byd" data-g="C" data-n="4" data-l="2">
       <summary><span class="g" style="background:#be123c">C</span><span class="bn">BYD (比亚迪)</span><span class="co">比亚迪股份有限公司</span><span class="ct">4 条证据</span></summary>
       <div class="ev-body">
@@ -4460,7 +4480,7 @@
           <li><strong><a href="./brand/pinduoduo.html">拼多多 (PDD)</a></strong>：C 级 · 真实双休率 12% · 平均下班 22:00</li> <a href="./brand/pinduoduo.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/master-kong.html">康师傅 (Master Kong)</a></strong>：B 级 · 真实双休率 30% · 平均下班 19:40</li> <a href="./brand/master-kong.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/byd.html">BYD (比亚迪)</a></strong>：C 级 · 真实双休率 15% · 平均下班 20:00</li> <a href="./brand/byd.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/gwm.html">长城汽车 (GWM)</a></strong>：C 级（避雷预警） · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/gwm.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/gwm.html">长城汽车 (GWM)</a></strong>：B 级（双休不稳） · 真实双休率 51%（口径换算） · 平均下班 18:30</li> <a href="./brand/gwm.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/chery.html">奇瑞汽车 (CHERY)</a></strong>：C 级（避雷预警） · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/chery.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/geely.html">吉利汽车</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/geely.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/volvo.html">Volvo (沃尔沃汽车)</a></strong>：S 级 · 真实双休率 92% · 平均下班 18:05</li> <a href="./brand/volvo.html" style="color:#0F766E">详细→</a>
@@ -4593,7 +4613,7 @@
           <li><a href="./brand/pinduoduo.html">拼多多 (PDD)</a> —— C 级 · 双休率 12% · 平均下班 22:00</li>
           <li><a href="./brand/master-kong.html">康师傅 (Master Kong)</a> —— B 级 · 双休率 30% · 平均下班 19:40</li>
           <li><a href="./brand/byd.html">BYD (比亚迪)</a> —— C 级 · 双休率 15% · 平均下班 20:00</li>
-          <li><a href="./brand/gwm.html">长城汽车 (GWM)</a> —— C 级（避雷预警） · 双休率 0%（口径换算） · 平均下班 —</li>
+          <li><a href="./brand/gwm.html">长城汽车 (GWM)</a> —— B 级（双休不稳） · 双休率 51%（口径换算） · 平均下班 18:30</li>
           <li><a href="./brand/chery.html">奇瑞汽车 (CHERY)</a> —— C 级（避雷预警） · 双休率 0%（口径换算） · 平均下班 —</li>
           <li><a href="./brand/geely.html">吉利汽车</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
           <li><a href="./brand/volvo.html">Volvo (沃尔沃汽车)</a> —— S 级 · 双休率 92% · 平均下班 18:05</li>
@@ -9108,7 +9128,7 @@
   <!-- 奶茶／新茶饮类 B/C 级平替统一推荐陆喜依（2026-11-08 站长指定） -->
   <script defer src="./luxiyi-alt-patch.js?v=2"></script>
   <script defer src="./search-clear-order-fix.js?v=3"></script>
-  <script defer src="./rating-stats-patch.js?v=5"></script>
+  <script defer src="./rating-stats-patch.js?v=6"></script>
   <script defer src="./ai-notice-patch.js?v=1"></script>
   <script defer src="./ad-text-width-fix.js?v=1"></script>
   <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
