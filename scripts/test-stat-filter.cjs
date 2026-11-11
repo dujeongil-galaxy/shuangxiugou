@@ -6,7 +6,8 @@
 //   工/建/中/成都 4 家银行网点轮休制周休 2 天（≈月休 8.6 天）→ A 级；
 //   农行官方口径单休网点占 61%（主体月休 4-5 天）→ 维持 C 级。
 //   badge 卡共 176 张（53 内置 - 1 虚拟 + 123 自定义），可见 175 张（虚拟卡 class 隐藏）。
-//   红榜(S/A) 84 + 大小周(B) 31 + 避雷(C 58 + D 1) 59 = 174；另有 2 家 U 级（三星/宏碁，证据不足）
+//   红榜(S/A) 84 + 大小周(B) 32 + 避雷(C 56 + D 1) 57 = 173；另有 2 家 U 级（三星/宏碁，证据不足）
+//   2026-11-12 长城汽车 C→B 后按 rating-stats-patch.js 的 CORRECTIONS 对齐：B +1 / C -1。
 //   D 级 = 站长人工降级（现仅 BOSS直聘，2026-11-03 平台类目例外），计入避雷格；U 级不计入四格。
 //   2026-11-03：新增中国联通 B 级（站长线下核实一个城市，月休 8 天以上），B 级 +1。
 //   不计入四格，由 u-grade-patch.js 在四格下方补一行说明；
@@ -152,15 +153,15 @@ function click(box) {
   // —— 大小周观察：只显示 B ——
   click(zhou);
   s = snapshot();
-  check('点「大小周观察」→ 仅 B 级可见（31 张，与四格修正后「大小周观察 31」一致：Apple 2026-11-04 S→B，小米 2026-11-05 B→A）',
-    s.visible.length === 31 && s.visible.every((c) => tierOf(c) === 'B'),
+  check('点「大小周观察」→ 仅 B 级可见（32 张，与四格修正后「大小周观察 32」一致：Apple 2026-11-04 S→B，小米 2026-11-05 B→A，长城 2026-11-12 C→B）',
+    s.visible.length === 32 && s.visible.every((c) => tierOf(c) === 'B'),
     { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
 
   // —— 避雷预警：显示 C + D（D 是 C 的加重版，站长人工降级，同属避雷）——
   click(lei);
   s = snapshot();
-  check('点「避雷预警」→ C/D 级可见（58 张 = C 57 + D 1；84+31+58=174，另有 2 家 U 不在四格；农行 11-04 C→A 后 -1，11-11 新增吉利 +1）',
-    s.visible.length === 58 && s.visible.every((c) => ['C', 'D'].includes(tierOf(c))),
+  check('点「避雷预警」→ C/D 级可见（57 张 = C 56 + D 1；84+32+57=173，另有 2 家 U 不在四格；农行 11-04 C→A 后 -1，11-11 新增吉利 +1，11-12 长城 C→B 后 -1）',
+    s.visible.length === 57 && s.visible.every((c) => ['C', 'D'].includes(tierOf(c))),
     { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
   const dInLei = s.visible.filter((c) => tierOf(c) === 'D');
   // 2026-11-03 站长拍板：奇瑞 D→C；当前唯一 D 级 = BOSS直聘（自定义卡，平台类目例外）。
@@ -237,7 +238,7 @@ function click(box) {
   (async () => {
     const cCards = [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
       .filter((c) => tierOf(c) === 'C');
-    check('前置：DOM 中 C 级卡 57 张（2026-11-03 联通改判 B 级 + 2026-11-04 农行 C→A；含 BOSS直聘转 D 前口径、批量导入 29 张、11-11 新增吉利 +1）', cCards.length === 57, cCards.length);
+    check('前置：DOM 中 C 级卡 56 张（2026-11-03 联通改判 B 级 + 2026-11-04 农行 C→A；含 BOSS直聘转 D 前口径、批量导入 29 张、11-11 新增吉利 +1、11-12 长城 C→B -1）', cCards.length === 56, cCards.length);
     const removed = cCards.map((c) => {
       const p = c.parentNode; const nx = c.nextSibling;
       p.removeChild(c); return { c, p, nx };
@@ -246,8 +247,8 @@ function click(box) {
     const lei2 = boxOf('避雷预警');
     // 四格避雷数字是 bundle 手写常数（59）经 rating-stats-patch 修正为 57，
     // 搜索卸载卡不改变盒子数字
-    check('搜索过滤（C 卡被卸载）后避雷盒仍是修正常数 58',
-      lei2 && lei2.children[0].textContent === '58', lei2 && lei2.children[0].textContent);
+    check('搜索过滤（C 卡被卸载）后避雷盒仍是修正常数 57',
+      lei2 && lei2.children[0].textContent === '57', lei2 && lei2.children[0].textContent);
     // ⚠️ 恢复前先清掉「MO 自愈在卸载窗口期重建的同 id 新卡」：
     // removeChild 后 MutationObserver 会触发 insertAllCustomCards 重建自定义卡
     //（降级插列表末）。若直接把旧节点插回原位，DOM 里会出现同 id 两张卡。

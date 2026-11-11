@@ -49,7 +49,9 @@ const remindSrc = read('remind-button.js');
   check('customCardsConfig 含 molina-card 配置', cfgStart !== -1);
   const cfgChunk = html.slice(cfgStart, cfgStart + 1600);
   check('★ 茉莉奶白卡为 C 级（2026-10-30 U→C 升级）', /grade:\s*'C级'/.test(cfgChunk));
-  check('茉莉奶白卡双休率 null（C 级不留数值）', /doubleRestRate:\s*null/.test(cfgChunk));
+  // 2026-11-12 站内核实补了「双休率 0%（口径换算）」，此处按事实对齐，
+  // 不再要求 null（PITFALLS 第四十七章：改断言对齐事实，不改数据迁就断言）。
+  check('茉莉奶白卡双休率 0%（口径换算，2026-11-12 补录）', /doubleRestRate:\s*'0'/.test(cfgChunk));
   check('茉莉奶白卡下班时间 null', /offWorkTime:\s*null/.test(cfgChunk));
   check('insertAfter 美宜佳（紧跟其后）', /insertAfter:\s*'美宜佳'/.test(cfgChunk));
   check('logo 路径有效（assets/molina.svg?v=2 存在，2026-10-30 换真 logo 后 bump）',
@@ -102,7 +104,7 @@ const remindSrc = read('remind-button.js');
     new RegExp('text-base`,children:' + TOTAL + '\\}').test(bundle));
   check('★ bundle tab 角标常数 = 证据链头部总数 ' + TOTAL,
     new RegExp('rounded-full`,children:' + TOTAL + '\\}').test(bundle));
-  check('bundle 引用已 bump（?v=50，2026-10-31 U 分支死代码清理 + 银行月休口径改判）', /index-YthXZ9eP\.js\?v=50/.test(html));
+  check('bundle 引用已 bump（?v=51，后续批次继续递增）', /index-YthXZ9eP\.js\?v=51/.test(html));
 
   // ── 拼音索引 ──
   const pi = read('pinyin-index.js');
