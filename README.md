@@ -279,6 +279,16 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 **别动它**：删除遮罩或退回「`#root` 内占位」会让 FOUC 复发。若想让转圈更短，给 bundle 加 `<link rel="preload">` 提前拉取即可，不要改结构。
 
+### 近期 bug 根因（fix）：手机端 AI 面板按 bottom 反推，软键盘一弹就把面板顶出屏幕（2026-11-12 09:23 · 提交 `b8ae4d1`）
+
+**现象**：站长拿两张手机长截图对照——图 1 面板顶到屏幕最上方、站点 header 被整块盖住；图 2 面板正好落在 header 下沿。要的是图 2 那个位置，手机端点开后就稳定停在那儿。
+
+**根因**：手机端面板按 `bottom` + `100vh` 反推（`bottom: calc(var(--sxg-bar-h) + var(--sxg-dock-h,288px) + 24px)`、`max-height: min(480px, calc(100vh - bar-h - dock-h - 120px))`）。`--sxg-dock-h` 是屏幕底部那堆常驻按钮的高度，软键盘一弹 visual viewport 只剩 ~420px，`420 - 113 - 288 - 120` 直接变负数 → `max-height` 被压成 2px、面板顶到 `top=-7px`，等于消失（CDP 实测，与图 1 同形）。底部锚定的面板天生不适合「视口会变矮」的场景。
+
+**修法**：改 top 锚定 —— `mobile-fixes.css` 的 `#sxg-ai-panel` 用 `top: calc(var(--sxg-ai-top,72px) + 8px)` + `bottom:auto`，高度由 `--sxg-ai-vh` 钳制；`ai-chat.js` 新增 `setupMobileGeometry()`，实测 header 下沿写 `--sxg-ai-top`、`visualViewport.height` 写 `--sxg-ai-vh`，在 resize / 旋转 / `visualViewport` 的 resize+scroll / 面板 focusin / 按钮 click 时重算。量 header 的门槛第一版写 `r.top <= 48`，真实 header 顶边是 49（手机顶部还有状态条）→ 被排除、回落 64px 兜底、面板 top=72 反而压住 header；放宽成 `r.top <= 140 && r.bottom <= 200` 后拿到 116，面板 top=124（= 116 + 8）。
+
+**机器强制**：verify §36q 的面板断言从「跟随 `--sxg-dock-h`」改为 top 锚定口径（`top: calc(var(--sxg-ai-top` / `bottom: auto` / `var(--sxg-ai-vh)`，旧魔数（+210/272/276/335px）禁令原样保留）；§36g / §36q / §36s 三处 `mobile-fixes.css?v` 期望 17→18，`ai-chat.js?v` 26→27（首页）/ 18→19（其余 7 页）。无头 Edge（390×844、dpr 2、触控）复测：打开态 panel `top=124 / h=422 / bottom=546`，键盘态（视口 420）`top=124 / h=184 / bottom=308`——位置不动、完整可见。1667 项全绿。
+
 ### 近期 bug 根因（fix）：16 个内置 LOGO 文件扩展名与真实格式不符，页面上退化成文字（2026-11-12 06:33 · 提交 `c03f058`）
 
 - 现象：站长报「很多 LOGO 缺失」。实测苹果、索尼、瑞幸三张卡的头像框是空的，只剩品牌文字。逐字节检查发现 `assets/apple.png` / `assets/sony.png` / `assets/luckin.png` 的真实文件头是 ICO（`00 00 01 00`），另有 12 个 `.png` 实为 JPEG、`assets/luxiyi.jpg` 与 `assets/snack-logo.png` 实为 WebP。GitHub Pages 按扩展名下发 `Content-Type: image/png`，浏览器按 PNG 解码失败即触发 `logoImg.onerror` 文字降级，视觉上就是「这张卡没有 LOGO」。
