@@ -584,7 +584,7 @@ check(virtual2e === 1, '虚拟对比卡恰 1 张（口径排除依据，id 变�
 // 2026-11-11 新增「吉利汽车」（站长指令建卡，独立公开来源）→ 122 张导入卡。
 // 这个数不是「随便写死」：它同时被 §2e 的四格统计、brand/ 页数、公告栏数字三处引用，
 // 任何一处生成器漏跑都会在这里对不上，所以必须保留为硬断言。
-const IMPORTED_CARD_COUNT = 106;
+const IMPORTED_CARD_COUNT = 107;
 check(customPairs2e.length === 19 + IMPORTED_CARD_COUNT,
   `能解析全部自定义卡（${19 + IMPORTED_CARD_COUNT} 张 = 19 张手工卡含联通 + ${IMPORTED_CARD_COUNT} 张导入卡（104 榜单 + 2 独立来源））`,
   '实际 ' + customPairs2e.length);
@@ -651,9 +651,27 @@ check(locked2e.length === 11,
 check(byGrade2e('A级') === 8 + 58,
   '自定义卡 A 级共 66 张（工/建/中/成都/农行 5 家银行 + 小米 2026-11-05 B→A + 2026-11-12 广发银行/四川天府银行 2 家 + 榜单导入 58 张）',
   '实际 ' + byGrade2e('A级'));
-check(byGrade2e('C级') === 10 + 29,
-  '自定义卡 C 级共 39 张（手工 10 张 + 榜单导入 29 张；农行 2026-11-04 由 C 转 A；BOSS直聘 2026-11-03 转入 D 级；2026-11-11 新增吉利汽车 C 级）',
+check(byGrade2e('C级') === 10 + 29 + 1,
+  '自定义卡 C 级共 40 张（手工 10 张 + 榜单导入 29 张 + 2026-11-12 新增零跑汽车 C 级；农行 2026-11-04 由 C 转 A；BOSS直聘 2026-11-03 转入 D 级；2026-11-11 新增吉利汽车 C 级）',
   '实际 ' + byGrade2e('C级'));
+// 2026-11-12 新增「零跑汽车」自定义卡（站长指令：新增品牌、证据链由联网核实公开报道；
+// 两条抖音短视频线索归属首页弹窗新版入口、不挂本卡证据链；备注栏必须注明内容存疑）。
+// 以下断言锁定该卡的关键字段，防止后续误改档位/漏挂免责声明/误把短视频链挂进证据链。
+{
+  const noscriptText2e = (html.match(/<noscript>([\s\S]*?)<\/noscript>/) || [])[1] || '';
+  const start = html.indexOf("id: 'leapmotor-card'");
+  const end = html.indexOf('// ==IMPORTED-CARDS-END==');
+  const block = start >= 0 && end > start ? html.slice(start, end) : '';
+  check(start >= 0, '自定义卡 leapmotor-card 存在', 'index.html 未发现 leapmotor-card');
+  check(/logo:\s*null/.test(block), '零跑卡 logo:null（文字徽标回退，无 PNG 资源）', 'leapmotor-card 块未含 logo:null');
+  check(/grade:\s*'C级'/.test(block), '零跑卡 grade 锁定为 C 级', '实际 ' + (block.match(/grade:\s*'([^']+)'/)||[])[1]);
+  check(/insertAfter:\s*'吉利汽车'/.test(block), '零跑卡 insertAfter 锁定为 吉利汽车（BYD 锚点已被吉利占用，共用会触发归位互抢判红）', 'leapmotor-card 块未发现 insertAfter 或值不符');
+  check(/cardNoteTitle:\s*'站长备注（内容真实性存疑，请注意甄别）'/.test(block), '零跑卡备注标题含「内容真实性存疑，请注意甄别」', 'leapmotor-card 未挂免责标题');
+  check(/cardNote:\s*'[^']*内容真实性存疑[^']*'/.test(block), '零跑卡备注正文含「内容真实性存疑」免责声明', 'leapmotor-card 未挂免责正文');
+  check(/cardNote:\s*'[^']*首页弹窗[^']*新版本[^']*'/.test(block), '零跑卡备注注明两条短视频线索归属首页弹窗新版本（不挂本卡证据链）', 'leapmotor-card 未注明短视频线索归属');
+  check(/零跑汽车/.test(noscriptText2e), 'noscript 主评级清单含零跑汽车（仅主清单、不进详情页 ul，保 177 计数链）', 'noscript 未含零跑汽车');
+  check(/brand\/leapmotor\.html/.test(html), '零跑卡已有 brand/leapmotor.html 详情页（自定义卡↔品牌页 1:1，保 178 计数链）', '未发现 brand/leapmotor.html 引用');
+}
 // D 级自定义卡：2026-11-03 起只有 BOSS直聘 一张（平台类目例外）。多一张或少一张都要判红 ——
 // 这一档是「人的结论」，被悄悄批量加卡就等于把站长的判断稀释成普通档位。
 check(byGrade2e('D级') === 1 && customPairs2e.filter((c) => c.grade === 'D级').map((c) => c.id)[0] === 'bosszhipin-card',
@@ -1364,7 +1382,7 @@ if (cfgBlock) {
 }
 const CUSTOM_COUNT = customCards.length;
 check(CUSTOM_COUNT === 19 + IMPORTED_CARD_COUNT,
-  `自定义卡 ${CUSTOM_COUNT} 张（19 张手工 + ${IMPORTED_CARD_COUNT} 张导入；2026-11-02 批量导入，2026-11-03 增联通 B 级，2026-11-08 增陆喜依 S 级，2026-11-12 增广发银行/四川天府银行 A 级）`);
+  `自定义卡 ${CUSTOM_COUNT} 张（19 张手工 + ${IMPORTED_CARD_COUNT} 张导入；2026-11-02 批量导入，2026-11-03 增联通 B 级，2026-11-08 增陆喜依 S 级，2026-11-12 增广发银行/四川天府银行 A 级 + 零跑汽车 C 级）`);
 
 // null 规则：双休率 / 下班时间不得为占位 0，也不得是字符串 '未知'
 customCards.forEach((c) => {
@@ -7047,8 +7065,8 @@ section('24. 白屏兜底与加载态（防用户误退出）');
   check(/grade: 'S级'/.test(card25) && /doubleRestRate: null/.test(card25),
     '§25k 首页卡为 S 级且真实双休率留空 null（不估填）');
   check(/华龙网转载极目新闻/.test(card25), '§25l 卡面可见文案写明真实来源');
-  check(/\/brand\/luxiyi\.html/.test(idx25) && /全部品牌详细页（177 个）/.test(idx25),
-    '§25m noscript 清单含陆喜依且标题数字同步 177');
+  check(/\/brand\/luxiyi\.html/.test(idx25) && /全部品牌详细页（178 个）/.test(idx25),
+    '§25m noscript 清单含陆喜依且标题数字同步 178');
   check(/\/brand\/luxiyi\.html/.test(read('projects.html')), '§25n projects.html 索引含陆喜依');
   check(/\/brand\/luxiyi\.html/.test(read('sitemap.xml')), '§25o sitemap.xml 含陆喜依详情页');
   const ebStart = idx25.indexOf('id="evidence-board"');
