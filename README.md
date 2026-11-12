@@ -251,7 +251,7 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 **改动失败时往往完全不报错**（见 `PITFALLS.md`）。半年后回来看，唯一能判断
 「这行为什么长这样」的东西，就是当时的记录。
 
-> **近期改动入口**：最近一批（2026-11-12 15:38 · 提交 `99d0ad0`）首页弹窗「新版/旧版」转换按钮**落位改到弹窗内部右上角**（站长纠正：紧挨 × 左侧、「劳工友好提醒」标签同行，不是顶栏）。默认新版本（比亚迪·前后轮辋装反 + 理想L8·方向盘拉不动 两枚抖音短片、隐藏事实核查），点后切旧版本（在抖音中观看/事实核查/站长随笔），再点回新版本；文案 `替换旧版`↔`新版本`，localStorage 记忆默认 new。① 不改弹窗本体，只 patch `.dyp__acts`；事实核查隐藏用 `.dyp--new .dyp__factcheck{display:none !important}` class 兜底（与 `factcheck-button.js` 注入时机无关、消除闪烁窗口），仍只显隐不删除、可随版本恢复。② `?v=1→2`；verify §36u③④、`test-dyp-toggle.cjs` 22 项、CDP 双视口真渲染（`inPanel/beforeX=true`、`inHeader/inDock=false`）。同批（15:29 · `4817ce1`）**新增零跑汽车 C 级自定义卡 + 详情页**：证据链联网核实，两条抖音线索只入备注栏并注明「内容真实性存疑，请注意甄别」、不挂证据链；计数全套 177→178 / 125→126 收口。逐批明细见 [最近更新.md](./最近更新.md) 与 [CHANGELOG.md](./CHANGELOG.md)。
+> **近期改动入口**：最近一批（2026-11-12 16:13 · 提交 `af19de0`）三条一起落地。① **弹窗三按钮**：站长追问「看看按钮大小，再看文字」——实测 1440 行宽 357px、后两枚只分到 90px，「理想L8·抖音短片」scrollWidth 107 > clientWidth 92 被省略号截断；文案收成 `比亚迪短片 / 理想L8短片 / 站长随笔`，新版三枚等宽（`@media(min-width:521px)`，≤520px 保留官方纵向 `flex:0 0 auto`），修后 113/115/115px、三枚 `clipped=false`。② **零跑备注栏**写入售后服务抖音短链 `n-xv654_mrI`（站长：写入备注栏、不挂证据链），同段注明「内容真实性存疑，请注意甄别」+ 视频未点名品牌 + 不进本卡证据链；备注框渲染由纯 `textContent` 改为「http(s) 自动成可点 `<a>`」（`rel=noopener noreferrer nofollow`），`brand/leapmotor.html` 保持零抖音链。③ **视频区**新增第 4 条「为什么说宁等网约车也不要坐出租车？」（`asAmGiTjrAU`），`featured-douyin.js ?v=5→6`。机器强制：verify 1706→1713、§36u⑤/§36m 新断言、`test-dyp-toggle` 25 项、CDP 双视口 + 新增 `cdp-leapmotor-note-video.cjs`（`NOTE_OK`/`VIDEO_OK`）、7 组故障注入全判红。逐批明细见 [最近更新.md](./最近更新.md) 与 [CHANGELOG.md](./CHANGELOG.md)。
 
 > 上一批（2026-11-12 09:25 · 提交 `a89db78`）手机端顶栏按钮**全部展开、不再隐藏**（§36t）。站长「我再说一次，手机端，全部展开，按钮不再做隐藏」指的是上一轮只撑开了右侧 76px 隔离列里的 dock，`Star on GitHub` 等顶栏按钮仍藏在「菜单▼」里。① `header-menu-patch.js` 删掉 `collapse/restore`、下拉容器与按钮隐藏规则，改打 `data-sxg-hdr-expanded` 标记 + `reclaim()` 回收旧菜单残留；下半段 GitHub 登录逻辑不动。② `mobile-fixes.css` ≤640px 顶栏 `flex-wrap`，品牌第一行、按钮组换行铺满第二行，每枚自身宽度 + `nowrap` 常显，🌐 圆形帮助入口单独排除并贴回 Star；另补 641–900px，修 660px 真渲染六枚按钮被挤成逐字竖条。③ `github-access-help.js` 电脑 / 手机平板两条办法**同时常显**，`isDesktop()` 只给当前设备那条打「推荐」标记；🌐 入口宽窄屏统一贴 Star 常显，不再挂下拉。④ `appeal-policy.js` 帮助块变高后复位 `card.scrollTop = 0`，避免 `focus()` 把标题滚出视野。`index.html` 四个资源 `?v` 同步 bump（CSS 18 / header 11 / help 2 / appeal 4）；verify 更新 §36g/§36q/§36r/§36s 钉子 + 新增 §36t 七断言，新增 `scripts/test-header-expand.cjs`（32 项）挂进 CI，另按事实改两条过期断言。**1674 全绿**、44 组非本机专用测试分三批全通过、8 组故障注入全判红后还原，CDP 真渲染 360/390/660/1440 四档零隐藏零裁切零溢出。合并远端 §38 后两份 CSS 改动合流，`mobile-fixes.css?v` 顺延至 19。该次 merge 的提交说明误带跳过标记字面量致三个 CI workflow 未触发，已补推一次提交重新触发。逐批明细见 [最近更新.md](./最近更新.md) 与 [CHANGELOG.md](./CHANGELOG.md)。
 
@@ -282,6 +282,14 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 **改动历史**：2026-11-01 先试过「`#root` 内加载占位」方案（提交 `e9f5ac0`）——站长实测仍闪（证据链区块在 `#root` 之外，占位盖不住）；同轮改为全屏遮罩（提交 `ca414e9`）根治。完整改动见 [CHANGELOG.md](./CHANGELOG.md)。
 
 **别动它**：删除遮罩或退回「`#root` 内占位」会让 FOUC 复发。若想让转圈更短，给 bundle 加 `<link rel="preload">` 提前拉取即可，不要改结构。
+
+### 近期 bug 根因（fix）：弹窗三按钮「大小不合适」——文案 8～9 字塞进 90px 格子，被省略号截断（2026-11-12 16:13 · 提交 `af19de0`）
+
+**现象**：站长 11-12 15:48 截图追问「这下面 3 个按钮，你觉得合适吗？看看按钮大小，再看文字」——弹窗底部三枚按钮里，「理想L8·抖音短片」显示成「理想L8·抖音短…」。
+
+**根因**：`.dyp__acts` 是 `flex:1 1 0` 等分 + `white-space:nowrap` + `text-overflow:ellipsis`，而旧版给主按钮加了 `.dyp__go{flex:2 1 0}`（当初为「在抖音中观看」6 字留余量）。新版沿用这套权重后，1440 下行宽 357px、gap 8px → 第一枚 161px、后两枚只剩 90px；「理想L8·抖音短片」实测 `scrollWidth 107 > clientWidth 92`，直接被省略号吃掉。
+
+**修复**：① 文案收敛为 `比亚迪短片 / 理想L8短片 / 站长随笔`（5～6 字），「抖音短视频」的完整说明移到 `title` 悬停提示；② 新版三枚等宽 `@media (min-width:521px){.dyp__acts.dyp--new > *{flex:1 1 0}}`（≤520px 不生效，保住官方纵向 `flex:0 0 auto`——纵向 `basis:0` 会让高度先归零）；旧版仍保留 `.dyp__go{flex:2}`（那时主按钮是视觉重心）。修复后实测 113/115/115px、三枚 `clipped=false`。`?v=2→3`；verify §36u⑤ 钉「文案 ≤6 字 + 等宽规则限定 ≥521px」，`test-dyp-toggle.cjs` 加文案长度与 `title` 护栏（25 项），`cdp-dyp-toggle.cjs` 加逐枚 `scrollWidth > clientWidth` 量测断言（截断即判失败）。
 
 ### 近期 bug 根因（fix）：弹窗版本转换按钮落错了地方——放进顶栏，站长要的是「弹窗内右上角」（2026-11-12 15:38 · 提交 `99d0ad0`）
 

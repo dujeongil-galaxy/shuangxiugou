@@ -3008,3 +3008,16 @@ HEAD 不是补提交，只是正文里引用了一下标记，同样被跳过。
 2. **「新版本隐藏事实核查」只切 inline `display:none` 会跟上游注入时机竞态**。`factcheck-button.js` 是独立脚本、在 `requestAnimationFrame` 里注入 `.dyp__factcheck`；若它在本脚本 `applyDyp` 之后才注入，就有一帧「事实核查闪一下」的窗口（CDP 探针实测 `fcDisplay:'flex'`）。解法：给 `.dyp__acts` 打 `dyp--new` class，配 `.dyp__acts.dyp--new .dyp__factcheck{display:none !important}`——与注入顺序无关，新注入的节点也会立刻被 CSS 藏掉；inline `display` 仍保留作双保险。**判据**：凡「隐藏一个由别的脚本后注入的节点」，别只依赖 JS 时序，要用状态 class + CSS `!important` 兜底。
 3. **落位断言要正反两面**。§36u③ 既咬 `.dyp__panel`/`.dyp__x`/`.dyp__version-toggle` 存在与顺序（正面），又 `!/login-github-btn/ && !/DOCK_ID/`（反面，防回退顶栏）。只写正面断言，下次又会悄悄挪回顶栏而绿灯。
 4. **CDP 探针要轮询等弹窗 build**。`.dyp` 是加载后 2.5s 才 build，单次 `sleep(2500)` 后 probe 极易赶在「面板还没建」的空窗误报 `present:false`；改成 `pollToggle` 轮询到按钮出现，并让 `pollActsNew` 等到 `goText/d2Text/fcDisplay/laterText` 四项全就位再返回，避免抓到中间态误判。
+
+## 第五十九章：按钮「大小/文字」要按实测像素判，别凭感觉；备注栏写链接 ≠ 链接能点（2026-11-12 16:13 af19de0）
+
+站长原话「这下面 3 个按钮，你觉得合适吗？看看按钮大小，再看文字」——这类反馈不能靠肉眼估，必须量出来再改：
+
+1. **flex 等分 + 长文案 = 省略号截断，且被 `.dyp__go{flex:2}` 放大**。`.dyp__acts` 是 `flex:1 1 0` + `white-space:nowrap` + `text-overflow:ellipsis`，旧版权重给主按钮 2 份，于是 1440 行宽 357px 分下来是 161/90/90——「理想L8·抖音短片」实测 `scrollWidth 107 > clientWidth 92`，直接被吃掉半截。**取证方法**：在页面里对每枚按钮取 `scrollWidth` 与 `clientWidth`，差值 > 1 即截断；不要只看文案对不对（文案对、渲染仍可能残缺）。
+2. **改法优先级：先缩文案，再谈宽度**。先把「比亚迪·抖音短片 / 理想L8·抖音短片」（8～9 字）收成「比亚迪短片 / 理想L8短片」（5～6 字），完整说明搬 `title`；再给新版加 `@media (min-width:521px){.dyp__acts.dyp--new > *{flex:1 1 0}}` 让三枚等宽。**为什么必须带 `min-width:521px`**：≤520px 时官方把 `.dyp__acts` 转纵向并写死 `flex:0 0 auto`，若在窄屏也套 `flex:1 1 0`，纵向 `basis:0` 会让高度先归零、全靠 `min-height` 兜底（官方注释已写明这点）。
+3. **旧版权重不要顺手改掉**。`.dyp__go{flex:2}` 是给旧版「在抖音中观看」6 字留的余量、也符合「主按钮更重」的语义；新版三入口同级才需要等宽。两个版本语义不同，别用一条规则通吃。
+4. **`cardNote` 是 `textContent`，写进去的链接读者点不动**。站长说「链接写入备注栏」，光把 URL 塞进字符串只得到一行可看不可点的文字。做法：渲染层把 `http(s)` 切成 `<a>`（`target=_blank` + `rel=noopener noreferrer nofollow`），无链接时行为与纯文本一致——别为了一个链接改整块卡片结构。
+5. **「不挂证据链」要能被机器反查**。短视频线索只许留在卡面备注栏：断言除了「备注栏含该链」，还要**反查详情页 `brand/<slug>.html` 不得出现 `v.douyin.com`**。只写正面断言，下次「顺手补个来源」就把线索挂进证据链了。
+6. **单卡配置变长会顶坏别人的取值窗口**。verify 里「kw 回填词必命中 keywords」原来按 `slice(cfgStart, cfgStart+1600)` 取本卡片段，备注一长就把 `keywords` 切到窗口外、误报「kw 未命中」（本次真踩）。**判据**：凡按固定字数截取「某个对象的一段」，改成按下一个对象的分隔符界定（本卡 `id:` 到下一张卡 `id:`），否则配置越写越长，迟早假红。
+7. **扫源码做「旧文案不得残留」的断言，先剥注释**。文件里保留「原先写 8～9 字被截断」的说明是记录，不是实现；但**别用裸 `\/\/[^\n]*` 剥**——那会把 `https://` 的尾巴当注释吃掉（第三十四章老坑）。只剥块注释 + 整行 `//` 注释。
+8. **数组类内容（视频列表）追加条目 ≠ 生效**：`featured-douyin.js` 这类带 `?v` 的脚本必须同步 bump（本次 5→6），否则浏览器拿缓存旧脚本，条目在源码里、页面上却没有；断言要同时咬「条目在位」与「`?v` 已 bump」。
