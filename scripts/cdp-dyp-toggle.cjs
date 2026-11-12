@@ -1,9 +1,9 @@
 // 【本机专用 · 不挂 CI】真渲染验收：首页弹窗「新版/旧版 转换按钮」（2026-11-12 §36u）
 // 本地起静态服务 + 无头 Edge CDP，桌面(1440)与手机(390)分别独立加载：
-//   1) 转换按钮可见（桌面在顶栏 / 手机进 #sxg-fab-dock）
+//   1) 转换按钮在「弹窗内部右上角」（.dyp__panel 内、插在 .dyp__x 之前），不在顶栏/dock
 //   2) 默认 new 版：弹窗 acts = [比亚迪] [理想L8] [站长随笔]，事实核查隐藏
 //   3) 点转换按钮 → old 版：acts = [在抖音中观看] [事实核查] [站长随笔]
-//   4) 截弹窗图，肉眼复核按钮文案与顺序
+//   4) 截弹窗图，肉眼复核按钮位置/文案与顺序
 // 产物落 D:/WorkBuddy-Cache/shots/dyp-*.png
 const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
 const { spawn } = require('child_process');
@@ -73,7 +73,9 @@ async function pollActsNew(ws, ms) {
         fcDisplay:fc?(fc.style.display||getComputedStyle(fc).display):null, fcText:fc?fc.textContent:null,
         laterText:later?later.textContent:null};
     `);
-    if (last && last.acts && last.goText === '比亚迪·抖音短片') return last;
+    if (last && last.acts && last.goText === '比亚迪·抖音短片'
+      && last.d2Text === '理想L8·抖音短片' && last.fcDisplay === 'none'
+      && last.laterText === '站长随笔') return last;
     await sleep(500);
   }
   return last;
@@ -82,6 +84,33 @@ function shot(ws, name, w, h) {
   return cdp(ws, 'Page.captureScreenshot', { format:'png', fromSurface:true,
     captureBeyondViewport:false, clip:{ x:0, y:0, width:w, height:h, scale:1 } })
     .then(s => { if (s.result && s.result.data) { const o = cacheDir(name); fs.writeFileSync(o, Buffer.from(s.result.data,'base64')); return o; } });
+}
+// 轮询直到转换按钮出现（弹窗 2.5s 才 build，且按钮由 observer/sweep 随后插入）
+async function pollToggle(ws, ms) {
+  const deadline = Date.now() + ms;
+  let last = null;
+  while (Date.now() < deadline) {
+    last = await toggleProbe(ws);
+    if (last && last.present) return last;
+    await sleep(400);
+  }
+  return last;
+}
+// 检查转换按钮是否在「弹窗内部右上角」：.dyp__panel 内、nextSibling 是 .dyp__x、可见
+function toggleProbe(ws) {
+  return evalJson(ws, `
+    var b=document.getElementById('sxg-dyp-toggle-btn'); if(!b) return {present:false};
+    var cs=getComputedStyle(b); var panel=document.querySelector('.dyp__panel');
+    var x=panel?panel.querySelector('.dyp__x'):null;
+    var inPanel=!!(panel&&panel.contains(b));
+    var beforeX=!!(x&&b.nextSibling===x);
+    var r=b.getBoundingClientRect();
+    return {present:true, text:b.textContent, display:cs.display,
+      inPanel:inPanel, beforeX:beforeX, inHeader:!!(b.closest&&b.closest('header')),
+      inDock:!!((document.getElementById('sxg-fab-dock')||{contains:function(){return false}}).contains(b)),
+      rect:{x:Math.round(r.x),y:Math.round(r.y),w:Math.round(r.width),h:Math.round(r.height)},
+      panelRect:(function(){if(!panel)return null;var pr=panel.getBoundingClientRect();return {x:Math.round(pr.x),y:Math.round(pr.y),w:Math.round(pr.width),h:Math.round(pr.height)};})()};
+  `);
 }
 
 (async () => {
@@ -115,18 +144,13 @@ function shot(ws, name, w, h) {
   await cdp(ws, 'Page.enable');
   await cdp(ws, 'Runtime.enable');
 
-  // ============ ① 桌面（先加载，>640 dock 不建，toggle 进顶栏） ============
+  // ============ ① 桌面 1440 ============
   await cdp(ws, 'Emulation.setDeviceMetricsOverride', {
     width: 1440, height: 900, deviceScaleFactor: 1, mobile: false, screenWidth: 1440, screenHeight: 900
   });
   await cdp(ws, 'Page.navigate', { url: URL });
   await sleep(2500);
-  const dToggle = await evalJson(ws, `
-    var b=document.getElementById('sxg-dyp-toggle-btn'); if(!b) return {present:false};
-    var cs=getComputedStyle(b); var hdr=b.closest && b.closest('header');
-    return {present:true, text:b.textContent, display:cs.display, inHeader:!!hdr,
-      prevId:b.previousSibling?b.previousSibling.id:null};
-  `);
+  const dToggle = await pollToggle(ws, 8000);
   console.log('[desktop] TOGGLE(new)=' + JSON.stringify(dToggle));
   const dActs = await pollActsNew(ws, 6000);
   console.log('[desktop] ACTS(new)=' + JSON.stringify(dActs));
@@ -150,29 +174,25 @@ function shot(ws, name, w, h) {
   console.log('[desktop] ACTS(old)=' + JSON.stringify(dActsOld));
   await shot(ws, 'shots/dyp-desktop-old.png', 1440, 900);
 
-  // ============ ② 手机（清 localStorage 重新加载，≤640 dock 建，toggle 进 dock） ============
+  // ============ ② 手机 390（清 localStorage 重新加载，默认 new） ============
   await evalJson(ws, `try{localStorage.removeItem('dyp_version_toggle_v1');localStorage.removeItem('dy_video_prompt_at');}catch(e){}`);
   await cdp(ws, 'Emulation.setDeviceMetricsOverride', {
     width: 390, height: 844, deviceScaleFactor: 1, mobile: true, screenWidth: 390, screenHeight: 844
   });
   await cdp(ws, 'Page.navigate', { url: URL });
   await sleep(2500);
-  const mToggle = await evalJson(ws, `
-    var b=document.getElementById('sxg-dyp-toggle-btn'); if(!b) return {present:false};
-    var cs=getComputedStyle(b); var dock=document.getElementById('sxg-fab-dock');
-    return {present:true, text:b.textContent, display:cs.display, offsetParentNull:b.offsetParent===null,
-      inDock:!!(dock&&dock.contains(b)), inHeader:!!(b.closest&&b.closest('header'))};
-  `);
+  const mToggle = await pollToggle(ws, 8000);
   console.log('[mobile] TOGGLE(new)=' + JSON.stringify(mToggle));
   const mActs = await pollActsNew(ws, 6000);
   console.log('[mobile] ACTS(new)=' + JSON.stringify(mActs));
   await shot(ws, 'shots/dyp-mobile-new.png', 390, 844);
 
-  const mOk = mToggle && mToggle.present && mToggle.display !== 'none' && mToggle.inDock === true
-    && mToggle.text === '替换旧版'
+  const toggleOk = (t) => t && t.present && t.display !== 'none' && t.text === '替换旧版'
+    && t.inPanel === true && t.beforeX === true && t.inHeader === false && t.inDock === false;
+  const mOk = toggleOk(mToggle)
     && mActs && mActs.goText === '比亚迪·抖音短片' && mActs.d2Text === '理想L8·抖音短片'
     && mActs.fcDisplay === 'none' && mActs.laterText === '站长随笔';
-  const dOk = dToggle && dToggle.present && dToggle.text === '替换旧版' && dToggle.inHeader === true
+  const dOk = toggleOk(dToggle)
     && dActs && dActs.goText === '比亚迪·抖音短片' && dActs.d2Text === '理想L8·抖音短片'
     && dActs.fcDisplay === 'none' && dActs.laterText === '站长随笔'
     && clickRes && clickRes.version === 'old' && clickRes.newText === '新版本'

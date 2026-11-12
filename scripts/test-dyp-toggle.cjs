@@ -7,10 +7,11 @@
      ② 默认（new）把 .dyp__acts 调成 [比亚迪] [理想L8] [站长随笔]，隐藏事实核查
      ③ 切到 old 恢复 [在抖音中观看] [事实核查] [站长随笔]
      ④ 幂等：重复应用 new 不产生多枚 .dyp__douyin2
-     ⑤ 桌面落位：Login GitHub 之后、带 sxg-header-btn、文案默认「替换旧版」
-     ⑥ 手机落位：进 #sxg-fab-dock、带 dock 短标签、不进菜单
+     ⑤ 落位：转换按钮在「弹窗内」右上角（.dyp__panel 内、插在 .dyp__x 之前），
+        不在顶栏 / dock；带 .dyp__version-toggle
+     ⑥ 弹窗未 build 时 sweep 不报错、不误建按钮
      ⑦ 点击转换按钮翻版本（new ↔ old）并记忆 localStorage
-     ⑧ index.html 引用 dyp-version-toggle.js?v=1（剥 HTML 注释再判）
+     ⑧ index.html 引用 dyp-version-toggle.js?v=2（剥 HTML 注释再判）
    ========================================================================== */
 'use strict';
 
@@ -29,14 +30,13 @@ function check(name, cond, detail) {
 
 function mkDom(opts) {
   opts = opts || {};
-  const state = { narrow: !!opts.narrow, listeners: [] };
   const html = '<!DOCTYPE html><html><head></head><body>'
-    + '<div class="flex items-center gap-3" id="hdr" style="position:relative">'
+    + '<div class="flex items-center gap-3" id="hdr">'
     + '<a id="star" href="x">★ Star on GitHub</a>'
     + '<a id="sponsor-entry-btn" href="./sponsor.html">☕ 赞助本项目</a>'
     + '<a id="login-github-btn" href="https://x/auth/github">🔑 Login GitHub</a>'
     + '</div>'
-    + (opts.dock ? '<div id="sxg-fab-dock"><button id="sxg-top-btn">TOP</button></div>' : '')
+    + (opts.panel ? buildPanelHtml() : '')
     + '</body></html>';
   const dom = new JSDOM(html, {
     runScripts: 'outside-only',
@@ -44,44 +44,38 @@ function mkDom(opts) {
     pretendToBeVisual: true
   });
   const w = dom.window;
-  w.matchMedia = function (q) {
-    return {
-      get matches() { return /max-width/.test(q) ? state.narrow : false; },
-      addEventListener: function (_, fn) { state.listeners.push(fn); },
-      removeEventListener: function () {},
-      addListener: function (fn) { state.listeners.push(fn); }
-    };
-  };
+  w.matchMedia = function () { return { matches: false, addEventListener: function () {}, removeEventListener: function () {}, addListener: function () {} }; };
   w.eval(SRC);
   w.document.dispatchEvent(new w.Event('DOMContentLoaded', { bubbles: true }));
   if (w.SXGDypToggle) w.SXGDypToggle.sweep();
-  return { w: w, state: state };
+  return { w: w };
 }
 
-// 造一个 .dyp__acts（模拟 douyin-prompt.js + factcheck-button.js 已注入的弹窗底部）
-function buildDyp(w, withFactcheck) {
-  const acts = w.document.createElement('div');
-  acts.className = 'dyp__acts';
-  const go = w.document.createElement('a');
-  go.className = 'dyp__go';
-  go.textContent = '在抖音中观看';
-  go.href = 'https://v.douyin.com/37pbo6qxUbs/';
-  const later = w.document.createElement('a');
-  later.className = 'dyp__later';
-  later.href = './notes.html';
-  later.textContent = '站长随笔';
-  acts.appendChild(go);
-  if (withFactcheck) {
-    const fc = w.document.createElement('a');
-    fc.className = 'dyp__factcheck';
-    fc.id = 'dyp__factcheck';
-    fc.href = './jiahua-fact-check.html';
-    fc.textContent = '事实核查';
-    acts.appendChild(fc);   // factcheck-button.js 插在 go 与 later 之间
-  }
-  acts.appendChild(later);
-  w.document.body.appendChild(acts);
-  return acts;
+// 模拟 douyin-prompt.js 的弹窗骨架（含 × 关闭 + tag + acts）
+function buildPanelHtml() {
+  return '<div class="dyp"><div class="dyp__mask"></div>'
+    + '<div class="dyp__panel">'
+    + '<button class="dyp__x" type="button" aria-label="关闭">×</button>'
+    + '<div class="dyp__tag">劳工友好提醒</div>'
+    + '<h2 class="dyp__title">压榨员工的产品，最后买单的是谁？</h2>'
+    + '<div class="dyp__acts">'
+    + '<a class="dyp__go" target="_blank" rel="noopener noreferrer"></a>'
+    + '<a class="dyp__later" href="./notes.html">站长随笔</a>'
+    + '</div>'
+    + '</div></div>';
+}
+
+// 在已有弹窗里补一个事实核查节点（模拟 factcheck-button.js 注入到 go 与 later 之间）
+function injectFactcheck(w) {
+  const acts = w.document.querySelector('.dyp__acts');
+  if (!acts || acts.querySelector('.dyp__factcheck')) return;
+  const later = acts.querySelector('.dyp__later');
+  const fc = w.document.createElement('a');
+  fc.className = 'dyp__factcheck';
+  fc.id = 'dyp__factcheck';
+  fc.href = './jiahua-fact-check.html';
+  fc.textContent = '事实核查';
+  acts.insertBefore(fc, later);
 }
 
 (async function () {
@@ -95,8 +89,8 @@ function buildDyp(w, withFactcheck) {
 
   /* ② 默认（new）调成 [比亚迪] [理想L8] [站长随笔]，隐藏事实核查 */
   console.log('\n② new 版 acts');
-  const b = mkDom({});
-  buildDyp(b.w, true);
+  const b = mkDom({ panel: true });
+  injectFactcheck(b.w);
   b.w.SXGDypToggle.setVersion('new');
   b.w.SXGDypToggle.applyDyp('new');
   const actsB = b.w.document.querySelector('.dyp__acts');
@@ -110,14 +104,15 @@ function buildDyp(w, withFactcheck) {
     && d2B.textContent === '理想L8·抖音短片', d2B && { href: d2B.href, t: d2B.textContent });
   check('事实核查被隐藏（display:none，不删除节点）', !!fcB && fcB.style.display === 'none');
   check('第三链接仍是站长随笔', !!laterB && laterB.textContent === '站长随笔'
-    && laterB.href === b.w.location.href.replace(/\/$/, '') + '/notes.html' || laterB.href.indexOf('notes.html') !== -1);
-  check('d2 插在站长随笔之前（第二按钮位）', !!d2B && d2B.nextSibling === laterB);
+    && laterB.href.indexOf('notes.html') !== -1);
+  check('d2 在站长随笔之前（第二按钮位，可见顺序 抖音1→抖音2→随笔）',
+    !!d2B && (d2B.compareDocumentPosition(laterB) & 4) === 4);
   b.w.close();
 
   /* ③ 切 old 恢复 [在抖音中观看] [事实核查] [站长随笔] */
   console.log('\n③ old 版 acts');
-  const c = mkDom({});
-  buildDyp(c.w, true);
+  const c = mkDom({ panel: true });
+  injectFactcheck(c.w);
   c.w.SXGDypToggle.setVersion('old');
   c.w.SXGDypToggle.applyDyp('old');
   const actsC = c.w.document.querySelector('.dyp__acts');
@@ -132,8 +127,8 @@ function buildDyp(w, withFactcheck) {
 
   /* ④ 幂等：重复应用 new 不重复造 .dyp__douyin2 */
   console.log('\n④ 幂等：重复应用不重复');
-  const d = mkDom({});
-  buildDyp(d.w, true);
+  const d = mkDom({ panel: true });
+  injectFactcheck(d.w);
   d.w.SXGDypToggle.applyDyp('new');
   d.w.SXGDypToggle.applyDyp('new');
   d.w.SXGDypToggle.applyDyp('new');
@@ -141,31 +136,29 @@ function buildDyp(w, withFactcheck) {
     d.w.document.querySelectorAll('.dyp__douyin2').length === 1);
   d.w.close();
 
-  /* ⑤ 桌面落位 */
-  console.log('\n⑤ 桌面顶栏落位');
-  const e = mkDom({ narrow: false });
+  /* ⑤ 落位：弹窗内右上角、× 之前、不在顶栏 */
+  console.log('\n⑤ 弹窗内右上角落位');
+  const e = mkDom({ panel: true });
+  const panelE = e.w.document.querySelector('.dyp__panel');
   const btnE = e.w.document.getElementById('sxg-dyp-toggle-btn');
-  check('按钮存在', !!btnE);
-  check('插在 Login GitHub 之后', !!btnE && btnE.previousSibling
-    && btnE.previousSibling.id === 'login-github-btn');
-  check('带 sxg-header-btn 且文案默认「替换旧版」', !!btnE
-    && btnE.classList.contains('sxg-header-btn') && btnE.textContent === '替换旧版');
+  const xE = panelE && panelE.querySelector('.dyp__x');
+  check('按钮在 .dyp__panel 内', !!btnE && panelE.contains(btnE));
+  check('插在 × 关闭按钮之前（右上角、× 左侧）', !!btnE && xE && btnE.nextSibling === xE);
+  check('带 .dyp__version-toggle 且文案默认「替换旧版」', !!btnE
+    && btnE.classList.contains('dyp__version-toggle') && btnE.textContent === '替换旧版');
+  check('不在页面顶栏（不在 #hdr 内）', !!btnE && !e.w.document.getElementById('hdr').contains(btnE));
   e.w.close();
 
-  /* ⑥ 手机落位 */
-  console.log('\n⑥ 手机端进 dock');
-  const f = mkDom({ narrow: true, dock: true });
-  const btnF = f.w.document.getElementById('sxg-dyp-toggle-btn');
-  const dock = f.w.document.getElementById('sxg-fab-dock');
-  check('按钮是 dock 第一个子项', !!btnF && dock.firstChild === btnF);
-  check('dock 短标签＝「替换旧版」', !!btnF && btnF.getAttribute('data-sxg-dock-label') === '替换旧版');
-  check('绝不挂进 #sxg-header-menu', !f.w.document.getElementById('sxg-header-menu')
-    || !f.w.document.getElementById('sxg-header-menu').contains(btnF));
+  /* ⑥ 弹窗未 build 时 sweep 不报错、不误建按钮 */
+  console.log('\n⑥ 弹窗缺席时安全');
+  const f = mkDom({ panel: false });
+  check('无弹窗时 ensureButton 返回 null', f.w.SXGDypToggle.ensureButton() === null);
+  check('无弹窗时未凭空创建按钮', !f.w.document.getElementById('sxg-dyp-toggle-btn'));
   f.w.close();
 
   /* ⑦ 点击转换按钮翻版本 */
   console.log('\n⑦ 点击翻转 + 记忆');
-  const g = mkDom({ narrow: false });
+  const g = mkDom({ panel: true });
   const btnG = g.w.document.getElementById('sxg-dyp-toggle-btn');
   check('起始文案＝替换旧版（new）', btnG.textContent === '替换旧版');
   btnG.dispatchEvent(new g.w.Event('click', { bubbles: true, cancelable: true }));
@@ -176,12 +169,12 @@ function buildDyp(w, withFactcheck) {
     && btnG.textContent === '替换旧版');
   g.w.close();
 
-  /* ⑧ index.html 引用 ?v=1（剥 HTML 注释后再判，避免被注释块误判）*/
+  /* ⑧ index.html 引用 ?v=2（剥 HTML 注释后再判，避免被注释块误判）*/
   console.log('\n⑧ index.html 引用');
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')
     .replace(/<!--[\s\S]*?-->/g, '');
-  check('index.html 已引用 dyp-version-toggle.js?v=1',
-    /<script defer src="\.\/dyp-version-toggle\.js\?v=1"><\/script>/.test(idx));
+  check('index.html 已引用 dyp-version-toggle.js?v=2',
+    /<script defer src="\.\/dyp-version-toggle\.js\?v=2"><\/script>/.test(idx));
 
   setTimeout(function () {
     console.log('\n========== 结果：' + passed + ' 项通过，' + failed + ' 项失败 ==========');

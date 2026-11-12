@@ -1,25 +1,22 @@
 /* ==========================================================================
    dyp-version-toggle.js —— 首页「劳工友好提醒」弹窗 新版 / 旧版 转换按钮
    --------------------------------------------------------------------------
-   站长指令（2026-11-12）：首页弹窗（douyin-prompt.js 的 .dyp）当前是「旧版」
-   （在抖音中观看 + 事实核查 + 站长随笔）。站长要在顶栏「Star on GitHub」与
-   「赞助」之间的位置（此前匿名邮箱按钮的落点）放一枚「转换按钮」，用来在
-   「新版」与「旧版」之间切换：
-
-     默认（新版）：2 个抖音链接 + 站长随笔
-       [比亚迪·抖音短片] [理想L8·抖音短片] [站长随笔]
-       —— 第二按钮不再显示「事实核查」（事实核查入口隐藏，不删除）。
-     旧版：在抖音中观看 + 事实核查 + 站长随笔（恢复原样）。
-
-   转换按钮文案随当前版本翻转：
-     显示新版（默认）→ 按钮写「替换旧版」（点它切到旧版）
-     显示旧版        → 按钮写「新版本」（点它切到新版）
+   站长指令（2026-11-12）：
+     · 转换按钮**放在弹窗内部右上角**（紧挨 × 关闭按钮左侧，与「劳工友好提醒」
+       标签同一行），不要放到页面顶栏。
+     · 默认显示「新版」：2 个抖音链接 + 站长随笔
+         [比亚迪·抖音短片] [理想L8·抖音短片] [站长随笔]
+         第二按钮不再显示「事实核查」（事实核查入口隐藏，不删除节点）。
+     · 点按钮切到「旧版」：在抖音中观看 + 事实核查 + 站长随笔（恢复原样）。
+     · 按钮文案随当前版本翻转：
+         显示新版（默认）→ 按钮写「替换旧版」（点它切到旧版）
+         显示旧版        → 按钮写「新版本」（点它切到新版）
 
    实现纪律（沿用 anon-mail.js 的下游补丁思路）：
      · 不改压缩 bundle、不改 douyin-prompt.js / factcheck-button.js 本体；
-       本文件只「补丁」.dyp__acts：切 display / 改文本与 href / 增删一枚
+       本文件只「补丁」.dyp__panel 与 .dyp__acts：往弹窗面板右上角插一枚自有
+       按钮 .dyp__version-toggle，切 .dyp__acts 的 display / 文本 / href / 增删
        自有锚点 .dyp__douyin2；绝不删除 factcheck-button.js 注入的 .dyp__factcheck。
-     · 顶栏落位照抄 anon-mail.js（贴在 Login GitHub 之后；≤640px 进 #sxg-fab-dock）。
      · 版本记忆在 localStorage（默认 new）；弹窗 2.5s 才 build，用 MutationObserver
        + 定时 sweep + 500ms 轮询三重兜底抓取插入时机，幂等可重入。
    ========================================================================== */
@@ -28,8 +25,6 @@
 
   var BTN_ID     = 'sxg-dyp-toggle-btn';
   var STYLE_ID   = 'sxg-dyp-toggle-style';
-  var DOCK_ID    = 'sxg-fab-dock';
-  var MQ         = '(max-width: 640px)';
   var STORAGE_KEY = 'dyp_version_toggle_v1';
 
   // 新版两个抖音链接（取自站长提供的分享短链）
@@ -38,24 +33,6 @@
   // 旧版「在抖音中观看」链接（恢复用，取自 douyin-prompt.js CONFIG.link）
   var OLD_GO_HREF = 'https://v.douyin.com/37pbo6qxUbs/';
   var OLD_GO_TEXT = '在抖音中观看';
-
-  // 顶栏按钮外观基线（照抄 anon-mail.js：不可现场读 Star，断点切回会退化）
-  var HEADER_CLASS = 'inline-flex items-center gap-1.5 text-xs sm:text-sm '
-    + 'bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg '
-    + 'font-medium shadow-sm transition sxg-header-btn';
-
-  function isNarrow() {
-    if (window.matchMedia) return window.matchMedia(MQ).matches;
-    return window.innerWidth <= 640;
-  }
-
-  function findStar() {
-    var list = document.querySelectorAll('a');
-    for (var i = 0; i < list.length; i++) {
-      if ((list[i].textContent || '').indexOf('Star on GitHub') >= 0) return list[i];
-    }
-    return null;
-  }
 
   function getVersion() {
     var v = null;
@@ -75,12 +52,21 @@
       : '当前：旧版弹窗（在抖音中观看 + 事实核查 + 站长随笔）。点击切换到新版';
   }
 
-  /* ---- 注入样式：仅 .dyp__douyin2 配色 + 窄屏顺序；尺寸沿用 .dyp__acts > * ---- */
+  /* ---- 注入样式：弹窗内右上角药丸按钮（紧挨 × 左侧） ---- */
   function buildStyle() {
     if (document.getElementById(STYLE_ID)) return;
     var s = document.createElement('style');
     s.id = STYLE_ID;
     s.textContent =
+      '.dyp__version-toggle{' +
+        'position:absolute;top:10px;right:52px;' +
+        'height:32px;padding:0 12px;border:1px solid #b9d7c9;border-radius:999px;' +
+        'background:#eef7f1;color:#2e8b6f;font-size:12px;font-weight:700;' +
+        'line-height:30px;white-space:nowrap;cursor:pointer;' +
+        'transition:background .15s ease,color .15s ease,border-color .15s ease;' +
+      '}' +
+      '.dyp__version-toggle:hover{background:#dcefe4;border-color:#93c6b1;color:#226b54}' +
+      '.dyp__version-toggle:active{transform:scale(.97)}' +
       '.dyp__douyin2{' +
         'border:1px solid #4fb389;background:#d9efe5;color:#175e48;' +
         'text-decoration:none;' +
@@ -88,6 +74,10 @@
       '}' +
       '.dyp__douyin2:hover{background:#c9e8db;border-color:#3ea87c;color:#0f4a37}' +
       '.dyp__douyin2:active{transform:scale(.98)}' +
+      // 新版隐藏事实核查：用 class + !important 兜底，做到与「事实核查节点被注入的
+      // 时机」无关——即便 factcheck-button.js 在本脚本 applyDyp 之后才注入，
+      // 只要 acts 带 .dyp--new，新注入的 .dyp__factcheck 也会立刻被 CSS 藏掉，无闪烁。
+      '.dyp__acts.dyp--new .dyp__factcheck{display:none !important}' +
       '@media (max-width:520px){.dyp__douyin2{order:1}}';
     (document.head || document.documentElement).appendChild(s);
   }
@@ -103,6 +93,7 @@
     var d2 = acts.querySelector('.dyp__douyin2');
 
     if (version === 'new') {
+      acts.classList.add('dyp--new');   // 新版标记：CSS 侧隐藏事实核查（见 buildStyle）
       if (go) { go.textContent = '比亚迪·抖音短片'; go.href = BYD; }
       // 事实核查入口：隐藏而非删除（factcheck-button.js 注入的节点保留在 DOM）
       if (fact) fact.style.display = 'none';
@@ -119,6 +110,7 @@
         d2.textContent = '理想L8·抖音短片';
       }
     } else {
+      acts.classList.remove('dyp--new');
       if (go) { go.textContent = OLD_GO_TEXT; go.href = OLD_GO_HREF; }
       if (fact) fact.style.display = '';
       if (d2 && d2.parentNode) d2.parentNode.removeChild(d2);
@@ -127,72 +119,41 @@
     return true;
   }
 
-  /* ---- 转换按钮 ---- */
+  /* ---- 弹窗内转换按钮（贴在 .dyp__panel 右上角，× 左侧）---- */
   function ensureButton() {
-    var btn = document.getElementById(BTN_ID);
+    var panel = document.querySelector('.dyp__panel');
+    if (!panel) return null;                 // 弹窗还没 build（2.5s 延迟）
+    var btn = panel.querySelector('#' + BTN_ID);
     if (btn) return btn;
-    btn = document.createElement('a');
+    btn = document.createElement('button');
     btn.id = BTN_ID;
-    btn.href = '#';
-    btn.setAttribute('role', 'button');
+    btn.type = 'button';
+    btn.className = 'dyp__version-toggle';
     btn.setAttribute('aria-label', '切换首页视频弹窗版本（新版 / 旧版）');
-    btn.setAttribute('data-sxg-dock-label', labelFor(getVersion()));
     btn.addEventListener('click', function (ev) {
       ev.preventDefault();
+      ev.stopPropagation();
       var v = getVersion() === 'new' ? 'old' : 'new';
       setVersion(v);
       updateBtn(btn, v);
       applyDyp(v);
-      // 若弹窗还没 build（2.5s 延迟），applyDyp 返回 false 也无妨，
-      // 定时轮询与 observer 会在弹窗出现后自动按当前版本应用。
     });
-    document.body.appendChild(btn);
+    var x = panel.querySelector('.dyp__x');
+    if (x) panel.insertBefore(btn, x);
+    else panel.appendChild(btn);
     return btn;
   }
 
   function updateBtn(btn, v) {
+    if (!btn) return;
     btn.textContent = labelFor(v);
     btn.setAttribute('title', titleFor(v));
-    btn.setAttribute('data-sxg-dock-label', labelFor(v));
-  }
-
-  function place() {
-    var btn = ensureButton();
-    updateBtn(btn, getVersion());
-    if (isNarrow()) {
-      var dock = document.getElementById(DOCK_ID);
-      btn.classList.remove('sxg-header-btn');
-      if (dock) {
-        if (btn.parentNode !== dock) dock.insertBefore(btn, dock.firstChild);
-      } else {
-        if (btn.parentNode !== document.body) document.body.appendChild(btn);
-      }
-      return true;
-    }
-    var anchor = document.getElementById('login-github-btn') || findStar();
-    if (!anchor || !anchor.parentNode) return false;
-    btn.className = HEADER_CLASS;
-    btn.style.backgroundColor = '#0F766E';
-    btn.style.color = '#ffffff';
-    btn.style.borderColor = '#0F766E';
-    btn.style.whiteSpace = 'nowrap';
-    var menu = document.getElementById('sxg-header-menu');
-    var toggle = document.getElementById('sxg-header-menu-toggle');
-    var targetParent = anchor.parentNode;
-    var wantNext = anchor.nextSibling;
-    if (menu && anchor.parentNode === menu && menu.parentNode) {
-      targetParent = menu.parentNode;
-      wantNext = (toggle && toggle.parentNode === targetParent) ? toggle : null;
-    }
-    if (wantNext === btn) wantNext = btn.nextSibling;
-    if (btn.parentNode !== targetParent || btn.nextSibling !== wantNext) {
-      targetParent.insertBefore(btn, wantNext || null);
-    }
-    return true;
   }
 
   function sweep() {
-    try { buildStyle(); place(); } catch (e) { /* 下游补丁不许因宿主异常抛错 */ }
+    try { buildStyle(); var b = ensureButton(); if (b) updateBtn(b, getVersion()); } catch (e) {
+      /* 下游补丁不许因宿主异常抛错 */
+    }
   }
 
   /* ---- 启动：落位 + 三重兜底观察弹窗 build / factcheck 注入 ---- */
@@ -247,8 +208,7 @@
     labelFor: labelFor,
     applyDyp: applyDyp,
     updateBtn: updateBtn,
-    place: place,
-    sweep: sweep,
-    ensureButton: ensureButton
+    ensureButton: ensureButton,
+    sweep: sweep
   };
 })();

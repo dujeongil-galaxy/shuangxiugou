@@ -8533,20 +8533,24 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§36u 默认版本 new、new 版隐藏事实核查（display:none 不删除）、old 版移除自有 .dyp__douyin2（不删 factcheck 节点）',
     '默认版不是 new / new 版仍在显示事实核查 / 旧版没清掉新版第二按钮 / 误删事实核查节点');
 
-  // ③ 转换按钮落位：复用 anon-mail 的顶栏 + dock 机制，不另起炉灶；带 dock 短标签。
-  const placeOk = /DOCK_ID\s*=\s*'sxg-fab-dock'/.test(t36u)
-    && /login-github-btn/.test(t36u)
-    && /data-sxg-dock-label/.test(t36u)
-    && /HEADER_CLASS/.test(t36u);
+  // ③ 转换按钮落位：站长 2026-11-12 纠正——放在「弹窗内部右上角」（.dyp__panel 内、
+  //    紧挨 × 左侧），不放页面顶栏/dock。锚点用 .dyp__panel + .dyp__x + .dyp__version-toggle。
+  const placeOk = /\.dyp__panel/.test(t36u)
+    && /\.dyp__x/.test(t36u)
+    && /dyp__version-toggle/.test(t36u)
+    && /insertBefore\(btn,\s*x\)/.test(t36u)
+    // 反面：不得再回退到顶栏落位（anon-mail 那套 dock 机制）
+    && !/login-github-btn/.test(t36u)
+    && !/DOCK_ID\s*=\s*'sxg-fab-dock'/.test(t36u);
   check(placeOk,
-    '§36u 转换按钮落位复用 anon-mail 机制（Login GitHub 之后 + ≤640px 进 dock），带 dock 短标签',
-    '转换按钮另起炉灶 / 没进 dock → 手机端够不到或顶栏错排');
+    '§36u 转换按钮落在弹窗内部右上角（.dyp__panel 内、插在 .dyp__x 之前、带 .dyp__version-toggle），不回退顶栏',
+    '按钮没进弹窗 / 回到顶栏 dock 落位 → 与站长「放在这个位置」不符');
 
   // ④ 挂载与 ?v 钉子 + jsdom 测试挂进 CI（§21o）。
-  check(/<script defer src="\.\/dyp-version-toggle\.js\?v=1"><\/script>/.test(idx36u)
+  check(/<script defer src="\.\/dyp-version-toggle\.js\?v=2"><\/script>/.test(idx36u)
     && exists('scripts/test-dyp-toggle.cjs')
     && wf36u.indexOf('node scripts/test-dyp-toggle.cjs') !== -1,
-    '§36u index.html 挂载 dyp-version-toggle.js?v=1，配套 jsdom 测试挂进 CI',
+    '§36u index.html 挂载 dyp-version-toggle.js?v=2，配套 jsdom 测试挂进 CI',
     '?v 没 bump / 测试没挂 CI → 转换逻辑静默失效没人拦');
 }
 
