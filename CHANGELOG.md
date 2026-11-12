@@ -4,6 +4,18 @@
 
 ---
 
+### fix：分享弹窗平台改按钮 + 三级兜底，外链特征清零杜绝误拦截（2026-11-12 22:54 · 提交 `49dbfd2`）
+
+站长指令：「先解决分享链接，加固，以后不要出现误拦截」。
+
+- **根因**：8 个外链平台（微博 / Facebook / X / LinkedIn / Reddit / Telegram / Line / WhatsApp）此前渲染成 `<a href=".../intent/...">` + `target="_blank"`，广告/隐私/跟踪防护扩展按这类外链指纹整块隐藏，站长看到的就是「平台变少」；复制类按钮不受影响，正好对上「少的全是外链那批」。
+- **改渲染**：全部平台项改为 `<button type="button" data-share="键">`，分享 URL 只存在 JS 闭包 `shareTargets` 里，DOM 上不落 `href`、不落 `target="_blank"`、不落 `rel`。
+- **改点击**：新增 `openExternal()` 三级兜底——`window.open(url,'_blank')` → 返回空或窗口立即被关（连新窗口也被拦）→ 复制分享链接 + toast 明说「新窗口被浏览器拦截，分享链接已复制」。原先 `a href` 被拦后是「点了没反应」，现在任何环境都能拿到链接。
+- **清单口径**：14 项恒定渲染，不做任何条件裁剪（不按 UA / 网络环境 / 可用性增删）。
+- **机器强制**：`?v=5→6`（`index.html` / `sponsor.html` 同步）；verify §36v 五条断言（剥注释后源码零 `target="_blank"` / `rel="noopener"` / `href` 拼分享 URL、`data-share` 按钮化、`openExternal` 兜底在位、14 键齐全、`?v` 与挂载号一致）；新增 `scripts/test-share-modal.cjs`（jsdom 29 项）并挂进 CI；新增 `scripts/cdp-share-modal.cjs`（真 Edge 双视口 1440 / 390）。
+- **README**：新增长期规则章节「🔗 分享弹窗平台口径与防误拦截」，把「禁用外链特征」写成禁令。
+- **复核**：verify **全绿**；`test-share-modal.cjs` 29/0；`cdp-share-modal.cjs` 双端 `PROBE` 均 14 项、`aTags=0`、`leak=[]`、`off=[]`、8 次点击 `window.open` 全 `_blank`+https、被拦兜底 OK、`PAGEERRORS=[]`、`ALL_OK=true`。故障注入三组（外链回退 `<a>` / 删 `closed` 判定 / 裁掉 WhatsApp）均判红。
+
 ### chore：弹窗版本转换按钮文案改「切换旧版」，源码禁用「替换」二字（2026-11-12 21:47 · 提交 `9e9c1ff`）
 
 站长指令（附弹窗截图，箭头指着按钮）：「切换旧版，请不要使用替换二字，马上去修改」。
