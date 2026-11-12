@@ -4,6 +4,10 @@
    需求：
      1) PC 端：右上角 4 个按钮（提交数据/Star/赞助/Login）全部常显
      2) 手机端：右上角只显示一个「菜单▼」按钮，点开后下拉显示这 4 个按钮
+   2026-11-12 §36s 补：断点切换要**双向**。以前只有「进窄屏折叠」这一半，
+   手机端载入后把窗口拉宽，四个按钮仍留在下拉容器里，在顶栏右侧竖着堆成一列。
+   现在记住每个按钮原来的父节点 / class / style，切回宽屏逐个还原；下拉容器
+   在宽屏也强制 display:none，杜绝残留节点撑坏布局。
    ========================================================================== */
 (function () {
   'use strict';
@@ -23,6 +27,9 @@
       /* 手机端才显示这个折叠按钮 */
       '#' + TOGGLE_ID + '{display:none;}',
 
+      /* 宽屏下拉容器一律不显示：断点切回桌面时菜单里残留的节点不能竖着堆在顶栏 */
+      '#' + MENU_ID + '{display:none !important;}',
+
       /* 手机端：隐藏原来的 4 个按钮，只显示折叠按钮 */
       '@media (max-width:640px){',
       '  .sxg-header-btn{display:none !important;}',
@@ -36,7 +43,7 @@
       '  #' + MENU_ID + '{display:none;position:absolute;top:calc(100% + 8px);right:0;',
       '    flex-direction:column;gap:0;background:#fff;border-radius:14px;',
       '    box-shadow:0 8px 24px rgba(0,0,0,.18);overflow:hidden;z-index:1000;min-width:200px;}',
-      '  #' + MENU_ID + '.is-open{display:flex;}',
+      '  #' + MENU_ID + '.is-open{display:flex !important;}',
       '  #' + MENU_ID + ' a{display:block !important;width:100% !important;',
       '    padding:12px 16px !important;margin:0 !important;',
       '    color:#1f2937 !important;background:#fff !important;',
@@ -59,24 +66,92 @@
     return window.matchMedia && window.matchMedia('(max-width:640px)').matches;
   }
 
+  /* 每个按钮的原始归属；断点来回切换都靠它还原，绝不重新猜父节点。 */
+  var records = [];
+  var collapsed = false;
+
+  function applyMenuStyle(btn) {
+    btn.classList.remove('sxg-header-btn');
+    btn.removeAttribute('class');
+    btn.removeAttribute('style');
+    btn.style.display = 'block';
+    btn.style.width = '100%';
+    btn.style.padding = '12px 16px';
+    btn.style.margin = '0';
+    btn.style.color = '#1f2937';
+    btn.style.background = '#fff';
+    btn.style.textDecoration = 'none';
+    btn.style.textAlign = 'left';
+    btn.style.font = '500 14px/1.4 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+    btn.style.borderBottom = '1px solid #f3f4f6';
+    btn.style.borderRadius = '0';
+    btn.style.boxShadow = 'none';
+    btn.style.boxSizing = 'border-box';
+    btn.style.whiteSpace = 'nowrap';
+  }
+
+  function collapse() {
+    var menu = document.getElementById(MENU_ID);
+    if (!menu) return false;
+    var list;
+    if (records.length) {
+      list = records.map(function (r) { return r.el; });
+    } else {
+      list = [].slice.call(document.querySelectorAll('.sxg-header-btn'));
+      if (!list.length) return false;
+      list.forEach(function (el) {
+        records.push({
+          el: el,
+          parent: el.parentNode,
+          cls: el.getAttribute('class') || '',
+          style: el.getAttribute('style') || ''
+        });
+      });
+    }
+    list.forEach(function (btn) {
+      applyMenuStyle(btn);
+      menu.appendChild(btn);
+    });
+    collapsed = true;
+    return true;
+  }
+
+  function restore() {
+    var toggle = document.getElementById(TOGGLE_ID);
+    var menu = document.getElementById(MENU_ID);
+    records.forEach(function (r) {
+      if (!r.el || !r.parent) return;
+      if (r.cls) r.el.setAttribute('class', r.cls);
+      else r.el.removeAttribute('class');
+      if (r.style) r.el.setAttribute('style', r.style);
+      else r.el.removeAttribute('style');
+      var before = (toggle && toggle.parentNode === r.parent) ? toggle : null;
+      r.parent.insertBefore(r.el, before);
+    });
+    if (menu) menu.classList.remove('is-open');
+    collapsed = false;
+  }
+
   function build() {
     if (!isMobile()) return;
-    if (document.getElementById(TOGGLE_ID)) return;
+    if (document.getElementById(TOGGLE_ID)) {
+      if (!collapsed) collapse();
+      return;
+    }
 
     buildStyle();
 
-    // 找到所有带 sxg-header-btn class 的按钮
     var btns = document.querySelectorAll('.sxg-header-btn');
-    if (btns.length === 0) return;
+    if (btns.length === 0 && !records.length) return;
+    var first = btns[0] || records[0].el;
 
-    // 找到它们的共同父容器
-    var container = btns[0].parentElement;
+    // 找到按钮组的共同父容器（顶栏里那个 position:relative 的容器）
+    var container = first.parentElement;
     while (container && container.style.position !== 'relative') {
       container = container.parentElement;
     }
-    // 如果没找到 relative 的父容器，就给按钮的父容器加上 relative
     if (!container || container.style.position !== 'relative') {
-      container = btns[0].parentElement;
+      container = first.parentElement;
       container.style.position = 'relative';
     }
 
@@ -91,35 +166,9 @@
     var menu = document.createElement('div');
     menu.id = MENU_ID;
 
-    // 把原来的 4 个按钮移到下拉菜单里
-    btns.forEach(function(btn) {
-      // 先取消隐藏（CSS 里隐藏了它们）
-      btn.style.display = '';
-      btn.classList.remove('sxg-header-btn'); // 从这个 class 里去掉，不再被 CSS 隐藏
-      // 清空所有原有样式，直接用 JS 强制设置统一样式（比 CSS 更可靠）
-      btn.removeAttribute('class');
-      btn.removeAttribute('style');
-      // 直接内联设置样式，确保万无一失
-      btn.style.display = 'block';
-      btn.style.width = '100%';
-      btn.style.padding = '12px 16px';
-      btn.style.margin = '0';
-      btn.style.color = '#1f2937';
-      btn.style.background = '#fff';
-      btn.style.textDecoration = 'none';
-      btn.style.textAlign = 'left';
-      btn.style.font = '500 14px/1.4 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
-      btn.style.borderBottom = '1px solid #f3f4f6';
-      btn.style.borderRadius = '0';
-      btn.style.boxShadow = 'none';
-      btn.style.boxSizing = 'border-box';
-      btn.style.whiteSpace = 'nowrap';
-      menu.appendChild(btn);
-    });
-
-    // 把折叠按钮和下拉菜单加到父容器里
     container.appendChild(toggle);
     container.appendChild(menu);
+    collapse();
 
     // 点击折叠按钮切换下拉菜单
     toggle.addEventListener('click', function(e) {
@@ -134,6 +183,21 @@
         menu.classList.remove('is-open');
       }
     });
+  }
+
+  /* 断点双向切换：进窄屏折叠、回宽屏还原。此前只有前半段，
+     手机端载入后拉宽会留下一列竖排的顶栏按钮（§36s 真渲染实测）。 */
+  if (window.matchMedia) {
+    var mq = window.matchMedia('(max-width:640px)');
+    var onBp = function () {
+      if (mq.matches) {
+        if (!collapsed) build();
+      } else if (collapsed) {
+        restore();
+      }
+    };
+    if (mq.addEventListener) mq.addEventListener('change', onBp);
+    else if (mq.addListener) mq.addListener(onBp);
   }
 
   if (document.readyState === 'loading') {

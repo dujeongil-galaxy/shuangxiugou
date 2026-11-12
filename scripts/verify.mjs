@@ -8097,8 +8097,10 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(ruleOk,
     '§36g 手机端 [data-ai-notice]（AI 开通公告）改块级，右列 76px 由 body 统一预留（§36j 上移）',
     '公告仍是居中 inline-block 且无处预留右列宽 → 窄屏右缘压在右侧悬浮钮上（站长截图）');
-  check(/mobile-fixes\.css\?v=16/.test(idx36g),
-    '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 16',
+  /* §36s 又改了同一份 CSS（悬浮层全部撑开），?v 随每次改动继续往上走；
+     这里与 §36q / §36s 的钉子必须同步，别只改其中一处。 */
+  check(/mobile-fixes\.css\?v=17/.test(idx36g),
+    '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 17（§36s 悬浮层撑开）',
     '?v 没 bump → 浏览器缓存旧 CSS，预留列宽不生效');
 }
 
@@ -8228,18 +8230,18 @@ section('25. 成功案例专题页（QQ奶奶）');
     '窄屏没给右侧 FAB 列留列宽 → hero/卡片/统计滚动经过时仍被悬浮钮压住；或又把吸底条收窄导致文案竖排');
 }
 
-// ---------- 36q. 悬浮层收口：六枚圆钮统一进 #sxg-fab-dock（2026-11-12 站长「按你的建议执行」） ----------
-// 取代 §36p 的逐点补丁。原写法是 6 个脚本各自 fixed + 各写死一个 bottom，
-// 每加一枚 / 换屏高就要重算；现在由唯一容器 + flex 自动排布，且低频 4 枚
-// 收进「更多」折叠层（功能不删，只换入口）。断言钉「架构契约」而非六个魔数。
+// ---------- 36q. 悬浮层收口：唯一 #sxg-fab-dock 容器（2026-11-12） ----------
+// §36s 之后撤掉了「更多」折叠层：右列 76px 已整页隔离（§36j），六枚 + 邮箱
+// 一律常显并撑成宽条。这里只钉「唯一所有者 + 自动排布 + 可还原桌面」的架构契约，
+// 不再钉任何逐点魔数，也不再钉折叠状态。
 {
   const mf36q = exists('mobile-fixes.css') ? stripCssComments(read('mobile-fixes.css')) : '';
   const dock36q = exists('fab-dock.js') ? read('fab-dock.js') : '';
   const idx36q = read('index.html');
 
   // ① CSS：容器只写一次定位；容器子项把源脚本注入的 fixed/bottom 整体清成 relative。
-  const dockCssOk = /#sxg-fab-dock\s*\{[^}]*position:\s*fixed[^}]*flex-direction:\s*column[^}]*gap:\s*8px/.test(mf36q)
-    && /#sxg-fab-dock\s*>\s*\*,\s*#sxg-fab-dock\s*\.sxg-fab-dock__extra\s*>\s*\*\s*\{[^}]*position:\s*relative\s*!important[^}]*bottom:\s*auto\s*!important/.test(mf36q)
+  const dockCssOk = /#sxg-fab-dock\s*\{[^}]*position:\s*fixed[^}]*flex-direction:\s*column[^}]*gap:\s*6px/.test(mf36q)
+    && /#sxg-fab-dock\s*>\s*\*[^}]*position:\s*relative\s*!important[^}]*bottom:\s*auto\s*!important/.test(mf36q)
     && /#sxg-fab-dock\s*\{[^}]*pointer-events:\s*none/.test(mf36q);
   // ② 面板与高度：AI 面板跟随 --sxg-dock-h，导航面板右锚定；绝不再出现逐点魔数。
   const panelOk = /#sxg-ai-panel\s*\{[^}]*var\(--sxg-dock-h/.test(mf36q)
@@ -8247,30 +8249,30 @@ section('25. 成功案例专题页（QQ奶奶）');
     && !/\+\s*(210|272|276|335)px/.test(mf36q)
     && !/body\s*\{[^}]*padding-left/.test(mf36q);
   check(dockCssOk && panelOk,
-    '§36q 悬浮层收口：唯一 #sxg-fab-dock 容器（flex 自动排布 / 空隙不吃点击），子项清掉各自 fixed+bottom，AI 面板跟随 --sxg-dock-h，旧魔数清零',
-    '又回到六枚各自 fixed 写死 bottom / 面板写死 +276px → 加第 7 枚或换屏高必然再穿模');
+    '§36q 悬浮层唯一所有者 #sxg-fab-dock（flex 自动排布 / 空隙不吃点击），子项清掉各自 fixed+bottom，AI 面板跟随 --sxg-dock-h，旧魔数清零',
+    '又回到六枚各自 fixed 写死 bottom / 面板写死 +276px → 加按钮或换屏高必然再穿模');
 
-  // ③ JS：注册清单覆盖六枚、常驻两枚 + 折叠四枚，且能双向搬迁（桌面还原）。
-  const listOk = /var\s+PRIMARY\s*=\s*\[[^\]]*sxg-ai-fab[^\]]*sxg-top-btn/.test(dock36q)
-    && /var\s+EXTRA\s*=\s*\[[^\]]*sxg-nav[^\]]*sxg-remind-btn[^\]]*sxg-video-btn[^\]]*sxg-bottom-btn/.test(dock36q)
-    && /var\s+ALL\s*=\s*PRIMARY\.concat\(EXTRA\)/.test(dock36q);
+  // ③ JS：注册清单覆盖六枚 + 客居入口，且能双向搬迁（桌面还原）。
+  const listOk = /var\s+ORDER\s*=\s*\[[^\]]*sxg-nav[^\]]*sxg-remind-btn[^\]]*sxg-video-btn[^\]]*sxg-bottom-btn[^\]]*sxg-ai-fab[^\]]*sxg-top-btn/.test(dock36q)
+    && /var\s+GUESTS\s*=\s*\[[^\]]*sxg-anon-mail-btn/.test(dock36q)
+    && /var\s+ALL\s*=\s*ORDER\.concat\(GUESTS\)/.test(dock36q)
+    && /data-sxg-dock-label/.test(dock36q);
   const archOk = /max-width:\s*640px/.test(dock36q)
     && /--sxg-dock-h/.test(dock36q)
-    && /function\s+disable\(\)[\s\S]{0,500}?document\.body\.appendChild/.test(dock36q)
-    && /MutationObserver/.test(dock36q);
+    && /function\s+disable\(\)[\s\S]{0,900}?document\.body\.appendChild/.test(dock36q)
+    && /MutationObserver/.test(dock36q)
+    && !/is-expanded|sxg-fab-more|var\s+PRIMARY|var\s+EXTRA/.test(dock36q);
   check(exists('fab-dock.js') && listOk && archOk,
-    '§36q fab-dock.js 收编六枚（常驻 AI/TOP + 折叠 导航/提醒/视频/到底），高度写 --sxg-dock-h，仅 ≤640px 启用且可还原桌面',
-    '收编清单缺项 / 桌面端也被搬走 / 不能还原 → 悬浮层又变成两套布局各自为政');
-  check(/is-expanded/.test(dock36q) && /aria-expanded/.test(dock36q) && /\.sxg-fab-dock__extra\[hidden\]/.test(mf36q),
-    '§36q 低频功能进「更多」折叠层（可展开、可用、带 aria 状态），不是直接删掉按钮',
-    '折叠层没有可点开关或缺 aria → 低频功能等于被静默删除');
+    '§36q fab-dock.js 六枚全部常显（含短标签）、客居入口退出窄屏时还给 body，仅 ≤640px 启用且可还原桌面',
+    '收编清单缺项 / 折叠层回潮 / 桌面端也被搬走 → 悬浮层又变成两套布局各自为政');
 
-  // ④ 挂载顺序：dock 脚本必须排在所有悬浮脚本之后（defer + DOMContentLoaded 监听顺序）。
-  const mountOk = /<script defer src="\.\/fab-dock\.js\?v=1"><\/script>/.test(idx36q)
-    && idx36q.indexOf('fab-dock.js?v=1') > idx36q.indexOf('nav-menu.js?v=6')
-    && /mobile-fixes\.css\?v=16/.test(idx36q);
+  // ④ 挂载顺序：dock 脚本必须排在所有悬浮脚本之后。
+  const mountOk = /<script defer src="\.\/fab-dock\.js\?v=2"><\/script>/.test(idx36q)
+    && idx36q.indexOf('fab-dock.js?v=2') > idx36q.indexOf('nav-menu.js?v=6')
+    && /mobile-fixes\.css\?v=17/.test(idx36q)
+    && /header-menu-patch\.js\?v=10/.test(idx36q);
   check(mountOk,
-    '§36q index.html 已挂载 fab-dock.js?v=1 且排在所有悬浮脚本之后，mobile-fixes.css ?v 同步 bump 16',
+    '§36q index.html 已挂载 fab-dock.js?v=2 且排在所有悬浮脚本之后，mobile-fixes.css?v=17 / header-menu-patch.js?v=10 同步 bump',
     '挂载顺序错了 → dock 执行时按钮还没建好，收编为空；?v 没 bump → 浏览器缓存旧 CSS');
 }
 
@@ -8348,6 +8350,71 @@ section('25. 成功案例专题页（QQ奶奶）');
     && exists('scripts/test-github-access-help.cjs'),
     '§36r index.html 挂载 github-access-help.js?v=1，两个改动脚本 ?v 同步 bump，配套 jsdom 行为测试存在',
     '?v 没 bump → 浏览器/CDN 命中旧脚本，新文案与链接规整都不生效');
+}
+
+// ---------- 36s. 匿名邮箱入口 + 访问告知弹窗 + 手机悬浮按钮全部撑开（2026-11-12 站长） ----------
+{
+  const am36s = exists('anon-mail.js') ? read('anon-mail.js') : '';
+  const hp36s = read('header-menu-patch.js');
+  const idx36s = read('index.html');
+  const mf36s = stripCssComments(read('mobile-fixes.css'));
+  const dock36s = read('fab-dock.js');
+  const wf36s = read('.github/workflows/verify.yml');
+
+  // ① 事实点：目标站点、最新匿名邮箱、明确的「没 VPN 打不开」，只钉要素不钉逐字。
+  check(/SITE_URL\s*=\s*'https:\/\/m\.kuku\.lu\/cn\.php'/.test(am36s)
+    && /MAIL\s*=\s*'mantoopea@exdonuts\.com'/.test(am36s)
+    && /没有 VPN/.test(am36s) && /无法访问/.test(am36s)
+    && /大陆网络/.test(am36s)
+    && !/别抄原话|站长推荐|点此购买|直接url链接/.test(am36s),
+    '§36s 匿名邮箱弹窗写清「没有 VPN 无法访问」，并备注站长最新邮箱 mantoopea@exdonuts.com；草稿批注不上页面',
+    '少了 VPN 告知或邮箱写错 → 用户点进去白等；把站长括号批注贴到公开弹窗 → §36n 同款事故');
+
+  // ② 首次点击必须先弹窗：目标链接只存在于弹窗的「仍要前往」出口。
+  const modalHtml36s = (am36s.match(/card\.innerHTML\s*=([\s\S]*?);/) || ['', ''])[1];
+  const interceptOk = /addEventListener\('click',\s*function\s*\(ev\)[\s\S]{0,280}?ev\.preventDefault\(\)[\s\S]{0,280}?openModal\(\)/.test(am36s)
+    && /class="sxg-am-go" href="' \+ SITE_URL/.test(modalHtml36s)
+    && /target="_blank"/.test(modalHtml36s)
+    && /class="sxg-am-copy"/.test(modalHtml36s)
+    && !/window\.location/.test(am36s);
+  check(interceptOk,
+    '§36s 首次点击 preventDefault + 先弹窗，目标 URL 只在「仍要前往」出口（新标签），另给复制邮箱按钮',
+    '按钮直接 href 跳走 / 弹窗没有可点出口 / 复制按钮丢失 → 等于没做告知层');
+
+  // ③ 手机落位：不进顶栏、不进「菜单▼」，直接进已隔离的 dock；并禁止折叠回潮。
+  const placeOk = /DOCK_ID\s*=\s*'sxg-fab-dock'/.test(am36s)
+    && /dock\.insertBefore\(btn, dock\.firstChild\)/.test(am36s)
+    && /data-sxg-anon-slot/.test(am36s)
+    && /HEADER_CLASS/.test(am36s)
+    && !/menu\.appendChild\(btn\)/.test(am36s);
+  const stretchOk = /#sxg-fab-dock\s*\{[^}]*width:\s*68px[^}]*align-items:\s*stretch/.test(mf36s)
+    && /#sxg-fab-dock\s*>\s*\*[^}]*width:\s*68px\s*!important[^}]*height:\s*36px\s*!important/.test(mf36s)
+    && /content:\s*attr\(data-sxg-dock-label\)/.test(mf36s)
+    && !/is-expanded|sxg-fab-dock__more-btn|sxg-fab-dock__extra/.test(mf36s)
+    && !/is-expanded|sxg-fab-more/.test(dock36s);
+  check(placeOk && stretchOk,
+    '§36s 手机端按钮全部撑开：dock 68px 贴右留白列、每枚 68×36 带中文短标签、撤掉「更多」折叠；邮箱入口挂 dock 首位',
+    '又写回「⋯ 更多」折叠 / 宽条退回圆钮 / 新入口塞进「菜单▼」被隐藏 → 白留一列且入口静默失效');
+
+  // ④ 断点双向还原：手机载入后拉宽，顶栏四按钮不能竖着堆在右侧。
+  check(/function\s+restore\(\)/.test(hp36s)
+    && /insertBefore\(r\.el, before\)/.test(hp36s)
+    && /addEventListener\('change', onBp\)|addListener\(onBp\)/.test(hp36s)
+    && /display:none !important;/.test(hp36s)
+    && /display:flex !important;/.test(hp36s),
+    '§36s 顶栏折叠改双向：记住原父节点 / class / style，切回宽屏还原四按钮，下拉容器宽屏强制隐藏',
+    '只有「进窄屏折叠」这一半 → 手机载入后拉宽，四个按钮竖排堆在顶栏右侧（真渲染实测）');
+
+  // ⑤ 挂载与 ?v 钉子（§21h 纪律）+ jsdom 行为测试挂进 CI（§21o）。
+  check(/<script defer src="\.\/anon-mail\.js\?v=1"><\/script>/.test(idx36s)
+    && idx36s.indexOf('anon-mail.js?v=1') > idx36s.indexOf('fab-dock.js?v=2')
+    && /fab-dock\.js\?v=2/.test(idx36s)
+    && /mobile-fixes\.css\?v=17/.test(idx36s)
+    && /header-menu-patch\.js\?v=10/.test(idx36s)
+    && exists('scripts/test-anon-mail.cjs')
+    && wf36s.indexOf('node scripts/test-anon-mail.cjs') !== -1,
+    '§36s index.html 挂载 anon-mail.js?v=1（排在 fab-dock 之后），三个改动资源 ?v 同步 bump，配套 jsdom 测试挂进 CI',
+    '?v 没 bump → 浏览器/CDN 命中旧脚本；测试没挂 CI → §21o 判红或回归没人拦');
 }
 
 // ---------- 汇总 ----------
