@@ -4,9 +4,9 @@
    被测：github-access-help.js / share-modal.js（浏览器 IIFE）
    覆盖：
      ① isDesktop()：PC / Android / iPhone / iPad / iPadOS 伪装 Mac / 触屏笔记本
-     ② helpHtml()：PC 只出 Steam++ 官网 + 勾选 GitHub；移动端只出站点原有入口
+     ② helpHtml()：§36t 起电脑 / 手机平板两条办法都常显，isDesktop() 只打推荐标记
      ③ populate()：容器填充幂等，不重复叠加
-     ④ Star 二级菜单：桌面触发入口挂载 + 点击出浮层 + 外部点击关闭
+     ④ Star 二级菜单：宽窄屏都贴 Star 常显（不进下拉）+ 点击出浮层 + 外部点击关闭
      ⑤ shareUrl()：sponsor.html（含 query / hash）剥净，其它页面 URL 原样
      ⑥ share-modal.info()：打赏页分享出去的 url 不带 sponsor.html
    ========================================================================== */
@@ -71,21 +71,30 @@ function mkDom(opts) {
     w.close();
   });
 
-  /* ② 帮助内容按设备分流 */
-  console.log('\n② helpHtml() 按设备分流');
+  /* ② §36t：两条办法都常显，设备判定只决定推荐标记落在哪一条 */
+  console.log('\n② helpHtml() 两条办法都常显 + 推荐标记');
   const wPc = mkDom({});
   const hPc = wPc.SXGGitHubAccess.helpHtml();
   check('PC 含 Steam++ 官网', hPc.indexOf('https://steampp.net/') !== -1);
   check('PC 含「网络加速」与「勾选 GitHub」', /网络加速/.test(hPc) && /勾选/.test(hPc) && /GitHub/.test(hPc));
-  check('PC 不出现移动入口（本次不推荐 VPN）', hPc.indexOf('47.112.97.173') === -1);
+  check('PC 也把手机 / 平板那条常显（不隐藏）', hPc.indexOf('47.112.97.173') !== -1 && /手机\s*\/\s*平板/.test(hPc));
+  check('PC 两条 row 都在', (hPc.match(/sxg-gh-help__row/g) || []).length === 2);
+  check('PC 只有一枚推荐标记，落在电脑那条',
+    (hPc.match(/sxg-gh-help__rec/g) || []).length === 1
+    && /steampp\.net[\s\S]{0,180}当前设备 · 推荐/.test(hPc));
   check('PC 无「站长推荐 / 点此购买」推广话术', !/站长推荐|点此购买/.test(hPc));
+  check('不再写「自动判断，无需手动切换」', !/已按当前设备自动判断，无需手动切换/.test(hPc));
   wPc.close();
 
   const wMob = mkDom({ ua: 'Mozilla/5.0 (Linux; Android 13; Pixel 7) Mobile Safari/537.36', touch: 5 });
   const hMob = wMob.SXGGitHubAccess.helpHtml();
   check('移动端含站点原有入口', hMob.indexOf('47.112.97.173:8000/register?aff=v17mHNYv') !== -1);
-  check('移动端不推 Steam++ 桌面方案', hMob.indexOf('steampp.net') === -1);
+  check('移动端也把电脑那条常显（不隐藏）', hMob.indexOf('steampp.net') !== -1 && /网络加速/.test(hMob));
   check('移动端文案点明手机 / 平板', /手机\s*\/\s*平板/.test(hMob));
+  check('移动端两条 row 都在', (hMob.match(/sxg-gh-help__row/g) || []).length === 2);
+  check('移动端只有一枚推荐标记，落在手机 / 平板那条',
+    (hMob.match(/sxg-gh-help__rec/g) || []).length === 1
+    && /手机\s*\/\s*平板[\s\S]{0,260}当前设备 · 推荐/.test(hMob));
   wMob.close();
 
   /* ③ populate 幂等 */
@@ -116,12 +125,16 @@ function mkDom(opts) {
   }
   wMenu.close();
 
+  /* §36t：窄屏不再挂下拉，🌐 圆钮仍贴在 Star 右侧常显（与桌面同一分支） */
   const wNarrow = mkDom({ narrow: true, ua: 'Mozilla/5.0 (Linux; Android 13) Mobile Safari/537.36', touch: 5 });
   const menu = wNarrow.document.createElement('div');
   menu.id = 'sxg-header-menu';
   wNarrow.document.body.appendChild(menu);
   await new Promise(function (r) { setTimeout(r, 60); });
-  check('窄屏把入口挂进 #sxg-header-menu', !!menu.querySelector('#' + wNarrow.SXGGitHubAccess.TRIGGER_ID));
+  const trigN = wNarrow.document.getElementById(wNarrow.SXGGitHubAccess.TRIGGER_ID);
+  check('窄屏仍贴 Star 常显（同桌面父节点 #root）', !!trigN && trigN.parentNode && trigN.parentNode.id === 'root');
+  check('窄屏入口不进 #sxg-header-menu', !menu.querySelector('#' + wNarrow.SXGGitHubAccess.TRIGGER_ID));
+  check('窄屏入口沿用圆形桌面样式', !!trigN && trigN.getAttribute('data-sxg-gh-desktop') === '1');
   wNarrow.close();
 
   /* ⑤ shareUrl 剥除 sponsor.html */

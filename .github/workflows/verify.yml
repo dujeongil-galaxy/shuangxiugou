@@ -295,14 +295,21 @@ jobs:
 
       # 2026-11-12「申诉弹窗补规则 + GitHub 访问帮助按设备分流 + 打赏页链接规整」：
       # jsdom 真跑 isDesktop()（PC / Android / iPhone / iPad / iPadOS 伪装 Mac /
-      # 触屏笔记本）、helpHtml() 两端互斥、Star 二级菜单浮层、shareUrl() 剥
+      # 触屏笔记本）、helpHtml() 两条办法都常显 + 推荐标记（§36t）、Star 二级菜单浮层、shareUrl() 剥
       # sponsor.html 与 info() 全平台共用。配套 verify §36r。
       - name: GitHub 访问帮助与分享链接规整测试
         run: node scripts/test-github-access-help.cjs
 
       # 2026-11-12「匿名邮箱按钮 + 访问前告知弹窗 + 手机悬浮按钮全部撑开」：
       # jsdom 真跑桌面 / 手机落位、点击先弹窗不跳走、复制邮箱、五条关闭路径、
-      # 断点来回切换，以及 header-menu-patch 切回桌面把顶栏四按钮还原出下拉容器。
+      # 断点来回切换，以及 §36t 起顶栏全部常显（旧菜单残留回收、按钮不丢）。
       # 配套 verify §36s。
       - name: 匿名邮箱入口与断点还原测试
         run: node scripts/test-anon-mail.cjs
+
+      # 2026-11-12 §36t 站长「手机端，全部展开，按钮不再做隐藏」：
+      # jsdom 真跑顶栏不折叠 / 不许隐藏 / 旧菜单残留回收 / 断点来回不丢按钮，
+      # 🌐 入口宽窄屏都贴 Star 常显，帮助两条办法都常显 + 推荐标记。
+      # 配套 verify §36t。
+      - name: 顶栏全部展开与帮助入口常显测试
+        run: node scripts/test-header-expand.cjs

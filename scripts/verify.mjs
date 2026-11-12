@@ -8097,10 +8097,10 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(ruleOk,
     '§36g 手机端 [data-ai-notice]（AI 开通公告）改块级，右列 76px 由 body 统一预留（§36j 上移）',
     '公告仍是居中 inline-block 且无处预留右列宽 → 窄屏右缘压在右侧悬浮钮上（站长截图）');
-  /* §36s 又改了同一份 CSS（悬浮层全部撑开），?v 随每次改动继续往上走；
+  /* §36t 又改了同一份 CSS（顶栏全部常显），?v 随每次改动继续往上走；
      这里与 §36q / §36s 的钉子必须同步，别只改其中一处。 */
-  check(/mobile-fixes\.css\?v=17/.test(idx36g),
-    '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 17（§36s 悬浮层撑开）',
+  check(/mobile-fixes\.css\?v=18/.test(idx36g),
+    '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 18（§36t 顶栏全部展开）',
     '?v 没 bump → 浏览器缓存旧 CSS，预留列宽不生效');
 }
 
@@ -8269,10 +8269,10 @@ section('25. 成功案例专题页（QQ奶奶）');
   // ④ 挂载顺序：dock 脚本必须排在所有悬浮脚本之后。
   const mountOk = /<script defer src="\.\/fab-dock\.js\?v=2"><\/script>/.test(idx36q)
     && idx36q.indexOf('fab-dock.js?v=2') > idx36q.indexOf('nav-menu.js?v=6')
-    && /mobile-fixes\.css\?v=17/.test(idx36q)
-    && /header-menu-patch\.js\?v=10/.test(idx36q);
+    && /mobile-fixes\.css\?v=18/.test(idx36q)
+    && /header-menu-patch\.js\?v=11/.test(idx36q);
   check(mountOk,
-    '§36q index.html 已挂载 fab-dock.js?v=2 且排在所有悬浮脚本之后，mobile-fixes.css?v=17 / header-menu-patch.js?v=10 同步 bump',
+    '§36q index.html 已挂载 fab-dock.js?v=2 且排在所有悬浮脚本之后，mobile-fixes.css?v=18 / header-menu-patch.js?v=11 同步 bump',
     '挂载顺序错了 → dock 执行时按钮还没建好，收编为空；?v 没 bump → 浏览器缓存旧 CSS');
 }
 
@@ -8324,13 +8324,15 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§36r 手机 / 平板分支沿用 Login GitHub 弹窗的站点原有入口（同一 URL，不新造推广链接）',
     '移动端另起一条新推广链接 → 等于借本次改动扩大 VPN 推广面');
 
-  // ⑤ Star on GitHub 二级菜单：找到 Star 按钮 + 手机端挂进既有下拉 + fixed 浮层。
+  // ⑤ Star on GitHub 二级菜单：§36t 起两端都贴 Star 常显，浮层 fixed 不插 DOM。
   const menuOk = /TRIGGER_ID/.test(gh36r) && /findStar\(\)/.test(gh36r)
-    && /Star on GitHub/.test(gh36r) && /sxg-header-menu/.test(gh36r)
-    && /position:fixed/.test(gh36r) && /FLY_ID/.test(gh36r);
+    && /Star on GitHub/.test(gh36r)
+    && /star\.parentNode\.insertBefore\(t, star\.nextSibling\)/.test(gh36r)
+    && /position:fixed/.test(gh36r) && /FLY_ID/.test(gh36r)
+    && !/sxg-header-menu/.test(gh36r);
   check(menuOk,
-    '§36r Star on GitHub 二级菜单：桌面贴 Star 挂触发入口、手机并入「菜单▼」，浮层不继承菜单 white-space:nowrap',
-    '二级菜单没挂上或把浮层塞进 #sxg-header-menu → 长 URL 撑爆手机下拉');
+    '§36r Star on GitHub 二级菜单：🌐 触发入口贴 Star 常显（§36t 撤掉下拉），浮层 position:fixed 不插进顶栏 DOM',
+    '入口又挂回下拉菜单 / 浮层塞进顶栏按钮组 → 长 URL 被 nowrap 撑爆或按钮被藏');
 
   // ⑥ 打赏页所有按钮生成的链接剥掉 sponsor.html：分享单一真相源 + 兜底复制都要改。
   const normOk = sm36r.indexOf('function shareUrl(') !== -1
@@ -8343,12 +8345,12 @@ section('25. 成功案例专题页（QQ奶奶）');
     '只改好路径漏了兜底复制 → 脚本未加载时复制出去的仍是带 sponsor.html 的链接');
 
   // ⑦ 挂载与 ?v 钉子（§21h 纪律），以及 jsdom 行为测试存在。
-  check(/<script defer src="\.\/github-access-help\.js\?v=1"><\/script>/.test(idx36r)
-    && /appeal-policy\.js\?v=3/.test(idx36r)
+  check(/<script defer src="\.\/github-access-help\.js\?v=2"><\/script>/.test(idx36r)
+    && /appeal-policy\.js\?v=4/.test(idx36r)
     && /share-modal\.js\?v=5/.test(idx36r)
     && /share-modal\.js\?v=5/.test(sp36r)
     && exists('scripts/test-github-access-help.cjs'),
-    '§36r index.html 挂载 github-access-help.js?v=1，两个改动脚本 ?v 同步 bump，配套 jsdom 行为测试存在',
+    '§36r index.html 挂载 github-access-help.js?v=2 / appeal-policy.js?v=4，改动脚本 ?v 同步 bump，配套 jsdom 行为测试存在',
     '?v 没 bump → 浏览器/CDN 命中旧脚本，新文案与链接规整都不生效');
 }
 
@@ -8396,25 +8398,105 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§36s 手机端按钮全部撑开：dock 68px 贴右留白列、每枚 68×36 带中文短标签、撤掉「更多」折叠；邮箱入口挂 dock 首位',
     '又写回「⋯ 更多」折叠 / 宽条退回圆钮 / 新入口塞进「菜单▼」被隐藏 → 白留一列且入口静默失效');
 
-  // ④ 断点双向还原：手机载入后拉宽，顶栏四按钮不能竖着堆在右侧。
-  check(/function\s+restore\(\)/.test(hp36s)
-    && /insertBefore\(r\.el, before\)/.test(hp36s)
+  // ④ §36t 起顶栏不再折叠：两端都常显，只确认展开标记与断点监听还在。
+  check(/data-sxg-hdr-expanded/.test(hp36s)
     && /addEventListener\('change', onBp\)|addListener\(onBp\)/.test(hp36s)
-    && /display:none !important;/.test(hp36s)
-    && /display:flex !important;/.test(hp36s),
-    '§36s 顶栏折叠改双向：记住原父节点 / class / style，切回宽屏还原四按钮，下拉容器宽屏强制隐藏',
-    '只有「进窄屏折叠」这一半 → 手机载入后拉宽，四个按钮竖排堆在顶栏右侧（真渲染实测）');
+    && !/function\s+restore\(\)|function\s+collapse\(/.test(hp36s)
+    && !/\.sxg-header-btn\s*\{\s*display:\s*none/.test(hp36s),
+    '§36s 顶栏不再折叠：撤掉 collapse/restore 与隐藏规则，宽窄屏都常显，断点只重新确认展开标记',
+    '又写回折叠 / restore → 站长 §36t「全部展开，按钮不再做隐藏」被推翻');
 
   // ⑤ 挂载与 ?v 钉子（§21h 纪律）+ jsdom 行为测试挂进 CI（§21o）。
   check(/<script defer src="\.\/anon-mail\.js\?v=1"><\/script>/.test(idx36s)
     && idx36s.indexOf('anon-mail.js?v=1') > idx36s.indexOf('fab-dock.js?v=2')
     && /fab-dock\.js\?v=2/.test(idx36s)
-    && /mobile-fixes\.css\?v=17/.test(idx36s)
-    && /header-menu-patch\.js\?v=10/.test(idx36s)
+    && /mobile-fixes\.css\?v=18/.test(idx36s)
+    && /header-menu-patch\.js\?v=11/.test(idx36s)
     && exists('scripts/test-anon-mail.cjs')
     && wf36s.indexOf('node scripts/test-anon-mail.cjs') !== -1,
     '§36s index.html 挂载 anon-mail.js?v=1（排在 fab-dock 之后），三个改动资源 ?v 同步 bump，配套 jsdom 测试挂进 CI',
     '?v 没 bump → 浏览器/CDN 命中旧脚本；测试没挂 CI → §21o 判红或回归没人拦');
+}
+
+// ---------- 36t. 手机端顶栏全部常显 + 帮助入口/两条办法不再隐藏（2026-11-12 站长「我再说一次」） ----------
+{
+  const hp36t = read('header-menu-patch.js');
+  const mf36t = stripCssComments(read('mobile-fixes.css'));
+  const gh36t = read('github-access-help.js');
+  const ap36t = read('appeal-policy.js');
+  const idx36t = read('index.html');
+  const wf36t = read('.github/workflows/verify.yml');
+
+  // ① 顶栏：撤掉折叠与隐藏，改成「不许隐藏」兜底 + 旧菜单残留回收。
+  const noFold = /data-sxg-hdr-expanded/.test(hp36t)
+    && /function\s+reclaim\(\)/.test(hp36t)
+    && /display:inline-flex\s*!important/.test(hp36t)
+    && !/\.sxg-header-btn\s*\{\s*display:\s*none/.test(hp36t)
+    && !/function\s+collapse\(|function\s+restore\(/.test(hp36t)
+    && !/menu\.appendChild\(btn\)|is-open|MENU_ID|TOGGLE_ID/.test(hp36t);
+  check(noFold,
+    '§36t 顶栏彻底撤掉「菜单▼」折叠：不再注入 .sxg-header-btn{display:none}、不建下拉容器，只留不许隐藏兜底 + 旧菜单残留回收',
+    '又写回折叠 / 隐藏规则 → 站长「手机端全部展开，按钮不再做隐藏」再次落空');
+
+  // ② CSS：≤640px 顶栏换行铺满，按钮自身宽度、nowrap、不省略；圆形帮助入口单独排除。
+  const layoutOk = /header\s*>\s*div\[class\*="h-16"\]\s*\{[^}]*flex-wrap:\s*wrap[^}]*row-gap/.test(mf36t)
+    && /header\s+div\[data-hdr-acts\][\s\S]{0,320}?flex-direction:\s*row\s*!important/.test(mf36t)
+    && /header\s+div\[data-hdr-acts\][\s\S]{0,420}?flex-wrap:\s*wrap\s*!important/.test(mf36t)
+    && /header\s+div\[data-hdr-acts\][\s\S]{0,900}?width:\s*auto\s*!important/.test(mf36t)
+    && /white-space:\s*nowrap\s*!important/.test(mf36t)
+    && /data-sxg-gh-desktop/.test(mf36t)
+    && !/header\s+a\[href\*="github\.com"\][\s\S]{0,220}?width:\s*100%/.test(mf36t)
+    && !/flex-direction:\s*column;\s*\n\s*align-items:\s*flex-end/.test(mf36t);
+  check(layoutOk,
+    '§36t ≤640px 顶栏 flex-wrap 换行、按钮组横向铺满第二行、每枚自身宽度 nowrap 全常显；🌐 圆形入口单独排除不撑成宽条',
+    '退回竖排 width:100% / 文字省略号 → 全部展开变成换个姿态藏按钮');
+
+  // ③ 帮助内容：两条办法都常显，设备判定只打「当前设备 · 推荐」标记。
+  const helpBody = (gh36t.match(/function\s+helpHtml\(\)\s*\{([\s\S]*?)\n\s*\}/) || ['', ''])[1];
+  const bothOk = /var\s+pcRow\s*=/.test(helpBody) && /var\s+mobRow\s*=/.test(helpBody)
+    && /pcRow\s*\+\s*\(pc\s*\?\s*rec/.test(helpBody)
+    && /mobRow\s*\+\s*\(pc\s*\?\s*''\s*:\s*rec\)/.test(helpBody)
+    && /sxg-gh-help__rec/.test(gh36t)
+    && !/var\s+row\s*;/.test(helpBody)
+    && !/已按当前设备自动判断，无需手动切换/.test(gh36t);
+  check(bothOk,
+    '§36t GitHub 访问帮助两条（电脑 / 手机平板）同时常显，isDesktop() 只给当前设备那条打推荐标记，不再按设备隐藏另一条',
+    '又用 if/else 只拼一个 row → 手机上永远看不到另一条办法，等于把内容藏起来');
+
+  // ④ 触发入口：宽屏窄屏同一分支，贴 Star 常显，不再依赖下拉菜单。
+  const trigOk = /findStar\(\)/.test(gh36t)
+    && /star\.parentNode\.insertBefore\(t, star\.nextSibling\)/.test(gh36t)
+    && /position:fixed/.test(gh36t)
+    && !/sxg-header-menu/.test(gh36t)
+    && !/if\s*\(isNarrow\(\)\)/.test(gh36t)
+    && !/removeTrigger\(\);/.test(gh36t);
+  check(trigOk,
+    '§36t Star 的 🌐 二级菜单入口两端都贴 Star 常显（同桌面截图），不再挂下拉、不做断点重建隐藏',
+    '入口又塞进菜单 / 断点又重建 → 手机上按钮会凭空消失');
+
+  // ⑤ 弹窗滚动复位：内容变长后聚焦按钮不能把标题滚出视野。
+  check(/card\.scrollTop\s*=\s*0/.test(ap36t),
+    '§36t 申诉弹窗打开后复位滚动位置，标题不被裁出视野（帮助块两条后卡片变高）',
+    '内容变高 + focus() 自动滚到底 → 用户一打开只看到下半截');
+
+  // ⑥ 641–900px 中等宽度：真渲染 660px 曾把六枚按钮挤成逐字竖条，补换行铺满。
+  const midCss36t = (mf36t.match(/@media\s*\(min-width:\s*641px\)\s*and\s*\(max-width:\s*900px\)\s*\{([\s\S]*?)\n\}/) || ['', ''])[1];
+  check(/flex-wrap:\s*wrap/.test(midCss36t)
+    && /width:\s*100%/.test(midCss36t)
+    && /white-space:\s*nowrap\s*!important/.test(midCss36t)
+    && /flex:\s*0\s+0\s+auto\s*!important/.test(midCss36t),
+    '§36t 641–900px 中等宽度顶栏也换行铺满（660px 真渲染实测逐字竖排），按钮 nowrap 不压缩',
+    '只修 ≤640px → 平板横屏 / 窄桌面窗口按钮仍被挤成不可读的竖条');
+
+  // ⑦ ?v 钉子（§21h）+ 新 jsdom 测试挂进 CI（§21o）。
+  check(/mobile-fixes\.css\?v=18/.test(idx36t)
+    && /header-menu-patch\.js\?v=11/.test(idx36t)
+    && /github-access-help\.js\?v=2/.test(idx36t)
+    && /appeal-policy\.js\?v=4/.test(idx36t)
+    && exists('scripts/test-header-expand.cjs')
+    && wf36t.indexOf('node scripts/test-header-expand.cjs') !== -1,
+    '§36t 四个改动资源 ?v 同步 bump，配套 jsdom 行为测试存在并挂进 CI',
+    '?v 没 bump → 真机命中旧折叠脚本；测试没挂 CI → §21o 判红或回归没人拦');
 }
 
 // ---------- 汇总 ----------

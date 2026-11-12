@@ -11,7 +11,7 @@
      ⑥ 复制：navigator.clipboard 真写入 + 「已复制」反馈
      ⑦ 关闭：× / 先不去 / ESC / 点遮罩 / 仍要前往 都收起，重复点击不叠加
      ⑧ 断点：手机 ↔ 桌面来回切换，按钮不丢、不进下拉
-     ⑨ header-menu-patch 双向还原：切回桌面把四个按钮放回顶栏、菜单隐藏
+     ⑨ §36t 顶栏全部常显：不建下拉、旧菜单残留回收、断点来回按钮不丢
    ========================================================================== */
 'use strict';
 
@@ -185,23 +185,44 @@ function mkDom(opts) {
     && !bR.classList.contains('sxg-header-btn'));
   r.w.close();
 
-  /* ⑨ header-menu-patch 双向还原 */
-  console.log('\n⑨ 顶栏四按钮断点还原');
+  /* ⑨ §36t：顶栏全部常显，撤掉折叠；旧菜单残留要被回收 */
+  console.log('\n⑨ 顶栏按钮全部常显（不再折叠）');
   const h = mkDom({ narrow: true, header: true });
-  // 关掉 anon-mail 的干扰：只需验证 header-menu-patch 自己的归属
-  const hdr = h.w.document.getElementById('hdr');
-  const login = h.w.document.getElementById('login-github-btn');
-  const menu = h.w.document.getElementById('sxg-header-menu');
-  check('窄屏：四枚按钮都进了下拉容器', !!menu && menu.contains(login));
+  const doc = h.w.document;
+  const hdr = doc.getElementById('hdr');
+  const login = doc.getElementById('login-github-btn');
+  // 补齐真实页面的 <header> + data-hdr-acts 结构
+  const header = doc.createElement('header');
+  hdr.parentNode.insertBefore(header, hdr);
+  header.appendChild(hdr);
+  hdr.setAttribute('data-hdr-acts', '1');
+  // 人为造一份旧版残留：下拉容器里藏着一枚按钮 + 一个「菜单▼」
+  const stale = doc.createElement('div');
+  stale.id = 'sxg-header-menu';
+  hdr.appendChild(stale);
+  stale.appendChild(login);
+  const staleToggle = doc.createElement('button');
+  staleToggle.id = 'sxg-header-menu-toggle';
+  hdr.appendChild(staleToggle);
+  h.state.listeners.forEach(function (fn) { fn(); });
+  check('窄屏：展开标记就位', hdr.getAttribute('data-sxg-hdr-expanded') === '1');
+  check('窄屏：不创建下拉容器与「菜单▼」',
+    !doc.getElementById('sxg-header-menu') && !doc.getElementById('sxg-header-menu-toggle'));
+  check('旧菜单里藏着的按钮被搬回顶栏', login.parentNode === hdr);
+  check('窄屏：三枚顶栏按钮全部留在按钮组常显', hdr.querySelectorAll('a').length === 3,
+    hdr.querySelectorAll('a').length);
+  const expStyle = doc.getElementById('sxg-header-expand-style');
+  check('注入「不许隐藏」兜底样式', !!expStyle && /display:inline-flex/.test(expStyle.textContent));
   h.state.narrow = false;
   h.state.listeners.forEach(function (fn) { fn(); });
-  check('切宽屏：Login GitHub 回到顶栏原父节点', login.parentNode === hdr);
-  check('切宽屏：class 与内联样式还原', login.classList.contains('sxg-header-btn')
-    && login.getAttribute('style') === null, login.getAttribute('class'));
-  check('切宽屏：下拉菜单收起', !menu.classList.contains('is-open'));
+  // 切宽屏时 anon-mail.js 按设计把「匿名邮箱」挂回顶栏（第 4 枚），别写死 3。
+  check('切宽屏：原三枚按钮不丢、仍在顶栏',
+    hdr.contains(login) && hdr.querySelectorAll('a').length >= 3,
+    hdr.querySelectorAll('a').length);
   h.state.narrow = true;
   h.state.listeners.forEach(function (fn) { fn(); });
-  check('再切窄屏：按钮重新折叠进菜单', menu.contains(login));
+  check('再切窄屏：按钮不丢、仍常显',
+    hdr.contains(login) && !doc.getElementById('sxg-header-menu'));
   h.w.close();
 
   setTimeout(function () {

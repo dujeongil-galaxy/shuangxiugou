@@ -140,6 +140,10 @@
     modal.style.display = 'flex'; // 同步内联 display（hidden 会被内联 flex 压过，见 buildModal 注释）
     var yes = document.getElementById(MODAL_ID + '-agree');
     if (yes) yes.focus();
+    /* 2026-11-12 §36t：帮助块从 1 条展开成 2 条后卡片变高，focus() 会让
+       可滚动卡片自动滚到按钮处，标题被裁出视野。聚焦后复位到顶部。 */
+    var card = modal.firstElementChild;
+    if (card) card.scrollTop = 0;
   }
 
   function closeModal() {

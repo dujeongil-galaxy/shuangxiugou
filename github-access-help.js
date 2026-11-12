@@ -5,21 +5,24 @@
    打不开。参考 Login GitHub 已有的提示弹窗，把「打不开怎么办」补到两个新入口：
      · 申诉政策确认弹窗（appeal-policy.js 留一个 [data-sxg-gh-help] 容器）
      · Star on GitHub 按钮的二级菜单（本文件挂触发入口 + 浮层）
-   设备分流只写这一份逻辑，两端复用：
-     · 电脑  → Watt Toolkit（原 Steam++）官网，提示「网络加速中勾选 GitHub」
-     · 手机 / 平板 → 沿用站点原有的网络访问入口
-   站长要求「加入判定代码，判定用户设备是 PC 还是手机平板」，即 isDesktop()。
+   设备判定代码仍保留（站长 2026-11-12「加入判定代码，判定用户设备是 PC 还是
+   手机平板」），但 2026-11-12 §36t 站长把口径改了：
+     「我再说一次，手机端，全部展开，按钮不再做隐藏。」
+   → 两条办法（电脑 / 手机平板）**同时常显**，判定结果只用来给当前设备那一条
+     打「当前设备 · 推荐」标记，不再用它把另一条藏起来。
+   → Star on GitHub 的 🌐 触发入口两端都直接贴在 Star 按钮右侧常显（与桌面
+     截图一致），不再挂进任何下拉菜单、不做断点隐藏。
+
    设备判定口径：UA 为主（Android / iPhone / iPad / Mobile / Tablet ... 一律算
    移动端），再修 iPadOS 13+ 伪装成 Macintosh（多点触控 + Mac → 判平板），
    触屏笔记本因 UA 仍报桌面平台且无移动标识，按 PC 处理。
 
    纪律：
      · 纯 DOM 下游补丁，不改压缩 bundle、不改六个悬浮脚本、不改 Login 弹窗。
-     · 手机端顶栏按钮会被 header-menu-patch.js 收进「菜单▼」；本文件的触发
-       入口在 ≤640px 直接挂进 #sxg-header-menu，避开 .sxg-header-btn 的
-       display:none 隐藏规则，也避开桌面顶栏第 5 枚按钮挤窄布局。
-     · 二级菜单用 position:fixed 浮层（不插进 #sxg-header-menu 里），否则会
-       继承 #sxg-header-menu a 的 white-space:nowrap !important 把长 URL 撑爆。
+     · 顶栏按钮由 header-menu-patch.js 撤掉折叠后全部常显；本文件不再依赖
+       旧的下拉菜单容器，触发入口统一贴 Star，宽屏窄屏同一份代码。
+     · 二级菜单用 position:fixed 浮层（不插进顶栏按钮组里），避免继承
+       顶栏按钮的 nowrap 规则把长 URL 撑爆。
    ========================================================================== */
 (function () {
   'use strict';
@@ -65,6 +68,9 @@
       '.sxg-gh-help__row a{color:#0F766E;font-weight:600;text-decoration:underline;',
       '  word-break:break-all}',
       '.sxg-gh-help__note{margin:0;color:#94a3b8;font-size:11.5px}',
+      '.sxg-gh-help__rec{display:inline-block;margin-left:6px;padding:1px 7px;',
+      '  border-radius:6px;background:#0F766E;color:#fff;font-size:11px;',
+      '  font-weight:600;vertical-align:middle;white-space:nowrap}',
       '#' + FLY_ID + '{box-sizing:border-box;background:#fff;border-radius:14px;',
       '  box-shadow:0 14px 38px rgba(15,23,42,.22);padding:16px 18px;',
       '  border:1px solid #e2e8f0;z-index:10000;max-height:70vh;overflow-y:auto}',
@@ -78,25 +84,25 @@
   }
 
   /* ---------------------------------------------------------- 内容（单一真相源） */
+  /* §36t：两条办法都常显，设备判定只决定哪一条带「当前设备 · 推荐」。
+     旧版 if/else 只拼一个 row，等于把另一半藏起来 —— 那正是站长要撤掉的做法。 */
   function helpHtml() {
-    var pc = false;
+    var pc = true;
     try { pc = isDesktop(); } catch (e) { pc = true; }
-    var row;
-    if (pc) {
-      row = '💻 <b>电脑</b>：装 Watt Toolkit（原 Steam++，开源免费），在「网络加速」里'
-        + '勾选 <b>GitHub</b> 后重试。官网：<a href="' + STEAMPP_URL + '" '
-        + 'target="_blank" rel="noopener noreferrer">' + STEAMPP_URL + '</a>';
-    } else {
-      row = '📱 <b>手机 / 平板</b>：可沿用站点原有的网络访问入口（VPN）：'
-        + '<a href="' + MOBILE_ENTRY + '" target="_blank" rel="noopener noreferrer">'
-        + MOBILE_ENTRY + '</a>';
-    }
+    var pcRow = '💻 <b>电脑</b>：装 Watt Toolkit（原 Steam++，开源免费），在「网络加速」里'
+      + '勾选 <b>GitHub</b> 后重试。官网：<a href="' + STEAMPP_URL + '" '
+      + 'target="_blank" rel="noopener noreferrer">' + STEAMPP_URL + '</a>';
+    var mobRow = '📱 <b>手机 / 平板</b>：可沿用站点原有的网络访问入口（VPN）：'
+      + '<a href="' + MOBILE_ENTRY + '" target="_blank" rel="noopener noreferrer">'
+      + MOBILE_ENTRY + '</a>';
+    var rec = '<span class="sxg-gh-help__rec">当前设备 · 推荐</span>';
     return '<div class="sxg-gh-help">'
       + '<div class="sxg-gh-help__hd">GitHub 访问帮助</div>'
       + '<p class="sxg-gh-help__lead">申诉、Star 与登录都走 GitHub；大陆部分网络环境下'
-      + '可能无法直连。打不开时按当前设备选一种办法：</p>'
-      + '<div class="sxg-gh-help__row">' + row + '</div>'
-      + '<p class="sxg-gh-help__note">已按当前设备自动判断，无需手动切换。</p>'
+      + '可能无法直连。两种办法都列在下面，按自己设备选一种：</p>'
+      + '<div class="sxg-gh-help__row">' + pcRow + (pc ? rec : '') + '</div>'
+      + '<div class="sxg-gh-help__row">' + mobRow + (pc ? '' : rec) + '</div>'
+      + '<p class="sxg-gh-help__note">两条都常显、不做隐藏；带「当前设备」标记的是按 UA 自动判断的建议。</p>'
       + '</div>';
   }
 
@@ -165,23 +171,10 @@
     if (old && old.parentNode) old.parentNode.removeChild(old);
   }
 
+  /* §36t：宽屏 / 窄屏同一分支 —— 🌐 圆形入口始终贴在 Star 按钮右侧常显。
+     旧版窄屏塞进「菜单▼」，等于把入口藏起来；现在顶栏已全部展开，不需要它。 */
   function ensureTrigger() {
     if (document.getElementById(TRIGGER_ID)) return true;
-
-    if (isNarrow()) {
-      /* 手机端：直接挂进 header-menu-patch.js 建好的下拉菜单，
-         不占顶栏、也不会被 .sxg-header-btn{display:none} 隐藏。 */
-      var menu = document.getElementById('sxg-header-menu');
-      if (!menu) return false;
-      var a = document.createElement('a');
-      a.id = TRIGGER_ID;
-      a.href = '#';
-      a.textContent = '🌐 GitHub 打不开？';
-      a.setAttribute('aria-label', 'GitHub 访问帮助');
-      menu.appendChild(a);
-      bindTrigger(a);
-      return true;
-    }
 
     var star = findStar();
     if (!star || !star.parentNode) return false;
@@ -220,14 +213,13 @@
     if (ev.key === 'Escape') closeFlyout();
   });
 
-  /* 断点来回切换时重建入口（手机菜单 ↔ 桌面顶栏） */
+  /* 断点来回切换：入口不重建（两端都在 Star 旁边），只把「当前设备 · 推荐」
+     标记按新断点重刷一次。isNarrow() 仍保留，用来感知断点变化。 */
   var lastMode = null;
   function checkMode() {
     var mode = isNarrow() ? 'narrow' : 'wide';
     if (lastMode !== null && lastMode !== mode) {
       closeFlyout();
-      removeTrigger();
-      /* 容器内容按设备重刷一次 */
       var slots = document.querySelectorAll('[' + SLOT_ATTR + ']');
       for (var i = 0; i < slots.length; i++) {
         slots[i].removeAttribute(SLOT_MARK);
@@ -263,6 +255,7 @@
     helpHtml: helpHtml,
     populate: populate,
     STEAMPP_URL: STEAMPP_URL,
+    MOBILE_ENTRY: MOBILE_ENTRY,
     TRIGGER_ID: TRIGGER_ID,
     FLY_ID: FLY_ID
   };

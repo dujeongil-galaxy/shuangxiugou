@@ -74,83 +74,125 @@
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   ≤640px（Tailwind sm 断点）：按钮竖排
+   ≤640px（Tailwind sm 断点）：顶栏按钮全部常显、换行铺满（2026-11-12 §36t）
    --------------------------------------------------------------------------
-   高度要算清楚，否则竖排三行会把首屏吃掉一大半：
+   站长口径：「我再说一次，手机端，全部展开，按钮不再做隐藏。」
+   旧版把按钮竖排三行靠 padding 1.5px 压高度，但那仍是「菜单▼」折叠
+   之前的形态；撤掉折叠后按钮组有 5 枚（提交数据 / Star / 赞助 /
+   Login / GitHub 帮助），横排一行放不下 314px（390 - 右侧 76px 隔离列）。
 
-     按钮高 = font-size × 1.25 + padding上下 × 2
-     总高   = 按钮高 × 3 + gap × 2 + 容器 padding × 2
-
-   ┌──────────────────────────┬────────┬──────────────┐
-   │ 方案                     │ 总高   │ 判断         │
-   ├──────────────────────────┼────────┼──────────────┤
-   │ padding 7px（第一版）    │ 117px  │ ❌ 顶栏涨太多 │
-   │ padding 5px              │  99px  │ ❌ 仍偏高     │
-   │ padding 3px              │  87px  │ △勉强        │
-   │ **padding 1.5px + gap 6**│**78px**│ ✓ 仅多 14px  │
-   └──────────────────────────┴────────┴──────────────┘
-
-   做法：按钮 padding 只留 1.5px（视觉上的最小点击态），
-        按钮之间的间距全部交给容器的 row-gap 控制。
-        这样既保留了 44px 级别的触摸高度，又不至于顶栏过高。
+   做法：顶栏容器 flex-wrap，品牌占第一行，按钮组 width:100% 独占第二行，
+        按钮组自身 flex-wrap 横向换行；每枚按钮保持自身宽度、nowrap、
+        inline-flex，绝不 display:none / width:100% 竖排 / 文字省略。
+   > ⚠️ 算宽度必须算总量：品牌行 + 按钮行，不能只算单项。
    -------------------------------------------------------------------------- */
 @media (max-width: 640px) {
-  /* ① 放开顶栏固定高度 */
+  /* ① 顶栏放开固定高度并允许换行 */
   header > div[class*="h-16"] {
     height: auto;
     min-height: 64px;
-    padding-top: 6px;
-    padding-bottom: 6px;
+    flex-wrap: wrap;
+    row-gap: 6px;
+    padding-top: 8px;
+    padding-bottom: 8px;
   }
 
-  /* ② 按钮区：竖排，间距由 gap 控制 */
+  /* ② 按钮区：横向换行铺满第二行，不再竖排、不再 flex-end */
   header div[data-hdr-acts],
   header div:has(> a[href*="sponsor.html"]),
-  header div:has(> a[href*="github.com"] > span) {
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
+  header div:has(> a[href*="github.com"] > span),
+  header div:has(> a[href*="shuangxiugou/issues"]) {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: 100%;
+    gap: 6px !important;
   }
 
-  /* ③ 按钮本身：占满按钮区宽度，padding 压到最小 */
-  header a[href*="github.com"],
-  header a[href*="sponsor.html"],
-  header a[href*="shuangxiugou/issues"] {
-    flex: 0 0 auto;
-    width: 100%;
-    min-width: 0;
-    white-space: nowrap;
-    display: flex;
+  /* ③ 每枚按钮：自身宽度、全部可见、不省略。
+        🌐 圆形帮助入口有自己的 30×30 样式，用 :not() 排除，别撑成宽条。 */
+  header div[data-hdr-acts] > a:not([data-sxg-gh-desktop]),
+  header div[data-hdr-acts] > button {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: 100%;
+    white-space: nowrap !important;
+    display: inline-flex !important;
     align-items: center;
     justify-content: center;
-    line-height: 1.4;
-    font-size: 12px;
-    padding: 1.5px 10px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.3;
+    font-size: 11.5px;
+    padding: 5px 9px;
+    border-radius: 8px;
+    overflow: visible;
+    text-overflow: clip;
   }
 }
 
 /* --------------------------------------------------------------------------
-   ≤400px：更紧凑一档（360px 手机竖排三行也要控制高度）
+   ≤400px：更紧凑一档（360px 手机也要把 5 枚按钮收在两行内）
    -------------------------------------------------------------------------- */
 @media (max-width: 400px) {
-  header div[data-hdr-acts],
-  header div:has(> a[href*="sponsor.html"]),
-  header div:has(> a[href*="github.com"] > span) {
-    gap: 5px;
+  /* ≤400px 收掉圆形帮助入口的多余外边距，让它跟 Star 挂在同一行，别被 1px 挤到下一行。 */
+  header div[data-hdr-acts] > a[data-sxg-gh-desktop] {
+    margin-left: 0 !important;
   }
 
-  header a[href*="github.com"],
-  header a[href*="sponsor.html"],
-  header a[href*="shuangxiugou/issues"] {
-    font-size: 11.5px;
-    padding: 1.5px 8px;
+  header div[data-hdr-acts],
+  header div:has(> a[href*="sponsor.html"]),
+  header div:has(> a[href*="github.com"] > span),
+  header div:has(> a[href*="shuangxiugou/issues"]) {
+    gap: 5px !important;
+  }
+
+  header div[data-hdr-acts] > a:not([data-sxg-gh-desktop]),
+  header div[data-hdr-acts] > button {
+    font-size: 11px;
+    padding: 5px 8px;
   }
 
   header > div[class*="h-16"] {
-    padding-top: 5px;
-    padding-bottom: 5px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   641–900px（桌面中等宽度 / 平板横屏）：按钮不许被挤成逐字竖排
+   --------------------------------------------------------------------------
+   §36t 真渲染实测 660px：顶栏六枚按钮被 justify-between 压成
+   53–80px 的窄条，中文与英文都逐字换行
+   （「★ Star / on / GitHub」），虽没溢出但完全不可读。
+   ≤640px 已有换行铺满规则，这里补上 641–900 这一段，
+   避免「手机展开了、平板还是竖条」。做法与窄屏一致：
+   顶栏允许换行、按钮组铺满第二行、每枚自身宽度 + nowrap。
+   -------------------------------------------------------------------------- */
+@media (min-width: 641px) and (max-width: 900px) {
+  header > div[class*="h-16"] {
+    height: auto;
+    min-height: 64px;
+    flex-wrap: wrap;
+    row-gap: 6px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  header div[data-hdr-acts],
+  header div:has(> a[href*="sponsor.html"]),
+  header div:has(> a[href*="github.com"] > span) {
+    flex-wrap: wrap !important;
+    justify-content: flex-start !important;
+    width: 100%;
+    gap: 6px !important;
+  }
+
+  header div[data-hdr-acts] > a,
+  header div[data-hdr-acts] > button {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
   }
 }
 
