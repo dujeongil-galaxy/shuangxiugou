@@ -491,14 +491,20 @@
     right: 0 !important;
   }
 
-  /* AI 面板不进 dock（它是宽面板，仍 fixed 在 body）。bottom 引用
-     --sxg-dock-h（由 fab-dock.js 用 ResizeObserver 实时写），换屏高 /
-     增减按钮时自动跟随，不再有「+276px」这种随按钮数量漂移的魔数。 */
+  /* AI 面板不进 dock（它是宽面板，仍 fixed 在 body）。
+     2026-11-12 站长截图指令：手机端面板要落在「站点 header 正下方」那个位置。
+     原来按 bottom 反推（bar-h + dock-h 288 + 24），算式里 dock 那 288px 是「屏幕底部
+     常驻按钮堆」的高度——键盘一弹，visual viewport 只剩 ~420px，这个算式直接变负数，
+     面板被顶到 top:-7px、高 2px（实测等于消失，正是站长图 1 的样子）。
+     改法：top 锚定。--sxg-ai-top 由 ai-chat.js 实测 header 下沿写入，--sxg-ai-vh 由
+     visualViewport 实时写（无 visualViewport 时退回 100dvh），键盘弹出只让面板变矮，
+     位置不再漂。 */
   #sxg-ai-panel {
     left: 14px !important;
     right: 14px !important;
     width: auto !important;
-    bottom: calc(var(--sxg-bar-h, 0px) + var(--sxg-dock-h, 288px) + 24px + env(safe-area-inset-bottom, 0px)) !important;
-    max-height: min(480px, calc(100vh - var(--sxg-bar-h, 0px) - var(--sxg-dock-h, 288px) - 120px)) !important;
+    top: calc(var(--sxg-ai-top, 72px) + 8px) !important;
+    bottom: auto !important;
+    max-height: min(480px, calc(var(--sxg-ai-vh, 100dvh) - var(--sxg-ai-top, 72px) - 120px)) !important;
   }
 }
