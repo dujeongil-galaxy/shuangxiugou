@@ -44,8 +44,8 @@
   //   被省略号吃掉半截（截图即此现象）。收敛成「品牌 + 短片」5～6 字，并把新版三枚
   //   改成等宽（见 buildStyle 里 .dyp__acts.dyp--new > * 规则），14px 下都不截断。
   //   完整说明（「抖音短视频」字样）放 title，悬停可见，不占按钮宽度。
-  var NEW_GO_TEXT = '比亚迪短片';
-  var NEW_D2_TEXT = '理想L8短片';
+  var NEW_GO_TEXT = '比亚迪';
+  var NEW_D2_TEXT = '理想L8';
   var NEW_GO_TITLE = '比亚迪·前后轮辋装反了（抖音短视频，点击跳转）';
   var NEW_D2_TITLE = '理想L8·高速方向盘拉不动（抖音短视频，点击跳转）';
 
