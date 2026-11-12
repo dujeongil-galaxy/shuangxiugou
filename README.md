@@ -324,7 +324,15 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 **改动失败时往往完全不报错**（见 `PITFALLS.md`）。半年后回来看，唯一能判断
 「这行为什么长这样」的东西，就是当时的记录。
 
-> **近期改动入口**：最近一批（2026-11-12 19:05 · 提交 `6458763`）顶栏恢复「匿名邮箱」、撤掉蓝色 🌐，并把顶栏组成与开关写死成规则章节。站长看图指「最右边一开始不是有个匿名邮箱的按钮吗，被 AI 给吃了」——① `github-access-help.js` 新增 `SHOW_TRIGGER = false`，`ensureTrigger()` 首行 `if(!SHOW_TRIGGER){removeTrigger();return false;}`：只撤 Star 旁的可见入口，帮助浮层与 `appeal-policy.js` 的 `[data-sxg-gh-help]` 槽位保留。② `anon-mail.js` 的 `ENABLED` 由 `false` 翻回 `true`（12:02 `dcf9868` 那次只是站长要求临时隐藏，落位逻辑一直没动，翻回即恢复），位在 Login GitHub 之后、深青底 `rgb(15,118,110)`。改后桌面顶栏五枚自左向右为 `+ 提交数据/申诉` → `★ Star` → `☕ 赞助` → `🔑 Login GitHub` → `匿名邮箱`。③ 同批 `dyp-version-toggle.js` 三枚按钮去掉「短片」字样（`比亚迪短片 / 理想L8短片` → `比亚迪 / 理想L8`）。`index.html` 中 `anon-mail.js` 与 `github-access-help.js` bump 至 `?v=3`、`dyp-version-toggle.js` 至 `?v=4`；CDP 强刷双端真渲染核对顺序与底色，🌐 已消失。开关口径见上方「🧭 顶栏按钮组成与两处显隐开关」。逐批明细见 [最近更新.md](./最近更新.md) 与 [CHANGELOG.md](./CHANGELOG.md)。
+> **近期改动入口**：最近一批（2026-11-12 23:55 · 提交 `519edb4`）站长「右上角的问题」——顶栏加一枚带 LOGO 的「分享本站」，并给「匿名邮箱」文字前补 LOGO。
+>
+> - 新增 `share-entry.js`：桌面顶栏紧跟「匿名邮箱」注入**第 6 枚**「分享本站」，内联 SVG 分享图标（`currentColor`，不引外部图片）；点击一律走 `window.SXGShare.open()` 复用 §36v 那套 14 平台卡片（不另造第二套弹窗），`share-modal.js` 缺席时退化为复制地址 + 气泡提示。
+> - 落位锚点逐级兜底：`anon-mail` → `login-github` → `sponsor`；匿名邮箱被开关隐藏时分享仍贴其位置不跳动。≤640px 进 `#sxg-fab-dock`（中文短标签常显），dock 未就绪先藏，不进「菜单▼」。
+> - `anon-mail.js` 文字前补内联信封 LOGO，`textContent` 仍是「匿名邮箱」；`index.html` bump `anon-mail.js?v=4`、新增 `share-entry.js?v=1`；`sponsor.html` 不挂本入口（打赏页分享剥 `sponsor.html` 指向首页的逻辑保留）。
+> - 强制：`verify.mjs` 新增 §36w 八断言、§36s⑤ 同步 `v=4`；新增 `test-share-entry.cjs`（39 项，已挂 CI）+ 本机 `cdp-share-entry.cjs` 五档真渲染；README「🧭 顶栏按钮组成」章节五枚改**六枚**。
+> - 复核：verify **1728 全绿**；八个相关 jsdom 测试全 0 失败；CDP 五档 `ALL_OK=true`；四组故障注入判红后还原。
+
+> **上一批**（2026-11-12 19:05 · 提交 `6458763`）顶栏恢复「匿名邮箱」、撤掉蓝色 🌐，并把顶栏组成与开关写死成规则章节。站长看图指「最右边一开始不是有个匿名邮箱的按钮吗，被 AI 给吃了」——① `github-access-help.js` 新增 `SHOW_TRIGGER = false`，`ensureTrigger()` 首行 `if(!SHOW_TRIGGER){removeTrigger();return false;}`：只撤 Star 旁的可见入口，帮助浮层与 `appeal-policy.js` 的 `[data-sxg-gh-help]` 槽位保留。② `anon-mail.js` 的 `ENABLED` 由 `false` 翻回 `true`（12:02 `dcf9868` 那次只是站长要求临时隐藏，落位逻辑一直没动，翻回即恢复），位在 Login GitHub 之后、深青底 `rgb(15,118,110)`。改后桌面顶栏五枚自左向右为 `+ 提交数据/申诉` → `★ Star` → `☕ 赞助` → `🔑 Login GitHub` → `匿名邮箱`。③ 同批 `dyp-version-toggle.js` 三枚按钮去掉「短片」字样（`比亚迪短片 / 理想L8短片` → `比亚迪 / 理想L8`）。`index.html` 中 `anon-mail.js` 与 `github-access-help.js` bump 至 `?v=3`、`dyp-version-toggle.js` 至 `?v=4`；CDP 强刷双端真渲染核对顺序与底色，🌐 已消失。开关口径见上方「🧭 顶栏按钮组成与两处显隐开关」。逐批明细见 [最近更新.md](./最近更新.md) 与 [CHANGELOG.md](./CHANGELOG.md)。
 
 > 同批收尾（2026-11-12 · 文档 + 断言口径）：站长要求「写入 README，避免下次又被顺手改掉」——把顶栏五枚顺序、两处开关现状与三条禁令固化成上方规则章节；同时把验证口径从「钉死当前布尔值」改成「跟着开关走」：`verify.mjs` §36t④ 改钉 `var SHOW_TRIGGER` 存在 + `if(!SHOW_TRIGGER){removeTrigger();return false}` 早退机制 + 开着时贴 Star 常显，§36u 文案断言与 §36r/§36s/§36u⑦ 的 `?v` 钉子同步到 `v=3/v=4`；`test-github-access-help.cjs` ④、`test-header-expand.cjs` ⑤ 与 `test-dyp-toggle.cjs`、`cdp-dyp-toggle.cjs` 的按钮文案改 `比亚迪 / 理想L8`。复核：verify **1713 全绿**，四个 jsdom 测试 25/40/32/31 全 0 失败。
 

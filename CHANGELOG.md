@@ -4,6 +4,20 @@
 
 ---
 
+### feat：顶栏第 6 枚「分享本站」入口 + 匿名邮箱补信封 LOGO（2026-11-12 23:55 · 提交 `519edb4`）
+
+站长指令：「保留此逻辑（打赏页分享剥 sponsor.html 指向首页）。现在开始解决第二件事，右上角的问题」。
+
+- **新增 `share-entry.js`（桌面第 6 枚）**：顶栏「匿名邮箱」之后注入 `#sxg-share-entry-btn`，`ICON` 为内联 SVG 分享图标（`viewBox="0 0 24 24"` + `stroke="currentColor"`，不引外部图片）；`role="button"` + `tabindex="0"` + `aria-label`，Enter/空格同样可触发。
+- **点击复用唯一弹窗**：`openShare()` 先取 `var api = window.SXGShare`，`api.open()` 命中即用（§36v 的 14 平台卡片）；否则 `copyText()` 复制地址 + 气泡「链接已复制，可粘贴分享」/「复制失败，请手动复制地址栏链接」，按钮不会变成死键。
+- **落位兜底**：桌面锚点 `#sxg-anon-mail-btn` → `#login-github-btn` → `#sponsor-entry-btn`，命不中直接 `return false` 不乱插；匿名邮箱 `ENABLED=false` 隐藏时分享仍贴其 DOM 位置之后。窄屏 ≤640px 进 `#sxg-fab-dock`：`anon` 在 dock 内则插其后，否则插 dock 首位；dock 不存在时 `data-sxg-share-slot="pending"` + `!important` 隐藏兜底。
+- **开关**：`var ENABLED`（当前 `true`）+ `#sxg-share-entry-btn[data-sxg-share-hidden="1"]{display:none !important}`（压过 dock 的 `display:flex !important`），**只隐藏不删本体**，与 anon-mail 同口径。
+- **匿名邮箱 LOGO**：`anon-mail.js` 新增 `ICON`（信封 `rect` + 折线 `path`，`stroke="currentColor"`），`btn.innerHTML = ICON + '<span class="sxg-anon-mail-txt">匿名邮箱</span>'`。
+- **挂载**：`index.html` `anon-mail.js?v=3→4`、新增 `share-entry.js?v=1`（排在 `anon-mail.js` 之后）；`sponsor.html` 不挂（打赏页分享走自己的 `shareUrl`，剥 `sponsor.html` 指向首页的逻辑保留）。
+- **断言与测试**：`verify.mjs` 新增 §36w 八条、§36s⑤ `?v` 同步 `v=4`；新增 `scripts/test-share-entry.cjs`（39 项，挂进 `.github/workflows/verify.yml`）与 `scripts/cdp-share-entry.cjs`（本机真 Edge，五档 1440/900/660/390/360）。
+- **README**：「🧭 顶栏按钮组成与两处显隐开关」改为六枚（新增第 6 行 + 落位说明 + `share-entry.js` 开关行 + `?v` 与测试口径）。
+- 复核：verify **1728 全绿**；39/40/31/29/32/50/13/6 八个 jsdom 测试全 0 失败；CDP 五档 `ALL_OK=true`；故障注入四组判红后还原。
+
 ### fix：分享弹窗平台改按钮 + 三级兜底，外链特征清零杜绝误拦截（2026-11-12 22:54 · 提交 `89b5b95`）
 
 站长指令：「先解决分享链接，加固，以后不要出现误拦截」。
