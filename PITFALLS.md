@@ -530,7 +530,7 @@ stdout 在 `e.stdout` 里。不接`catch` 就会把所有「本该报错」的�
 | 内容 | 真实位置 |
 |---|---|
 | 53 张内置品牌卡 | `assets/index-YthXZ9eP.js`（压缩） |
-| 126 张自定义卡 | 根目录 `index.html` 的 `customCardsConfig` |
+| 127 张自定义卡 | 根目录 `index.html` 的 `customCardsConfig` |
 | `app/` 下的 Next.js 源码 | **未构建成线上页面** |
 
 仓库根目录另有一份同名 `index-YthXZ9eP.js` 是**非部署副本**，改它无效。
@@ -3000,7 +3000,7 @@ HEAD 不是补提交，只是正文里引用了一下标记，同样被跳过。
 4. **`cardNote` 是纯文本（`textContent`），塞进去的链接不可点**。站长说「视频链接写入备注栏」，要写成文字说明 + 归属说明，不要指望它是可点超链接；真要能点得另做 DOM。
 5. **noscript 是两套清单，语义不同别混**。① 主评级清单（`:X 级` 手写区，允许无页品牌）与 ②「全部品牌详细页（N 个）」ul（`N === 唯一 slug 数 === brand/ 页数`）不是一回事；新卡两处都要加：① 加一条（带 `详细→` 与品牌链接，且「平均下班」只写 `22:00`、与详情页 kv 逐字对齐，否则 `noscript 数值 = 详情页` 逐条比对判红），② 的 N 要 +1。
 6. **计数断言/常量要成套改，漏一处就红**：`IMPORTED_CARD_COUNT +1`、C 级 `10+29 → 10+29+1`（D 级因「平台例外」锁死、别动）、bundle 收录品牌/tab 角标 +1、首页「共 N 家」×2 +1、`rating-stats-patch` 对应档 +1、README/FORK_GUIDE/MAINTAINING/PITFALLS/员工实测的「N 张自定义」+1。
-7. **派生文件要重生成，不能手改**：证据公示区 `python scripts/gen-evidence-board.py`（它会重算 178 家/458 条/409 链接）、拼音索引 `python scripts/gen-pinyin-index.py`（`?v` 要 +1）、`projects.html` 手工补一条链接、`sitemap.xml` 手工补一条 `<loc>`（别跑会覆盖 brand 页的 `generate-brand-pages.py`）。
+7. **派生文件要重生成，不能手改**：证据公示区 `python scripts/gen-evidence-board.py`（它会重算 179 家/462 条/409 链接）、拼音索引 `python scripts/gen-pinyin-index.py`（`?v` 要 +1）、`projects.html` 手工补一条链接、`sitemap.xml` 手工补一条 `<loc>`（别跑会覆盖 brand 页的 `generate-brand-pages.py`）。
 
 ## 第五十八章：落位别沿用上一条功能的惯性；「隐藏」要跟上游注入时机解耦（2026-11-12 15:38 弹窗转换按钮改位 99d0ad0）
 

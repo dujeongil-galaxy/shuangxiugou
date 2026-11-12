@@ -585,8 +585,8 @@ check(virtual2e === 1, '虚拟对比卡恰 1 张（口径排除依据，id 变�
 // 这个数不是「随便写死」：它同时被 §2e 的四格统计、brand/ 页数、公告栏数字三处引用，
 // 任何一处生成器漏跑都会在这里对不上，所以必须保留为硬断言。
 const IMPORTED_CARD_COUNT = 107;
-check(customPairs2e.length === 19 + IMPORTED_CARD_COUNT,
-  `能解析全部自定义卡（${19 + IMPORTED_CARD_COUNT} 张 = 19 张手工卡含联通 + ${IMPORTED_CARD_COUNT} 张导入卡（104 榜单 + 2 独立来源））`,
+check(customPairs2e.length === 20 + IMPORTED_CARD_COUNT,
+  `能解析全部自定义卡（${20 + IMPORTED_CARD_COUNT} 张 = 20 张手工卡含联通/小米汽车 + ${IMPORTED_CARD_COUNT} 张导入卡（104 榜单 + 2 独立来源））`,
   '实际 ' + customPairs2e.length);
 check(headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') === statTotal,
   '顶部「收录品牌」= 实名企业卡总数', '页面 ' + headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') + ' / 计算 ' + statTotal + '（改 bundle 顶部统计常数）');
@@ -651,8 +651,8 @@ check(locked2e.length === 11,
 check(byGrade2e('A级') === 8 + 58,
   '自定义卡 A 级共 66 张（工/建/中/成都/农行 5 家银行 + 小米 2026-11-05 B→A + 2026-11-12 广发银行/四川天府银行 2 家 + 榜单导入 58 张）',
   '实际 ' + byGrade2e('A级'));
-check(byGrade2e('C级') === 10 + 29 + 1,
-  '自定义卡 C 级共 40 张（手工 10 张 + 榜单导入 29 张 + 2026-11-12 新增零跑汽车 C 级；农行 2026-11-04 由 C 转 A；BOSS直聘 2026-11-03 转入 D 级；2026-11-11 新增吉利汽车 C 级）',
+check(byGrade2e('C级') === 10 + 29 + 2,
+  '自定义卡 C 级共 41 张（手工 10 张 + 榜单导入 29 张 + 2026-11-12 新增零跑汽车 C 级 + 2026-11-13 新增小米汽车 C 级；农行 2026-11-04 由 C 转 A；BOSS直聘 2026-11-03 转入 D 级；2026-11-11 新增吉利汽车 C 级）',
   '实际 ' + byGrade2e('C级'));
 // 2026-11-12 新增「零跑汽车」自定义卡（站长指令：新增品牌、证据链由联网核实公开报道；
 // 两条抖音短视频线索归属首页弹窗新版入口、不挂本卡证据链；备注栏必须注明内容存疑）。
@@ -1402,8 +1402,8 @@ if (cfgBlock) {
   }
 }
 const CUSTOM_COUNT = customCards.length;
-check(CUSTOM_COUNT === 19 + IMPORTED_CARD_COUNT,
-  `自定义卡 ${CUSTOM_COUNT} 张（19 张手工 + ${IMPORTED_CARD_COUNT} 张导入；2026-11-02 批量导入，2026-11-03 增联通 B 级，2026-11-08 增陆喜依 S 级，2026-11-12 增广发银行/四川天府银行 A 级 + 零跑汽车 C 级）`);
+check(CUSTOM_COUNT === 20 + IMPORTED_CARD_COUNT,
+  `自定义卡 ${CUSTOM_COUNT} 张（20 张手工 + ${IMPORTED_CARD_COUNT} 张导入；2026-11-02 批量导入，2026-11-03 增联通 B 级，2026-11-08 增陆喜依 S 级，2026-11-12 增广发银行/四川天府银行 A 级 + 零跑汽车 C 级，2026-11-13 增小米汽车 C 级）`);
 
 // null 规则：双休率 / 下班时间不得为占位 0，也不得是字符串 '未知'
 customCards.forEach((c) => {
@@ -5987,6 +5987,24 @@ section('21c. 首页滑到底部按钮');
   }
   check(brandPages > 0 && mounted === brandPages,
     `62 张品牌页全部挂载挂件（实际 ${mounted}/${brandPages}）`);
+  // 品牌页 ai-chat.js 的 ?v 必须与首页同值（2026-11-13）：
+  // 这之前的 AI 分流批把 ai-chat.js 升到 v28，首页改了，179 张品牌页却仍钉在 v19，
+  // 品牌页访客会读到浏览器缓存里的旧聊天脚本（缺 endpointCN 分流与线路条），
+  // 且没有任何断言会红 —— 静默失效。此处把「版本号必须一致」变成硬约束。
+  {
+    const chatV = (html.match(/ai-chat\.js\?v=(\d+)/) || [])[1];
+    const staleV = [];
+    if (exists('brand')) {
+      for (const f of readdirSync(brandDir)) {
+        if (!f.endsWith('.html')) continue;
+        const t = readFileSync(join(brandDir, f), 'utf8');
+        const v = (t.match(/ai-chat\.js\?v=(\d+)/) || [])[1];
+        if (v !== chatV) staleV.push(`${f}@${v}`);
+      }
+    }
+    check(chatV && staleV.length === 0,
+      `品牌页 ai-chat.js ?v 与首页一致（首页 v${chatV}，不一致 ${staleV.length} 张${staleV.length ? '：' + staleV.slice(0, 5).join(' / ') : ''}）`);
+  }
   // 挂载顺序：config 在 chat 前（chat 读 window.SXG_AI_CONFIG，顺序反了首帧读不到）
   {
     const acer = readFileSync(join(ROOT, 'brand/acer.html'), 'utf8');
@@ -7186,8 +7204,14 @@ section('24. 白屏兜底与加载态（防用户误退出）');
   check(/grade: 'S级'/.test(card25) && /doubleRestRate: null/.test(card25),
     '§25k 首页卡为 S 级且真实双休率留空 null（不估填）');
   check(/华龙网转载极目新闻/.test(card25), '§25l 卡面可见文案写明真实来源');
-  check(/\/brand\/luxiyi\.html/.test(idx25) && /全部品牌详细页（178 个）/.test(idx25),
-    '§25m noscript 清单含陆喜依且标题数字同步 178');
+  // 标题里的数字不再硬编码（每次新增卡都要改断言等于把漂移搬到校验脚本里），
+  // 改为与 brand/ 实际页数咬合：清单标题必须是「真实存在的页数」。
+  const nsHead25 = Number((idx25.match(/全部品牌详细页（(\d+) 个）/) || [])[1]);
+  const brandPages25 = existsSync(join(ROOT, 'brand'))
+    ? readdirSync(join(ROOT, 'brand')).filter((f) => f.endsWith('.html')).length : 0;
+  check(/\/brand\/luxiyi\.html/.test(idx25) && nsHead25 === brandPages25,
+    `§25m noscript 清单含陆喜依且标题数字同步 ${brandPages25}`,
+    `标题写 ${nsHead25}，brand/ 实有 ${brandPages25} 页`);
   check(/\/brand\/luxiyi\.html/.test(read('projects.html')), '§25n projects.html 索引含陆喜依');
   check(/\/brand\/luxiyi\.html/.test(read('sitemap.xml')), '§25o sitemap.xml 含陆喜依详情页');
   const ebStart = idx25.indexOf('id="evidence-board"');

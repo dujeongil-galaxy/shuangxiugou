@@ -104,7 +104,10 @@ const remindSrc = read('remind-button.js');
     new RegExp('text-base`,children:' + TOTAL + '\\}').test(bundle));
   check('★ bundle tab 角标常数 = 证据链头部总数 ' + TOTAL,
     new RegExp('rounded-full`,children:' + TOTAL + '\\}').test(bundle));
-  check('bundle 引用已 bump（?v=51，后续批次继续递增）', /index-YthXZ9eP\.js\?v=51/.test(html));
+  // ?v 每改一次 bundle 就 +1，写死等于每批都要改断言；改为「不低于本批基线 52」。
+  const bundleV = Number((html.match(/index-YthXZ9eP\.js\?v=(\d+)/) || [])[1]);
+  check('bundle 引用已 bump（?v≥52，后续批次继续递增）',
+    Number.isInteger(bundleV) && bundleV >= 52, { v: bundleV });
 
   // ── 拼音索引 ──
   const pi = read('pinyin-index.js');
