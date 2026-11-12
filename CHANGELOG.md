@@ -4,6 +4,14 @@
 
 ---
 
+### chore：全站恢复访问（撤维护闸门，190 页正文按关站前原样还原）（2026-11-12 13:28 · 提交 `41376df`）
+
+站长 11-12 13:22 指令：「https://dujeongil-galaxy.github.io/shuangxiugou/ 恢复访问」（原计划 13:30，提前 8 分钟）。
+
+- **一条命令撤块**：`node scripts/maintenance-gate.mjs --off` 按 START..END 精确剥离，190 个页面（根目录 13 + `brand/` 176 + 非线上 `notes-plaintext-preview.html`）闸门清零，`--check` 报 0/190；`--on` 原样保留，随时可再关站。
+- **首版 `--off` 不是字节级还原（本次踩到）**：`insert()` 在 PAYLOAD 前多插一个换行，剥完每页在 `<head>` 后留 2 行空行，`git diff` 成了「189 files changed, 189 insertions」的脏 diff。已在 `strip()` 里连前置换行一起吃掉，并把 189 页按关站提交的父提交 `dcf9868` 逐字节回填；`git diff dcf9868 -- '*.html'` 现在只剩 index.html 版本号一处（版本号交给 CI 在推送后同步）。**判据**：恢复的底线是「与关站前逐字节一致」，不是「页面能打开」。
+- **顺手修掉 CI 连红（与撤闸门无关，但同批核到）**：按 WRFFMB 核对 CI 发现「站点一致性校验 · 拼音搜索测试」自关站提交 `156b9b0` 起连红（run #668/#669/#670），失败步是「校验脚本自检」——根因是 `1e3bac7` 给星巴克章节编的 `20p` 与 `f005fb7`「品牌 LOGO 加密容器」撞号，`test-verify-self.cjs` 的「节号无重复」判红，而 verify 本身是绿的，所以没人察觉。星巴克章节改 `20q`（提交 `b9c6672`），README / CHANGELOG / PITFALLS / 最近更新 四处引用同步。
+- 复核：`--check` 0/190；verify 全绿；`test-verify-self.cjs` 6/0（节号无重复恢复绿灯）；线上带随机 query 抓 index / `brand/xiaomi.html` / `404.html` / 根 URL 四页，均 200 且不再含 `SXG-MAINT-GATE`——Pages 对 HTML 有 max-age=600，核查看长尾页 + 随机 query，不凭首页一次请求下结论。
 ### chore：全站关站维护（维护闸门，正文不动，预计 13:30 恢复）（2026-11-12 12:27 · 提交 `156b9b0`）
 
 站长 11-12 12:19 指令：「关站，所有 html 页面都关闭，写提示，正在维护，预计 2026-11-12 13:30 完成」。
