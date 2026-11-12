@@ -8,6 +8,13 @@
  *   末尾：复制链接
  * 说明：微信、朋友圈、抖音、小红书、Discord、KakaoTalk 没有可用的网页分享接口，
  *       统一走「复制链接 + 提示粘贴」，不假装能一键跳转。
+ *
+ * 2026-11-12 站长要求「以后不要出现误拦截」的加固口径（改动前必读）：
+ *   ① 平台项一律渲染成 <button data-share="键">，URL 只存在 JS 闭包里，DOM 上不落 href，
+ *      也不再出现 target="_blank" / rel 之类外链特征。
+ *   ② 点击统一走 openExternal()：window.open 新建窗口；若新窗口仍被拦（返回空 / 已关闭），
+ *      退化为「复制分享链接 + 明说被拦」。
+ *   ③ 平台清单恒定渲染全部 14 项，不做任何条件裁剪，保证入口不会因环境差异变少。
  */
 (function () {
   'use strict';
@@ -97,6 +104,25 @@
     { k: 'whatsapp', name: 'WhatsApp', url: 'whatsapp' }
   ];
 
+  // 分享目标 URL（build 时填充），DOM 上只留 data-share 键名。
+  var shareTargets = {};
+
+  /* 2026-11-12 站长要求「以后不要出现误拦截」：
+     外链平台不再走 <a href>，改为按钮 + window.open；如果某些拦截规则连新窗口一起拦
+     （window.open 返回空 / 窗口立即被关），就把分享链接复制到剪贴板并明说原因，
+     保证用户任何环境下都能拿到链接，不会出现「点了没反应」。 */
+  function openExternal(url) {
+    if (!url) return;
+    var win = null;
+    try { win = window.open(url, '_blank'); } catch (e) { win = null; }
+    if (win && !win.closed) {
+      // 不传 noopener 参数（那样拿不到窗口引用、无法判断是否被拦），改为手动断 opener
+      try { win.opener = null; } catch (e2) {}
+      return;
+    }
+    copyText(url, '新窗口被浏览器拦截，分享链接已复制，粘贴到浏览器打开');
+  }
+
   function injectStyle() {
     if (document.getElementById('sxg-share-style')) return;
     var s = document.createElement('style');
@@ -148,6 +174,7 @@
     var d = encodeURIComponent(i.desc);
     // 能附图的平台就附图（og-share.png：微信/Discord/Telegram 链接卡片与微博配图共用）
     var pic = encodeURIComponent('https://dujeongil-galaxy.github.io/shuangxiugou/og-share.png');
+    // 分享目标 URL 只活在 JS 闭包里（不写进 DOM 属性），点击时按 data-share 键取用。
     var urls = {
       weibo: 'https://service.weibo.com/share/share.php?url=' + u + '&title=' + d + '&pic=' + pic,
       facebook: 'https://www.facebook.com/sharer/sharer.php?u=' + u,
@@ -159,6 +186,7 @@
     // wa.me 只有 text 参数，链接要拼进文案里
     whatsapp: 'https://wa.me/?text=' + d + '%0A' + u
   };
+  shareTargets = urls;
 
     var html = '<div class="sxg-share-card" role="dialog" aria-modal="true" aria-label="分享双休购">'
       + '<button type="button" class="sxg-share-x" data-act="close" aria-label="关闭">×</button>'
@@ -169,9 +197,9 @@
 
     DOMESTIC.forEach(function (p) {
       if (p.url) {
-        html += '<a class="sxg-sd" href="' + urls[p.url] + '" target="_blank" rel="noopener noreferrer">'
+        html += '<button type="button" class="sxg-sd" data-share="' + p.url + '">'
           + '<span class="sxg-sd-ico" style="background:' + p.bg + '">' + ICON[p.k] + '</span>'
-          + '<span class="sxg-sd-name">' + p.name + '</span></a>';
+          + '<span class="sxg-sd-name">' + p.name + '</span></button>';
       } else {
         html += '<button type="button" class="sxg-sd" data-copy="1" data-msg="' + p.copy + '">'
           + '<span class="sxg-sd-ico" style="background:' + p.bg + '">' + ICON[p.k] + '</span>'
@@ -183,9 +211,9 @@
 
     FOREIGN.forEach(function (p) {
       if (p.url) {
-        html += '<a class="sxg-sf" href="' + urls[p.url] + '" target="_blank" rel="noopener noreferrer">'
+        html += '<button type="button" class="sxg-sf" data-share="' + p.url + '">'
           + '<span class="sxg-sf-ico">' + ICON[p.k] + '</span>'
-          + '<span class="sxg-sf-name">' + p.name + '</span></a>';
+          + '<span class="sxg-sf-name">' + p.name + '</span></button>';
       } else {
         html += '<button type="button" class="sxg-sf" data-copy="1" data-msg="' + p.copy + '">'
           + '<span class="sxg-sf-ico">' + ICON[p.k] + '</span>'
@@ -213,9 +241,13 @@
 
     mask.addEventListener('click', function (e) {
       if (e.target === mask) { close(); return; }
-      var el = e.target.closest ? e.target.closest('[data-act="close"], [data-copy]') : null;
+      var el = e.target.closest ? e.target.closest('[data-act="close"], [data-copy], [data-share]') : null;
       if (!el) return;
       if (el.getAttribute('data-act') === 'close') { close(); return; }
+      // 外链平台（微博 / Facebook / X / LinkedIn / Reddit / Telegram / Line / WhatsApp）：
+      // 按钮点击 → 按 data-share 键从闭包里取 URL → window.open（被拦则复制兜底）
+      var key = el.getAttribute('data-share');
+      if (key) { openExternal(shareTargets[key]); return; }
       var mode = el.getAttribute('data-copy');
       if (mode === 'link') {
         copyText(i.url, el.getAttribute('data-msg') || '链接已复制');

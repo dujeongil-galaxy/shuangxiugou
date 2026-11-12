@@ -8469,8 +8469,8 @@ section('25. 成功案例专题页（QQ奶奶）');
   // ⑦ 挂载与 ?v 钉子（§21h 纪律），以及 jsdom 行为测试存在。
   check(/<script defer src="\.\/github-access-help\.js\?v=3"><\/script>/.test(idx36r)
     && /appeal-policy\.js\?v=4/.test(idx36r)
-    && /share-modal\.js\?v=5/.test(idx36r)
-    && /share-modal\.js\?v=5/.test(sp36r)
+    && /share-modal\.js\?v=6/.test(idx36r)
+    && /share-modal\.js\?v=6/.test(sp36r)
     && exists('scripts/test-github-access-help.cjs'),
     '§36r index.html 挂载 github-access-help.js?v=3 / appeal-policy.js?v=4，改动脚本 ?v 同步 bump，配套 jsdom 行为测试存在',
     '?v 没 bump → 浏览器/CDN 命中旧脚本，新文案与链接规整都不生效');
@@ -8703,6 +8703,70 @@ section('25. 成功案例专题页（QQ奶奶）');
     && wf36t.indexOf('node scripts/test-header-expand.cjs') !== -1,
     '§36t 四个改动资源 ?v 同步 bump，配套 jsdom 行为测试存在并挂进 CI',
     '?v 没 bump → 真机命中旧折叠脚本；测试没挂 CI → §21o 判红或回归没人拦');
+}
+
+// ---------- 36v. 分享弹窗加固：平台一个都不能少，外链不再被误拦截（2026-11-12 站长） ----------
+// 事故现场：站长看到分享平台「变少」。定位到 8 个外链平台（微博 / Facebook / X / LinkedIn /
+// Reddit / Telegram / Line / WhatsApp）原先渲染成 <a href="…service.weibo.com/share…">，
+// 被浏览器扩展 / 手机浏览器跟踪防护按分享接口特征整块移除，只剩 6 个复制类按钮。
+// 加固口径（本段把它钉死，回退即判红）：外链一律 <button data-share>，URL 只活在 JS 闭包里，
+// 点击走 window.open，新窗口若仍被拦就复制链接 + 明说，不允许「点了没反应」。
+{
+  const sm36v = read('share-modal.js');
+  const idx36v = read('index.html');
+  const sp36v = read('sponsor.html');
+  const wf36v = read('.github/workflows/verify.yml');
+
+  // ① 外链特征清零：弹窗里不许再有 <a> / href / target=_blank。
+  //    先剥注释再判：源码注释里写「不再用 <a href>」属于说明，不是实际渲染。
+  const sm36vCode = sm36v.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  const noAnchor = !/<a\s/.test(sm36vCode)
+    && !/href\s*=/.test(sm36vCode)
+    && !/target\s*=\s*["']_blank/.test(sm36vCode)
+    && !/<a class="sxg-sd"|<a class="sxg-sf"/.test(sm36vCode);
+  check(noAnchor,
+    '§36v 分享弹窗零外链特征：平台项不再渲染 <a> / href / target="_blank"（拦截规则无从匹配）',
+    '外链又退回 <a href> → 扩展按分享接口特征整块移除，站长遇到的「平台变少」重新出现');
+
+  // ② 外链平台按钮化：data-share 只带键名，URL 不进 DOM。
+  const btnOk = /'<button type="button" class="sxg-sd" data-share="' \+ p\.url/.test(sm36v)
+    && /'<button type="button" class="sxg-sf" data-share="' \+ p\.url/.test(sm36v)
+    && /closest\('\[data-act="close"\], \[data-copy\], \[data-share\]'\)/.test(sm36v)
+    && /var key = el\.getAttribute\('data-share'\)/.test(sm36v)
+    && /openExternal\(shareTargets\[key\]\)/.test(sm36v)
+    && !/data-share="'\s*\+\s*urls/.test(sm36v);
+  check(btnOk,
+    '§36v 国内 + 海外外链平台统一 <button data-share="键名">，点击按 key 从闭包取 URL（data-share 里不落 http 串）',
+    '把分享 URL 写回 data-href / data-share 属性 → 换成会被扫的明文，加固白做');
+
+  // ③ 打开方式与兜底：window.open 为主，被拦则复制 + 明说原因。
+  const openOk = /function\s+openExternal\(url\)/.test(sm36v)
+    && /window\.open\(url, '_blank'\)/.test(sm36v)
+    && /win && !win\.closed/.test(sm36v)
+    && /copyText\(url,/.test(sm36v)
+    && /拦截/.test(sm36v);
+  check(openOk,
+    '§36v 外链统一 window.open 打开，遇新窗口被拦（返回空 / 已关闭）自动复制分享链接并在 toast 说明被拦',
+    '删掉拦截判定 → 手机浏览器 / 严格拦截环境下「点了没反应」，用户连链接都拿不到');
+
+  // ④ 平台清单恒定 14 项，不许任何条件裁剪（症状是「变少」，就不能再有任何少的机会）。
+  const arrDom = (sm36v.match(/var DOMESTIC = \[([\s\S]*?)\];/) || ['', ''])[1];
+  const arrFrn = (sm36v.match(/var FOREIGN = \[([\s\S]*?)\];/) || ['', ''])[1];
+  const cntDom = (arrDom.match(/\{\s*k:\s*'/g) || []).length;
+  const cntFrn = (arrFrn.match(/\{\s*k:\s*'/g) || []).length;
+  check(cntDom === 5 && cntFrn === 9
+    && /name: 'WhatsApp', url: 'whatsapp'/.test(arrFrn)
+    && !/DOMESTIC\s*=\s*[\s\S]{0,80}?\.filter\(|FOREIGN\s*=\s*[\s\S]{0,80}?\.filter\(/.test(sm36v),
+    '§36v 平台清单恒定渲染 14 项（国内 5 + 海外 9，WhatsApp 在末位），不做环境 / UA 条件裁剪',
+    '条目被删或被 filter 掉 → 又变成「平台变少」，这次是自己人干的');
+
+  // ⑤ ?v 同步 + jsdom 行为测试挂进 CI（§21h / §21o 纪律）。
+  check(/share-modal\.js\?v=6/.test(idx36v)
+    && /share-modal\.js\?v=6/.test(sp36v)
+    && exists('scripts/test-share-modal.cjs')
+    && wf36v.indexOf('node scripts/test-share-modal.cjs') !== -1,
+    '§36v share-modal.js?v=6 在 index.html / sponsor.html 同步 bump，分享弹窗 jsdom 测试存在并挂进 CI',
+    '?v 没 bump → 线上仍跑旧脚本，加固等于没发；测试没挂 CI → 下次回退没人拦');
 }
 
 // ---------- 汇总 ----------

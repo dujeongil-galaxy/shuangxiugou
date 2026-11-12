@@ -326,3 +326,10 @@ jobs:
       # 配套 verify §36t。
       - name: 顶栏全部展开与帮助入口常显测试
         run: node scripts/test-header-expand.cjs
+
+      # 2026-11-12 §36v 站长「平台变少 / 以后不要出现误拦截」：
+      # 分享弹窗 14 个平台恒定渲染、弹窗 DOM 零外链特征（无 <a>/href/target=_blank，
+      # 分享接口地址不进 DOM）、外链走 window.open、被拦时复制链接并明说。
+      # 配套 verify §36v。
+      - name: 分享弹窗平台齐全与防误拦截测试
+        run: node scripts/test-share-modal.cjs

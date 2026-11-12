@@ -276,6 +276,35 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 `test-header-expand.cjs` ⑤ 直接从 `github-access-help.js` 源码读开关真值决定断言方向。
 所以把开关翻回 `true` 只需 bump `?v`，测试不会误判；但**删掉开关或改成一堆 `if` 分支里散落的隐藏，一定判红**。
 
+## 🔗 分享弹窗平台口径与防误拦截（2026-11-12 站长要求「以后不要出现误拦截」，长期有效）
+
+**平台清单恒定 14 项 + 复制链接**：国内 5（朋友圈 / 微信 / 抖音 / 小红书 / 微博）、
+海外 9（Discord / Facebook / X / LinkedIn / Reddit / Telegram / KakaoTalk / Line / WhatsApp）。
+**清单不做任何条件裁剪**——不按 UA、不按网络环境、不按「哪个平台可用」动态增删，
+否则站长打开只看到一半，又会被当成「平台被吃了」。
+
+**分享项一律是 `<button data-share="键">`，DOM 上不许出现外链特征**：
+
+| 禁止 | 原因 |
+|---|---|
+| `<a href="...twitter.com/intent/...">` | 广告/隐私/跟踪防护扩展按 `a[href*="twitter.com/intent"]` 这类特征整块隐藏，平台会「少几个」 |
+| `target="_blank"` / `rel="noopener"` 写在平台项上 | 同上，属于典型外链指纹 |
+| 把分享 URL 写进 `href` / `data-url` 等任何 DOM 属性 | 特征仍可被扫到；URL 只许活在 JS 闭包的 `shareTargets` 里 |
+
+**点击走 `openExternal()` 三级兜底**：`window.open(url,'_blank')` →
+若返回空或窗口立即被关（`!win || win.closed`，说明连新窗口也被拦）→
+**复制分享链接 + toast 明说「新窗口被浏览器拦截，分享链接已复制」**。
+任何环境都必须让用户拿到链接，**不许出现「点了没反应」**（原 `a href` 被拦后就是这个表现）。
+
+**机器强制**（改这一块必须同步跑）：
+- `verify.mjs` §36v：`share-modal.js` 源码内不得出现 `target="_blank"` / `rel="noopener"` /
+  `href="` 拼分享 URL 的写法（注释先剥掉再判）；`data-share` 按钮化 + `openExternal` 兜底在位；
+  14 项清单键名齐全；`?v` 与 `index.html` / `sponsor.html` 挂载号一致。
+- `test-share-modal.cjs`（jsdom，29 项）：14 项恒渲染、DOM 零外链特征、被拦（`open` 返回 `null` /
+  返回 `{closed:true}`）时必复制并明说、复制类文案、打赏页链接剥 `sponsor.html`。
+- `cdp-share-modal.cjs`（真浏览器官能，双视口 1440 / 390）：结构 + 逐个点击 + 被拦兜底，**允许任一 `ALL_OK=false` 即失败**。
+- 该 jsdom 测试已挂 CI（`.github/workflows/verify.yml`），CDP 脚本不挂 CI（需本地 Edge）。
+
 ## 🗂 改动必记账（本项目长期规则）
 
 **这个仓库里，任何一次改动都必须留下记录，不许「改完就算了」。**
