@@ -251,7 +251,7 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 **改动失败时往往完全不报错**（见 `PITFALLS.md`）。半年后回来看，唯一能判断
 「这行为什么长这样」的东西，就是当时的记录。
 
-> **近期改动入口**：最近一批（2026-11-12 13:59 · 提交 `4db9f41`）首页弹窗 新版/旧版 转换按钮（§36u）。站长看图要求弹窗旁加「转换按钮」：默认新版本（比亚迪·前后轮辋装反 + 理想L8·方向盘拉不动 两枚抖音短片、隐藏事实核查），点后切旧版本（在抖音中观看/事实核查/站长随笔），再点回新版本；第三链接始终站长随笔。① 不改弹窗本体 douyin-prompt.js/factcheck-button.js，只在下游补丁 dyp-version-toggle.js patch .dyp__acts（事实核查只显隐不删，可随版本恢复）。② 落位复用 anon-mail：桌面 Login GitHub 之后、窄屏进 #sxg-fab-dock 首位，文案随版本翻转（new→替换旧版 / old→新版本），localStorage 记忆 dyp_version_toggle_v1 默认 new。③ index.html ?v=1；verify 新增 §36u 四断言（单一真相源 / 双版本 patch / 落位复用 / 引用+测试挂 CI）、新增 scripts/test-dyp-toggle.cjs（22 项）挂 CI，故障注入 1 组判红还原；本机 scripts/cdp-dyp-toggle.cjs 双视口真渲染。1692 全绿、test-dyp-toggle 22/0、CDP 390/1440 确认双版本切换。另补 PITFALLS 第五十五章（anon-mail 隐藏 !important 压过 dock，dcf9868 引用但此前未落地）。逐批明细见 [最近更新.md](./最近更新.md) 与 [CHANGELOG.md](./CHANGELOG.md)。
+> **近期改动入口**：最近一批（2026-11-12 15:38 · 提交 `99d0ad0`）首页弹窗「新版/旧版」转换按钮**落位改到弹窗内部右上角**（站长纠正：紧挨 × 左侧、「劳工友好提醒」标签同行，不是顶栏）。默认新版本（比亚迪·前后轮辋装反 + 理想L8·方向盘拉不动 两枚抖音短片、隐藏事实核查），点后切旧版本（在抖音中观看/事实核查/站长随笔），再点回新版本；文案 `替换旧版`↔`新版本`，localStorage 记忆默认 new。① 不改弹窗本体，只 patch `.dyp__acts`；事实核查隐藏用 `.dyp--new .dyp__factcheck{display:none !important}` class 兜底（与 `factcheck-button.js` 注入时机无关、消除闪烁窗口），仍只显隐不删除、可随版本恢复。② `?v=1→2`；verify §36u③④、`test-dyp-toggle.cjs` 22 项、CDP 双视口真渲染（`inPanel/beforeX=true`、`inHeader/inDock=false`）。同批（15:29 · `4817ce1`）**新增零跑汽车 C 级自定义卡 + 详情页**：证据链联网核实，两条抖音线索只入备注栏并注明「内容真实性存疑，请注意甄别」、不挂证据链；计数全套 177→178 / 125→126 收口。逐批明细见 [最近更新.md](./最近更新.md) 与 [CHANGELOG.md](./CHANGELOG.md)。
 
 > 上一批（2026-11-12 09:25 · 提交 `a89db78`）手机端顶栏按钮**全部展开、不再隐藏**（§36t）。站长「我再说一次，手机端，全部展开，按钮不再做隐藏」指的是上一轮只撑开了右侧 76px 隔离列里的 dock，`Star on GitHub` 等顶栏按钮仍藏在「菜单▼」里。① `header-menu-patch.js` 删掉 `collapse/restore`、下拉容器与按钮隐藏规则，改打 `data-sxg-hdr-expanded` 标记 + `reclaim()` 回收旧菜单残留；下半段 GitHub 登录逻辑不动。② `mobile-fixes.css` ≤640px 顶栏 `flex-wrap`，品牌第一行、按钮组换行铺满第二行，每枚自身宽度 + `nowrap` 常显，🌐 圆形帮助入口单独排除并贴回 Star；另补 641–900px，修 660px 真渲染六枚按钮被挤成逐字竖条。③ `github-access-help.js` 电脑 / 手机平板两条办法**同时常显**，`isDesktop()` 只给当前设备那条打「推荐」标记；🌐 入口宽窄屏统一贴 Star 常显，不再挂下拉。④ `appeal-policy.js` 帮助块变高后复位 `card.scrollTop = 0`，避免 `focus()` 把标题滚出视野。`index.html` 四个资源 `?v` 同步 bump（CSS 18 / header 11 / help 2 / appeal 4）；verify 更新 §36g/§36q/§36r/§36s 钉子 + 新增 §36t 七断言，新增 `scripts/test-header-expand.cjs`（32 项）挂进 CI，另按事实改两条过期断言。**1674 全绿**、44 组非本机专用测试分三批全通过、8 组故障注入全判红后还原，CDP 真渲染 360/390/660/1440 四档零隐藏零裁切零溢出。合并远端 §38 后两份 CSS 改动合流，`mobile-fixes.css?v` 顺延至 19。该次 merge 的提交说明误带跳过标记字面量致三个 CI workflow 未触发，已补推一次提交重新触发。逐批明细见 [最近更新.md](./最近更新.md) 与 [CHANGELOG.md](./CHANGELOG.md)。
 
@@ -282,6 +282,14 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 **改动历史**：2026-11-01 先试过「`#root` 内加载占位」方案（提交 `e9f5ac0`）——站长实测仍闪（证据链区块在 `#root` 之外，占位盖不住）；同轮改为全屏遮罩（提交 `ca414e9`）根治。完整改动见 [CHANGELOG.md](./CHANGELOG.md)。
 
 **别动它**：删除遮罩或退回「`#root` 内占位」会让 FOUC 复发。若想让转圈更短，给 bundle 加 `<link rel="preload">` 提前拉取即可，不要改结构。
+
+### 近期 bug 根因（fix）：弹窗版本转换按钮落错了地方——放进顶栏，站长要的是「弹窗内右上角」（2026-11-12 15:38 · 提交 `99d0ad0`）
+
+**现象**：站长截图指出——转换按钮被放到了页面顶栏，而他要的是**弹窗内部右上角**（「劳工友好提醒」标签同一行、紧挨 × 关闭按钮左侧）。
+
+**根因**：上一版 `4db9f41` 按「复用 anon-mail 落位」的思路把按钮放进了顶栏 / dock，方向理解错了；站长要的是弹窗内的就地切换。
+
+**修复**：`dyp-version-toggle.js` 改为往 `.dyp__panel` 里 `insertBefore(btn, .dyp__x)`（`.dyp__version-toggle` 药丸，`top:10px / right:52px`）；版本逻辑不变。另修一个真渲染才暴露的隐患——**事实核查「闪一下」**：只切 inline `display:none` 时，若 `factcheck-button.js` 在 applyDyp 之后才注入节点会漏一帧；改用 `.dyp--new .dyp__factcheck{display:none !important}` class 兜底，与注入时机无关（inline display 保留双保险，仍只显隐不删除）。`?v=1→2`；§36u③ 落位断言改咬 `.dyp__panel`/`.dyp__x` 且**反查不得回退顶栏 dock**，§36u④ `?v=2`；`test-dyp-toggle.cjs` 22 项；CDP 双视口真渲染确认 `inPanel/beforeX=true`、`inHeader/inDock=false`。
 
 ### 近期 bug 根因（fix）：手机端 AI 面板按 bottom 反推，软键盘一弹就把面板顶出屏幕（2026-11-12 09:23 · 提交 `b8ae4d1`）
 

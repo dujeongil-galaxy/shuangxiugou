@@ -4,6 +4,26 @@
 
 ---
 
+### fix：首页弹窗版本转换按钮改放「弹窗内部右上角」（2026-11-12 15:38 · 提交 `99d0ad0`）
+
+站长 11-12 15:2x 看图纠正：转换按钮要放在**弹窗内部右上角**（「劳工友好提醒」标签同一行、紧挨 × 左侧），不是页面顶栏（上一版 `4db9f41` 落位在顶栏，方向错了）。
+
+- **落位改为弹窗内**：`dyp-version-toggle.js` 由「顶栏复用 anon-mail（Login GitHub 之后 / 窄屏进 dock）」改为往 `.dyp__panel` 里 `insertBefore(btn, .dyp__x)`，新增 `.dyp__version-toggle` 药丸样式（top:10px / right:52px）。版本逻辑不变：默认 new（比亚迪+理想L8 抖音短片、隐藏事实核查、第三站长随笔），点按钮切 old（在抖音中观看+事实核查+随笔），文案 `替换旧版`↔`新版本`。
+- **事实核查隐藏改用 class 兜底**：新增 `.dyp__acts.dyp--new .dyp__factcheck{display:none !important}` + applyDyp 给 acts 加/去 `dyp--new`。此前只切 inline `display:none`，若 `factcheck-button.js` 在 applyDyp 之后才注入节点，会有一帧「事实核查闪一下」的窗口；class+CSS `!important` 与注入时机无关，彻底消除闪烁（inline display 仍保留作双保险）。不删节点、随时随版本恢复。
+- **机器强制**：`?v=1→2`；verify §36u③ 落位断言改咬 `.dyp__panel`/`.dyp__x`/`.dyp__version-toggle` 且**反查不得回退顶栏 dock**（`!login-github-btn && !DOCK_ID`），④ `?v=2`；`test-dyp-toggle.cjs` 落位用例改为「.dyp__panel 内、× 之前、不在顶栏/dock」+ 新增弹窗缺席安全用例（22 项）。
+- **真渲染**：`cdp-dyp-toggle.cjs` 桌面 1440 / 手机 390，断言 `inPanel=true / beforeX=true / inHeader=false / inDock=false`，双视口 `MOBILE_OK / DESKTOP_OK` 均 true、`PAGEERRORS=[]`；截图肉眼复核按钮在右上角、新版本三按钮无事实核查、旧版本完整恢复。
+- 复核：verify **1705 全绿**；`test-dyp-toggle.cjs` 22/0。
+
+### feat：新增零跑汽车 C 级自定义卡 + 详情页（2026-11-12 15:29 · 提交 `4817ce1`）
+
+站长 11-12 指令「新增零跑，核实证据链；抖音视频链接写入备注栏（参考比亚迪）、不挂证据链；备注务必注明『内容真实性存疑，请注意甄别』」。按铁律不改压缩 bundle，走自定义卡（`customCardsConfig`），证据链由联网检索公开报道核实。
+
+- **新增卡**：`leapmotor-card`（C 级、`logo:null` 文字回退「零跑」、`insertAfter:'吉利汽车'`——避开与吉利共用的 `BYD (比亚迪)` 锚点防归位互抢）。`cardNoteTitle/cardNote` 注明「内容真实性存疑，请注意甄别」，并说明两条抖音短片线索（比亚迪前后轮辋装反 / 某品牌售后）归属**首页弹窗新版入口**、与零跑本卡证据链相互独立。
+- **新建详情页** `brand/leapmotor.html`（C 级；真实双休率 0%（口径换算）、平均下班 22:00；证据链：36氪/网易/有驾 2026-05 调休餐补爆料、多地工厂集体旷工网传、2023 大小周历史、湖州年会风波；均按「报道/网传口径」登记并标缺口，未获官方确认不放大）。
+- **计数 1:1 收口**（自定义卡须配套品牌页，否则「brand 页数 = 收录数」断言判红）：bundle 收录品牌 / tab 角标 177→178、首页「共 N 家」×2、`rating-stats-patch.js` 避雷预警 57→58；README / FORK_GUIDE / MAINTAINING / PITFALLS / 员工实测 125→126 自定义；noscript 双清单（主清单①带 `详细→`、详情页 ul② 177→178 加零跑）；证据公示区重生成（178 家 / 458 条 / 409 链接）；projects.html / sitemap.xml 收录；拼音索引重生成（176 品牌 / 126 自定义，`?v=14→15`）。
+- **机器强制**：verify `IMPORTED_CARD_COUNT 106→107`、C 级 39→40、新增零跑专属断言（`logo:null` / C 级 / `insertAfter` 吉利 / cardNote 含「内容真实性存疑」与「首页弹窗新版本」/ `brand/leapmotor.html` 存在 / noscript 含零跑）；§25m 标题数字同步 178。
+- 复核：verify **1706 全绿**（含本轮全部计数收口）。
+
 ### feat：首页「劳工友好提醒」弹窗 新版/旧版 转换按钮（2026-11-12 13:59 · 提交 `4db9f41`）
 
 站长 11-12 看图要求在首页「劳工友好提醒」弹窗（`.dyp`）旁加一个「转换按钮」：「若当前显示的新版本（默认），则显示替换旧版。若用户替换了旧版，则显示新版本；新版本挂2个抖音链接（新版本第二按钮不再显示事实核查），第三链接还是站长随笔」。提供的两条抖音短片：比亚迪·前后轮辋装反了 `https://v.douyin.com/_n2cFrXIRec/`、理想L8·高速方向盘拉不动 `https://v.douyin.com/EHOOH9INCMk/`。

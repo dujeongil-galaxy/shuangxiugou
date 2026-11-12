@@ -2989,3 +2989,22 @@ HEAD 不是补提交，只是正文里引用了一下标记，同样被跳过。
 3. **双版本文案靠 localStorage 记忆、默认 new**。`dyp_version_toggle_v1` 默认 `new`，按钮文案随版本翻转（`new`→「替换旧版」、`old`→「新版本」），刷新不丢；但默认 new 意味着新访客首屏看到的是「替换旧版」入口，必须在验收里确认默认态弹窗确实是新版（比亚迪/理想L8/站长随笔、事实核查不可见）。
 4. **落位复用既有入口机制，别另写一套**。转换按钮直接复用 anon-mail 的落位函数（桌面 Login GitHub 之后、窄屏进 `#sxg-fab-dock` 首位、短标签 `data-sxg-dock-label`），既省验证，也保证和右侧 dock 的避让关系不回退。`index.html` `?v=1`。
 5. **多版本共享同一 `.dyp__acts` 样式基线时，自有锚点只配色**。`.dyp__acts > *` 一条规则给所有按钮统一尺寸，新增的 `.dyp__douyin2` 只配色（浅绿描边，复用事实核查视觉档）不抢尺寸；窄屏用 `@media (max-width:520px){.dyp__douyin2{order:1}}` 微调顺序，别再开一条尺寸规则。
+
+## 第五十七章：新增自定义卡是「牵一发动全身」——1:1 品牌页、锚点独占、双清单、计数全套（2026-11-12 15:29 零跑汽车 4817ce1）
+
+站长要求「新增零跑、联网核实证据链」；按铁律不改压缩 bundle，只能加 `customCardsConfig` 自定义卡。以为「加一条 JSON」就完事，实际引爆 15 项 verify 红，教训写死：
+
+1. **计数模型是硬 1:1：每张自定义卡必须有配套的 `brand/<slug>.html`**。`statTotal = builtin2e + customCards.length` 且要求 `=== brand/ 页数`；`snack-card`（虚拟对比卡）是唯一历史例外，且它「没页」的缺口恰好被「虚拟内置卡自带页面」平衡掉。再加第二张无页卡（零跑）就打破平衡、断言判红。**判据**：不要臆想「主清单能放无页卡」——要么建页，要么动模型，前者才是与既有 176 张卡一致的做法。
+2. **`insertAfter` 锚点禁共用**。吉利已占用 `BYD (比亚迪)` 锚点，零跑若也写 BYD，verify「每个 insertAfter 锚点只被一张卡使用」直接判红（共用＝归位互抢＝无限自激卡死）。改挂到同品类、相邻的吉利（`insertAfter:'吉利汽车'`）。
+3. **`logo:null` 走文字回退，不是漏配**。bundle 渲染只用 `logoText`、零处用 PNG `logo` 字段，`logo:null` 触发 `logoDiv.textContent = logoAlt` 文字徽标；新卡无需 PNG 资源。verify 的 logo 断言接受 `null=文字回退`。
+4. **`cardNote` 是纯文本（`textContent`），塞进去的链接不可点**。站长说「视频链接写入备注栏」，要写成文字说明 + 归属说明，不要指望它是可点超链接；真要能点得另做 DOM。
+5. **noscript 是两套清单，语义不同别混**。① 主评级清单（`:X 级` 手写区，允许无页品牌）与 ②「全部品牌详细页（N 个）」ul（`N === 唯一 slug 数 === brand/ 页数`）不是一回事；新卡两处都要加：① 加一条（带 `详细→` 与品牌链接，且「平均下班」只写 `22:00`、与详情页 kv 逐字对齐，否则 `noscript 数值 = 详情页` 逐条比对判红），② 的 N 要 +1。
+6. **计数断言/常量要成套改，漏一处就红**：`IMPORTED_CARD_COUNT +1`、C 级 `10+29 → 10+29+1`（D 级因「平台例外」锁死、别动）、bundle 收录品牌/tab 角标 +1、首页「共 N 家」×2 +1、`rating-stats-patch` 对应档 +1、README/FORK_GUIDE/MAINTAINING/PITFALLS/员工实测的「N 张自定义」+1。
+7. **派生文件要重生成，不能手改**：证据公示区 `python scripts/gen-evidence-board.py`（它会重算 178 家/458 条/409 链接）、拼音索引 `python scripts/gen-pinyin-index.py`（`?v` 要 +1）、`projects.html` 手工补一条链接、`sitemap.xml` 手工补一条 `<loc>`（别跑会覆盖 brand 页的 `generate-brand-pages.py`）。
+
+## 第五十八章：落位别沿用上一条功能的惯性；「隐藏」要跟上游注入时机解耦（2026-11-12 15:38 弹窗转换按钮改位 99d0ad0）
+
+1. **落位先问「哪个容器的哪个位置」，别沿用上一个功能的落位**。匿名邮箱刚做过「顶栏 / dock 落位」，弹窗转换按钮就顺手复用了同一套，结果站长要的是**弹窗内部右上角**（「劳工友好提醒」标签同行、紧挨 × 左侧）。方向错了，功能对也没用。**判据**：截图里站长画的框就是落位规格，照框放。
+2. **「新版本隐藏事实核查」只切 inline `display:none` 会跟上游注入时机竞态**。`factcheck-button.js` 是独立脚本、在 `requestAnimationFrame` 里注入 `.dyp__factcheck`；若它在本脚本 `applyDyp` 之后才注入，就有一帧「事实核查闪一下」的窗口（CDP 探针实测 `fcDisplay:'flex'`）。解法：给 `.dyp__acts` 打 `dyp--new` class，配 `.dyp__acts.dyp--new .dyp__factcheck{display:none !important}`——与注入顺序无关，新注入的节点也会立刻被 CSS 藏掉；inline `display` 仍保留作双保险。**判据**：凡「隐藏一个由别的脚本后注入的节点」，别只依赖 JS 时序，要用状态 class + CSS `!important` 兜底。
+3. **落位断言要正反两面**。§36u③ 既咬 `.dyp__panel`/`.dyp__x`/`.dyp__version-toggle` 存在与顺序（正面），又 `!/login-github-btn/ && !/DOCK_ID/`（反面，防回退顶栏）。只写正面断言，下次又会悄悄挪回顶栏而绿灯。
+4. **CDP 探针要轮询等弹窗 build**。`.dyp` 是加载后 2.5s 才 build，单次 `sleep(2500)` 后 probe 极易赶在「面板还没建」的空窗误报 `present:false`；改成 `pollToggle` 轮询到按钮出现，并让 `pollActsNew` 等到 `goText/d2Text/fcDisplay/laterText` 四项全就位再返回，避免抓到中间态误判。
