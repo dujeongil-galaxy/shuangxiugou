@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 双休购 · 站点一致性校验（零依赖，纯 Node.js）
  *
  * 为什么需要这个：
@@ -6488,8 +6488,8 @@ section('21c. 首页滑到底部按钮');
     '§33a2 广告位三张设计图首屏预热，且每张的 ?v 与 black-card-adslot.js 里的常量完全一致',
     '预热 URL 与脚本里的实际 URL 不一致 → 白预热，广告位照样「卡片先出来、图还是空的」');
 
-  check(/<script async src="\.\/black-card-adslot\.js\?v=20"><\/script>/.test(idx)
-    && idx.indexOf('black-card-adslot.js?v=20') < idx.indexOf('</head>')
+  check(/<script async src="\.\/black-card-adslot\.js\?v=21"><\/script>/.test(idx)
+    && idx.indexOf('black-card-adslot.js?v=21') < idx.indexOf('</head>')
     && !/script defer src="\.\/black-card-adslot\.js/.test(idx),
     '§33b 广告位补丁在 head 里 async 加载（不再排在第 40 个 defer，也不必等 692KB body 解析完）',
     '广告位补丁退回 defer 队列尾部 → 慢网又要 15 秒才冒出广告位');
@@ -7613,7 +7613,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
 
   check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
-    && /black-card-adslot\.js\?v=20/.test(idx29),
+    && /black-card-adslot\.js\?v=21/.test(idx29),
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 
   // —— 站长 2026-11-10 晚：胖东来广告卡（首页推荐位） ——
@@ -7839,8 +7839,8 @@ section('25. 成功案例专题页（QQ奶奶）');
   check((code32.match(/公益广告位/g) || []).length >= 4
     && !/广告位招商中|品牌展示|>广告位</.test(code32)
     && /data-adslot-kind', 'public-welfare'/.test(code32)
-    && /black-card-adslot\.js\?v=20/.test(idx32),
-    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 13');
+    && /black-card-adslot\.js\?v=21/.test(idx32),
+    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 21');
 
   // 站长 2026-11-10 二次纠正「广告图叫你重构，不是让你改成纯文字 / 文字明显重叠」：
   // 文案已全部画进 ad-recruit.svg 的 <text>（与图同坐标系同缩放，结构上不可能叠字），
@@ -8052,8 +8052,8 @@ section('25. 成功案例专题页（QQ奶奶）');
 
   const preload35 = mob35.every(([f, , ver]) =>
     idx35.indexOf('<link rel="preload" as="image" href="./' + f + '?v=' + ver + '" media="(max-width:480px)" />') !== -1);
-  check(preload35 && /black-card-adslot\.js\?v=20/.test(idx35),
-    '§35c 手机三图带 media 预热、?v 与脚本 *_MOBILE 常量一致，首页脚本已升 13',
+  check(preload35 && /black-card-adslot\.js\?v=21/.test(idx35),
+    '§35c 手机三图带 media 预热、?v 与脚本 *_MOBILE 常量一致，首页脚本已升 21（2026-11-12 政策文案改写后再 bump）',
     '预热漏 media 或 ?v 不一致 → 慢网首帧先出桌面稿再跳手机稿');
 
   check(/function keepClear\(/.test(code35) && /keepClear\(slot\);/.test(code35)
@@ -8185,7 +8185,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     'JEV 条目写成互惠/互挂 → 与「不要求互挂」矛盾');
 
   // ④ 两个脚本在 index.html 的 ?v 随内容变更 bump，否则浏览器缓存旧脚本
-  check(/black-card-adslot\.js\?v=20/.test(idx36f)
+  check(/black-card-adslot\.js\?v=21/.test(idx36f)
     && /friend-links-footer\.js\?v=16/.test(idx36f),
     '§36f 两个脚本在 index.html 的 ?v 已随内容变更 bump 到 16',
     '?v 没 bump → 浏览器缓存旧脚本，新文案 / 新友链不生效');
@@ -8225,8 +8225,8 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(/n\.id\s*===\s*['"]sxg-flash-mask['"]/.test(ad36h),
     '§36h keepClear 按 id 排除闪屏遮罩 #sxg-flash-mask（不被当悬浮钮隐藏、整页磨砂不破洞）',
     'keepClear 漏排除闪屏遮罩 → 广告位相交时遮罩被隐藏、磨砂破洞、广告位穿模');
-  check(/black-card-adslot\.js\?v=20/.test(idx36h),
-    '§36h black-card-adslot.js 的 ?v 已 bump 到 18（浏览器缓存旧脚本会吃掉本次修复）',
+  check(/black-card-adslot\.js\?v=21/.test(idx36h),
+    '§36h black-card-adslot.js 的 ?v 已 bump 到 21（浏览器缓存旧脚本会吃掉本次修复）',
     '?v 没 bump → 旧脚本仍带 z-index:9995，修复不生效');
 }
 
@@ -8239,8 +8239,8 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(!/@media \(max-width:480px\)\{\.sxg-adslot__nav\{display:none\}/.test(ad36k),
     '§36k 手机端（≤480px）不再隐藏公益广告位左右翻页箭头（放出 prev/next 按钮）',
     '移动端媒体查询又把 .sxg-adslot__nav 设 display:none → 手机上看不到左右翻页箭头');
-  check(/black-card-adslot\.js\?v=20/.test(idx36k),
-    '§36k black-card-adslot.js 的 ?v 已 bump 到 18（浏览器缓存旧脚本会吃掉本次改动）',
+  check(/black-card-adslot\.js\?v=21/.test(idx36k),
+    '§36k black-card-adslot.js 的 ?v 已 bump 到 21（浏览器缓存旧脚本会吃掉本次改动）',
     '?v 没 bump → 旧脚本仍隐藏手机端箭头，改动不生效');
 }
 
@@ -8296,11 +8296,17 @@ section('25. 成功案例专题页（QQ奶奶）');
     /联网/.test(ad36n) &&
     /issue/.test(ad36n) &&
     /实证|证据/.test(ad36n) &&
-    /2026-11-11\s*起执行/.test(ad36n),
-    '§36n 公益广告位底部免责脚注（AI 生成图 + 站长人工核实产线须双休 + 不靠联网 + issue 递交实证申请上刊 + 2026-11-11 起执行）',
+    /2026\s*年\s*11\s*月起(开始)?实行/.test(ad36n),
+    '§36n 公益广告位底部免责脚注（AI 生成图 + 站长人工核实产线须双休 + 不靠联网 + issue 递交实证申请上刊 + 本政策自 2026 年 11 月起实行）',
     '脚注文案缺失 → 访客无法得知图片是 AI 生成、企业信息由站长人工核实、如何申请上刊');
-  check(/black-card-adslot\.js\?v=20/.test(idx36n),
-    '§36n black-card-adslot.js 的 ?v 已 bump 到 19（浏览器缓存旧脚本会吃掉本次脚注）',
+  /* 2026-11-12 站长：「加一句话，仅限中国大陆品牌，因为双休购本质上还是希望改变我们自己」。
+     同样只钉语义要素（适用范围 / 中国大陆），不钉改写后的原句，便于日后继续润色。 */
+  check(/sxg-adslot__scope/.test(ad36n) &&
+    /中国大陆/.test(ad36n),
+    '§36n 脚注已声明适用范围仅限中国大陆品牌与门店（本站意在改进国内用工状况，不评价境外）',
+    '缺「仅限中国大陆」限定 → 读者会以为榜单对境外品牌也作同等评判');
+  check(/black-card-adslot\.js\?v=21/.test(idx36n),
+    '§36n black-card-adslot.js 的 ?v 已 bump 到 21（浏览器缓存旧脚本会吃掉本次脚注）',
     '?v 没 bump → 旧脚本无脚注、本次改动不生效');
 }
 

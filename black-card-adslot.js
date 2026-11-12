@@ -421,7 +421,7 @@
         '<div class="sxg-adslot__dots"></div>' +
         '<button type="button" class="sxg-adslot__nav sxg-adslot__next" aria-label="下一张">›</button>' +
       '</div>' +
-      '<div class="sxg-adslot__disclaimer">公益广告位图片由 AI 绘制；企业信息全部由站长人工核实——线上自营、线下门店，只要有一条产线做不到双休，就上不了这一栏。核实结论来自站长亲自查证，不是联网搜一句「是否双休」得出的。想让自家企业上首页，请到 <a class="sxg-adslot__issue" href="https://github.com/dujeongil-galaxy/shuangxiugou/issues/new" target="_blank" rel="noopener">issue</a> 递交实证材料。<span class="sxg-adslot__date">本政策自 2026-11-11 起执行。</span></div>';
+      '<div class="sxg-adslot__disclaimer">公益广告位图片由 AI 绘制；企业信息全部由站长人工核实——线上自营、线下门店，只要有一条产线做不到双休，就上不了这一栏。核实结论来自站长亲自查证，不是联网搜一句「是否双休」得出的。想让自家企业上首页，请到 <a class="sxg-adslot__issue" href="https://github.com/dujeongil-galaxy/shuangxiugou/issues/new" target="_blank" rel="noopener">issue</a> 递交实证材料。<span class="sxg-adslot__scope">适用范围只到中国大陆的品牌与门店：这一栏盯的是自家门口的用工状况，先把身边的事改好，比给远方打分要紧。</span><span class="sxg-adslot__date">本政策自 2026 年 11 月起实行。</span></div>';
     initCarousel(root);
     // ⑪ 胖东来整图 + CTA 的「点击复制 + 去微信」交互，只绑带 data-sxg-share 的两个 <a>
     bindShare(root);
