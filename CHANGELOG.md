@@ -33,7 +33,7 @@
 - **新组件**：`starbucks-ad.css` / `starbucks-ad.js` 独立 IIFE（不碰压缩 bundle），沿用良配同款架构与 `--sxg-bar-h` 避让语义（≥1440 右侧竖排卡 / <1440 底部吸底条 / ≤374 收紧）；延迟 6s 淡入避免加载即弹。LOGO 换星巴克绿（「星巴克」三字永远横排，三断点容器宽均比 3 字所需宽 ≥8px）；悬浮卡 CTA「查看活动」打开活动海报弹窗。
 - **活动日期完整**：弹窗海报节点 `.sb-poster__date` 完整显示「11月12日 8:00 — 11月16日 23:59」（取图三活动页原文），含起止时分，不省略——这是站长唯一硬约束。
 - **海报二维码（待补真源）**：悬浮窗放不下整张海报，弹窗内用 CSS 复原版海报（黑底荧光绿 + 星巴克 × WorkBuddy 头 + 日期 + 任务 + 奖励 + 扫码占位 + 规则脚注）。真实二维码站长未提供图源，组件预留 `posterImg`（把真实海报放到 `./assets/starbucks-poster.jpg` 即自动启用，含真二维码）；当前为占位「扫码参与」框。
-- **机器强制**：`verify.mjs` 新增 §20p 钉死「良配已注释下线 + 星巴克已上线 + 日期完整 + 避让语义 + 测试挂 CI」；新增 `scripts/test-starbucks-ad.cjs`（39 项：LOGO 横排 / 日期完整 / 文案 / 避让 / index.html 引用状态）挂进 `.github/workflows/verify.yml`；新增本机专用 `scripts/cdp-starbucks-ad.cjs` 真渲染验收（390 / 1440 两档）。
+- **机器强制**：`verify.mjs` 新增 §20q 钉死「良配已注释下线 + 星巴克已上线 + 日期完整 + 避让语义 + 测试挂 CI」；新增 `scripts/test-starbucks-ad.cjs`（39 项：LOGO 横排 / 日期完整 / 文案 / 避让 / index.html 引用状态）挂进 `.github/workflows/verify.yml`；新增本机专用 `scripts/cdp-starbucks-ad.cjs` 真渲染验收（390 / 1440 两档）。
 - **验收**：verify **1688 项全绿**（原 1674 + 新 14）；`test-starbucks-ad.cjs` 39/0；故障注入 2 组（良配引用回潮 / 活动日期不完整）均判红后还原复绿；CDP 真渲染 390×844 / 1440×900 确认手机底部条、桌面右侧卡均正常、弹窗居中显示完整日期与扫码参与、底部不再有良配残留。
 
 ---
