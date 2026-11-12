@@ -8099,8 +8099,8 @@ section('25. 成功案例专题页（QQ奶奶）');
     '公告仍是居中 inline-block 且无处预留右列宽 → 窄屏右缘压在右侧悬浮钮上（站长截图）');
   /* §36t 又改了同一份 CSS（顶栏全部常显），?v 随每次改动继续往上走；
      这里与 §36q / §36s 的钉子必须同步，别只改其中一处。 */
-  check(/mobile-fixes\.css\?v=18/.test(idx36g),
-    '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 18（§36t 顶栏全部展开）',
+  check(/mobile-fixes\.css\?v=19/.test(idx36g),
+    '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 19（§36t 顶栏展开 + §38 AI 面板 top 锚定，合并后顺延）',
     '?v 没 bump → 浏览器缓存旧 CSS，预留列宽不生效');
 }
 
@@ -8244,12 +8244,16 @@ section('25. 成功案例专题页（QQ奶奶）');
     && /#sxg-fab-dock\s*>\s*\*[^}]*position:\s*relative\s*!important[^}]*bottom:\s*auto\s*!important/.test(mf36q)
     && /#sxg-fab-dock\s*\{[^}]*pointer-events:\s*none/.test(mf36q);
   // ② 面板与高度：AI 面板跟随 --sxg-dock-h，导航面板右锚定；绝不再出现逐点魔数。
-  const panelOk = /#sxg-ai-panel\s*\{[^}]*var\(--sxg-dock-h/.test(mf36q)
+  // 2026-11-12：AI 面板改 top 锚定（贴 header 下沿），不再用 dock-h 反推——
+  // 键盘弹起时 visual viewport 变矮，bottom 算式会变负数把面板顶出屏幕。
+  const panelOk = /#sxg-ai-panel\s*\{[^}]*top:\s*calc\(var\(--sxg-ai-top/.test(mf36q)
+    && /#sxg-ai-panel\s*\{[^}]*bottom:\s*auto/.test(mf36q)
+    && /#sxg-ai-panel\s*\{[^}]*var\(--sxg-ai-vh/.test(mf36q)
     && /#sxg-nav-panel\s*\{[^}]*right:\s*0\s*!important/.test(mf36q)
     && !/\+\s*(210|272|276|335)px/.test(mf36q)
     && !/body\s*\{[^}]*padding-left/.test(mf36q);
   check(dockCssOk && panelOk,
-    '§36q 悬浮层唯一所有者 #sxg-fab-dock（flex 自动排布 / 空隙不吃点击），子项清掉各自 fixed+bottom，AI 面板跟随 --sxg-dock-h，旧魔数清零',
+    '§36q 悬浮层唯一所有者 #sxg-fab-dock（flex 自动排布 / 空隙不吃点击），子项清掉各自 fixed+bottom，AI 面板 top 锚定 header 下沿并由 --sxg-ai-vh 钳高（键盘弹起不挪位），旧魔数清零',
     '又回到六枚各自 fixed 写死 bottom / 面板写死 +276px → 加按钮或换屏高必然再穿模');
 
   // ③ JS：注册清单覆盖六枚 + 客居入口，且能双向搬迁（桌面还原）。
@@ -8269,10 +8273,10 @@ section('25. 成功案例专题页（QQ奶奶）');
   // ④ 挂载顺序：dock 脚本必须排在所有悬浮脚本之后。
   const mountOk = /<script defer src="\.\/fab-dock\.js\?v=2"><\/script>/.test(idx36q)
     && idx36q.indexOf('fab-dock.js?v=2') > idx36q.indexOf('nav-menu.js?v=6')
-    && /mobile-fixes\.css\?v=18/.test(idx36q)
+    && /mobile-fixes\.css\?v=19/.test(idx36q)
     && /header-menu-patch\.js\?v=11/.test(idx36q);
   check(mountOk,
-    '§36q index.html 已挂载 fab-dock.js?v=2 且排在所有悬浮脚本之后，mobile-fixes.css?v=18 / header-menu-patch.js?v=11 同步 bump',
+    '§36q index.html 已挂载 fab-dock.js?v=2 且排在所有悬浮脚本之后，mobile-fixes.css?v=19 / header-menu-patch.js?v=11 同步 bump',
     '挂载顺序错了 → dock 执行时按钮还没建好，收编为空；?v 没 bump → 浏览器缓存旧 CSS');
 }
 
@@ -8410,7 +8414,7 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(/<script defer src="\.\/anon-mail\.js\?v=1"><\/script>/.test(idx36s)
     && idx36s.indexOf('anon-mail.js?v=1') > idx36s.indexOf('fab-dock.js?v=2')
     && /fab-dock\.js\?v=2/.test(idx36s)
-    && /mobile-fixes\.css\?v=18/.test(idx36s)
+    && /mobile-fixes\.css\?v=19/.test(idx36s)
     && /header-menu-patch\.js\?v=11/.test(idx36s)
     && exists('scripts/test-anon-mail.cjs')
     && wf36s.indexOf('node scripts/test-anon-mail.cjs') !== -1,
@@ -8489,7 +8493,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '只修 ≤640px → 平板横屏 / 窄桌面窗口按钮仍被挤成不可读的竖条');
 
   // ⑦ ?v 钉子（§21h）+ 新 jsdom 测试挂进 CI（§21o）。
-  check(/mobile-fixes\.css\?v=18/.test(idx36t)
+  check(/mobile-fixes\.css\?v=19/.test(idx36t)
     && /header-menu-patch\.js\?v=11/.test(idx36t)
     && /github-access-help\.js\?v=2/.test(idx36t)
     && /appeal-policy\.js\?v=4/.test(idx36t)

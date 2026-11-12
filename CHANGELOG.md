@@ -15,8 +15,24 @@
 - **缓存号**：`index.html` 四个资源同步 bump —— `mobile-fixes.css?v=17→18`、`header-menu-patch.js?v=10→11`、`github-access-help.js?v=1→2`、`appeal-policy.js?v=3→4`；注释口径同步改。
 - **机器强制**：`verify.mjs` 更新 §36g / §36q / §36r⑤⑦ / §36s④⑤ 钉子，新增 §36t 七断言（禁隐藏回潮、CSS 换行铺满、两条办法都常显、入口贴 Star、弹窗滚动复位、641–900px、?v+CI）；新增 `scripts/test-header-expand.cjs`（32 项）挂进 `.github/workflows/verify.yml`，并按事实改 `test-github-access-help.cjs`（35 项）与 `test-anon-mail.cjs`（40 项）的过期断言。
 - **验收**：verify **1674 项全绿**；44 组非本机专用 jsdom 测试分三批串行全通过；8 组故障注入（隐藏规则回潮 / CSS 竖排 / 帮助只出一条 / 入口塞回菜单 / 滚动复位丢失 / ?v 回退 / 测试没挂 CI / 中等宽度竖条）全部判红、还原复绿；CDP 真渲染 360 / 390 / 660 / 1440 四档确认按钮零隐藏、零裁切、零横向溢出，弹窗两条方案与标题均可见。
+- **合并顺延**：合并远端 §38「手机端 AI 面板 top 锚定」（`b8ae4d1`，同样改了 `mobile-fixes.css`）后，两份 CSS 改动合流，`?v` 从双方各自的 18 再顺延到 **19**，避免真机命中合并前的旧缓存；§36g / §36q / §36s / §36t 四处 `?v` 钉子同步。
 
 ---
+
+### fix：手机端 AI 面板改 top 锚定 header 下沿，软键盘弹出不再被顶出屏幕（§38）（2026-11-12 09:23 · 提交 `b8ae4d1`）
+
+站长原话：「AI 能参考图片 2 的位置吗，手机端打开之后，默认就是图片 2 那个位置」。两张 1440×3200 手机截图里，图 1 面板顶到屏幕最上方、站点 header 被整块盖住；图 2 面板正好落在 header 下沿。
+
+- **复现（未改前）**：390×844、dpr 2、触控模拟的无头 Edge + CDP。未改前 `OPEN` 面板 top=96 / h=323（由 `bottom: calc(var(--sxg-bar-h) + var(--sxg-dock-h,288px) + 24px)` 反推）；把视口压到 420 模拟软键盘后 `KEYBOARD` 面板 top=**-7** / h=**2** —— 面板实际消失，正是图 1 的故障形态。
+- **根因**：手机端面板按 `bottom` + `100vh` 反推。算式里的 `--sxg-dock-h`（288px）是屏幕底部那堆常驻按钮的高度，键盘一弹 visual viewport 只剩 ~420px，`420 - 113 - 288 - 120` 直接变负数，`max-height` 被压成 2px、面板被顶出屏幕上沿。底部锚定的面板天生不适合「视口会变矮」的场景。
+- **修法**：`mobile-fixes.css` 手机端 `#sxg-ai-panel` 改 `top: calc(var(--sxg-ai-top, 72px) + 8px) !important` + `bottom:auto !important` + `max-height` 由 `--sxg-ai-vh` 钳制；`ai-chat.js` 新增 `setupMobileGeometry(panel)`（`isCompact` 时调用），实测站点 header 下沿写 `--sxg-ai-top`、`visualViewport.height` 写 `--sxg-ai-vh`，在 `resize` / `orientationchange` / `visualViewport` 的 `resize`+`scroll` / 面板 `focusin` / 按钮 `click` 时重算。键盘弹出只让面板变矮，位置一格不动。
+- **测量门槛的坑（第二版才修对）**：站点 header 不在 y=0 —— 手机浏览器顶部还有状态条/地址栏，实测 header 顶边 49、下沿 116。第一版量 header 的门槛写 `r.top <= 48`，真实 header 被这个门槛排除在外，`headerBottom()` 回落到 64px 兜底 → 面板 top=72，反而压住 header 下沿。放宽成 `r.top <= 140 && r.bottom <= 200` 后拿到 116，面板 top=124（= 116 + 8）。
+- **复测**：`OPEN` panel top=124 / h=422 / bottom=546（header 完整可见、面板贴其下沿，与站长图 2 版式一致，截图 `mob_open.png`）；`KEYBOARD`（视口 420）panel top=124 / h=184 / bottom=308 —— 位置不变、完整可见，输入框与发送按钮都在屏内（截图 `mob_keyboard.png`）。
+- **校验与版本**：`scripts/verify.mjs` §36q 的面板断言从「跟随 `--sxg-dock-h`」改为 top 锚定口径（`top: calc(var(--sxg-ai-top` + `bottom: auto` + `var(--sxg-ai-vh)`，旧魔数（+210/272/276/335px）禁令原样保留），§36g / §36q / §36s 三处 `mobile-fixes.css?v` 期望同步 17→18；`ai-chat.js?v` 26→27（`index.html`）、18→19（其余 7 页），`mobile-fixes.css?v` 17→18。手机端默认仍是点「AI」才展开（`panel.hidden = isCompact`），本次只改「展开后落在哪」，不改默认开合。
+- **复核**：verify **1667 项全绿**（一次 `node --check` + 一次全量 verify，改动前后各跑一遍）。
+
+---
+
 
 ### merge：合并远端 §37 LOGO 补全 / §38 广发·天府 A 级卡，与本地 §36s 匿名邮箱批次对齐（2026-11-12 07:56 · 提交 `b50f7fe`）
 

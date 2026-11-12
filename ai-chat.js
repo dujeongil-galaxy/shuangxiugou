@@ -271,11 +271,54 @@
     document.body.appendChild(panel);
     document.body.appendChild(btn);
 
+    // 手机端几何：实测站点 header 下沿写进 --sxg-ai-top，面板贴在它下面；
+    // visualViewport 高度写进 --sxg-ai-vh，软键盘弹出时只缩高不挪位
+    // （手机端原来按 bottom + 100vh 反推，键盘一来面板就被顶出屏幕）。
+    if (isCompact) setupMobileGeometry(panel);
     // 加载即展开面板（展示欢迎语），8 秒后自动收起，避免一直遮挡页面；
     // 用户一旦在面板内交互（点击/输入）即取消自动收起。
     // 移动端默认已收起（panel.hidden=isCompact），不再启动自动收起计时。
     panel.addEventListener('pointerdown', clearAutoClose);
     if (!isCompact) startAutoClose();
+  }
+
+  // ---------- 手机端面板几何 ----------
+  // 只用两个变量：--sxg-ai-top（header 下沿，像素）与 --sxg-ai-vh（可视视口高）。
+  // 不量 header 高度硬编码：菜单折叠、公告条出现都会改高度，写死 64px 必然错位。
+  function setupMobileGeometry(panel) {
+    var root = document.documentElement;
+    function headerBottom() {
+      var best = 0;
+      // 站点顶栏不是 <header> 标签就是 .sxg-header* 容器；取「贴顶且最高」的那个
+      var sels = ['.sxg-header', 'header', '#sxg-header-menu', '.sxg-header-bar'];
+      for (var i = 0; i < sels.length; i++) {
+        var el = document.querySelector(sels[i]);
+        if (!el) continue;
+        var r = el.getBoundingClientRect();
+        // 站点 header 不在 y=0：手机浏览器顶部还有地址栏/状态条，实测 header 顶边
+        // 会落在 40~120 之间（站长截图里是 49）。门槛放到 140，否则量不到 → 面板压住 header。
+        if (r.height > 0 && r.top <= 140 && r.bottom > best && r.bottom <= 200) best = r.bottom;
+      }
+      return best || 64;
+    }
+    function apply() {
+      var top = headerBottom();
+      root.style.setProperty('--sxg-ai-top', Math.round(top) + 'px');
+      var vv = window.visualViewport;
+      var vh = (vv && vv.height) ? vv.height : window.innerHeight;
+      root.style.setProperty('--sxg-ai-vh', Math.round(vh) + 'px');
+    }
+    apply();
+    // 面板展开时再量一次：键盘已经弹起、地址栏收起等都会改变可用高度
+    var btn = document.getElementById(BTN_ID);
+    if (btn) btn.addEventListener('click', apply);
+    panel.addEventListener('focusin', apply);
+    window.addEventListener('resize', apply);
+    window.addEventListener('orientationchange', apply);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', apply);
+      window.visualViewport.addEventListener('scroll', apply);
+    }
   }
 
   // 切换头像弹层显隐（头像与「切换形象」按钮共用）

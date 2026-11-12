@@ -251,7 +251,7 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 **改动失败时往往完全不报错**（见 `PITFALLS.md`）。半年后回来看，唯一能判断
 「这行为什么长这样」的东西，就是当时的记录。
 
-> **近期改动入口**：最近一批（2026-11-12 09:25 · 提交 `a89db78`）手机端顶栏按钮**全部展开、不再隐藏**（§36t）。站长「我再说一次，手机端，全部展开，按钮不再做隐藏」指的是上一轮只撑开了右侧 76px 隔离列里的 dock，`Star on GitHub` 等顶栏按钮仍藏在「菜单▼」里。① `header-menu-patch.js` 删掉 `collapse/restore`、下拉容器与按钮隐藏规则，改打 `data-sxg-hdr-expanded` 标记 + `reclaim()` 回收旧菜单残留；下半段 GitHub 登录逻辑不动。② `mobile-fixes.css` ≤640px 顶栏 `flex-wrap`，品牌第一行、按钮组换行铺满第二行，每枚自身宽度 + `nowrap` 常显，🌐 圆形帮助入口单独排除并贴回 Star；另补 641–900px，修 660px 真渲染六枚按钮被挤成逐字竖条。③ `github-access-help.js` 电脑 / 手机平板两条办法**同时常显**，`isDesktop()` 只给当前设备那条打「推荐」标记；🌐 入口宽窄屏统一贴 Star 常显，不再挂下拉。④ `appeal-policy.js` 帮助块变高后复位 `card.scrollTop = 0`，避免 `focus()` 把标题滚出视野。`index.html` 四个资源 `?v` 同步 bump（CSS 18 / header 11 / help 2 / appeal 4）；verify 更新 §36g/§36q/§36r/§36s 钉子 + 新增 §36t 七断言，新增 `scripts/test-header-expand.cjs`（32 项）挂进 CI，另按事实改两条过期断言。**1674 全绿**、44 组非本机专用测试分三批全通过、8 组故障注入全判红后还原，CDP 真渲染 360/390/660/1440 四档零隐藏零裁切零溢出。逐批明细见 [最近更新.md](./最近更新.md) 与 [CHANGELOG.md](./CHANGELOG.md)。
+> **近期改动入口**：最近一批（2026-11-12 09:25 · 提交 `a89db78`）手机端顶栏按钮**全部展开、不再隐藏**（§36t）。站长「我再说一次，手机端，全部展开，按钮不再做隐藏」指的是上一轮只撑开了右侧 76px 隔离列里的 dock，`Star on GitHub` 等顶栏按钮仍藏在「菜单▼」里。① `header-menu-patch.js` 删掉 `collapse/restore`、下拉容器与按钮隐藏规则，改打 `data-sxg-hdr-expanded` 标记 + `reclaim()` 回收旧菜单残留；下半段 GitHub 登录逻辑不动。② `mobile-fixes.css` ≤640px 顶栏 `flex-wrap`，品牌第一行、按钮组换行铺满第二行，每枚自身宽度 + `nowrap` 常显，🌐 圆形帮助入口单独排除并贴回 Star；另补 641–900px，修 660px 真渲染六枚按钮被挤成逐字竖条。③ `github-access-help.js` 电脑 / 手机平板两条办法**同时常显**，`isDesktop()` 只给当前设备那条打「推荐」标记；🌐 入口宽窄屏统一贴 Star 常显，不再挂下拉。④ `appeal-policy.js` 帮助块变高后复位 `card.scrollTop = 0`，避免 `focus()` 把标题滚出视野。`index.html` 四个资源 `?v` 同步 bump（CSS 18 / header 11 / help 2 / appeal 4）；verify 更新 §36g/§36q/§36r/§36s 钉子 + 新增 §36t 七断言，新增 `scripts/test-header-expand.cjs`（32 项）挂进 CI，另按事实改两条过期断言。**1674 全绿**、44 组非本机专用测试分三批全通过、8 组故障注入全判红后还原，CDP 真渲染 360/390/660/1440 四档零隐藏零裁切零溢出。合并远端 §38 后两份 CSS 改动合流，`mobile-fixes.css?v` 顺延至 19。逐批明细见 [最近更新.md](./最近更新.md) 与 [CHANGELOG.md](./CHANGELOG.md)。
 
 > 上一批（2026-11-12 07:39 · 提交 `f4906e6`）新增「匿名邮箱」按钮与访问告知弹窗、手机悬浮按钮全部撑开、顶栏断点双向还原（§36s）。① 新增 `anon-mail.js`：桌面顶栏第 5 枚「匿名邮箱」指向 `https://m.kuku.lu/cn.php`，点击**先弹窗**明确写「没有 VPN（或代理）就无法访问」，并备注站长最新匿名邮箱 `mantoopea@exdonuts.com`（可复制），目标链接只在「仍要前往」出口放行。② 手机端不进顶栏也不进「菜单▼」，直接挂进右侧已隔离的 `#sxg-fab-dock` 首位。③ 按站长「右边已经隔离了，为什么不干脆按钮全部撑开」撤掉「⋯ 更多」折叠：六枚悬浮按钮 + 邮箱共 7 枚一律常显，撑成 68×36 带中文短标签的统一宽条，dock 68px 贴 `right:8px` 与内容右缘严丝合缝。④ `header-menu-patch.js` 补 `restore()`：记住原父节点 / class / style，手机载入后拉宽也能把四个顶栏按钮还原成横排，下拉容器宽屏强制隐藏。`fab-dock.js?v=2`、`mobile-fixes.css?v=17`、`header-menu-patch.js?v=10`、`anon-mail.js?v=1`；verify 更新 §36q + 新增 §36s 五断言，新增 jsdom 测试 38 项挂进 CI，顺带把两条过期计数断言对齐事实；合并远端 §37/§38 后复核 **1667 全绿**、43 组测试全通过、故障注入 7 组判红后还原，双端真渲染含真鼠标复制回读全达标。合并批次见 2026-11-12 07:56 · 提交 `b50f7fe`（两处记账冲突按时间倒序保留、四格计数随两张 A 级卡对齐 177/86）。逐批明细见 [最近更新.md](./最近更新.md) 与 [CHANGELOG.md](./CHANGELOG.md)。
 
@@ -280,6 +280,16 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 **改动历史**：2026-11-01 先试过「`#root` 内加载占位」方案（提交 `e9f5ac0`）——站长实测仍闪（证据链区块在 `#root` 之外，占位盖不住）；同轮改为全屏遮罩（提交 `ca414e9`）根治。完整改动见 [CHANGELOG.md](./CHANGELOG.md)。
 
 **别动它**：删除遮罩或退回「`#root` 内占位」会让 FOUC 复发。若想让转圈更短，给 bundle 加 `<link rel="preload">` 提前拉取即可，不要改结构。
+
+### 近期 bug 根因（fix）：手机端 AI 面板按 bottom 反推，软键盘一弹就把面板顶出屏幕（2026-11-12 09:23 · 提交 `b8ae4d1`）
+
+**现象**：站长拿两张手机长截图对照——图 1 面板顶到屏幕最上方、站点 header 被整块盖住；图 2 面板正好落在 header 下沿。要的是图 2 那个位置，手机端点开后就稳定停在那儿。
+
+**根因**：手机端面板按 `bottom` + `100vh` 反推（`bottom: calc(var(--sxg-bar-h) + var(--sxg-dock-h,288px) + 24px)`、`max-height: min(480px, calc(100vh - bar-h - dock-h - 120px))`）。`--sxg-dock-h` 是屏幕底部那堆常驻按钮的高度，软键盘一弹 visual viewport 只剩 ~420px，`420 - 113 - 288 - 120` 直接变负数 → `max-height` 被压成 2px、面板顶到 `top=-7px`，等于消失（CDP 实测，与图 1 同形）。底部锚定的面板天生不适合「视口会变矮」的场景。
+
+**修法**：改 top 锚定 —— `mobile-fixes.css` 的 `#sxg-ai-panel` 用 `top: calc(var(--sxg-ai-top,72px) + 8px)` + `bottom:auto`，高度由 `--sxg-ai-vh` 钳制；`ai-chat.js` 新增 `setupMobileGeometry()`，实测 header 下沿写 `--sxg-ai-top`、`visualViewport.height` 写 `--sxg-ai-vh`，在 resize / 旋转 / `visualViewport` 的 resize+scroll / 面板 focusin / 按钮 click 时重算。量 header 的门槛第一版写 `r.top <= 48`，真实 header 顶边是 49（手机顶部还有状态条）→ 被排除、回落 64px 兜底、面板 top=72 反而压住 header；放宽成 `r.top <= 140 && r.bottom <= 200` 后拿到 116，面板 top=124（= 116 + 8）。
+
+**机器强制**：verify §36q 的面板断言从「跟随 `--sxg-dock-h`」改为 top 锚定口径（`top: calc(var(--sxg-ai-top` / `bottom: auto` / `var(--sxg-ai-vh)`，旧魔数（+210/272/276/335px）禁令原样保留）；§36g / §36q / §36s 三处 `mobile-fixes.css?v` 期望 17→18，`ai-chat.js?v` 26→27（首页）/ 18→19（其余 7 页）。无头 Edge（390×844、dpr 2、触控）复测：打开态 panel `top=124 / h=422 / bottom=546`，键盘态（视口 420）`top=124 / h=184 / bottom=308`——位置不动、完整可见。1667 项全绿。
 
 ### 近期 bug 根因（fix）：16 个内置 LOGO 文件扩展名与真实格式不符，页面上退化成文字（2026-11-12 06:33 · 提交 `c03f058`）
 
