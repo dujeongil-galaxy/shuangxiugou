@@ -8490,6 +8490,48 @@ section('25. 成功案例专题页（QQ奶奶）');
     'anon-mail.js 缺失 ENABLED 开关或 data-sxg-anon-hidden 隐藏规则');
 }
 
+// ---------- 36u. 首页弹窗 新版/旧版 转换按钮（2026-11-12 站长） ----------
+{
+  const t36u = exists('dyp-version-toggle.js') ? read('dyp-version-toggle.js') : '';
+  const idx36u = read('index.html');
+  const wf36u = read('.github/workflows/verify.yml');
+
+  // ① 单一真相源：两个新版抖音短链 + 旧版「在抖音中观看」链接，与站长给的分享短链一致。
+  const srcOk = /BYD\s*=\s*'https:\/\/v\.douyin\.com\/_n2cFrXIRec\/'/.test(t36u)
+    && /L8\s*=\s*'https:\/\/v\.douyin\.com\/EHOOH9INCMk\/'/.test(t36u)
+    && /OLD_GO_HREF\s*=\s*'https:\/\/v\.douyin\.com\/37pbo6qxUbs\/'/.test(t36u)
+    && /OLD_GO_TEXT\s*=\s*'在抖音中观看'/.test(t36u);
+  check(srcOk,
+    '§36u 转换按钮单一真相源：新版比亚迪/理想L8 两个抖音短链 + 旧版「在抖音中观看」链接，与站长给的分享链一致',
+    '抖音链接抄错 / 旧版链接丢失 → 转换后跳错页面');
+
+  // ② 默认版本 new（用户硬规定「默认显示新版本」）；new 版隐藏事实核查（display:none，不删除节点）；
+  //    old 版移除自有 .dyp__douyin2（绝不碰 factcheck-button.js 注入的 .dyp__factcheck 节点）。
+  const verOk = /function\s+getVersion\(\)\s*\{[\s\S]{0,160}?return\s+v\s*===\s*'old'\s*\?\s*'old'\s*:\s*'new'/.test(t36u)
+    && /if\s*\(\s*fact\s*\)\s*fact\.style\.display\s*=\s*'none'/.test(t36u)
+    && /if\s*\(\s*d2\s*&&\s*d2\.parentNode\s*\)\s*d2\.parentNode\.removeChild\(d2\)/.test(t36u)
+    && !/dyp__factcheck[\s\S]{0,60}removeChild/.test(t36u);
+  check(verOk,
+    '§36u 默认版本 new、new 版隐藏事实核查（display:none 不删除）、old 版移除自有 .dyp__douyin2（不删 factcheck 节点）',
+    '默认版不是 new / new 版仍在显示事实核查 / 旧版没清掉新版第二按钮 / 误删事实核查节点');
+
+  // ③ 转换按钮落位：复用 anon-mail 的顶栏 + dock 机制，不另起炉灶；带 dock 短标签。
+  const placeOk = /DOCK_ID\s*=\s*'sxg-fab-dock'/.test(t36u)
+    && /login-github-btn/.test(t36u)
+    && /data-sxg-dock-label/.test(t36u)
+    && /HEADER_CLASS/.test(t36u);
+  check(placeOk,
+    '§36u 转换按钮落位复用 anon-mail 机制（Login GitHub 之后 + ≤640px 进 dock），带 dock 短标签',
+    '转换按钮另起炉灶 / 没进 dock → 手机端够不到或顶栏错排');
+
+  // ④ 挂载与 ?v 钉子 + jsdom 测试挂进 CI（§21o）。
+  check(/<script defer src="\.\/dyp-version-toggle\.js\?v=1"><\/script>/.test(idx36u)
+    && exists('scripts/test-dyp-toggle.cjs')
+    && wf36u.indexOf('node scripts/test-dyp-toggle.cjs') !== -1,
+    '§36u index.html 挂载 dyp-version-toggle.js?v=1，配套 jsdom 测试挂进 CI',
+    '?v 没 bump / 测试没挂 CI → 转换逻辑静默失效没人拦');
+}
+
 // ---------- 36t. 手机端顶栏全部常显 + 帮助入口/两条办法不再隐藏（2026-11-12 站长「我再说一次」） ----------
 {
   const hp36t = read('header-menu-patch.js');
