@@ -37,6 +37,15 @@
   var HEADER_CLASS = 'inline-flex items-center gap-1.5 text-xs sm:text-sm '
     + 'bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg '
     + 'font-medium shadow-sm transition sxg-header-btn';
+  /* 按钮前缀 LOGO（2026-11-12 站长要求「匿名邮箱前面补个 LOGO」）：其余五枚
+     都靠 emoji 字形当图标，本枚原本是纯文字、看着比邻居矮一截。改用内联 SVG
+     信封，字形三端一致、颜色跟随按钮前景（白），且 SVG 不产生文本节点，
+     btn.textContent 仍是「匿名邮箱」，既有 jsdom 断言不受影响。 */
+  var ICON = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" '
+    + 'stroke="currentColor" stroke-width="2" stroke-linecap="round" '
+    + 'stroke-linejoin="round" aria-hidden="true" focusable="false">'
+    + '<rect x="3" y="5" width="18" height="14" rx="2"/>'
+    + '<path d="m3.5 7 8.5 6 8.5-6"/></svg>';
 
   function isNarrow() {
     if (window.matchMedia) return window.matchMedia(MQ).matches;
@@ -196,7 +205,9 @@
     btn.setAttribute('aria-label', '匿名邮箱（先阅读访问提示）');
     /* 窄屏撑开的宽条只有 68px，短标签由 mobile-fixes.css 的 ::after 读取 */
     btn.setAttribute('data-sxg-dock-label', '匿名邮箱');
-    btn.textContent = '匿名邮箱';
+    /* LOGO + 文字：SVG 无文本节点，textContent 依旧是「匿名邮箱」。
+       dock（≤640px）里 svg 由 mobile-fixes.css 统一隐藏、只显示短标签。 */
+    btn.innerHTML = ICON + '<span class="sxg-anon-mail-txt">匿名邮箱</span>';
     /* 首次点击一律拦下来先弹窗；目标链接只在「仍要前往」出口放行。 */
     btn.addEventListener('click', function (ev) {
       ev.preventDefault();

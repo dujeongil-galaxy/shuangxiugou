@@ -9515,7 +9515,13 @@
        挂进上面刚建好的 #sxg-fab-dock（右侧已隔离的 76px 留白列、七枚全部撑开），
        不进已展开的顶栏，避免把第二行挤成三行。点击先弹访问告知弹窗，目标链接
        只在弹窗出口放行。排在 fab-dock.js 之后，dock 存在时一次安置到位。 -->
-  <script defer src="./anon-mail.js?v=3"></script>
+  <script defer src="./anon-mail.js?v=4"></script>
+  <!-- 「分享本站」顶栏入口（2026-11-12 站长要求，§36w）：桌面顶栏第 6 枚，
+       紧跟「匿名邮箱」之后，带内联 SVG 分享图标；点击直接开 share-modal 的
+       分享卡片，弹窗脚本没就绪时退化为复制地址。≤640px 与匿名邮箱同口径进
+       #sxg-fab-dock，不把已经两行的顶栏挤成第三行。必须排在 anon-mail.js
+       之后（落位要插在它后面），故放在这里而不是更早。 -->
+  <script defer src="./share-entry.js?v=1"></script>
   <!-- 首页「劳工友好提醒」弹窗 新版/旧版 转换按钮（2026-11-12 站长指令）：
        顶栏落在 anon-mail 同位置（Login GitHub 之后；≤640px 进 fab-dock），
        默认新版（2 个抖音链接 + 站长随笔、隐藏事实核查），点击切旧版（含事实核查）。

@@ -333,3 +333,9 @@ jobs:
       # 配套 verify §36v。
       - name: 分享弹窗平台齐全与防误拦截测试
         run: node scripts/test-share-modal.cjs
+
+      # 顶栏第 6 枚「分享本站」：落位（桌面贴匿名邮箱 / 窄屏进 dock）、点击复用
+      # SXGShare.open()、脚本缺席时复制兜底、断点来回不丢不重建、ENABLED 只隐藏不删，
+      # 以及匿名邮箱按钮文字前的信封 LOGO。配套 verify §36w。
+      - name: 顶栏分享入口与匿名邮箱 LOGO 测试
+        run: node scripts/test-share-entry.cjs

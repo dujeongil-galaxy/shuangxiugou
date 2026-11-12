@@ -8529,14 +8529,14 @@ section('25. 成功案例专题页（QQ奶奶）');
     '又写回折叠 / restore → 站长 §36t「全部展开，按钮不再做隐藏」被推翻');
 
   // ⑤ 挂载与 ?v 钉子（§21h 纪律）+ jsdom 行为测试挂进 CI（§21o）。
-  check(/<script defer src="\.\/anon-mail\.js\?v=3"><\/script>/.test(idx36s)
-    && idx36s.indexOf('anon-mail.js?v=3') > idx36s.indexOf('fab-dock.js?v=2')
+  check(/<script defer src="\.\/anon-mail\.js\?v=4"><\/script>/.test(idx36s)
+    && idx36s.indexOf('anon-mail.js?v=4') > idx36s.indexOf('fab-dock.js?v=2')
     && /fab-dock\.js\?v=2/.test(idx36s)
     && /mobile-fixes\.css\?v=19/.test(idx36s)
     && /header-menu-patch\.js\?v=11/.test(idx36s)
     && exists('scripts/test-anon-mail.cjs')
     && wf36s.indexOf('node scripts/test-anon-mail.cjs') !== -1,
-    '§36s index.html 挂载 anon-mail.js?v=3（排在 fab-dock 之后），三个改动资源 ?v 同步 bump，配套 jsdom 测试挂进 CI',
+    '§36s index.html 挂载 anon-mail.js?v=4（排在 fab-dock 之后，§36w 补 LOGO 时 bump），三个改动资源 ?v 同步 bump，配套 jsdom 测试挂进 CI',
     '?v 没 bump → 浏览器/CDN 命中旧脚本；测试没挂 CI → §21o 判红或回归没人拦');
 
   // 隐藏开关 + CSS 隐藏规则必须都在（临时隐藏不删除：ENABLED 改 true 即恢复；
@@ -8767,6 +8767,83 @@ section('25. 成功案例专题页（QQ奶奶）');
     && wf36v.indexOf('node scripts/test-share-modal.cjs') !== -1,
     '§36v share-modal.js?v=6 在 index.html / sponsor.html 同步 bump，分享弹窗 jsdom 测试存在并挂进 CI',
     '?v 没 bump → 线上仍跑旧脚本，加固等于没发；测试没挂 CI → 下次回退没人拦');
+}
+
+// ---------- 36w. 顶栏第 6 枚「分享本站」+ 匿名邮箱 LOGO（2026-11-12 站长「右上角的问题」） ----------
+{
+  const se36w = exists('share-entry.js') ? read('share-entry.js') : '';
+  const idx36w = read('index.html');
+  const sp36w = read('sponsor.html');
+  const am36w = exists('anon-mail.js') ? read('anon-mail.js') : '';
+  const rd36w = read('README.md');
+  const wf36w = read('.github/workflows/verify.yml');
+
+  // ① 源码要素：按钮 id / 开关 / 内联 SVG 图标（不许引外部图片，三端各一套图床迟早 404）。
+  check(/BTN_ID\s*=\s*'sxg-share-entry-btn'/.test(se36w)
+    && /var\s+ENABLED\s*=\s*(true|false)/.test(se36w)
+    && /<svg[^>]*viewBox="0 0 24 24"/.test(se36w)
+    && /stroke="currentColor"/.test(se36w)
+    && !/https?:\/\/[^"']*\.(png|svg|woff2?)/.test(se36w),
+    '§36w 分享入口单一真相源：id=sxg-share-entry-btn、内联 SVG LOGO（currentColor 跟随前景色）、不依赖外部图片',
+    '图改成外链 → 图床挂掉按钮变空白；id 乱改 → cdp-share-entry.cjs 与 README 规则全部对不上');
+
+  // ② 点击一律走站内分享卡片，不许自己再造一套弹窗（§36v 那套 14 平台是唯一实现）。
+  check(/var\s+api\s*=\s*window\.SXGShare;/.test(se36w)
+    && /api\s*&&\s*typeof\s+api\.open\s*===\s*'function'/.test(se36w)
+    && /api\.open\(\)/.test(se36w)
+    && /navigator\.clipboard[\s\S]{0,120}?writeText/.test(se36w)
+    && !/sxg-share-entry-modal/.test(se36w)
+    && !/service\.weibo\.com|facebook\.com\/sharer|twitter\.com\/intent/.test(se36w),
+    '§36w 点击分享 → 复用 window.SXGShare.open()（唯一实现），脚本缺席时退化为复制地址 + 气泡；不另造弹窗、不在本文件里写外链',
+    '各写一套弹窗 → 平台清单两处漂移，又是「平台变少」事故；本文件塞外链 → 被扩展拦截即整块消失');
+
+  // ③ 落位：桌面贴匿名邮箱之后（锚点逐级兜底），窄屏进 dock 并带短标签。
+  check(/getElementById\(ANON_ID\)[\s\S]{0,20}?\|\|[\s\S]{0,20}?getElementById\('login-github-btn'\)[\s\S]{0,20}?\|\|[\s\S]{0,20}?getElementById\('sponsor-entry-btn'\)/.test(se36w)
+    && /targetParent\.insertBefore\(btn,\s*wantNext\s*\|\|\s*null\)/.test(se36w)
+    && /DOCK_ID\s*=\s*'sxg-fab-dock'/.test(se36w)
+    && /dock\.insertBefore\(btn,\s*anchor\s*\|\|\s*null\)/.test(se36w)
+    && /data-sxg-dock-label/.test(se36w)
+    && /data-sxg-share-slot/.test(se36w)
+    && !/menu\.appendChild\(btn\)/.test(se36w),
+    '§36w 落位：桌面紧跟匿名邮箱（锚点 anon → login → sponsor → 最后一个按钮逐级兜底），≤640px 进 #sxg-fab-dock 带中文短标签，不进「菜单▼」',
+    '锚点写死一枚 → 匿名邮箱被隐藏或脚本没加载就悬空/消失；窄屏塞进下拉 → 入口静默失效');
+
+  // ④ 隐藏开关机制：只隐藏不删（与 §36s 同口径），!important 压过 dock 的 display:flex。
+  check(/data-sxg-share-hidden="1"\]\{display:none !important\}/.test(se36w)
+    && /data-sxg-share-slot="pending"\]\{display:none !important\}/.test(se36w)
+    && /addEventListener\('keydown'/.test(se36w),
+    '§36w 开关机制：ENABLED + data-sxg-share-hidden 的 !important 隐藏规则 + dock 未就绪时 pending 兜底 + 键盘 Enter/空格可达',
+    '直接删按钮本体 → 下次要恢复只能重写一遍；无 pending 兜底 → 手机首次加载会裸奔出现一枚错位按钮');
+
+  // ⑤ 匿名邮箱补 LOGO：信封 SVG 内联，textContent 仍是「匿名邮箱」（既有断言 / dock 标签依赖它）。
+  check(/var\s+ICON\s*=\s*'<svg/.test(am36w)
+    && /btn\.innerHTML\s*=\s*ICON\s*\+\s*'<span class="sxg-anon-mail-txt">匿名邮箱<\/span>'/.test(am36w)
+    && /sxg-anon-mail-txt/.test(am36w),
+    '§36w 匿名邮箱按钮文字前补内联信封 LOGO（innerHTML = ICON + <span>匿名邮箱</span>），按钮语义文字不变',
+    '改成纯文字 → 丢失站长要的 LOGO；改掉「匿名邮箱」四个字 → test-anon-mail.cjs 与 dock 短标签一起判红');
+
+  // ⑥ 挂载与 ?v：index.html 两个脚本同批 bump，sponsor.html 不挂分享入口（打赏页自己有分享逻辑）。
+  check(/<script defer src="\.\/share-entry\.js\?v=1"><\/script>/.test(idx36w)
+    && idx36w.indexOf('share-entry.js?v=1') > idx36w.indexOf('anon-mail.js?v=4')
+    && /anon-mail\.js\?v=4/.test(idx36w)
+    && !/anon-mail\.js\?v=3/.test(idx36w)
+    && !/share-entry\.js/.test(sp36w),
+    '§36w index.html 挂载 share-entry.js?v=1（排在 anon-mail.js?v=4 之后）；sponsor.html 不挂本入口（打赏页分享走自己的 shareUrl）',
+    '?v 没 bump → 线上仍跑旧脚本；把入口也挂到 sponsor.html → 打赏页多出一枚重复分享，与「打赏页分享指向首页」的逻辑打架');
+
+  // ⑦ README 规则章节跟着改：六枚 + 第 6 枚落位规则 + 新开关行（避免半年后又「被吃掉」）。
+  check(/桌面顶栏自左向右固定六枚/.test(rd36w)
+    && /\| 6 \| `分享本站`/.test(rd36w)
+    && /`share-entry\.js` \| `var ENABLED`/.test(rd36w)
+    && !/桌面顶栏自左向右固定五枚/.test(rd36w),
+    '§36w README「🧭 顶栏按钮组成」规则章节同步为六枚：新增第 6 枚落位/兜底/窄屏规则 + share-entry.js 开关行 + ?v 与测试脚本口径',
+    '只改代码不改规则章节 → 下一轮维护又按「五枚」核对，分享入口被当成野按钮删掉');
+
+  // ⑧ 配套测试挂进 CI（§21o）。
+  check(exists('scripts/test-share-entry.cjs')
+    && wf36w.indexOf('node scripts/test-share-entry.cjs') !== -1,
+    '§36w 新增 jsdom 行为测试 test-share-entry.cjs（39 项）并挂进 CI；真渲染验收 cdp-share-entry.cjs 五档 1440/900/660/390/360 在本机跑',
+    '测试不挂 CI → 下次谁把按钮挪走没人拦');
 }
 
 // ---------- 汇总 ----------
