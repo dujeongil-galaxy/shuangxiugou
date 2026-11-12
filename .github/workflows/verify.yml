@@ -106,6 +106,12 @@ jobs:
       - name: 广告 LOGO 横排测试
         run: node scripts/test-ad-logo.cjs
 
+      # 星巴克 × WorkBuddy 联名推广（临时替换良配，2026-11-12）。
+      # 钉住：良配已注释下线（文件保留可恢复）、星巴克已上线、活动日期完整、
+      # LOGO 横排、沿用 --sxg-bar-h 避让语义。
+      - name: 星巴克联名活动位测试
+        run: node scripts/test-starbucks-ad.cjs
+
       # verify.mjs 自身的自检：check() 参数顺序、节号连续性。
       # 今天曾在同一天内两次把 check(cond, msg) 写成 check(msg, cond)，
       # 症状是输出出现「✓ true」—— 标签被当成条件，检查照样绿灯。

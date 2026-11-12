@@ -4945,6 +4945,64 @@ if (exists(ADJS) && exists(ADCSS) && exists('ai-chat.js')) {
   err('缺少 liangpei-ad.js / liangpei-ad.css / ai-chat.js', '桌面悬浮层避让无法校验');
 }
 
+// ---------- 20p. 良配临时下线 + 星巴克临时上线（2026-11-12 站长指令） ----------
+// 站长要求把「良配」限时推广临时下线（注释 index.html 引用、文件保留便于恢复），
+// 换成星巴克 × WorkBuddy 联名活动。本段机器钉住这个「临时替换」状态，
+// 防止有人手滑把良配取消注释、或星巴克上线后引用丢失。
+section('20p. 良配临时下线 + 星巴克临时上线');
+{
+  const idxHtml = exists('index.html') ? read('index.html') : '';
+  // 剥 HTML 注释：良配引用被包在 <!-- ... --> 内，裸正则会误判为活跃引用
+  const idxNoCmt = idxHtml.replace(/<!--[\s\S]*?-->/g, '');
+
+  // 1) 良配必须已注释下线（无活跃 link/script 引用），且文件仍保留（可恢复）
+  check(!/<link[^>]*liangpei-ad\.css[^>]*>/i.test(idxNoCmt),
+    'index.html 中良配 css 已注释下线（无活跃引用）',
+    '良配推广临时下线，若仍活跃引用会与星巴克活动位冲突');
+  check(!/<script[^>]*liangpei-ad\.js[^>]*>/i.test(idxNoCmt),
+    'index.html 中良配 js 已注释下线（无活跃引用）');
+  check(exists('liangpei-ad.css') && exists('liangpei-ad.js'),
+    '良配文件仍保留在仓库（便于一键恢复：取消 index.html 注释即可）',
+    '站长要求「注释而非删除」，文件删了就无法快速恢复');
+
+  // 2) 星巴克必须已上线
+  check(/<link[^>]*starbucks-ad\.css[^>]*>/i.test(idxNoCmt),
+    'index.html 已引用 starbucks-ad.css');
+  check(/<script[^>]*starbucks-ad\.js[^>]*>/i.test(idxNoCmt),
+    'index.html 已引用 starbucks-ad.js');
+  check(/starbucks-ad\.css\?v=1/.test(idxHtml),
+    'starbucks-ad.css 版本号 ?v=1（缓存防穿透）');
+  check(/starbucks-ad\.js\?v=1/.test(idxHtml),
+    'starbucks-ad.js 版本号 ?v=1');
+
+  // 3) 星巴克组件自身：完整活动日期 + 避让语义
+  if (exists('starbucks-ad.js') && exists('starbucks-ad.css')) {
+    const sbJs = read('starbucks-ad.js');
+    const sbCss = read('starbucks-ad.css');
+    const dM = /activityDateFull:\s*'([^']*)'/.exec(sbJs);
+    check(!!dM && /11月12日\s*8:00\s*[—-]\s*11月16日\s*23:59/.test(dM ? dM[1] : ''),
+      '星巴克活动日期完整显示（含起止时分 11月12日8:00-11月16日23:59）',
+      dM ? `当前：${dM[1]}` : '找不到 activityDateFull');
+    check(/matchMedia\('\(min-width: 1440px\)'\)\.matches/.test(sbJs),
+      '星巴克脚本沿用 1440px 断点避让（与良配同款 --sxg-bar-h 语义）');
+    check(/var h = \(wide \|\| aside\.classList\.contains\('is-hidden'\)\) \? 0 : aside\.offsetHeight;/.test(sbJs),
+      '星巴克脚本 ≥1440px / 隐藏时 --sxg-bar-h 写 0（桌面无吸底条可让位）');
+    check(/\.sb-modal\s*\{/.test(sbCss),
+      '星巴克 CSS 含活动海报弹窗 .sb-modal');
+    check(/\.sb-poster__date\s*\{/.test(sbCss),
+      '星巴克 CSS 含完整日期节点 .sb-poster__date');
+  } else {
+    err('缺少 starbucks-ad.js / starbucks-ad.css', '星巴克活动位无法上线');
+  }
+
+  // 4) 行为测试接入
+  check(exists('scripts/test-starbucks-ad.cjs'), '存在星巴克活动位行为测试');
+  if (exists('.github/workflows/verify.yml')) {
+    check(read('.github/workflows/verify.yml').includes('test-starbucks-ad.cjs'),
+      'CI 里已接入星巴克活动位测试');
+  }
+}
+
 // ---------- 20e. 校验脚本自检 ----------
 // 今天在同一天内两次把 check(cond, msg, detail) 写成 check(msg, cond)，
 // 症状是输出里出现「✓ true」—— 标签被当成条件打印，

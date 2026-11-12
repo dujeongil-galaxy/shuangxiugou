@@ -1,0 +1,459 @@
+/* ==========================================================================
+   星巴克 × WorkBuddy 联名推广（临时替换「良配」，2026-11-12）
+   --------------------------------------------------------------------------
+   部署说明：本文件被根目录 index.html 直接引用（GitHub Pages 直发根目录，
+   不经构建）。改完文案/样式后请把 index.html 里的 ?v=N 版本号 +1 防缓存。
+
+   背景：站长要求把原「良配」限时推广临时下线（index.html 注释其引用，
+   文件保留以便恢复），换成这次的星巴克 × WorkBuddy 联名活动。
+   悬浮窗放不下整张活动海报，所以采用「小悬浮卡 + 点击弹出活动海报弹窗」。
+
+   响应式策略（与良配一致，便于复用 --sxg-bar-h 避让）：
+     ≥1440px  → 右侧竖排悬浮卡片（贴近容器右侧留白，不遮挡正文）
+     <1440px  → 底部横向吸底条（含手机，避免遮挡内容）
+
+   ⚠️ 海报里的二维码：本站无法凭空生成真实可扫的二维码。
+      若站长把真实活动海报（含二维码）放到 ./assets/starbucks-poster.jpg，
+      弹窗会自动改用该图片（含真二维码）；否则显示下方 CSS 复原版海报 +
+      占位「扫码参与」框。恢复真实二维码只需放图，无需改代码。
+   ========================================================================== */
+
+.sb-ad {
+  /* 只在本组件内定义变量，不污染全局 */
+  --sb-primary: #00704A;        /* 星巴克绿 */
+  --sb-primary-dark: #00543A;
+  --sb-accent: #00E676;         /* 海报荧光绿 */
+  --sb-surface: #ffffff;
+  --sb-border: #e3ece7;
+  --sb-text: #1f2a24;
+  --sb-text-2: #5c6b63;
+  --sb-text-3: #8a978f;
+
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  color: var(--sb-text);
+  line-height: 1.5;
+}
+
+.sb-ad *,
+.sb-ad *::before,
+.sb-ad *::after {
+  box-sizing: border-box;
+}
+
+/* 初始隐藏：用 opacity + visibility 而非 display:none，便于移除 is-hidden 时淡入 */
+.sb-ad.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ---------- 通用零件 ---------- */
+.sb-ad__logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--sb-primary), var(--sb-primary-dark));
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 112, 74, 0.32);
+}
+
+.sb-ad__brand {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--sb-text);
+  white-space: nowrap;
+}
+
+.sb-ad__title {
+  margin-top: 4px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--sb-text-2);
+}
+
+.sb-ad__cta {
+  display: block;
+  margin-top: 10px;
+  padding: 11px 15px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--sb-primary), var(--sb-primary-dark));
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 112, 74, 0.3);
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.sb-ad__cta:hover { filter: brightness(1.06); }
+.sb-ad__cta:active { transform: scale(0.97); }
+.sb-ad__cta::after { content: ' ›'; font-weight: 700; }
+
+.sb-ad__note {
+  color: var(--sb-text-3);
+  font-size: 12px;
+}
+
+.sb-ad__close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sb-text-3);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sb-ad__close:hover {
+  background: rgba(31, 42, 36, 0.06);
+  color: var(--sb-text);
+}
+
+/* ---------- 复制/提示 toast（备用，活动链接可用时启用） ---------- */
+.sb-ad-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--sxg-bar-h, 0px) + 96px);
+  z-index: 10001;
+  max-width: min(88vw, 340px);
+  padding: 11px 16px;
+  border-radius: 12px;
+  background: rgba(31, 42, 36, 0.93);
+  color: #fff;
+  font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+  transform: translate(-50%, 8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.sb-ad-toast.is-show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ---------- 活动海报弹窗 ---------- */
+.sb-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10005;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.sb-modal.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sb-modal__card {
+  width: min(92vw, 400px);
+  max-height: 90vh;
+  overflow: auto;
+  background: #0a0a0a;
+  border-radius: 18px;
+  padding: 18px 16px 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  transform: translateY(10px);
+  transition: transform 0.2s ease;
+}
+
+.sb-modal.is-open .sb-modal__card { transform: translateY(0); }
+
+.sb-modal__close {
+  position: absolute;
+  top: calc(50% - min(45vh, 200px) + 2px);
+  right: max(4vw, 12px);
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* 真实海报图（站长放入 ./assets/starbucks-poster.jpg 后生效） */
+.sb-modal__poster-img {
+  display: block;
+  width: 100%;
+  border-radius: 12px;
+}
+
+/* CSS 复原版海报（未放入真实图片时的兜底） */
+.sb-poster {
+  text-align: center;
+  color: var(--sb-accent);
+  font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+.sb-poster__head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-weight: 800;
+}
+
+.sb-poster__sb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--sb-primary);
+  color: #fff;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.sb-poster__x { font-size: 20px; color: var(--sb-accent); }
+
+.sb-poster__wb {
+  color: #4fc3f7;
+  font-size: 15px;
+}
+
+.sb-poster__date {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  margin: 6px 0 12px;
+}
+
+.sb-poster__line {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #d6ffe6;
+}
+
+.sb-poster__reward {
+  margin: 8px 0 4px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.sb-poster__qty {
+  font-size: 14px;
+  color: var(--sb-accent);
+  margin-bottom: 12px;
+}
+
+.sb-poster__qr {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 8px auto 12px;
+}
+
+.sb-poster__qrbox {
+  width: 132px;
+  height: 132px;
+  border-radius: 10px;
+  background:
+    repeating-linear-gradient(0deg, #00e676 0 6px, #0a0a0a 6px 12px),
+    repeating-linear-gradient(90deg, #00e676 0 6px, #0a0a0a 6px 12px);
+  background-blend-mode: difference;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sb-poster__qrbox::after {
+  content: '☕';
+  font-size: 40px;
+  background: #0a0a0a;
+  border-radius: 8px;
+  padding: 4px 10px;
+}
+
+.sb-poster__scan {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.sb-poster__foot {
+  font-size: 11px;
+  line-height: 1.5;
+  color: #7fe0a8;
+  margin-top: 4px;
+}
+
+.sb-modal__copy {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: center;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #e8fff0;
+}
+
+.sb-modal__cta {
+  display: block;
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--sb-primary);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.sb-modal__cta:hover { filter: brightness(1.08); }
+
+/* ---------- 右侧竖排卡片（≥1440px） ---------- */
+@media (min-width: 1440px) {
+  .sb-ad {
+    position: fixed;
+    top: 88px;
+    right: 16px;
+    z-index: 9990;
+    width: 176px;
+    max-width: calc(100vw - 24px);
+    overflow: hidden;
+    padding: 14px 12px 12px;
+    border: 1px solid var(--sb-border);
+    border-radius: 16px;
+    background: var(--sb-surface);
+    box-shadow: 0 10px 30px rgba(0, 112, 74, 0.14);
+    text-align: center;
+    transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .sb-ad:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 36px rgba(0, 112, 74, 0.22);
+  }
+
+  .sb-ad__body { display: block; position: relative; }
+
+  .sb-ad__logo {
+    width: 72px;
+    height: 42px;
+    margin: 0 auto 8px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  .sb-ad__brand { font-size: 14px; }
+
+  .sb-ad__title { font-size: 13.5px; line-height: 1.6; }
+
+  .sb-ad__note { display: block; margin-top: 10px; font-size: 11px; white-space: nowrap; }
+}
+
+/* ---------- 底部吸底条（<1440px，含手机） ---------- */
+@media (max-width: 1439px) {
+  .sb-ad {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9990;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 40px 12px 12px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--sb-border);
+    background: var(--sb-surface);
+    box-shadow: 0 -6px 22px rgba(31, 42, 36, 0.1);
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+  }
+
+  /* 内容避让吸底条：由 JS 实测 offsetHeight 写入 --sxg-bar-h */
+  body { padding-bottom: var(--sxg-bar-h, 0px); }
+
+  .sb-ad__body { display: flex; align-items: center; gap: 10px; flex: 1 1 auto; min-width: 0; }
+
+  .sb-ad__logo {
+    width: 56px;
+    height: 42px;
+    margin: 0;
+    flex: 0 0 auto;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .sb-ad__text { min-width: 0; }
+  .sb-ad__brand { font-size: 15px; margin-bottom: 2px; }
+
+  .sb-ad__title {
+    font-size: 13px;
+    line-height: 1.45;
+    display: block;
+    overflow: visible;
+  }
+
+  .sb-ad__note { display: none; }
+
+  .sb-ad__cta {
+    flex: 0 0 auto;
+    padding: 10px 18px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+}
+
+/* ---------- 超窄屏（≤374px，含 320px） ---------- */
+@media (max-width: 374px) {
+  .sb-ad { gap: 8px; padding: 10px 34px 10px 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+  .sb-ad__body { gap: 8px; }
+  .sb-ad__logo { width: 44px; height: 36px; font-size: 11px; white-space: nowrap; }
+  .sb-ad__brand { font-size: 13px; }
+  .sb-ad__title { font-size: 11.5px; line-height: 1.4; }
+  .sb-ad__cta { padding: 9px 10px; font-size: 13px; }
+}
+
+@media (min-width: 1440px) {
+  .sb-ad-toast {
+    bottom: auto;
+    top: 50%;
+    transform: translate(-50%, calc(-50% + 8px));
+  }
+  .sb-ad-toast.is-show { transform: translate(-50%, -50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sb-ad, .sb-ad__cta, .sb-modal, .sb-modal__card, .sb-ad-toast { transition: none; }
+}
