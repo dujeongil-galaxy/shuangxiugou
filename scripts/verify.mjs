@@ -669,6 +669,27 @@ check(byGrade2e('C级') === 10 + 29 + 1,
   check(/cardNoteTitle:\s*'站长备注（内容真实性存疑，请注意甄别）'/.test(block), '零跑卡备注标题含「内容真实性存疑，请注意甄别」', 'leapmotor-card 未挂免责标题');
   check(/cardNote:\s*'[^']*内容真实性存疑[^']*'/.test(block), '零跑卡备注正文含「内容真实性存疑」免责声明', 'leapmotor-card 未挂免责正文');
   check(/cardNote:\s*'[^']*首页弹窗[^']*新版本[^']*'/.test(block), '零跑卡备注注明两条短视频线索归属首页弹窗新版本（不挂本卡证据链）', 'leapmotor-card 未注明短视频线索归属');
+  // 2026-11-12 15:48 站长：售后服务那条抖音链「写入备注栏（参考比亚迪），不要挂在证据链」，
+  // 备注栏务必注明「内容真实性存疑，请注意甄别」。
+  //   ① 链接必须落在 cardNote（备注栏）里，且同段有「请注意甄别」；
+  //   ② 详情页（证据链所在）不得出现该链接——挂进证据链就违反了站长口径。
+  const noteBlock = (block.match(/cardNote:\s*'([^']*)'/) || [, ''])[1];
+  check(/v\.douyin\.com\/n-xv654_mrI\//.test(noteBlock),
+    '零跑卡备注栏写入售后服务抖音短链（v.douyin.com/n-xv654_mrI/）',
+    '备注栏没写入站长给的售后服务短视频链接');
+  check(/内容真实性存疑[\s\S]*请注意甄别/.test(noteBlock)
+    && /未点名品牌/.test(noteBlock) && /不进入本卡证据链/.test(noteBlock),
+    '零跑卡备注栏写明「内容真实性存疑，请注意甄别」+ 视频未点名品牌 + 不进入本卡证据链',
+    '备注栏缺免责口径（存疑/未点名品牌/不挂证据链）');
+  check(!/v\.douyin\.com/.test(exists('brand/leapmotor.html') ? read('brand/leapmotor.html') : ''),
+    '零跑详情页（证据链）不含抖音短链——短视频线索只留在卡面备注栏',
+    '详情页被塞进了抖音短链 → 违反「不要挂在证据链」');
+  // 备注栏链接要能点：渲染层把 cardNote 里的 http(s) 自动成 <a>（原先只有 textContent）。
+  check(/var noteUrlRe = \/https\?:\\\/\\\/\[/.test(html)
+    && /noteLink\.rel = 'noopener noreferrer nofollow'/.test(html)
+    && /noteBody\.appendChild\(noteLink\)/.test(html),
+    '备注栏渲染把 http(s) 自动转成可点链接（带 rel=noopener noreferrer nofollow）',
+    '备注栏仍是纯 textContent → 站长给的抖音链接在卡面上点不动');
   check(/零跑汽车/.test(noscriptText2e), 'noscript 主评级清单含零跑汽车（仅主清单、不进详情页 ul，保 177 计数链）', 'noscript 未含零跑汽车');
   check(/brand\/leapmotor\.html/.test(html), '零跑卡已有 brand/leapmotor.html 详情页（自定义卡↔品牌页 1:1，保 178 计数链）', '未发现 brand/leapmotor.html 引用');
 }
@@ -4411,9 +4432,17 @@ if (!exists(PINYIN_IDX)) {
     `缺失：${[...customIds].filter((i) => !idxCustomKw.some((e) => e.id === i)).join(', ') || '无'}。
      修复：python scripts/gen-pinyin-index.py`);
   // kw 必须是 customCardsConfig 里对应卡 keywords 的子串（必命中过滤）
+  //
+  // 取值窗口按「本卡 id 到下一张卡 id」自动切，不写死 1600 字：
+  // 2026-11-12 零跑卡备注栏写入短视频链接后，单卡配置变得比原来长，
+  // 写死窗口会把 keywords 切在窗口外 → 误报「kw 未命中」。按下一张卡的
+  // `id: '` 位置界定才是稳定做法（读到结尾时退回 4000 字上限兜底）。
   const kwMismatch = idxCustomKw.filter((e) => {
-    const cfgStart = read(INDEX_HTML).indexOf("id: '" + e.id + "'");
-    const chunk = read(INDEX_HTML).slice(cfgStart, cfgStart + 1600);
+    const cfgAll = read(INDEX_HTML);
+    const cfgStart = cfgAll.indexOf("id: '" + e.id + "'");
+    const after = cfgAll.slice(cfgStart + 1);
+    const nextId = after.indexOf("id: '");
+    const chunk = after.slice(0, nextId > 0 ? nextId : 4000);
     const kwArr = /keywords:\s*\[([^\]]*)\]/.exec(chunk);
     if (!kwArr) return true;
     return !kwArr[1].includes("'" + e.kw + "'");
@@ -8242,9 +8271,14 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(/《磨囚》/.test(fd) && /v\.douyin\.com\/1hItX481VuQ\//.test(fd),
     '§36m 首页视频弹窗新增《磨囚》视频（标题 + 抖音短链均就位）',
     '《磨囚》新视频没进 VIDEOS 数组 → 首页视频区看不到这条');
-  check(/featured-douyin\.js\?v=5/.test(idx36m),
-    '§36m featured-douyin.js 的 ?v 已 bump 到 5（浏览器缓存旧脚本会吃掉本次改动）',
-    '?v 没 bump → 旧脚本仍按旧 VIDEOS 渲染，dead 标记与《磨囚》都不生效');
+  // 2026-11-12 站长：「宁等网约车也不要坐出租车」这条放视频区（不进任何品牌卡）。
+  check(/v\.douyin\.com\/asAmGiTjrAU\//.test(fd)
+    && /为什么说宁等网约车也不要坐出租车/.test(fd),
+    '§36m 视频区新增「宁等网约车也不要坐出租车」（短链 + 标题均就位）',
+    '站长 11-12 给的科普短视频没进 VIDEOS 数组 → 视频区少一条');
+  check(/featured-douyin\.js\?v=6/.test(idx36m),
+    '§36m featured-douyin.js 的 ?v 已 bump 到 6（浏览器缓存旧脚本会吃掉本次改动）',
+    '?v 没 bump → 旧脚本仍按旧 VIDEOS 渲染，新视频与 dead 标记都不生效');
 }
 
 
@@ -8547,11 +8581,30 @@ section('25. 成功案例专题页（QQ奶奶）');
     '按钮没进弹窗 / 回到顶栏 dock 落位 → 与站长「放在这个位置」不符');
 
   // ④ 挂载与 ?v 钉子 + jsdom 测试挂进 CI（§21o）。
-  check(/<script defer src="\.\/dyp-version-toggle\.js\?v=2"><\/script>/.test(idx36u)
+  check(/<script defer src="\.\/dyp-version-toggle\.js\?v=3"><\/script>/.test(idx36u)
     && exists('scripts/test-dyp-toggle.cjs')
     && wf36u.indexOf('node scripts/test-dyp-toggle.cjs') !== -1,
-    '§36u index.html 挂载 dyp-version-toggle.js?v=2，配套 jsdom 测试挂进 CI',
+    '§36u index.html 挂载 dyp-version-toggle.js?v=3，配套 jsdom 测试挂进 CI',
     '?v 没 bump / 测试没挂 CI → 转换逻辑静默失效没人拦');
+
+  // ⑤ 三按钮文案与宽度分配（2026-11-12 15:48 站长「看看按钮大小，再看文字」）。
+  //    实测（CDP 1440）：.dyp__acts 行宽 357px、gap 8px，旧版 .dyp__go{flex:2} 让
+  //    第三枚只剩 90px，「理想L8·抖音短片」scrollWidth 107 > clientWidth 92 → 省略号截断。
+  //    钉死：① 文案收到 ≤6 字；② 新版三枚等宽（flex:1 1 0）；③ 等宽只在 ≥521px 生效
+  //    （≤520px 纵向排列必须保留官方 flex:0 0 auto）。
+  // 只剥**注释**再判旧文案（文件里保留「原先写 8～9 字被截断」的说明，那是记录不是实现）。
+  // 注意别用裸 `\/\/[^\n]*` 剥：会把 https:// 的尾巴一起吃掉（PITFALLS 第三十四章老坑），
+  // 这里只认「整行以 // 开头」的行注释 + 块注释。
+  const t36uCode = t36u.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/[^\n]*$/gm, '');
+  const briefOk = /var NEW_GO_TEXT = '比亚迪短片'/.test(t36uCode)
+    && /var NEW_D2_TEXT = '理想L8短片'/.test(t36uCode)
+    && !/比亚迪·抖音短片|理想L8·抖音短片/.test(t36uCode);
+  check(briefOk,
+    '§36u 新版按钮文案收到 5～6 字（比亚迪短片 / 理想L8短片），不再写 8～9 字长串',
+    '文案又写长 → 三等分格子里被 ellipsis 截断（站长 11-12 已指出一次）');
+  check(/@media \(min-width:521px\)\{\.dyp__acts\.dyp--new > \*\{flex:1 1 0\}\}/.test(t36u),
+    '§36u 新版三按钮等宽（≥521px 生效，≤520px 保留官方纵向 flex:0 0 auto）',
+    '新版仍让 .dyp__go 占 2 倍宽度 → 后两枚被压到 90px、长文案截断');
 }
 
 // ---------- 36t. 手机端顶栏全部常显 + 帮助入口/两条办法不再隐藏（2026-11-12 站长「我再说一次」） ----------

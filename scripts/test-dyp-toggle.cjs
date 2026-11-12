@@ -99,9 +99,16 @@ function injectFactcheck(w) {
   const d2B = actsB.querySelector('.dyp__douyin2');
   const laterB = actsB.querySelector('.dyp__later');
   check('主页按钮＝比亚迪抖音短链', goB.href === 'https://v.douyin.com/_n2cFrXIRec/'
-    && goB.textContent === '比亚迪·抖音短片', { href: goB.href, t: goB.textContent });
+    && goB.textContent === '比亚迪短片', { href: goB.href, t: goB.textContent });
   check('第二按钮＝理想L8抖音短链', !!d2B && d2B.href === 'https://v.douyin.com/EHOOH9INCMk/'
-    && d2B.textContent === '理想L8·抖音短片', d2B && { href: d2B.href, t: d2B.textContent });
+    && d2B.textContent === '理想L8短片', d2B && { href: d2B.href, t: d2B.textContent });
+  // 文案长度护栏：站长 2026-11-12「看看按钮大小，再看文字」——按钮是三等分窄格，
+  // 文案超过 6 字（≈84px @14px）就会在 113px 的格子里触发 ellipsis 截断。
+  check('两个新版按钮文案均 ≤6 字（防再写长导致截断）',
+    goB.textContent.length <= 6 && d2B.textContent.length <= 6,
+    { go: goB.textContent, d2: d2B.textContent });
+  check('按钮 title 带「抖音短视频」说明（文案缩短后仍能说清是什么）',
+    /抖音短视频/.test(goB.getAttribute('title') || '') && /抖音短视频/.test(d2B.getAttribute('title') || ''));
   check('事实核查被隐藏（display:none，不删除节点）', !!fcB && fcB.style.display === 'none');
   check('第三链接仍是站长随笔', !!laterB && laterB.textContent === '站长随笔'
     && laterB.href.indexOf('notes.html') !== -1);
@@ -121,6 +128,7 @@ function injectFactcheck(w) {
   const d2C = actsC.querySelector('.dyp__douyin2');
   check('主页按钮恢复「在抖音中观看」', goC.textContent === '在抖音中观看'
     && goC.href === 'https://v.douyin.com/37pbo6qxUbs/');
+  check('旧版不残留新版 title 提示', !goC.getAttribute('title'));
   check('事实核查恢复显示', !!fcC && fcC.style.display !== 'none');
   check('新版第二按钮 .dyp__douyin2 已移除', !d2C);
   c.w.close();
@@ -169,12 +177,12 @@ function injectFactcheck(w) {
     && btnG.textContent === '替换旧版');
   g.w.close();
 
-  /* ⑧ index.html 引用 ?v=2（剥 HTML 注释后再判，避免被注释块误判）*/
+  /* ⑧ index.html 引用 ?v=3（剥 HTML 注释后再判，避免被注释块误判）*/
   console.log('\n⑧ index.html 引用');
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')
     .replace(/<!--[\s\S]*?-->/g, '');
-  check('index.html 已引用 dyp-version-toggle.js?v=2',
-    /<script defer src="\.\/dyp-version-toggle\.js\?v=2"><\/script>/.test(idx));
+  check('index.html 已引用 dyp-version-toggle.js?v=3',
+    /<script defer src="\.\/dyp-version-toggle\.js\?v=3"><\/script>/.test(idx));
 
   setTimeout(function () {
     console.log('\n========== 结果：' + passed + ' 项通过，' + failed + ' 项失败 ==========');

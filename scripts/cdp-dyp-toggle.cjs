@@ -69,12 +69,20 @@ async function pollActsNew(ws, ms) {
       var acts=document.querySelector('.dyp__acts'); if(!acts) return {acts:false};
       var go=acts.querySelector('.dyp__go'), d2=acts.querySelector('.dyp__douyin2'),
           fc=acts.querySelector('.dyp__factcheck'), later=acts.querySelector('.dyp__later');
+      // 站长 11-12「看看按钮大小，再看文字」：每枚按钮自己的 scrollWidth > clientWidth
+      // 就意味着文案被 ellipsis 吃掉，必须实测出来，别只看文案对不对。
+      function clip(el){ if(!el) return null; var r=el.getBoundingClientRect(), cs=getComputedStyle(el);
+        return {text:el.textContent, w:Math.round(r.width), h:Math.round(r.height),
+          fs:cs.fontSize, scrollW:el.scrollWidth, clientW:el.clientWidth,
+          clipped: el.scrollWidth > el.clientWidth + 1}; }
       return {acts:true, goText:go?go.textContent:null, d2Text:d2?d2.textContent:null,
         fcDisplay:fc?(fc.style.display||getComputedStyle(fc).display):null, fcText:fc?fc.textContent:null,
-        laterText:later?later.textContent:null};
+        laterText:later?later.textContent:null,
+        actsW:Math.round(acts.getBoundingClientRect().width),
+        mGo:clip(go), mD2:clip(d2), mLater:clip(later)};
     `);
-    if (last && last.acts && last.goText === '比亚迪·抖音短片'
-      && last.d2Text === '理想L8·抖音短片' && last.fcDisplay === 'none'
+    if (last && last.acts && last.goText === '比亚迪短片'
+      && last.d2Text === '理想L8短片' && last.fcDisplay === 'none'
       && last.laterText === '站长随笔') return last;
     await sleep(500);
   }
@@ -189,16 +197,21 @@ function toggleProbe(ws) {
 
   const toggleOk = (t) => t && t.present && t.display !== 'none' && t.text === '替换旧版'
     && t.inPanel === true && t.beforeX === true && t.inHeader === false && t.inDock === false;
+  // 三枚按钮不许有文案被 ellipsis 截断（站长 11-12「看看按钮大小，再看文字」）
+  const noClip = (a) => !!a && !!a.mGo && !!a.mD2 && !!a.mLater
+    && a.mGo.clipped === false && a.mD2.clipped === false && a.mLater.clipped === false;
   const mOk = toggleOk(mToggle)
-    && mActs && mActs.goText === '比亚迪·抖音短片' && mActs.d2Text === '理想L8·抖音短片'
-    && mActs.fcDisplay === 'none' && mActs.laterText === '站长随笔';
+    && mActs && mActs.goText === '比亚迪短片' && mActs.d2Text === '理想L8短片'
+    && mActs.fcDisplay === 'none' && mActs.laterText === '站长随笔' && noClip(mActs);
   const dOk = toggleOk(dToggle)
-    && dActs && dActs.goText === '比亚迪·抖音短片' && dActs.d2Text === '理想L8·抖音短片'
-    && dActs.fcDisplay === 'none' && dActs.laterText === '站长随笔'
+    && dActs && dActs.goText === '比亚迪短片' && dActs.d2Text === '理想L8短片'
+    && dActs.fcDisplay === 'none' && dActs.laterText === '站长随笔' && noClip(dActs)
     && clickRes && clickRes.version === 'old' && clickRes.newText === '新版本'
     && dActsOld && dActsOld.goText === '在抖音中观看' && dActsOld.d2Present === false
     && dActsOld.fcDisplay !== 'none' && dActsOld.fcText === '事实核查';
   console.log('PAGEERRORS=' + JSON.stringify(errors.slice(0, 10)));
+  console.log('CLIP(desktop)=' + JSON.stringify({go: dActs && dActs.mGo, d2: dActs && dActs.mD2, later: dActs && dActs.mLater}));
+  console.log('CLIP(mobile)=' + JSON.stringify({go: mActs && mActs.mGo, d2: mActs && mActs.mD2, later: mActs && mActs.mLater}));
   console.log('MOBILE_OK=' + mOk);
   console.log('DESKTOP_OK=' + dOk);
   try { ws.close(); } catch (e) {}

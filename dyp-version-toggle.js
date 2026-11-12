@@ -5,8 +5,11 @@
      · 转换按钮**放在弹窗内部右上角**（紧挨 × 关闭按钮左侧，与「劳工友好提醒」
        标签同一行），不要放到页面顶栏。
      · 默认显示「新版」：2 个抖音链接 + 站长随笔
-         [比亚迪·抖音短片] [理想L8·抖音短片] [站长随笔]
+         [比亚迪短片] [理想L8短片] [站长随笔]
          第二按钮不再显示「事实核查」（事实核查入口隐藏，不删除节点）。
+         2026-11-12 15:48 站长复核三按钮：「看看按钮大小，再看文字」——
+         原「比亚迪·抖音短片 / 理想L8·抖音短片」太长，与随笔并排时第三枚只分到
+         90px，「理想L8·抖音短片」被省略号截断。改 5～6 字 + 新版三枚等宽，14px 不截断。
      · 点按钮切到「旧版」：在抖音中观看 + 事实核查 + 站长随笔（恢复原样）。
      · 按钮文案随当前版本翻转：
          显示新版（默认）→ 按钮写「替换旧版」（点它切到旧版）
@@ -33,6 +36,18 @@
   // 旧版「在抖音中观看」链接（恢复用，取自 douyin-prompt.js CONFIG.link）
   var OLD_GO_HREF = 'https://v.douyin.com/37pbo6qxUbs/';
   var OLD_GO_TEXT = '在抖音中观看';
+
+  // 新版两个按钮的文案（站长 2026-11-12 指出「看看按钮大小，再看文字」）：
+  //   原先写「比亚迪·抖音短片」(8 字) / 「理想L8·抖音短片」(9 字)，而 .dyp__acts 是
+  //   flex 等分 + white-space:nowrap + text-overflow:ellipsis，旧版 `.dyp__go{flex:2}`
+  //   让第三枚只分到 90px，实测「理想L8·抖音短片」scrollWidth 107 > clientWidth 92，
+  //   被省略号吃掉半截（截图即此现象）。收敛成「品牌 + 短片」5～6 字，并把新版三枚
+  //   改成等宽（见 buildStyle 里 .dyp__acts.dyp--new > * 规则），14px 下都不截断。
+  //   完整说明（「抖音短视频」字样）放 title，悬停可见，不占按钮宽度。
+  var NEW_GO_TEXT = '比亚迪短片';
+  var NEW_D2_TEXT = '理想L8短片';
+  var NEW_GO_TITLE = '比亚迪·前后轮辋装反了（抖音短视频，点击跳转）';
+  var NEW_D2_TITLE = '理想L8·高速方向盘拉不动（抖音短视频，点击跳转）';
 
   function getVersion() {
     var v = null;
@@ -74,6 +89,12 @@
       '}' +
       '.dyp__douyin2:hover{background:#c9e8db;border-color:#3ea87c;color:#0f4a37}' +
       '.dyp__douyin2:active{transform:scale(.98)}' +
+      // 新版三枚按钮等宽：旧版那套是「主按钮 2 倍权重」（在抖音中观看是视觉重心），
+      // 新版却是「两条短视频 + 随笔」三个同级入口，再给第一枚双倍宽度就会把后两枚
+      // 压到 90px、长文案被 ellipsis 截断（实测 scrollWidth 107 > clientWidth 92）。
+      // 只在 ≥521px 生效：≤520px 时 .dyp__acts 转纵向，官方那条 flex:0 0 auto 必须保住
+      // （纵向时 basis:0 会让高度先归零，全靠 min-height 兜底，官方注释已写明）。
+      '@media (min-width:521px){.dyp__acts.dyp--new > *{flex:1 1 0}}' +
       // 新版隐藏事实核查：用 class + !important 兜底，做到与「事实核查节点被注入的
       // 时机」无关——即便 factcheck-button.js 在本脚本 applyDyp 之后才注入，
       // 只要 acts 带 .dyp--new，新注入的 .dyp__factcheck 也会立刻被 CSS 藏掉，无闪烁。
@@ -93,8 +114,12 @@
     var d2 = acts.querySelector('.dyp__douyin2');
 
     if (version === 'new') {
-      acts.classList.add('dyp--new');   // 新版标记：CSS 侧隐藏事实核查（见 buildStyle）
-      if (go) { go.textContent = '比亚迪·抖音短片'; go.href = BYD; }
+      acts.classList.add('dyp--new');   // 新版标记：CSS 侧隐藏事实核查 + 三枚等宽（见 buildStyle）
+      if (go) {
+        go.textContent = NEW_GO_TEXT;
+        go.href = BYD;
+        go.title = NEW_GO_TITLE;
+      }
       // 事实核查入口：隐藏而非删除（factcheck-button.js 注入的节点保留在 DOM）
       if (fact) fact.style.display = 'none';
       if (!d2 && later) {
@@ -103,15 +128,17 @@
         d2.href = L8;
         d2.target = '_blank';
         d2.rel = 'noopener noreferrer';
-        d2.textContent = '理想L8·抖音短片';
+        d2.textContent = NEW_D2_TEXT;
+        d2.title = NEW_D2_TITLE;
         acts.insertBefore(d2, later);
       } else if (d2) {
         d2.href = L8;
-        d2.textContent = '理想L8·抖音短片';
+        d2.textContent = NEW_D2_TEXT;
+        d2.title = NEW_D2_TITLE;
       }
     } else {
       acts.classList.remove('dyp--new');
-      if (go) { go.textContent = OLD_GO_TEXT; go.href = OLD_GO_HREF; }
+      if (go) { go.textContent = OLD_GO_TEXT; go.href = OLD_GO_HREF; go.title = ''; }
       if (fact) fact.style.display = '';
       if (d2 && d2.parentNode) d2.parentNode.removeChild(d2);
     }
@@ -203,6 +230,7 @@
     BTN_ID: BTN_ID,
     STORAGE_KEY: STORAGE_KEY,
     BYD: BYD, L8: L8, OLD_GO_HREF: OLD_GO_HREF, OLD_GO_TEXT: OLD_GO_TEXT,
+    NEW_GO_TEXT: NEW_GO_TEXT, NEW_D2_TEXT: NEW_D2_TEXT,
     getVersion: getVersion,
     setVersion: setVersion,
     labelFor: labelFor,

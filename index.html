@@ -7924,7 +7924,7 @@
           recommendText: '⚠️ 暗改工时规则、多地工厂集体旷工',
           recommendColor: 'red',
           cardNoteTitle: '站长备注（内容真实性存疑，请注意甄别）',
-          cardNote: '本站另收到两条相关短视频线索（比亚迪「前后轮辋装反」、某品牌「售后服务」吐槽），内容真实性存疑、未独立核实，已一并挂在首页弹窗的「新版本」入口，供参考而非采信；请勿据此下单或传播。零跑本卡的曝光内容均来自上述公开新闻（36氪/网易/有驾等），短视频线索与零跑本卡证据链相互独立。',
+          cardNote: '站长另收到一条抖音短视频线索：有网友吐槽「这样的售后服务，你们怎么看？」，原视频 https://v.douyin.com/n-xv654_mrI/ （复制到抖音打开）。该视频未点名品牌、内容真实性存疑，请注意甄别——本站未独立核实，只按线索如实登记在此备注栏，不进入本卡证据链，也不代表视频所指对象就是零跑，请勿据此下单或传播。另一条「比亚迪·前后轮辋装反」的短片仍挂在首页弹窗的「新版本」入口。零跑本卡的曝光内容均来自公开新闻（36氪/网易/有驾 2026-05 等），与上述短视频线索相互独立。',
           insertAfter: '吉利汽车',
           keywords: ['零跑', '零跑汽车', 'Leapmotor', 'LEAPMOTOR', '新能源汽车', '造车新势力', '朱江明'],
           category: '汽车制造',
@@ -8197,7 +8197,32 @@
             noteBox.appendChild(noteHead);
             var noteBody = document.createElement('p');
             noteBody.setAttribute('style', 'margin:3px 0 0');
-            noteBody.textContent = config.cardNote;
+            // 备注正文里的 http(s) 链接自动变成可点链接。
+            // 站长 2026-11-12：抖音短视频线索「链接写入备注栏（参考比亚迪）」——
+            // 原先 noteBody.textContent 只能显示纯文字，读者没法点。这里仍以纯文本
+            // 为底：有链接才切出 <a>，链接文字照原样显示，不额外插平台名或推广语；
+            // 新窗口一律带 rel=noopener noreferrer nofollow（本站外链纪律）。
+            var noteTxt = String(config.cardNote);
+            var noteUrlRe = /https?:\/\/[^\s，。；：）)」』"<>]+/g;
+            var noteLast = 0;
+            var noteUrl;
+            while ((noteUrl = noteUrlRe.exec(noteTxt)) !== null) {
+              if (noteUrl.index > noteLast) {
+                noteBody.appendChild(document.createTextNode(noteTxt.slice(noteLast, noteUrl.index)));
+              }
+              var noteLink = document.createElement('a');
+              noteLink.href = noteUrl[0];
+              noteLink.target = '_blank';
+              noteLink.rel = 'noopener noreferrer nofollow';
+              noteLink.setAttribute('style',
+                'color:inherit;font-weight:700;text-decoration:underline;word-break:break-all');
+              noteLink.textContent = noteUrl[0];
+              noteBody.appendChild(noteLink);
+              noteLast = noteUrl.index + noteUrl[0].length;
+            }
+            if (noteLast < noteTxt.length) {
+              noteBody.appendChild(document.createTextNode(noteTxt.slice(noteLast)));
+            }
             noteBox.appendChild(noteBody);
             var noteAnchor = noteInner.children.length > 1 ? noteInner.children[1] : null;
             if (noteAnchor) noteInner.insertBefore(noteBox, noteAnchor);
@@ -9362,7 +9387,7 @@
   <!-- 全站证据链公示区折叠：h2 作把手，其下内容默认收起、点击展开（不改动生成内容，verify 防漂移不受影响）。2026-10-31 站长反馈「太乱」 -->
   <script defer src="./evidence-collapse.js?v=2"></script>
   <!-- 首页常驻抖音视频卡（专科双非怎么混进钱多事少的红利公司）：封面+播放按钮，点击尽力内嵌播放器，失败降级跳抖音。2026-10-31 站长要求「视频加这里，嵌入式点击可播放」 -->
-  <script defer src="./featured-douyin.js?v=5"></script>
+  <script defer src="./featured-douyin.js?v=6"></script>
   <!-- 打卡引导 + 自定义卡片按钮修复：
        1) 顶部「打卡并生成小票」改为弹窗，引导去品牌档案卡打卡（原来默认给第一家品牌打卡，会误导）
        2) 自定义品牌卡（DOM 克隆）没有 React onClick，补上「打卡」「详情证据」功能 -->
@@ -9495,7 +9520,7 @@
        顶栏落在 anon-mail 同位置（Login GitHub 之后；≤640px 进 fab-dock），
        默认新版（2 个抖音链接 + 站长随笔、隐藏事实核查），点击切旧版（含事实核查）。
        独立文件补丁 .dyp__acts，不改 douyin-prompt.js / factcheck-button.js 本体。 -->
-  <script defer src="./dyp-version-toggle.js?v=2"></script>
+  <script defer src="./dyp-version-toggle.js?v=3"></script>
   <!-- 首页黑色「全网打工人已转移消费额」卡片改为「滚动式广告位」（2026-11-09 站长指令升级：黑卡不保留，原位放滚动式广告位轮播——两张站点自绘矢量设计稿，陆喜依广告图与 CTA 提示词都是真链接可点跳天猫支持双休企业；卡片内容居中、箭头移到卡片下方导航条不再压住招商卡标题；支持手动切换与自动轮播；不动其它架构） -->
   <!-- 广告位补丁已前移到 <head> 用 async 加载（2026-11-10 站长「超过 10 秒都没加载成功」）：
        原来它排在第 40 个 defer 脚本，必须等 692KB body 解析完 + 前 39 个脚本执行完才跑，
