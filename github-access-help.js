@@ -35,6 +35,11 @@
   var STYLE_ID = 'sxg-gh-help-style';
   var FLY_ID = 'sxg-gh-help-flyout';
   var TRIGGER_ID = 'sxg-gh-help-trigger';
+  /* 2026-11-12 站长要求删掉顶栏那颗蓝色 🌐 图标（位于「Star on GitHub」与
+     「赞助本项目」之间）：只撤掉这个可见入口，浮层与其它宿主入口（申诉政策
+     弹窗内的 [data-sxg-gh-help] 槽位）全部保留。需恢复时把 SHOW_TRIGGER
+     改回 true 即可（一处改动）。 */
+  var SHOW_TRIGGER = false;
   var SLOT_ATTR = 'data-sxg-gh-help';
   var SLOT_MARK = 'data-sxg-gh-help-filled';
 
@@ -174,6 +179,7 @@
   /* §36t：宽屏 / 窄屏同一分支 —— 🌐 圆形入口始终贴在 Star 按钮右侧常显。
      旧版窄屏塞进「菜单▼」，等于把入口藏起来；现在顶栏已全部展开，不需要它。 */
   function ensureTrigger() {
+    if (!SHOW_TRIGGER) { removeTrigger(); return false; }
     if (document.getElementById(TRIGGER_ID)) return true;
 
     var star = findStar();

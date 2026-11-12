@@ -27,9 +27,10 @@
   var STYLE_ID  = 'sxg-anon-mail-style';
   var DOCK_ID   = 'sxg-fab-dock';
   var MQ        = '(max-width: 640px)';
-  /* 2026-11-12 站长要求临时隐藏「匿名邮箱」入口：保留全部代码与落位逻辑不删除，
-     仅设为不可见、不可点击。需恢复时把 ENABLED 改为 true 即可（一处改动）。 */
-  var ENABLED   = false;
+  /* 2026-11-12 站长要求恢复「匿名邮箱」入口（此前被临时隐藏，站长反馈「最右边
+     那个匿名邮箱按钮被 AI 给吃了」）：ENABLED 改回 true，落位逻辑与弹窗原样
+     启用，无需其它改动。 */
+  var ENABLED   = true;
   /* 顶栏按钮的外观基线（取自 Star 按钮真实 class）。不能现场读 Star：
      手机端 header-menu-patch 会把它的 class 整个摘掉，断点切回桌面时现场
      读到的是空串，按钮就退化成 14px 裸链接（§36s 真渲染实测）。 */
