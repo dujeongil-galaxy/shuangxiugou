@@ -4,6 +4,16 @@
 
 ---
 
+### feat：首页「劳工友好提醒」弹窗 新版/旧版 转换按钮（2026-11-12 13:59 · 提交 `4db9f41`）
+
+站长 11-12 看图要求在首页「劳工友好提醒」弹窗（`.dyp`）旁加一个「转换按钮」：「若当前显示的新版本（默认），则显示替换旧版。若用户替换了旧版，则显示新版本；新版本挂2个抖音链接（新版本第二按钮不再显示事实核查），第三链接还是站长随笔」。提供的两条抖音短片：比亚迪·前后轮辋装反了 `https://v.douyin.com/_n2cFrXIRec/`、理想L8·高速方向盘拉不动 `https://v.douyin.com/EHOOH9INCMk/`。
+
+- **默认新版本**：localStorage 记忆键 `dyp_version_toggle_v1`，默认 `new`。新版本把原「在抖音中观看」换成比亚迪·前后轮辋装反（`_n2cFrXIRec/`），在「站长随笔」前插入理想L8·方向盘拉不动（`EHOOH9INCMk/`），并**隐藏**（非删除）事实核查节点（`style.display='none'`）。旧版本完整还原原 `.dyp__acts`（`[在抖音中观看][事实核查][站长随笔]`）。
+- **不改弹窗本体**：`douyin-prompt.js` / `factcheck-button.js` 一个字节不动，只在下游补丁 `dyp-version-toggle.js` 里 patch `.dyp__acts`（改文本/href、增删自有锚点 `.dyp__douyin2`、事实核查只切 `style.display`）——避免破坏既有逻辑文件，也保留事实核查可随版本恢复显示。
+- **落位复用 anon-mail**：转换按钮复用匿名邮箱的落位机制（桌面 Login GitHub 之后、窄屏进 `#sxg-fab-dock` 首位），文案随版本翻转（`new`→「替换旧版」、`old`→「新版本」）。
+- **机器强制**：`?v=1`；verify §36u 新增 4 断言（单一真相源 / 双版本 patch 行为 / 落位复用 / index.html 引用+测试挂 CI），故障注入 1 组（破坏 BYD 链接）判红后还原；新增 `scripts/test-dyp-toggle.cjs`（22 项）挂进 CI；本机 `scripts/cdp-dyp-toggle.cjs` 双视口真渲染确认桌面/手机 new/old 切换无误。
+- 复核：verify **1692 全绿**；`test-dyp-toggle.cjs` 22/0；CDP 真渲染 390/1440 确认顶栏/dock 转换按钮文案翻转、弹窗 acts 双版本正确、事实核查在新版本不可见。
+
 ### chore：全站恢复访问（撤维护闸门，190 页正文按关站前原样还原）（2026-11-12 13:28 · 提交 `41376df`）
 
 站长 11-12 13:22 指令：「https://dujeongil-galaxy.github.io/shuangxiugou/ 恢复访问」（原计划 13:30，提前 8 分钟）。

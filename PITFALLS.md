@@ -2971,3 +2971,21 @@ HEAD 不是补提交，只是正文里引用了一下标记，同样被跳过。
 2. **新组件必须沿用被替换者的架构与避让契约，别另起炉灶**。星巴克活动位复刻了良配的同款 `--sxg-bar-h` 语义（`≥1440px` 或隐藏时变量写 0、吸底条写实测 `offsetHeight`）、同款延迟淡入（6s 后移除 `is-hidden`，避免加载即弹）、同款 LOGO 横排三断点（容器宽 ≥ 3 字宽 + 8px 余量）。换皮不换骨架，既省验证，也保证和右侧 dock / AI 面板的避让关系不回退。验证时务必真渲染两档：桌面 1440 看右侧竖排卡、手机 390 看底部吸底条，并确认底部不再有良配残留。
 3. **用户给的活动海报里的二维码，没有图源就别硬造可扫的码**。站长发来三张图，但对话附件不会落盘，海报（含二维码）取不到原文件。正确做法：弹窗内先用 CSS 复原版海报（黑底荧光绿 + 星巴克 × WorkBuddy 头 + 完整日期 + 任务 + 奖励 + 规则脚注）+ 占位「扫码参与」框，并预留 `posterImg`（把真实海报放到 `./assets/starbucks-poster.jpg` 即自动启用，含真二维码）。**绝不能**编一个第三方二维码 API 的 `<img src>` 当真二维码——线上用户扫了进不去活动。这条是「临时活动」的硬缺口，恢复真实二维码只要放图，不用改代码；缺图源时如实占位并在验收记录里写明，别假装完成。
 4. **HTML 注释里的 `<link>`/`<script>` 仍会被裸正则当成「活跃引用」**。`/<link[^>]*liangpei-ad\.css[^>]*>/` 若直接对全文匹配，会把注释里的 `<link rel="stylesheet" href="./liangpei-ad.css?v=13">` 误判为上线。断言和验收前必须先把 `<!-- ... -->` 剥掉再判断——本轮回填的两组故障注入（良配引用回潮 / 日期不完整）都先剥注释，确保判红的是「真活跃」而非「注释里那行」。
+
+## 第五十五章：隐藏（非删除）下游入口时，!important 才能压过手机 dock 的 flex !important（2026-11-12 12:02 匿名邮箱临时隐藏 dcf9868）
+
+站长要求把顶栏「匿名邮箱」按钮（Star 与赞助之间）**隐藏但不删除**——「彻底删除可能会导致代码架构层出现异常」。三个坑，写死：
+
+1. **「隐藏不删除」= 全部落位逻辑保留、只切可见性**。`anon-mail.js` 顶部加 `ENABLED` 开关（默认 `false`），关闭时仅把 `#sxg-anon-mail-btn` 设为不可见、不可点击，所有顶栏 / 手机 dock / 弹窗的落位逻辑原样保留，翻回 `true` 即恢复——一处改动，是可一键回退的「恢复块」，不碰任何逻辑文件。
+2. **inline `display:none` 压不过 dock 的 `display:flex !important`**。手机端按钮进 `#sxg-fab-dock`，而 `mobile-fixes.css` §36s 有 `#sxg-fab-dock > *{display:flex !important}`，会盖过 inline 样式——桌面隐藏成功、手机却仍可见。故隐藏改用带 `!important` 的 CSS 规则 `#sxg-anon-mail-btn[data-sxg-anon-hidden="1"]{display:none !important}`，桌面顶栏与手机 dock 双双生效。**判据**：隐藏类改动必须真渲染两视口各自确认 `offsetParent===null`，不能只看桌面（本机 `cdp-anon-hide.cjs` 已固化）。
+3. **隐藏不影响落位断言**。`test-anon-mail.cjs` 的落位断言只查「在哪个容器、文案、短标签」，不查可见性，所以隐藏不会让 40 项落位断言误红；可见性单独由 verify §36s 的「机制在位」断言钉（只钉 `ENABLED` 开关 + `!important` 规则存在，不钉当前布尔值，翻回 `true` 不误判红）。
+
+## 第五十六章：下游补丁 patch 弹窗按钮组时，事实核查「只显隐不删」才能随版本恢复（2026-11-12 13:59 弹窗新版/旧版转换按钮 4db9f41）
+
+站长看图要求在首页「劳工友好提醒」弹窗（`.dyp`）旁加「转换按钮」：默认新版本（比亚迪·前后轮辋装反 + 理想L8·方向盘拉不动 两枚抖音短片、隐藏事实核查），点后切旧版本（在抖音中观看/事实核查/站长随笔），再点回新版本；第三链接始终站长随笔。五个坑，写死：
+
+1. **补丁只 patch `.dyp__acts`，不碰弹窗本体**。`douyin-prompt.js`（建 `.dyp` 弹窗）/ `factcheck-button.js`（注入 `.dyp__factcheck`）一个字节不动；转换逻辑全在下游补丁 `dyp-version-toggle.js`，靠 sweep + MutationObserver + 定时轮询多重兜底抓 React 渲染后的注入时机，对 `.dyp__acts` 做 patch（改 `.dyp__go` 文本/href、增删自有锚点 `.dyp__douyin2`、`.dyp__factcheck` 只切 `style.display`）。
+2. **事实核查用 `display:none` 而非 `removeChild`**。新版本要「第二按钮不再显示事实核查」，但旧的「在抖音中观看/事实核查/站长随笔」是站长的原版记忆；若 removeChild，切回旧版时节点已失、需重建。保留节点只 `style.display=''`/`'none'` 切换，旧版还原零成本、零重建风险。**判据**：verify §36u 既要断言 new 版 `fact.style.display==='none'`，又要断言 old 版能 `removeChild(d2)` 且全文件不含 `dyp__factcheck...removeChild`——防止有人为「干净」把事实核查节点删了。
+3. **双版本文案靠 localStorage 记忆、默认 new**。`dyp_version_toggle_v1` 默认 `new`，按钮文案随版本翻转（`new`→「替换旧版」、`old`→「新版本」），刷新不丢；但默认 new 意味着新访客首屏看到的是「替换旧版」入口，必须在验收里确认默认态弹窗确实是新版（比亚迪/理想L8/站长随笔、事实核查不可见）。
+4. **落位复用既有入口机制，别另写一套**。转换按钮直接复用 anon-mail 的落位函数（桌面 Login GitHub 之后、窄屏进 `#sxg-fab-dock` 首位、短标签 `data-sxg-dock-label`），既省验证，也保证和右侧 dock 的避让关系不回退。`index.html` `?v=1`。
+5. **多版本共享同一 `.dyp__acts` 样式基线时，自有锚点只配色**。`.dyp__acts > *` 一条规则给所有按钮统一尺寸，新增的 `.dyp__douyin2` 只配色（浅绿描边，复用事实核查视觉档）不抢尺寸；窄屏用 `@media (max-width:520px){.dyp__douyin2{order:1}}` 微调顺序，别再开一条尺寸规则。
