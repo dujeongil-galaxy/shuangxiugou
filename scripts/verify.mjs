@@ -8469,15 +8469,23 @@ section('25. 成功案例专题页（QQ奶奶）');
     '又写回折叠 / restore → 站长 §36t「全部展开，按钮不再做隐藏」被推翻');
 
   // ⑤ 挂载与 ?v 钉子（§21h 纪律）+ jsdom 行为测试挂进 CI（§21o）。
-  check(/<script defer src="\.\/anon-mail\.js\?v=1"><\/script>/.test(idx36s)
-    && idx36s.indexOf('anon-mail.js?v=1') > idx36s.indexOf('fab-dock.js?v=2')
+  check(/<script defer src="\.\/anon-mail\.js\?v=2"><\/script>/.test(idx36s)
+    && idx36s.indexOf('anon-mail.js?v=2') > idx36s.indexOf('fab-dock.js?v=2')
     && /fab-dock\.js\?v=2/.test(idx36s)
     && /mobile-fixes\.css\?v=19/.test(idx36s)
     && /header-menu-patch\.js\?v=11/.test(idx36s)
     && exists('scripts/test-anon-mail.cjs')
     && wf36s.indexOf('node scripts/test-anon-mail.cjs') !== -1,
-    '§36s index.html 挂载 anon-mail.js?v=1（排在 fab-dock 之后），三个改动资源 ?v 同步 bump，配套 jsdom 测试挂进 CI',
+    '§36s index.html 挂载 anon-mail.js?v=2（排在 fab-dock 之后），三个改动资源 ?v 同步 bump，配套 jsdom 测试挂进 CI',
     '?v 没 bump → 浏览器/CDN 命中旧脚本；测试没挂 CI → §21o 判红或回归没人拦');
+
+  // 隐藏开关 + CSS 隐藏规则必须都在（临时隐藏不删除：ENABLED 改 true 即恢复；
+  // data-sxg-anon-hidden 的 !important 压过手机 dock 的 display:flex !important）。
+  // 只钉机制存在，不钉 ENABLED 当前布尔值——翻回 true 恢复显示时不应判红。
+  check(/var\s+ENABLED\s*=\s*(true|false)/.test(am36s)
+    && /data-sxg-anon-hidden="1"\]\{display:none !important\}/.test(am36s),
+    '§36s 匿名邮箱「隐藏开关 ENABLED + !important 隐藏规则」机制在位（不删除、可一键恢复）',
+    'anon-mail.js 缺失 ENABLED 开关或 data-sxg-anon-hidden 隐藏规则');
 }
 
 // ---------- 36t. 手机端顶栏全部常显 + 帮助入口/两条办法不再隐藏（2026-11-12 站长「我再说一次」） ----------

@@ -27,6 +27,9 @@
   var STYLE_ID  = 'sxg-anon-mail-style';
   var DOCK_ID   = 'sxg-fab-dock';
   var MQ        = '(max-width: 640px)';
+  /* 2026-11-12 站长要求临时隐藏「匿名邮箱」入口：保留全部代码与落位逻辑不删除，
+     仅设为不可见、不可点击。需恢复时把 ENABLED 改为 true 即可（一处改动）。 */
+  var ENABLED   = false;
   /* 顶栏按钮的外观基线（取自 Star 按钮真实 class）。不能现场读 Star：
      手机端 header-menu-patch 会把它的 class 整个摘掉，断点切回桌面时现场
      读到的是空串，按钮就退化成 14px 裸链接（§36s 真渲染实测）。 */
@@ -54,6 +57,10 @@
     s.id = STYLE_ID;
     s.textContent = [
       '#sxg-anon-mail-btn[data-sxg-anon-slot="pending"]{display:none !important}',
+      /* 临时隐藏（ENABLED=false）：用 !important 压过手机 dock 的
+         `#sxg-fab-dock > *{display:flex !important}`（mobile-fixes.css §36s），
+         否则手机端按钮仍会被 dock 规则显示出来。桌面顶栏无此规则，inline 即可。 */
+      '#sxg-anon-mail-btn[data-sxg-anon-hidden="1"]{display:none !important}',
       '#' + MODAL_ID + '{position:fixed;inset:0;z-index:10050;box-sizing:border-box;',
       '  background:rgba(15,23,42,.48);display:flex;align-items:center;',
       '  justify-content:center;padding:16px;}',
@@ -203,6 +210,16 @@
 
   function place() {
     var btn = ensureButton();
+    /* 隐藏模式：仍执行下方落位逻辑，保持 DOM 结构与上游架构层不变
+       （test-anon-mail.cjs 的落位断言依赖 slot / class / 相邻节点，不能跳过）。
+       仅把按钮设为不可见、不可点击；ENABLED=false 时生效。 */
+    if (ENABLED) {
+      btn.style.display = '';
+      btn.removeAttribute('data-sxg-anon-hidden');
+    } else {
+      btn.style.display = 'none';
+      btn.setAttribute('data-sxg-anon-hidden', '1');
+    }
     if (isNarrow()) {
       var dock = document.getElementById(DOCK_ID);
       btn.classList.remove('sxg-header-btn');
