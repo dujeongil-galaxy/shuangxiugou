@@ -4,6 +4,20 @@
 
 ---
 
+### feat：新增「小米汽车」卡片（第 127 张自定义卡 / 第 179 张详情页），并修品牌页 `ai-chat.js` 版本号长期钉旧（2026-11-13 03:49 · 提交 `22163f3`）
+
+站长指令：「第四件事：依据用户截图新建『小米汽车』卡片，由 AI 按仓库公开规则自主评级」。
+
+- **新卡 `xiaomi-auto-card`**：`insertAfter: 'leapmotor-card'`（挂在同为造车新势力的零跑之后，不与他人共用锚点）；`logo: null` 走文字回退，不需要 PNG。
+- **自主评级 C 级**，主因「产线月休不足 6 天」：研发/销售/白领口径约双休（月休 8 天），产线/轮班为「上六休一」至「上 13 休 1」（月休 4-5 天）、部分基地连续 14 天白/夜班轮换；研发岗作息早 9 晚 10，产线加班费平时约 40 元/小时、周末约 50 元/小时。判档只按公开规则里的月休天数档位取值，不看企业名气。
+- **数值留空不估算**：证据仅来自招聘信息与资讯聚合摘要，**无企业官方口径、无双休率统计**，故 `doubleRestRate` / `offWorkTime` 置 `null`、详情页显示「—」，并在卡面与详情页写明留空原因。另有一处「SU7 量产阶段岗位双休」的单源说法作为反例线索如实登记，不足以覆盖产线月休不足 6 天的主体事实。
+- **证据链 4 条**挂进首页证据公示区并链向 `brand/xiaomi-auto.html`；不改动既有「小米（手机）」卡。
+- **全仓计数口径同步**（此前散落十余处）：自定义卡 **127** 张、详情页 **179** 个、证据 **462** 条、收录 **179** 家、品牌卡共 **180** 张（含 1 张虚拟对比卡）；README / FORK_GUIDE / MAINTAINING / PITFALLS / 员工实测数据核实修改清单同步。
+- **派生文件重生成而非手改**：`pinyin-index.js` 新增 `xiaomi-auto`（含 `小米汽车 / Xiaomi Auto / XIAOMI AUTO / SU7` 等 alias，`?v` 递增）、`projects.html` 同类项目导航补一条、`sitemap.xml` 补一条 `<loc>`。
+- **顺带修一条静默失效**：上一批把 `ai-chat.js` 升到 `v28`、首页已改，但 179 张品牌页仍钉在 `v19`，品牌页访客会读到浏览器缓存里的旧聊天脚本（缺 `endpointCN` 分流与线路条），且当时**没有任何断言会红**。本次统一 bump 至 `v28`，并在 `verify.mjs` 新增「品牌页 `ai-chat.js?v` 必须与首页同值」硬断言防回归。（此前 CHANGELOG「185 个品牌页共 186 处 `?v` 递增」的表述与实际不符，以本条为准：那一批只 bump 了 `ai-config.js` 与首页。）
+- **测试基数随真实数据对齐**：`test-stat-filter.cjs`（徽章 180 / 可见 179 / 避雷 59 / C 58）、`test-molina-card.cjs`（`?v` 断言改为下界，不再写死单值）。
+- 复核：`node scripts/verify.mjs` **1759 全绿**；`test-ai-chat / test-ai-route / test-ai-worker-aliyun / test-render-page / test-molina-card / test-stat-filter / test-empty-state-sync / test-evidence-jump / test-virtual-card-remove` 均 exit 0。
+
 ### feat：AI 形象按线路分流 + 阿里云函数计算侧脚手架（2026-11-13 01:18 · 提交 `10b777f`）
 
 站长指令：「AI 形象切换分流——前 3 个卡通形象（A-C）走 Cloudflare，后 3 个（D-F）走阿里云，并说明阿里云如何配置」。
