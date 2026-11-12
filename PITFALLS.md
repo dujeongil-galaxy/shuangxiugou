@@ -2951,3 +2951,13 @@ HEAD 不是补提交，只是正文里引用了一下标记，同样被跳过。
 3. **远端在并行批次里新增卡片，会让你上一轮刚对齐的计数测试再次过期**。§38 两张 A 级卡把可见卡 175→177、badge 176→178、红榜 84→86，`test-stat-filter.cjs` 一次性判红 5 项。这不是功能回归：**按第四十七章「改断言对齐事实，不改数据迁就断言」**，以 `rating-stats-patch.js` 的 `CORRECTIONS` 与 verify §25s 为准改断言，顺手做一组故障注入（把 86 写回 84）确认判红再还原。合并后必须重跑全套 `test-*.cjs`，不能只信静态 verify 全绿。
 
 **另一个跨 shell 坑**：Bash 里写 PowerShell 的 `@'...'@` here-string，`@` 会被当成字面字符写进提交信息第一行（变成 `@ merge: ...`）。长提交信息统一用 `git commit -F <D 盘缓存里的 txt>`，别在命令行里拼多行。
+
+## 第五十三章：「全部展开」要逐层核对；反向断言别扫注释；内容变长会把弹窗标题滚没（2026-11-12 09:25 §36t）
+
+1. **「全部展开」不是只撑开一层**。§36s 已经把右侧 76px 隔离列的 dock 七枚撑开，但顶栏 `Star on GitHub` 等仍被 `header-menu-patch.js` 折进「菜单▼」，`github-access-help.js` 的 🌐 入口甚至挂在那个 `display:none` 的容器里。站长连说三次才定位到：**要按「入口在哪个容器、这个容器在窄屏是否可见」逐层核对**，不能只看自己刚改的那一层。真渲染读数比肉眼更快：把顶栏所有 `a/button` 的 `getBoundingClientRect()` 与 `getComputedStyle().display` 一起打出来，`vis:false` 一眼就露馅。
+2. **反向断言扫全文会误伤注释**。§36t 用 `!/\.sxg-header-btn\s*\{\s*display:\s*none/` 禁止隐藏回潮，结果被我在新注释里写的「不再注入 `.sxg-header-btn{display:none}`」自己判红。要么给断言剥掉 JS 注释，要么**注释里别写被禁止的字面量**（改说「按钮隐藏规则」）。同理 §36r 的「草稿批注不上页面」也是全文扫，注释里不能复述那些词。
+3. **删旧 CSS 规则前先看谁在钉它**。`verify.mjs` 有一条按断点区间检查 `a[href*="github.com"]` / `a[href*="sponsor.html"]` / `a[href*="shuangxiugou/issues"]` 三个选择器都存在的断言（3020 行附近，防按钮退回竖排）。换掉旧竖排规则后 `issues` 选择器消失，两条红。**正确做法是补一个真实有用的兜底选择器**（`header div:has(> a[href*="shuangxiugou/issues"])` 给 `header-fix.js` 未执行时定位），不是放宽断言。
+4. **内容变长 + `focus()` = 标题被滚没**。`appeal-policy.js` 打开弹窗时 `yes.focus()`，浏览器会把可滚动卡片自动滚到按钮处。帮助块从 1 条变 2 条后卡片内容 868px、可视 692px，用户一打开只看见下半截。聚焦后补 `card.scrollTop = 0` 即可，别去改 `max-height` 或删焦点。
+5. **只修 ≤640px 会漏掉中等宽度**。660px 下顶栏六枚按钮被 `justify-between` 压成 53–80px 窄条，中英文逐字换行（`★ Star / on / GitHub`），没有横向溢出所以静态校验一条不红 —— **只有真渲染截图能发现**。补 641–900px 同款换行铺满，并给它单配一条 verify 断言 + 一组故障注入。
+6. **Python 写文件：先编码成功，再动文件**。`open(p,'w')` 会先截断，随后 `f.write(str)` 若在编码阶段抛 `UnicodeEncodeError`（本轮是注释里写了代理对 `\ud83c\udf10`），文件直接变 0 字节。本轮 `mobile-fixes.css` 就这么被清空，靠 `git checkout --` 才救回来。统一改成 `data = s.encode('utf-8')` → 写临时文件 → `os.replace()`；CRLF 文件还要在落盘前把 `\n` 统一成 `\r\n`，否则整文件 diff 膨胀到上千行（第五十一章同款坑）。
+7. **故障注入脚本会累积耗时**：8 组 × 每次全量 verify + 两个 jsdom 测试，单条命令容易触到工具超时被 SIGTERM，stdout 因缓冲全丢、看起来像「没跑」。用 `python -u`（无缓冲），大批次拆成几轮；**中断后第一件事是自检注入特征是否残留**（隐藏规则 / `white-space: normal` / 删掉的 mobRow / `?v` 回退 / workflow 重复行），确认干净再继续。

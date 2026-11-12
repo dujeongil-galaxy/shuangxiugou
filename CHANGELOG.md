@@ -4,6 +4,20 @@
 
 ---
 
+### feat：手机端顶栏按钮全部展开 + Star 帮助入口与两条办法不再隐藏（§36t）（2026-11-12 09:25 · 提交 `a89db78`）
+
+站长 08:25 反馈：「我再说一次，手机端，全部展开，按钮不再做隐藏」。诊断：上一轮 §36s 只把右侧 76px 隔离列里的 dock 七枚撑开，顶栏 `Star on GitHub` / 赞助 / Login / 提交数据仍被 `header-menu-patch.js` 折进「菜单▼」，`github-access-help.js` 的 🌐 入口也挂在那个隐藏容器里（390px 真渲染实测顶栏按钮 `vis:false`，只剩一个「菜单▼」）。
+
+- **撤折叠**：`header-menu-patch.js` 删掉 `records` / `collapse()` / `restore()` / 下拉容器 / 菜单按钮与按钮隐藏规则；改为 `build()` 打 `data-sxg-hdr-expanded="1"` + `reclaim()` 把旧菜单残留里的按钮搬回按钮组并清掉旧容器，只注入一条「不许隐藏」兜底样式。下半段 GitHub 登录状态提示 / Login 弹窗 / 登录拦截原样保留。
+- **布局**：`mobile-fixes.css` ≤640px 顶栏 `flex-wrap: wrap`，品牌占第一行、按钮组 `width:100%` 换行铺满第二行；每枚按钮 `width:auto` + `nowrap` + `inline-flex` 全常显，🌐 圆形入口用 `:not([data-sxg-gh-desktop])` 排除，≤400px 去掉多余外边距让它贴回 Star。另补 **641–900px**：660px 真渲染实测六枚按钮被 `justify-between` 压成逐字竖条（「★ Star / on / GitHub」），同法换行铺满修掉。
+- **帮助**：`github-access-help.js` 的 `helpHtml()` 从 `if/else` 只拼一条改为 `pcRow` + `mobRow` 两条都常显，`isDesktop()` 只决定哪条带「当前设备 · 推荐」；🌐 触发入口宽窄屏统一 `star.parentNode.insertBefore(...)` 贴 Star 常显，不再依赖下拉、断点切换不再重建入口。
+- **弹窗**：两条帮助让卡片变高，`appeal-policy.js` 的 `yes.focus()` 会把可滚动卡片自动滚到按钮处、标题被裁出视野；聚焦后补 `card.scrollTop = 0`。
+- **缓存号**：`index.html` 四个资源同步 bump —— `mobile-fixes.css?v=17→18`、`header-menu-patch.js?v=10→11`、`github-access-help.js?v=1→2`、`appeal-policy.js?v=3→4`；注释口径同步改。
+- **机器强制**：`verify.mjs` 更新 §36g / §36q / §36r⑤⑦ / §36s④⑤ 钉子，新增 §36t 七断言（禁隐藏回潮、CSS 换行铺满、两条办法都常显、入口贴 Star、弹窗滚动复位、641–900px、?v+CI）；新增 `scripts/test-header-expand.cjs`（32 项）挂进 `.github/workflows/verify.yml`，并按事实改 `test-github-access-help.cjs`（35 项）与 `test-anon-mail.cjs`（40 项）的过期断言。
+- **验收**：verify **1674 项全绿**；44 组非本机专用 jsdom 测试分三批串行全通过；8 组故障注入（隐藏规则回潮 / CSS 竖排 / 帮助只出一条 / 入口塞回菜单 / 滚动复位丢失 / ?v 回退 / 测试没挂 CI / 中等宽度竖条）全部判红、还原复绿；CDP 真渲染 360 / 390 / 660 / 1440 四档确认按钮零隐藏、零裁切、零横向溢出，弹窗两条方案与标题均可见。
+
+---
+
 ### merge：合并远端 §37 LOGO 补全 / §38 广发·天府 A 级卡，与本地 §36s 匿名邮箱批次对齐（2026-11-12 07:56 · 提交 `b50f7fe`）
 
 `git push` 因远端并发提交被拒（远端 `44d95ed..8a603b7`），按纪律 `git fetch` + **普通 merge，绝不 rebase**。
