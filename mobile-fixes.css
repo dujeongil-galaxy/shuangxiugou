@@ -74,6 +74,74 @@
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
+   全站通用：按钮文字一行完整显示 + 尺寸基线统一（2026-11-13 站长截图反馈）
+   --------------------------------------------------------------------------
+   症状（两张截图同一根因）：
+   ① 顶栏六枚：前四枚被挤成两行（「提交数据 / 申 / 诉」「Star on / GitHub」
+      「赞助本项 / 目」「Login / GitHub」），后两枚按内容宽度贴缩成窄条，
+      高低宽窄都不齐。
+   ② 品牌卡底部「员工投票 / 打卡 / 详情证据」被压成两列竖排（「员工投 / 票」
+      「详情证 / 据」）。
+
+   根因：bundle 里这些按钮只写了 inline-flex / items-center / gap，没给文字
+   加 white-space:nowrap；容器宽度吃紧时浏览器在中英混排处逐字折断，按钮高度
+   被折行文字撑高。补丁脚本（赞助 / Login / 匿名邮箱 / 分享本站）复制了 Star
+   的 class，但文字直接挂在按钮上、没有内层 span，基线与原生按钮不一致。
+
+   修法（不碰压缩 bundle，只在本文件覆盖）：
+   · 顶栏六枚：统一 nowrap、单行高、同字号 / 内边距 / 圆角，文字与图标基线对齐；
+   · 卡片三枚操作钮：统一 nowrap、同内边距 / 圆角 / 行高，图标与文字不折行。
+   选择器按文字定位不可靠（压缩产物 + 动态补丁），这里用结构选择器 + 既有
+   .sxg-header-btn 标记圈定范围，避免误伤点赞 / 点踩、弹窗内按钮。
+   -------------------------------------------------------------------------- */
+
+/* ① 顶栏按钮：全断点统一单行、等高、同基线。 */
+header .sxg-header-btn,
+header div[data-hdr-acts] > a,
+header div[data-hdr-acts] > button {
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center;
+  line-height: 1.35;
+  min-height: 32px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  border-radius: 10px;
+  gap: 6px;
+}
+header .sxg-header-btn > svg,
+header div[data-hdr-acts] > a > svg,
+header div[data-hdr-acts] > button > svg {
+  flex: 0 0 auto;
+}
+header .sxg-header-btn > span,
+header div[data-hdr-acts] > a > span,
+header div[data-hdr-acts] > button > span {
+  white-space: nowrap;
+}
+
+/* ② 品牌卡底部操作钮：员工投票 / 打卡 / 详情证据。
+      卡片底栏 = div.px-5.py-3.bg-slate-50\/70.border-t；三枚操作钮在其右侧的
+      div.flex.items-center.gap-2 里（点赞 / 点踩在左侧另一枚同 class 容器中，
+      它们只显示数字，不折行，一并统一基线即可）。 */
+div[class*="border-t"][class*="bg-slate-50"] > div.flex.items-center.gap-2 > button,
+div[class*="border-t"][class*="bg-slate-50"] > div.flex.items-center.gap-2 > button > span,
+div[class*="border-t"][class*="bg-slate-50"] > div.flex.items-center.gap-2 > button > svg {
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+div[class*="border-t"][class*="bg-slate-50"] > div.flex.items-center.gap-2 > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.35;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-radius: 8px;
+}
+
+/* --------------------------------------------------------------------------
    ≤640px（Tailwind sm 断点）：顶栏按钮全部常显、换行铺满（2026-11-12 §36t）
    --------------------------------------------------------------------------
    站长口径：「我再说一次，手机端，全部展开，按钮不再做隐藏。」
