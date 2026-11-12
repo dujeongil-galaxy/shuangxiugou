@@ -1,4 +1,4 @@
-// 【本机专用 · 不挂 CI】真渲染验收：首页弹窗「新版/旧版 转换按钮」（2026-11-12 §36u）
+﻿// 【本机专用 · 不挂 CI】真渲染验收：首页弹窗「新版/旧版 转换按钮」（2026-11-12 §36u）
 // 本地起静态服务 + 无头 Edge CDP，桌面(1440)与手机(390)分别独立加载：
 //   1) 转换按钮在「弹窗内部右上角」（.dyp__panel 内、插在 .dyp__x 之前），不在顶栏/dock
 //   2) 默认 new 版：弹窗 acts = [比亚迪] [理想L8] [站长随笔]，事实核查隐藏
@@ -81,8 +81,8 @@ async function pollActsNew(ws, ms) {
         actsW:Math.round(acts.getBoundingClientRect().width),
         mGo:clip(go), mD2:clip(d2), mLater:clip(later)};
     `);
-    if (last && last.acts && last.goText === '比亚迪短片'
-      && last.d2Text === '理想L8短片' && last.fcDisplay === 'none'
+    if (last && last.acts && last.goText === '比亚迪'
+      && last.d2Text === '理想L8' && last.fcDisplay === 'none'
       && last.laterText === '站长随笔') return last;
     await sleep(500);
   }
@@ -201,10 +201,10 @@ function toggleProbe(ws) {
   const noClip = (a) => !!a && !!a.mGo && !!a.mD2 && !!a.mLater
     && a.mGo.clipped === false && a.mD2.clipped === false && a.mLater.clipped === false;
   const mOk = toggleOk(mToggle)
-    && mActs && mActs.goText === '比亚迪短片' && mActs.d2Text === '理想L8短片'
+    && mActs && mActs.goText === '比亚迪' && mActs.d2Text === '理想L8'
     && mActs.fcDisplay === 'none' && mActs.laterText === '站长随笔' && noClip(mActs);
   const dOk = toggleOk(dToggle)
-    && dActs && dActs.goText === '比亚迪短片' && dActs.d2Text === '理想L8短片'
+    && dActs && dActs.goText === '比亚迪' && dActs.d2Text === '理想L8'
     && dActs.fcDisplay === 'none' && dActs.laterText === '站长随笔' && noClip(dActs)
     && clickRes && clickRes.version === 'old' && clickRes.newText === '新版本'
     && dActsOld && dActsOld.goText === '在抖音中观看' && dActsOld.d2Present === false

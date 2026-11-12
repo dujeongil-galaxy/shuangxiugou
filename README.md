@@ -243,6 +243,39 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 ---
 
+## 🧭 顶栏按钮组成与两处显隐开关（2026-11-12 站长要求，长期有效）
+
+**桌面顶栏自左向右固定五枚，顺序不许随手调换**：
+
+| 序 | 按钮 | 由谁生成 | 落位 |
+|---|---|---|---|
+| 1 | `+ 提交数据 / 申诉` | `custom-card-actions.js` | 顶栏最左 |
+| 2 | `★ Star on GitHub` | 站点原生，`header-menu-patch.js` 打理分组 | 第 2 位 |
+| 3 | `☕ 赞助`（`sponsor.html`） | 站点原生 | 第 3 位 |
+| 4 | `🔑 Login GitHub` | `header-menu-patch.js` 下半段 | 第 4 位 |
+| 5 | `匿名邮箱`（指向 `https://m.kuku.lu/cn.php`） | `anon-mail.js` | `insertAfter(Login)` |
+
+**这五枚都不在 `index.html` 的静态标记里**，是脚本运行时注入的。DOM 里找不到、或某个入口突然消失，
+先看上面三个脚本，别默认「被删了」就去补写一份新的（重复注入会出两枚同名按钮）。
+
+**两处单点开关（增减入口只改这一行，不许删代码本体）**：
+
+| 文件 | 开关 | 当前值 | 关掉后的表现 |
+|---|---|---|---|
+| `anon-mail.js` | `var ENABLED` | `true` | 按钮不可见不可点，**落位逻辑与点击弹窗原样保留**，翻回 `true` 即恢复 |
+| `github-access-help.js` | `var SHOW_TRIGGER` | `false` | Star 旁不再挂蓝色 🌐 小圆钮；帮助浮层与申诉弹窗的 `[data-sxg-gh-help]` 槽位照旧保留 |
+
+**三条禁令**：① 任何一枚不想要了，走上面的开关（隐藏），**不许删按钮本体或整段注入逻辑**——
+2026-11-12 白天那次直接把 `ENABLED` 置 `false`，当晚站长看图就以为「匿名邮箱被吃掉了」；
+② 动了任一开关，`index.html` 里的 `?v` 必须同步 bump（现 `anon-mail.js?v=3`、`github-access-help.js?v=3`），
+不 bump 用户拿到的是旧缓存，等于没改；③ 改完跑 `node scripts/verify.mjs` 与 `node scripts/test-anon-mail.cjs`，
+再用真浏览器核对五枚顺序与底色（匿名邮箱为深青 `rgb(15,118,110)`、位在 Login 之后）。
+
+**断言跟着开关走，不钉死当前布尔值**：`verify.mjs` §36t 只钉「`SHOW_TRIGGER` 机制在位 +
+关掉时 `removeTrigger()` 早退 + 开着时贴 Star 常显」，`test-github-access-help.cjs` ④ 与
+`test-header-expand.cjs` ⑤ 直接从 `github-access-help.js` 源码读开关真值决定断言方向。
+所以把开关翻回 `true` 只需 bump `?v`，测试不会误判；但**删掉开关或改成一堆 `if` 分支里散落的隐藏，一定判红**。
+
 ## 🗂 改动必记账（本项目长期规则）
 
 **这个仓库里，任何一次改动都必须留下记录，不许「改完就算了」。**
@@ -251,7 +284,11 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 **改动失败时往往完全不报错**（见 `PITFALLS.md`）。半年后回来看，唯一能判断
 「这行为什么长这样」的东西，就是当时的记录。
 
-> **近期改动入口**：最近一批（2026-11-12 16:13 · 提交 `af19de0`）三条一起落地。① **弹窗三按钮**：站长追问「看看按钮大小，再看文字」——实测 1440 行宽 357px、后两枚只分到 90px，「理想L8·抖音短片」scrollWidth 107 > clientWidth 92 被省略号截断；文案收成 `比亚迪短片 / 理想L8短片 / 站长随笔`，新版三枚等宽（`@media(min-width:521px)`，≤520px 保留官方纵向 `flex:0 0 auto`），修后 113/115/115px、三枚 `clipped=false`。② **零跑备注栏**写入售后服务抖音短链 `n-xv654_mrI`（站长：写入备注栏、不挂证据链），同段注明「内容真实性存疑，请注意甄别」+ 视频未点名品牌 + 不进本卡证据链；备注框渲染由纯 `textContent` 改为「http(s) 自动成可点 `<a>`」（`rel=noopener noreferrer nofollow`），`brand/leapmotor.html` 保持零抖音链。③ **视频区**新增第 4 条「为什么说宁等网约车也不要坐出租车？」（`asAmGiTjrAU`），`featured-douyin.js ?v=5→6`。机器强制：verify 1706→1713、§36u⑤/§36m 新断言、`test-dyp-toggle` 25 项、CDP 双视口 + 新增 `cdp-leapmotor-note-video.cjs`（`NOTE_OK`/`VIDEO_OK`）、7 组故障注入全判红。逐批明细见 [最近更新.md](./最近更新.md) 与 [CHANGELOG.md](./CHANGELOG.md)。
+> **近期改动入口**：最近一批（2026-11-12 19:05 · 提交 `6458763`）顶栏恢复「匿名邮箱」、撤掉蓝色 🌐，并把顶栏组成与开关写死成规则章节。站长看图指「最右边一开始不是有个匿名邮箱的按钮吗，被 AI 给吃了」——① `github-access-help.js` 新增 `SHOW_TRIGGER = false`，`ensureTrigger()` 首行 `if(!SHOW_TRIGGER){removeTrigger();return false;}`：只撤 Star 旁的可见入口，帮助浮层与 `appeal-policy.js` 的 `[data-sxg-gh-help]` 槽位保留。② `anon-mail.js` 的 `ENABLED` 由 `false` 翻回 `true`（12:02 `dcf9868` 那次只是站长要求临时隐藏，落位逻辑一直没动，翻回即恢复），位在 Login GitHub 之后、深青底 `rgb(15,118,110)`。改后桌面顶栏五枚自左向右为 `+ 提交数据/申诉` → `★ Star` → `☕ 赞助` → `🔑 Login GitHub` → `匿名邮箱`。③ 同批 `dyp-version-toggle.js` 三枚按钮去掉「短片」字样（`比亚迪短片 / 理想L8短片` → `比亚迪 / 理想L8`）。`index.html` 中 `anon-mail.js` 与 `github-access-help.js` bump 至 `?v=3`、`dyp-version-toggle.js` 至 `?v=4`；CDP 强刷双端真渲染核对顺序与底色，🌐 已消失。开关口径见上方「🧭 顶栏按钮组成与两处显隐开关」。逐批明细见 [最近更新.md](./最近更新.md) 与 [CHANGELOG.md](./CHANGELOG.md)。
+
+> 同批收尾（2026-11-12 · 文档 + 断言口径）：站长要求「写入 README，避免下次又被顺手改掉」——把顶栏五枚顺序、两处开关现状与三条禁令固化成上方规则章节；同时把验证口径从「钉死当前布尔值」改成「跟着开关走」：`verify.mjs` §36t④ 改钉 `var SHOW_TRIGGER` 存在 + `if(!SHOW_TRIGGER){removeTrigger();return false}` 早退机制 + 开着时贴 Star 常显，§36u 文案断言与 §36r/§36s/§36u⑦ 的 `?v` 钉子同步到 `v=3/v=4`；`test-github-access-help.cjs` ④、`test-header-expand.cjs` ⑤ 与 `test-dyp-toggle.cjs`、`cdp-dyp-toggle.cjs` 的按钮文案改 `比亚迪 / 理想L8`。复核：verify **1712 全绿**，四个 jsdom 测试 25/40/32/31 全 0 失败。
+
+> 上一批（2026-11-12 16:13 · 提交 `af19de0`）三条一起落地。① **弹窗三按钮**：站长追问「看看按钮大小，再看文字」——实测 1440 行宽 357px、后两枚只分到 90px，「理想L8·抖音短片」scrollWidth 107 > clientWidth 92 被省略号截断；文案收成 `比亚迪短片 / 理想L8短片 / 站长随笔`，新版三枚等宽（`@media(min-width:521px)`，≤520px 保留官方纵向 `flex:0 0 auto`），修后 113/115/115px、三枚 `clipped=false`。② **零跑备注栏**写入售后服务抖音短链 `n-xv654_mrI`（站长：写入备注栏、不挂证据链），同段注明「内容真实性存疑，请注意甄别」+ 视频未点名品牌 + 不进本卡证据链；备注框渲染由纯 `textContent` 改为「http(s) 自动成可点 `<a>`」（`rel=noopener noreferrer nofollow`），`brand/leapmotor.html` 保持零抖音链。③ **视频区**新增第 4 条「为什么说宁等网约车也不要坐出租车？」（`asAmGiTjrAU`），`featured-douyin.js ?v=5→6`。机器强制：verify 1706→1713、§36u⑤/§36m 新断言、`test-dyp-toggle` 25 项、CDP 双视口 + 新增 `cdp-leapmotor-note-video.cjs`（`NOTE_OK`/`VIDEO_OK`）、7 组故障注入全判红。逐批明细见 [最近更新.md](./最近更新.md) 与 [CHANGELOG.md](./CHANGELOG.md)。
 
 > 上一批（2026-11-12 09:25 · 提交 `a89db78`）手机端顶栏按钮**全部展开、不再隐藏**（§36t）。站长「我再说一次，手机端，全部展开，按钮不再做隐藏」指的是上一轮只撑开了右侧 76px 隔离列里的 dock，`Star on GitHub` 等顶栏按钮仍藏在「菜单▼」里。① `header-menu-patch.js` 删掉 `collapse/restore`、下拉容器与按钮隐藏规则，改打 `data-sxg-hdr-expanded` 标记 + `reclaim()` 回收旧菜单残留；下半段 GitHub 登录逻辑不动。② `mobile-fixes.css` ≤640px 顶栏 `flex-wrap`，品牌第一行、按钮组换行铺满第二行，每枚自身宽度 + `nowrap` 常显，🌐 圆形帮助入口单独排除并贴回 Star；另补 641–900px，修 660px 真渲染六枚按钮被挤成逐字竖条。③ `github-access-help.js` 电脑 / 手机平板两条办法**同时常显**，`isDesktop()` 只给当前设备那条打「推荐」标记；🌐 入口宽窄屏统一贴 Star 常显，不再挂下拉。④ `appeal-policy.js` 帮助块变高后复位 `card.scrollTop = 0`，避免 `focus()` 把标题滚出视野。`index.html` 四个资源 `?v` 同步 bump（CSS 18 / header 11 / help 2 / appeal 4）；verify 更新 §36g/§36q/§36r/§36s 钉子 + 新增 §36t 七断言，新增 `scripts/test-header-expand.cjs`（32 项）挂进 CI，另按事实改两条过期断言。**1674 全绿**、44 组非本机专用测试分三批全通过、8 组故障注入全判红后还原，CDP 真渲染 360/390/660/1440 四档零隐藏零裁切零溢出。合并远端 §38 后两份 CSS 改动合流，`mobile-fixes.css?v` 顺延至 19。该次 merge 的提交说明误带跳过标记字面量致三个 CI workflow 未触发，已补推一次提交重新触发。逐批明细见 [最近更新.md](./最近更新.md) 与 [CHANGELOG.md](./CHANGELOG.md)。
 

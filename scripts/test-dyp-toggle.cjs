@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    test-dyp-toggle.cjs —— 首页弹窗「新版 / 旧版」转换按钮 行为测试
    --------------------------------------------------------------------------
    被测：dyp-version-toggle.js（浏览器 IIFE，jsdom 真跑）
@@ -99,9 +99,9 @@ function injectFactcheck(w) {
   const d2B = actsB.querySelector('.dyp__douyin2');
   const laterB = actsB.querySelector('.dyp__later');
   check('主页按钮＝比亚迪抖音短链', goB.href === 'https://v.douyin.com/_n2cFrXIRec/'
-    && goB.textContent === '比亚迪短片', { href: goB.href, t: goB.textContent });
+    && goB.textContent === '比亚迪', { href: goB.href, t: goB.textContent });
   check('第二按钮＝理想L8抖音短链', !!d2B && d2B.href === 'https://v.douyin.com/EHOOH9INCMk/'
-    && d2B.textContent === '理想L8短片', d2B && { href: d2B.href, t: d2B.textContent });
+    && d2B.textContent === '理想L8', d2B && { href: d2B.href, t: d2B.textContent });
   // 文案长度护栏：站长 2026-11-12「看看按钮大小，再看文字」——按钮是三等分窄格，
   // 文案超过 6 字（≈84px @14px）就会在 113px 的格子里触发 ellipsis 截断。
   check('两个新版按钮文案均 ≤6 字（防再写长导致截断）',
@@ -177,12 +177,12 @@ function injectFactcheck(w) {
     && btnG.textContent === '替换旧版');
   g.w.close();
 
-  /* ⑧ index.html 引用 ?v=3（剥 HTML 注释后再判，避免被注释块误判）*/
+  /* ⑧ index.html 引用 ?v=4（剥 HTML 注释后再判，避免被注释块误判）*/
   console.log('\n⑧ index.html 引用');
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')
     .replace(/<!--[\s\S]*?-->/g, '');
-  check('index.html 已引用 dyp-version-toggle.js?v=3',
-    /<script defer src="\.\/dyp-version-toggle\.js\?v=3"><\/script>/.test(idx));
+  check('index.html 已引用 dyp-version-toggle.js?v=4',
+    /<script defer src="\.\/dyp-version-toggle\.js\?v=4"><\/script>/.test(idx));
 
   setTimeout(function () {
     console.log('\n========== 结果：' + passed + ' 项通过，' + failed + ' 项失败 ==========');

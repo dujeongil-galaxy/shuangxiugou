@@ -20,6 +20,11 @@ const ROOT = path.join(__dirname, '..');
 const HELP_SRC = fs.readFileSync(path.join(ROOT, 'github-access-help.js'), 'utf8');
 const SHARE_SRC = fs.readFileSync(path.join(ROOT, 'share-modal.js'), 'utf8');
 
+/* 2026-11-12 站长要求删掉顶栏那颗蓝色 🌐 ⇒ SHOW_TRIGGER=false。
+   这里从源码读开关真值，断言方向跟着开关走：开着就深验落位，关着就验「不挂入口 +
+   浮层与申诉槽位仍在」。这样开关翻回 true 时测试不会误判，也不会失去故障注入价值。 */
+const TRIGGER_ON = /var\s+SHOW_TRIGGER\s*=\s*true/.test(HELP_SRC);
+
 let passed = 0, failed = 0;
 function check(name, cond, detail) {
   if (cond) { passed++; console.log('  ✓ ' + name); }
@@ -114,14 +119,20 @@ function mkDom(opts) {
   const wMenu = mkDom({});
   await new Promise(function (r) { setTimeout(r, 60); });
   const trig = wMenu.document.getElementById(wMenu.SXGGitHubAccess.TRIGGER_ID);
-  check('桌面在 Star 按钮旁挂了触发入口', !!trig && trig.getAttribute('data-sxg-gh-desktop') === '1');
-  if (trig) {
-    trig.dispatchEvent(new wMenu.Event('click', { bubbles: true, cancelable: true }));
-    const fly = wMenu.document.getElementById(wMenu.SXGGitHubAccess.FLY_ID);
-    check('点击后浮层出现且含访问帮助', !!fly && fly.textContent.indexOf('GitHub 访问帮助') !== -1);
-    check('浮层用 fixed 定位（不插入 header 菜单）', !!fly && fly.style.position === 'fixed' && fly.parentNode === wMenu.document.body);
-    wMenu.document.body.dispatchEvent(new wMenu.Event('click', { bubbles: true }));
-    check('点外部收起浮层', !wMenu.document.getElementById(wMenu.SXGGitHubAccess.FLY_ID));
+  if (TRIGGER_ON) {
+    check('桌面在 Star 按钮旁挂了触发入口', !!trig && trig.getAttribute('data-sxg-gh-desktop') === '1');
+    if (trig) {
+      trig.dispatchEvent(new wMenu.Event('click', { bubbles: true, cancelable: true }));
+      const fly = wMenu.document.getElementById(wMenu.SXGGitHubAccess.FLY_ID);
+      check('点击后浮层出现且含访问帮助', !!fly && fly.textContent.indexOf('GitHub 访问帮助') !== -1);
+      check('浮层用 fixed 定位（不插入 header 菜单）', !!fly && fly.style.position === 'fixed' && fly.parentNode === wMenu.document.body);
+      wMenu.document.body.dispatchEvent(new wMenu.Event('click', { bubbles: true }));
+      check('点外部收起浮层', !wMenu.document.getElementById(wMenu.SXGGitHubAccess.FLY_ID));
+    }
+  } else {
+    check('SHOW_TRIGGER=false：顶栏不再挂 🌐 入口（只撤可见入口，2026-11-12 站长）', !trig);
+    check('浮层机制原样保留（openFlyout 与 fixed 定位仍在意）',
+      /function\s+openFlyout\(/.test(HELP_SRC) && /position:fixed/.test(HELP_SRC));
   }
   wMenu.close();
 
@@ -132,9 +143,13 @@ function mkDom(opts) {
   wNarrow.document.body.appendChild(menu);
   await new Promise(function (r) { setTimeout(r, 60); });
   const trigN = wNarrow.document.getElementById(wNarrow.SXGGitHubAccess.TRIGGER_ID);
-  check('窄屏仍贴 Star 常显（同桌面父节点 #root）', !!trigN && trigN.parentNode && trigN.parentNode.id === 'root');
+  if (TRIGGER_ON) {
+    check('窄屏仍贴 Star 常显（同桌面父节点 #root）', !!trigN && trigN.parentNode && trigN.parentNode.id === 'root');
+    check('窄屏入口沿用圆形桌面样式', !!trigN && trigN.getAttribute('data-sxg-gh-desktop') === '1');
+  } else {
+    check('SHOW_TRIGGER=false：窄屏同样不挂 🌐 入口（不是只藏桌面）', !trigN);
+  }
   check('窄屏入口不进 #sxg-header-menu', !menu.querySelector('#' + wNarrow.SXGGitHubAccess.TRIGGER_ID));
-  check('窄屏入口沿用圆形桌面样式', !!trigN && trigN.getAttribute('data-sxg-gh-desktop') === '1');
   wNarrow.close();
 
   /* ⑤ shareUrl 剥除 sponsor.html */

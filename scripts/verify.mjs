@@ -8461,12 +8461,12 @@ section('25. 成功案例专题页（QQ奶奶）');
     '只改好路径漏了兜底复制 → 脚本未加载时复制出去的仍是带 sponsor.html 的链接');
 
   // ⑦ 挂载与 ?v 钉子（§21h 纪律），以及 jsdom 行为测试存在。
-  check(/<script defer src="\.\/github-access-help\.js\?v=2"><\/script>/.test(idx36r)
+  check(/<script defer src="\.\/github-access-help\.js\?v=3"><\/script>/.test(idx36r)
     && /appeal-policy\.js\?v=4/.test(idx36r)
     && /share-modal\.js\?v=5/.test(idx36r)
     && /share-modal\.js\?v=5/.test(sp36r)
     && exists('scripts/test-github-access-help.cjs'),
-    '§36r index.html 挂载 github-access-help.js?v=2 / appeal-policy.js?v=4，改动脚本 ?v 同步 bump，配套 jsdom 行为测试存在',
+    '§36r index.html 挂载 github-access-help.js?v=3 / appeal-policy.js?v=4，改动脚本 ?v 同步 bump，配套 jsdom 行为测试存在',
     '?v 没 bump → 浏览器/CDN 命中旧脚本，新文案与链接规整都不生效');
 }
 
@@ -8523,14 +8523,14 @@ section('25. 成功案例专题页（QQ奶奶）');
     '又写回折叠 / restore → 站长 §36t「全部展开，按钮不再做隐藏」被推翻');
 
   // ⑤ 挂载与 ?v 钉子（§21h 纪律）+ jsdom 行为测试挂进 CI（§21o）。
-  check(/<script defer src="\.\/anon-mail\.js\?v=2"><\/script>/.test(idx36s)
-    && idx36s.indexOf('anon-mail.js?v=2') > idx36s.indexOf('fab-dock.js?v=2')
+  check(/<script defer src="\.\/anon-mail\.js\?v=3"><\/script>/.test(idx36s)
+    && idx36s.indexOf('anon-mail.js?v=3') > idx36s.indexOf('fab-dock.js?v=2')
     && /fab-dock\.js\?v=2/.test(idx36s)
     && /mobile-fixes\.css\?v=19/.test(idx36s)
     && /header-menu-patch\.js\?v=11/.test(idx36s)
     && exists('scripts/test-anon-mail.cjs')
     && wf36s.indexOf('node scripts/test-anon-mail.cjs') !== -1,
-    '§36s index.html 挂载 anon-mail.js?v=2（排在 fab-dock 之后），三个改动资源 ?v 同步 bump，配套 jsdom 测试挂进 CI',
+    '§36s index.html 挂载 anon-mail.js?v=3（排在 fab-dock 之后），三个改动资源 ?v 同步 bump，配套 jsdom 测试挂进 CI',
     '?v 没 bump → 浏览器/CDN 命中旧脚本；测试没挂 CI → §21o 判红或回归没人拦');
 
   // 隐藏开关 + CSS 隐藏规则必须都在（临时隐藏不删除：ENABLED 改 true 即恢复；
@@ -8581,10 +8581,10 @@ section('25. 成功案例专题页（QQ奶奶）');
     '按钮没进弹窗 / 回到顶栏 dock 落位 → 与站长「放在这个位置」不符');
 
   // ④ 挂载与 ?v 钉子 + jsdom 测试挂进 CI（§21o）。
-  check(/<script defer src="\.\/dyp-version-toggle\.js\?v=3"><\/script>/.test(idx36u)
+  check(/<script defer src="\.\/dyp-version-toggle\.js\?v=4"><\/script>/.test(idx36u)
     && exists('scripts/test-dyp-toggle.cjs')
     && wf36u.indexOf('node scripts/test-dyp-toggle.cjs') !== -1,
-    '§36u index.html 挂载 dyp-version-toggle.js?v=3，配套 jsdom 测试挂进 CI',
+    '§36u index.html 挂载 dyp-version-toggle.js?v=4，配套 jsdom 测试挂进 CI',
     '?v 没 bump / 测试没挂 CI → 转换逻辑静默失效没人拦');
 
   // ⑤ 三按钮文案与宽度分配（2026-11-12 15:48 站长「看看按钮大小，再看文字」）。
@@ -8596,11 +8596,11 @@ section('25. 成功案例专题页（QQ奶奶）');
   // 注意别用裸 `\/\/[^\n]*` 剥：会把 https:// 的尾巴一起吃掉（PITFALLS 第三十四章老坑），
   // 这里只认「整行以 // 开头」的行注释 + 块注释。
   const t36uCode = t36u.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/[^\n]*$/gm, '');
-  const briefOk = /var NEW_GO_TEXT = '比亚迪短片'/.test(t36uCode)
-    && /var NEW_D2_TEXT = '理想L8短片'/.test(t36uCode)
-    && !/比亚迪·抖音短片|理想L8·抖音短片/.test(t36uCode);
+  const briefOk = /var NEW_GO_TEXT = '比亚迪'/.test(t36uCode)
+    && /var NEW_D2_TEXT = '理想L8'/.test(t36uCode)
+    && !/短片/.test(t36uCode);
   check(briefOk,
-    '§36u 新版按钮文案收到 5～6 字（比亚迪短片 / 理想L8短片），不再写 8～9 字长串',
+    '§36u 新版按钮文案只留品牌名（比亚迪 / 理想L8），顶栏与弹窗里不再出现「短片」字样',
     '文案又写长 → 三等分格子里被 ellipsis 截断（站长 11-12 已指出一次）');
   check(/@media \(min-width:521px\)\{\.dyp__acts\.dyp--new > \*\{flex:1 1 0\}\}/.test(t36u),
     '§36u 新版三按钮等宽（≥521px 生效，≤520px 保留官方纵向 flex:0 0 auto）',
@@ -8652,15 +8652,18 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§36t GitHub 访问帮助两条（电脑 / 手机平板）同时常显，isDesktop() 只给当前设备那条打推荐标记，不再按设备隐藏另一条',
     '又用 if/else 只拼一个 row → 手机上永远看不到另一条办法，等于把内容藏起来');
 
-  // ④ 触发入口：宽屏窄屏同一分支，贴 Star 常显，不再依赖下拉菜单。
-  const trigOk = /findStar\(\)/.test(gh36t)
+  // ④ 触发入口：开关 SHOW_TRIGGER 单点控制，开着时贴 Star 常显、不依赖下拉菜单。
+  //    2026-11-12 站长要求先删掉顶栏那颗蓝色 🌐（SHOW_TRIGGER=false），
+  //    所以这里钉的是「机制在位、落位不变」，不钉当前布尔值——翻回 true 不该判红。
+  const trigOk = /var\s+SHOW_TRIGGER\s*=\s*(true|false)/.test(gh36t)
+    && /if\s*\(\s*!SHOW_TRIGGER\s*\)\s*\{\s*removeTrigger\(\);\s*return false;\s*\}/.test(gh36t)
+    && /findStar\(\)/.test(gh36t)
     && /star\.parentNode\.insertBefore\(t, star\.nextSibling\)/.test(gh36t)
     && /position:fixed/.test(gh36t)
     && !/sxg-header-menu/.test(gh36t)
-    && !/if\s*\(isNarrow\(\)\)/.test(gh36t)
-    && !/removeTrigger\(\);/.test(gh36t);
+    && !/if\s*\(isNarrow\(\)\)/.test(gh36t);
   check(trigOk,
-    '§36t Star 的 🌐 二级菜单入口两端都贴 Star 常显（同桌面截图），不再挂下拉、不做断点重建隐藏',
+    '§36t 🌐 帮助入口由 SHOW_TRIGGER 单点开关控制（关 = 只撤可见入口，浮层与申诉槽位保留），开着时两端都贴 Star 常显、不挂下拉',
     '入口又塞进菜单 / 断点又重建 → 手机上按钮会凭空消失');
 
   // ⑤ 弹窗滚动复位：内容变长后聚焦按钮不能把标题滚出视野。
@@ -8680,7 +8683,7 @@ section('25. 成功案例专题页（QQ奶奶）');
   // ⑦ ?v 钉子（§21h）+ 新 jsdom 测试挂进 CI（§21o）。
   check(/mobile-fixes\.css\?v=19/.test(idx36t)
     && /header-menu-patch\.js\?v=11/.test(idx36t)
-    && /github-access-help\.js\?v=2/.test(idx36t)
+    && /github-access-help\.js\?v=3/.test(idx36t)
     && /appeal-policy\.js\?v=4/.test(idx36t)
     && exists('scripts/test-header-expand.cjs')
     && wf36t.indexOf('node scripts/test-header-expand.cjs') !== -1,

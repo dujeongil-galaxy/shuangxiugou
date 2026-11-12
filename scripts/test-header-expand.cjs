@@ -90,11 +90,17 @@ function mkDom(opts) {
   check('四枚按钮的内联 display 都不是 none',
     [].every.call(acts.querySelectorAll('a'), function (a) { return a.style.display !== 'none'; }));
 
-  /* 🌐 入口：挂在 Star 右侧，与桌面同一分支 */
+  /* 🌐 入口：由 SHOW_TRIGGER 单点开关控制（2026-11-12 站长要求删掉顶栏那颗蓝标） */
+  const TRIGGER_ON = /var\s+SHOW_TRIGGER\s*=\s*true/.test(HELP_SRC);
   const trig = doc.getElementById(m.w.SXGGitHubAccess.TRIGGER_ID);
-  check('窄屏 🌐 入口贴 Star 常显（父节点就是按钮组）',
-    !!trig && trig.parentNode === acts && trig.previousSibling === star);
-  check('窄屏 🌐 入口沿用圆形桌面样式', !!trig && trig.getAttribute('data-sxg-gh-desktop') === '1');
+  if (TRIGGER_ON) {
+    check('窄屏 🌐 入口贴 Star 常显（父节点就是按钮组）',
+      !!trig && trig.parentNode === acts && trig.previousSibling === star);
+    check('窄屏 🌐 入口沿用圆形桌面样式', !!trig && trig.getAttribute('data-sxg-gh-desktop') === '1');
+  } else {
+    check('SHOW_TRIGGER=false：窄屏不挂 🌐 入口，其余四枚照旧常显',
+      !trig && acts.querySelectorAll('a').length >= 4);
+  }
 
   /* 旧菜单残留回收 */
   const stale = doc.createElement('div');
@@ -129,8 +135,12 @@ function mkDom(opts) {
   console.log('\n③ 宽屏 🌐 入口同一分支');
   const d = mkDom({ narrow: false });
   const trigD = d.w.document.getElementById(d.w.SXGGitHubAccess.TRIGGER_ID);
-  check('宽屏 🌐 入口也贴 Star 右侧',
-    !!trigD && trigD.previousSibling === d.w.document.getElementById('star'));
+  if (TRIGGER_ON) {
+    check('宽屏 🌐 入口也贴 Star 右侧',
+      !!trigD && trigD.previousSibling === d.w.document.getElementById('star'));
+  } else {
+    check('SHOW_TRIGGER=false：宽屏同样不挂 🌐 入口', !trigD);
+  }
   check('宽屏也不建下拉容器', !d.w.document.getElementById('sxg-header-menu'));
   d.w.close();
 
