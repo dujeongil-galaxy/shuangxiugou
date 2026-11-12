@@ -1,54 +1,6 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<!-- SXG-MAINT-GATE:START · 2026-11-12 关站维护，预计 2026-11-12 13:30 恢复
-     这是站长临时插的维护闸门，正文未改动。恢复请运行：node scripts/maintenance-gate.mjs --off
-     兜底：2026-11-12T06:00:00.000Z 之后本段自动失效（页面无需再改） -->
-<style id="sxg-maint-css">
-html.sxg-maint{visibility:hidden;overflow:hidden!important}
-html.sxg-maint body{overflow:hidden!important}
-#sxg-maint-box{visibility:visible;position:fixed;top:0;right:0;bottom:0;left:0;z-index:2147483640;display:flex;align-items:center;justify-content:center;padding:24px;background:#f4f6f6;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;color:#111827;line-height:1.6}
-#sxg-maint-box .sxg-card{width:100%;max-width:420px;background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:38px 26px 28px;text-align:center;box-shadow:0 10px 30px rgba(15,118,110,.10)}
-#sxg-maint-box .sxg-badge{width:54px;height:54px;margin:0 auto 18px;border-radius:50%;background:#e6f2f0;display:flex;align-items:center;justify-content:center}
-#sxg-maint-box .sxg-title{font-size:22px;font-weight:800;margin:0 0 10px;letter-spacing:.5px;line-height:1.4}
-#sxg-maint-box .sxg-p{margin:0 0 8px;font-size:14px;line-height:1.8;color:#4b5563}
-#sxg-maint-box .sxg-eta{font-size:15px;font-weight:700;color:#0f766e;margin:14px 0 6px}
-#sxg-maint-box .sxg-cd{font-size:13px;color:#6b7280;margin:0}
-#sxg-maint-box .sxg-foot{font-size:12px;color:#9ca3af;margin:18px 0 0;padding-top:14px;border-top:1px solid #f3f4f6}
-</style>
-<script id="sxg-maint-gate">
-(function () {
-  var ETA = 1794461400000, UNLOCK = 1794463200000;
-  if (/jsdom/i.test(navigator.userAgent || '')) return;   // 静态校验 / jsdom 渲染不放闸门
-  if (Date.now() >= UNLOCK) return;                        // 兜底：到点自动放行
-  var E = document.documentElement;
-  if ((' ' + E.className + ' ').indexOf(' sxg-maint ') < 0) E.className += (E.className ? ' ' : '') + 'sxg-maint';
-  if (document.getElementById('sxg-maint-box')) return;    // 幂等：同页只盖一张
-  var clock = '<svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="#0f766e" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5V12l3.2 2.1"></path></svg>';
-  var box = document.createElement('div');
-  box.id = 'sxg-maint-box';
-  box.setAttribute('role', 'alert');
-  box.innerHTML = '<div class="sxg-card"><div class="sxg-badge">' + clock + '</div>'
-    + '<div class="sxg-title">站点维护中</div>'
-    + '<div class="sxg-p">双休购 ShuangxiuGo 正在进行维护，维护期间所有页面暂停访问。</div>'
-    + '<div class="sxg-p sxg-eta">预计 2026-11-12 13:30 恢复正常</div>'
-    + '<div class="sxg-p sxg-cd" id="sxg-maint-cd">维护中，请稍后刷新</div>'
-    + '<div class="sxg-foot">维护完成刷新即恢复，无需清除缓存</div></div>';
-  (document.body || E).appendChild(box);
-  document.title = '维护中 · 双休购 ShuangxiuGo';
-  var cd = document.getElementById('sxg-maint-cd');
-  (function tick() {
-    if (!cd || !cd.parentNode) return;
-    var left = ETA - Date.now();
-    if (left <= 0) { cd.textContent = '已到预计完成时间，若仍停留本页请刷新重试'; return; }
-    var m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
-    cd.textContent = '距预计恢复还有 ' + (m > 0 ? m + ' 分 ' : '') + s + ' 秒';
-    setTimeout(tick, 1000);
-  })();
-})();
-</script>
-<!-- SXG-MAINT-GATE:END -->
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>长城汽车 (GWM) 几点下班 双休率51%｜双休购</title>

@@ -109,7 +109,12 @@ function strip(src) {
   if (s < 0) return src;
   const e = src.indexOf(END_MARK, s);
   if (e < 0) throw new Error('找到 START 但找不到 END，文件已被手工改坏，先停下排查');
-  return src.slice(0, s) + src.slice(e + END_MARK.length);
+  // 2026-11-12 恢复时发现：insert() 在 PAYLOAD 前多加了一个 '\n'，
+  // 只切 START..END 会在 <head> 后留下一行空行（189 页各多 1 行），
+  // 变成「多出 189 行插入」的脏 diff，不是「恢复原样」。
+  // 剥块时连同这一行缩进前的换行一起吃掉，才能字节级还原。
+  const headEnd = s > 0 && src[s - 1] === '\n' ? s - 1 : s;
+  return src.slice(0, headEnd) + src.slice(e + END_MARK.length);
 }
 
 function insert(src) {
