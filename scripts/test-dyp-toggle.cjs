@@ -3,7 +3,7 @@
    --------------------------------------------------------------------------
    被测：dyp-version-toggle.js（浏览器 IIFE，jsdom 真跑）
    覆盖：
-     ① 默认版本 new；转换按钮文案随版本翻转（替换旧版 / 新版本）
+     ① 默认版本 new；转换按钮文案随版本翻转（切换旧版 / 新版本）
      ② 默认（new）把 .dyp__acts 调成 [比亚迪] [理想L8] [站长随笔]，隐藏事实核查
      ③ 切到 old 恢复 [在抖音中观看] [事实核查] [站长随笔]
      ④ 幂等：重复应用 new 不产生多枚 .dyp__douyin2
@@ -11,7 +11,7 @@
         不在顶栏 / dock；带 .dyp__version-toggle
      ⑥ 弹窗未 build 时 sweep 不报错、不误建按钮
      ⑦ 点击转换按钮翻版本（new ↔ old）并记忆 localStorage
-     ⑧ index.html 引用 dyp-version-toggle.js?v=2（剥 HTML 注释再判）
+     ⑧ index.html 引用 dyp-version-toggle.js?v=5（剥 HTML 注释再判）
    ========================================================================== */
 'use strict';
 
@@ -83,7 +83,7 @@ function injectFactcheck(w) {
   console.log('\n① 默认版 new + 文案翻转');
   const a = mkDom({});
   check('默认版本是 new', a.w.SXGDypToggle.getVersion() === 'new');
-  check('new 时标签「替换旧版」', a.w.SXGDypToggle.labelFor('new') === '替换旧版');
+  check('new 时标签「切换旧版」', a.w.SXGDypToggle.labelFor('new') === '切换旧版');
   check('old 时标签「新版本」', a.w.SXGDypToggle.labelFor('old') === '新版本');
   a.w.close();
 
@@ -152,8 +152,8 @@ function injectFactcheck(w) {
   const xE = panelE && panelE.querySelector('.dyp__x');
   check('按钮在 .dyp__panel 内', !!btnE && panelE.contains(btnE));
   check('插在 × 关闭按钮之前（右上角、× 左侧）', !!btnE && xE && btnE.nextSibling === xE);
-  check('带 .dyp__version-toggle 且文案默认「替换旧版」', !!btnE
-    && btnE.classList.contains('dyp__version-toggle') && btnE.textContent === '替换旧版');
+  check('带 .dyp__version-toggle 且文案默认「切换旧版」', !!btnE
+    && btnE.classList.contains('dyp__version-toggle') && btnE.textContent === '切换旧版');
   check('不在页面顶栏（不在 #hdr 内）', !!btnE && !e.w.document.getElementById('hdr').contains(btnE));
   e.w.close();
 
@@ -168,21 +168,21 @@ function injectFactcheck(w) {
   console.log('\n⑦ 点击翻转 + 记忆');
   const g = mkDom({ panel: true });
   const btnG = g.w.document.getElementById('sxg-dyp-toggle-btn');
-  check('起始文案＝替换旧版（new）', btnG.textContent === '替换旧版');
+  check('起始文案＝切换旧版（new）', btnG.textContent === '切换旧版');
   btnG.dispatchEvent(new g.w.Event('click', { bubbles: true, cancelable: true }));
   check('点一次 → new 翻成 old，文案＝新版本', g.w.SXGDypToggle.getVersion() === 'old'
     && btnG.textContent === '新版本');
   btnG.dispatchEvent(new g.w.Event('click', { bubbles: true, cancelable: true }));
-  check('再点一次 → old 翻回 new，文案＝替换旧版', g.w.SXGDypToggle.getVersion() === 'new'
-    && btnG.textContent === '替换旧版');
+  check('再点一次 → old 翻回 new，文案＝切换旧版', g.w.SXGDypToggle.getVersion() === 'new'
+    && btnG.textContent === '切换旧版');
   g.w.close();
 
-  /* ⑧ index.html 引用 ?v=4（剥 HTML 注释后再判，避免被注释块误判）*/
+  /* ⑧ index.html 引用 ?v=5（剥 HTML 注释后再判，避免被注释块误判）*/
   console.log('\n⑧ index.html 引用');
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')
     .replace(/<!--[\s\S]*?-->/g, '');
-  check('index.html 已引用 dyp-version-toggle.js?v=4',
-    /<script defer src="\.\/dyp-version-toggle\.js\?v=4"><\/script>/.test(idx));
+  check('index.html 已引用 dyp-version-toggle.js?v=5',
+    /<script defer src="\.\/dyp-version-toggle\.js\?v=5"><\/script>/.test(idx));
 
   setTimeout(function () {
     console.log('\n========== 结果：' + passed + ' 项通过，' + failed + ' 项失败 ==========');

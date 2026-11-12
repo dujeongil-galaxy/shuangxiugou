@@ -195,7 +195,7 @@ function toggleProbe(ws) {
   console.log('[mobile] ACTS(new)=' + JSON.stringify(mActs));
   await shot(ws, 'shots/dyp-mobile-new.png', 390, 844);
 
-  const toggleOk = (t) => t && t.present && t.display !== 'none' && t.text === '替换旧版'
+  const toggleOk = (t) => t && t.present && t.display !== 'none' && t.text === '切换旧版'
     && t.inPanel === true && t.beforeX === true && t.inHeader === false && t.inDock === false;
   // 三枚按钮不许有文案被 ellipsis 截断（站长 11-12「看看按钮大小，再看文字」）
   const noClip = (a) => !!a && !!a.mGo && !!a.mD2 && !!a.mLater

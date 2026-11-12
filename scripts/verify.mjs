@@ -8587,11 +8587,19 @@ section('25. 成功案例专题页（QQ奶奶）');
     '按钮没进弹窗 / 回到顶栏 dock 落位 → 与站长「放在这个位置」不符');
 
   // ④ 挂载与 ?v 钉子 + jsdom 测试挂进 CI（§21o）。
-  check(/<script defer src="\.\/dyp-version-toggle\.js\?v=4"><\/script>/.test(idx36u)
+  check(/<script defer src="\.\/dyp-version-toggle\.js\?v=5"><\/script>/.test(idx36u)
     && exists('scripts/test-dyp-toggle.cjs')
     && wf36u.indexOf('node scripts/test-dyp-toggle.cjs') !== -1,
-    '§36u index.html 挂载 dyp-version-toggle.js?v=4，配套 jsdom 测试挂进 CI',
+    '§36u index.html 挂载 dyp-version-toggle.js?v=5，配套 jsdom 测试挂进 CI',
     '?v 没 bump / 测试没挂 CI → 转换逻辑静默失效没人拦');
+
+  /* ⑥ 站长 2026-11-12：「切换旧版，请不要使用替换二字」。
+     按钮文案固定为「切换旧版」，源码里不得再出现「替换」二字（反面反查，
+     防下次改文案又把词写回去）。old 态那侧仍写「新版本」，不受影响。 */
+  check(/labelFor\(v\)\s*\{\s*return\s+v\s*===\s*'new'\s*\?\s*'切换旧版'/.test(t36u)
+    && !/替换/.test(t36u),
+    '§36u 转换按钮文案「切换旧版」，源码内不得出现「替换」二字',
+    '文案回退到「替换旧版」或在别处又写「替换」→ 与站长用词要求不符');
 
   // ⑤ 三按钮文案与宽度分配（2026-11-12 15:48 站长「看看按钮大小，再看文字」）。
   //    实测（CDP 1440）：.dyp__acts 行宽 357px、gap 8px，旧版 .dyp__go{flex:2} 让
