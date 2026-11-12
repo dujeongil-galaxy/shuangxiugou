@@ -1,4 +1,4 @@
-# 双休购 · ShuangxiuGo
+﻿# 双休购 · ShuangxiuGo
 
 把老板考核你的 KPI，变成打工人考核老板的货币选票。
 
@@ -286,7 +286,7 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 > **近期改动入口**：最近一批（2026-11-12 19:05 · 提交 `6458763`）顶栏恢复「匿名邮箱」、撤掉蓝色 🌐，并把顶栏组成与开关写死成规则章节。站长看图指「最右边一开始不是有个匿名邮箱的按钮吗，被 AI 给吃了」——① `github-access-help.js` 新增 `SHOW_TRIGGER = false`，`ensureTrigger()` 首行 `if(!SHOW_TRIGGER){removeTrigger();return false;}`：只撤 Star 旁的可见入口，帮助浮层与 `appeal-policy.js` 的 `[data-sxg-gh-help]` 槽位保留。② `anon-mail.js` 的 `ENABLED` 由 `false` 翻回 `true`（12:02 `dcf9868` 那次只是站长要求临时隐藏，落位逻辑一直没动，翻回即恢复），位在 Login GitHub 之后、深青底 `rgb(15,118,110)`。改后桌面顶栏五枚自左向右为 `+ 提交数据/申诉` → `★ Star` → `☕ 赞助` → `🔑 Login GitHub` → `匿名邮箱`。③ 同批 `dyp-version-toggle.js` 三枚按钮去掉「短片」字样（`比亚迪短片 / 理想L8短片` → `比亚迪 / 理想L8`）。`index.html` 中 `anon-mail.js` 与 `github-access-help.js` bump 至 `?v=3`、`dyp-version-toggle.js` 至 `?v=4`；CDP 强刷双端真渲染核对顺序与底色，🌐 已消失。开关口径见上方「🧭 顶栏按钮组成与两处显隐开关」。逐批明细见 [最近更新.md](./最近更新.md) 与 [CHANGELOG.md](./CHANGELOG.md)。
 
-> 同批收尾（2026-11-12 · 文档 + 断言口径）：站长要求「写入 README，避免下次又被顺手改掉」——把顶栏五枚顺序、两处开关现状与三条禁令固化成上方规则章节；同时把验证口径从「钉死当前布尔值」改成「跟着开关走」：`verify.mjs` §36t④ 改钉 `var SHOW_TRIGGER` 存在 + `if(!SHOW_TRIGGER){removeTrigger();return false}` 早退机制 + 开着时贴 Star 常显，§36u 文案断言与 §36r/§36s/§36u⑦ 的 `?v` 钉子同步到 `v=3/v=4`；`test-github-access-help.cjs` ④、`test-header-expand.cjs` ⑤ 与 `test-dyp-toggle.cjs`、`cdp-dyp-toggle.cjs` 的按钮文案改 `比亚迪 / 理想L8`。复核：verify **1712 全绿**，四个 jsdom 测试 25/40/32/31 全 0 失败。
+> 同批收尾（2026-11-12 · 文档 + 断言口径）：站长要求「写入 README，避免下次又被顺手改掉」——把顶栏五枚顺序、两处开关现状与三条禁令固化成上方规则章节；同时把验证口径从「钉死当前布尔值」改成「跟着开关走」：`verify.mjs` §36t④ 改钉 `var SHOW_TRIGGER` 存在 + `if(!SHOW_TRIGGER){removeTrigger();return false}` 早退机制 + 开着时贴 Star 常显，§36u 文案断言与 §36r/§36s/§36u⑦ 的 `?v` 钉子同步到 `v=3/v=4`；`test-github-access-help.cjs` ④、`test-header-expand.cjs` ⑤ 与 `test-dyp-toggle.cjs`、`cdp-dyp-toggle.cjs` 的按钮文案改 `比亚迪 / 理想L8`。复核：verify **1713 全绿**，四个 jsdom 测试 25/40/32/31 全 0 失败。
 
 > 上一批（2026-11-12 16:13 · 提交 `af19de0`）三条一起落地。① **弹窗三按钮**：站长追问「看看按钮大小，再看文字」——实测 1440 行宽 357px、后两枚只分到 90px，「理想L8·抖音短片」scrollWidth 107 > clientWidth 92 被省略号截断；文案收成 `比亚迪短片 / 理想L8短片 / 站长随笔`，新版三枚等宽（`@media(min-width:521px)`，≤520px 保留官方纵向 `flex:0 0 auto`），修后 113/115/115px、三枚 `clipped=false`。② **零跑备注栏**写入售后服务抖音短链 `n-xv654_mrI`（站长：写入备注栏、不挂证据链），同段注明「内容真实性存疑，请注意甄别」+ 视频未点名品牌 + 不进本卡证据链；备注框渲染由纯 `textContent` 改为「http(s) 自动成可点 `<a>`」（`rel=noopener noreferrer nofollow`），`brand/leapmotor.html` 保持零抖音链。③ **视频区**新增第 4 条「为什么说宁等网约车也不要坐出租车？」（`asAmGiTjrAU`），`featured-douyin.js ?v=5→6`。机器强制：verify 1706→1713、§36u⑤/§36m 新断言、`test-dyp-toggle` 25 项、CDP 双视口 + 新增 `cdp-leapmotor-note-video.cjs`（`NOTE_OK`/`VIDEO_OK`）、7 组故障注入全判红。逐批明细见 [最近更新.md](./最近更新.md) 与 [CHANGELOG.md](./CHANGELOG.md)。
 
