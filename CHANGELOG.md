@@ -4,6 +4,21 @@
 
 ---
 
+### feat：AI 形象按线路分流 + 阿里云函数计算侧脚手架（2026-11-13）
+
+站长指令：「AI 形象切换分流——前 3 个卡通形象（A-C）走 Cloudflare，后 3 个（D-F）走阿里云，并说明阿里云如何配置」。
+
+- **`ai-config.js` 双接入点**：新增 `endpointCN`（阿里云 FC 公网地址，当前为空串），与 `endpoint`（Cloudflare Worker）并存；文件头注释补齐两条线路的用途、分流规则与「空则回落」语义，并修正注释里 `index.js` → `index.mjs`。
+- **`ai-chat.js` 分流**：`ROUTE_SPLIT = 3`，`avatarIndex(id) < 3 → 'cf'`，否则 `'cn'`；新增 `wantedRoute / hasRoute / endpointOf / resolveRoute`，`resolveRoute()` 返回 `{want, route, fallback}`——目标线路未配即切另一条并置 `fallback=true`；`fetch` 打 `endpointOf(rs.route)`。
+- **回落可见**：面板顶部常显线路条 `#sxg-ai-route`（`routeBadgeText()` 三态文案 + `fallback` 时 `warn` 样式），「切换形象」后 `syncRouteBadge(resolveRoute(currentAvatarId()))` 同步刷新；线路条同步时机落在 `appendChild(panel)` 之后（首帧不空，测试抓过这个坑）。
+- **stub 口径**：`var STUB = !ENDPOINT && !ENDPOINT_CN;`，两条线路都空才进「AI 开通中」态。
+- **请求体**：`{ question, history, route }`，`route` 记**实际**线路（回落后为 `cf`）。
+- **异常文案分线路**：`NET_ERR.cf` 保留 VPN 指引，`NET_ERR.cn` 为「境内直连、一般无需代理，请稍后重试 / 可换回 A/B/C」，正文不出现 VPN 三字。
+- **`ai-worker/src/worker.js`**：解析 `body.route`（只认 `cf`/`cn`），`routeNotice(route)` 追加系统提示词「如实说明本次由哪条线路服务」，响应回声 `route`。
+- **新增 `ai-worker-aliyun/`**：`index.mjs`（FC Node.js 18+ handler，百炼 DashScope `compatible-mode/v1/chat/completions`）、`package.json`、`s.yaml`、`.env.example`、中文 `README.md`；CORS 白名单 / 500 字上限 / 每 IP 每小时 20 次限流 / `max_tokens` 与 Worker 对齐，Key 只读 `process.env.DASHSCOPE_API_KEY`；README 覆盖「开通百炼拿 Key → 建函数 → 配环境变量 → 拿公网地址 → 填 `endpointCN`」。
+- **机器强制**：`?v` 递增 186 处（`ai-config.js?v=1→2`、`ai-chat.js?v=27→28`）；`verify.mjs` 新增 §21g-1 二十余条断言、§21g stub 断言改口径；新增 `scripts/test-ai-route.cjs`（31 项）与 `scripts/test-ai-worker-aliyun.cjs`（46 项）并挂进 CI；`test-ai-worker.cjs` 补 route 四类断言（37 项）。
+- 复核：verify **1754 全绿**；`test-ai-chat.cjs` 35/0。生产站顶栏按钮组成与两处显隐开关未改。
+
 ### feat：顶栏第 6 枚「分享本站」入口 + 匿名邮箱补信封 LOGO（2026-11-12 23:55 · 提交 `519edb4`）
 
 站长指令：「保留此逻辑（打赏页分享剥 sponsor.html 指向首页）。现在开始解决第二件事，右上角的问题」。

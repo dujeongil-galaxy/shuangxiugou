@@ -32,14 +32,22 @@
 (function () {
   'use strict';
 
+  // ---------- 双线路接入点（2026-11-13 分流改造） ----------
+  // endpoint   → 线路 cf：Cloudflare Worker（ai-worker/）——形象 A/B/C 走这条
+  // endpointCN → 线路 cn：阿里云函数计算 FC（ai-worker-aliyun/）——形象 D/E/F 走这条
+  // 只有「两条线路都不可用」才算未开通；仅 cn 空 → D/E/F 回落 cf 并在面板明说。
+  function normUrl(v) {
+    return (typeof v === 'string' && /^https?:\/\//.test(v.trim())) ? v.trim() : '';
+  }
   var CFG = window.SXG_AI_CONFIG || {};
-  var ENDPOINT = typeof CFG.endpoint === 'string' ? CFG.endpoint.trim() : '';
+  var ENDPOINT = normUrl(CFG.endpoint);      // 线路 cf（Cloudflare）
+  var ENDPOINT_CN = normUrl(CFG.endpointCN); // 线路 cn（阿里云函数计算）
 
-  // ---------- 未配置 endpoint：按钮照常显示（stub 模式） ----------
+  // ---------- 两条线路都不可用：按钮照常显示（stub 模式） ----------
   // 2026-10-26 站长实测反馈：endpoint 空 = 整个隐身的设计错了——用户以为
   // 功能坏了。改为按钮永远显示；stub 模式下点开面板提示「AI 开通中」，
-  // 引导部署（部署教程在 ai-worker/README.md）。
-  var STUB = !ENDPOINT || !/^https?:\/\//.test(ENDPOINT);
+  // 引导部署（部署教程在 ai-worker/README.md 与 ai-worker-aliyun/README.md）。
+  var STUB = !ENDPOINT && !ENDPOINT_CN;
 
   var BTN_ID = 'sxg-ai-fab';
   var PANEL_ID = 'sxg-ai-panel';
@@ -91,6 +99,53 @@
     for (var i = 0; i < AVATARS.length; i++) if (AVATARS[i].id === c) return c;
     return AVATAR_DEFAULT;
   }
+
+  // ---------- 线路分流（形象 A/B/C → cf，D/E/F → cn；cn 空则回落 cf） ----------
+  // 2026-11-13 站长指令：前三个形象走 Cloudflare、后三个走阿里云，让国内用户少开 VPN。
+  // 三条纪律：① 回落后请求体里的 route 记**实际**线路（服务端要据此说明）；
+  //          ② 回落必须在面板里可见（线路条 + 一句话），不许静默；
+  //          ③ 网络异常文案按线路分别措辞——阿里云是境内直连，不能叫用户开 VPN。
+  var ROUTE_SPLIT = 3; // 索引 0/1/2 → cf；3/4/5 → cn
+  var ROUTE_LABEL = { cf: 'Cloudflare', cn: '阿里云' };
+  var ROUTE_FULL = { cf: 'Cloudflare Workers · 海外节点', cn: '阿里云函数计算 · 境内直连' };
+  function avatarIndex(id) {
+    for (var i = 0; i < AVATARS.length; i++) if (AVATARS[i].id === id) return i;
+    return 0;
+  }
+  // 形象「本应」走哪条线：只看索引，不看是否配置
+  function wantedRoute(id) {
+    return avatarIndex(id) < ROUTE_SPLIT ? 'cf' : 'cn';
+  }
+  function hasRoute(r) { return r === 'cn' ? !!ENDPOINT_CN : !!ENDPOINT; }
+  function endpointOf(r) { return r === 'cn' ? ENDPOINT_CN : ENDPOINT; }
+  // 实际走哪条线：期望线路没配 → 回落另一条（fallback=true，供 UI 明说）
+  function resolveRoute(id) {
+    var want = wantedRoute(id);
+    if (hasRoute(want)) return { want: want, route: want, fallback: false };
+    var other = want === 'cf' ? 'cn' : 'cf';
+    if (hasRoute(other)) return { want: want, route: other, fallback: true };
+    return { want: want, route: '', fallback: false };
+  }
+  function routeBadgeText(rs) {
+    if (!rs.route) return '线路：未开通（两条线路都还没配接入点）';
+    if (rs.fallback) return '线路：' + ROUTE_LABEL[rs.route] + '（' + ROUTE_LABEL[rs.want] + ' 接入点未配置，本次已回落）';
+    return '线路：' + ROUTE_LABEL[rs.route] + '（' + (rs.route === 'cn' ? '境内直连，通常无需 VPN' : '海外节点，国内网络需 VPN') + '）';
+  }
+  // 切换形象后必须跟着变，否则线路对用户是「看不见的黑盒」
+  function syncRouteBadge(rs) {
+    var el = document.getElementById('sxg-ai-route');
+    if (!el) return;
+    el.textContent = routeBadgeText(rs);
+    if (rs.fallback || !rs.route) el.className = 'sxg-ai-route warn';
+    else el.className = 'sxg-ai-route';
+  }
+
+  // 网络异常文案按线路分别措辞（模型/线路不同，自救办法本来就不同）
+  var NET_ERR = {
+    cf: '⚠️ 网络异常——连不上 AI 服务。本站 Cloudflare 线路由 Cloudflare Workers 提供，国内网络无法直接访问，需开启 VPN：https://47.112.97.173:8000/register?aff=v17mHNYv ',
+    cn: '⚠️ 网络异常——连不上 AI 服务。当前走的是阿里云线路（境内直连），一般无需代理，请稍后重试；若持续失败，可点右上角「切换形象」换回 A/B/C 形象改走 Cloudflare 线路。'
+  };
+
   var busy = false;
   var history = []; // [{role, content}] 仅当前会话内存
   var autoCloseTimer = null; // 加载后自动收起面板的定时器
@@ -132,7 +187,11 @@
       '}',
       '#' + PANEL_ID + '[hidden]{display:none}',
       '.sxg-ai-head{background:#0F766E;color:#fff;padding:10px 14px;font-size:14px;font-weight:600}',
-      '.sxg-ai-head small{display:block;font-weight:400;font-size:11px;opacity:.85;margin-top:2px}','#sxg-ai-head-avatar{transition:box-shadow .12s,transform .12s;border-radius:50%}','#sxg-ai-head-avatar:hover{box-shadow:0 0 0 2px rgba(255,255,255,.8)}','.sxg-ai-swap{margin-left:auto;display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:8px;padding:4px 9px;font-size:12px;font-weight:500;cursor:pointer;line-height:1.2;font-family:inherit;white-space:nowrap;flex:none}','.sxg-ai-swap:hover{background:rgba(255,255,255,.3)}',
+      '.sxg-ai-head small{display:block;font-weight:400;font-size:11px;opacity:.85;margin-top:2px}',
+      /* 线路条：面板头部下沿一整行，永远看得见当前走的是哪条线路（切换形象即同步） */
+      '.sxg-ai-route{padding:5px 14px;font-size:11px;line-height:1.45;background:#ecfdf5;color:#0F766E;border-bottom:1px solid #d1fae5}',
+      '.sxg-ai-route.warn{background:#fef3c7;color:#92400e;border-bottom-color:#fde68a}',
+      '@media (prefers-color-scheme:dark){.sxg-ai-route{background:#064e3b;color:#6ee7b7;border-bottom-color:#065f46}.sxg-ai-route.warn{background:#451a03;color:#fcd34d;border-bottom-color:#78350f}}','#sxg-ai-head-avatar{transition:box-shadow .12s,transform .12s;border-radius:50%}','#sxg-ai-head-avatar:hover{box-shadow:0 0 0 2px rgba(255,255,255,.8)}','.sxg-ai-swap{margin-left:auto;display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:8px;padding:4px 9px;font-size:12px;font-weight:500;cursor:pointer;line-height:1.2;font-family:inherit;white-space:nowrap;flex:none}','.sxg-ai-swap:hover{background:rgba(255,255,255,.3)}',
       '.sxg-ai-log{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:#f9fafb}',
       '.sxg-ai-msg{max-width:86%;padding:8px 11px;border-radius:10px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word}',
       '.sxg-ai-msg.user{align-self:flex-end;background:#0F766E;color:#fff;border-bottom-right-radius:3px}',
@@ -249,6 +308,13 @@
     });
 
     panel.appendChild(head);
+
+    // 线路条（头部下沿，全宽）：首次打开即告知当前走 Cloudflare 还是阿里云
+    var routeEl = document.createElement('div');
+    routeEl.id = 'sxg-ai-route';
+    routeEl.className = 'sxg-ai-route';
+    routeEl.setAttribute('role', 'status');
+    panel.appendChild(routeEl);
     panel.appendChild(log);
     panel.appendChild(form);
 
@@ -259,7 +325,16 @@
       // stub 模式：AI 服务未接入——明说 + 引导，不发请求不装死
       hello.innerHTML = linkify('你好，我是双休购的劳动法小助手。AI 服务正在开通中，暂时还不能回答问题——开通后会在这里为你解答劳动法（工时、加班费、年休假、试用期、解除补偿）与本站双休评级口径相关问题。');
     } else {
-      hello.innerHTML = linkify('你好，我是双休购的劳动法小助手。可以问我劳动法相关问题（工时、加班费、年休假、试用期、解除补偿），也可以问本站双休评级的口径。具体企业的最新数据请以站内搜索为准。\n\n由 Cloudflare Workers 提供 GLM-4.7-flash 模型，国内网络需开启 VPN（站长推荐：https://47.112.97.173:8000/register?aff=v17mHNYv ）；或 Login GitHub 并 Starred 本仓库满 7 天，解锁阿里云通义千问国内高速服务。');
+      var rs0 = resolveRoute(currentAvatarId());
+      var routeLine;
+      if (rs0.route === 'cn') {
+        routeLine = '当前形象走阿里云线路（' + ROUTE_FULL.cn + '），境内网络直连、通常不需要 VPN。';
+      } else if (rs0.fallback) {
+        routeLine = '当前形象本应走阿里云线路，但阿里云接入点（endpointCN）尚未配置，已自动回落 Cloudflare 线路；想境内直连请等站长把空填上。';
+      } else {
+        routeLine = '当前形象走 Cloudflare 线路（' + ROUTE_FULL.cf + '），模型 GLM-4.7-flash，国内网络需开启 VPN（站长推荐：https://47.112.97.173:8000/register?aff=v17mHNYv ）；或 Login GitHub 并 Starred 本仓库满 7 天，解锁阿里云通义千问国内高速服务。想要境内直连：点右上角「切换形象」换到 D / E / F 三个形象，走阿里云线路。';
+      }
+      hello.innerHTML = linkify('你好，我是双休购的劳动法小助手。可以问我劳动法相关问题（工时、加班费、年休假、试用期、解除补偿），也可以问本站双休评级的口径。具体企业的最新数据请以站内搜索为准。\n\n' + routeLine);
     }
     log.appendChild(hello);
     if (STUB) {
@@ -270,6 +345,8 @@
 
     document.body.appendChild(panel);
     document.body.appendChild(btn);
+    // 线路条首帧文案：必须在 panel 挂进 body 之后（此前 getElementById 还查不到）
+    syncRouteBadge(resolveRoute(currentAvatarId()));
 
     // 手机端几何：实测站点 header 下沿写进 --sxg-ai-top，面板贴在它下面；
     // visualViewport 高度写进 --sxg-ai-vh，软键盘弹出时只缩高不挪位
@@ -369,6 +446,15 @@
       img.style.visibility = '';
     }
     setCookie(AVATAR_COOKIE, id, 365);
+    // 线路跟着形象走：切完立刻刷线路条；若发生回落，在对话里再说一句（不许静默）
+    var rs = resolveRoute(id);
+    syncRouteBadge(rs);
+    if (rs.fallback) {
+      var lg = document.querySelector('.sxg-ai-log');
+      if (lg) {
+        addMsg(lg, 'bot', '已切到形象 ' + id + '：该形象应走阿里云线路，但阿里云接入点（endpointCN）尚未配置，本次已自动回落 Cloudflare 线路，国内网络可能仍需 VPN。');
+      }
+    }
     var pop = document.getElementById('sxg-ai-avatar-pop');
     if (pop) {
       var btns = pop.querySelectorAll('button');
@@ -438,15 +524,20 @@
 
   function ask(q, log, send) {
     if (STUB) return; // 未接入：不 fetch（表单已禁用，这是双保险）
+    // 分流：按当前形象的索引选线路（cn 未配 → 回落 cf），route 记**实际**线路
+    var rs = resolveRoute(currentAvatarId());
+    if (!rs.route) return; // 兜底：理论上 STUB 已拦住
+    var route = rs.route;
     busy = true;
     send.disabled = true;
     addMsg(log, 'user', q);
 
     var thinking = addMsg(log, 'bot', '思考中…');
 
-    var payload = { question: q, history: history.slice(-MAX_HISTORY) };
+    // route 字段给服务端做「如实说明本次由哪条线路服务」的依据（前端只说明用）
+    var payload = { question: q, history: history.slice(-MAX_HISTORY), route: route };
 
-    fetch(ENDPOINT, {
+    fetch(endpointOf(route), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -466,7 +557,8 @@
       })
       .catch(function () {
         thinking.remove();
-        addMsg(log, 'err', '⚠️ 网络异常——连不上 AI 服务。本站 AI 由 Cloudflare Workers 提供，国内网络无法直接访问，需开启 VPN：https://47.112.97.173:8000/register?aff=v17mHNYv ');
+        // 阿里云是境内直连，失败文案里绝不出现「需要开 VPN」——那是 Cloudflare 的自救法
+        addMsg(log, 'err', NET_ERR[route] || NET_ERR.cf);
       })
       .then(function () {
         busy = false;

@@ -1,0 +1,37 @@
+edition: 3.0.0
+name: shuangxiugou-ai-worker-aliyun
+# Serverless Devs 描述文件（阿里云函数计算 FC 3.0）
+# 用法：s config add（配好 AK）→ s deploy → 记下返回的 HTTP 触发器公网地址
+# 不想用 s 也可以，控制台手点同样能建，步骤见 README.md「路线 B」
+access: default
+
+vars:
+  region: cn-hangzhou
+
+resources:
+  aiCn:
+    component: fc3
+    props:
+      region: ${vars.region}
+      functionName: shuangxiugou-ai-cn
+      description: 双休购「劳动法小助手」境内直连线路（与 Cloudflare Worker 接口对齐）
+      runtime: nodejs20
+      code: ./
+      handler: index.handler
+      memorySize: 256
+      timeout: 60
+      # 单实例并发：Node 里只做一次外部 fetch，10 够用，省冷启动
+      instanceConcurrency: 10
+      environmentVariables:
+        # API Key 绝不写进仓库：本地先 export DASHSCOPE_API_KEY=sk-xxx 再 s deploy
+        DASHSCOPE_API_KEY: ${env('DASHSCOPE_API_KEY')}
+        DASHSCOPE_MODEL: qwen-plus
+      triggers:
+        - triggerName: httpTrigger
+          triggerType: http
+          qualifier: LATEST
+          triggerConfig:
+            authType: anonymous   # 公网匿名可访问（安全靠代码里的 CORS 白名单 + 限流）
+            methods:
+              - POST
+              - OPTIONS

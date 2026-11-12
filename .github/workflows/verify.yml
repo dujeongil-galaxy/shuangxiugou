@@ -209,6 +209,14 @@ jobs:
       - name: AI Worker 逻辑测试
         run: node scripts/test-ai-worker.cjs
 
+      # AI 形象按线路分流（2026-11-13）：A-C 走 Cloudflare / D-F 走阿里云，
+      # endpointCN 缺失回落且可见提示、请求体 route 字段、两线路异常文案分开。
+      - name: AI 分流行为测试
+        run: node scripts/test-ai-route.cjs
+      # 阿里云函数计算线路（2026-11-13）：桩 fetch 验 CORS/校验/限流/契约对齐。
+      - name: 阿里云线路逻辑测试
+        run: node scripts/test-ai-worker-aliyun.cjs
+
       # notes.html 锁屏的「我同意/我不同意」门禁行为。
       - name: 笔记锁屏同意门测试
         run: node scripts/test-notes-agree.cjs

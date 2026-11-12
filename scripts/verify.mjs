@@ -6027,8 +6027,8 @@ section('21c. 首页滑到底部按钮');
   // ---- stub 模式（endpoint 空 = 按钮照常显示 + 面板提示开通中）----
   // 2026-10-26 站长实测反馈：旧设计「endpoint 空 = 整体隐身」让站长以为
   // 图标坏了。改为永远显示；stub 提示「开通中」+ 表单禁用 + ask() 双保险。
-  check(/var STUB = !ENDPOINT \|\| !\/\^https\?:\\\/\\\/\/\.test\(ENDPOINT\);/.test(aiChat),
-    'stub 模式标记（未配置 endpoint 时按钮仍渲染）');
+  check(/var STUB = !ENDPOINT && !ENDPOINT_CN;/.test(aiChat),
+    'stub 模式标记（两条线路都不可用时按钮仍渲染）');
   check(/if \(STUB\) return; \/\/ 未接入：不 fetch/.test(aiChat),
     'ask() 的 stub 守卫（不 fetch，双保险）');
   check(/AI 服务正在开通中/.test(aiChat) && /AI 开通中，暂不可提问/.test(aiChat),
@@ -6128,6 +6128,98 @@ section('21c. 首页滑到底部按钮');
     const ci = read('.github/workflows/verify.yml');
     check(ci.includes('test-molina-card.cjs'),
       'CI 里已接入茉莉奶白卡与提醒文案测试');
+  }
+}
+
+// ---------- 21g-1. AI 形象按线路分流（CF / 阿里云双线路，2026-11-13 站长指令） ----------
+// 站长要求：前 3 个形象（A-C，索引 0-2）走 Cloudflare，后 3 个（D-F，索引 3-5）走阿里云；
+// 阿里云地址未配不许静默——回落 CF 但必须在面板里明说；线路标识随请求带给服务端；
+// 两条线路的网络异常文案要分开写（阿里云那条不能提 VPN，国内用户看了莫名其妙）。
+{
+  const aiChat = exists('ai-chat.js') ? read('ai-chat.js') : '';
+  const aiCfg = exists('ai-config.js') ? read('ai-config.js') : '';
+  const worker = exists('ai-worker/src/worker.js') ? read('ai-worker/src/worker.js') : '';
+  const aliyun = exists('ai-worker-aliyun/index.mjs') ? read('ai-worker-aliyun/index.mjs') : '';
+  section('21g-1. AI 形象按线路分流（cf / cn 双线路）');
+
+  // ---- 配置层：两个接入点 ----
+  check(/endpointCN\s*:/.test(aiCfg),
+    'ai-config.js 增加第二个接入点 endpointCN（阿里云函数计算地址）');
+  check(/endpoint\s*:/.test(aiCfg) && /endpointCN\s*:/.test(aiCfg),
+    '两个接入点并存（endpoint=Cloudflare / endpointCN=阿里云）');
+
+  // ---- 分流规则：索引 0-2 → cf，3-5 → cn ----
+  check(/var ROUTE_SPLIT = 3;/.test(aiChat),
+    '分界点 ROUTE_SPLIT = 3（A/B/C 走 cf，D/E/F 走 cn）');
+  check(/avatarIndex\(id\) < ROUTE_SPLIT \? 'cf' : 'cn'/.test(aiChat),
+    '分流按形象索引判定（<3 走 cf，其余走 cn）');
+  check(/ENDPOINT_CN = normUrl\(CFG\.endpointCN\)/.test(aiChat),
+    '前端读取 endpointCN 并做 URL 归一化');
+
+  // ---- 空则回落 + 可见提示（不许静默） ----
+  check(/function resolveRoute\(id\)/.test(aiChat) && /fallback: true/.test(aiChat),
+    'resolveRoute 返回 fallback 标记（目标线路缺失时切另一条）');
+  check(/syncRouteBadge/.test(aiChat) && /sxg-ai-route/.test(aiChat),
+    '面板顶部有线路条（sxg-ai-route）并可同步更新');
+  check(/回落/.test(aiChat),
+    '回落时给用户可见提示文案（不静默降级）');
+  check(/syncRouteBadge\(resolveRoute\(currentAvatarId\(\)\)\)/.test(aiChat),
+    '切换形象后同步刷新线路条（切 D 后立刻显示实际线路）');
+
+  // ---- 请求体线路标识 ----
+  check(/route: route/.test(aiChat),
+    '请求体带线路标识字段 route（供服务端如实说明/排查）');
+  check(/fetch\(endpointOf\(rs\.route\)|fetch\(endpointOf\(route\)|endpointOf\(/.test(aiChat),
+    '请求打到当前线路对应的 endpoint（不是写死 CF）');
+
+  // ---- 网络异常文案分线路 ----
+  check(/NET_ERR/.test(aiChat) && /route === 'cn'|rs\.route === 'cn'|\[route\]/.test(aiChat),
+    '网络异常文案按线路分别措辞（NET_ERR 表）');
+  {
+    // 阿里云那条不得出现 VPN（国内直连，提 VPN 是错的）
+    const idx = aiChat.indexOf('NET_ERR');
+    const block = aiChat.slice(idx, idx + 900);
+    const cnLine = block.split('\n').filter(l => /cn\s*:/.test(l)).join('\n');
+    check(cnLine.length > 0 && !/VPN/i.test(cnLine),
+      '阿里云线路的失败文案不提 VPN');
+  }
+
+  // ---- Worker 端线路说明 ----
+  check(/function routeNotice\(route\)/.test(worker) && /线路标识/.test(worker),
+    'Cloudflare Worker 系统提示词按 route 补「如实说明线路」一条');
+  check(/body\.route === 'cf' \|\| body\.route === 'cn'/.test(worker),
+    'Worker 对 route 做白名单校验（非法值忽略，防注入）');
+
+  // ---- 阿里云侧脚手架 ----
+  check(exists('ai-worker-aliyun/index.mjs') && exists('ai-worker-aliyun/README.md'),
+    '阿里云函数计算脚手架 + 中文 README 已落地');
+  check(/export async function handler/.test(aliyun) && /compatible-mode\/v1\/chat\/completions/.test(aliyun),
+    '阿里云函数实现 OpenAI 兼容（百炼 DashScope）调用');
+  check(/process\.env\.DASHSCOPE_API_KEY/.test(aliyun) && !/sk-[A-Za-z0-9]{16,}/.test(aliyun),
+    '密钥只从环境变量读，源码不落明文 Key');
+  check(/ALLOWED_ORIGINS\.includes\(origin\)/.test(aliyun) && /recent\.length >= RATE_LIMIT/.test(aliyun),
+    '阿里云侧 CORS 白名单与每 IP 限流口径与 Worker 对齐');
+  {
+    const rd = read('ai-worker-aliyun/README.md');
+    check(/API-KEY|API Key/.test(rd) && /百炼/.test(rd),
+      'README 写清百炼拿 Key 的步骤');
+    check(/环境变量/.test(rd) && /DASHSCOPE_API_KEY/.test(rd),
+      'README 写清环境变量配置');
+    check(/endpointCN/.test(rd),
+      'README 指回 ai-config.js 的 endpointCN（闭环）');
+    check(/fcapp\.run|自定义域名/.test(rd),
+      'README 写清公网地址/自定义域名获取方式');
+  }
+
+  // ---- 测试与 CI ----
+  check(exists('scripts/test-ai-route.cjs'),
+    '存在分流行为测试（test-ai-route.cjs）');
+  check(exists('scripts/test-ai-worker-aliyun.cjs'),
+    '存在阿里云线路逻辑测试（test-ai-worker-aliyun.cjs）');
+  if (exists('.github/workflows/verify.yml')) {
+    const ci = read('.github/workflows/verify.yml');
+    check(ci.includes('test-ai-route.cjs') && ci.includes('test-ai-worker-aliyun.cjs'),
+      'CI 里已接入分流与阿里云线路两个测试');
   }
 }
 
@@ -8206,8 +8298,8 @@ section('25. 成功案例专题页（QQ奶奶）');
     '公告仍是居中 inline-block 且无处预留右列宽 → 窄屏右缘压在右侧悬浮钮上（站长截图）');
   /* §36t 又改了同一份 CSS（顶栏全部常显），?v 随每次改动继续往上走；
      这里与 §36q / §36s 的钉子必须同步，别只改其中一处。 */
-  check(/mobile-fixes\.css\?v=19/.test(idx36g),
-    '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 19（§36t 顶栏展开 + §38 AI 面板 top 锚定，合并后顺延）',
+  check(/mobile-fixes\.css\?v=20/.test(idx36g),
+    '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 20（顶栏 / 卡片按钮单行与基线统一，顺延）',
     '?v 没 bump → 浏览器缓存旧 CSS，预留列宽不生效');
 }
 
@@ -8391,10 +8483,10 @@ section('25. 成功案例专题页（QQ奶奶）');
   // ④ 挂载顺序：dock 脚本必须排在所有悬浮脚本之后。
   const mountOk = /<script defer src="\.\/fab-dock\.js\?v=2"><\/script>/.test(idx36q)
     && idx36q.indexOf('fab-dock.js?v=2') > idx36q.indexOf('nav-menu.js?v=6')
-    && /mobile-fixes\.css\?v=19/.test(idx36q)
+    && /mobile-fixes\.css\?v=20/.test(idx36q)
     && /header-menu-patch\.js\?v=11/.test(idx36q);
   check(mountOk,
-    '§36q index.html 已挂载 fab-dock.js?v=2 且排在所有悬浮脚本之后，mobile-fixes.css?v=19 / header-menu-patch.js?v=11 同步 bump',
+    '§36q index.html 已挂载 fab-dock.js?v=2 且排在所有悬浮脚本之后，mobile-fixes.css?v=20 / header-menu-patch.js?v=11 同步 bump',
     '挂载顺序错了 → dock 执行时按钮还没建好，收编为空；?v 没 bump → 浏览器缓存旧 CSS');
 }
 
@@ -8532,7 +8624,7 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(/<script defer src="\.\/anon-mail\.js\?v=4"><\/script>/.test(idx36s)
     && idx36s.indexOf('anon-mail.js?v=4') > idx36s.indexOf('fab-dock.js?v=2')
     && /fab-dock\.js\?v=2/.test(idx36s)
-    && /mobile-fixes\.css\?v=19/.test(idx36s)
+    && /mobile-fixes\.css\?v=20/.test(idx36s)
     && /header-menu-patch\.js\?v=11/.test(idx36s)
     && exists('scripts/test-anon-mail.cjs')
     && wf36s.indexOf('node scripts/test-anon-mail.cjs') !== -1,
@@ -8695,7 +8787,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '只修 ≤640px → 平板横屏 / 窄桌面窗口按钮仍被挤成不可读的竖条');
 
   // ⑦ ?v 钉子（§21h）+ 新 jsdom 测试挂进 CI（§21o）。
-  check(/mobile-fixes\.css\?v=19/.test(idx36t)
+  check(/mobile-fixes\.css\?v=20/.test(idx36t)
     && /header-menu-patch\.js\?v=11/.test(idx36t)
     && /github-access-help\.js\?v=3/.test(idx36t)
     && /appeal-policy\.js\?v=4/.test(idx36t)

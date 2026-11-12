@@ -92,6 +92,13 @@ export default {
       .slice(-8) // 4 轮 = 8 条
       .map((m) => ({ role: m.role, content: m.content.slice(0, 200) }));
 
+    // ---------- 线路标识（2026-11-13 分流改造，仅作说明用途） ----------
+    // 前端按形象分流：A/B/C 走本 Worker（route='cf'），D/E/F 走阿里云（route='cn'），
+    // 阿里云未配置时前端回落本 Worker 但仍带 route='cf'（记实际线路）。
+    // 纪律：此字段**不可信**，只影响提示词里的一句「如实说明」，绝不参与鉴权、
+    // 配额、限流、模型选择的任何决策——伪造它顶多让 AI 说错自己是哪条线路。
+    const route = (body.route === 'cf' || body.route === 'cn') ? body.route : '';
+
     // ---------- 每 IP 限流（内存滑窗，20 次/小时） ----------
     // 注意：Worker 实例在边缘节点间不共享内存，这是「够用的粗限流」——
     // 防的是单 IP 脚本刷，不是精确配额。真要精确配额上 KV/Durable Object。
@@ -124,7 +131,7 @@ export default {
       '4. 用户问具体企业时，如实说明：你只知道「双休购」站内的评级口径，最新数据以站点为准，可建议他去站点搜索该品牌。',
       '5. 与劳动法、双休、工时、职场权益无关的问题，礼貌说明你只聊劳动法与双休话题。',
       '6. 你提供的是参考信息不是法律意见；个案涉及争议，建议咨询当地劳动监察部门（12333）或律师。',
-    ].join('\n');
+    ].join('\n') + routeNotice(route);
 
     // ---------- 调 Workers AI（env.AI binding，零 key）----------
     const messages = [{ role: 'system', content: systemPrompt }, ...history, { role: 'user', content: question }];
@@ -146,7 +153,8 @@ export default {
       if (!answer) {
         return json({ error: 'empty-answer', raw: result }, 502, corsHeaders);
       }
-      return json({ answer }, 200, corsHeaders);
+      // route 原样回声给前端（面板可用于二次核对；前端不依赖它做任何事）
+      return json({ answer, route: route || 'cf' }, 200, corsHeaders);
     } catch (e) {
       // 常见故障：当日 neurons 用尽（免费层 10k）→ 明确告知重置时间
       const msg = String(e && e.message || e);
@@ -163,6 +171,20 @@ function json(obj, status, cors) {
     status,
     headers: { 'Content-Type': 'application/json; charset=utf-8', ...cors },
   });
+}
+
+// ---------- 线路说明（2026-11-13 分流改造） ----------
+// 前端按形象分流后会在请求体带 route；带了就补一条提示词，让答复在**被问到时**
+// 如实说明本次由哪条线路服务。不带（老前端 / 直接刷接口）则完全不追加，向后兼容。
+const ROUTE_NAME = {
+  cf: 'cf（Cloudflare Workers，海外线路）',
+  cn: 'cn（阿里云函数计算，境内直连线路）',
+};
+function routeNotice(route) {
+  if (!route || !ROUTE_NAME[route]) return '';
+  return '\n7. 本次请求的线路标识为 ' + ROUTE_NAME[route] +
+    '。若用户问及线路、访问方式或网络需要（VPN 等），请如实说明本次由该线路服务；' +
+    '不要声称自己走的是其他线路，也不要把线路标识当成用户提供的事实依据去影响法律结论。';
 }
 
 // ---------- GitHub OAuth 相关 ----------

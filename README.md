@@ -324,7 +324,21 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 **改动失败时往往完全不报错**（见 `PITFALLS.md`）。半年后回来看，唯一能判断
 「这行为什么长这样」的东西，就是当时的记录。
 
-> **近期改动入口**：最近一批（2026-11-12 23:55 · 提交 `519edb4`）站长「右上角的问题」——顶栏加一枚带 LOGO 的「分享本站」，并给「匿名邮箱」文字前补 LOGO。
+> **近期改动入口**：最近一批（2026-11-13）站长「AI 形象切换分流」——前 3 个卡通形象（A-C）走 Cloudflare，后 3 个（D-F）走阿里云，并把阿里云侧的部署脚手架一次落地。
+>
+> - **配置双接入点**：`ai-config.js` 新增 `endpointCN`（阿里云函数计算公网地址，现留空串），与既有 `endpoint`（Cloudflare）并存；注释写清两者用途与「**空则回落**」——空串不是错误，是「还没配」，D/E/F 继续走 CF，面板明说。
+> - **前端分流**：`ai-chat.js` 的 `ROUTE_SPLIT = 3`，按当前形象索引判定（0-2 → `cf`，3-5 → `cn`）；`resolveRoute()` 返回 `{want, route, fallback}`，目标线路没配就切另一条并置 `fallback=true`，`routeBadgeText()` 把「回落」写成一句人话（不是静默降级）。**stub 判定改为两条线路都空**才对用户说「开通中」。
+> - **请求体加 `route`**：值记**实际**线路（回落后就是 `cf`），服务端据此如实说明本次由谁服务。
+> - **线路可见**：面板顶部常显线路条 `#sxg-ai-route`（Cloudflare / 阿里云），点右上角「切换形象」后 `syncRouteBadge()` 同步刷新，切 D 立刻变「阿里云 · 境内直连」。
+> - **异常文案分线路**：`NET_ERR.cf` 保留 VPN 指引；`NET_ERR.cn` 明确「境内直连、一般无需代理，可先换回 A/B/C 形象走 Cloudflare」——**阿里云那条不许出现 VPN 三字**（境内用户看了只会困惑）。
+> - **Worker 侧说明**：`ai-worker/src/worker.js` 解析 `body.route`（只认 `cf` / `cn`，非法值忽略），拼一条「如实说明本次由哪条线路服务」进系统提示词，响应回声 `route` 便于排查。
+
+> - **阿里云脚手架**：新增 `ai-worker-aliyun/`（`index.mjs` + `package.json` + `s.yaml` + `.env.example` + 中文 `README.md`），接口与现有 Worker 对齐（入参 `question`+`history`、出参 `answer`/`error`、CORS 白名单、每 IP 每小时 20 次限流、500 字上限），密钥只从环境变量 `DASHSCOPE_API_KEY` 读；README 写清「开通百炼拿 Key → 建函数 → 配环境变量 → 拿公网地址 → 填回 `endpointCN`」全流程。
+> - **机器强制**：`index.html` 与全部品牌页 `ai-config.js` / `ai-chat.js` 的 `?v` 递增（186 处，`ai-config v1→2`、`ai-chat v27→28`）；`verify.mjs` 新增 §21g-1 二十余条断言（分流分界 / 回落可见 / `route` 字段 / 阿里云线不提 VPN / 脚手架与 README 要素 / 测试已挂 CI），并把 §21g 的旧 stub 断言从「只判 `endpoint`」改为「两条线路都空」。
+> - 复核：verify **1754 全绿**；`test-ai-route.cjs` 31/0、`test-ai-worker.cjs` 37/0、`test-ai-worker-aliyun.cjs` 46/0、`test-ai-chat.cjs` 35/0。**线上生产站的顶栏按钮组成与两处显隐开关未动。**
+> - 待办：`endpointCN` 现为空串（D/E/F 处于回落态、面板有可见提示）；站长按 `ai-worker-aliyun/README.md` 部署后把地址填进去即上线，无需再改前端。
+
+> **上一批**（2026-11-12 23:55 · 提交 `519edb4`）站长「右上角的问题」——顶栏加一枚带 LOGO 的「分享本站」，并给「匿名邮箱」文字前补 LOGO。
 >
 > - 新增 `share-entry.js`：桌面顶栏紧跟「匿名邮箱」注入**第 6 枚**「分享本站」，内联 SVG 分享图标（`currentColor`，不引外部图片）；点击一律走 `window.SXGShare.open()` 复用 §36v 那套 14 平台卡片（不另造第二套弹窗），`share-modal.js` 缺席时退化为复制地址 + 气泡提示。
 > - 落位锚点逐级兜底：`anon-mail` → `login-github` → `sponsor`；匿名邮箱被开关隐藏时分享仍贴其位置不跳动。≤640px 进 `#sxg-fab-dock`（中文短标签常显），dock 未就绪先藏，不进「菜单▼」。

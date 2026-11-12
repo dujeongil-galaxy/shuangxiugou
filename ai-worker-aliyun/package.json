@@ -1,0 +1,14 @@
+{
+  "name": "shuangxiugou-ai-worker-aliyun",
+  "version": "1.0.0",
+  "private": true,
+  "description": "双休购「劳动法小助手」阿里云函数计算（FC）线路，接口与 Cloudflare Worker 版对齐",
+  "type": "module",
+  "main": "index.mjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node ../scripts/test-ai-worker-aliyun.cjs"
+  }
+}
