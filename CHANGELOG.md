@@ -4,6 +4,17 @@
 
 ---
 
+### chore：匿名邮箱入口换新地址，`anon-mail.js?v=4 → v=5`（2026-11-13 12:07 · 提交 `e03a6c8`）
+
+站长指令：把「匿名邮箱」入口的邮箱地址换成新地址。
+
+- **单一常量驱动**：只改 `anon-mail.js` 里的 `MAIL` 常量，弹窗「站长最新匿名邮箱」展示值与「复制邮箱」按钮写入值同源，页面里没有第二处地址可漂。注释同步为「地址只写在下方 MAIL 常量这一处」。
+- **缓存号**：`index.html` 引用 `anon-mail.js?v=4 → v=5`（不 bump 用户拿到旧脚本，等于没改）。
+- **断言同步**：`scripts/verify.mjs` §36s（`MAIL` 常量值正则 + 弹窗文案 + `index.html` 挂载与 `?v`）、§36w（分享入口排在 `anon-mail.js?v=5` 之后）与 `scripts/test-anon-mail.cjs`（3 处）、`scripts/test-share-entry.cjs`（2 处）全部改为新值；反向钉子保留为 `!/anon-mail\.js\?v=4/`，不允许靠放宽断言过检。
+- **记账例外（站长口径）**：邮箱类改动不写进 README 近期改动段落；README / 最近更新.md / CHANGELOG.md 里既有旧地址明文一律抹除，改写为不含地址的描述（「站长最新匿名邮箱」），仅提「匿名邮箱」按钮名的规则段保留不动，本文件也不落地址本身。
+- **顺带**：页面版本号从 `22163f3` 同步到 `e03a6c8`（提交 `4b41bc1`，HEAD~1 语义），此前已落后 3 拍、§20g 判红。
+- **验证**：`node scripts/verify.mjs` **1759 项全绿**、`test-anon-mail.cjs` 40/0、`test-share-entry.cjs` 37/0；全仓 `git grep` 旧地址零残留；未推送远端。
+
 ### feat：新增「小米汽车」卡片（第 127 张自定义卡 / 第 179 张详情页），并修品牌页 `ai-chat.js` 版本号长期钉旧（2026-11-13 03:49 · 提交 `22163f3`）
 
 站长指令：「第四件事：依据用户截图新建『小米汽车』卡片，由 AI 按仓库公开规则自主评级」。
@@ -220,7 +231,7 @@
 
 ### feat：匿名邮箱入口 + 访问告知弹窗 + 手机悬浮按钮全部撑开 + 顶栏断点双向还原（§36s）（2026-11-12 07:39 · 提交 `f4906e6`）
 
-站长一轮两件事：右上角新增「匿名邮箱」按钮（`https://m.kuku.lu/cn.php`），点击**先弹窗**明确告知没有 VPN 就无法访问，弹窗里备注站长最新匿名邮箱 `mantoopea@exdonuts.com`；手机端自行处理。并追问「我觉得上一轮你没做好，既然右边已经隔离了，为什么不干脆按钮全部撑开？」
+站长一轮两件事：右上角新增「匿名邮箱」按钮（`https://m.kuku.lu/cn.php`），点击**先弹窗**明确告知没有 VPN 就无法访问，弹窗里备注站长最新匿名邮箱；手机端自行处理。并追问「我觉得上一轮你没做好，既然右边已经隔离了，为什么不干脆按钮全部撑开？」
 
 - **① 新增 `anon-mail.js`**（下游 DOM 补丁，不改压缩 bundle、不改六个悬浮脚本）：桌面顶栏第 5 枚 `.sxg-header-btn`，外观基线写死为常量 —— 现场读 Star 的 class 是坑，手机端 `header-menu-patch.js` 会把它的 class 整个摘掉，断点切回桌面时现场读到空串、按钮退化成 14px 裸链接（真渲染实测）。首次点击 `preventDefault()` + `openModal()`，目标 URL 只出现在弹窗「仍要前往」的 `target="_blank" rel="noopener noreferrer"` 出口；弹窗给「复制邮箱」（`navigator.clipboard.writeText` + `execCommand` 兜底）与 × / 先不去 / ESC / 点遮罩四条关闭路径，重复点击不叠加。≤640px 不进顶栏、也不进「菜单▼」，直接挂进 `#sxg-fab-dock` 首位，避开 `.sxg-header-btn{display:none !important}` 把晚到入口静默吃掉（第五十章 ①）。
 - **② 右列按钮全部撑开**：`fab-dock.js` 撤掉 `PRIMARY` / `EXTRA` 与「⋯ 更多」折叠（含 `is-expanded` / `sxg-fab-more` / `sxg-fab-dock-extra`），改单一 `ORDER` 数组 + `LABELS` 短标签映射，六枚悬浮按钮 + 客居的邮箱按钮共 7 枚全部常显；`GUESTS` 里的邮箱按钮在 `disable()` 时先还给 body，不随 `dock.remove()` 一起没，再由 `anon-mail.js` 安置回顶栏。`mobile-fixes.css` 把 dock 设为 `width:68px; right:8px; align-items:stretch`（左缘正好 vw-76，与 §36j 内容右缘严丝合缝），每枚撑成 68×36 圆角宽条，`::after` 读 `data-sxg-dock-label` 补中文短标签；源脚本的「TOP」/「AI」/ 纯 SVG / 视频三角一律收起，避免 68px 内折行。容器 `pointer-events:none`、子项 `auto`；`--sxg-dock-h` 仍由 ResizeObserver 实时写，AI 面板跟随。桌面 >640px 完全不启用 dock。
@@ -229,7 +240,7 @@
 - **⑤ 校验**：`scripts/verify.mjs` 把 §36q 改成「唯一所有者 + 自动排布 + 可还原桌面」契约（删掉折叠断言、加反向禁止 `is-expanded` / `PRIMARY` / `EXTRA` 回潮），新增 §36s 五断言：事实要素（URL / 邮箱 / 无 VPN 无法访问 / 草稿批注不上页面）、拦截与唯一出口（只扫 `card.innerHTML` 真实拼接防注释救绿）、68px 撑开与禁止折叠、断点双向还原、`?v` + jsdom 测试挂 CI。新增 `scripts/test-anon-mail.cjs` 38 项（桌面 / 手机落位、pending 兜底、点击先弹窗、复制、五条关闭路径、断点往返、顶栏四按钮还原）挂进 `.github/workflows/verify.yml`。
 - **⑥ 顺带对齐两条过期断言**（PITFALLS 第四十七章「改断言对齐事实，不改数据迁就断言」）：`test-molina-card.cjs` 的 bundle `?v=50`→`51`、茉莉奶白 `doubleRestRate:null`→`'0'`（11-12 补录双休率 0%）；`test-stat-filter.cjs` 按 `rating-stats-patch.js` 的 11-12 长城 C→B 修正为 B 32 / C 56 / 避雷 57。二者在**干净 HEAD 工作树**上复跑同样判红，属远端自带的存量红，与本次功能改动无关。
 - **验证**：verify **1657 全绿**；43 组非 CDP 行为测试全通过（`test-photo-vault.cjs` 已知偶发单跑即过）；故障注入 7 组（邮箱写错 / 去掉 `preventDefault` / 宽条退回 46px / 折叠层回潮 / `?v` 回退 16 / 只留单向折叠 / 测试漏挂 CI）全部判红并还原复绿，其中 3 组同时让 jsdom 测试判红。
-- **真渲染**：1440×900 与 390×844 串行无头 Edge + CDP。手机 dock `x314 / 68×288`、7 枚各 68×36 零重叠、`scrollWidth=390`；真鼠标点「匿名邮箱」→ 弹窗 `z-index=10050` 且未跳走，文案含「没有 VPN（或代理）就无法访问」与最新邮箱，`grantPermissions(clipboardReadWrite)` 后 `readText()` 回读 `mantoopea@exdonuts.com`、按钮变「已复制」；`elementFromPoint` 确认遮罩盖住 dock；桌面顶栏 5 枚横排（1440 / 768 / 660 三档均无横向溢出）；手机→桌面→手机断点往返，按钮不丢、四枚顶栏按钮还原成横排、下拉容器宽屏隐藏。
+- **真渲染**：1440×900 与 390×844 串行无头 Edge + CDP。手机 dock `x314 / 68×288`、7 枚各 68×36 零重叠、`scrollWidth=390`；真鼠标点「匿名邮箱」→ 弹窗 `z-index=10050` 且未跳走，文案含「没有 VPN（或代理）就无法访问」与最新邮箱，`grantPermissions(clipboardReadWrite)` 后 `readText()` 回读与弹窗展示的邮箱一致、按钮变「已复制」；`elementFromPoint` 确认遮罩盖住 dock；桌面顶栏 5 枚横排（1440 / 768 / 660 三档均无横向溢出）；手机→桌面→手机断点往返，按钮不丢、四枚顶栏按钮还原成横排、下拉容器宽屏隐藏。
 
 ---
 ### feat：新增广发银行 / 四川天府银行两张 A 级卡（站长指令·含站长备注，§38）（2026-11-12 07:14 · 提交 `f98f76d`）
