@@ -4,6 +4,17 @@
 
 ---
 
+### feat：分享弹窗新增「汤不热 Tumblr」，平台图标统一改圆形、排布上5下10（共 15 项）（2026-11-14 01:30 · 提交 `09a7279`）
+
+站长指令：「去增加汤不热，然后下面的，做成圆形，上5下10，你优化一下，所有页面的分享功能都是如此。」
+
+- **新增 Tumblr**：`share-modal.js` 的 `ICON` 补 `tumblr`（`#36465D` 圆底 + 白色 T 形），`FOREIGN` 数组末尾加 `{k:'tumblr',name:'Tumblr',url:'tumblr'}`，`shareTargets` 接 `https://www.tumblr.com/widgets/share/tool?canonicalUrl=…&title=…&caption=…`；平台数 **14 → 15**（国内 5 + 海外 10）。仍走 `<button data-share="键">` + `openExternal()` 三级兜底，URL 只活在 JS 闭包里，**不因新增平台引入任何外链特征**。
+- **改圆形**：`.sxg-share-domestic/.sxg-share-foreign` 统一 `display:grid;grid-template-columns:repeat(5,1fr);gap:14px 4px`，图标 `.sxg-sd-ico/.sxg-sf-ico` 48px（`max-width:420px` 为 44px）`border-radius:50%`；海外由原来的「横条清单行 + 提示」改成与国内一致的「圆形图标 + 平台名」竖排项，删掉 `.sxg-sf-hint`。海外 SVG 底形 `rx="6.2"`（圆角方形，7 处）全部改 `rx="11"`，Tumblr 直接画 `circle` —— 只看 CSS 圆角会漏掉「里面还是个圆角方块」，所以图形本身也一起改圆。
+- **上 5 下 10**：国内 5 枚一排、海外 10 枚两排各 5 枚；**固定 5 列，不按 UA / 视口改列数**，手机端同样 5 列（只把图标缩到 44px），保证两端排布一致、不必单独解释。
+- **全站生效**：全站仅 `index.html`（9630 行）与 `sponsor.html`（485 行）挂 `share-modal.js`，顶栏「分享本站」由 `share-entry.js` 调 `window.SXGShare.open()` 复用同一弹窗，故两处 `?v=6→7` 一并 bump，`sponsor.html` 注释同步改成「国内5圆形+海外10圆形」。
+- **断言/测试同步**：`verify.mjs` §36v 平台数 14→15、④ 改 `cntFrn===10` 且含 `tumblr`、新增 ④-2「`repeat(5,1fr)` 布局钉子」、⑤ `?v=7`；§36r 第⑦项 `share-modal.js?v=6` 改 `?v=7`（首跑 verify 就是被这里咬红）。`test-share-modal.cjs` 扩到 **33 项**（15 项渲染 / 5 列 / 圆形 / `data-share` 含 `tumblr` / 点击 Tumblr 校验 `tumblr.com/widgets/share/tool`）。`cdp-share-modal.cjs` 探针新增 `domRows/frnRows/roundBad`（按 `top` 归行、逐枚量宽高与圆角、并看 SVG 底形是 `circle` 还是 `rx≈11` 圆角矩形），`clickAll` 键名数组加到 9 项（含 `tumblr`），`structOk` 改 15 项 + 上5下10 + 全圆，`clickOk`/`blockOk` 改 9 次；截图前先重开弹窗并把高层全屏遮罩让位，否则截到的是首页活动弹窗而不是分享卡片。
+- 复核：verify **1771 项全绿**；`test-share-modal` **33/0**；CDP 真渲染桌面 1440 + 手机 390 双档 `DESKTOP_STRUCT_OK / MOBILE_STRUCT_OK / DESKTOP_CLICK_OK / MOBILE_CLICK_OK / BLOCKED_FALLBACK_OK` 全 true、`ALL_OK=true`、`PAGEERRORS` 空；截图实测三排各 5 枚全圆、Tumblr 位于末排末位。
+
 ### fix：首页弹窗理想L8 短片下线，第二入口换挂「新车轮毂装错」；两枚抖音按钮改按差异点命名（2026-11-14 00:44 · 提交 `65b6807`）
 
 站长指令：「理想L8的链接删了吧，替换为：… https://v.douyin.com/fe8jmWjCmqY/ （新车轮毂竟然能装错）#新能源汽车 。那么现在就出现了两个BYD的视频，你看看按钮如何优化文字。」

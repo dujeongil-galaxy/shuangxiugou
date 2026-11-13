@@ -296,10 +296,15 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 ## 🔗 分享弹窗平台口径与防误拦截（2026-11-12 站长要求「以后不要出现误拦截」，长期有效）
 
-**平台清单恒定 14 项 + 复制链接**：国内 5（朋友圈 / 微信 / 抖音 / 小红书 / 微博）、
-海外 9（Discord / Facebook / X / LinkedIn / Reddit / Telegram / KakaoTalk / Line / WhatsApp）。
+**平台清单恒定 15 项 + 复制链接**：国内 5（朋友圈 / 微信 / 抖音 / 小红书 / 微博）、
+海外 10（Discord / Facebook / X / LinkedIn / Reddit / Telegram / KakaoTalk / Line / WhatsApp / Tumblr）。
 **清单不做任何条件裁剪**——不按 UA、不按网络环境、不按「哪个平台可用」动态增删，
 否则站长打开只看到一半，又会被当成「平台被吃了」。
+
+**图标一律正圆、排布上 5 下 10**（2026-11-14 站长要求「做成圆形，上5下10，所有页面的分享功能都是如此」）：
+国内 5 枚一排、海外 10 枚分两排各 5 枚，`grid-template-columns:repeat(5,1fr)` 固定 5 列，
+图标 48px（`max-width:420px` 时 44px）`border-radius:50%`；**列数不随 UA / 视口改**，
+手机端同样 5 列（只是图标缩到 44px），避免两端排布不一致又要单独解释。
 
 **分享项一律是 `<button data-share="键">`，DOM 上不许出现外链特征**：
 
@@ -317,10 +322,11 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 **机器强制**（改这一块必须同步跑）：
 - `verify.mjs` §36v：`share-modal.js` 源码内不得出现 `target="_blank"` / `rel="noopener"` /
   `href="` 拼分享 URL 的写法（注释先剥掉再判）；`data-share` 按钮化 + `openExternal` 兜底在位；
-  14 项清单键名齐全；`?v` 与 `index.html` / `sponsor.html` 挂载号一致。
-- `test-share-modal.cjs`（jsdom，29 项）：14 项恒渲染、DOM 零外链特征、被拦（`open` 返回 `null` /
+  **15 项清单键名齐全（含 `tumblr`）+ 上 5 下 10 的 `repeat(5,1fr)` 布局钉子**；`?v` 与 `index.html` / `sponsor.html` 挂载号一致。
+- `test-share-modal.cjs`（jsdom，33 项）：15 项恒渲染、5 列网格与圆形图标、DOM 零外链特征、被拦（`open` 返回 `null` /
   返回 `{closed:true}`）时必复制并明说、复制类文案、打赏页链接剥 `sponsor.html`。
-- `cdp-share-modal.cjs`（真浏览器官能，双视口 1440 / 390）：结构 + 逐个点击 + 被拦兜底，**允许任一 `ALL_OK=false` 即失败**。
+- `cdp-share-modal.cjs`（真浏览器官能，双视口 1440 / 390）：结构（15 项 / 国内 1 排 5 枚 / 海外 2 排各 5 枚 / 每枚正圆）
+  + 逐个点击（9 个外链项含 Tumblr）+ 被拦兜底，**允许任一 `ALL_OK=false` 即失败**。
 - 该 jsdom 测试已挂 CI（`.github/workflows/verify.yml`），CDP 脚本不挂 CI（需本地 Edge）。
 
 ## 🗂 改动必记账（本项目长期规则）
@@ -331,14 +337,22 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 **改动失败时往往完全不报错**（见 `PITFALLS.md`）。半年后回来看，唯一能判断
 「这行为什么长这样」的东西，就是当时的记录。
 
-> **本批**（2026-11-14 · 提交 `65b6807`）站长两条指令：**首页弹窗那枚「理想L8」抖音短片下线**，第二入口改挂当天新分享链（新车轮毂竟然能装错）；**两个入口都成了比亚迪之后，按钮文字得重新优化**。
+> **本批**（2026-11-14 01:30 · 提交 `09a7279`）站长指令：**分享弹窗「去增加汤不热」，下方平台「做成圆形，上5下10」，且「所有页面的分享功能都是如此」**。
+>
+> - **新增 Tumblr**：`share-modal.js` 的 `ICON` 补 `tumblr`（`#36465D` 圆底 + 白 T），`FOREIGN` 数组末尾加 `{k:'tumblr',name:'Tumblr'}`，`shareTargets` 走 `https://www.tumblr.com/widgets/share/tool?canonicalUrl=…&title=…&caption=…`；平台数 **14 → 15**（国内 5 + 海外 10）。仍是 `<button data-share>` + `openExternal()` 三级兜底，不引入任何外链特征。
+> - **改圆形**：国内/海外两段统一 `display:grid;grid-template-columns:repeat(5,1fr)`，图标 48px `border-radius:50%`（≤420px 缩 44px），海外由原来的竖排横条卡片改成与国内一致的图标 + 平台名；海外 SVG 底形 `rx="6.2"` 圆角方形全部改 `rx="11"`，Tumblr 直接画 `circle`——**看图是圆的，量出来也是圆的**，不留半圆半方。
+> - **上 5 下 10**：国内 5 枚一排、海外 10 枚两排各 5 枚，固定 5 列不随 UA / 视口变，手机端同样 5 列（只缩图标），两端排布一致。全站只有 `index.html` / `sponsor.html` 挂 `share-modal.js`（顶栏「分享本站」经 `share-entry.js` 复用同一弹窗），两处 `?v=6→7` 一起 bump。
+> - **断言同步**：verify §36v 平台数 14→15、加 `tumblr` 链接与 `repeat(5,1fr)` 布局钉子、§36r 同 `?v=7`；`test-share-modal.cjs` 扩到 **33 项**（15 项渲染、5 列、圆形、点击 Tumblr）；`cdp-share-modal.cjs` 探针新增 `domRows/frnRows/roundBad`（按 top 归行 + 逐枚量宽高与圆角），判定改「国内 1 行 5 枚 / 海外 2 行各 5 枚 / 15 项 / 9 个外链点击」，截图前先重开弹窗并让高层遮罩位，避免截到别的活动弹窗。
+> - 复核：verify **1771 项全绿**；`test-share-modal` **33/0**；CDP 真渲染桌面 1440 + 手机 390 双档 `ALL_OK=true`（结构 / 点击 / 被拦兜底全 true）、`PAGEERRORS` 空；截图实测三排各 5 枚、全圆、Tumblr 在末排末位。
+
+> **上一批**（2026-11-14 · 提交 `65b6807`）站长两条指令：**首页弹窗那枚「理想L8」抖音短片下线**，第二入口改挂当天新分享链（新车轮毂竟然能装错）；**两个入口都成了比亚迪之后，按钮文字得重新优化**。
 >
 > - **换链**：`dyp-version-toggle.js` 的 `L8`（`EHOOH9INCMk/` 理想L8·高速方向盘拉不动）不再挂用，改 `BYD2 = 'https://v.douyin.com/fe8jmWjCmqY/'`；变量名一并由 `L8` 改 `BYD2`——两条都属比亚迪，名字再留着「L8」下次改链必被误导。旧链站内已无引用。
 > - **按钮文字**：同品牌两个入口，按钮上再写「比亚迪」零信息量、也分不清是哪条片子，改按「部件 + 错误动作」各 4 字：`比亚迪`→`轮辋装反`、`理想L8`→`轮毂装错`；品牌归属、完整片名与「抖音短视频 · 点击跳转」说明全进 `title` 悬停。**为什么只给 4 字**：11-12 那次截断实测格子内容区 ≈92px、6 汉字≈84px 已贴边，4 汉字≈56px 才留余量。
 > - **断言同步**：verify §36u① 改咬 `BYD2 = '…/fe8jmWjCmqY/'`、§36u④ `?v=5→6`、§36u⑤ 文案钉子改「轮辋装反 / 轮毂装错」；`test-dyp-toggle.cjs` ② 与 `cdp-dyp-toggle.cjs` 的 `goText/d2Text` 同步。
 > - 复核：verify **1770 项全绿**；`test-dyp-toggle` **25/0**；CDP 真渲染桌面 1440 + 手机 390 双档 `DESKTOP_OK / MOBILE_OK` 全 true、三枚 `clipped=false`、`PAGEERRORS` 为空。踩坑记在 `PITFALLS.md` 第六十一章（注释里引用站长原话「替换」二字被 §36u 反查咬红，已改词）。
 
-> **上一批**（2026-11-13 · 提交 `7bbcdc8`）站长两条指令落地：**BYD 卡面备注栏把 11-13 那条抖音链接换成当天新短链**（`https://v.douyin.com/3oI-7tZ12R8/`，原链接不用了），**卡面标签区把比亚迪旗下子品牌全部写完**。
+> **更早一批**（2026-11-13 · 提交 `7bbcdc8`）站长两条指令落地：**BYD 卡面备注栏把 11-13 那条抖音链接换成当天新短链**（`https://v.douyin.com/3oI-7tZ12R8/`，原链接不用了），**卡面标签区把比亚迪旗下子品牌全部写完**。
 >
 > - **备注栏换链**：`byd-expose-patch.js` 的 `LEGAL_HREF` 改成新短链，旧 11-13 短链（法务部悬赏那条红V视频）与原来的站内 `./brand/byd.html` 链接**一并作废**，站内不再保留；外链补 `rel="nofollow noopener"` + `target="_blank"`，框内写明「5 秒短视频」「本站只挂线索、不作推广」「视频内容未核实」。首页 `?v=2→3` 防缓存。
 > - **旗下子品牌全列**：新增 `patchBrandTags()`，在渲染后的 DOM 上把「秦/汉/海鸥电动车」这一个标签扩成 **王朝网（秦/汉/唐/宋/元）· 海洋网（海鸥/海豚/海豹/驱逐舰/护卫舰）· 腾势 · 方程豹 · 仰望 · 弗迪电池 · 比亚迪电子**；bundle 里原有的「车载储能」「汽车周边」原样保留、不重复追加。**不动压缩 bundle**，幂等 + 重渲染自动重补。
