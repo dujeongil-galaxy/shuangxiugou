@@ -12,6 +12,14 @@
    - 两类弹窗若各写一份逻辑，以后必然漂移。这里用**同一个独立 DOM 补丁**，
      靠「含『生成我的投票小票』按钮的底部按钮排」定位两种容器，运行时插按钮。
 
+   2026-11-13 站长指令「卡片保持统一，有些打开是2个按钮，有些是3个，全部统
+   一为3个」：两类详情弹窗底排统一为【跳转到证据链公示】【生成我的投票小票】
+   【关闭】三枚。自定义卡弹窗本就有「关闭」（.sxg-btn-ghost）；内置 React 弹
+   窗底排原本只有「生成我的投票小票」（关闭靠右上角 ✕），本补丁在内置底排
+   末尾补一枚「关闭」幽灵按钮（data-sxg-ev-close），点击走 closeModal()——
+   点弹窗自己的头部 ✕，不外部 removeChild React 节点。小票/投票/讨论等其它
+   弹窗没有锚点按钮，不会被误挂。
+
    真相源只有一处：首页 #evidence-board 里的
    <details id="ev-<slug>" data-b="<slug>">，由 scripts/gen-evidence-board.py
    从 brand/*.html 自动生成（请勿手改）。本脚本不硬编码任何品牌 URL / 品牌名
@@ -37,6 +45,7 @@
   var BTN_TEXT = '跳转到证据链公示';
   var BTN_ATTR = 'data-sxg-ev-jump';
   var ROOT_ATTR = 'data-sxg-ev-jump-root';
+  var CLOSE_ATTR = 'data-sxg-ev-close';
   var FOCUS_ATTR = 'data-sxg-ev-focus';
   var NOTICE_ATTR = 'data-sxg-ev-notice';
   var STYLE_ID = 'sxg-ev-jump-style';
@@ -77,6 +86,13 @@
         'padding:10px 14px;transition:background .18s ease,border-color .18s ease}' +
       '.sxg-ev-jump-btn:hover{background:#ccfbf1;border-color:#5eead4}' +
       '.sxg-ev-jump-btn:focus-visible{outline:2px solid #0d9488;outline-offset:2px}' +
+      '.sxg-ev-close-btn{display:inline-flex;align-items:center;justify-content:center;' +
+        'flex:0 0 auto;white-space:nowrap;cursor:pointer;' +
+        'background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;' +
+        'border-radius:12px;font-size:12px;font-weight:700;line-height:1.2;' +
+        'padding:10px 14px;transition:background .18s ease,border-color .18s ease}' +
+      '.sxg-ev-close-btn:hover{background:#e2e8f0;border-color:#cbd5e1}' +
+      '.sxg-ev-close-btn:focus-visible{outline:2px solid #64748b;outline-offset:2px}' +
       '[' + ROOT_ATTR + ']{flex-wrap:wrap}' +
       '#evidence-board details[' + FOCUS_ATTR + ']{outline:3px solid #0d9488;' +
         'outline-offset:-3px;background:#f0fdfa;' +
@@ -181,6 +197,7 @@
     for (i = 0; i < bs.length; i++) {
       t = txt(bs[i]);
       if (t === '关闭' || t === '✕' || t === '×' || bs[i].getAttribute('aria-label') === '关闭') {
+        if (bs[i].hasAttribute(CLOSE_ATTR)) continue; // 补丁自己插的「关闭」不能点自己，交给弹窗头部 ✕
         bs[i].click();
         return;
       }
@@ -266,6 +283,23 @@
     }
   }
 
+  function makeCloseButton() {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'sxg-ev-close-btn';
+    b.setAttribute(CLOSE_ATTR, '1');
+    b.textContent = '关闭';
+    b.setAttribute('title', '关闭详情弹窗');
+    b.setAttribute('aria-label', '关闭');
+    b.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      var foot = b.parentElement;
+      closeModal(modalRoot(foot));
+    });
+    return b;
+  }
+
   function makeButton() {
     var b = document.createElement('button');
     b.type = 'button';
@@ -309,10 +343,17 @@
       if (txt(btns[i]).indexOf(ANCHOR_TEXT) === -1) continue;
       var foot = findFoot(btns[i]);
       if (!foot) continue;
+      var cls = String(foot.className || '');
+      var isBuiltinFoot = /(^|\s)pt-2(\s|$)/.test(cls) && /justify-end/.test(cls);
       // 幂等：容器上已有按钮就不重复插（React 重渲染重建容器时靠 Observer 补挂）
-      if (foot.querySelector('[' + BTN_ATTR + ']')) continue;
-      if (!foot.hasAttribute(ROOT_ATTR)) foot.setAttribute(ROOT_ATTR, '1');
-      foot.insertBefore(makeButton(), btns[i]);
+      if (!foot.querySelector('[' + BTN_ATTR + ']')) {
+        if (!foot.hasAttribute(ROOT_ATTR)) foot.setAttribute(ROOT_ATTR, '1');
+        foot.insertBefore(makeButton(), btns[i]);
+      }
+      // 2026-11-13 站长统一口径：内置弹窗底排只有两枚，补一枚「关闭」对齐三键
+      if (isBuiltinFoot && !foot.querySelector('[' + CLOSE_ATTR + ']')) {
+        foot.appendChild(makeCloseButton());
+      }
     }
   }
 

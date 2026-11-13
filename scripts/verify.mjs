@@ -7877,11 +7877,11 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§31a README 写死本批五条口径（两类弹窗一视同仁 / 完整定位 / 单一真相源 / 无条目如实降级 / 机器强制）',
     '规则只挂口头 → 又会出现「按钮有、跳过去却停在公示区顶部」的静默失效');
 
-  check(p31.length > 0 && /<script defer src="\.\/evidence-jump-patch\.js\?v=2"><\/script>/.test(idx31)
+  check(p31.length > 0 && /<script defer src="\.\/evidence-jump-patch\.js\?v=3"><\/script>/.test(idx31)
     && /不能改 bundle|不能改\s*bundle/.test(p31)
     && !/https?:\/\//.test(p31)
     && !/ev-patagonia|ev-icbc|ev-zhaoyiming|ev-byd/.test(p31),
-    '§31b 跳转补丁入库并挂进首页（?v=1）；不动压缩 bundle、不写死品牌 URL / 品牌 id 清单');
+    '§31b 跳转补丁入库并挂进首页（?v=3）；不动压缩 bundle、不写死品牌 URL / 品牌 id 清单');
 
   check(code31.indexOf('var isBuiltin =') !== -1
     && code31.indexOf('pt-2') !== -1 && code31.indexOf('justify-end') !== -1
@@ -7923,6 +7923,12 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(exists('scripts/test-evidence-jump.cjs') && /test-evidence-jump\.cjs/.test(wf31)
     && /window\.__sxgEvidenceJump/.test(code31),
     '§31h 真 DOM 测试存在并挂进 CI（三层强制：规则 + 断言 + CI）');
+
+  check(/var CLOSE_ATTR = 'data-sxg-ev-close'/.test(code31)
+    && /function makeCloseButton\(/.test(code31)
+    && /isBuiltinFoot/.test(code31)
+    && code31.indexOf("'关闭'") !== -1,
+    '§31i 2026-11-13 站长统一口径：内置弹窗底排补「关闭」幽灵按钮，两类弹窗统一三键（跳转/小票/关闭）');
 }
 
 // ---------- 32. 2026-11-10 批次：公益广告位 / 6 秒倒计时 / 新闻登记 / 随笔年内上线 ----------
