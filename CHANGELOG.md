@@ -12,8 +12,8 @@
 - **缓存号**：`index.html` 引用 `anon-mail.js?v=4 → v=5`（不 bump 用户拿到旧脚本，等于没改）。
 - **断言同步**：`scripts/verify.mjs` §36s（`MAIL` 常量值正则 + 弹窗文案 + `index.html` 挂载与 `?v`）、§36w（分享入口排在 `anon-mail.js?v=5` 之后）与 `scripts/test-anon-mail.cjs`（3 处）、`scripts/test-share-entry.cjs`（2 处）全部改为新值；反向钉子保留为 `!/anon-mail\.js\?v=4/`，不允许靠放宽断言过检。
 - **记账例外（站长口径）**：邮箱类改动不写进 README 近期改动段落；README / 最近更新.md / CHANGELOG.md 里既有旧地址明文一律抹除，改写为不含地址的描述（「站长最新匿名邮箱」），仅提「匿名邮箱」按钮名的规则段保留不动，本文件也不落地址本身。
-- **顺带**：页面版本号从 `22163f3` 同步到 `e03a6c8`（提交 `4b41bc1`，HEAD~1 语义），此前已落后 3 拍、§20g 判红。
-- **验证**：`node scripts/verify.mjs` **1758 项全绿**（页面版本号为 HEAD~2，§20g 走 note 分支不计入通过项）、`test-anon-mail.cjs` 40/0、`test-share-entry.cjs` 39/0；全仓 `git grep` 旧地址零残留；未推送远端。
+- **顺带**：页面版本号同步到「上一个提交」（HEAD~1 语义），此前已落后 3 拍、§20g 判红。
+- **验证**：`node scripts/verify.mjs` **1759 项全绿**、`test-anon-mail.cjs` 40/0、`test-share-entry.cjs` 37/0；全仓 `git grep` 旧地址零残留；未推送远端。
 
 ### feat：新增「小米汽车」卡片（第 127 张自定义卡 / 第 179 张详情页），并修品牌页 `ai-chat.js` 版本号长期钉旧（2026-11-13 03:49 · 提交 `22163f3`）
 
