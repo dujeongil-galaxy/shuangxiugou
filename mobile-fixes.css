@@ -141,6 +141,33 @@ div[class*="border-t"][class*="bg-slate-50"] > div.flex.items-center.gap-2 > but
   border-radius: 8px;
 }
 
+/* ②-补 右侧「员工投票 / 打卡 / 详情证据」三枚基线统一（2026-11-13 站长截图反馈）。
+      上游 JSX 里三枚样式不一致：投票带 px-2 py-1 白底描边药丸（26px 高），
+      打卡 / 详情证据是纯文字链（无内边距、无边框，24px 高），同一行里高低不齐。
+      这里只圈右侧三枚（投票 / 打卡 / 证据按钮），左侧点赞·点踩数字钮不在范围。 */
+div[class*="border-t"][class*="bg-slate-50"] > div.flex.items-center.gap-2 > button[title] ,
+div[class*="border-t"][class*="bg-slate-50"] > div.flex.items-center.gap-2 > button > span:only-child {
+  white-space: nowrap;
+}
+div[class*="border-t"][class*="bg-slate-50"] > div.flex.items-center.gap-2 > button[title] {
+  min-height: 28px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+/* 纯文字链两枚（打卡 / 详情证据）补成与投票同款药丸，三枚等高、同内边距、同底色描边。 */
+div[class*="border-t"][class*="bg-slate-50"] > div.flex.items-center.gap-2 > button:not([title]) {
+  min-height: 28px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 10px;
+  padding-right: 10px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
 /* --------------------------------------------------------------------------
    ≤640px（Tailwind sm 断点）：顶栏按钮全部常显、换行铺满（2026-11-12 §36t）
    --------------------------------------------------------------------------

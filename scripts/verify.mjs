@@ -8322,8 +8322,8 @@ section('25. 成功案例专题页（QQ奶奶）');
     '公告仍是居中 inline-block 且无处预留右列宽 → 窄屏右缘压在右侧悬浮钮上（站长截图）');
   /* §36t 又改了同一份 CSS（顶栏全部常显），?v 随每次改动继续往上走；
      这里与 §36q / §36s 的钉子必须同步，别只改其中一处。 */
-  check(/mobile-fixes\.css\?v=20/.test(idx36g),
-    '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 20（顶栏 / 卡片按钮单行与基线统一，顺延）',
+  check(/mobile-fixes\.css\?v=21/.test(idx36g),
+    '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 21（卡片三枚操作钮基线统一，顺延）',
     '?v 没 bump → 浏览器缓存旧 CSS，预留列宽不生效');
 }
 
@@ -8507,10 +8507,10 @@ section('25. 成功案例专题页（QQ奶奶）');
   // ④ 挂载顺序：dock 脚本必须排在所有悬浮脚本之后。
   const mountOk = /<script defer src="\.\/fab-dock\.js\?v=2"><\/script>/.test(idx36q)
     && idx36q.indexOf('fab-dock.js?v=2') > idx36q.indexOf('nav-menu.js?v=6')
-    && /mobile-fixes\.css\?v=20/.test(idx36q)
+    && /mobile-fixes\.css\?v=21/.test(idx36q)
     && /header-menu-patch\.js\?v=11/.test(idx36q);
   check(mountOk,
-    '§36q index.html 已挂载 fab-dock.js?v=2 且排在所有悬浮脚本之后，mobile-fixes.css?v=20 / header-menu-patch.js?v=11 同步 bump',
+    '§36q index.html 已挂载 fab-dock.js?v=2 且排在所有悬浮脚本之后，mobile-fixes.css?v=21 / header-menu-patch.js?v=11 同步 bump',
     '挂载顺序错了 → dock 执行时按钮还没建好，收编为空；?v 没 bump → 浏览器缓存旧 CSS');
 }
 
@@ -8648,7 +8648,7 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(/<script defer src="\.\/anon-mail\.js\?v=4"><\/script>/.test(idx36s)
     && idx36s.indexOf('anon-mail.js?v=4') > idx36s.indexOf('fab-dock.js?v=2')
     && /fab-dock\.js\?v=2/.test(idx36s)
-    && /mobile-fixes\.css\?v=20/.test(idx36s)
+    && /mobile-fixes\.css\?v=21/.test(idx36s)
     && /header-menu-patch\.js\?v=11/.test(idx36s)
     && exists('scripts/test-anon-mail.cjs')
     && wf36s.indexOf('node scripts/test-anon-mail.cjs') !== -1,
@@ -8811,7 +8811,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '只修 ≤640px → 平板横屏 / 窄桌面窗口按钮仍被挤成不可读的竖条');
 
   // ⑦ ?v 钉子（§21h）+ 新 jsdom 测试挂进 CI（§21o）。
-  check(/mobile-fixes\.css\?v=20/.test(idx36t)
+  check(/mobile-fixes\.css\?v=21/.test(idx36t)
     && /header-menu-patch\.js\?v=11/.test(idx36t)
     && /github-access-help\.js\?v=3/.test(idx36t)
     && /appeal-policy\.js\?v=4/.test(idx36t)
