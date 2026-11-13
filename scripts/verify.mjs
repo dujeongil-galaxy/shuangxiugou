@@ -8610,8 +8610,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   // ⑦ 挂载与 ?v 钉子（§21h 纪律），以及 jsdom 行为测试存在。
   check(/<script defer src="\.\/github-access-help\.js\?v=3"><\/script>/.test(idx36r)
     && /appeal-policy\.js\?v=4/.test(idx36r)
-    && /share-modal\.js\?v=6/.test(idx36r)
-    && /share-modal\.js\?v=6/.test(sp36r)
+    && /share-modal\.js\?v=7/.test(idx36r)
+    && /share-modal\.js\?v=7/.test(sp36r)
     && exists('scripts/test-github-access-help.cjs'),
     '§36r index.html 挂载 github-access-help.js?v=3 / appeal-policy.js?v=4，改动脚本 ?v 同步 bump，配套 jsdom 行为测试存在',
     '?v 没 bump → 浏览器/CDN 命中旧脚本，新文案与链接规整都不生效');
@@ -8856,6 +8856,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
 // 被浏览器扩展 / 手机浏览器跟踪防护按分享接口特征整块移除，只剩 6 个复制类按钮。
 // 加固口径（本段把它钉死，回退即判红）：外链一律 <button data-share>，URL 只活在 JS 闭包里，
 // 点击走 window.open，新窗口若仍被拦就复制链接 + 明说，不允许「点了没反应」。
+// 2026-11-14 站长追加：新增「汤不热（Tumblr）」→ 海外 10 项；图标全部圆形，上 5 下 10。
 {
   const sm36v = read('share-modal.js');
   const idx36v = read('index.html');
@@ -8899,18 +8900,33 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   const arrFrn = (sm36v.match(/var FOREIGN = \[([\s\S]*?)\];/) || ['', ''])[1];
   const cntDom = (arrDom.match(/\{\s*k:\s*'/g) || []).length;
   const cntFrn = (arrFrn.match(/\{\s*k:\s*'/g) || []).length;
-  check(cntDom === 5 && cntFrn === 9
-    && /name: 'WhatsApp', url: 'whatsapp'/.test(arrFrn)
+  check(cntDom === 5 && cntFrn === 10
+    && /url: 'whatsapp'/.test(arrFrn)
+    && /name: 'Tumblr', url: 'tumblr'/.test(arrFrn)
+    && /tumblr:\s*'https:\/\/www\.tumblr\.com\/widgets\/share\/tool\?canonicalUrl='/.test(sm36v)
     && !/DOMESTIC\s*=\s*[\s\S]{0,80}?\.filter\(|FOREIGN\s*=\s*[\s\S]{0,80}?\.filter\(/.test(sm36v),
-    '§36v 平台清单恒定渲染 14 项（国内 5 + 海外 9，WhatsApp 在末位），不做环境 / UA 条件裁剪',
-    '条目被删或被 filter 掉 → 又变成「平台变少」，这次是自己人干的');
+    '§36v 平台清单恒定渲染 15 项（国内 5 + 海外 10，末位 2026-11-14 新增的 Tumblr/汤不热，走 tumblr.com/widgets/share/tool），不做环境 / UA 条件裁剪',
+    '条目被删或被 filter 掉 → 又变成「平台变少」，这次是自己人干的；少了 tumblr 键 → 点击落空');
+
+  // ④-2 布局（2026-11-14 站长「下面的做成圆形，上 5 下 10」）：
+  // 国内 5 一枚一排，海外 10 枚按 5 列网格折成两排，两段同一套圆形图标尺寸。
+  const layoutOk = /\.sxg-share-domestic,\.sxg-share-foreign\{display:grid;grid-template-columns:repeat\(5,1fr\)/.test(sm36v)
+    && /\.sxg-sd-ico,\.sxg-sf-ico\{[^}]*width:48px;height:48px;border-radius:50%/.test(sm36v)
+    && /\.sxg-sd,\.sxg-sf\{display:flex;flex-direction:column/.test(sm36v)
+    && !/\.sxg-sf\{[^}]*border-bottom/.test(sm36v)
+    && !/sxg-sf-hint/.test(sm36v);
+  check(layoutOk,
+    '§36v 分享平台统一「圆形图标 + 名称」网格：国内 5 一排 + 海外 10 折成 5 列两排（上 5 下 10，共 15 枚），旧的横向清单行 / 提示文案已清除',
+    '海外仍走横向清单行 → 上 5 下 10 不成立；图标容器改回圆角方形 → 与国内两套视觉分裂');
 
   // ⑤ ?v 同步 + jsdom 行为测试挂进 CI（§21h / §21o 纪律）。
-  check(/share-modal\.js\?v=6/.test(idx36v)
-    && /share-modal\.js\?v=6/.test(sp36v)
+  check(/share-modal\.js\?v=7/.test(idx36v)
+    && /share-modal\.js\?v=7/.test(sp36v)
+    && !/share-modal\.js\?v=6/.test(idx36v)
+    && !/share-modal\.js\?v=6/.test(sp36v)
     && exists('scripts/test-share-modal.cjs')
     && wf36v.indexOf('node scripts/test-share-modal.cjs') !== -1,
-    '§36v share-modal.js?v=6 在 index.html / sponsor.html 同步 bump，分享弹窗 jsdom 测试存在并挂进 CI',
+    '§36v share-modal.js?v=7 在 index.html / sponsor.html 同步 bump，分享弹窗 jsdom 测试存在并挂进 CI',
     '?v 没 bump → 线上仍跑旧脚本，加固等于没发；测试没挂 CI → 下次回退没人拦');
 }
 

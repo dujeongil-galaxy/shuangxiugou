@@ -95,9 +95,47 @@ function probe(ws) {
         if (r.right > cardR.right+1 || r.left < cardR.left-1) off.push({k:items[j].getAttribute('data-share')||items[j].getAttribute('data-copy'),outOfCard:true});
       }
     }
+    // 圆形 + 「上 5 下 10」排版：按 top 归行，逐枚核对图标为正圆（宽高相等且圆角 >= 半径）
+    var rndBad=[];
+    function rowsOf(sel){
+      var els=mask.querySelectorAll(sel), map={}, tops=[];
+      for (var i=0;i<els.length;i++){
+        var el=els[i], r=el.getBoundingClientRect();
+        var key=Math.round(r.top/6)*6;
+        if(!map[key]){ map[key]=0; tops.push(key); }
+        map[key]++;
+        var ico=el.querySelector('.sxg-sd-ico, .sxg-sf-ico');
+        if(!ico){ rndBad.push({k:el.getAttribute('data-share')||'copy',why:'noIco'}); continue; }
+        var cs=getComputedStyle(ico);
+        var w=parseFloat(cs.width)||0, h=parseFloat(cs.height)||0;
+        var br=parseFloat(cs.borderTopLeftRadius)||0;
+        var svg=ico.querySelector('svg');
+        // 圆形判定：容器必须正圆（宽高相等 + 圆角达半径），底面要么由容器背景色填满，要么 svg 自绘圆 / rx≈11 圆角矩形，要么被圆形裁切
+        var shapeOk=false;
+        var bg=getComputedStyle(ico).backgroundColor;
+        var hasBg = !!bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent';
+        var baseRound=false;
+        if(svg){
+          var maxR=0, cs2=svg.querySelectorAll('circle');
+          for(var q=0;q<cs2.length;q++){ maxR=Math.max(maxR, parseFloat(cs2[q].getAttribute('r'))||0); }
+          var rc=svg.querySelector('rect');
+          var rx=rc?parseFloat(rc.getAttribute('rx'))||0:0;
+          var sbr=parseFloat(getComputedStyle(svg).borderTopLeftRadius)||0;
+          baseRound = maxR>=10.5 || rx>=10.9 || sbr>=w/2-1.5;
+        }
+        shapeOk = hasBg || baseRound;
+        if(!(Math.abs(w-h)<=1 && br>=w/2-1.5 && shapeOk))
+          rndBad.push({k:el.getAttribute('data-share')||'copy',w:w,h:h,br:br,shapeOk:shapeOk});
+      }
+      tops.sort(function(a,b){return a-b;});
+      return {rows:tops.length, per:tops.map(function(t){return map[t];})};
+    }
+    var domRows=rowsOf('.sxg-share-domestic .sxg-sd');
+    var frnRows=rowsOf('.sxg-share-foreign .sxg-sf');
     return {ready:true, dom:dom, frn:frn, total:dom+frn, aTags:mask.querySelectorAll('a').length,
       hasHref:/href\\s*=/.test(html), hasBlank:/target\\s*=\\s*["']?_blank/.test(html),
       leak:leak, keys:keys, copyBtn:!!mask.querySelector('.sxg-share-copy[data-copy="link"]'),
+      domRows:domRows, frnRows:frnRows, roundBad:rndBad,
       cardW:cardR?Math.round(cardR.width):null, docW:document.documentElement.clientWidth,
       off:off, cardOverflow: cardR ? Math.round(cardR.width) > document.documentElement.clientWidth : null};
   `);
@@ -109,7 +147,7 @@ function clickAll(ws, forceBlocked) {
     window.__opened=[];
     window.open=function(u,t){ window.__opened.push({url:u,target:t}); ${forceBlocked ? 'return null;' : "return {closed:false};"} };
     var mask=document.getElementById('sxg-share-mask');
-    var ks=['weibo','facebook','x','linkedin','reddit','telegram','line','whatsapp'];
+    var ks=['weibo','facebook','x','linkedin','reddit','telegram','line','whatsapp','tumblr'];
     var miss=[]; ks.forEach(function(k){ var b=mask.querySelector('[data-share="'+k+'"]'); if(!b) miss.push(k); else b.click(); });
     return {opened:window.__opened, miss:miss,
       copySupported: !!(navigator.clipboard && navigator.clipboard.writeText)};
@@ -173,6 +211,21 @@ function readToast(ws) {
   const dBlockToast = await readToast(ws);
   const dBlockAll = Object.assign({}, dBlock, dBlockToast);
   console.log('[desktop] BLOCKED=' + JSON.stringify(dBlockAll));
+  // 点按钮会收起弹窗，截图前重新打开，保证截到的是弹窗真实排版
+  await evalJson(ws, `
+    if(window.SXGShare&&window.SXGShare.open) window.SXGShare.open();
+    var m=document.getElementById('sxg-share-mask');
+    if(m){ m.classList.add('on'); m.style.zIndex='2147483000'; }
+    // 站点别的高层全屏遮罩（活动弹窗等）会盖住分享卡片，截图前先让位
+    var els=document.querySelectorAll('body *');
+    for(var i=0;i<els.length;i++){ var el=els[i]; if(!el || el.id==='sxg-share-mask') continue;
+      var cs=getComputedStyle(el);
+      if(cs.position==='fixed' && (parseInt(cs.zIndex||'0',10)>=9000)
+        && el.offsetWidth>window.innerWidth*0.8 && el.offsetHeight>window.innerHeight*0.6){ el.style.display='none'; }
+    }
+    return 1;
+  `);
+  await sleep(400);
   await shot(ws, 'shots/share-desktop.png', 1440, 900);
 
   // ============ ② 手机 390 ============
@@ -185,17 +238,36 @@ function readToast(ws) {
   console.log('[mobile] PROBE=' + JSON.stringify(mProbe));
   const mClick = await clickAll(ws, false);
   console.log('[mobile] CLICK=' + JSON.stringify(mClick));
+  await evalJson(ws, `
+    if(window.SXGShare&&window.SXGShare.open) window.SXGShare.open();
+    var m=document.getElementById('sxg-share-mask');
+    if(m){ m.classList.add('on'); m.style.zIndex='2147483000'; }
+    // 站点别的高层全屏遮罩（活动弹窗等）会盖住分享卡片，截图前先让位
+    var els=document.querySelectorAll('body *');
+    for(var i=0;i<els.length;i++){ var el=els[i]; if(!el || el.id==='sxg-share-mask') continue;
+      var cs=getComputedStyle(el);
+      if(cs.position==='fixed' && (parseInt(cs.zIndex||'0',10)>=9000)
+        && el.offsetWidth>window.innerWidth*0.8 && el.offsetHeight>window.innerHeight*0.6){ el.style.display='none'; }
+    }
+    return 1;
+  `);
+  await sleep(400);
   await shot(ws, 'shots/share-mobile.png', 390, 844);
 
-  const structOk = (p) => p && p.ready && p.dom === 5 && p.frn === 9 && p.total === 14
+  const structOk = (p) => p && p.ready && p.dom === 5 && p.frn === 10 && p.total === 15
     && p.aTags === 0 && p.hasHref === false && p.hasBlank === false
     && Array.isArray(p.leak) && p.leak.length === 0 && p.copyBtn === true
+    && p.domRows && p.domRows.rows === 1 && p.domRows.per[0] === 5
+    && p.frnRows && p.frnRows.rows === 2 && p.frnRows.per[0] === 5 && p.frnRows.per[1] === 5
+    && Array.isArray(p.roundBad) && p.roundBad.length === 0
+    && Array.isArray(p.keys) && p.keys.indexOf('tumblr') !== -1
     && Array.isArray(p.off) && p.off.length === 0 && p.cardOverflow === false;
-  const clickOk = (c) => c && c.miss.length === 0 && c.opened.length === 8
+  const clickOk = (c) => c && c.miss.length === 0 && c.opened.length === 9
     && c.opened.every(o => o.target === '_blank' && /^https:\/\//.test(o.url))
-    && /service\.weibo\.com/.test(c.opened[0].url);
-  // 被拦：8 次 open 都返回 null，最后一条 toast 必须明说「拦截」且带「已复制」
-  const blockOk = (b) => b && b.opened.length === 8 && !!b.toast
+    && /service\.weibo\.com/.test(c.opened[0].url)
+    && c.opened.some(o => /^https:\/\/www\.tumblr\.com\/widgets\/share\/tool\?canonicalUrl=/.test(o.url));
+  // 被拦：9 次 open 都返回 null，最后一条 toast 必须明说「拦截」且带「已复制」
+  const blockOk = (b) => b && b.opened.length === 9 && !!b.toast
     && /拦截/.test(b.toast) && /已复制/.test(b.toast);
 
   console.log('PAGEERRORS=' + JSON.stringify(errors.slice(0, 10)));

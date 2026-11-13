@@ -2,12 +2,18 @@
  * 用法：<script src="./share-modal.js?v=1" defer></script>
  *      window.SXGShare.open();
  *
- * 平台口径（站长 2026-11-04 指定）：
+ * 平台口径（站长 2026-11-04 指定，2026-11-14 追加 Tumblr）：
  *   国内：朋友圈 / 微信 / 抖音 / 小红书 / 微博（圆形图标，按站长给的样式）
- *   海外：Discord（替换原 Email）/ Facebook / X / LinkedIn / Reddit / Telegram / KakaoTalk / Line
+ *   海外：Discord / Facebook / X / LinkedIn / Reddit / Telegram / KakaoTalk / Line /
+ *        WhatsApp / Tumblr（汤不热）
  *   末尾：复制链接
  * 说明：微信、朋友圈、抖音、小红书、Discord、KakaoTalk 没有可用的网页分享接口，
  *       统一走「复制链接 + 提示粘贴」，不假装能一键跳转。
+ *
+ * 2026-11-14 站长要求「下面的做成圆形，上 5 下 10」：
+ *   ① 图标一律圆形（48px 圆），国内 5 项一排、海外 10 项两排，整体 5 列网格；
+ *   ② 海外项由「横向清单行」改为与国内同款的「圆形图标 + 名称」竖排卡片；
+ *   ③ 全站共用本文件（index.html / sponsor.html 挂载），改这一处即所有页面同步。
  *
  * 2026-11-12 站长要求「以后不要出现误拦截」的加固口径（改动前必读）：
  *   ① 平台项一律渲染成 <button data-share="键">，URL 只存在 JS 闭包里，DOM 上不落 href，
@@ -38,24 +44,21 @@
     '.sxg-share-title{margin:0 0 4px;font-size:17px;font-weight:700;color:#0f766e}',
     '.sxg-share-sub{margin:0 0 16px;font-size:13px;color:#6b7280}',
     '.sxg-share-label{margin:0 0 10px;font-size:12px;font-weight:600;color:#94a3b8;letter-spacing:.5px}',
-    '.sxg-share-domestic{display:flex;justify-content:space-between;gap:4px;margin-bottom:18px}',
-    '.sxg-sd{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:0;border:none;background:none;cursor:pointer;font:inherit;text-decoration:none;color:inherit}',
-    '.sxg-sd-ico{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(15,23,42,.12);transition:transform .15s ease}',
-    '.sxg-sd:hover .sxg-sd-ico{transform:translateY(-2px) scale(1.04)}',
+    '.sxg-share-domestic,.sxg-share-foreign{display:grid;grid-template-columns:repeat(5,1fr);gap:14px 4px;margin-bottom:16px}',
+    '.sxg-share-foreign{border-top:1px solid #f1f5f9;padding-top:16px}',
+    '.sxg-sd,.sxg-sf{display:flex;flex-direction:column;align-items:center;gap:7px;padding:0;border:none;background:none;cursor:pointer;font:inherit;text-decoration:none;color:inherit}',
+    '.sxg-sd-ico,.sxg-sf-ico{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;box-shadow:0 2px 8px rgba(15,23,42,.12);transition:transform .15s ease}',
+    '.sxg-sd:hover .sxg-sd-ico,.sxg-sf:hover .sxg-sf-ico{transform:translateY(-2px) scale(1.04)}',
     '.sxg-sd-ico svg{width:28px;height:28px;display:block}',
-    '.sxg-sd-name{font-size:11px;color:#4b5563;white-space:nowrap}',
-    '.sxg-share-foreign{border-top:1px solid #f1f5f9}',
-    '.sxg-sf{display:flex;align-items:center;gap:10px;width:100%;padding:9px 2px;border:none;border-bottom:1px solid #f1f5f9;background:none;text-decoration:none;color:#1f2937;font:inherit;font-size:14px;text-align:left;cursor:pointer}',
-    '.sxg-sf:hover{background:#f8fafc}',
-    '.sxg-sf-ico{flex:0 0 22px;width:22px;height:22px;display:flex;align-items:center;justify-content:center}',
-    '.sxg-sf-ico svg{width:22px;height:22px;display:block}',
-    '.sxg-sf-name{flex:1}',
-    '.sxg-sf-hint{font-size:11px;color:#cbd5e1}',
-    '.sxg-share-copy{display:flex;align-items:center;gap:10px;width:100%;margin-top:10px;padding:10px 2px;border:none;background:none;font:inherit;font-size:14px;color:#1f2937;text-align:left;cursor:pointer;border-radius:8px}',
+    '.sxg-sf-ico svg{width:100%;height:100%;display:block;border-radius:50%}',
+    '.sxg-sd-name,.sxg-sf-name{max-width:100%;font-size:11px;line-height:1.25;color:#4b5563;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+    '.sxg-share-copy{display:flex;align-items:center;gap:10px;width:100%;margin-top:2px;padding:10px 2px;border:none;background:none;font:inherit;font-size:14px;color:#1f2937;text-align:left;cursor:pointer;border-radius:8px}',
     '.sxg-share-copy:hover{background:#f8fafc}',
+    '.sxg-share-copy .sxg-sf-ico{flex:0 0 22px;width:22px;height:22px;box-shadow:none}',
+    '.sxg-share-copy .sxg-sf-ico svg{width:22px;height:22px}',
     '.sxg-share-toast{position:fixed;left:50%;bottom:40px;transform:translate(-50%,12px);z-index:10000;max-width:86vw;padding:10px 18px;border-radius:999px;background:rgba(17,24,39,.92);color:#fff;font-size:13px;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease}',
     '.sxg-share-toast.on{opacity:1;transform:translate(-50%,0)}',
-    '@media (max-width:420px){.sxg-sd-ico{width:44px;height:44px}.sxg-sd-ico svg{width:24px;height:24px}.sxg-sd-name{font-size:10px}.sxg-share-card{padding:20px 16px 12px}}'
+    '@media (max-width:420px){.sxg-sd-ico,.sxg-sf-ico{width:44px;height:44px}.sxg-sd-ico svg{width:25px;height:25px}.sxg-sd-name,.sxg-sf-name{font-size:10px}.sxg-share-card{padding:20px 16px 12px}}'
   ].join('');
 
   var D = 'M15 3h1.9c.3 1.7 1.4 3.1 3.1 3.4v2c-1.2 0-2.3-.4-3.2-1.1v6.2c0 3-2.4 5.4-5.4 5.4S6 16.5 6 13.5s2.4-5.4 5.4-5.4c.3 0 .6 0 .9.1v2c-.3-.1-.6-.1-.9-.1-1.9 0-3.4 1.5-3.4 3.4s1.5 3.4 3.4 3.4 3.4-1.5 3.4-3.4V3z';
@@ -72,15 +75,16 @@
     douyin: '<svg viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(-.8,-.5)" fill="#25F4EE"><path d="' + D + '"/></g><g transform="translate(.8,.5)" fill="#FE2C55"><path d="' + D + '"/></g><path d="' + D + '" fill="#fff"/></svg>',
     xhs: '<svg viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="12.4" text-anchor="middle" dominant-baseline="middle" font-size="7.6" font-weight="700" fill="#fff" font-family="-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif">小红书</text></svg>',
     weibo: '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><ellipse cx="11.6" cy="12.8" rx="7.2" ry="5.1"/><path d="M17.4 6.5c1.8.4 3 1.6 3.4 3.3"/></g><circle cx="11.6" cy="12.8" r="2.1" fill="#fff"/></svg>',
-    discord: '<svg viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="6.2" fill="#5865F2"/><path d="M15.9 7.3a8.4 8.4 0 0 0-1.9-.6l-.3.6a6.6 6.6 0 0 0-2.4 0l-.3-.6c-.7.1-1.3.3-1.9.6-1.5 2.1-1.9 4.2-1.7 6.2.8.6 1.6 1 2.5 1.2l.5-.8-.8-.4.2-.2c1.6.7 3.3.7 4.8 0l.2.2-.8.4.5.8c.9-.2 1.7-.6 2.5-1.2.2-2-.2-4.1-1.7-6.2z" fill="#fff"/><circle cx="9.3" cy="11.6" r=".85" fill="#5865F2"/><circle cx="12.7" cy="11.6" r=".85" fill="#5865F2"/></svg>',
-    facebook: '<svg viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="6.2" fill="#1877F2"/><text x="11.4" y="11.9" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="700" fill="#fff" font-family="Georgia,\'Times New Roman\',serif">f</text></svg>',
-    x: '<svg viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="6.2" fill="#0f1419"/><text x="11" y="11.4" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#fff" font-family="Georgia,\'Times New Roman\',serif">X</text></svg>',
-    linkedin: '<svg viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="6.2" fill="#0A66C2"/><text x="11" y="11.4" text-anchor="middle" dominant-baseline="middle" font-size="9.6" font-weight="700" fill="#fff" font-family="-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif">in</text></svg>',
+    discord: '<svg viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="11" fill="#5865F2"/><path d="M15.9 7.3a8.4 8.4 0 0 0-1.9-.6l-.3.6a6.6 6.6 0 0 0-2.4 0l-.3-.6c-.7.1-1.3.3-1.9.6-1.5 2.1-1.9 4.2-1.7 6.2.8.6 1.6 1 2.5 1.2l.5-.8-.8-.4.2-.2c1.6.7 3.3.7 4.8 0l.2.2-.8.4.5.8c.9-.2 1.7-.6 2.5-1.2.2-2-.2-4.1-1.7-6.2z" fill="#fff"/><circle cx="9.3" cy="11.6" r=".85" fill="#5865F2"/><circle cx="12.7" cy="11.6" r=".85" fill="#5865F2"/></svg>',
+    facebook: '<svg viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="11" fill="#1877F2"/><text x="11.4" y="11.9" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="700" fill="#fff" font-family="Georgia,\'Times New Roman\',serif">f</text></svg>',
+    x: '<svg viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="11" fill="#0f1419"/><text x="11" y="11.4" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#fff" font-family="Georgia,\'Times New Roman\',serif">X</text></svg>',
+    linkedin: '<svg viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="11" fill="#0A66C2"/><text x="11" y="11.4" text-anchor="middle" dominant-baseline="middle" font-size="9.6" font-weight="700" fill="#fff" font-family="-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif">in</text></svg>',
     reddit: '<svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="11" fill="#FF4500"/><path d="M11 6.7l.5 1.5" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/><circle cx="11.6" cy="6.2" r="1" fill="#fff"/><ellipse cx="11" cy="12.7" rx="5" ry="4.2" fill="#fff"/><circle cx="9" cy="12.1" r="1.1" fill="#FF4500"/><circle cx="13" cy="12.1" r="1.1" fill="#FF4500"/><path d="M9.3 14.6c1.1.7 2.4.7 3.4 0" stroke="#FF4500" stroke-width="1" fill="none" stroke-linecap="round"/><circle cx="5.7" cy="11.5" r="1.2" fill="#fff"/><circle cx="16.3" cy="11.5" r="1.2" fill="#fff"/></svg>',
     telegram: '<svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="11" fill="#229ED9"/><path d="M5.2 10.9l11-4.3c.5-.2 1 .1.8.8l-1.9 8.7c-.1.5-.5.6-.9.4l-2.4-1.8-1.2 1.2c-.2.2-.4.2-.5.1l.2-2.6 4.9-4.4-6 3.7-2.7-.7c-.6-.2-.6-.7 0-.9z" fill="#fff"/></svg>',
-    kakaotalk: '<svg viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="6.2" fill="#FEE500"/><path d="M11 5.5c-3.5 0-6.3 2.3-6.3 5.1 0 1.7 1 3.2 2.6 4.1l-.7 2.4 2.7-1.5c.5.1 1.1.2 1.7.2 3.5 0 6.3-2.3 6.3-5.2S14.5 5.5 11 5.5z" fill="#3C1E1E"/></svg>',
-    line: '<svg viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="6.2" fill="#06C755"/><text x="11" y="11.4" text-anchor="middle" dominant-baseline="middle" font-size="6.4" font-weight="700" fill="#fff" font-family="-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif">LINE</text></svg>',
-    whatsapp: '<svg viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="6.2" fill="#25D366"/><path d="M11 4.6c-3.5 0-6.4 2.8-6.4 6.3 0 1.2.3 2.3.9 3.2L4.5 17.6l3.6-.9c.9.5 1.8.7 2.9.7 3.5 0 6.4-2.8 6.4-6.3S14.5 4.6 11 4.6z" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/><path d="M8.7 7.9c.2-.4.4-.4.6-.4h.5c.2 0 .3.1.4.3l.7 1.5c.1.2.1.4-.1.6l-.5.5c-.1.1-.1.3-.1.4.4.8 1.3 1.6 2.1 2 .2.1.3.1.5-.1l.5-.5c.2-.2.4-.2.6-.1l1.5.7c.3.1.4.3.4.5-.1.9-.8 1.5-1.7 1.5-2.3 0-5.1-2.6-5.1-5.1 0-.8.1-1.4.7-1.8z" fill="#fff"/></svg>',
+    kakaotalk: '<svg viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="11" fill="#FEE500"/><path d="M11 5.5c-3.5 0-6.3 2.3-6.3 5.1 0 1.7 1 3.2 2.6 4.1l-.7 2.4 2.7-1.5c.5.1 1.1.2 1.7.2 3.5 0 6.3-2.3 6.3-5.2S14.5 5.5 11 5.5z" fill="#3C1E1E"/></svg>',
+    line: '<svg viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="11" fill="#06C755"/><text x="11" y="11.4" text-anchor="middle" dominant-baseline="middle" font-size="6.4" font-weight="700" fill="#fff" font-family="-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif">LINE</text></svg>',
+    whatsapp: '<svg viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="11" fill="#25D366"/><path d="M11 4.6c-3.5 0-6.4 2.8-6.4 6.3 0 1.2.3 2.3.9 3.2L4.5 17.6l3.6-.9c.9.5 1.8.7 2.9.7 3.5 0 6.4-2.8 6.4-6.3S14.5 4.6 11 4.6z" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/><path d="M8.7 7.9c.2-.4.4-.4.6-.4h.5c.2 0 .3.1.4.3l.7 1.5c.1.2.1.4-.1.6l-.5.5c-.1.1-.1.3-.1.4.4.8 1.3 1.6 2.1 2 .2.1.3.1.5-.1l.5-.5c.2-.2.4-.2.6-.1l1.5.7c.3.1.4.3.4.5-.1.9-.8 1.5-1.7 1.5-2.3 0-5.1-2.6-5.1-5.1 0-.8.1-1.4.7-1.8z" fill="#fff"/></svg>',
+    tumblr: '<svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="11" fill="#36465D"/><g transform="translate(11 11) scale(1.26) translate(-11 -11)"><path d="M10.9 5.1v2.6H9.1v2.3h1.8v3.6c0 1.7 1 2.5 2.6 2.5.6 0 1.2-.1 1.6-.3v-2.1c-.3.1-.6.2-1 .2-.5 0-.8-.2-.8-.8V10h2V7.7h-2V5.1h-2.4z" fill="#fff"/></g></svg>',
     link: '<svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="11" fill="#E2E8F0"/><g fill="none" stroke="#475569" stroke-width="1.6" stroke-linecap="round"><path d="M9.4 12.6a2.5 2.5 0 0 0 3.5 0l2.1-2.1a2.5 2.5 0 0 0-3.5-3.5l-.9.9"/><path d="M12.6 9.4a2.5 2.5 0 0 0-3.5 0l-2.1 2.1a2.5 2.5 0 0 0 3.5 3.5l.9-.9"/></g></svg>'
   };
 
@@ -101,7 +105,8 @@
     { k: 'telegram', name: 'Telegram', url: 'telegram' },
     { k: 'kakaotalk', name: 'KakaoTalk', copy: '文案和链接已复制，粘贴到 KakaoTalk 聊天' },
     { k: 'line', name: 'Line', url: 'line' },
-    { k: 'whatsapp', name: 'WhatsApp', url: 'whatsapp' }
+    { k: 'whatsapp', name: 'WhatsApp', url: 'whatsapp' },
+    { k: 'tumblr', name: 'Tumblr', url: 'tumblr' }
   ];
 
   // 分享目标 URL（build 时填充），DOM 上只留 data-share 键名。
@@ -182,10 +187,12 @@
       linkedin: 'https://www.linkedin.com/sharing/share-offsite/?url=' + u,
       reddit: 'https://www.reddit.com/submit?url=' + u + '&title=' + t,
     telegram: 'https://t.me/share/url?url=' + u + '&text=' + d,
-    line: 'https://social-plugins.line.me/lineit/share?url=' + u + '&text=' + d,
-    // wa.me 只有 text 参数，链接要拼进文案里
-    whatsapp: 'https://wa.me/?text=' + d + '%0A' + u
-  };
+      line: 'https://social-plugins.line.me/lineit/share?url=' + u + '&text=' + d,
+      // wa.me 只有 text 参数，链接要拼进文案里
+      whatsapp: 'https://wa.me/?text=' + d + '%0A' + u,
+      // 汤不热（Tumblr）：canonicalUrl 必填，title/caption 分别带标题与说明
+      tumblr: 'https://www.tumblr.com/widgets/share/tool?canonicalUrl=' + u + '&title=' + t + '&caption=' + d
+    };
   shareTargets = urls;
 
     var html = '<div class="sxg-share-card" role="dialog" aria-modal="true" aria-label="分享双休购">'
@@ -207,6 +214,8 @@
       }
     });
 
+    // 海外 10 项：与国内同款「圆形图标 + 名称」竖排卡片，5 列网格自动排成 2 排
+    // （站长 2026-11-14「上 5 下 10」）。扫描器/拦截规则仍只看到 data-share 键名。
     html += '</div><p class="sxg-share-label">海外平台</p><div class="sxg-share-foreign">';
 
     FOREIGN.forEach(function (p) {

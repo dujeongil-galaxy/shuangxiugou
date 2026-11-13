@@ -8,9 +8,9 @@
         加固口径：外链平台全部改 <button data-share>，URL 只存在 JS 闭包里；
         点击走 window.open，新窗口若仍被拦则复制链接并明说。
    覆盖：
-     ① 14 个平台恒定渲染（国内 5 + 海外 9），一个不少
+     ① 15 个平台恒定渲染（国内 5 + 海外 10，含 2026-11-14 新增的 Tumblr），一个不少
      ② 弹窗 DOM 里 0 个 <a>，也不出现 href / target="_blank" / 分享接口明文
-     ③ 外链平台 8 项带 data-share，且 URL 不在任何 DOM 属性里
+     ③ 外链平台 9 项带 data-share，且 URL 不在任何 DOM 属性里
      ④ 点击外链平台 → window.open(url, '_blank') 被调起
      ⑤ window.open 被拦（返回 null）→ 复制分享链接 + toast 明说「拦截」
      ⑥ 复制类平台 → 文案 + 链接一起复制（不光秃秃一个 URL）
@@ -75,20 +75,33 @@ function openModal(env, opts) {
   return env.doc.getElementById('sxg-share-mask');
 }
 
-/* ---------- ① 14 个平台恒定渲染 ---------- */
-console.log('\n① 平台清单恒定渲染（国内 5 + 海外 9）');
+/* ---------- ① 15 个平台恒定渲染（上 5 下 10） ---------- */
+console.log('\n① 平台清单恒定渲染（国内 5 + 海外 10，站长要求「上 5 下 10」）');
 {
   const env = mkEnv();
   const mask = openModal(env);
   const dom5 = mask.querySelectorAll('.sxg-share-domestic .sxg-sd');
-  const frn9 = mask.querySelectorAll('.sxg-share-foreign .sxg-sf');
+  const frn10 = mask.querySelectorAll('.sxg-share-foreign .sxg-sf');
   check('国内平台 5 个（朋友圈/微信/抖音/小红书/微博）', dom5.length === 5, dom5.length);
-  check('海外平台 9 个（Discord/Facebook/X/LinkedIn/Reddit/Telegram/KakaoTalk/Line/WhatsApp）',
-    frn9.length === 9, frn9.length);
-  check('平台合计 14 项，一个不少（拦截事故的核心症状是「变少」）',
-    dom5.length + frn9.length === 14, dom5.length + frn9.length);
+  check('海外平台 10 个（Discord/Facebook/X/LinkedIn/Reddit/Telegram/KakaoTalk/Line/WhatsApp/Tumblr）',
+    frn10.length === 10, frn10.length);
+  check('平台合计 15 项，一个不少（拦截事故的核心症状是「变少」）',
+    dom5.length + frn10.length === 15, dom5.length + frn10.length);
   check('末尾仍有独立「复制链接」按钮',
     !!mask.querySelector('.sxg-share-copy[data-copy="link"]'));
+  // 圆形 + 上 5 下 10：两段都是 5 列网格，图标容器统一圆形
+  const styleEl = env.doc.getElementById('sxg-share-style');
+  const css = styleEl ? styleEl.textContent : '';
+  check('国内 / 海外两段都是 5 列网格（上 5 下 10 的布局基础）',
+    /\.sxg-share-domestic,\.sxg-share-foreign\{display:grid;grid-template-columns:repeat\(5,1fr\)/.test(css), css.slice(0, 0));
+  check('图标容器统一圆形（border-radius:50%），国内海外同一套尺寸',
+    /\.sxg-sd-ico,\.sxg-sf-ico\{[^}]*width:48px;height:48px;border-radius:50%/.test(css));
+  check('海外 10 项渲染成「图标 + 名称」竖排卡片（不再是横向清单行）',
+    Array.prototype.every.call(frn10, function (b) {
+      return !!b.querySelector('.sxg-sf-ico svg') && !!b.querySelector('.sxg-sf-name');
+    }) && Array.prototype.every.call(frn10, function (b) {
+      return /flex-direction:column/.test(css);
+    }));
 }
 
 /* ---------- ② 弹窗 DOM 零外链特征 ---------- */
@@ -103,9 +116,9 @@ console.log('\n② 弹窗 DOM 不含任何外链特征（拦截规则无从匹�
   check('弹窗内不出现 target="_blank"', !/target\s*=\s*["']?_blank/.test(html));
   const leak = ['service.weibo.com/share', 'facebook.com/sharer', 'twitter.com/intent',
     'linkedin.com/sharing', 'reddit.com/submit', 't.me/share',
-    'social-plugins.line.me', 'wa.me/?text'];
+    'social-plugins.line.me', 'wa.me/?text', 'tumblr.com/widgets/share'];
   const hit = leak.filter(function (s) { return html.indexOf(s) !== -1; });
-  check('8 个分享接口地址一个都没写进 DOM（含 encode 后形态）',
+  check('9 个分享接口地址一个都没写进 DOM（含 encode 后形态）',
     hit.length === 0 && html.indexOf(encodeURIComponent(leak[0])) === -1, hit);
 }
 
@@ -116,9 +129,9 @@ console.log('\n③ 外链平台按钮化（data-share 键名，不带 URL）');
   const mask = openModal(env);
   const btns = mask.querySelectorAll('button[data-share]');
   const keys = Array.prototype.map.call(btns, function (b) { return b.getAttribute('data-share'); });
-  const expect = ['weibo', 'facebook', 'x', 'linkedin', 'reddit', 'telegram', 'line', 'whatsapp'];
-  check('8 个外链平台都是 <button data-share>', btns.length === 8, keys);
-  check('键名与清单一一对应（微博 FB X LinkedIn Reddit TG Line WhatsApp）',
+  const expect = ['weibo', 'facebook', 'x', 'linkedin', 'reddit', 'telegram', 'line', 'whatsapp', 'tumblr'];
+  check('9 个外链平台都是 <button data-share>', btns.length === 9, keys);
+  check('键名与清单一一对应（微博 FB X LinkedIn Reddit TG Line WhatsApp Tumblr）',
     expect.every(function (k) { return keys.indexOf(k) !== -1; }), keys);
   check('data-share 里只有键名，没有 http 串',
     keys.every(function (k) { return k.indexOf('http') === -1; }));
@@ -140,17 +153,22 @@ console.log('\n④ 点击外链平台调起 window.open');
     env.opened[0] && env.opened[0].url);
   check('成功后不误报拦截（未复制、无拦截提示）', env.copied.length === 0, env.copied);
 
-  // 其余 7 个平台逐个点，伞形覆盖
-  const others = ['facebook', 'x', 'linkedin', 'reddit', 'telegram', 'line', 'whatsapp'];
+  // 其余 8 个平台逐个点，伞形覆盖
+  const others = ['facebook', 'x', 'linkedin', 'reddit', 'telegram', 'line', 'whatsapp', 'tumblr'];
   others.forEach(function (k) {
     mask.querySelector('[data-share="' + k + '"]')
       .dispatchEvent(new env.w.MouseEvent('click', { bubbles: true }));
   });
-  check('7 个海外外链平台点击全部调起 window.open（累计 8 次）',
-    env.opened.length === 8, env.opened.length);
+  check('8 个海外外链平台点击全部调起 window.open（累计 9 次）',
+    env.opened.length === 9, env.opened.length);
   check('海外平台 URL 指向各自分享接口',
-    env.opened.slice(1).every(function (o) { return /^https:\/\/(www\.)?(facebook\.com|twitter\.com|linkedin\.com|reddit\.com|t\.me|social-plugins\.line\.me|wa\.me)\//.test(o.url); }),
+    env.opened.slice(1).every(function (o) { return /^https:\/\/(www\.)?(facebook\.com|twitter\.com|linkedin\.com|reddit\.com|t\.me|social-plugins\.line\.me|wa\.me|tumblr\.com)\//.test(o.url); }),
     env.opened.slice(1).map(function (o) { return o.url; }));
+  const tum = env.opened[8] && env.opened[8].url;
+  check('Tumblr 走 tumblr.com/widgets/share/tool（canonicalUrl 带站点链接）',
+    !!tum && /tumblr\.com\/widgets\/share\/tool\?canonicalUrl=/.test(tum)
+    && decodeURIComponent(tum).indexOf('canonicalUrl=https://dujeongil-galaxy.github.io/shuangxiugou/') !== -1,
+    tum && decodeURIComponent(tum));
 }
 
 /* ---------- ⑤ window.open 被拦 → 复制兜底 ---------- */
