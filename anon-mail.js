@@ -3,7 +3,8 @@
    --------------------------------------------------------------------------
    站长指令（口径）：右上角新增「匿名邮箱」按钮，指向 https://m.kuku.lu/cn.php；
    点击**先弹窗**明确告知「没有 VPN 就无法访问」，同时在弹窗里备注站长最新
-   匿名邮箱 mantoopea@exdonuts.com。手机端落位由本文件按断点自行处理。
+   匿名邮箱。**地址只写在下方 MAIL 常量这一处**，弹窗展示与「复制邮箱」
+   共用同一份，别在别处再写一遍。手机端落位由本文件按断点自行处理。
 
    纪律（沿用 §36q / §36r 的下游补丁思路）：
      · 不改压缩 bundle，不改六个悬浮脚本，不改 header-menu-patch.js。
@@ -21,7 +22,7 @@
   'use strict';
 
   var SITE_URL  = 'https://m.kuku.lu/cn.php';
-  var MAIL      = 'mantoopea@exdonuts.com';
+  var MAIL      = 'tensi2026@choco.la';
   var BTN_ID    = 'sxg-anon-mail-btn';
   var MODAL_ID  = 'sxg-anon-mail-modal';
   var STYLE_ID  = 'sxg-anon-mail-style';

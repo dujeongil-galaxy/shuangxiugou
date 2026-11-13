@@ -8603,11 +8603,11 @@ section('25. 成功案例专题页（QQ奶奶）');
 
   // ① 事实点：目标站点、最新匿名邮箱、明确的「没 VPN 打不开」，只钉要素不钉逐字。
   check(/SITE_URL\s*=\s*'https:\/\/m\.kuku\.lu\/cn\.php'/.test(am36s)
-    && /MAIL\s*=\s*'mantoopea@exdonuts\.com'/.test(am36s)
+    && /MAIL\s*=\s*'tensi2026@choco\.la'/.test(am36s)
     && /没有 VPN/.test(am36s) && /无法访问/.test(am36s)
     && /大陆网络/.test(am36s)
     && !/别抄原话|站长推荐|点此购买|直接url链接/.test(am36s),
-    '§36s 匿名邮箱弹窗写清「没有 VPN 无法访问」，并备注站长最新邮箱 mantoopea@exdonuts.com；草稿批注不上页面',
+    '§36s 匿名邮箱弹窗写清「没有 VPN 无法访问」，并备注站长最新匿名邮箱（弹窗展示与复制按钮同由 MAIL 常量驱动）；草稿批注不上页面',
     '少了 VPN 告知或邮箱写错 → 用户点进去白等；把站长括号批注贴到公开弹窗 → §36n 同款事故');
 
   // ② 首次点击必须先弹窗：目标链接只存在于弹窗的「仍要前往」出口。
@@ -8645,14 +8645,14 @@ section('25. 成功案例专题页（QQ奶奶）');
     '又写回折叠 / restore → 站长 §36t「全部展开，按钮不再做隐藏」被推翻');
 
   // ⑤ 挂载与 ?v 钉子（§21h 纪律）+ jsdom 行为测试挂进 CI（§21o）。
-  check(/<script defer src="\.\/anon-mail\.js\?v=4"><\/script>/.test(idx36s)
-    && idx36s.indexOf('anon-mail.js?v=4') > idx36s.indexOf('fab-dock.js?v=2')
+  check(/<script defer src="\.\/anon-mail\.js\?v=5"><\/script>/.test(idx36s)
+    && idx36s.indexOf('anon-mail.js?v=5') > idx36s.indexOf('fab-dock.js?v=2')
     && /fab-dock\.js\?v=2/.test(idx36s)
     && /mobile-fixes\.css\?v=21/.test(idx36s)
     && /header-menu-patch\.js\?v=11/.test(idx36s)
     && exists('scripts/test-anon-mail.cjs')
     && wf36s.indexOf('node scripts/test-anon-mail.cjs') !== -1,
-    '§36s index.html 挂载 anon-mail.js?v=4（排在 fab-dock 之后，§36w 补 LOGO 时 bump），三个改动资源 ?v 同步 bump，配套 jsdom 测试挂进 CI',
+    '§36s index.html 挂载 anon-mail.js?v=5（排在 fab-dock 之后；v=5 为匿名邮箱地址变更那次 bump），三个改动资源 ?v 同步 bump，配套 jsdom 测试挂进 CI',
     '?v 没 bump → 浏览器/CDN 命中旧脚本；测试没挂 CI → §21o 判红或回归没人拦');
 
   // 隐藏开关 + CSS 隐藏规则必须都在（临时隐藏不删除：ENABLED 改 true 即恢复；
@@ -8940,11 +8940,11 @@ section('25. 成功案例专题页（QQ奶奶）');
 
   // ⑥ 挂载与 ?v：index.html 两个脚本同批 bump，sponsor.html 不挂分享入口（打赏页自己有分享逻辑）。
   check(/<script defer src="\.\/share-entry\.js\?v=1"><\/script>/.test(idx36w)
-    && idx36w.indexOf('share-entry.js?v=1') > idx36w.indexOf('anon-mail.js?v=4')
-    && /anon-mail\.js\?v=4/.test(idx36w)
-    && !/anon-mail\.js\?v=3/.test(idx36w)
+    && idx36w.indexOf('share-entry.js?v=1') > idx36w.indexOf('anon-mail.js?v=5')
+    && /anon-mail\.js\?v=5/.test(idx36w)
+    && !/anon-mail\.js\?v=4/.test(idx36w)
     && !/share-entry\.js/.test(sp36w),
-    '§36w index.html 挂载 share-entry.js?v=1（排在 anon-mail.js?v=4 之后）；sponsor.html 不挂本入口（打赏页分享走自己的 shareUrl）',
+    '§36w index.html 挂载 share-entry.js?v=1（排在 anon-mail.js?v=5 之后）；sponsor.html 不挂本入口（打赏页分享走自己的 shareUrl）',
     '?v 没 bump → 线上仍跑旧脚本；把入口也挂到 sponsor.html → 打赏页多出一枚重复分享，与「打赏页分享指向首页」的逻辑打架');
 
   // ⑦ README 规则章节跟着改：六枚 + 第 6 枚落位规则 + 新开关行（避免半年后又「被吃掉」）。

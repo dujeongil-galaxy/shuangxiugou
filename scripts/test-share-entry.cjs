@@ -84,7 +84,7 @@ function fire(w, el, type) {
   check('index.html 挂载 share-entry.js?v=1，且排在 anon-mail.js 之后',
     (function () {
       const iShare = HTML.indexOf('./share-entry.js?v=1');
-      const iAnon = HTML.indexOf('./anon-mail.js?v=4');
+      const iAnon = HTML.indexOf('./anon-mail.js?v=5');
       return iShare > 0 && iAnon > 0 && iShare > iAnon;
     })());
 
@@ -251,7 +251,7 @@ function fire(w, el, type) {
       !!anon && anon.textContent.trim() === '匿名邮箱');
     check('LOGO 用 currentColor（跟随按钮前景色，不写死颜色）',
       /stroke="currentColor"/.test(ANON_SRC));
-    check('index.html 中 anon-mail.js 已 bump 到 ?v=4', HTML.indexOf('./anon-mail.js?v=4') > 0);
+    check('index.html 中 anon-mail.js 已 bump 到 ?v=5', HTML.indexOf('./anon-mail.js?v=5') > 0);
   }
 
   console.log('\n========== 结果：' + passed + ' 项通过，' + failed + ' 项失败 ==========');

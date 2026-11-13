@@ -74,7 +74,7 @@ function mkDom(opts) {
   console.log('\n① 单一真相源');
   const c = mkDom({ header: false });
   check('目标站点是 m.kuku.lu/cn.php', c.w.SXGAnonMail.SITE_URL === 'https://m.kuku.lu/cn.php');
-  check('最新匿名邮箱是 mantoopea@exdonuts.com', c.w.SXGAnonMail.MAIL === 'mantoopea@exdonuts.com');
+  check('最新匿名邮箱是 tensi2026@choco.la', c.w.SXGAnonMail.MAIL === 'tensi2026@choco.la');
   c.w.close();
 
   /* ② 桌面落位 */
@@ -129,7 +129,7 @@ function mkDom(opts) {
   const txt = modal ? modal.textContent : '';
   check('明确写「没有 VPN … 无法访问」', /没有 VPN/.test(txt) && /无法访问/.test(txt));
   check('写明大陆网络直连会打不开', /大陆网络/.test(txt) && /连接失败/.test(txt));
-  check('备注最新匿名邮箱', txt.indexOf('mantoopea@exdonuts.com') !== -1);
+  check('备注最新匿名邮箱', txt.indexOf('tensi2026@choco.la') !== -1);
   check('备注点明目标站点是境外临时邮箱', /m\.kuku\.lu/.test(txt) && /境外/.test(txt));
   check('草稿批注 / 推广话术不上页面', !/别抄原话|站长推荐|点此购买|直接url链接/.test(txt));
   const go = modal.querySelector('.sxg-am-go');
@@ -141,7 +141,7 @@ function mkDom(opts) {
   console.log('\n⑥ 复制邮箱');
   modal.querySelector('.sxg-am-copy').dispatchEvent(new k.w.Event('click', { bubbles: true }));
   await new Promise(function (r) { setTimeout(r, 20); });
-  check('clipboard.writeText 写入的就是最新邮箱', k.copied.length === 1 && k.copied[0] === 'mantoopea@exdonuts.com', k.copied);
+  check('clipboard.writeText 写入的就是最新邮箱', k.copied.length === 1 && k.copied[0] === 'tensi2026@choco.la', k.copied);
   check('按钮给出「已复制」反馈', modal.querySelector('.sxg-am-copy').textContent === '已复制');
 
   /* ⑦ 关闭路径 */
