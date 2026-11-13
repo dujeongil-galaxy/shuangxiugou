@@ -4,6 +4,19 @@
 
 ---
 
+### fix：拼音搜索框「搜 A 看不见 A」——强口径过滤用全文猜卡片身份，把正主卡当弱命中藏掉；卡片口径与全仓计数同步（2026-11-13 23:20 · 提交 `HASHPLACEHOLDER`）
+
+站长反馈：「我拼音框搜索比亚迪，怎么被腾势卡死了，根本看不见比亚迪」。
+
+- **现象**：拼音框输入「比亚迪」→ 联想候选有 BYD → 卡片区**看不到比亚迪卡**，视野被另一张卡占满；全拼「biyadi」联想为空、列表滚到无关项。
+- **取证**：无头 Edge + CDP 真渲染，逐卡取 `display`/class —— BYD 卡 `display:none` 且带 `sxg-scope-hidden`，另一张自定义卡 `display:flex`。
+- **根因**：`search-scope-fix.js` 的 `findBrandFor(text)` 用卡片**全文**做品牌名匹配，并把**最长匹配**当卡片身份。BYD 卡正文末尾的站长点评提到另一家车企全名（比「比亚迪」更长）→ 该卡被认成别家的卡，按弱命中隐藏；另一张卡关联别名含「比亚迪系」（`bydx`，权重 3）构成强命中被保留。**判定口径没错，错在拿全文猜身份。**
+- **修复**：新增 `cardHeading(node)`（取 `h2`/`h3` 文本），`applyScope` 先按标题 `findBrandFor`，标题认不出才回落全文；关联别名/关键词仍按强字段算。`?v=4→5`。
+- **删卡（按「全资子公司不单列成卡」口径）**：删 1 张自定义卡及其 `brand/` 详情页、`sitemap.xml` 条目、`projects.html` 索引、noscript 清单两处；`gen-pinyin-index.py` / `gen-evidence-board.py` 重生成（178 品牌 / 180 家 / 472 证据）。
+- **计数对账**：收录 181→**180**（bundle「收录品牌」常数 + tab 角标 `?v=52→53`）、自定义卡 129→**128**、badge 182→**181**/可见 180、证据 474→**472** 条/421→**418** 链接、U 出口说明 3→**2**（`u-grade-patch.js?v=18→19`）、`rating-stats-patch.js?v=12→13`、`pinyin-index.js?v=18→19`。
+- **断言与文档同步**：verify §2e（手工卡 22→21）、§7（README/FORK_GUIDE/MAINTAINING/PITFALLS/员工清单 全部 128 张自定义卡）；`test-stat-filter.cjs`（初始可见 180/badge 181/隐藏 96/U 2 家）、`test-gf-search.cjs`（U 视图 2 张）；README 新增「近期 bug 根因」条。
+- 复核：verify **1766 项全绿**；`test-stat-filter`、`test-gf-search`、`test-search-scope`、`test-byd-expose`、`test-pinyin-search` 全 0 失败。
+
 ### fix：清除 rebase 冲突标记残留，版本号真相源节点恢复唯一（2026-11-13 17:50 · 提交 `e0494cd`）
 
 远端一次 rebase 在 `index.html` 留下 4 行冲突标记（`<<<<<<<` / `=======` / `>>>>>>>`），公告栏「当前版本号」的真相源节点因此出现两份，`sync-version.mjs` 可能取到错的那一份。

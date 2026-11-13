@@ -218,6 +218,20 @@
     return !!(node && node.querySelector && node.querySelector(INPUT_SEL));
   }
 
+  /* 卡片的「身份」只看标题（h2/h3），不看全文。
+     2026-11-13 站长报障：拼音搜索框输「比亚迪」，结果里比亚迪自己的卡反而消失，
+     只剩一张别的卡盖在首位，看起来像「搜索被那张卡卡死」。
+     复现（无头 Edge + CDP）：BYD 卡正文末尾带一句「打工人推荐双休平替：Volvo (沃尔沃汽车)」，
+     全文最长匹配把这张卡认成了「Volvo (沃尔沃汽车)」的卡；查询词「比亚迪」对沃尔沃是弱命中，
+     于是它被 HIDE_CLASS 收起。凡是正文提到别家全名（平替推荐 / 同类对比 / 引用报道）的卡
+     都会中这一枪，跟具体是哪一家无关。
+     修法：先用标题文本判定身份，标题认不出来才回落全文——summary / 平替这类兜底命中
+     仍走全文，口径不变。 */
+  function cardHeading(node) {
+    var h = node && node.querySelector ? node.querySelector('h2,h3') : null;
+    return h ? (h.textContent || '') : '';
+  }
+
   function findBrandFor(cardText, fields) {
     // 卡片文本含 brand.name 即视为该品牌的卡；取最长匹配，
     // 避免「库迪」抢先匹配「库迪咖啡 (COTTI COFFEE)」的卡。
@@ -262,7 +276,9 @@
       if (isSearchContainer(card)) { verdicts.push(null); continue; }
       text = card.textContent || '';
       if (text.indexOf('虚拟对比黑榜') !== -1) { verdicts.push(null); continue; }
-      var brand = findBrandFor(text, fieldsCache);
+      var brand = findBrandFor(cardHeading(card), fieldsCache);
+      // 标题认不出品牌身份（如标题只写英文缩写）才回落全文判定
+      if (!brand) brand = findBrandFor(text, fieldsCache);
       if (!brand) { verdicts.push(null); continue; } // 识别不了的不动
       var strong = isStrongHit(brand, q);
       if (strong) strongCount += 1;

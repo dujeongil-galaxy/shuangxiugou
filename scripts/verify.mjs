@@ -585,8 +585,8 @@ check(virtual2e === 1, '虚拟对比卡恰 1 张（口径排除依据，id 变�
 // 这个数不是「随便写死」：它同时被 §2e 的四格统计、brand/ 页数、公告栏数字三处引用，
 // 任何一处生成器漏跑都会在这里对不上，所以必须保留为硬断言。
 const IMPORTED_CARD_COUNT = 107;
-check(customPairs2e.length === 22 + IMPORTED_CARD_COUNT,
-  `能解析全部自定义卡（${22 + IMPORTED_CARD_COUNT} 张 = 22 张手工卡含联通/小米汽车/广汽丰田/腾势 + ${IMPORTED_CARD_COUNT} 张导入卡（104 榜单 + 2 独立来源））`,
+check(customPairs2e.length === 21 + IMPORTED_CARD_COUNT,
+  `能解析全部自定义卡（${21 + IMPORTED_CARD_COUNT} 张 = 21 张手工卡含联通/小米汽车/广汽丰田 + ${IMPORTED_CARD_COUNT} 张导入卡（104 榜单 + 2 独立来源））`,
   '实际 ' + customPairs2e.length);
 check(headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') === statTotal,
   '顶部「收录品牌」= 实名企业卡总数', '页面 ' + headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') + ' / 计算 ' + statTotal + '（改 bundle 顶部统计常数）');
@@ -1405,8 +1405,8 @@ if (cfgBlock) {
   }
 }
 const CUSTOM_COUNT = customCards.length;
-check(CUSTOM_COUNT === 22 + IMPORTED_CARD_COUNT,
-  `自定义卡 ${CUSTOM_COUNT} 张（22 张手工 + ${IMPORTED_CARD_COUNT} 张导入；2026-11-02 批量导入，2026-11-03 增联通 B 级，2026-11-08 增陆喜依 S 级，2026-11-12 增广发银行/四川天府银行 A 级 + 零跑汽车 C 级，2026-11-13 增小米汽车（建卡 C 级、同日站长人工介入上调 B 级）+ 广汽丰田 B 级 + 腾势 U 级）`);
+check(CUSTOM_COUNT === 21 + IMPORTED_CARD_COUNT,
+  `自定义卡 ${CUSTOM_COUNT} 张（21 张手工 + ${IMPORTED_CARD_COUNT} 张导入；2026-11-02 批量导入，2026-11-03 增联通 B 级，2026-11-08 增陆喜依 S 级，2026-11-12 增广发银行/四川天府银行 A 级 + 零跑汽车 C 级，2026-11-13 增小米汽车（建卡 C 级、同日站长人工介入上调 B 级）+ 广汽丰田 B 级）`);
 
 // null 规则：双休率 / 下班时间不得为占位 0，也不得是字符串 '未知'
 customCards.forEach((c) => {
@@ -5812,9 +5812,9 @@ section('21b-2. 安全事件默认收起 + 分享弹窗接线');
     '改末句措辞/断行 → 站长指定的固定收尾句被破坏');
   // 脚本缓存号：改 u-grade-patch.js 必须同步 ?v=，否则线上仍是旧抵制区
   const idxUgp = readFileSync(join(ROOT, 'index.html'), 'utf8');
-  check(/u-grade-patch\.js\?v=18/.test(idxUgp)
-    && !/u-grade-patch\.js\?v=17/.test(idxUgp),
-    'index.html 引用 u-grade-patch.js?v=18（缓存号已随改动同步 +1）',
+  check(/u-grade-patch\.js\?v=19/.test(idxUgp)
+    && !/u-grade-patch\.js\?v=18/.test(idxUgp),
+    'index.html 引用 u-grade-patch.js?v=19（缓存号已随改动同步 +1）',
     '漏 bump ?v 或仍写旧值 → 浏览器命中旧缓存，新抵制区不生效');
 }
 
@@ -6641,8 +6641,8 @@ section('21c. 首页滑到底部按钮');
   check(/'D 级'/.test(rowTexts) && /'U 级'/.test(rowTexts),
     'stat-filter.js 评级行互斥枚举含「D 级」「U 级」（点 D/U 清五格筛选）',
     'stat-filter 没跟上 → 点 D/U 不清四格筛选，两套过滤层互相覆盖出现空面板');
-  check(/u-grade-patch\.js\?v=18/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
-    'u-grade-patch.js?v=18 / stat-filter.js?v=9（缓存号已随内容 bump；11-13 U 计数动态刷新）',
+  check(/u-grade-patch\.js\?v=19/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
+    'u-grade-patch.js?v=19 / stat-filter.js?v=9（缓存号已随内容 bump；11-13 U 计数动态刷新）',
     '缓存号没 bump → 用户拿旧补丁，D/U 按钮注入不生效（2026-11-01 拼音索引同类事故）');
   // 2026-11-03 站长实测 bug：点「D 级 / U 级」后拼音搜索框整块消失。
   // 根因：CARD_SEL（div.bg-white.rounded-2xl.border）命中面比品牌卡宽，
