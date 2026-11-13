@@ -165,6 +165,10 @@
     }
     origin.textContent = BRANDS[0];
     var proto = origin.cloneNode(false);
+    // 2026-11-13：子品牌必须连成一片地排在被替换的那个标签后面，
+    // 不能 appendChild 到末尾——否则 bundle 原生的「车载储能」「汽车周边」
+    // 会夹在王朝网和海洋网中间，标签区一半是品牌、一半是业务，读起来断成两截。
+    var ref = origin.nextSibling;
     for (var j = 1; j < BRANDS.length; j++) {
       // bundle 里本来就有「车载储能」「汽车周边」两个 span，别追加成重复项
       var dup = false;
@@ -174,7 +178,7 @@
       if (dup) continue;
       var s = proto.cloneNode(false);
       s.textContent = BRANDS[j];
-      row.appendChild(s);
+      row.insertBefore(s, ref);
     }
     return true;
   }

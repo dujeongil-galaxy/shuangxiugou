@@ -33,8 +33,8 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   const rd = read('README.md');
 
   check('曝光补丁文件存在', exists('byd-expose-patch.js'));
-  check('首页挂了曝光补丁（?v=3 防缓存）',
-    /<script defer src="\.\/byd-expose-patch\.js\?v=3"><\/script>/.test(html));
+  check('首页挂了曝光补丁（?v=4 防缓存）',
+    /<script defer src="\.\/byd-expose-patch\.js\?v=4"><\/script>/.test(html));
   check('真 DOM 测试挂进 CI 的 pinyin job', /test-byd-expose\.cjs/.test(wf));
   check('README 写死曝光登记口径',
     /比亚迪卡片曝光登记/.test(rd) && /失效链接不得冒充可点来源/.test(rd));
