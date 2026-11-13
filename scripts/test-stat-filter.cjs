@@ -6,10 +6,11 @@
 //   工/建/中/成都 4 家银行网点轮休制周休 2 天（≈月休 8.6 天）→ A 级；
 //   农行官方口径单休网点占 61%（主体月休 4-5 天）→ 维持 C 级。
 //   badge 卡共 182 张（53 内置含 1 虚拟 + 129 自定义），可见 181 张（虚拟卡 class 隐藏）。
-//   红榜(S/A) 86 + 大小周(B) 34 + 避雷(C 57 + D 1) 58 = 178；另有 3 家 U 级（三星/宏碁/腾势，证据不足）
+//   红榜(S/A) 85 + 大小周(B) 35 + 避雷(C 57 + D 1) 58 = 178；另有 3 家 U 级（三星/宏碁/腾势，证据不足）
 //   2026-11-13 新增「小米汽车」C 级卡（证据仅招聘/资讯聚合摘要、数值留空）：badge 178→180、可见 177→179、避雷 57→59、C 56→58。
 //   2026-11-13 小米汽车 C→B（站长人工介入，修改日期 2026-11-13；同日补有驾分厂排班证据入链）：B 32→33、C 58→57、避雷 59→58。
 //   2026-11-13 新增「广汽丰田」B 级卡 + 「腾势」U 级卡（第 128/129 张自定义卡）：badge 180→182、可见 179→181、B 33→34、U 2→3（另同日 BYD/奇瑞卡面备注补品牌动态线索，不参与定档）。
+//   2026-11-13 小米 A→B（站长要求下调，修改日期 2026-11-13；首页不另加备注亦为站长要求）：红榜 86→85、B 34→35。
 //   2026-11-12 §38 新增广发银行 / 四川天府银行两张 A 级卡：自定义卡 123→125、可见 175→177、红榜 84→86。
 //   2026-11-12 长城汽车 C→B 后按 rating-stats-patch.js 的 CORRECTIONS 对齐：B +1 / C -1。
 //   D 级 = 站长人工降级（现仅 BOSS直聘，2026-11-03 平台类目例外），计入避雷格；U 级不计入四格。
@@ -140,10 +141,10 @@ function click(box) {
   // —— 双休红榜：只显示 S/A ——
   click(red);
   let s = snapshot();
-  const okRed = s.visible.length === 86
+  const okRed = s.visible.length === 85
     && s.visible.every((c) => { const t = tierOf(c); return t === 'S' || t === 'A'; })
-    && s.hidden === s.total - 86;
-  check('点「双休红榜」→ 仅 S/A 级可见（86 张；2026-11-12 §38 新增广发银行 / 四川天府银行两张 A 级卡后 84→86）', okRed,
+    && s.hidden === s.total - 85;
+  check('点「双休红榜」→ 仅 S/A 级可见（85 张；2026-11-12 广发/天府 A 级后 84→86，2026-11-13 小米 A→B 站长要求下调后 86→85）', okRed,
     { visible: s.visible.length, hidden: s.hidden,
       tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
   check('红榜激活态写上 data-sxg-active', red.getAttribute('data-sxg-active') === '1');
@@ -157,8 +158,8 @@ function click(box) {
   // —— 大小周观察：只显示 B ——
   click(zhou);
   s = snapshot();
-  check('点「大小周观察」→ 仅 B 级可见（34 张，与四格修正后「大小周观察 34」一致：Apple 2026-11-04 S→B，小米 2026-11-05 B→A，长城 2026-11-12 C→B，小米汽车 2026-11-13 C→B 站长人工介入，11-13 新增广汽丰田 B 级）',
-    s.visible.length === 34 && s.visible.every((c) => tierOf(c) === 'B'),
+  check('点「大小周观察」→ 仅 B 级可见（35 张，与四格修正后「大小周观察 35」一致：Apple 2026-11-04 S→B，小米 2026-11-05 B→A，长城 2026-11-12 C→B，小米汽车 2026-11-13 C→B 站长人工介入，11-13 新增广汽丰田 B 级，11-13 小米 A→B 站长要求下调）',
+    s.visible.length === 35 && s.visible.every((c) => tierOf(c) === 'B'),
     { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
 
   // —— 避雷预警：显示 C + D（D 是 C 的加重版，站长人工降级，同属避雷）——
@@ -231,7 +232,7 @@ function click(box) {
   click(red);
   s = snapshot();
   check('互斥前置：点红榜后隐藏 ' + (s.total - s.visible.length) + ' 张（含 class 隐藏的虚拟卡）',
-    s.hidden === 96, s.hidden); // total 182（含虚拟卡）- 可见 86 = 96
+    s.hidden === 97, s.hidden); // total 182（含虚拟卡）- 可见 85 = 97
   const allBtn = rowBtn('全部评级');
   if (allBtn) click(allBtn);
   s = snapshot();

@@ -632,7 +632,7 @@ const EXPECT_GRADE_2E = {
   // 2026-11-03 新增：中国联通 B 级（站长线下核实一个城市，月休 8 天以上，见 brand/unicom.html）。
   'unicom-card': 'B级',
   // 2026-11-05 新增：小米 B→A（爱企查公开知识条目「公司普遍每周双休」；原有线下销售岗单休备注保留）。
-  'xiaomi-card': 'A级',
+  'xiaomi-card': 'B级',
   // 2026-11-12 新增：广发银行 / 四川天府银行 A 级（站长指令建卡，网点轮班周休 2 天，见 brand/guangfa.html、brand/tianfu.html）。
   'guangfa-card': 'A级', 'tianfu-card': 'A级',
 };
@@ -641,15 +641,18 @@ const relockedU2e = locked2e
   .filter((c) => c.grade !== EXPECT_GRADE_2E[c.id])
   .map((c) => c.id + '=' + c.grade + '（应 ' + EXPECT_GRADE_2E[c.id] + '）');
 check(relockedU2e.length === 0,
-  '7 家银行 A 级（工/建/中/成都/农行/广发/天府）+ 小米 A 级 + 淘宝闪购 C 级 + BOSS直聘 D 级（锁定，不得回退）',
+  '7 家银行 A 级（工/建/中/成都/农行/广发/天府）+ 小米 B 级（2026-11-13 站长要求下调）+ 淘宝闪购 C 级 + BOSS直聘 D 级（锁定，不得回退）',
   relockedU2e.length ? relockedU2e.join(', ') : '锁定生效');
 check(locked2e.length === 11,
   '11 张锁定卡全部存在（删卡判红）', '实际 ' + locked2e.length);
 // 2026-11-02 起：A 级 / C 级计数含榜单导入卡（A 58 张、C 29 张）。
 // 断言仍然写成「基准 + 导入数」的算式，导入批次调整时改 IMPORTED_CARD_COUNT 一处即可，
 // 但两个基准值（4 / 11）必须保持 —— 那是手工卡的既有口径，动了就等于偷偷改档。
-check(byGrade2e('A级') === 8 + 58,
-  '自定义卡 A 级共 66 张（工/建/中/成都/农行 5 家银行 + 小米 2026-11-05 B→A + 2026-11-12 广发银行/四川天府银行 2 家 + 榜单导入 58 张）',
+// 2026-11-02 起：A 级 / C 级计数含榜单导入卡（A 58 张、C 29 张）。
+// 断言仍然写成「基准 + 导入数」的算式，导入批次调整时改 IMPORTED_CARD_COUNT 一处即可，
+// 但两个基准值（4 / 11）必须保持 —— 那是手工卡的既有口径，动了就等于偷偷改档。
+check(byGrade2e('A级') === 7 + 58,
+  '自定义卡 A 级共 65 张（工/建/中/成都/农行 5 家银行 + 2026-11-12 广发银行/四川天府银行 2 家 + 榜单导入 58 张；小米 2026-11-05 B→A、2026-11-13 站长要求下调回 B）',
   '实际 ' + byGrade2e('A级'));
 check(byGrade2e('C级') === 10 + 29 + 1,
   '自定义卡 C 级共 40 张（手工 10 张 + 榜单导入 29 张 + 2026-11-12 新增零跑汽车 C 级；小米汽车 2026-11-13 建卡 C 级、同日站长人工介入上调 B 级；农行 2026-11-04 由 C 转 A；BOSS直聘 2026-11-03 转入 D 级；2026-11-11 新增吉利汽车 C 级）',
@@ -6877,18 +6880,20 @@ section('21c. 首页滑到底部按钮');
     `detail=${xmDetail.length} / card=${/id: 'xiaomi-card'/.test(xmIndex)}`);
   // 按「出现次数」锁，不按「文件里有没有」锁：故障注入首轮故意只抹掉一处，
   // 只查存在性的断言照样全绿（另外几处还写着），等于没拦住「某处被悄悄改回旧措辞」。
+  // 2026-11-13 站长要求下调 A→B 后详情页整段重写，重复表述收敛但仍保有 3 处口径。
   const xmDetailHits = (xmDetail.match(/官方授权直营店/g) || []).length;
   const xmIndexHits = (xmIndex.match(/官方授权直营店/g) || []).length;
-  check(/小米之家属于官方授权直营店/.test(xmDetail) && /上六休一/.test(xmDetail) && xmDetailHits >= 6,
-    '§21p 详情页按站长口径写明「小米之家属于官方授权直营店，上六休一」（6 处口径全在）',
+  check(/小米之家属于官方授权直营店/.test(xmDetail) && /上六休一/.test(xmDetail) && xmDetailHits >= 3,
+    '§21p 详情页按站长口径写明「小米之家属于官方授权直营店，上六休一」（口径全在）',
     `detailHits=${xmDetailHits}`);
   check(xmIndexHits >= 3,
     '§21p 首页卡片三处（休息制度 / 描述 / 红框）口径全在',
     `indexHits=${xmIndexHits}`);
-  check(/不是本次 A 级评级的依据/.test(xmDetail) && /不代为合并/.test(xmDetail),
-    '§21p 详情页标明门店备注不是 A 级评级依据、不代为合并口径');
-  check(/recommendText: '⚠️ 小米之家（官方授权直营店）上六休一/.test(xmIndex) &&
-        /小米之家（官方授权直营店）上六休一 \/ 客服轮班/.test(xmIndex),
+  check(/门店性质/.test(xmDetail) && /原有备注保留/.test(xmDetail)
+    && !/线下销售岗位单休」。/.test(xmDetail.replace(/（线下销售岗位单休）/g, '')),
+    '§21p 详情页标明门店备注性质（2026-11-06 口径保留；11-13 下调后岗位分化成为 B 级依据的一部分）');
+  check(/recommendText: '⚠️ B 级 · 双休不稳（2026-11-13 站长要求下调）/.test(xmIndex) &&
+        /小米之家（官方授权直营店）上六休一 \/ 客服轮班 \/ 工厂倒班 12 小时/.test(xmIndex),
     '§21p 首页卡片红框与休息制度字段与详情页同口径');
   check(/aiqicha\.baidu\.com\/details\/ugknowledge\?id=f5fe5b856c9a6bcf251add4319e48490/.test(xmDetail) &&
         /aiqicha\.baidu\.com\/details\/ugknowledge\?id=f5fe5b856c9a6bcf251add4319e48490/.test(xmIndex),
@@ -7222,8 +7227,8 @@ section('24. 白屏兜底与加载态（防用户误退出）');
   check(/--only/.test(impPy25) && /def guard_full_rebuild/.test(impPy25)
     && /重新生成已存在的卡片配置/.test(impPy25),
     '§25r 导入脚本有增量模式 + 全量重建保护 + 已存在卡可重新生成');
-  check(/'双休红榜':\s*86/.test(read('rating-stats-patch.js')),
-    '§25s 四格红榜补丁同步为 86（S/A 级 +2：广发/天府）');
+  check(/'双休红榜':\s*85/.test(read('rating-stats-patch.js')),
+    '§25s 四格红榜补丁同步为 85（2026-11-13 小米 A→B 站长要求下调）');
 }
 
 // ---------- 26. 淘宝评论补充说明 / 奶茶类 B/C 平替陆喜依 / 天猫链接隐私 / 别名直搜 ----------
