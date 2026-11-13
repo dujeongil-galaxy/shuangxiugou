@@ -33,8 +33,8 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   const rd = read('README.md');
 
   check('曝光补丁文件存在', exists('byd-expose-patch.js'));
-  check('首页挂了曝光补丁（?v=2 防缓存）',
-    /<script defer src="\.\/byd-expose-patch\.js\?v=2"><\/script>/.test(html));
+  check('首页挂了曝光补丁（?v=3 防缓存）',
+    /<script defer src="\.\/byd-expose-patch\.js\?v=3"><\/script>/.test(html));
   check('真 DOM 测试挂进 CI 的 pinyin job', /test-byd-expose\.cjs/.test(wf));
   check('README 写死曝光登记口径',
     /比亚迪卡片曝光登记/.test(rd) && /失效链接不得冒充可点来源/.test(rd));
@@ -72,7 +72,12 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   check('幂等标记 + MutationObserver + rAF 合帧',
     /data-byd-expose/.test(src) && /new MutationObserver\(schedule\)/.test(src)
     && /requestAnimationFrame/.test(src));
-  check('卡片里不放任何抖音外链（死链不进卡）', !/v\.douyin\.com|https?:\/\//.test(src));
+  check('卡面备注只挂站长指定的那一条抖音短链（其余不放外链、旧短链清干净）',
+    (src.match(/https?:\/\//g) || []).length === 1
+    && /var LEGAL_HREF = 'https:\/\/v\.douyin\.com\/3oI-7tZ12R8\/'/.test(src)
+    && /setAttribute\('rel', 'nofollow noopener'\)/.test(src)
+    && !/kKmeU180irU/.test(src)
+    && !/LEGAL_HREF = 'https:\/\/v\.douyin\.com\/NrP3/.test(src));
   check('不抄站长口述、不写「日记」', !/日记/.test(src));
   check('随笔引用走站内 ./notes.html', /var NOTES_HREF = '\.\/notes\.html'/.test(src));
 
@@ -141,10 +146,34 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
     && legalBox.textContent.indexOf('法务部悬赏') !== -1
     && legalBox.textContent.indexOf('你大唐刚出事') !== -1
     && legalBox.textContent.indexOf('50 万元至 500 万元') !== -1);
-  check('点评框链接是站内 ./brand/byd.html（外链在详情页证据链）',
-    !!legalBox.querySelector('a[href="./brand/byd.html"]'));
-  check('点评框内同样零外链',
-    !!legalBox && !/https?:\/\//.test(legalBox.innerHTML));
+  // 2026-11-13 站长指令：备注栏链接换成当天那条抖音短链（原站内 byd.html 链接与旧短链不再使用）
+  const legalA = legalBox && legalBox.querySelector('a');
+  check('点评框链接是站长指定的抖音短链（5 秒视频那一条）',
+    !!legalA && legalA.getAttribute('href') === 'https://v.douyin.com/3oI-7tZ12R8/',
+    legalA && legalA.getAttribute('href'));
+  check('外链带 rel="nofollow noopener" + target="_blank"',
+    !!legalA && legalA.getAttribute('rel') === 'nofollow noopener'
+    && legalA.getAttribute('target') === '_blank');
+  check('点评框外链只有这一条、且没有图片',
+    !!legalBox && (legalBox.innerHTML.match(/https?:\/\//g) || []).length === 1
+    && !legalBox.querySelector('img'));
+  check('点评框不再链回站内 byd.html（原链接按站长指令不用了）',
+    !!legalBox && !legalBox.querySelector('a[href="./brand/byd.html"]'));
+  check('点评框写明 5 秒短视频 + 只挂线索不推广 + 未核实',
+    !!legalBox && legalBox.textContent.indexOf('5 秒短视频') !== -1
+    && legalBox.textContent.indexOf('不作推广') !== -1
+    && legalBox.textContent.indexOf('未核实') !== -1);
+  // 2026-11-13 站长第四条指令：卡面标签区把比亚迪旗下子品牌全部写完
+  const tagRow = bydCard.querySelector('div.flex.flex-wrap');
+  const tagText = tagRow ? tagRow.textContent.replace(/\s+/g, ' ') : '';
+  check('标签区换了位置：原「秦/汉/海鸥电动车」已被子品牌全景替换',
+    !!tagRow && tagText.indexOf('秦/汉/海鸥电动车') === -1 && tagText.indexOf('车载储能') !== -1,
+    tagText.slice(0, 120));
+  for (const k of ['王朝网', '秦/汉/唐/宋/元', '海洋网', '海鸥/海豚/海豹', '腾势', '方程豹', '仰望', '弗迪电池', '比亚迪电子']) {
+    check('标签区写出「' + k + '」', tagText.indexOf(k) !== -1, tagText.slice(0, 160));
+  }
+  check('标签区幂等：王朝网只出现一次',
+    (tagText.match(/王朝网/g) || []).length === 1);
   check('别的品牌卡不受影响', !otherCard.querySelector('[data-byd-expose]'));
 
   // 幂等：再触发一次 DOM 变动，仍只有两只曝光框（红色登记 + 琥珀点评）

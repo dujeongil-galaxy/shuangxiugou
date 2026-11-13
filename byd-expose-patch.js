@@ -19,7 +19,10 @@
  *  ① 按标题「BYD (比亚迪)」定位卡片，向上找 .bg-white.rounded-2xl.border 根节点；
  *  ② 曝光框插在标题行之后、工时政策栏之前，保证一眼可见；
  *  ③ 只写线索与已发生的事实（视频已删、链接失效），不对指称内容作事实认定；
- *  ④ 失效的抖音短链不写进卡片，也不写进任何外链；随笔只引用章节号，不抄口述原话。
+ *  ④ 失效的抖音短链不写进卡片；2026-11-13 站长指令后，卡面备注栏**只挂一条**当日抖音
+ *     短链（rel="nofollow noopener" target="_blank"），其余外链仍不进卡面；
+ *     随笔只引用章节号，不抄口述原话；
+ *  ⑤ 卡面标签区把比亚迪旗下子品牌全部写完（王朝网/海洋网/腾势/方程豹/仰望/弗迪/比亚迪电子）。
  */
 (function () {
   var TITLE = '⚠️ 直营门店强制加班曝光（员工／社群反馈）';
@@ -32,13 +35,29 @@
   // 2026-11-13 站长第二条首页备注（卡面第二只框，琥珀色区分）：
   // 「给比亚迪的证据链加备注……你大唐刚出事，你就开始发动法务部技能」。
   // 事实：11-11 澎湃报道车主投诉「唐」前后轮毂装反（公示区在册）；11-13 法务部发文
-  // 悬赏 50 万–500 万征集「黑公关」线索。站长原话入框。外链不进卡面（§30e 口径），
-  // 抖音视频链接落在详情页证据来源与首页公示区（站规：备注栏内容同步证据链）。
+  // 悬赏 50 万–500 万征集「黑公关」线索。站长原话入框。
+  //
+  // 2026-11-13 站长第三条指令（口径变更）：卡面备注栏里的链接**直接挂当天那条抖音短链**，
+  // 原 11-13 那条旧短链（NrP3UMT8Y-4）作废不再使用；框里只挂链接与子品牌，不作推广。
+  // 旧口径（备注栏零外链、外链只落详情页/公示区）自此按站长本次指令放开：**仅此一条**，
+  // 且必须 rel="nofollow noopener" + target="_blank"，其余卡片仍执行零外链（§30e 已按此收窄）。
   var LEGAL_TITLE = '⚑ 站长点评 · 法务部悬赏征集「黑公关」线索（2026-11-13）';
   var LEGAL_P1 = '2026-11-11 澎湃新闻刚报道多位车主投诉比亚迪「唐」前后轮毂装反（本页公示区在册），11-13 法务部即发文：为打击网络黑公关乱象，对通过 MCN 等有组织、有策划抹黑比亚迪的线索，一经查实给予 50 万元至 500 万元奖励。';
-  var LEGAL_P2 = '站长原话：「你大唐刚出事，你就开始发动法务部技能，那你确实很牛逼了。」——本条为站长主观点评，仅登记可核查事实（法务部发文）与公开报道（澎湃），不作事实认定；抖音视频线索（红V账号）已按站规同步登记进详情页证据链。';
-  var LEGAL_HREF = './brand/byd.html';
-  var LEGAL_LINK_TEXT = '查看证据链与视频链接';
+  var LEGAL_P2 = '站长原话：「你大唐刚出事，你就开始发动法务部技能，那你确实很牛逼了。」——本条为站长主观点评，仅登记可核查事实（法务部发文）与公开报道（澎湃），不作事实认定；抖音视频线索已按站规同步登记进详情页证据链与首页公示区。';
+  var LEGAL_P3 = '抖音视频（站长 2026-11-13 提供，5 秒短视频）：文案「摊牌了！彻底撕开了网络黑公关的遮羞布」「花五百万找『说它坏话的人』，评论区第一句话却是：这钱不如改善食堂。」话题 #比亚迪 #MCN #公司。本站只挂线索、不作推广，视频内容未核实。';
+  var LEGAL_HREF = 'https://v.douyin.com/3oI-7tZ12R8/';
+  var LEGAL_LINK_TEXT = '打开抖音看这条 5 秒短视频 → v.douyin.com/3oI-7tZ12R8';
+
+  // 2026-11-13 站长第四条指令：卡面标签区（截图里只有「秦/汉/海鸥电动车 / 车载储能 /
+  // 汽车周边」）要把比亚迪旗下子品牌**全部写完**。
+  // 归属口径：王朝网（秦·汉·唐·宋·元）、海洋网（海鸥/海豚/海豹/驱逐舰/护卫舰）为自营
+  // 产品线；腾势 DENZA、方程豹、仰望为全资子品牌；弗迪电池（弗迪系）、比亚迪电子为集团
+  // 全资子公司；车载储能/汽车周边为在售业务线。标签是 bundle 渲染出来的 span，
+  // bundle 不能改 → 就地改写这一行（首项替换 + 追加），幂等靠文本判断，不新增 data 标记。
+  var BRANDS = ['王朝网 · 秦/汉/唐/宋/元', '海洋网 · 海鸥/海豚/海豹/驱逐舰/护卫舰',
+    '腾势 DENZA（全资）', '方程豹（全资）', '仰望 YANGWANG（全资）',
+    '弗迪电池（弗迪系）', '比亚迪电子', '车载储能', '汽车周边'];
+  var BRANDS_ORIGIN = '秦/汉/海鸥电动车';
 
   var BOX_STYLE = 'margin:2px 0 0;padding:10px 12px;border:1px solid #fecaca;' +
     'border-left:4px solid #dc2626;border-radius:10px;background:#fef2f2;' +
@@ -115,10 +134,13 @@
 
     box.appendChild(makePara(LEGAL_P1));
     box.appendChild(makePara(LEGAL_P2));
+    box.appendChild(makePara(LEGAL_P3));
 
     var link = makePara('');
     var a = document.createElement('a');
     a.setAttribute('href', LEGAL_HREF);
+    a.setAttribute('rel', 'nofollow noopener');
+    a.setAttribute('target', '_blank');
     a.setAttribute('style', 'color:#b45309;font-weight:700;text-decoration:underline');
     a.textContent = LEGAL_LINK_TEXT;
     link.appendChild(a);
@@ -126,7 +148,42 @@
     return box;
   }
 
+  /* 标签区补全：把 bundle 渲染的「秦/汉/海鸥电动车」改写成完整子品牌清单。
+     只动这一个 span（首项改名 + 追加同级 span），同行的其他标签（车载储能/汽车周边等）
+     保持原样；幂等判断看第二项是否已在行内。 */
+  function patchBrandTags(card) {
+    var spans = card.querySelectorAll('span');
+    var origin = null;
+    for (var i = 0; i < spans.length; i++) {
+      if ((spans[i].textContent || '').trim() === BRANDS_ORIGIN) { origin = spans[i]; break; }
+    }
+    if (!origin) return false;
+    var row = origin.parentElement;
+    if (!row) return false;
+    for (var k = 1; k < row.children.length; k++) {
+      if ((row.children[k].textContent || '').trim() === BRANDS[1]) return true; // 已写过
+    }
+    origin.textContent = BRANDS[0];
+    var proto = origin.cloneNode(false);
+    for (var j = 1; j < BRANDS.length; j++) {
+      // bundle 里本来就有「车载储能」「汽车周边」两个 span，别追加成重复项
+      var dup = false;
+      for (var m = 0; m < row.children.length; m++) {
+        if ((row.children[m].textContent || '').trim() === BRANDS[j]) { dup = true; break; }
+      }
+      if (dup) continue;
+      var s = proto.cloneNode(false);
+      s.textContent = BRANDS[j];
+      row.appendChild(s);
+    }
+    return true;
+  }
+
   function patchCard(card) {
+    // 标签补全与框独立：先补标签（自身幂等），再判框是否已插
+    try { patchBrandTags(card); } catch (e) {
+      console.error('[双休购] 比亚迪子品牌标签补全失败：', e);
+    }
     if (card.querySelector('[data-byd-expose]')) return true; // 幂等
     var inner = card.querySelector('div.p-5.space-y-3\\.5');
     var host = inner || card;

@@ -7819,9 +7819,9 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§30a README 写死比亚迪曝光登记四条口径（卡片真挂载 / 死链不冒充 / 如实登记 / 随笔引用）',
     '规则只挂口头 → 又会出现「详情页写了、卡片没动」的静默失效');
 
-  check(p30.length > 0 && /<script defer src="\.\/byd-expose-patch\.js\?v=2"><\/script>/.test(idx30)
+  check(p30.length > 0 && /<script defer src="\.\/byd-expose-patch\.js\?v=3"><\/script>/.test(idx30)
     && /不能改 bundle|不能改\s*bundle/.test(p30),
-    '§30b 曝光补丁入库并挂进首页（?v=2，2026-11-13 加第二只站长点评框），且写明不动压缩 bundle');
+    '§30b 曝光补丁入库并挂进首页（?v=3，2026-11-13 换卡面备注栏抖音短链 + 补全旗下子品牌标签），且写明不动压缩 bundle');
 
   check(/\^BYD\\s\*\\\(比亚迪\\\)/.test(p30) && /data-byd-expose/.test(p30)
     && /new MutationObserver\(schedule\)/.test(p30)
@@ -7836,8 +7836,14 @@ section('25. 成功案例专题页（QQ奶奶）');
 
   check(/var NOTES_TEXT = '《站长随笔》第10章'/.test(p30)
     && /var NOTES_HREF = '\.\/notes\.html'/.test(p30)
-    && !/日记/.test(p30) && !/v\.douyin\.com|https?:\/\//.test(p30),
-    '§30e 随笔引用只写「详见《站长随笔》第10章」且指站内 notes.html；不抄口述、不写「日记」、不放死链外链');
+    && !/日记/.test(p30)
+    && /var LEGAL_HREF = 'https:\/\/v\.douyin\.com\/3oI-7tZ12R8\/'/.test(p30)
+    && (p30.match(/https?:\/\//g) || []).length === 1
+    && /setAttribute\('rel', 'nofollow noopener'\)/.test(p30)
+    && /setAttribute\('target', '_blank'\)/.test(p30)
+    && !/kKmeU180irU/.test(p30)
+    && !/LEGAL_HREF = 'https:\/\/v\.douyin\.com\/NrP3/.test(p30),
+    '§30e 随笔引用只写「详见《站长随笔》第10章」且指站内 notes.html、不抄口述、不写「日记」；2026-11-13 站长指令后卡面备注栏只挂一条抖音短链（nofollow noopener + 新窗口打开），失效旧短链一律不进卡');
 
   const evByd30 = (idx30.match(/<details id="ev-byd"[\s\S]*?<\/details>/) || [])[0] || '';
   const liByd30 = (byd30.match(/<li style="margin:0 0 12px"><strong>BYD 直营门店强制加班曝光[\s\S]*?<\/li>/) || [])[0] || '';
@@ -7856,7 +7862,13 @@ section('25. 成功案例专题页（QQ奶奶）');
     && (evByd30.match(/（本条无可点原始链接/g) || []).length === 2,
     '§30g 公示区由生成器同步：ev-byd 5 条证据（11-13 新增法务部悬赏线索，带链）、可点链接 3 条、摘要仍写出视频下架');
 
-  check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
+  check(/var BRANDS = \[/.test(p30)
+&& /王朝网/.test(p30) && /海洋网/.test(p30) && /腾势/.test(p30) && /方程豹/.test(p30)
+&& /仰望/.test(p30) && /弗迪电池/.test(p30) && /比亚迪电子/.test(p30)
+&& /function patchBrandTags\(card\)/.test(p30) && /var BRANDS_ORIGIN = '秦\/汉\/海鸥电动车'/.test(p30),
+'§30i 卡面标签区补全比亚迪旗下子品牌（王朝网秦/汉/唐/宋/元 · 海洋网海鸥/海豚/海豹/驱逐舰/护卫舰 · 腾势 · 方程豹 · 仰望 · 弗迪电池 · 比亚迪电子），DOM 就地改写、不动 bundle');
+
+check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     && /data-byd-expose/.test(p30),
     '§30h 真 DOM 测试存在并挂进 CI（三层强制：规则 + 断言 + CI）');
 }
