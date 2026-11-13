@@ -20,8 +20,8 @@
       X-Frame-Options: SAMEORIGIN，浏览器禁止跨域 iframe 嵌入。
       所以只能做「摘要 + 跳转观看」，不做站内播放。
 
-   缓存需求：同一浏览器在 cooldownMs 内只弹一次，刷新页面也不再弹。
-   实现上「自动弹」和「手动触发」都记时间戳，避免手动打开后刷新又自动弹。   ========================================================================== */
+   弹出需求：每次刷新首页都必弹（站长 2026-11-13 指令「不要 15 分钟冷却，
+   刷新首页必弹」）。不再用 localStorage 记时间戳、不再有冷却期，关掉再刷就再弹。   ========================================================================== */
 (function () {
   'use strict';
 
@@ -45,33 +45,10 @@
     // 挂在弹窗底部提示小字里，单独一行、同字号，不抢主按钮的视觉重量。
     siteLink: 'https://dujeongil-galaxy.github.io/dating-data-factcheck/',
     siteLinkText: '顺便推荐站长的新站「婚恋数据核查台」：给相亲数据做溯源核查 ↗',
-    // 冷却时长：15 分钟内不再自动弹（毫秒）
-    cooldownMs: 15 * 60 * 1000,
-    // 首次访问延迟多少毫秒后自动弹出。
+    // 首次访问延迟多少毫秒后自动弹出（每次刷新首页都弹，不设冷却）。
     // 别设太长：页面早已加载完成，再晚就变成「莫名其妙突然弹出来」。
-    autoDelayMs: 2500,
-    storageKey: 'dy_video_prompt_at'
+    autoDelayMs: 2500
   };
-
-  function readLastShown() {
-    try {
-      return Number(localStorage.getItem(CONFIG.storageKey) || 0);
-    } catch (e) {
-      return 0;
-    }
-  }
-
-  function markShown() {
-    try {
-      localStorage.setItem(CONFIG.storageKey, String(Date.now()));
-    } catch (e) {}
-  }
-
-  function inCooldown() {
-    var last = readLastShown();
-    if (!last) return false;
-    return Date.now() - last < CONFIG.cooldownMs;
-  }
 
   var box = null;
 
@@ -136,7 +113,6 @@
 
   function open() {
     if (!box) build();
-    markShown();          // 打开即计时：即便用户马上刷新，也不会再次自动弹
     box.classList.add('is-open');
     startCountdown();     // 8 秒倒计时：未到则 × 不生效
   }
@@ -251,11 +227,8 @@
   }
 
   function init() {
-    // 冷却期内直接不装DOM，省一次渲染
-    if (inCooldown()) return;
+    // 每次刷新首页都自动弹（无冷却）：延迟 autoDelayMs 后弹出
     setTimeout(function () {
-      // 延迟结束时再确认一次：期间用户可能已手动打开过
-      if (inCooldown() && readLastShown()) return;
       open();
     }, CONFIG.autoDelayMs);
   }

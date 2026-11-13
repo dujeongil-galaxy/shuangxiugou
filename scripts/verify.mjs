@@ -9001,10 +9001,16 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(/点右上角 × 关闭/.test(dp36x) && !/现在可以关闭了/.test(dp36x),
     '§36x 倒计时到点后提示改为「点右上角 × 关闭」',
     '提示仍写「可以关闭」却没说怎么关 → 用户会去点空白');
-  check(/<script defer src="\.\/douyin-prompt\.js\?v=17"><\/script>/.test(idx36x)
-    && !/douyin-prompt\.js\?v=16/.test(idx36x),
-    '§36x index.html 挂载 douyin-prompt.js?v=17（bump 缓存号）',
+  check(/<script defer src="\.\/douyin-prompt\.js\?v=18"><\/script>/.test(idx36x)
+    && !/douyin-prompt\.js\?v=17/.test(idx36x),
+    '§36x index.html 挂载 douyin-prompt.js?v=18（bump 缓存号）',
     '?v 没 bump → 线上仍跑旧脚本，改动等于没发');
+
+  // 2026-11-13 站长追加：「不要 15 分钟冷却，刷新首页必弹」。
+  // 静态断言：源码里不得再出现任何冷却/记时间戳逻辑。
+  check(!/inCooldown|cooldownMs|markShown|readLastShown|storageKey/.test(dpCode36x),
+    '§36x 冷却逻辑已彻底移除（刷新首页必弹，不再 15 分钟只弹一次）',
+    '又出现 inCooldown / cooldownMs / markShown / readLastShown / storageKey → 冷却回来了，刷新首页不会必弹');
 }
 
 // ---------- 汇总 ----------
