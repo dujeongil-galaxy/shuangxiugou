@@ -8051,14 +8051,26 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     && /search-clear-order-fix\.js\?v=3/.test(idx32),
     '§32e 搜索删空强制 6 秒 + 倒计时 + 硬 deadline；两侧契约同改、缓存号都 bump');
 
+  // 2026-11-14 站长：「还是放理想的证据链吧，备注那一栏也加入，文案你写」。
+  // 卡面备注栏原本是零外链（§32f 旧口径），本次按站长逐条指令放开**一条白名单**：
+  // 理想 L8 高速方向盘线索的抖音短链。判据钉三点：
+  //   ① news-incident-patch.js 里出现 http(s) 的只有这一个 URL（白名单不许自行扩大）；
+  //   ② 外链必须 rel="nofollow noopener" + target="_blank"（§30e 外链纪律）；
+  //   ③ 详情页 brand/lixiang.html 同步登记同一条链接（站规：备注栏内容同步证据链）。
+  const newsLinks32 = [...news32.matchAll(/https?:\/\/[^'"\s)]+/g)].map((x) => x[0]);
   check(news32.length > 0
-    && /<script defer src="\.\/news-incident-patch\.js\?v=4"><\/script>/.test(idx32)
+    && /<script defer src="\.\/news-incident-patch\.js\?v=5"><\/script>/.test(idx32)
     && /var ITEMS = \[/.test(news32) && /key: 'logitech'/.test(news32) && /key: 'xingyu'/.test(news32)
     && /key: 'geely'/.test(news32) && /key: 'lixiang'/.test(news32) && /key: 'chery'/.test(news32)
+    && /key: 'lixiang-douyin'/.test(news32)
+    && newsLinks32.length === 1 && newsLinks32[0] === 'https://v.douyin.com/nHGcAwzSXOU/'
+    && /setAttribute\('rel', 'nofollow noopener'\)/.test(news32)
+    && /setAttribute\('target', '_blank'\)/.test(news32)
     && /new MutationObserver\(schedule\)/.test(news32)
     && /不能改 bundle/.test(news32)
-    && !/https?:\/\//.test(news32),
-    '§32f 新闻登记补丁配置驱动两张内置卡 + 三张车企卡（吉利/理想/奇瑞），幂等 + 重渲染兜底，卡片零外链、不碰 bundle');
+    && /nHGcAwzSXOU/.test(read('brand/lixiang.html')),
+    '§32f 新闻登记补丁配置驱动内置卡 + 三张车企卡（吉利/理想/奇瑞），幂等 + 重渲染兜底、不碰 bundle；卡面外链只有白名单一条（理想 L8 抖音线索），rel/target 齐全且详情页证据链同步登记',
+    '外链白名单被扩大、rel/target 缺失，或 brand/lixiang.html 没同步这条证据');
 
   check(/罗技中国就授权店铺侮辱消费者广告致歉/.test(logi32)
     && /总经理扣薪 12 个月、人力资源总监免职/.test(xing32)

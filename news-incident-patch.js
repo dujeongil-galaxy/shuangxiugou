@@ -24,6 +24,10 @@
  *     这才是「吃新闻流量」的正确落点）；卡片只链站内详情页。
  *  ④ 事实来自中国经济网／光明网／中新经纬／南方+／中国新闻周刊／
  *     封面新闻／中国能源网等公开报道，日期与主体逐条对齐，不编造、不夸大。
+ *  ⑤ 2026-11-14 站长指令（理想 L8 高速方向盘线索）：item 可显式声明 extLinks，
+ *     在卡面备注栏挂外链（rel="nofollow noopener" + target="_blank"），并同步登记进
+ *     详情页「证据来源」与「证据链」；**未声明 extLinks 的项仍执行零外链**，
+ *     该口子只按站长逐条指令放开，不得自行扩大。
  *
  * 2026-11-10 全站检查补记（站长：「让你写一个常州星宇，你把所有自定义卡片
  * 都写了？」「罗技的也是，到处乱飞」）：
@@ -89,6 +93,27 @@
       href: './brand/lixiang.html',
       linkText: '查看证据与原始报道链接',
       tone: 'blue'
+    },
+    // 2026-11-14 站长指令：「还是放理想的证据链吧，备注那一栏也加入，文案你写」。
+    // 证据链落两处：本项＝首页卡面备注栏（外链只挂这一条抖音短链），
+    // 详情页 brand/lixiang.html「证据来源」+「证据链」同步登记（站规：备注栏内容同步证据链）。
+    // 口径：媒体转述的车主单方陈述，事故原因与系统是否介入均无第三方结论 → 只登记线索、
+    // 不作事实认定、不改 B 级；与工时/双休无关，卡片里必须写清。
+    {
+      key: 'lixiang-douyin',
+      title: /^理想汽车/,
+      head: '⚑ 站长备注 · 高速「方向盘突然拉不动」的抖音线索（2026-11-14）',
+      paras: [
+        '抖音媒体原创账号发布的视频称：一台 40 多万元的理想 L8 在高速上方向盘突然拉不动，车主表示当时并未开启智驾、判断车辆被系统干预；诉求原话是「希望他们承认错误，不要理想赔偿」。',
+        '这是媒体转述的车主单方陈述——事故原因、车辆状态、系统是否介入均无第三方结论，本站只登记线索、不作事实认定，也不据此调整 B 级评级（该线索与工时、双休数据无关）。'
+      ],
+      extLinks: [
+        { href: 'https://v.douyin.com/nHGcAwzSXOU/', text: '抖音视频（站长 2026-11-14 提供）→ v.douyin.com/nHGcAwzSXOU' }
+      ],
+      extNote: '本站只挂线索、不作推广，视频内容未核实',
+      href: './brand/lixiang.html',
+      linkText: '查看证据链与原始视频链接',
+      tone: 'red'
     },
     {
       key: 'chery',
@@ -200,6 +225,27 @@
       p.setAttribute('style', 'margin:3px 0 0');
       p.textContent = item.paras[i];
       box.appendChild(p);
+    }
+
+    // 卡面外链（2026-11-14 站长指令后放开的口子）：默认零外链，只有显式声明
+    // extLinks 的项才挂在卡面上；必须 rel="nofollow noopener" + target="_blank"。
+    if (item.extLinks && item.extLinks.length) {
+      var ext = document.createElement('p');
+      ext.setAttribute('style', 'margin:5px 0 0');
+      for (var n = 0; n < item.extLinks.length; n++) {
+        var ea = document.createElement('a');
+        ea.setAttribute('href', item.extLinks[n].href);
+        ea.setAttribute('rel', 'nofollow noopener');
+        ea.setAttribute('target', '_blank');
+        ea.setAttribute('style', style.link);
+        ea.textContent = item.extLinks[n].text;
+        ext.appendChild(ea);
+        if (n < item.extLinks.length - 1) ext.appendChild(document.createTextNode(' · '));
+      }
+      if (item.extNote) {
+        ext.appendChild(document.createTextNode('（' + item.extNote + '。详细口径见详情页证据链）'));
+      }
+      box.appendChild(ext);
     }
 
     var last = document.createElement('p');

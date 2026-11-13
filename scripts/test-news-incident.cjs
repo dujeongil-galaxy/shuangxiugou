@@ -34,8 +34,8 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   const rd = read('README.md');
 
   check('新闻登记补丁文件存在', exists('news-incident-patch.js'));
-  check('首页挂了新闻登记补丁（?v=4 防缓存）',
-    /<script defer src="\.\/news-incident-patch\.js\?v=4"><\/script>/.test(html));
+  check('首页挂了新闻登记补丁（?v=5 防缓存）',
+    /<script defer src="\.\/news-incident-patch\.js\?v=5"><\/script>/.test(html));
   check('真 DOM 测试挂进 CI 的 pinyin job', /test-news-incident\.cjs/.test(wf));
   check('README 写死新闻登记口径',
     /新闻事件登记/.test(rd) && /不作因果认定|不写「报应」/.test(rd));
@@ -106,8 +106,14 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   check('幂等标记 + MutationObserver + rAF 合帧',
     /data-sxg-news/.test(src) && /new MutationObserver\(schedule\)/.test(src)
     && /requestAnimationFrame/.test(src));
-  check('卡片里不放任何外链（原始报道链接只放详情页/公示区）',
-    !/https?:\/\//.test(src));
+  // 2026-11-14 站长指令后，卡面外链从「零外链」放开为**白名单一条**：
+  // 只许出现理想 L8 高速方向盘线索的抖音短链，其余 http(s) 一律不许进卡面。
+  const srcLinks = [...src.matchAll(/https?:\/\/[^'"\s)]+/g)].map((m) => m[0]);
+  check('卡面外链只放白名单一条（理想 L8 抖音线索），其余零外链',
+    srcLinks.length === 1 && srcLinks[0] === 'https://v.douyin.com/nHGcAwzSXOU/');
+  check('白名单外链带 rel="nofollow noopener" + target="_blank"',
+    /setAttribute\('rel', 'nofollow noopener'\)/.test(src)
+    && /setAttribute\('target', '_blank'\)/.test(src));
   check('卡片只链站内详情页',
     /\.\/brand\/logitech\.html/.test(src) && /\.\/brand\/xingyu\.html/.test(src));
   check('罗技卡写明与评级无关、不调整 A 级',
@@ -135,6 +141,7 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
     '<!doctype html><html><head></head><body>' +
     CARD('Logitech (罗技)', 'logi-card') +
     CARD('常州星宇股份 (车灯及汽车消费品)', 'xing-card') +
+    CARD('理想汽车 (Li Auto)', 'lix-card') +
     CARD('Patagonia (巴塔哥尼亚)', 'other-card') +
     '</body></html>',
     { runScripts: 'outside-only', url: 'http://localhost/', virtualConsole: vc, pretendToBeVisual: true }
@@ -146,6 +153,7 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
 
   const logiBox = doc.querySelector('#logi-card [data-sxg-news="logitech"]');
   const xingBox = doc.querySelector('#xing-card [data-sxg-news="xingyu"]');
+  const lixBox = doc.querySelector('#lix-card [data-sxg-news="lixiang-douyin"]');
   check('★ 罗技卡渲染后真的出现登记框', !!logiBox);
   check('★ 星宇卡渲染后真的出现登记框', !!xingBox);
   check('★ 罗技框标题写明「品牌行为登记」与日期',
@@ -160,9 +168,20 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   check('两张框都插在标题行之后（inner.children[1]）',
     doc.querySelector('#logi-card div.p-5.space-y-3\\.5').children[1] === logiBox
     && doc.querySelector('#xing-card div.p-5.space-y-3\\.5').children[1] === xingBox);
-  check('★ 卡片内链接都是站内详情页，没有 http 外链',
+  check('★ 罗技/星宇两框内链接都是站内详情页，零 http 外链',
     [logiBox, xingBox].every((b) => b && [].slice.call(b.querySelectorAll('a'))
       .every((a) => /^\.\/brand\//.test(a.getAttribute('href') || ''))));
+  check('★ 理想框只挂一条抖音外链，rel/target 齐全、写明未核实',
+    !!lixBox && (() => {
+      const as = [].slice.call(lixBox.querySelectorAll('a'));
+      const ext = as.filter((a) => /^https?:\/\//.test(a.getAttribute('href') || ''));
+      return ext.length === 1
+        && ext[0].getAttribute('href') === 'https://v.douyin.com/nHGcAwzSXOU/'
+        && /nofollow/.test(ext[0].getAttribute('rel') || '')
+        && /noopener/.test(ext[0].getAttribute('rel') || '')
+        && ext[0].getAttribute('target') === '_blank'
+        && /未核实/.test(lixBox.textContent) && /不作推广/.test(lixBox.textContent);
+    })());
   check('★ 无关的 Patagonia 卡没被误挂',
     doc.querySelectorAll('#other-card [data-sxg-news]').length === 0);
   check('两张卡各只有一个登记框（幂等初态）',
