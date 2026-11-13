@@ -585,8 +585,8 @@ check(virtual2e === 1, '虚拟对比卡恰 1 张（口径排除依据，id 变�
 // 这个数不是「随便写死」：它同时被 §2e 的四格统计、brand/ 页数、公告栏数字三处引用，
 // 任何一处生成器漏跑都会在这里对不上，所以必须保留为硬断言。
 const IMPORTED_CARD_COUNT = 107;
-check(customPairs2e.length === 20 + IMPORTED_CARD_COUNT,
-  `能解析全部自定义卡（${20 + IMPORTED_CARD_COUNT} 张 = 20 张手工卡含联通/小米汽车 + ${IMPORTED_CARD_COUNT} 张导入卡（104 榜单 + 2 独立来源））`,
+check(customPairs2e.length === 22 + IMPORTED_CARD_COUNT,
+  `能解析全部自定义卡（${22 + IMPORTED_CARD_COUNT} 张 = 22 张手工卡含联通/小米汽车/广汽丰田/腾势 + ${IMPORTED_CARD_COUNT} 张导入卡（104 榜单 + 2 独立来源））`,
   '实际 ' + customPairs2e.length);
 check(headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') === statTotal,
   '顶部「收录品牌」= 实名企业卡总数', '页面 ' + headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') + ' / 计算 ' + statTotal + '（改 bundle 顶部统计常数）');
@@ -1402,8 +1402,8 @@ if (cfgBlock) {
   }
 }
 const CUSTOM_COUNT = customCards.length;
-check(CUSTOM_COUNT === 20 + IMPORTED_CARD_COUNT,
-  `自定义卡 ${CUSTOM_COUNT} 张（20 张手工 + ${IMPORTED_CARD_COUNT} 张导入；2026-11-02 批量导入，2026-11-03 增联通 B 级，2026-11-08 增陆喜依 S 级，2026-11-12 增广发银行/四川天府银行 A 级 + 零跑汽车 C 级，2026-11-13 增小米汽车（建卡 C 级、同日站长人工介入上调 B 级））`);
+check(CUSTOM_COUNT === 22 + IMPORTED_CARD_COUNT,
+  `自定义卡 ${CUSTOM_COUNT} 张（22 张手工 + ${IMPORTED_CARD_COUNT} 张导入；2026-11-02 批量导入，2026-11-03 增联通 B 级，2026-11-08 增陆喜依 S 级，2026-11-12 增广发银行/四川天府银行 A 级 + 零跑汽车 C 级，2026-11-13 增小米汽车（建卡 C 级、同日站长人工介入上调 B 级）+ 广汽丰田 B 级 + 腾势 U 级）`);
 
 // null 规则：双休率 / 下班时间不得为占位 0，也不得是字符串 '未知'
 customCards.forEach((c) => {
@@ -5809,10 +5809,10 @@ section('21b-2. 安全事件默认收起 + 分享弹窗接线');
     '改末句措辞/断行 → 站长指定的固定收尾句被破坏');
   // 脚本缓存号：改 u-grade-patch.js 必须同步 ?v=，否则线上仍是旧抵制区
   const idxUgp = readFileSync(join(ROOT, 'index.html'), 'utf8');
-  check(/u-grade-patch\.js\?v=17/.test(idxUgp)
-    && !/u-grade-patch\.js\?v=16/.test(idxUgp),
-    'index.html 引用 u-grade-patch.js?v=17（缓存号已随改动同步 +1）',
-    '漏 bump ?v 或仍写 15 → 浏览器命中旧缓存，新抵制区不生效');
+  check(/u-grade-patch\.js\?v=18/.test(idxUgp)
+    && !/u-grade-patch\.js\?v=17/.test(idxUgp),
+    'index.html 引用 u-grade-patch.js?v=18（缓存号已随改动同步 +1）',
+    '漏 bump ?v 或仍写旧值 → 浏览器命中旧缓存，新抵制区不生效');
 }
 
 // ---------- 21c. 首页滑到底部按钮 ----------
@@ -6638,8 +6638,8 @@ section('21c. 首页滑到底部按钮');
   check(/'D 级'/.test(rowTexts) && /'U 级'/.test(rowTexts),
     'stat-filter.js 评级行互斥枚举含「D 级」「U 级」（点 D/U 清五格筛选）',
     'stat-filter 没跟上 → 点 D/U 不清四格筛选，两套过滤层互相覆盖出现空面板');
-  check(/u-grade-patch\.js\?v=17/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
-    'u-grade-patch.js?v=17 / stat-filter.js?v=9（缓存号已随内容 bump）',
+  check(/u-grade-patch\.js\?v=18/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
+    'u-grade-patch.js?v=18 / stat-filter.js?v=9（缓存号已随内容 bump；11-13 U 计数动态刷新）',
     '缓存号没 bump → 用户拿旧补丁，D/U 按钮注入不生效（2026-11-01 拼音索引同类事故）');
   // 2026-11-03 站长实测 bug：点「D 级 / U 级」后拼音搜索框整块消失。
   // 根因：CARD_SEL（div.bg-white.rounded-2xl.border）命中面比品牌卡宽，
@@ -7814,9 +7814,9 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§30a README 写死比亚迪曝光登记四条口径（卡片真挂载 / 死链不冒充 / 如实登记 / 随笔引用）',
     '规则只挂口头 → 又会出现「详情页写了、卡片没动」的静默失效');
 
-  check(p30.length > 0 && /<script defer src="\.\/byd-expose-patch\.js\?v=1"><\/script>/.test(idx30)
+  check(p30.length > 0 && /<script defer src="\.\/byd-expose-patch\.js\?v=2"><\/script>/.test(idx30)
     && /不能改 bundle|不能改\s*bundle/.test(p30),
-    '§30b 曝光补丁入库并挂进首页（?v=1），且写明不动压缩 bundle');
+    '§30b 曝光补丁入库并挂进首页（?v=2，2026-11-13 加第二只站长点评框），且写明不动压缩 bundle');
 
   check(/\^BYD\\s\*\\\(比亚迪\\\)/.test(p30) && /data-byd-expose/.test(p30)
     && /new MutationObserver\(schedule\)/.test(p30)
@@ -7843,12 +7843,13 @@ section('25. 成功案例专题页（QQ奶奶）');
     && /v\.douyin\.com\/kKmeU180irU\//.test(liByd30),
     '§30f 详情页如实登记视频下架，失效抖音短链降级为纯文本、不再冒充可点来源');
 
-  check(/data-n="4" data-l="2"/.test(evByd30)
+  check(/data-n="5" data-l="3"/.test(evByd30)
     && evByd30.indexOf('该视频现已删除') !== -1
     && evByd30.indexOf('原链接已失效') !== -1
     && evByd30.indexOf('轮毂装反') !== -1
+    && evByd30.indexOf('法务部') !== -1
     && (evByd30.match(/（本条无可点原始链接/g) || []).length === 2,
-    '§30g 公示区由生成器同步：ev-byd 4 条证据（新增澎湃轮毂装反报道）、可点链接 2 条、摘要仍写出视频下架');
+    '§30g 公示区由生成器同步：ev-byd 5 条证据（11-13 新增法务部悬赏线索，带链）、可点链接 3 条、摘要仍写出视频下架');
 
   check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     && /data-byd-expose/.test(p30),
@@ -8034,13 +8035,13 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§32e 搜索删空强制 6 秒 + 倒计时 + 硬 deadline；两侧契约同改、缓存号都 bump');
 
   check(news32.length > 0
-    && /<script defer src="\.\/news-incident-patch\.js\?v=3"><\/script>/.test(idx32)
+    && /<script defer src="\.\/news-incident-patch\.js\?v=4"><\/script>/.test(idx32)
     && /var ITEMS = \[/.test(news32) && /key: 'logitech'/.test(news32) && /key: 'xingyu'/.test(news32)
-    && /key: 'geely'/.test(news32) && /key: 'lixiang'/.test(news32)
+    && /key: 'geely'/.test(news32) && /key: 'lixiang'/.test(news32) && /key: 'chery'/.test(news32)
     && /new MutationObserver\(schedule\)/.test(news32)
     && /不能改 bundle/.test(news32)
     && !/https?:\/\//.test(news32),
-    '§32f 新闻登记补丁配置驱动两张内置卡 + 两张车企卡（吉利/理想），幂等 + 重渲染兜底，卡片零外链、不碰 bundle');
+    '§32f 新闻登记补丁配置驱动两张内置卡 + 三张车企卡（吉利/理想/奇瑞），幂等 + 重渲染兜底，卡片零外链、不碰 bundle');
 
   check(/罗技中国就授权店铺侮辱消费者广告致歉/.test(logi32)
     && /总经理扣薪 12 个月、人力资源总监免职/.test(xing32)

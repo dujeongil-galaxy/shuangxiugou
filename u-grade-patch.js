@@ -197,56 +197,70 @@
     return null;
   }
 
+  function statNoteText(n) {
+    return '四格统计 S/A/B/C（D 级已计入避雷预警格）；另有 ' + n
+      + ' 家已尽合理检索仍无证据，标为 U级 · 证据不足（不计入上表）';
+  }
+
   function injectStatNote() {
-    if (document.getElementById(NOTE_ID)) return;
     var label = findStatLabel('避雷预警');
     if (!label) return;
     var grid = label.closest ? label.closest('div.grid') : null;
     if (!grid || !grid.parentElement) return;
     var n = document.querySelectorAll(CARD_SEL + ' [' + UB + ']').length;
     if (!n) return;
-    var p = document.createElement('div');
-    p.id = NOTE_ID;
-    p.setAttribute('style', 'margin-top:6px;font-size:11px;line-height:1.5;color:#94a3b8;text-align:center');
-    p.textContent = '四格统计 S/A/B/C（D 级已计入避雷预警格）；另有 ' + n
-      + ' 家已尽合理检索仍无证据，标为 U级 · 证据不足（不计入上表）';
-    grid.parentElement.insertBefore(p, grid.nextSibling);
-    /* 2026-11-04 站长指定：紧接上述说明文字下方换行，
-       红色加粗写「抵制垃圾Boss直聘，请使用智联招聘App」（含智联官网链接）。 */
-    var b = document.createElement('div');
-    b.id = 'sxg-boss-boycott';
-    b.setAttribute('style', 'margin-top:4px;font-size:14px;font-weight:900;'
-      + 'color:#dc2626;text-align:center;line-height:1.6');
-    b.innerHTML = '🚫 抵制垃圾Boss直聘，'
-      + '请使用<a href="https://www.zhaopin.com" target="_blank" rel="noopener noreferrer"'
-      + ' style="color:#1d4ed8;text-decoration:underline">智联招聘App</a>';
-    p.appendChild(document.createElement('br'));
-    p.appendChild(b);
-    /* 2026-11-04 站长指定：抵制行下方挂 BOSS直聘详情页入口——
-       「点击这里阅读 “狗日的”Boss直聘」，「这里」是链接，
-       「“狗日的”Boss直聘」单独换色标注。
-       2026-11-07 站长追加：粗口「狗日的」必须加中文引号（U+201C/U+201D），
-       表示这是引用文章标题里的用词，不是本站/站长在这行骂人。 */
-    var r = document.createElement('div');
-    r.setAttribute('style', 'margin-top:4px;font-size:13px;text-align:center;line-height:1.6');
-    r.innerHTML = '点击<a href="./brand/bosszhipin.html"'
-      + ' style="color:#1d4ed8;text-decoration:underline">这里</a>阅读 '
-      + '<span style="color:#d97706;font-weight:bold">“狗日的”Boss直聘</span>';
-    p.appendChild(r);
-    /* 2026-11-06 站长指定：抵制区末尾追加「海比优」一句 + 固定末句。
-       海比优文案由站长提供英文 Application Introduction，此处译写一句中文；
-       末句一字不改（含「；」不换行）：应用商店搜索（开发中，限号注册）+ 与本站无关声明。 */
-    var h = document.createElement('div');
-    h.setAttribute('style', 'margin-top:6px;font-size:13px;text-align:center;'
-      + 'line-height:1.7;color:#475569');
-    h.textContent = '海比优（Haibiyou）是一款认真做招聘的求职平台，'
-      + '为求职者筛选真实可靠的企业岗位，也帮企业快速找到优秀人才。';
-    p.appendChild(h);
-    var f = document.createElement('div');
-    f.setAttribute('style', 'margin-top:4px;font-size:13px;text-align:center;'
-      + 'line-height:1.7;color:#475569');
-    f.textContent = '欢迎前往各大手机应用商店搜索（开发中，限号注册）；推广内容与本站无关，站长不会收取任何广告费。';
-    p.appendChild(f);
+    var p = document.getElementById(NOTE_ID);
+    if (!p) {
+      p = document.createElement('div');
+      p.id = NOTE_ID;
+      p.setAttribute('style', 'margin-top:6px;font-size:11px;line-height:1.5;color:#94a3b8;text-align:center');
+      p.appendChild(document.createTextNode(statNoteText(n)));
+      grid.parentElement.insertBefore(p, grid.nextSibling);
+      /* 2026-11-04 站长指定：紧接上述说明文字下方换行，
+         红色加粗写「抵制垃圾Boss直聘，请使用智联招聘App」（含智联官网链接）。 */
+      var b = document.createElement('div');
+      b.id = 'sxg-boss-boycott';
+      b.setAttribute('style', 'margin-top:4px;font-size:14px;font-weight:900;'
+        + 'color:#dc2626;text-align:center;line-height:1.6');
+      b.innerHTML = '🚫 抵制垃圾Boss直聘，'
+        + '请使用<a href="https://www.zhaopin.com" target="_blank" rel="noopener noreferrer"'
+        + ' style="color:#1d4ed8;text-decoration:underline">智联招聘App</a>';
+      p.appendChild(document.createElement('br'));
+      p.appendChild(b);
+      /* 2026-11-04 站长指定：抵制行下方挂 BOSS直聘详情页入口——
+         「点击这里阅读 “狗日的”Boss直聘」，「这里」是链接，
+         「“狗日的”Boss直聘」单独换色标注。
+         2026-11-07 站长追加：粗口「狗日的」必须加中文引号（U+201C/U+201D），
+         表示这是引用文章标题里的用词，不是本站/站长在这行骂人。 */
+      var r = document.createElement('div');
+      r.setAttribute('style', 'margin-top:4px;font-size:13px;text-align:center;line-height:1.6');
+      r.innerHTML = '点击<a href="./brand/bosszhipin.html"'
+        + ' style="color:#1d4ed8;text-decoration:underline">这里</a>阅读 '
+        + '<span style="color:#d97706;font-weight:bold">“狗日的”Boss直聘</span>';
+      p.appendChild(r);
+      /* 2026-11-06 站长指定：抵制区末尾追加「海比优」一句 + 固定末句。
+         海比优文案由站长提供英文 Application Introduction，此处译写一句中文；
+         末句一字不改（含「；」不换行）：应用商店搜索（开发中，限号注册）+ 与本站无关声明。 */
+      var h = document.createElement('div');
+      h.setAttribute('style', 'margin-top:6px;font-size:13px;text-align:center;'
+        + 'line-height:1.7;color:#475569');
+      h.textContent = '海比优（Haibiyou）是一款认真做招聘的求职平台，'
+        + '为求职者筛选真实可靠的企业岗位，也帮企业快速找到优秀人才。';
+      p.appendChild(h);
+      var f = document.createElement('div');
+      f.setAttribute('style', 'margin-top:4px;font-size:13px;text-align:center;'
+        + 'line-height:1.7;color:#475569');
+      f.textContent = '欢迎前往各大手机应用商店搜索（开发中，限号注册）；推广内容与本站无关，站长不会收取任何广告费。';
+      p.appendChild(f);
+    }
+    /* 2026-11-13：U 卡计数动态刷新——自定义卡是分批注入的，首批扫描时
+       腾势等自定义 U 卡可能尚未落地；早先「创建后不再更新」会把「另有 N 家」
+       冻在旧值（本轮真踩：说明停在 2 家，实际 3 家）。这里只刷新首行计数文本，
+       不动下方抵制区/海比优等固定块。 */
+    if (p.firstChild && p.firstChild.nodeType === 3
+      && p.firstChild.textContent !== statNoteText(n)) {
+      p.firstChild.textContent = statNoteText(n);
+    }
   }
 
   /* D 级出口：它**计入**避雷预警格（D 是 C 的加重版，不是另一类），

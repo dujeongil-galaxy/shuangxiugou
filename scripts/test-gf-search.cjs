@@ -204,12 +204,12 @@ function snapshot() {
 
   console.log('点「U 级」');
   clickBtn('U');
-  await untilTiers(2, 'U');
+  await untilTiers(3, 'U');
   s = snapshot();
   check('搜索框仍可见（U 分支同样不许误伤）',
     searchHiddenBy(input).length === 0, searchHiddenBy(input));
-  check('U 级视图只剩 U 卡（三星/宏碁 2 张）',
-    s.visibleTiers.length === 2 && s.visibleTiers.every((t) => t === 'U'), s.visibleTiers);
+  check('U 级视图只剩 U 卡（三星/宏碁/腾势 3 张，2026-11-13 新增腾势 U 级）',
+    s.visibleTiers.length === 3 && s.visibleTiers.every((t) => t === 'U'), s.visibleTiers);
   check('U 级视图下被隐藏的节点里也没有无档位容器',
     s.hiddenNoTier.length === 0, s.hiddenNoTier);
 
