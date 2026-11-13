@@ -28,6 +28,13 @@
       text: 'JEV 双休购 · Chrome 插件',
       desc: '边逛淘宝、京东时实时猜工作制、疑似非双休直接在商品图上盖 PASS 的浏览器插件；与本站人工评级互补，作者已回应本站的数据共建提议。',
     },
+    {
+      // 站长 2026-11-14：新开 GitHub 仓库，记录投资理财五个公式。
+      // 备注：GitHub 中国大陆无法直连，建议科学上网访问。
+      href: 'https://github.com/dujeongil-galaxy/investment-formulas',
+      text: '投资理财公式',
+      desc: '投资理财笔记，记录五个理财公式（#投资 #理财 #成长 #认知）。GitHub 中国大陆无法直连，建议科学上网访问。',
+    },
   ];
 
   var FOOTER_ID = 'related-sites-footer';
