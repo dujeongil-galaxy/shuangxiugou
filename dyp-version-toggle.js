@@ -5,11 +5,14 @@
      · 转换按钮**放在弹窗内部右上角**（紧挨 × 关闭按钮左侧，与「劳工友好提醒」
        标签同一行），不要放到页面顶栏。
      · 默认显示「新版」：2 个抖音链接 + 站长随笔
-         [比亚迪短片] [理想L8短片] [站长随笔]
+         [轮辋装反] [轮毂装错] [站长随笔]      ← 文案见 2026-11-14 记录
          第二按钮不再显示「事实核查」（事实核查入口隐藏，不删除节点）。
          2026-11-12 15:48 站长复核三按钮：「看看按钮大小，再看文字」——
          原「比亚迪·抖音短片 / 理想L8·抖音短片」太长，与随笔并排时第三枚只分到
          90px，「理想L8·抖音短片」被省略号截断。改 5～6 字 + 新版三枚等宽，14px 不截断。
+     · 站长指令（2026-11-14）：原第二按钮的「理想L8·高速方向盘拉不动」下架，换成
+       新分享链 fe8jmWjCmqY（「新车轮毂竟然能装错」）。两条入口至此都是比亚迪短片，
+       按钮文字改按「部件 + 错误动作」区分，不再写品牌名（详见下方常量注释）。
      · 点按钮切到「旧版」：在抖音中观看 + 事实核查 + 站长随笔（恢复原样）。
      · 按钮文案随当前版本翻转：
          显示新版（默认）→ 按钮写「切换旧版」（点它切到旧版；站长 2026-11-12 定稿措辞，勿改回旧写法）
@@ -31,8 +34,11 @@
   var STORAGE_KEY = 'dyp_version_toggle_v1';
 
   // 新版两个抖音链接（取自站长提供的分享短链）
-  var BYD = 'https://v.douyin.com/_n2cFrXIRec/';   // 比亚迪·前后轮辋装反了
-  var L8  = 'https://v.douyin.com/EHOOH9INCMk/';   // 理想L8·高速方向盘拉不动
+  // 2026-11-14 站长指令：「理想L8 的链接删了」，第二条改挂 fe8jmWjCmqY——原片
+  //   「理想L8·高速方向盘拉不动」不再挂，现片为「新车轮毂竟然能装错」，同属比亚迪，
+  //   故两个按钮至此都是比亚迪短片（变量名随之由 L8 改为 BYD2，勿再回填理想L8）。
+  var BYD  = 'https://v.douyin.com/_n2cFrXIRec/';  // 比亚迪·前后轮辋装反了
+  var BYD2 = 'https://v.douyin.com/fe8jmWjCmqY/';  // 比亚迪·新车轮毂竟然装错
   // 旧版「在抖音中观看」链接（恢复用，取自 douyin-prompt.js CONFIG.link）
   var OLD_GO_HREF = 'https://v.douyin.com/37pbo6qxUbs/';
   var OLD_GO_TEXT = '在抖音中观看';
@@ -41,13 +47,22 @@
   //   原先写「比亚迪·抖音短片」(8 字) / 「理想L8·抖音短片」(9 字)，而 .dyp__acts 是
   //   flex 等分 + white-space:nowrap + text-overflow:ellipsis，旧版 `.dyp__go{flex:2}`
   //   让第三枚只分到 90px，实测「理想L8·抖音短片」scrollWidth 107 > clientWidth 92，
-  //   被省略号吃掉半截（截图即此现象）。收敛成「品牌 + 短片」5～6 字，并把新版三枚
-  //   改成等宽（见 buildStyle 里 .dyp__acts.dyp--new > * 规则），14px 下都不截断。
+  //   被省略号吃掉半截（截图即此现象）。收敛成 ≤6 字，并把新版三枚改成等宽
+  //   （见 buildStyle 里 .dyp__acts.dyp--new > * 规则），14px 下都不截断。
   //   完整说明（「抖音短视频」字样）放 title，悬停可见，不占按钮宽度。
-  var NEW_GO_TEXT = '比亚迪';
-  var NEW_D2_TEXT = '理想L8';
+  //
+  //   2026-11-14 站长：「现在就出现了两个比亚迪的视频，你看看按钮如何优化文字」。
+  //   两个入口同品牌后，按钮再写「比亚迪」零信息量（重复且分不清是哪条片子），
+  //   格子里该放的是差异点。两条片子恰是同一类问题的两种装配错误，故按
+  //   「部件 + 错误动作」命名，各 4 字、互不重叠：
+  //     旧「比亚迪」 → 「轮辋装反」（前一条：前后轮辋装反了）
+  //     旧「理想L8」 → 「轮毂装错」（本条：新车轮毂竟然装错）
+  //   品牌归属、完整片名、跳转说明一律进 title；4 汉字≈56px，在 90px 格子里留足
+  //   余量（6 汉字≈84px 已贴边，会重演 11-12 的截断）。
+  var NEW_GO_TEXT = '轮辋装反';
+  var NEW_D2_TEXT = '轮毂装错';
   var NEW_GO_TITLE = '比亚迪·前后轮辋装反了（抖音短视频，点击跳转）';
-  var NEW_D2_TITLE = '理想L8·高速方向盘拉不动（抖音短视频，点击跳转）';
+  var NEW_D2_TITLE = '比亚迪·新车轮毂竟然装错（抖音短视频，点击跳转）';
 
   function getVersion() {
     var v = null;
@@ -125,14 +140,14 @@
       if (!d2 && later) {
         d2 = document.createElement('a');
         d2.className = 'dyp__douyin2';
-        d2.href = L8;
+        d2.href = BYD2;
         d2.target = '_blank';
         d2.rel = 'noopener noreferrer';
         d2.textContent = NEW_D2_TEXT;
         d2.title = NEW_D2_TITLE;
         acts.insertBefore(d2, later);
       } else if (d2) {
-        d2.href = L8;
+        d2.href = BYD2;
         d2.textContent = NEW_D2_TEXT;
         d2.title = NEW_D2_TITLE;
       }
@@ -229,7 +244,7 @@
   window.SXGDypToggle = {
     BTN_ID: BTN_ID,
     STORAGE_KEY: STORAGE_KEY,
-    BYD: BYD, L8: L8, OLD_GO_HREF: OLD_GO_HREF, OLD_GO_TEXT: OLD_GO_TEXT,
+    BYD: BYD, BYD2: BYD2, OLD_GO_HREF: OLD_GO_HREF, OLD_GO_TEXT: OLD_GO_TEXT,
     NEW_GO_TEXT: NEW_GO_TEXT, NEW_D2_TEXT: NEW_D2_TEXT,
     getVersion: getVersion,
     setVersion: setVersion,

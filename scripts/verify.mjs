@@ -8696,12 +8696,14 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   const wf36u = read('.github/workflows/verify.yml');
 
   // ① 单一真相源：两个新版抖音短链 + 旧版「在抖音中观看」链接，与站长给的分享短链一致。
+  //    2026-11-14 站长：「理想L8 的链接删了」→ 第二条换成 fe8jmWjCmqY（新车轮毂竟然装错），
+  //    变量 L8 随之改名 BYD2（两条都是比亚迪短片，留着 L8 这个名字会误导下一次改链）。
   const srcOk = /BYD\s*=\s*'https:\/\/v\.douyin\.com\/_n2cFrXIRec\/'/.test(t36u)
-    && /L8\s*=\s*'https:\/\/v\.douyin\.com\/EHOOH9INCMk\/'/.test(t36u)
+    && /BYD2\s*=\s*'https:\/\/v\.douyin\.com\/fe8jmWjCmqY\/'/.test(t36u)
     && /OLD_GO_HREF\s*=\s*'https:\/\/v\.douyin\.com\/37pbo6qxUbs\/'/.test(t36u)
     && /OLD_GO_TEXT\s*=\s*'在抖音中观看'/.test(t36u);
   check(srcOk,
-    '§36u 转换按钮单一真相源：新版比亚迪/理想L8 两个抖音短链 + 旧版「在抖音中观看」链接，与站长给的分享链一致',
+    '§36u 转换按钮单一真相源：新版比亚迪两条短片短链（轮辋装反 _n2cFrXIRec / 轮毂装错 fe8jmWjCmqY）+ 旧版「在抖音中观看」链接，与站长给的分享链一致',
     '抖音链接抄错 / 旧版链接丢失 → 转换后跳错页面');
 
   // ② 默认版本 new（用户硬规定「默认显示新版本」）；new 版隐藏事实核查（display:none，不删除节点）；
@@ -8728,10 +8730,10 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '按钮没进弹窗 / 回到顶栏 dock 落位 → 与站长「放在这个位置」不符');
 
   // ④ 挂载与 ?v 钉子 + jsdom 测试挂进 CI（§21o）。
-  check(/<script defer src="\.\/dyp-version-toggle\.js\?v=5"><\/script>/.test(idx36u)
+  check(/<script defer src="\.\/dyp-version-toggle\.js\?v=6"><\/script>/.test(idx36u)
     && exists('scripts/test-dyp-toggle.cjs')
     && wf36u.indexOf('node scripts/test-dyp-toggle.cjs') !== -1,
-    '§36u index.html 挂载 dyp-version-toggle.js?v=5，配套 jsdom 测试挂进 CI',
+    '§36u index.html 挂载 dyp-version-toggle.js?v=6，配套 jsdom 测试挂进 CI',
     '?v 没 bump / 测试没挂 CI → 转换逻辑静默失效没人拦');
 
   /* ⑥ 站长 2026-11-12：「切换旧版，请不要使用替换二字」。
@@ -8751,11 +8753,13 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   // 注意别用裸 `\/\/[^\n]*` 剥：会把 https:// 的尾巴一起吃掉（PITFALLS 第三十四章老坑），
   // 这里只认「整行以 // 开头」的行注释 + 块注释。
   const t36uCode = t36u.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/[^\n]*$/gm, '');
-  const briefOk = /var NEW_GO_TEXT = '比亚迪'/.test(t36uCode)
-    && /var NEW_D2_TEXT = '理想L8'/.test(t36uCode)
+  //    2026-11-14：两个入口同属比亚迪后，按钮文字改按「部件 + 错误动作」区分——
+  //    轮辋装反 / 轮毂装错（各 4 字）。品牌名重复写两遍等于零信息量，且分不清是哪条片子。
+  const briefOk = /var NEW_GO_TEXT = '轮辋装反'/.test(t36uCode)
+    && /var NEW_D2_TEXT = '轮毂装错'/.test(t36uCode)
     && !/短片/.test(t36uCode);
   check(briefOk,
-    '§36u 新版按钮文案只留品牌名（比亚迪 / 理想L8），顶栏与弹窗里不再出现「短片」字样',
+    '§36u 新版按钮文案只留 4 字辨识词（轮辋装反 / 轮毂装错），不再重复品牌名，也不出现「短片」字样',
     '文案又写长 → 三等分格子里被 ellipsis 截断（站长 11-12 已指出一次）');
   check(/@media \(min-width:521px\)\{\.dyp__acts\.dyp--new > \*\{flex:1 1 0\}\}/.test(t36u),
     '§36u 新版三按钮等宽（≥521px 生效，≤520px 保留官方纵向 flex:0 0 auto）',

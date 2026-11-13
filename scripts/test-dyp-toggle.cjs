@@ -4,14 +4,14 @@
    被测：dyp-version-toggle.js（浏览器 IIFE，jsdom 真跑）
    覆盖：
      ① 默认版本 new；转换按钮文案随版本翻转（切换旧版 / 新版本）
-     ② 默认（new）把 .dyp__acts 调成 [比亚迪] [理想L8] [站长随笔]，隐藏事实核查
+     ② 默认（new）把 .dyp__acts 调成 [轮辋装反] [轮毂装错] [站长随笔]，隐藏事实核查
      ③ 切到 old 恢复 [在抖音中观看] [事实核查] [站长随笔]
      ④ 幂等：重复应用 new 不产生多枚 .dyp__douyin2
      ⑤ 落位：转换按钮在「弹窗内」右上角（.dyp__panel 内、插在 .dyp__x 之前），
         不在顶栏 / dock；带 .dyp__version-toggle
      ⑥ 弹窗未 build 时 sweep 不报错、不误建按钮
      ⑦ 点击转换按钮翻版本（new ↔ old）并记忆 localStorage
-     ⑧ index.html 引用 dyp-version-toggle.js?v=5（剥 HTML 注释再判）
+     ⑧ index.html 引用 dyp-version-toggle.js?v=6（剥 HTML 注释再判）
    ========================================================================== */
 'use strict';
 
@@ -87,7 +87,7 @@ function injectFactcheck(w) {
   check('old 时标签「新版本」', a.w.SXGDypToggle.labelFor('old') === '新版本');
   a.w.close();
 
-  /* ② 默认（new）调成 [比亚迪] [理想L8] [站长随笔]，隐藏事实核查 */
+  /* ② 默认（new）调成 [轮辋装反] [轮毂装错] [站长随笔]，隐藏事实核查 */
   console.log('\n② new 版 acts');
   const b = mkDom({ panel: true });
   injectFactcheck(b.w);
@@ -98,10 +98,13 @@ function injectFactcheck(w) {
   const fcB = actsB.querySelector('.dyp__factcheck');
   const d2B = actsB.querySelector('.dyp__douyin2');
   const laterB = actsB.querySelector('.dyp__later');
-  check('主页按钮＝比亚迪抖音短链', goB.href === 'https://v.douyin.com/_n2cFrXIRec/'
-    && goB.textContent === '比亚迪', { href: goB.href, t: goB.textContent });
-  check('第二按钮＝理想L8抖音短链', !!d2B && d2B.href === 'https://v.douyin.com/EHOOH9INCMk/'
-    && d2B.textContent === '理想L8', d2B && { href: d2B.href, t: d2B.textContent });
+  check('主页按钮＝比亚迪·轮辋装反抖音短链', goB.href === 'https://v.douyin.com/_n2cFrXIRec/'
+    && goB.textContent === '轮辋装反', { href: goB.href, t: goB.textContent });
+  // 2026-11-14 站长：理想L8 那条删了，换成 fe8jmWjCmqY（新车轮毂竟然装错）。
+  // 两个入口至此都是比亚迪短片，按钮文字改按「部件 + 错误动作」区分，各 4 字：
+  //   轮辋装反（前后轮辋装反了） / 轮毂装错（新车轮毂竟然装错）。
+  check('第二按钮＝比亚迪·轮毂装错抖音短链', !!d2B && d2B.href === 'https://v.douyin.com/fe8jmWjCmqY/'
+    && d2B.textContent === '轮毂装错', d2B && { href: d2B.href, t: d2B.textContent });
   // 文案长度护栏：站长 2026-11-12「看看按钮大小，再看文字」——按钮是三等分窄格，
   // 文案超过 6 字（≈84px @14px）就会在 113px 的格子里触发 ellipsis 截断。
   check('两个新版按钮文案均 ≤6 字（防再写长导致截断）',
@@ -177,12 +180,12 @@ function injectFactcheck(w) {
     && btnG.textContent === '切换旧版');
   g.w.close();
 
-  /* ⑧ index.html 引用 ?v=5（剥 HTML 注释后再判，避免被注释块误判）*/
+  /* ⑧ index.html 引用 ?v=6（剥 HTML 注释后再判，避免被注释块误判）*/
   console.log('\n⑧ index.html 引用');
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')
     .replace(/<!--[\s\S]*?-->/g, '');
-  check('index.html 已引用 dyp-version-toggle.js?v=5',
-    /<script defer src="\.\/dyp-version-toggle\.js\?v=5"><\/script>/.test(idx));
+  check('index.html 已引用 dyp-version-toggle.js?v=6',
+    /<script defer src="\.\/dyp-version-toggle\.js\?v=6"><\/script>/.test(idx));
 
   setTimeout(function () {
     console.log('\n========== 结果：' + passed + ' 项通过，' + failed + ' 项失败 ==========');

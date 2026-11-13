@@ -1,10 +1,12 @@
 ﻿// 【本机专用 · 不挂 CI】真渲染验收：首页弹窗「新版/旧版 转换按钮」（2026-11-12 §36u）
 // 本地起静态服务 + 无头 Edge CDP，桌面(1440)与手机(390)分别独立加载：
 //   1) 转换按钮在「弹窗内部右上角」（.dyp__panel 内、插在 .dyp__x 之前），不在顶栏/dock
-//   2) 默认 new 版：弹窗 acts = [比亚迪] [理想L8] [站长随笔]，事实核查隐藏
+//   2) 默认 new 版：弹窗 acts = [轮辋装反] [轮毂装错] [站长随笔]，事实核查隐藏
 //   3) 点转换按钮 → old 版：acts = [在抖音中观看] [事实核查] [站长随笔]
 //   4) 截弹窗图，肉眼复核按钮位置/文案与顺序
 // 产物落 D:/WorkBuddy-Cache/shots/dyp-*.png
+// 2026-11-14 站长：理想L8 短片下线，换 fe8jmWjCmqY（新车轮毂竟然装错）；两个入口同为
+//   比亚迪，按钮文案改成「轮辋装反 / 轮毂装错」，验收断言随文案同步。
 const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
 const { spawn } = require('child_process');
 const http = require('http');
@@ -81,8 +83,8 @@ async function pollActsNew(ws, ms) {
         actsW:Math.round(acts.getBoundingClientRect().width),
         mGo:clip(go), mD2:clip(d2), mLater:clip(later)};
     `);
-    if (last && last.acts && last.goText === '比亚迪'
-      && last.d2Text === '理想L8' && last.fcDisplay === 'none'
+    if (last && last.acts && last.goText === '轮辋装反'
+      && last.d2Text === '轮毂装错' && last.fcDisplay === 'none'
       && last.laterText === '站长随笔') return last;
     await sleep(500);
   }
@@ -201,10 +203,10 @@ function toggleProbe(ws) {
   const noClip = (a) => !!a && !!a.mGo && !!a.mD2 && !!a.mLater
     && a.mGo.clipped === false && a.mD2.clipped === false && a.mLater.clipped === false;
   const mOk = toggleOk(mToggle)
-    && mActs && mActs.goText === '比亚迪' && mActs.d2Text === '理想L8'
+    && mActs && mActs.goText === '轮辋装反' && mActs.d2Text === '轮毂装错'
     && mActs.fcDisplay === 'none' && mActs.laterText === '站长随笔' && noClip(mActs);
   const dOk = toggleOk(dToggle)
-    && dActs && dActs.goText === '比亚迪' && dActs.d2Text === '理想L8'
+    && dActs && dActs.goText === '轮辋装反' && dActs.d2Text === '轮毂装错'
     && dActs.fcDisplay === 'none' && dActs.laterText === '站长随笔' && noClip(dActs)
     && clickRes && clickRes.version === 'old' && clickRes.newText === '新版本'
     && dActsOld && dActsOld.goText === '在抖音中观看' && dActsOld.d2Present === false
