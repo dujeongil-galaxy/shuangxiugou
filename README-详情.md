@@ -36,7 +36,7 @@
 ⚠️ **架构说明（2026-10 修正）**：本仓库存在两套产物，请勿混淆——
 
 - **线上实际部署**的是仓库根目录的**静态产物**：`index.html` + `assets/index-YthXZ9eP.js` + `assets/index-BgVofs0W.css` + `assets/*.logo`。GitHub Pages 直接发布仓库根目录，**不经过构建步骤**，推送即生效（约 60 秒）。
-- `app/` 下的 Next.js 源码（`app/page.tsx` 等）**并未构建成线上页面**。`npm run build` 的产物也没有部署到 GitHub Pages。
+- `app/` 下的 Next.js 源码（`app/page.tsx` 等）**并未构建成线上页面**，历史上 `npm run build` 的产物也从未部署到 GitHub Pages。2026-11-13 起 Next 应用栈依赖（`next`/`react`/`react-dom`/`framer-motion`/`tailwindcss-animate`）与 `dev`/`build`/`start`/`lint`/`check-types` 脚本已整体移除，`npm audit` 从 8 项漏洞（1 critical / 5 high / 2 moderate）归零；`app/` 仅作历史源码留存，**不再可构建**，线上行为零变化。
 
 **改数据前必看**：公司卡片数据分散在两处，改错位置不生效——
 

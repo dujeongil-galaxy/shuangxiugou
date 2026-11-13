@@ -245,16 +245,23 @@ README 的推荐位与页脚、社交链接、赞助入口、数据口径、免�
 
 ## 八、开发环境
 
+**没有构建步骤**——本站是纯静态站点，clone 后直接打开根目录 `index.html` 就能看。
+
 ```bash
-npm install
-npm run dev     # 开发
-npm run build   # 构建
-npm run lint    # 等同 tsc --noEmit
+npx serve .                    # 可选：起本地静态服务
+
+node scripts/verify.mjs        # 改完必跑，零依赖
+# 等价写法：npm run verify
+
+npm install                    # 仅当要跑 jsdom 回归时才需要（只有 jsdom + encoding）
+node scripts/test-render-page.cjs
 ```
+
+> 📦 **2026-11-13 起**：`next` / `react` / `react-dom` / `framer-motion` / `tailwindcss-animate` 与 `dev`/`build`/`start`/`lint`/`check-types` 脚本已整体移除，`npm audit` 从 8 项漏洞归零。**仓库里已没有 `npm run dev` / `npm run build` / `npm run lint` 可用**，`app/` 目录保留但不再可构建。
 
 **但请注意**：`app/page.tsx` 渲染的是 `lib/companies.json`（28 家赞助商名单），**与线上 53 张内置双休评级卡完全是两套数据**。
 
-> ⚠️ **不要执行 `npm run build` 后把产物部署到 GitHub Pages**，那会用赞助商名单页面覆盖现有的双休评级站点。如需修改线上内容，请直接编辑根目录 `index.html` 与 `assets/` 下的静态产物（见第三节）。
+> ⚠️ **历史上 `npm run build` 的产物曾差点覆盖线上站点**：它渲染的是赞助商名单页面，与双休评级站点是两套数据。现在构建脚本已删，**即使你想部署也构建不出来**；如需修改线上内容，请直接编辑根目录 `index.html` 与 `assets/` 下的静态产物（见第三节）。
 
 ---
 

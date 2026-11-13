@@ -90,7 +90,7 @@
 三条硬性约束：
 
 1. 改 `assets/` 下的 bundle 后，必须递增 `index.html` 里的 `?v=N`，否则浏览器/CDN 继续用旧缓存
-2. 不要执行 `npm run build` 后部署——`app/page.tsx` 渲染的是赞助商名单（`lib/companies.json`），会覆盖双休评级站点
+2. 不要指望 `npm run build`——2026-11-13 已把 Next 应用栈（`next`/`react`/`react-dom`/`framer-motion`/`tailwindcss-animate`）与 `dev`/`build`/`start`/`lint`/`check-types` 脚本整体移除（`npm audit` 8 项漏洞归零），`app/page.tsx` 那套赞助商名单页面（`lib/companies.json`）只是历史源码、不可再构建，线上照样只认根目录静态产物
 3. 不要动根目录那份同名 js 副本
 
 **第 3 条为何存在**：仓库里同时有 `assets/index-YthXZ9eP.js`（部署用）和 `./index-YthXZ9eP.js`（副本），文件名完全相同。这是历史上传产物时的残留，删除比保留风险更高，故原样留着并在文档中标注。

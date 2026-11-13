@@ -102,7 +102,7 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 1. **数据合规优先**：本项目内容是对具名企业的劳动评价，MIT协议只管代码不管内容合法性。改数据必须同步更新证据说明，**不要删除站内免责声明**。
 2. **改错位置不生效**：53 张内置卡数据在 `assets/index-YthXZ9eP.js`，127 张自定义卡在 `index.html`；根目录另有一份同名 js 是**非部署副本**，改它无效；改 bundle 后须递增 `?v=N` 防缓存。
-3. **不要 `npm run build` 后部署**：`app/` 源码与线上产物是两套数据，重建会覆盖现有站点。
+3. **不要试图构建后部署**：`app/` 源码与线上产物是两套数据，重建会覆盖现有站点。2026-11-13 起 Next 应用栈（`next` / `react` / `react-dom` / `framer-motion` / `tailwindcss-animate`）连同 `dev`/`build`/`start`/`lint`/`check-types` 脚本已整体移除（`npm audit` 从 8 项漏洞归零），仓库里**已不再提供 `npm run build`**，`app/` 仅作历史留存。
 4. **改完跑一次校验**：`npm run verify`（零依赖，不需要 `npm install`）。它会检查卡片数量、logo 与资源路径、noscript 是否同步、文档数字口径、提交号真实性、h2/h3 双查、换行符锁定等，有问题直接 `exit 1`。**这是唯一能发现「静默失效」的手段** —— 本站的补丁脚本失败时页面上看不出任何异常。
 5. **加检查之后必须注入故障验证**：`verify.mjs` 里的检查自己踩过很多坑（见 `PITFALLS.md` 第三节）。**没经过「故意注入故障、确认能抓到」的检查，不算加了检查** —— 它可能范围太窄、可能恒真、可能只是摆设。
 6. **往 React 渲染的 DOM 里手动插节点，必须假设它会被移位**：
@@ -900,18 +900,25 @@ U 级 = **证据缺失级**：仅当已尽合理检索（招聘平台 / 媒体�
 4. 应用名称和包名自定义即可
 5. 生成 APK 安装即可
 
-## 🚀 本地开发与启动
+## 🚀 本地预览与校验
+
+本站是**纯静态站点，没有构建步骤**：克隆后直接打开根目录 `index.html` 即可预览，或起个静态服务。
 
 ```bash
-# 1. 克隆项目并安装依赖
+# 1. 可选：起本地静态服务（仓库已无 dev 脚本，别找 npm run dev）
+npx serve .
+
+# 2. 改完必须跑校验（零依赖，不需要 npm install）
+node scripts/verify.mjs
+# 等价写法：npm run verify
+
+# 3. 需要跑 jsdom 回归时才装依赖（全仓仅 jsdom + encoding 两个）
 npm install
-
-# 2. 启动本地开发服务
-npm run dev
-
-# 3. 构建生产包（Next.js standalone 输出）
-npm run build
+node scripts/test-render-page.cjs
 ```
+
+> 📦 **依赖说明（2026-11-13）**：`next` / `react` / `react-dom` / `framer-motion` / `tailwindcss-animate` 与 `dev`/`build`/`start`/`lint`/`check-types` 脚本已整体移除，`npm audit` 从 8 项漏洞（1 critical / 5 high / 2 moderate）归零。`app/` 下的 Next.js 源码保留但**不再可构建**——它本来就是与线上无关的两套数据，删依赖不改变任何线上行为。
+> 该文件是工程改动、不涉及前端产物，故 `?v=N` 未动。
 
 > ⚠️ **架构说明（摘要）**：线上部署的是仓库根目录静态产物（`index.html` + `assets/` 下的 bundle 与 css），GitHub Pages 直接发布、不经过构建；`app/` 下的 Next.js 源码未构建成线上页面。卡片数据分两处——53 张内置卡在 `assets/index-YthXZ9eP.js`，127 张自定义卡在根目录 `index.html` 的 `customCardsConfig`；改 bundle 后须把 `?v=N` 加 1，仅改自定义卡不用。
 >
