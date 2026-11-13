@@ -193,7 +193,7 @@
          这个锚点回写与校验，删节点等于让每日版本号同步静默失效。
          用 hidden 而不是删掉：hidden 只影响渲染，textContent 照样可读，
          nav-menu.js 运行时读它，菜单里不另存哈希（两份数据没有比对源，必然漂）。 -->
-<span id="site-version" hidden><span class="notice-ver">当前版本号 e03a6c8</span></span>
+<span id="site-version" hidden><span class="notice-ver">当前版本号 22163f3</span></span>
     <div id="root">
       <!-- 首屏占位：React 大包解析期间先显示「加载中」，避免 #root 为空把下方证据链区块
            甩到视口顶部造成白屏闪烁（FOUC）。React 挂载后自动替换本节点。 -->
@@ -4962,8 +4962,8 @@
           s.target = '_blank';
           s.rel = 'noopener noreferrer';
           s.className = starBtn.className + ' sxg-header-btn';
-          s.setAttribute('aria-label', '赞助本项目');
-          s.textContent = '☕ 赞助本项目';
+          s.setAttribute('aria-label', '打赏赞助');
+          s.textContent = '☕ 打赏赞助';
           // 换掉 Star 按钮的深色底，改用站点主色，与「提交爆料」区隔开。
           // ⚠️ 只能替换成本项目 CSS 里实际生成过的类名——assets 的 Tailwind 是
           // 按站点用到的样式裁剪过的，bg-emerald-700 等未使用的类并不存在，
@@ -9285,9 +9285,36 @@
         body.appendChild(row);
       }
 
+      // 2026-11-13 站长口径：手机端顶栏只留 提交数据申诉 / Star / 赞助 / 分享本站
+      // 四枚；Login GitHub 与匿名邮箱一起收进右侧 #sxg-fab-dock。桌面端六枚原位不动。
+      // 幂等：已在 dock 就不重复搬；断点切回桌面由 fab-dock.js 的 disable() 还给 body。
+      function relocateLoginForNarrow() {
+        var login = document.getElementById('login-github-btn');
+        var dock = document.getElementById('sxg-fab-dock');
+        if (!login || !dock) return;
+        var narrow = window.matchMedia && window.matchMedia('(max-width: 640px)').matches;
+        if (narrow) {
+          login.setAttribute('data-sxg-dock-label', '登录');
+          if (login.parentNode !== dock) dock.appendChild(login);
+        } else if (login.parentNode === dock) {
+          // 切回桌面：回到顶栏「赞助之后」原位。赞助按钮由 replaceLinksAndButtons 注入，
+          // 顶栏按钮组与它同属 header；找不到赞助锚点时先挂 body，等下一轮 init 再校正。
+          var sponsorBack = document.getElementById('sponsor-entry-btn');
+          var acts = document.querySelector('header div[data-hdr-acts]') || (sponsorBack && sponsorBack.parentNode);
+          if (acts && sponsorBack && sponsorBack.parentNode === acts) {
+            acts.insertBefore(login, sponsorBack.nextSibling);
+          } else if (acts) {
+            acts.appendChild(login);
+          } else {
+            document.body.appendChild(login);
+          }
+        }
+      }
+
       function init() {
         tagSearchInput();
         replaceLinksAndButtons();
+        relocateLoginForNarrow();
         insertAllCustomCards();
         insertWechatInlineLink();
         replaceAllLogos();
@@ -9395,6 +9422,12 @@
       
       const observer = new MutationObserver(init);
       observer.observe(document.getElementById('root'), { childList: true, subtree: true });
+
+      // 断点切换 / 稍后 dock 就绪时再校正一次 Login 归属；定时重试兜住慢网 DOM 落地。
+      window.addEventListener('resize', relocateLoginForNarrow);
+      window.setTimeout(relocateLoginForNarrow, 600);
+      window.setTimeout(relocateLoginForNarrow, 1500);
+      window.setTimeout(relocateLoginForNarrow, 3000);
 
       // 「某代工烘焙食品」没有公开 logo：把占位块改成纯白，在白色卡片上等于隐形，
       // 同时保留 40px 占位，让标题与相邻卡片的左对齐位置保持一致。
@@ -9567,18 +9600,17 @@
   <!-- 悬浮层统一容器（2026-11-12 §36q，§36s 改为全部撑开）：必须排在所有
        悬浮脚本之后，defer 保证 DOMContentLoaded 监听器在它们的 build() 之后
        执行。只在 ≤640px 收编按钮；桌面端完全不启用，六枚原位。 -->
-  <script defer src="./fab-dock.js?v=2"></script>
+  <script defer src="./fab-dock.js?v=3"></script>
   <!-- 「匿名邮箱」入口（2026-11-12 §36s）：桌面顶栏第 5 枚按钮，≤640px 直接
-       挂进上面刚建好的 #sxg-fab-dock（右侧已隔离的 76px 留白列、七枚全部撑开），
-       不进已展开的顶栏，避免把第二行挤成三行。点击先弹访问告知弹窗，目标链接
-       只在弹窗出口放行。排在 fab-dock.js 之后，dock 存在时一次安置到位。 -->
+       挂进上面刚建好的 #sxg-fab-dock（右侧已隔离的 76px 留白列；与 Login 同为
+       客居入口，连同六枚常驻按钮一起撑开），不进已展开的顶栏。点击先弹访问告知
+       弹窗，目标链接只在弹窗出口放行。排在 fab-dock.js 之后，dock 存在时一次安置到位。 -->
   <script defer src="./anon-mail.js?v=5"></script>
-  <!-- 「分享本站」顶栏入口（2026-11-12 站长要求，§36w）：桌面顶栏第 6 枚，
-       紧跟「匿名邮箱」之后，带内联 SVG 分享图标；点击直接开 share-modal 的
-       分享卡片，弹窗脚本没就绪时退化为复制地址。≤640px 与匿名邮箱同口径进
-       #sxg-fab-dock，不把已经两行的顶栏挤成第三行。必须排在 anon-mail.js
-       之后（落位要插在它后面），故放在这里而不是更早。 -->
-  <script defer src="./share-entry.js?v=1"></script>
+  <!-- 「分享本站」顶栏入口（2026-11-12 站长要求，§36w；2026-11-13 口径更新）：
+       桌面顶栏第 6 枚，紧跟「匿名邮箱」之后；手机端也留顶栏（四枚之一，排在赞助之后），
+       不再进 dock。带内联 SVG 分享图标；点击直接开 share-modal 的分享卡片，
+       弹窗脚本没就绪时退化为复制地址。必须排在 anon-mail.js 之后，故放在这里。 -->
+  <script defer src="./share-entry.js?v=2"></script>
   <!-- 首页「劳工友好提醒」弹窗 新版/旧版 转换按钮（2026-11-12 站长指令）：
        顶栏落在 anon-mail 同位置（Login GitHub 之后；≤640px 进 fab-dock），
        默认新版（2 个抖音链接 + 站长随笔、隐藏事实核查），点击切旧版（含事实核查）。

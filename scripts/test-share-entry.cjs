@@ -6,7 +6,7 @@
      ① 常量与开关：BTN_ID / ENABLED / 内联 SVG，不依赖外部图片
      ② 桌面落位：紧跟「匿名邮箱」之后、带 sxg-header-btn、slot=header
      ③ 锚点缺失兜底：没有匿名邮箱时退到 Login GitHub / 赞助，绝不悬空
-     ④ 手机落位：进 #sxg-fab-dock 且排在匿名邮箱之后；dock 没就绪时 pending 兜底
+     ④ 手机落位：分享本站留顶栏，排在赞助之后（匿名 / Login 在 dock）
      ⑤ 点击：拦下默认行为、调 window.SXGShare.open()，不自己拼第二套弹窗
      ⑥ 弹窗脚本缺席：退化为复制当前地址 + 气泡提示，按钮不做成死的
      ⑦ 键盘可达：Enter / 空格同样能打开
@@ -81,9 +81,9 @@ function fire(w, el, type) {
     && /var\s+ICON\s*=\s*'<svg/.test(SHARE_SRC));
   check('图标是内联 SVG（不引外部图片/字体，避免 404 与三端不一致）',
     /<svg[^>]*viewBox="0 0 24 24"/.test(SHARE_SRC) && !/https?:\/\/[^"']*\.(png|svg|woff)/.test(SHARE_SRC));
-  check('index.html 挂载 share-entry.js?v=1，且排在 anon-mail.js 之后',
+  check('index.html 挂载 share-entry.js?v=2，且排在 anon-mail.js 之后',
     (function () {
-      const iShare = HTML.indexOf('./share-entry.js?v=1');
+      const iShare = HTML.indexOf('./share-entry.js?v=2');
       const iAnon = HTML.indexOf('./anon-mail.js?v=5');
       return iShare > 0 && iAnon > 0 && iShare > iAnon;
     })());
@@ -121,30 +121,26 @@ function fire(w, el, type) {
   }
 
   /* ---------------- ④ 手机落位 ---------------- */
-  console.log('④ 手机落位（≤640px）');
+  console.log('④ 手机落位（≤640px）：分享本站留顶栏（2026-11-13 站长口径）');
   {
     const { w } = mkDom({ narrow: true, dock: true });
     const d = w.document;
     const share = d.getElementById('sxg-share-entry-btn');
-    const anon = d.getElementById('sxg-anon-mail-btn');
+    const sponsor = d.getElementById('sponsor-entry-btn');
     const dock = d.getElementById('sxg-fab-dock');
-    check('进 #sxg-fab-dock', !!share && share.parentNode === dock);
-    check('slot=dock', !!share && share.getAttribute('data-sxg-share-slot') === 'dock');
-    check('排在匿名邮箱之后', !!share && !!anon && anon.nextElementSibling === share);
-    check('摘掉 sxg-header-btn（免得被顶栏隐藏规则吃掉）',
-      !!share && !share.classList.contains('sxg-header-btn'));
-    check('带 dock 短标签 data-sxg-dock-label=分享本站',
-      !!share && share.getAttribute('data-sxg-dock-label') === '分享本站');
+    check('留在顶栏（不进 dock）', !!share && share.parentNode !== dock);
+    check('slot=header', !!share && share.getAttribute('data-sxg-share-slot') === 'header');
+    check('排在赞助之后（匿名 / Login 已在 dock，顶栏锚点退到赞助）',
+      !!share && !!sponsor && sponsor.nextElementSibling === share);
+    check('保留 sxg-header-btn（顶栏同款外观）',
+      !!share && share.classList.contains('sxg-header-btn'));
   }
   {
-    /* dock 还没建好的那一拍：先挂 body 藏住，不许裸奔在页面上 */
+    /* 手机端分享留顶栏：即使 dock 未就绪也不藏进 pending，挂顶栏锚点即可 */
     const { w } = mkDom({ narrow: true, dock: false });
     const share = w.document.getElementById('sxg-share-entry-btn');
-    check('dock 未就绪时 slot=pending（先藏起来）',
-      !!share && share.getAttribute('data-sxg-share-slot') === 'pending');
-    const style = w.document.getElementById('sxg-share-entry-style');
-    check('pending 兜底样式带 !important',
-      !!style && /data-sxg-share-slot="pending"\]\{display:none !important\}/.test(style.textContent));
+    check('dock 未就绪时仍 slot=header（不 pending 藏起）',
+      !!share && share.getAttribute('data-sxg-share-slot') === 'header');
   }
 
   /* ---------------- ⑤ 点击调分享弹窗 ---------------- */
@@ -189,7 +185,7 @@ function fire(w, el, type) {
   }
 
   /* ---------------- ⑧ 断点来回切 ---------------- */
-  console.log('⑧ 断点手机 ↔ 桌面');
+  console.log('⑧ 断点手机 ↔ 桌面（分享两端都留顶栏）');
   {
     const { w, state } = mkDom({ narrow: false, dock: true });
     const d = w.document;
@@ -198,7 +194,7 @@ function fire(w, el, type) {
     check('起点在顶栏', share.parentNode && share.parentNode.tagName === 'HEADER');
     state.narrow = true;
     w.dispatchEvent(new w.Event('resize'));
-    check('切窄屏 → 进 dock', share.parentNode === dock);
+    check('切窄屏 → 仍留顶栏（不进 dock）', share.parentNode !== dock);
     state.narrow = false;
     w.dispatchEvent(new w.Event('resize'));
     check('切回桌面 → 回顶栏且仍在匿名邮箱之后',
@@ -207,7 +203,7 @@ function fire(w, el, type) {
     state.narrow = true;
     w.dispatchEvent(new w.Event('resize'));
     check('再切窄屏 → 按钮不丢、不重复创建',
-      share.parentNode === dock && d.querySelectorAll('#sxg-share-entry-btn').length === 1);
+      share.parentNode !== dock && d.querySelectorAll('#sxg-share-entry-btn').length === 1);
   }
 
   /* ---------------- ⑨ ENABLED 开关 ---------------- */

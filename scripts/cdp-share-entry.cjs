@@ -5,7 +5,7 @@
 //   2) 分享按钮内联 SVG 真渲染可见（display/尺寸），中心点 elementFromPoint 命中自身
 //      （防「按钮在但被别的浮层盖住」这类假通过）
 //   3) 点一下分享按钮，分享卡片必须真的弹出来（.sxg-share-mask.on）、平台 14 项
-//   4) ≤640px 分享按钮与匿名邮箱同样进 #sxg-fab-dock（68×36、不隐藏、svg 由 CSS 隐去）
+//   4) ≤640px 分享本站留顶栏（四枚之一）；匿名邮箱 + Login GitHub 进 #sxg-fab-dock
 //   5) 无横向溢出、无按钮重叠、无页面异常
 // 产物落 cacheDir：share-entry-*.png
 const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
@@ -237,7 +237,7 @@ const CLICK = `
   }
 
   // ---------------- 判红 ----------------
-  const EXPECT_DESKTOP = ['+ 提交数据 / 申诉','★ Star on GitHub','☕ 赞助本项目','🔑 Login GitHub','匿名邮箱','分享本站'];
+  const EXPECT_DESKTOP = ['+ 提交数据 / 申诉','★ Star on GitHub','☕ 打赏赞助','🔑 Login GitHub','匿名邮箱','分享本站'];
   const fails = [];
   const need = (cond, msg) => { if (!cond) fails.push(msg); };
 
@@ -268,19 +268,25 @@ const CLICK = `
       need(!!p.anon && p.anon.svgCount === 1 && p.anon.svgVisible === true, r.vp + ': 匿名邮箱 LOGO 没渲染出来');
       need(!!p.anon && p.anon.slot === 'header' && p.anon.hidden === false, r.vp + ': 匿名邮箱不在顶栏');
     } else {
-      // 手机：进 dock、68×36、常显、LOGO 由 CSS 隐去
-      need(p.share.slot === 'dock', r.vp + ': 窄屏分享按钮没进 fab-dock（' + p.share.slot + '）');
+      // 手机（2026-11-13 口径）：顶栏四枚 = 申诉 / Star / 赞助 / 分享；Login、匿名进 dock。
+      need(p.share.slot === 'header', r.vp + ': 窄屏分享按钮应留顶栏（' + p.share.slot + '）');
       need(p.share.hidden === false, r.vp + ': 窄屏分享按钮被隐藏');
-      need(p.share.rect.w === 68 && p.share.rect.h === 36,
-        r.vp + ': 窄屏分享按钮尺寸不是 68×36（' + p.share.rect.w + '×' + p.share.rect.h + '）');
-      need(!!p.dock && p.dock.items.some(i => i.id === 'sxg-share-entry-btn' && i.shown),
-        r.vp + ': fab-dock 里没有常显的分享按钮');
       need(!!p.dock && p.dock.items.some(i => i.id === 'sxg-anon-mail-btn' && i.shown),
         r.vp + ': fab-dock 里没有匿名邮箱');
+      need(!!p.dock && p.dock.items.some(i => i.id === 'login-github-btn' && i.shown),
+        r.vp + ': fab-dock 里没有 Login GitHub');
+      need(!!p.dock && !p.dock.items.some(i => i.id === 'sxg-share-entry-btn'),
+        r.vp + ': 分享本站不该再进 fab-dock');
       need(!!p.anon && p.anon.svgVisible === false, r.vp + ': 窄屏 dock 内不该显示邮箱 LOGO（应换成短标签）');
-      // 顶栏不许藏按钮（§36t）：四枚既有按钮仍要露出
-      need(Array.isArray(p.headerOrder) && p.headerOrder.length >= 4,
-        r.vp + ': 窄屏顶栏按钮少于 4 枚 ' + JSON.stringify(p.headerOrder));
+      // 顶栏四枚既有按钮仍要露出
+      need(Array.isArray(p.headerOrder) && p.headerOrder.length === 4,
+        r.vp + ': 窄屏顶栏应为 4 枚 ' + JSON.stringify(p.headerOrder));
+      need(Array.isArray(p.headerOrder)
+        && p.headerOrder[0].indexOf('提交数据') >= 0
+        && p.headerOrder[1].indexOf('Star') >= 0
+        && p.headerOrder[2].indexOf('赞助') >= 0
+        && p.headerOrder[3].indexOf('分享') >= 0,
+        r.vp + ': 窄屏顶栏四枚顺序不对 ' + JSON.stringify(p.headerOrder));
     }
   }
 

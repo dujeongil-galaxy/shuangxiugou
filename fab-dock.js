@@ -41,8 +41,10 @@
     'sxg-ai-fab',         // AI 劳动法小助手
     'sxg-top-btn'         // 回顶部
   ];
-  /* 外部组件挂进 dock 的入口：不归本文件 fill() 管，但退出窄屏时要还给 body。 */
-  var GUESTS = ['sxg-anon-mail-btn'];
+  /* 外部组件挂进 dock 的入口：不归本文件 fill() 管，但退出窄屏时要还给 body。
+     2026-11-13 站长口径：手机端顶栏只留 提交数据/Star/赞助/分享本站 四枚，
+     Login GitHub 与匿名邮箱一起收进右侧 dock（桌面端六枚顺序不动）。 */
+  var GUESTS = ['sxg-anon-mail-btn', 'login-github-btn'];
   var ALL    = ORDER.concat(GUESTS);
 
   /* 撑开的宽条只有 68px，统一用中文短标签；标签是 CSS ::after 的唯一真相源，
@@ -53,7 +55,8 @@
     'sxg-video-btn':    '▶ 视频',
     'sxg-bottom-btn':   '↓ 到底',
     'sxg-ai-fab':       'AI 对话',
-    'sxg-top-btn':      '↑ 顶部'
+    'sxg-top-btn':      '↑ 顶部',
+    'login-github-btn': '登录'
   };
 
   var dock = null;
@@ -87,6 +90,14 @@
         : el;
       labelEl.setAttribute('data-sxg-dock-label', LABELS[ORDER[i]]);
       if (el.parentNode !== dock) dock.appendChild(el);
+    }
+    /* 客居入口（匿名邮箱 / Login GitHub）：归属不归本文件，但短标签同样由
+       LABELS 补齐；只打标签，不主动搬入（它们自己的脚本会安置进 dock）。 */
+    for (i = 0; i < GUESTS.length; i++) {
+      var guest = document.getElementById(GUESTS[i]);
+      if (guest && LABELS[GUESTS[i]]) {
+        guest.setAttribute('data-sxg-dock-label', LABELS[GUESTS[i]]);
+      }
     }
     syncHeight();
     return missing;

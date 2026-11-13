@@ -149,30 +149,19 @@
       btn.setAttribute('data-sxg-share-hidden', '1');
     }
 
-    if (isNarrow()) {
-      var dock = document.getElementById(DOCK_ID);
-      btn.classList.remove('sxg-header-btn');
-      btn.className = 'sxg-share-entry-dock';
-      if (dock) {
-        /* 排在「匿名邮箱」之后（它与 fab-dock 其余六枚已各就各位）。 */
-        var anon = document.getElementById(ANON_ID);
-        var anchor = (anon && anon.parentNode === dock) ? anon.nextSibling : dock.firstChild;
-        if (btn.parentNode !== dock || btn.nextSibling !== anchor) {
-          dock.insertBefore(btn, anchor || null);
-        }
-        btn.setAttribute('data-sxg-share-slot', 'dock');
-      } else {
-        if (btn.parentNode !== document.body) document.body.appendChild(btn);
-        btn.setAttribute('data-sxg-share-slot', 'pending');
-      }
-      return true;
+    /* 桌面与手机端同口径：分享本站都留在顶栏（2026-11-13 站长口径：手机端
+       顶栏四枚 = 提交数据申诉 / Star / 赞助 / 分享本站；其余才收进 dock）。
+       桌面紧跟「匿名邮箱」之后；手机端匿名 / Login 已在 dock，锚点退到赞助之后。 */
+    var inDock = function (el) { return !!el && !!document.getElementById(DOCK_ID) && el.parentNode === document.getElementById(DOCK_ID); };
+    var anchor = document.getElementById(ANON_ID);
+    if (isNarrow() || inDock(anchor)) {
+      anchor = document.getElementById('sponsor-entry-btn')
+        || document.getElementById('login-github-btn');
     }
-
-    /* 桌面：紧跟「匿名邮箱」之后；它若被 ENABLED 关掉（DOM 仍在）也照旧插它后面，
-       保证顶栏第 6 枚位置稳定，不因开关翻动而跳动。 */
-    var anchor = document.getElementById(ANON_ID)
-      || document.getElementById('login-github-btn')
+    /* 桌面兜底：匿名缺失时退 Login → 赞助；与旧逐级兜底口径一致。 */
+    if (!anchor) anchor = document.getElementById('login-github-btn')
       || document.getElementById('sponsor-entry-btn');
+    if (!anchor) anchor = document.getElementById(ANON_ID);
     if (!anchor || !anchor.parentNode) return false;
     btn.className = HEADER_CLASS + ' sxg-share-entry-btn';
     btn.style.whiteSpace = 'nowrap';

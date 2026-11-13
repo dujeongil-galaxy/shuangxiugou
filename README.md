@@ -251,7 +251,7 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 |---|---|---|---|
 | 1 | `+ 提交数据 / 申诉` | `custom-card-actions.js` | 顶栏最左 |
 | 2 | `★ Star on GitHub` | 站点原生，`header-menu-patch.js` 打理分组 | 第 2 位 |
-| 3 | `☕ 赞助`（`sponsor.html`） | 站点原生 | 第 3 位 |
+| 3 | `☕ 打赏赞助`（`sponsor.html`） | 站点原生 | 第 3 位 |
 | 4 | `🔑 Login GitHub` | `header-menu-patch.js` 下半段 | 第 4 位 |
 | 5 | `匿名邮箱`（指向 `https://m.kuku.lu/cn.php`，文字前带信封 LOGO） | `anon-mail.js` | `insertAfter(Login)` |
 | 6 | `分享本站`（带内联分享 LOGO，点开站内分享卡片） | `share-entry.js` | `insertAfter(匿名邮箱)` |
@@ -259,13 +259,18 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 **这六枚都不在 `index.html` 的静态标记里**，是脚本运行时注入的。DOM 里找不到、或某个入口突然消失，
 先看上面四个脚本，别默认「被删了」就去补写一份新的（重复注入会出两枚同名按钮）。
 
-**第 6 枚「分享本站」的落位是「跟着匿名邮箱走」**：锚点优先级 `#sxg-anon-mail-btn` →
+**第 6 枚「分享本站」的落位是「跟着匿名邮箱走」**：桌面锚点优先级 `#sxg-anon-mail-btn` →
 `#login-github-btn` → `#sponsor-entry-btn` → 顶栏最后一个按钮，逐级兜底。
 所以匿名邮箱若被隐藏（`ENABLED=false`，DOM 仍在）分享按钮**照样贴着它**；
 哪天匿名邮箱脚本没加载，分享按钮也不会悬空乱飞。点击一律走 `window.SXGShare.open()`，
 **不许自己再造第二套分享弹窗**；`share-modal.js` 万一缺席，退化为复制当前地址 + 气泡提示。
-≤640px 与匿名邮箱同规则进 `#sxg-fab-dock`，带 `data-sxg-dock-label="分享本站"` 短标签常显不隐藏
-（dock 内由 CSS 统一隐去 LOGO 只留文字，与其它悬浮按钮一致）。
+
+**手机端（≤640px）顶栏只留四枚**（2026-11-13 站长口径，长期有效）：
+`+ 提交数据 / 申诉`、`★ Star on GitHub`、`☕ 打赏赞助`、`分享本站`。
+其余两枚——`🔑 Login GitHub`、`匿名邮箱`——收进右侧 `#sxg-fab-dock`（与六枚常驻悬浮按钮同列，
+带短标签常显）；切回桌面 >640px 时它们回到顶栏原位，桌面六枚顺序不动。
+手机端分享本站**留在顶栏**、排在赞助之后（匿名 / Login 已在 dock，顶栏锚点退到赞助按钮），
+不再进 dock。
 
 **两处单点开关（增减入口只改这一行，不许删代码本体）**：
 
@@ -277,8 +282,8 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 **三条禁令**：① 任何一枚不想要了，走上面的开关（隐藏），**不许删按钮本体或整段注入逻辑**——
 2026-11-12 白天那次直接把 `ENABLED` 置 `false`，当晚站长看图就以为「匿名邮箱被吃掉了」；
-② 动了任一开关，`index.html` 里的 `?v` 必须同步 bump（现 `anon-mail.js?v=5`、`share-entry.js?v=1`、
-`github-access-help.js?v=3`），不 bump 用户拿到的是旧缓存，等于没改；③ 改完跑 `node scripts/verify.mjs` 与
+② 动了任一开关，`index.html` 里的 `?v` 必须同步 bump（现 `anon-mail.js?v=5`、`share-entry.js?v=2`、
+`fab-dock.js?v=3`、`github-access-help.js?v=3`），不 bump 用户拿到的是旧缓存，等于没改；③ 改完跑 `node scripts/verify.mjs` 与
 `node scripts/test-anon-mail.cjs`、`node scripts/test-share-entry.cjs`，再用真浏览器核对六枚顺序与底色
 （匿名邮箱为深青 `rgb(15,118,110)`、位在 Login 之后；分享本站紧跟其后、浅色描边、与其它顶栏按钮同款）。
 

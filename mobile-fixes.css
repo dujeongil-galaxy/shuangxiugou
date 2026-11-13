@@ -551,7 +551,8 @@ div[class*="border-t"][class*="bg-slate-50"] > div.flex.items-center.gap-2 > but
    §36j 已经把整页 body 右留 76px，内容永远不会进这一列；§36q 却仍把
    4 枚低频按钮藏进「更多」，等于白留一列，还多出一套折叠状态要维护。
    现在改成：
-     · fab-dock.js 撤掉折叠，ORDER 六枚全部常显（另挂第 7 枚匿名邮箱）；
+     · fab-dock.js 撤掉折叠，ORDER 六枚全部常显；客居入口为匿名邮箱 + Login GitHub
+       （2026-11-13 口径：手机端顶栏只留四枚，其余两枚收进 dock）；
      · dock 宽 68px 贴 right:8px → 左缘正好是 vw-76，与内容右缘严丝合缝；
      · 每枚按钮统一撑成 68×36 的圆角宽条，用 ::after 读 data-sxg-dock-label
        补中文短标签（源脚本只给圆钮 / 只给英文 TOP / 只给 SVG 的都在这里补齐）。

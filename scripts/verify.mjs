@@ -8492,8 +8492,9 @@ section('25. 成功案例专题页（QQ奶奶）');
 
   // ③ JS：注册清单覆盖六枚 + 客居入口，且能双向搬迁（桌面还原）。
   const listOk = /var\s+ORDER\s*=\s*\[[^\]]*sxg-nav[^\]]*sxg-remind-btn[^\]]*sxg-video-btn[^\]]*sxg-bottom-btn[^\]]*sxg-ai-fab[^\]]*sxg-top-btn/.test(dock36q)
-    && /var\s+GUESTS\s*=\s*\[[^\]]*sxg-anon-mail-btn/.test(dock36q)
+    && /var\s+GUESTS\s*=\s*\[[^\]]*sxg-anon-mail-btn[^\]]*login-github-btn/.test(dock36q)
     && /var\s+ALL\s*=\s*ORDER\.concat\(GUESTS\)/.test(dock36q)
+    && /'login-github-btn':\s*'登录'/.test(dock36q)
     && /data-sxg-dock-label/.test(dock36q);
   const archOk = /max-width:\s*640px/.test(dock36q)
     && /--sxg-dock-h/.test(dock36q)
@@ -8501,16 +8502,16 @@ section('25. 成功案例专题页（QQ奶奶）');
     && /MutationObserver/.test(dock36q)
     && !/is-expanded|sxg-fab-more|var\s+PRIMARY|var\s+EXTRA/.test(dock36q);
   check(exists('fab-dock.js') && listOk && archOk,
-    '§36q fab-dock.js 六枚全部常显（含短标签）、客居入口退出窄屏时还给 body，仅 ≤640px 启用且可还原桌面',
+    '§36q fab-dock.js 六枚全部常显（含短标签）、客居入口（匿名邮箱 / Login GitHub）退出窄屏时还给 body，仅 ≤640px 启用且可还原桌面',
     '收编清单缺项 / 折叠层回潮 / 桌面端也被搬走 → 悬浮层又变成两套布局各自为政');
 
   // ④ 挂载顺序：dock 脚本必须排在所有悬浮脚本之后。
-  const mountOk = /<script defer src="\.\/fab-dock\.js\?v=2"><\/script>/.test(idx36q)
-    && idx36q.indexOf('fab-dock.js?v=2') > idx36q.indexOf('nav-menu.js?v=6')
+  const mountOk = /<script defer src="\.\/fab-dock\.js\?v=3"><\/script>/.test(idx36q)
+    && idx36q.indexOf('fab-dock.js?v=3') > idx36q.indexOf('nav-menu.js?v=6')
     && /mobile-fixes\.css\?v=21/.test(idx36q)
     && /header-menu-patch\.js\?v=11/.test(idx36q);
   check(mountOk,
-    '§36q index.html 已挂载 fab-dock.js?v=2 且排在所有悬浮脚本之后，mobile-fixes.css?v=21 / header-menu-patch.js?v=11 同步 bump',
+    '§36q index.html 已挂载 fab-dock.js?v=3 且排在所有悬浮脚本之后，mobile-fixes.css?v=21 / header-menu-patch.js?v=11 同步 bump',
     '挂载顺序错了 → dock 执行时按钮还没建好，收编为空；?v 没 bump → 浏览器缓存旧 CSS');
 }
 
@@ -8646,8 +8647,8 @@ section('25. 成功案例专题页（QQ奶奶）');
 
   // ⑤ 挂载与 ?v 钉子（§21h 纪律）+ jsdom 行为测试挂进 CI（§21o）。
   check(/<script defer src="\.\/anon-mail\.js\?v=5"><\/script>/.test(idx36s)
-    && idx36s.indexOf('anon-mail.js?v=5') > idx36s.indexOf('fab-dock.js?v=2')
-    && /fab-dock\.js\?v=2/.test(idx36s)
+    && idx36s.indexOf('anon-mail.js?v=5') > idx36s.indexOf('fab-dock.js?v=3')
+    && /fab-dock\.js\?v=3/.test(idx36s)
     && /mobile-fixes\.css\?v=21/.test(idx36s)
     && /header-menu-patch\.js\?v=11/.test(idx36s)
     && exists('scripts/test-anon-mail.cjs')
@@ -8913,23 +8914,24 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§36w 点击分享 → 复用 window.SXGShare.open()（唯一实现），脚本缺席时退化为复制地址 + 气泡；不另造弹窗、不在本文件里写外链',
     '各写一套弹窗 → 平台清单两处漂移，又是「平台变少」事故；本文件塞外链 → 被扩展拦截即整块消失');
 
-  // ③ 落位：桌面贴匿名邮箱之后（锚点逐级兜底），窄屏进 dock 并带短标签。
-  check(/getElementById\(ANON_ID\)[\s\S]{0,20}?\|\|[\s\S]{0,20}?getElementById\('login-github-btn'\)[\s\S]{0,20}?\|\|[\s\S]{0,20}?getElementById\('sponsor-entry-btn'\)/.test(se36w)
+  // ③ 落位（2026-11-13 站长口径）：分享本站两端都留顶栏；桌面紧跟匿名邮箱之后，
+  // 窄屏锚点退到赞助之后（匿名 / Login 已收进 dock）。锚点逐级兜底，不进「菜单▼」。
+  check(/getElementById\(ANON_ID\)/.test(se36w)
+    && /getElementById\('login-github-btn'\)/.test(se36w)
+    && /getElementById\('sponsor-entry-btn'\)/.test(se36w)
     && /targetParent\.insertBefore\(btn,\s*wantNext\s*\|\|\s*null\)/.test(se36w)
-    && /DOCK_ID\s*=\s*'sxg-fab-dock'/.test(se36w)
-    && /dock\.insertBefore\(btn,\s*anchor\s*\|\|\s*null\)/.test(se36w)
-    && /data-sxg-dock-label/.test(se36w)
     && /data-sxg-share-slot/.test(se36w)
+    && !/dock\.insertBefore\(btn/.test(se36w)
     && !/menu\.appendChild\(btn\)/.test(se36w),
-    '§36w 落位：桌面紧跟匿名邮箱（锚点 anon → login → sponsor → 最后一个按钮逐级兜底），≤640px 进 #sxg-fab-dock 带中文短标签，不进「菜单▼」',
-    '锚点写死一枚 → 匿名邮箱被隐藏或脚本没加载就悬空/消失；窄屏塞进下拉 → 入口静默失效');
+    '§36w 落位：分享本站两端都留顶栏；桌面紧跟匿名邮箱（锚点 anon → login → sponsor 逐级兜底），窄屏退到赞助之后，不进 #sxg-fab-dock、不进「菜单▼」',
+    '锚点写死一枚 → 匿名邮箱被隐藏或脚本没加载就悬空/消失；窄屏又进 dock → 顶栏少一枚站长点名要留的分享入口');
 
   // ④ 隐藏开关机制：只隐藏不删（与 §36s 同口径），!important 压过 dock 的 display:flex。
   check(/data-sxg-share-hidden="1"\]\{display:none !important\}/.test(se36w)
     && /data-sxg-share-slot="pending"\]\{display:none !important\}/.test(se36w)
     && /addEventListener\('keydown'/.test(se36w),
-    '§36w 开关机制：ENABLED + data-sxg-share-hidden 的 !important 隐藏规则 + dock 未就绪时 pending 兜底 + 键盘 Enter/空格可达',
-    '直接删按钮本体 → 下次要恢复只能重写一遍；无 pending 兜底 → 手机首次加载会裸奔出现一枚错位按钮');
+    '§36w 开关机制：ENABLED + data-sxg-share-hidden 的 !important 隐藏规则 + 残留 pending 兜底样式 + 键盘 Enter/空格可达',
+    '直接删按钮本体 → 下次要恢复只能重写一遍；无隐藏规则 → 手机首次加载会裸奔出现一枚错位按钮');
 
   // ⑤ 匿名邮箱补 LOGO：信封 SVG 内联，textContent 仍是「匿名邮箱」（既有断言 / dock 标签依赖它）。
   check(/var\s+ICON\s*=\s*'<svg/.test(am36w)
@@ -8939,12 +8941,12 @@ section('25. 成功案例专题页（QQ奶奶）');
     '改成纯文字 → 丢失站长要的 LOGO；改掉「匿名邮箱」四个字 → test-anon-mail.cjs 与 dock 短标签一起判红');
 
   // ⑥ 挂载与 ?v：index.html 两个脚本同批 bump，sponsor.html 不挂分享入口（打赏页自己有分享逻辑）。
-  check(/<script defer src="\.\/share-entry\.js\?v=1"><\/script>/.test(idx36w)
-    && idx36w.indexOf('share-entry.js?v=1') > idx36w.indexOf('anon-mail.js?v=5')
+  check(/<script defer src="\.\/share-entry\.js\?v=2"><\/script>/.test(idx36w)
+    && idx36w.indexOf('share-entry.js?v=2') > idx36w.indexOf('anon-mail.js?v=5')
     && /anon-mail\.js\?v=5/.test(idx36w)
     && !/anon-mail\.js\?v=4/.test(idx36w)
     && !/share-entry\.js/.test(sp36w),
-    '§36w index.html 挂载 share-entry.js?v=1（排在 anon-mail.js?v=5 之后）；sponsor.html 不挂本入口（打赏页分享走自己的 shareUrl）',
+    '§36w index.html 挂载 share-entry.js?v=2（排在 anon-mail.js?v=5 之后）；sponsor.html 不挂本入口（打赏页分享走自己的 shareUrl）',
     '?v 没 bump → 线上仍跑旧脚本；把入口也挂到 sponsor.html → 打赏页多出一枚重复分享，与「打赏页分享指向首页」的逻辑打架');
 
   // ⑦ README 规则章节跟着改：六枚 + 第 6 枚落位规则 + 新开关行（避免半年后又「被吃掉」）。
