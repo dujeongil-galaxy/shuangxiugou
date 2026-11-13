@@ -8976,6 +8976,37 @@ section('25. 成功案例专题页（QQ奶奶）');
     '测试不挂 CI → 下次谁把按钮挪走没人拦');
 }
 
+// ---------- 36x. 首页弹窗只允许点 × 关闭（2026-11-13 站长「先锁死」） ----------
+// 站长原话：「用户只能点击x按钮关闭，而不是点击空白区域就能关掉弹窗」。
+// 静态断言盯源码（遮罩 / Esc 不许再绑 close、× 必须还在），真行为由 CDP
+// 点击验收；故障注入见本轮 CHANGELOG / PITFALLS。
+{
+  const dp36x = read('douyin-prompt.js');
+  const idx36x = read('index.html');
+  // 剥注释再判：注释里写「不绑定」不能把真代码救绿。
+  const dpCode36x = dp36x.replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '');
+
+  check(!/\.dyp__mask[^\n]*\.onclick\s*=\s*close/.test(dpCode36x)
+    && !/addEventListener\(\s*['"]click['"][\s\S]{0,160}close/.test(dpCode36x),
+    '§36x 遮罩不再绑定 close（点空白不关弹窗）',
+    '遮罩又绑回 close → 站长要的「锁死」失效，误点空白就关掉');
+  check(!/addEventListener\(\s*['"]keydown['"]/.test(dpCode36x)
+    && !/['"]Escape['"]/.test(dpCode36x),
+    '§36x Esc 不再关闭弹窗（关闭入口只剩 ×）',
+    'Esc 又能关 → 不是「只能点 ×」');
+  check(/\.dyp__x[^\n]*\.onclick\s*=\s*close/.test(dpCode36x),
+    '§36x × 仍绑定 close（唯一关闭入口没被一起删掉）',
+    '× 被删 → 弹窗永远关不掉，比点空白能关更糟');
+  check(/点右上角 × 关闭/.test(dp36x) && !/现在可以关闭了/.test(dp36x),
+    '§36x 倒计时到点后提示改为「点右上角 × 关闭」',
+    '提示仍写「可以关闭」却没说怎么关 → 用户会去点空白');
+  check(/<script defer src="\.\/douyin-prompt\.js\?v=17"><\/script>/.test(idx36x)
+    && !/douyin-prompt\.js\?v=16/.test(idx36x),
+    '§36x index.html 挂载 douyin-prompt.js?v=17（bump 缓存号）',
+    '?v 没 bump → 线上仍跑旧脚本，改动等于没发');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {

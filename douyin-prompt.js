@@ -122,16 +122,14 @@
       tipEl.appendChild(sl);
     }
 
-    // 关闭方式：遮罩、✕、Esc
+    // 关闭方式（2026-11-13 站长指令「先锁死」）：**只能点右上角 × 关闭**。
+    // 原先遮罩点击、×、Esc 三条路都能关；现在遮罩与 Esc 一律不绑定 close，
+    // 避免误点空白就把弹窗关掉。键盘用户仍可 Tab 到 ×（原生 <button>）按
+    // Enter 关闭，可访问性不丢。
     // 「站长随笔」直接跳 notes.html（该页保留密码锁，robots noindex）
     // 2026-10-25 站长要求：按钮文字还原为「站长随笔」
     // （此前沿革：「站长随笔」→「解锁菜单」→「解锁彩蛋」→「站长随笔」，跳转目标不变）
-    box.querySelector('.dyp__mask').onclick = close;
     box.querySelector('.dyp__x').onclick = close;
-    document.addEventListener('keydown', function (e) {
-      if (e.key !== 'Escape') return;
-      close();
-    });
 
     document.body.appendChild(box);
   }
@@ -140,10 +138,10 @@
     if (!box) build();
     markShown();          // 打开即计时：即便用户马上刷新，也不会再次自动弹
     box.classList.add('is-open');
-    startCountdown();     // 8 秒倒计时：未到则关闭按钮/遮罩/Esc 不生效
+    startCountdown();     // 8 秒倒计时：未到则 × 不生效
   }
 
-  // 关闭锁定：弹出后 8 秒内，点击关闭（× / 遮罩 / Esc）不生效
+  // 关闭锁定：弹出后 8 秒内，点 × 不生效（遮罩与 Esc 本来就不关闭）
   var unlockAt = 0;
   var countTimer = null;
   function close() {
@@ -237,7 +235,7 @@
         warmNext(); warmNext(); warmNext(); warmNext();
         setTimeout(warmStop, 3000); // 留 3s 给最后一批拉完，然后停摆
         if (numEl) numEl.textContent = '0';
-        if (labelEl) labelEl.textContent = '现在可以关闭了';
+        if (labelEl) labelEl.textContent = '点右上角 × 关闭';
         if (barEl) barEl.style.width = '0%';
         if (box) {
           var rd = box.querySelector('.dyp__count');
