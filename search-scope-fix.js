@@ -136,6 +136,10 @@
     return INDEX.map(function (e) {
       var fields = (e.t || []).map(function (t) { return t[0]; });
       if (e.cn) fields.push(e.cn);
+      // 2026-11-13：降级路径同步把关联别名算强字段（与 ensureFields 主路径同口径）
+      (e.alias || []).forEach(function (a) {
+        if (a && a[0]) fields.push(String(a[0]));
+      });
       return { name: e.name || e.cn || '', fields: fields };
     }).filter(function (b) { return b.name; });
   }
@@ -176,6 +180,14 @@
           .map(function (e) {
             var flds = (e.t || []).map(function (t) { return t[0]; });
             if (e.cn) flds.push(e.cn);
+            // 2026-11-13 站长「拼音搜索逻辑还是没有强化」：关联别名也算强字段。
+            // 典型场景：搜「澎湃」——澎湃OS 是 MIUI 升级后的系统名，应命中小米手机/小米
+            // 汽车（强命中）并收起仅靠 summary 提及「澎湃新闻」的内置卡（美的/奇瑞/大疆）。
+            // filterCustomCards 的关键词匹配已含 aliasWordsFor（word.includes(query)），
+            // scope 口径同步，否则自定义卡强命中判不出来，弱命中卡全留在结果里。
+            (e.alias || []).forEach(function (a) {
+              if (a && a[0]) flds.push(String(a[0]));
+            });
             return { name: e.name || e.cn || '', fields: flds };
           });
         // 提取失败（0 条）不静默吞掉，降级保底（fieldsFromPinyinIndex 已含自定义卡）

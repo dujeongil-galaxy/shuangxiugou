@@ -1,6 +1,7 @@
 {
   "_comment": "拼音/首字母搜索的「关联词典」。键是 pinyin-index.js 里的品牌 id（内置卡或自定义卡的 id 都可），值是该品牌的别名/英文产品词/子品牌/中文别名数组。gen-pinyin-index.py 会把每个别名展开成 [展示名, 全拼, 首字母]（中文别名自动算拼音，英文原样小写）写入索引的 alias 字段；pinyin-search.js 搜索时额外匹配 alias，命中走第 5 层「关联」（永远排在名字/拼音/首字母之后），回填仍是品牌主名（React 原生命中，零风险）。想加哪个品牌随手加，跑 python scripts/gen-pinyin-index.py 重生索引即可。",
-  "xiaomi-card": ["MIUI", "Redmi", "红米", "POCO", "米家", "小米商城", "小米科技"],
+  "xiaomi-card": ["MIUI", "Redmi", "红米", "POCO", "米家", "小米商城", "小米科技", "澎湃OS", "澎湃"],
+  "xiaomi-auto-card": ["澎湃OS", "澎湃"],
   "huawei-consumer": ["鸿蒙", "HarmonyOS", "EMUI", "华为云", "海思", "HiSilicon"],
   "apple-consumer": ["iPhone", "iOS", "macOS", "iPad", "Apple"],
   "tencent": ["微信", "WeChat", "QQ", "微信支付", "腾讯视频", "腾讯云"],

@@ -33,8 +33,8 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   const rd = read('README.md');
 
   check('曝光补丁文件存在', exists('byd-expose-patch.js'));
-  check('首页挂了曝光补丁（?v=1 防缓存）',
-    /<script defer src="\.\/byd-expose-patch\.js\?v=1"><\/script>/.test(html));
+  check('首页挂了曝光补丁（?v=2 防缓存）',
+    /<script defer src="\.\/byd-expose-patch\.js\?v=2"><\/script>/.test(html));
   check('真 DOM 测试挂进 CI 的 pinyin job', /test-byd-expose\.cjs/.test(wf));
   check('README 写死曝光登记口径',
     /比亚迪卡片曝光登记/.test(rd) && /失效链接不得冒充可点来源/.test(rd));
@@ -59,8 +59,8 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   check('失效短链不再冒充可点原始链接（无 <a href>）',
     !/<a href="https:\/\/v\.douyin\.com\/kKmeU180irU\//.test(detail));
   const ebByd = (html.match(/<details id="ev-byd"[\s\S]*?<\/details>/) || [])[0] || '';
-  check('公示区 ev-byd 4 条证据、可点链接 2 条（死链不计；2026-11-11 澎湃轮毂装反报道 +1 条带链）',
-    /data-n="4" data-l="2"/.test(ebByd), ebByd.slice(0, 120));
+  check('公示区 ev-byd 5 条证据、可点链接 3 条（死链不计；11-13 新增法务部悬赏线索 +1 条带链）',
+    /data-n="5" data-l="3"/.test(ebByd), ebByd.slice(0, 120));
   check('公示区摘要如实写出视频已删除 / 链接已失效',
     ebByd.indexOf('该视频现已删除') !== -1 && ebByd.indexOf('原链接已失效') !== -1);
   check('公示区该条标注「无可点原始链接」',
@@ -132,21 +132,34 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
     notesLink && notesLink.getAttribute('href'));
   check('曝光框内没有任何外链 / 图片',
     !/https?:\/\//.test(box.innerHTML) && !box.querySelector('img'));
+  // 2026-11-13 第二只框：琥珀色「站长点评 · 法务部悬赏」（同一幂等标记，一次插入两只）
+  const bothBoxes = bydCard.querySelectorAll('[data-byd-expose]');
+  const legalBox = bothBoxes[1];
+  check('2026-11-13 起卡面共两只框（红色曝光登记 + 琥珀色站长点评）', bothBoxes.length === 2, bothBoxes.length);
+  check('点评框含站长原话（大唐 · 法务部技能）与悬赏事实',
+    !!legalBox
+    && legalBox.textContent.indexOf('法务部悬赏') !== -1
+    && legalBox.textContent.indexOf('你大唐刚出事') !== -1
+    && legalBox.textContent.indexOf('50 万元至 500 万元') !== -1);
+  check('点评框链接是站内 ./brand/byd.html（外链在详情页证据链）',
+    !!legalBox.querySelector('a[href="./brand/byd.html"]'));
+  check('点评框内同样零外链',
+    !!legalBox && !/https?:\/\//.test(legalBox.innerHTML));
   check('别的品牌卡不受影响', !otherCard.querySelector('[data-byd-expose]'));
 
-  // 幂等：再触发一次 DOM 变动，仍只有一个曝光框
+  // 幂等：再触发一次 DOM 变动，仍只有两只曝光框（红色登记 + 琥珀点评）
   bydCard.appendChild(doc.createElement('span'));
   await tick(120);
-  check('重复触发不会重复插框（幂等）',
-    bydCard.querySelectorAll('[data-byd-expose]').length === 1);
+  check('重复触发不会重复插框（幂等，2026-11-13 起两只框）',
+    bydCard.querySelectorAll('[data-byd-expose]').length === 2);
 
   // React 重渲染模拟：整段内容区被替换，MutationObserver 必须补挂
   const inner = bydCard.querySelector('div.p-5.space-y-3\\.5');
   inner.innerHTML = '<div class="flex items-start justify-between gap-3"><div><h2>BYD (比亚迪)</h2></div></div>' +
     '<div class="bg-slate-50 rounded-xl p-2.5">工时政策</div>';
   await tick(150);
-  check('卡片被重渲染后曝光框自动补挂',
-    bydCard.querySelectorAll('[data-byd-expose]').length === 1);
+  check('卡片被重渲染后两只框都自动补挂',
+    bydCard.querySelectorAll('[data-byd-expose]').length === 2);
   check('重渲染后补挂的框仍在标题之后',
     bydCard.querySelector('div.p-5.space-y-3\\.5').children[1].getAttribute('data-byd-expose') === '1');
   check('运行期无 JS 异常', errors.length === 0, errors.slice(0, 3));

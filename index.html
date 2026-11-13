@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -128,11 +128,11 @@
     <link rel="stylesheet" crossorigin href="./assets/index-BgVofs0W.css">
     <!-- 预加载关键补丁脚本（与 HTML 解析并行下载，减少隐私窗口无缓存时 RTT 等待） -->
     <link rel="preload" href="./custom-card-actions.js?v=24" as="script">
-    <link rel="preload" href="./u-grade-patch.js?v=17" as="script">
+    <link rel="preload" href="./u-grade-patch.js?v=18" as="script">
     <link rel="preload" href="./search-clear-order-fix.js?v=3" as="script">
     <link rel="preload" href="./logo-vault.js?v=1" as="script">
     <link rel="preload" href="./stat-filter.js?v=9" as="script">
-    <link rel="preload" href="./pinyin-index.js?v=16" as="script">
+    <link rel="preload" href="./pinyin-index.js?v=18" as="script">
     <link rel="preload" href="./nav-menu.js?v=6" as="script">
     <!-- 良配 · 限时推广广告位：2026-11-12 临时下线（保留文件便于恢复；恢复时取消下方注释） -->
     <!-- <link rel="stylesheet" href="./liangpei-ad.css?v=13"> -->
@@ -183,7 +183,7 @@
            display:none 的那一半不进无障碍树，名字会随状态自己变；
            写死 aria-label 反而一直是「展开」，收起后就读错了。 -->
       <input type="checkbox" id="notice-more" class="notice-more-cb">
-      <span id="evidence-notice">本站全部数据均附公开证据链：179 家企业 462 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 5 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice -->
+      <span id="evidence-notice">本站全部数据均附公开证据链：181 家企业 475 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 5 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice -->
       <label for="notice-more" class="notice-more-lbl"><span class="t-more">展开</span><span class="t-less">收起</span></label>
     </div>
     <!-- 版本号唯一真相源（2026-11-02 第五轮，站长：「版本号不要写这里了，加入三横菜单吧」）
@@ -193,7 +193,7 @@
          这个锚点回写与校验，删节点等于让每日版本号同步静默失效。
          用 hidden 而不是删掉：hidden 只影响渲染，textContent 照样可读，
          nav-menu.js 运行时读它，菜单里不另存哈希（两份数据没有比对源，必然漂）。 -->
-<span id="site-version" hidden><span class="notice-ver">当前版本号 b43d872</span></span>
+<span id="site-version" hidden><span class="notice-ver">当前版本号 e0494cd</span></span>
     <div id="root">
       <!-- 首屏占位：React 大包解析期间先显示「加载中」，避免 #root 为空把下方证据链区块
            甩到视口顶部造成白屏闪烁（FOUC）。React 挂载后自动替换本节点。 -->
@@ -211,7 +211,7 @@
      本区块由 scripts/gen-evidence-board.py 自动生成，请勿手改。
      改证据请改 brand/*.html 详情页，然后重跑：python scripts/gen-evidence-board.py
      单一真相源在 brand/ 页；scripts/verify.mjs 有防漂移断言逐条比对。
-     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：179 家企业 / 462 条证据 / 409 条带原始链接 / 5 家证据薄弱。 -->
+     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：181 家企业 / 475 条证据 / 421 条带原始链接 / 5 家证据薄弱。 -->
 <style>#evidence-board{max-width:960px;margin:0 auto;padding:28px 16px 40px;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.75;color:#1f2937;font-size:14px}
 #evidence-board h2{font-size:20px;font-weight:700;margin:0 0 6px;color:#0f172a;line-height:1.4}
 #evidence-board a{color:#0f766e}
@@ -260,17 +260,17 @@
 #evidence-board .ev-more{margin-top:10px;font-size:12px}
 #evidence-board .ev-foot{margin:16px 0 0;font-size:12.5px;color:#64748b}
 @media(max-width:640px){#evidence-board{padding:20px 12px 32px}#evidence-board .ev-stat{flex:1 1 44%}#evidence-board .ct{margin-left:0;width:100%}}</style>
-<section id="evidence-board" data-ev-brands="179" data-ev-total="462" data-ev-linked="409" data-ev-weak="5">
-  <h2>全站证据链公示（179 家企业 · 462 条证据）</h2>
+<section id="evidence-board" data-ev-brands="181" data-ev-total="475" data-ev-linked="421" data-ev-weak="5">
+  <h2>全站证据链公示（181 家企业 · 475 条证据）</h2>
   <p class="ev-lead">站长要求「证据链必须首页完整公示，口说无凭」——以下是站内每一条评级的取证清单，含证据类型、取证日期、文书编号与可点击的原始来源链接。数据由各品牌详情页（<code>brand/*.html</code>）自动汇总生成，两处不一致会被 <code>scripts/verify.mjs</code> 判红。</p>
   <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">其中 <strong>41 家</strong>目前仅有一条来源（第三方榜单聚合，2026-07-11，二手、未抓原文），属<strong>榜单口径换算</strong>而非实测：这些企业的真实双休率未核实，详情页已逐家公示「证据链」——来源、日期、原话、以及尚缺哪几类证据。补齐任一类证据后即重新核实改档。</p>
   <div class="ev-stats">
-    <div class="ev-stat"><b style="color:#0f766e">462</b><i>证据总条数</i></div>
-    <div class="ev-stat"><b style="color:#1d4ed8">409</b><i>带原始链接</i></div>
-    <div class="ev-stat"><b style="color:#b45309">53</b><i>无可点链接</i></div>
-    <div class="ev-stat"><b style="color:#475569">7/79/32/58/1</b><i>S/A/B/C/D 家数</i></div>
+    <div class="ev-stat"><b style="color:#0f766e">475</b><i>证据总条数</i></div>
+    <div class="ev-stat"><b style="color:#1d4ed8">421</b><i>带原始链接</i></div>
+    <div class="ev-stat"><b style="color:#b45309">54</b><i>无可点链接</i></div>
+    <div class="ev-stat"><b style="color:#475569">7/78/35/57/1</b><i>S/A/B/C/D 家数</i></div>
     <div class="ev-stat"><b style="color:#450a0a">1 家</b><i>D 级（站长强制降级）</i></div>
-    <div class="ev-stat"><b style="color:#64748b">2 家</b><i>U 级（证据不足）</i></div>
+    <div class="ev-stat"><b style="color:#64748b">3 家</b><i>U 级（证据不足）</i></div>
     <div class="ev-stat"><b style="color:#be123c">5 家</b><i>证据薄弱企业</i></div>
   </div>
   <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">D 级（站长强制降级）<strong>计入首页避雷预警格</strong>：判据是管理层指令性规避法律风险加班（高管邮件主动要求「想办法规避法律风险」）。<strong>该档位不由 AI 判定</strong>，只记录站长的人工介入结论，详情页附「人工干预记录」。</p>
@@ -280,24 +280,26 @@
     <div class="ev-pills">
       <span class="ev-pill" style="border-color:#7c3aed;color:#7c3aed">司法裁判 <b>7</b></span>
       <span class="ev-pill" style="border-color:#be123c;color:#be123c">官方处罚/通报 <b>5</b></span>
-      <span class="ev-pill" style="border-color:#0f766e;color:#0f766e">官方公示/备案 <b>27</b></span>
+      <span class="ev-pill" style="border-color:#0f766e;color:#0f766e">官方公示/备案 <b>28</b></span>
       <span class="ev-pill" style="border-color:#1d4ed8;color:#1d4ed8">企业官方自述 <b>13</b></span>
       <span class="ev-pill" style="border-color:#0369a1;color:#0369a1">ESG/审计报告 <b>9</b></span>
       <span class="ev-pill" style="border-color:#b45309;color:#b45309">媒体报道/调查 <b>65</b></span>
       <span class="ev-pill" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径 <b>27</b></span>
       <span class="ev-pill" style="border-color:#c2410c;color:#c2410c">站长一手实测 <b>3</b></span>
       <span class="ev-pill" style="border-color:#57534e;color:#57534e">员工/社群反馈 <b>79</b></span>
-      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">旁证/二手汇总 <b>131</b></span>
+      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">旁证/二手汇总 <b>139</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（field_verification） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（recruiting） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（third_party） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（上市公司年报（高置信）） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（员工/社群反馈） <b>1</b></span>
+      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体报道（二手，未抓原文）） <b>3</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体报道（含员工爆料，二手）） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体评论（附法条对照）） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体评论） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（官方媒体报道（员工采访）） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径） <b>86</b></span>
+      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（招聘自述（二手，未抓原文）） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（暗访） <b>1</b></span>
     </div>
     <div class="ev-note">司法裁判文书与劳动监察通报为最高强度证据；招聘平台自述属「招聘方口径」，只证明企业怎么说、不证明实际怎么排班；社群匿名反馈与旁证汇总强度最低，本站不用它们单独定档。</div>
@@ -328,7 +330,7 @@
     </ul>
   </div>
   <div class="ev-list">
-    <div class="ev-listhead">按档位排列 · 点击企业名展开该企业的全部证据条目（共 179 家）</div>
+    <div class="ev-listhead">按档位排列 · 点击企业名展开该企业的全部证据条目（共 181 家）</div>
     <details id="ev-luxiyi" data-b="luxiyi" data-g="S" data-n="5" data-l="5">
       <summary><span class="g" style="background:#7c3aed">S</span><span class="bn">陆喜依</span><span class="co">陆喜依</span><span class="ct">5 条证据</span></summary>
       <div class="ev-body">
@@ -2415,20 +2417,6 @@
         <div class="ev-more"><a href="./brand/jzt.html">查看 九州通 完整详情页 →</a></div>
       </div>
     </details>
-    <details id="ev-xiaomi" data-b="xiaomi" data-g="A" data-n="1" data-l="1">
-      <summary><span class="g" style="background:#0f766e">A</span><span class="bn">小米</span><span class="co">小米科技有限责任公司</span><span class="ct">1 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">爱企查企业知识条目：小米公司作息（弹性工作制／每周双休）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：第三方百科</span> <span class="d">2026-11-05</span></div>
-            <div class="s">原文：「小米公司普遍实行弹性工作制，标准工作时间为上午9:00至下午18:00或18:30，中午休息1-1.5小时，每周双休，但实际下班时间常因项目进度延后。」。如实标注：该条为企…</div>
-            <div class="u"><a href="https://aiqicha.baidu.com/details/ugknowledge?id=f5fe5b856c9a6bcf251add4319e48490#:~:text=%E5%B0%8F%E7%B1%B3%E5%85%AC%E5%8F%B8%E6%99%AE%E9%81%8D%E5%AE%9E%E8%A1%8C,%E5%9B%A0%E9%A1%B9%E7%9B%AE%E8%BF%9B%E5%BA%A6%E5%BB%B6%E5%90%8E%E3%80%82" rel="nofollow noopener" target="_blank">aiqicha.baidu.com/details/ugknowledge?id=f5fe5b856c9a6bcf251ad…</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/xiaomi.html">查看 小米 完整详情页 →</a></div>
-      </div>
-    </details>
     <details id="ev-pepsi" data-b="pepsi" data-g="A" data-n="1" data-l="0">
       <summary><span class="g" style="background:#0f766e">A</span><span class="bn">百事食品 (乐事 Lay&#x27;s / 桂格燕麦)</span><span class="co">百事食品（中国）有限公司</span><span class="ct">1 条证据</span></summary>
       <div class="ev-body">
@@ -2457,8 +2445,8 @@
         <div class="ev-more"><a href="./brand/bee-flower.html">查看 蜂花 (Bee &amp; Flower) 完整详情页 →</a></div>
       </div>
     </details>
-    <details id="ev-gwm" data-b="gwm" data-g="B" data-n="8" data-l="8">
-      <summary><span class="g" style="background:#b45309">B</span><span class="bn">长城汽车 (GWM)</span><span class="co">长城汽车股份有限公司</span><span class="ct">8 条证据</span></summary>
+    <details id="ev-gwm" data-b="gwm" data-g="B" data-n="9" data-l="9">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">长城汽车 (GWM)</span><span class="co">长城汽车股份有限公司</span><span class="ct">9 条证据</span></summary>
       <div class="ev-body">
         <ol class="ev-items">
           <li>
@@ -2466,6 +2454,12 @@
             <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：官方媒体报道（官宣级）</span> <span class="d">2026-01-08</span></div>
             <div class="s">「长城汽车此次双休调整于 2026 年正式落地，覆盖全体员工」；休假制度完成第四次迭代；伴随调整取消 10 天高温假（其中 5 天抵扣年假）；含 2026 年工作日历「周末已更新为…</div>
             <div class="u"><a href="http://m.ce.cn/qc/gd/202601/t20260108_2690049.shtml" rel="nofollow noopener" target="_blank">m.ce.cn/qc/gd/202601/t20260108_2690049.shtml</a></div>
+          </li>
+          <li>
+            <div class="t">海报新闻／大河报（头条号转载）：双休调整于 2026 年正式落地、覆盖全体员工——2026 工作日历周末双休 + 入职 8 年员工证言</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：官方媒体报道（官宣级）</span> <span class="d">2026-11-13 检索</span></div>
+            <div class="s">「长城汽车此次双休调整于 2026 年正式落地，覆盖全体员工」；配图 2026 年工作日历「周末已更新为双休」；保定食堂老员工欢呼「盼了30年，终于等到这一天了」，入职 8 年员工…</div>
+            <div class="u"><a href="https://www.toutiao.com/article/7592171410996167222/" rel="nofollow noopener" target="_blank">toutiao.com/article/7592171410996167222/</a></div>
           </li>
           <li>
             <div class="t">长城汽车大冶分公司 2026-10 校招/社招 JD：产线仍为「单双休工作制、月休 6 天」及「做六休一、两班倒」</div>
@@ -2555,6 +2549,76 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/lixiang.html">查看 理想汽车 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-xiaomi-auto" data-b="xiaomi-auto" data-g="B" data-n="5" data-l="1">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">小米汽车</span><span class="co">小米汽车（小米集团汽车业务，主体登记名称未独立核实）</span><span class="ct">5 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">招聘／资讯聚合摘要（小米汽车 双休与班制问答）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-11</span></div>
+            <div class="s">核心表述：是否双休取决于岗位类型——研发和销售岗位通常双休，生产线和轮班岗位多为轮班制或上六休一；工厂两班制或 14 天白／夜轮换、每天约 12 小时（含 1 小时休息），部分产线…</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">招聘口径（产线岗薪资与加班费）</div>
+            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-11</span></div>
+            <div class="s">加班费按小时计，平时约 40 元/小时、周末约 50 元/小时；产线岗月薪区间约 15-20k。招聘方自述口径，供交叉参考，未与官方薪酬制度核对。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">资讯摘要（研发作息描述）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-11</span></div>
+            <div class="s">「多数研发部门实行早 9 点至晚 10 点工作制」，未标注样本与统计方式，本站不据此填写平均下班时间，仅登记表述本身。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">资讯摘要（量产阶段产线双休反例）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-11</span></div>
+            <div class="s">「小米 SU7 车厂产线在量产阶段实行双休且不加班，日产能约 240 辆」，与轮班口径冲突、未标注基地与时间窗，单列登记、不采纳为定档依据。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">自媒体资讯（有驾·松间碎光）：小米工厂排班曝光——一厂上六休一、二厂上五休二、三厂传上四休三</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：自媒体转述（二手）</span> <span class="d">2026-06-22</span></div>
+            <div class="s">核心表述：北京一厂（一期）上六休一、双班倒，约 76 秒/台、年产能约 15 万辆（SU7 产能主力）；二厂（二期）上五休二、双班倒；三期工厂据传上四休三（2026 年春节后投产）…</div>
+            <div class="u"><a href="https://www.yoojia.com/article/9940789617326657056.html" rel="nofollow noopener" target="_blank">yoojia.com/article/9940789617326657056.html</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/xiaomi-auto.html">查看 小米汽车 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-gac-toyota" data-b="gac-toyota" data-g="B" data-n="4" data-l="4">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">广汽丰田</span><span class="co">广汽丰田汽车有限公司（广汽集团与丰田汽车合资整车企业）</span><span class="ct">4 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">招聘自述（知乎·广汽丰田 2026 春招推广文）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（招聘自述（二手，未抓原文））</span> <span class="raw">原标注：招聘自述（二手，未抓原文）</span> <span class="d">2026</span></div>
+            <div class="s">「公司管理相对人性化，实行 5 天 8 小时工作制，实现朝八晚五，如果加班的话会有加班费，而且全年不超过 248 个工作日」，另提及提供员工宿舍与免费工作餐。</div>
+            <div class="u"><a href="https://zhuanlan.zhihu.com/p/2005228380275115620" rel="nofollow noopener" target="_blank">zhuanlan.zhihu.com/p/2005228380275115620</a></div>
+          </li>
+          <li>
+            <div class="t">媒体报道（劳动信息库转载·AutoPix 千人裁员调查）：产线「欠班／补班」机制</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（媒体报道（二手，未抓原文））</span> <span class="raw">原标注：媒体报道（二手，未抓原文）</span> <span class="d">2023-09</span></div>
+            <div class="s">「生产线都欠公司的班，现在加班的工时都算是在补班，拿不到加班工资」——供职一线的受访人称。报道背景为 2023 年广汽丰田千人裁员与电车产线收缩；</div>
+            <div class="u"><a href="https://search.laborinfocn.com/articles/29428" rel="nofollow noopener" target="_blank">search.laborinfocn.com/articles/29428</a></div>
+          </li>
+          <li>
+            <div class="t">站长提供的抖音视频线索（品牌动态）：广汽丰田召回超 10 万辆，仅因一颗螺母</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：自媒体转述（二手）</span> <span class="d">2026-11-13 站长提供</span></div>
+            <div class="s">视频称广汽丰田召回超 10 万辆、原因指向一颗螺母，话题标签含「广丰追着车主兜底担责」「实名羡慕丰田铂智车主」。；按站规（备注栏内容同步证据链）如实登记。</div>
+            <div class="u"><a href="https://v.douyin.com/i_YDqfeSwmg/" rel="nofollow noopener" target="_blank">v.douyin.com/i_YDqfeSwmg/</a></div>
+          </li>
+          <li>
+            <div class="t">站长提供的抖音视频线索（品牌动态）：丰田高管正面回应「电车使用超 8 年后怎么办」</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：自媒体转述（二手）</span> <span class="d">2026-11-13 站长提供</span></div>
+            <div class="s">视频称丰田高管正面回应电动车长期使用问题，话题标签含「高性价比纯电SUV推荐」「铂智3X」。；按站规（备注栏内容同步证据链）如实登记。</div>
+            <div class="u"><a href="https://v.douyin.com/dTOnhdsLAPc/" rel="nofollow noopener" target="_blank">v.douyin.com/dTOnhdsLAPc/</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/gac-toyota.html">查看 广汽丰田 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-tongyi" data-b="tongyi" data-g="B" data-n="4" data-l="4">
@@ -2821,6 +2885,26 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/liangpin.html">查看 良品铺子 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-xiaomi" data-b="xiaomi" data-g="B" data-n="2" data-l="1">
+      <summary><span class="g" style="background:#b45309">B</span><span class="bn">小米</span><span class="co">小米科技有限责任公司</span><span class="ct">2 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">爱企查企业知识条目：小米公司作息（弹性工作制／每周双休）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：第三方百科</span> <span class="d">2026-11-05</span></div>
+            <div class="s">原文：「小米公司普遍实行弹性工作制，标准工作时间为上午9:00至下午18:00或18:30，中午休息1-1.5小时，每周双休，但实际下班时间常因项目进度延后。」。如实标注：该条为企…</div>
+            <div class="u"><a href="https://aiqicha.baidu.com/details/ugknowledge?id=f5fe5b856c9a6bcf251add4319e48490#:~:text=%E5%B0%8F%E7%B1%B3%E5%85%AC%E5%8F%B8%E6%99%AE%E9%81%8D%E5%AE%9E%E8%A1%8C,%E5%9B%A0%E9%A1%B9%E7%9B%AE%E8%BF%9B%E5%BA%A6%E5%BB%B6%E5%90%8E%E3%80%82" rel="nofollow noopener" target="_blank">aiqicha.baidu.com/details/ugknowledge?id=f5fe5b856c9a6bcf251ad…</a></div>
+          </li>
+          <li>
+            <div class="t">爱企查企业知识条目：小米公司作息（完整口径补录，2026-11-13）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：第三方百科</span> <span class="d">2026-11-13</span></div>
+            <div class="s">同一条目的完整内容：名义 18:00–18:30，因项目进度和加班文化实际普遍 20:00–21:30；官方未强制但部分岗位因项目需求存在加班，员工反馈日均工时可能 11–12 小…</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/xiaomi.html">查看 小米 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-tencent" data-b="tencent" data-g="B" data-n="1" data-l="0">
@@ -3483,6 +3567,44 @@
         <div class="ev-more"><a href="./brand/heytea.html">查看 喜茶 (HEYTEA) 完整详情页 →</a></div>
       </div>
     </details>
+    <details id="ev-byd" data-b="byd" data-g="C" data-n="5" data-l="3">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">BYD (比亚迪)</span><span class="co">比亚迪股份有限公司</span><span class="ct">5 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">深圳市坪山区人民法院劳动争议民事判决书</div>
+            <div class="m"><span class="k" style="border-color:#7c3aed;color:#7c3aed">司法裁判</span> <span class="raw">原标注：judicial_record</span> <span class="d">2024-03-12</span> <span class="d">文号／编号：(2024)粤0310民初1894号</span></div>
+            <div class="s">法院审理认定涉案产线及技术岗位存在超法定标准延时工作事实，判令用人单位依法支付周六单休加班费差额及法定补偿。</div>
+            <div class="u"><a href="https://wenshu.court.gov.cn/website/parse/doc/detail?id=202403101894" rel="nofollow noopener" target="_blank">wenshu.court.gov.cn/website/parse/doc/detail?id=202403101894</a></div>
+          </li>
+          <li>
+            <div class="t">西安市高陵区劳动争议仲裁委员会裁决公示</div>
+            <div class="m"><span class="k" style="border-color:#7c3aed;color:#7c3aed">司法裁判</span> <span class="raw">原标注：judicial_record</span> <span class="d">2023-08-20</span> <span class="d">文号／编号：高劳人仲案字〔2023〕第512号</span></div>
+            <div class="s">就员工超长考勤与休息权主张依法裁决，认定月度工时超出法定基准红线，裁令限期补缴工时对应补贴。</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">BYD 直营门店强制加班曝光（抖音「BYD直营员工维权」）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（员工/社群反馈）</span> <span class="raw">原标注：员工/社群反馈</span> <span class="d">2026-11-09</span></div>
+            <div class="s">登记补记（2026-11-10）：该视频现已删除、原链接已失效；站长判断发布者受到了某种压力，本站无从核实，也不作进一步推断。视频本体无法回看，这一条只按线索如实登记，不对指称内容…</div>
+            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
+          </li>
+          <li>
+            <div class="t">澎湃新闻：多位车主投诉比亚迪大唐前后轮毂装反</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道</span> <span class="d">2026-11-11</span></div>
+            <div class="s">报道要点：多位车主投诉车辆前后轮毂装反；比亚迪客服回应称已收到相关反馈，可至附近 4S 店检查。（澎湃新闻记者 郑朝渊） 本条属消费／产品质量线索，不涉及用工与双休认定，仅作证据登…</div>
+            <div class="u"><a href="https://v.douyin.com/On1eQs3gnWE/" rel="nofollow noopener" target="_blank">v.douyin.com/On1eQs3gnWE/</a></div>
+          </li>
+          <li>
+            <div class="t">比亚迪法务部发文：悬赏 50 万–500 万征集「黑公关」线索（抖音红V视频，站长提供）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：自媒体转述（二手）</span> <span class="d">2026-11-13</span></div>
+            <div class="s">11 月 13 日比亚迪法务部发文：为打击网络黑公关乱象，对通过 MCN 等有组织、有策划抹黑比亚迪的相关线索，一经查实对符合条件的线索提供者给予 50 万元至 500 万元奖励；…</div>
+            <div class="u"><a href="https://v.douyin.com/NrP3UMT8Y-4/" rel="nofollow noopener" target="_blank">v.douyin.com/NrP3UMT8Y-4/</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/byd.html">查看 BYD (比亚迪) 完整详情页 →</a></div>
+      </div>
+    </details>
     <details id="ev-geely" data-b="geely" data-g="C" data-n="5" data-l="5">
       <summary><span class="g" style="background:#be123c">C</span><span class="bn">吉利汽车</span><span class="co">浙江吉利控股集团（吉利汽车集团）</span><span class="ct">5 条证据</span></summary>
       <div class="ev-body">
@@ -3557,6 +3679,44 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/miniso.html">查看 名创优品 (MINISO) 完整详情页 →</a></div>
+      </div>
+    </details>
+    <details id="ev-chery" data-b="chery" data-g="C" data-n="5" data-l="5">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">奇瑞汽车 (CHERY)</span><span class="co">奇瑞汽车股份有限公司</span><span class="ct">5 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">财联社：奇瑞高管要求规避法律风险想办法加班，称“周六是奋斗者正常工作日”</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（多源交叉）</span> <span class="d">2023-03-08</span></div>
+            <div class="s">「高新华在邮件内容中写道：“以奋斗者为本，周六是奋斗者的正常工作日。对于行政领导们，必须是正常工作日，请想办法（规避法律风险）；学习华为精神，让奋斗者努力，也不能让奋斗者吃亏！从机…</div>
+            <div class="u"><a href="https://m.cls.cn/detail/1287914" rel="nofollow noopener" target="_blank">m.cls.cn/detail/1287914</a></div>
+          </li>
+          <li>
+            <div class="t">新浪财经（转界面新闻）：奇瑞员工曝强制加班，月工作300小时挣4800元</div>
+            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（快照）</span> <span class="d">2024-07-02</span></div>
+            <div class="s">「一位认证为“奇瑞员工”的网友发帖称，奇瑞汽车内部存在强制加班行为，每周加班时长需大于20小时并且没有加班费，仅补贴10元餐补。」（搜索快照，未抓原文）。</div>
+            <div class="u"><a href="https://finance.sina.cn/2024-07-02/detail-incatkzi0499403.d.html" rel="nofollow noopener" target="_blank">finance.sina.cn/2024-07-02/detail-incatkzi0499403.d.html</a></div>
+          </li>
+          <li>
+            <div class="t">中国青年报·中青汽车：奇瑞高管回应“想办法加班”</div>
+            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：企业回应（快照）</span> <span class="d">2023-03-09</span></div>
+            <div class="s">「高新华在3月8日做出回应称：邮件要求对象不是普通员工，是激发愿意努力工作的员工，鼓励他们奋斗，同时不让他们吃亏，本意不是压榨员工。」（搜索快照；回应承认邮件存在，属口径对照）。</div>
+            <div class="u"><a href="http://auto.cyol.com/gb/articles/2023-03/09/content_Q4POJYtRKX.html" rel="nofollow noopener" target="_blank">auto.cyol.com/gb/articles/2023-03/09/content_Q4POJYtRKX.html</a></div>
+          </li>
+          <li>
+            <div class="t">站长提供的抖音视频线索：奇瑞法务部声明「这场招聘跟奇瑞没关系」（冒充招聘事件）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：自媒体转述（二手）</span> <span class="d">2026-11-13 站长提供</span></div>
+            <div class="s">视频称：奇瑞法务部发声明称有人冒充奇瑞员工和供应商、伪造材料，在河南工学院等高校拉群招聘，已经报警；话题标签含「奇瑞」「冒充奇瑞招聘」。；按站规（备注栏内容同步证据链，2026-1…</div>
+            <div class="u"><a href="https://v.douyin.com/RCRaxQCcnOA/" rel="nofollow noopener" target="_blank">v.douyin.com/RCRaxQCcnOA/</a></div>
+          </li>
+          <li>
+            <div class="t">站长提供的抖音视频线索：「江山代有才人出」（河南工学院校招现场）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：自媒体转述（二手）</span> <span class="d">2026-11-13 站长提供</span></div>
+            <div class="s">视频标签含「奇瑞」「河南工学院」「校招」，与上一条冒充招聘事件同校同期流传，具体拍摄主体与内容本站未核实。；按站规（备注栏内容同步证据链，2026-11-13 新规）随首页卡面备注…</div>
+            <div class="u"><a href="https://v.douyin.com/-pz40ik3sBc/" rel="nofollow noopener" target="_blank">v.douyin.com/-pz40ik3sBc/</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/chery.html">查看 奇瑞汽车 (CHERY) 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-xingyu" data-b="xingyu" data-g="C" data-n="5" data-l="5">
@@ -3635,70 +3795,6 @@
         <div class="ev-more"><a href="./brand/leapmotor.html">查看 零跑汽车 完整详情页 →</a></div>
       </div>
     </details>
-    <details id="ev-byd" data-b="byd" data-g="C" data-n="4" data-l="2">
-      <summary><span class="g" style="background:#be123c">C</span><span class="bn">BYD (比亚迪)</span><span class="co">比亚迪股份有限公司</span><span class="ct">4 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">深圳市坪山区人民法院劳动争议民事判决书</div>
-            <div class="m"><span class="k" style="border-color:#7c3aed;color:#7c3aed">司法裁判</span> <span class="raw">原标注：judicial_record</span> <span class="d">2024-03-12</span> <span class="d">文号／编号：(2024)粤0310民初1894号</span></div>
-            <div class="s">法院审理认定涉案产线及技术岗位存在超法定标准延时工作事实，判令用人单位依法支付周六单休加班费差额及法定补偿。</div>
-            <div class="u"><a href="https://wenshu.court.gov.cn/website/parse/doc/detail?id=202403101894" rel="nofollow noopener" target="_blank">wenshu.court.gov.cn/website/parse/doc/detail?id=202403101894</a></div>
-          </li>
-          <li>
-            <div class="t">西安市高陵区劳动争议仲裁委员会裁决公示</div>
-            <div class="m"><span class="k" style="border-color:#7c3aed;color:#7c3aed">司法裁判</span> <span class="raw">原标注：judicial_record</span> <span class="d">2023-08-20</span> <span class="d">文号／编号：高劳人仲案字〔2023〕第512号</span></div>
-            <div class="s">就员工超长考勤与休息权主张依法裁决，认定月度工时超出法定基准红线，裁令限期补缴工时对应补贴。</div>
-            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
-          </li>
-          <li>
-            <div class="t">BYD 直营门店强制加班曝光（抖音「BYD直营员工维权」）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（员工/社群反馈）</span> <span class="raw">原标注：员工/社群反馈</span> <span class="d">2026-11-09</span></div>
-            <div class="s">登记补记（2026-11-10）：该视频现已删除、原链接已失效；站长判断发布者受到了某种压力，本站无从核实，也不作进一步推断。视频本体无法回看，这一条只按线索如实登记，不对指称内容…</div>
-            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
-          </li>
-          <li>
-            <div class="t">澎湃新闻：多位车主投诉比亚迪大唐前后轮毂装反</div>
-            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道</span> <span class="d">2026-11-11</span></div>
-            <div class="s">报道要点：多位车主投诉车辆前后轮毂装反；比亚迪客服回应称已收到相关反馈，可至附近 4S 店检查。（澎湃新闻记者 郑朝渊） 本条属消费／产品质量线索，不涉及用工与双休认定，仅作证据登…</div>
-            <div class="u"><a href="https://v.douyin.com/On1eQs3gnWE/" rel="nofollow noopener" target="_blank">v.douyin.com/On1eQs3gnWE/</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/byd.html">查看 BYD (比亚迪) 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-xiaomi-auto" data-b="xiaomi-auto" data-g="C" data-n="4" data-l="0">
-      <summary><span class="g" style="background:#be123c">C</span><span class="bn">小米汽车</span><span class="co">小米汽车（小米集团汽车业务，主体登记名称未独立核实）</span><span class="ct">4 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">招聘／资讯聚合摘要（小米汽车 双休与班制问答）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-11</span></div>
-            <div class="s">核心表述：是否双休取决于岗位类型——研发和销售岗位通常双休，生产线和轮班岗位多为轮班制或上六休一；工厂两班制或 14 天白／夜轮换、每天约 12 小时（含 1 小时休息），部分产线…</div>
-            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
-          </li>
-          <li>
-            <div class="t">招聘口径（产线岗薪资与加班费）</div>
-            <div class="m"><span class="k" style="border-color:#4d7c0f;color:#4d7c0f">招聘平台口径</span> <span class="raw">原标注：recruit_posting</span> <span class="d">2026-11</span></div>
-            <div class="s">加班费按小时计，平时约 40 元/小时、周末约 50 元/小时；产线岗月薪区间约 15-20k。招聘方自述口径，供交叉参考，未与官方薪酬制度核对。</div>
-            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
-          </li>
-          <li>
-            <div class="t">资讯摘要（研发作息描述）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-11</span></div>
-            <div class="s">「多数研发部门实行早 9 点至晚 10 点工作制」，未标注样本与统计方式，本站不据此填写平均下班时间，仅登记表述本身。</div>
-            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
-          </li>
-          <li>
-            <div class="t">资讯摘要（量产阶段产线双休反例）</div>
-            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：公开汇总（二手，未抓原文）</span> <span class="d">2026-11</span></div>
-            <div class="s">「小米 SU7 车厂产线在量产阶段实行双休且不加班，日产能约 240 辆」，与轮班口径冲突、未标注基地与时间窗，单列登记、不采纳为定档依据。</div>
-            <div class="nl">（本条无可点原始链接，详见详情页说明）</div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/xiaomi-auto.html">查看 小米汽车 完整详情页 →</a></div>
-      </div>
-    </details>
     <details id="ev-mixue" data-b="mixue" data-g="C" data-n="4" data-l="3">
       <summary><span class="g" style="background:#be123c">C</span><span class="bn">蜜雪冰城 (MIXUE)</span><span class="co">蜜雪冰城股份有限公司</span><span class="ct">4 条证据</span></summary>
       <div class="ev-body">
@@ -3755,32 +3851,6 @@
           </li>
         </ol>
         <div class="ev-more"><a href="./brand/jml.html">查看 今麦郎 完整详情页 →</a></div>
-      </div>
-    </details>
-    <details id="ev-chery" data-b="chery" data-g="C" data-n="3" data-l="3">
-      <summary><span class="g" style="background:#be123c">C</span><span class="bn">奇瑞汽车 (CHERY)</span><span class="co">奇瑞汽车股份有限公司</span><span class="ct">3 条证据</span></summary>
-      <div class="ev-body">
-        <ol class="ev-items">
-          <li>
-            <div class="t">财联社：奇瑞高管要求规避法律风险想办法加班，称“周六是奋斗者正常工作日”</div>
-            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（多源交叉）</span> <span class="d">2023-03-08</span></div>
-            <div class="s">「高新华在邮件内容中写道：“以奋斗者为本，周六是奋斗者的正常工作日。对于行政领导们，必须是正常工作日，请想办法（规避法律风险）；学习华为精神，让奋斗者努力，也不能让奋斗者吃亏！从机…</div>
-            <div class="u"><a href="https://m.cls.cn/detail/1287914" rel="nofollow noopener" target="_blank">m.cls.cn/detail/1287914</a></div>
-          </li>
-          <li>
-            <div class="t">新浪财经（转界面新闻）：奇瑞员工曝强制加班，月工作300小时挣4800元</div>
-            <div class="m"><span class="k" style="border-color:#b45309;color:#b45309">媒体报道/调查</span> <span class="raw">原标注：媒体报道（快照）</span> <span class="d">2024-07-02</span></div>
-            <div class="s">「一位认证为“奇瑞员工”的网友发帖称，奇瑞汽车内部存在强制加班行为，每周加班时长需大于20小时并且没有加班费，仅补贴10元餐补。」（搜索快照，未抓原文）。</div>
-            <div class="u"><a href="https://finance.sina.cn/2024-07-02/detail-incatkzi0499403.d.html" rel="nofollow noopener" target="_blank">finance.sina.cn/2024-07-02/detail-incatkzi0499403.d.html</a></div>
-          </li>
-          <li>
-            <div class="t">中国青年报·中青汽车：奇瑞高管回应“想办法加班”</div>
-            <div class="m"><span class="k" style="border-color:#0f766e;color:#0f766e">官方公示/备案</span> <span class="raw">原标注：企业回应（快照）</span> <span class="d">2023-03-09</span></div>
-            <div class="s">「高新华在3月8日做出回应称：邮件要求对象不是普通员工，是激发愿意努力工作的员工，鼓励他们奋斗，同时不让他们吃亏，本意不是压榨员工。」（搜索快照；回应承认邮件存在，属口径对照）。</div>
-            <div class="u"><a href="http://auto.cyol.com/gb/articles/2023-03/09/content_Q4POJYtRKX.html" rel="nofollow noopener" target="_blank">auto.cyol.com/gb/articles/2023-03/09/content_Q4POJYtRKX.html</a></div>
-          </li>
-        </ol>
-        <div class="ev-more"><a href="./brand/chery.html">查看 奇瑞汽车 (CHERY) 完整详情页 →</a></div>
       </div>
     </details>
     <details id="ev-haidilao" data-b="haidilao" data-g="C" data-n="3" data-l="3">
@@ -4547,6 +4617,32 @@
         <div class="ev-more"><a href="./brand/acer.html">查看 宏碁 (Acer) 完整详情页 →</a></div>
       </div>
     </details>
+    <details id="ev-denza" data-b="denza" data-g="U" data-n="3" data-l="3">
+      <summary><span class="g" style="background:#64748b">U</span><span class="bn">腾势</span><span class="co">腾势汽车销售服务有限公司（比亚迪与梅赛德斯-奔驰合资的高端新能源品牌，现由比亚迪主导运营）</span><span class="ct">3 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">36氪：直营大退潮，腾势、鸿蒙智行、极氪等品牌三四线门店转为加盟</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（媒体报道（二手，未抓原文））</span> <span class="raw">原标注：媒体报道（二手，未抓原文）</span> <span class="d">2025-11-18</span></div>
+            <div class="s">「直营店的生存状态不稳定会直接导致员工流动大、执行有偏差，从而动摇直营店最基本的服务质量」。</div>
+            <div class="u"><a href="https://m.36kr.com/p/3558458211875970" rel="nofollow noopener" target="_blank">m.36kr.com/p/3558458211875970</a></div>
+          </li>
+          <li>
+            <div class="t">汽车家号／知乎专栏：腾势直营门店「腾退」？销售曝料渠道转经销商，官方尚未回应</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（媒体报道（二手，未抓原文））</span> <span class="raw">原标注：媒体报道（二手，未抓原文）</span> <span class="d">2025-11-04</span></div>
+            <div class="s">有腾势直营门店销售表示接到通知需将拉客关系转移到经销商，「之前谈的是全员接收，薪资福利待遇不变」，经销商接手后称「只有前三个月」。</div>
+            <div class="u"><a href="https://chejiahao.m.autohome.com.cn/info/23739777" rel="nofollow noopener" target="_blank">chejiahao.m.autohome.com.cn/info/23739777</a></div>
+          </li>
+          <li>
+            <div class="t">站长提供的抖音视频线索（品牌动态）：腾势总经理李慧「我们注定造不出速成车」</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：自媒体转述（二手）</span> <span class="d">2026-11-13 站长提供</span></div>
+            <div class="s">视频称腾势汽车总经理李慧表示「千锤百炼，只为让用户买车不烧心」，话题标签含「媒体原创」。；按站规（备注栏内容同步证据链）如实登记。</div>
+            <div class="u"><a href="https://v.douyin.com/VZQmh1wTZU8/" rel="nofollow noopener" target="_blank">v.douyin.com/VZQmh1wTZU8/</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/denza.html">查看 腾势 完整详情页 →</a></div>
+      </div>
+    </details>
   </div>
   <p class="ev-foot">以上证据均来自公开渠道，本站只做汇总与标注，<strong>不构成对任何企业的法律定性</strong>。企业用工情况会随时间变化；如认为某条证据过时、不实或属个案误判，欢迎通过 <a href="https://github.com/dujeongil-galaxy/shuangxiugou/issues">GitHub Issues</a> 提交可查证的来源，核实后同步更新本页与详情页。</p>
 </section>
@@ -4600,7 +4696,7 @@
           <strong>U 级（证据不足）</strong>：已尽合理检索仍无可采信证据时使用，卡面标「U级 · 证据不足」。它不评级、不猜测，<strong>不以「查不到」代替「没有」</strong>；单独列示、不并入上方四格统计，且必须附证据缺失说明（该企业查过哪些渠道、缺哪一类证据）。企业公开披露休息制度后即可重新核实改档。
         </p>
 
-        <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">已收录企业双休评级与平均下班时间（共 179 家）</h2>
+        <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">已收录企业双休评级与平均下班时间（共 181 家）</h2>
         <p style="margin:0 0 8px">
           下表按评级与真实双休率列出。判定口径是「每周能完整休满两天的员工占比」；
           平均下班时间取员工实际离岗点的众数，连锁门店取晚班打烊／交班点，不以门店营业时间代替。
@@ -4667,7 +4763,7 @@
           <li><strong><a href="./brand/chabaidao.html">茶百道</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/chabaidao.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/bingliw.html">兵立王</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/bingliw.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/yidiandian.html">一点点</a></strong>：C 级 · 真实双休率 50%（推算） · 平均下班 —</li> <a href="./brand/yidiandian.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/xiaomi.html">小米</a></strong>：A 级 · 真实双休率 53% · 平均下班 20:30</li> <a href="./brand/xiaomi.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/xiaomi.html">小米</a></strong>：B 级（双休不稳 · 2026-11-13 站长要求下调） · 真实双休率 53% · 平均下班 20:30</li> <a href="./brand/xiaomi.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/kfc.html">肯德基</a></strong>：C 级 · 真实双休率 10% · 平均下班 23:00</li> <a href="./brand/kfc.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/icbc.html">工商银行 (ICBC)</a></strong>：A 级 · 真实双休率 85%（推算） · 平均下班 —</li> <a href="./brand/icbc.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/ccb.html">建设银行 (CCB)</a></strong>：A 级 · 真实双休率 85%（推算） · 平均下班 —</li> <a href="./brand/ccb.html" style="color:#0F766E">详细→</a>
@@ -4677,7 +4773,9 @@
           <li><strong><a href="./brand/guangfa.html">广发银行 (CGB)</a></strong>：A 级 · 真实双休率 80%（推算） · 平均下班 —</li> <a href="./brand/guangfa.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/tianfu.html">四川天府银行</a></strong>：A 级 · 真实双休率 75%（推算） · 平均下班 —</li> <a href="./brand/tianfu.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/leapmotor.html">零跑汽车</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 22:00</li> <a href="./brand/leapmotor.html" style="color:#0F766E">详细→</a>
-          <li><strong><a href="./brand/xiaomi-auto.html">小米汽车</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/xiaomi-auto.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/xiaomi-auto.html">小米汽车</a></strong>：B 级（双休不稳 · 2026-11-13 站长人工介入 C→B） · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/xiaomi-auto.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/gac-toyota.html">广汽丰田</a></strong>：B 级（双休不稳） · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/gac-toyota.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/denza.html">腾势</a></strong>：U 级（证据不足） · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/denza.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/meiyijia.html">美宜佳</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/meiyijia.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/molina.html">茉莉奶白</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/molina.html" style="color:#0F766E">详细→</a>
         </ul>
@@ -4741,7 +4839,7 @@
           按证据强度分项标注。本站数据仅供个人择业与消费偏好参考，不构成商业背书或法律定性。
         </p>
 
-                <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">全部品牌详细页（179 个）</h2>
+                <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">全部品牌详细页（181 个）</h2>
         <p style="margin:0 0 8px">每个品牌都有独立页面，含完整评级说明、判定依据与证据来源链接：</p>
         <ul style="margin:0 0 16px;padding-left:22px">
           <li><a href="./brand/patagonia.html">Patagonia (巴塔哥尼亚)</a> —— S 级 · 双休率 98% · 平均下班 17:45</li>
@@ -4782,7 +4880,9 @@
           <li><a href="./brand/chery.html">奇瑞汽车 (CHERY)</a> —— C 级（避雷预警） · 双休率 0%（口径换算） · 平均下班 —</li>
           <li><a href="./brand/geely.html">吉利汽车</a> —— C 级 · 双休率 25%（推算） · 平均下班 22:30</li>
           <li><a href="./brand/leapmotor.html">零跑汽车 (Leapmotor)</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 22:00</li>
-          <li><a href="./brand/xiaomi-auto.html">小米汽车</a> —— C 级 · 双休率 未核实 · 平均下班 —</li>
+          <li><a href="./brand/xiaomi-auto.html">小米汽车</a> —— B 级（双休不稳 · 站长人工介入 C→B） · 双休率 未核实 · 平均下班 —</li>
+          <li><a href="./brand/gac-toyota.html">广汽丰田</a> —— B 级（双休不稳） · 双休率 未核实 · 平均下班 —</li>
+          <li><a href="./brand/denza.html">腾势</a> —— U 级（证据不足） · 双休率 未核实 · 平均下班 —</li>
           <li><a href="./brand/volvo.html">Volvo (沃尔沃汽车)</a> —— S 级 · 双休率 92% · 平均下班 18:05</li>
           <li><a href="./brand/huawei.html">华为终端 (Huawei)</a> —— C 级 · 双休率 35% · 平均下班 20:30</li>
           <li><a href="./brand/apple.html">Apple (苹果中国)</a> —— S 级 · 双休率 92%（总部口径）· 平均下班 18:00</li>
@@ -4805,7 +4905,7 @@
           <li><a href="./brand/chabaidao.html">茶百道</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 —</li>
           <li><a href="./brand/bingliw.html">兵立王</a> —— C 级 · 双休率 0%（口径换算） · 平均下班 —</li>
           <li><a href="./brand/yidiandian.html">一点点</a> —— C 级 · 双休率 50%（推算） · 平均下班 —</li>
-          <li><a href="./brand/xiaomi.html">小米</a> —— A 级 · 双休率 53% · 平均下班 20:30</li>
+          <li><a href="./brand/xiaomi.html">小米</a> —— B 级（双休不稳 · 站长要求下调） · 双休率 53% · 平均下班 20:30</li>
           <li><a href="./brand/kfc.html">肯德基</a> —— C 级 · 双休率 10% · 平均下班 23:00</li>
           <li><a href="./brand/icbc.html">工商银行 (ICBC)</a> —— A 级 · 双休率 85%（推算） · 平均下班 —</li>
           <li><a href="./brand/ccb.html">建设银行 (CCB)</a> —— A 级 · 双休率 85%（推算） · 平均下班 —</li>
@@ -5222,21 +5322,21 @@
           company: '小米科技有限责任公司',
           logo: './assets/xiaomi.svg?v=2',
           logoAlt: '小米',
-          workPolicy: '每周双休（弹性工作制 9:00-18:00/18:30）；小米之家（官方授权直营店）上六休一 / 客服轮班',
-          overtime: '总部日均11.5h隐性要求 / 门店节假日无休 / 实际下班常因项目进度延后',
+          workPolicy: '每周双休（弹性工作制 9:00-18:00/18:30，名义口径）；小米之家（官方授权直营店）上六休一 / 客服轮班 / 工厂倒班 12 小时',
+          overtime: '实际下班普遍 20:00-21:30、员工反馈日均 11-12 小时且工时排名影响绩效 / 门店节假日无休',
           doubleRestRate: '53',
           offWorkTime: '20:30',
           voteCount: '0',
-          desc: '"2026-11-05 修改：公司普遍弹性工作制、每周双休，评级由 B 级上调为 A 级（依据爱企查企业知识条目，见首页证据链公示）；原有备注保留——总部日均11.5小时隐性工时、普遍20:30后下班，小米之家属于官方授权直营店、上六休一（线下销售岗位单休）、周末节假日不休，在线客服为轮班制（多源交叉验证）；2026-11-06 按站长口径补注门店性质，不作为评级依据"',
+          desc: '"2026-11-13 站长要求下调：评级由 A 级下调为 B 级（双休不稳）——同一爱企查条目的完整口径显示：名义每周双休（9:00-18:00/18:30），但实际下班普遍 20:00-21:30、员工反馈日均工时 11-12 小时且工时排名靠后影响绩效，双休兑现不稳；工厂操作工倒班 12 小时（白班 09:00-21:00），小米之家（官方授权直营店）上六休一（线下销售岗位单休）、客服多班次。A 档要求双休真实兑现，名实差距明显，按 B 档「双休不稳」定档。2026-11-05 曾据该条目「每周双休」由 B 上调 A；2026-11-13 完整口径补录后下调，原有备注保留（总部日均11.5小时隐性工时、普遍20:30后下班，多源交叉验证）。按站长要求本次下调不在首页加备注。"',
           tags: ['科技数码', '手机', '智能硬件', '小米之家'],
           likeCount: '0',
           dislikeCount: '0',
-          recommendText: '⚠️ 小米之家（官方授权直营店）上六休一 · 2026-11-05 评级由 B 级上调为 A 级（每周双休）',
-          recommendColor: 'red',
+          recommendText: '⚠️ B 级 · 双休不稳（2026-11-13 站长要求下调）：名义双休但实际下班 20:00-21:30、日均 11-12 小时；小米之家（官方授权直营店）上六休一',
+          recommendColor: 'orange',
           insertAfter: '腾讯',
-          keywords: ['小米', 'Xiaomi', '手机', '智能硬件', '米家', '小米之家'],
+          keywords: ['小米', 'Xiaomi', '手机', '智能硬件', '米家', '小米之家', '澎湃OS', '澎湃'],
           category: '数码3C',
-          grade: 'A级'
+          grade: 'B级'
         },
         {
           id: 'kfc-card',
@@ -7971,21 +8071,71 @@
           logo: null,
           logoAlt: '小米汽车',
           logoText: '小米汽车',
-          workPolicy: '研发/销售岗约双休；产线/轮班上六休一，部分基地连续 14 天白/夜班轮换、排班表单见上 13 休 1（月休 4-5 天）',
+          workPolicy: '研发/销售岗约双休；产线基地间分化——一厂上六休一、二厂上五休二、三厂传上四休三（2026-06 网传排班表）；另见 14 天白/夜轮换与上 13 休 1（月休 4-5 天）',
           overtime: '研发岗作息早 9 晚 10；产线加班费平时约 40 元/小时、周末约 50 元/小时；产线月薪约 15-20k',
           doubleRestRate: null,
           offWorkTime: null,
           voteCount: '0',
-          desc: '北京市亦庄工厂与多地岗位并存：研发/销售岗约双休；产线/轮班岗为上六休一，部分基地连续 14 天白/夜班轮换、排班表单显示上 13 休 1（月休 4-5 天）；研发岗作息普遍早 9 晚 10，产线加班费平时约 40 元/小时、周末约 50 元/小时，产线月薪约 15-20k。按本站公开判档口径（只看月休天数：B=月休 6-8 天、A=月休 8 天以上、C=月休不足 6 天或拒不披露）：「产线月休不足 6 天」为定档主因 → C 级；研发/销售岗双休的事实不改变档位（口径取用工主体覆盖面最大的最差排班）。真实双休率与平均下班时间：本次仅取得招聘/资讯聚合摘要，无企业官方口径、无双休率统计，按规则留空显示「—」，不以估算值填充。另有一处「SU7 量产阶段岗位双休」的单源说法，未标明所属基地与岗位，属反例线索，不足以覆盖产线月休不足 6 天的主体事实，详见详情页证据链。（来源：招聘/资讯聚合摘要 2026，本站未独立实测）',
+          desc: '北京市亦庄工厂与多地岗位并存：研发/销售岗约双休；产线/轮班岗为上六休一，部分基地连续 14 天白/夜班轮换、排班表单显示上 13 休 1（月休 4-5 天）；研发岗作息普遍早 9 晚 10，产线加班费平时约 40 元/小时、周末约 50 元/小时，产线月薪约 15-20k。2026-06 网传分厂排班（有驾转述）：一厂上六休一（产能主力）、二厂上五休二、三厂传上四休三——产线基地间亦分化，一厂六休一仍是最差主体口径（月休约 4 天）。建卡时（2026-11-13）AI 按公开判档口径（只看月休天数，口径取覆盖面最大的最差排班）初评 C 级；同日站长人工介入上调为 B 级（双休不稳）——理由：①岗位/基地两级分化（研发/销售/职能岗通常双休、产线一厂六休一二厂双休），单一 C 级对白领岗求职者偏低；②证据均为招聘/资讯与自媒体二手转述，不足以支撑「避雷预警」级负面定性；③一厂六休一的最差口径未被推翻，不至 A。产线岗求职者仍按 C 级口径谨慎对待。真实双休率与平均下班时间：无企业官方口径、无双休率统计，按规则留空显示「—」，不以估算值填充。人工干预记录与改档日期（2026-11-13）见 brand/xiaomi-auto.html。（来源：招聘/资讯聚合摘要 2026 + 站长 2026-11-13 补证，本站未独立实测）',
           tags: ['新能源汽车', '小米汽车', '小米', 'SU7', '造车新势力', '汽车制造', '待复核'],
           likeCount: '0',
           dislikeCount: '0',
-          recommendText: '⚠️ 产线月休不足 6 天（上六休一 / 上 13 休 1）',
-          recommendColor: 'red',
+          recommendText: '⚠️ B 级 · 站长人工介入（2026-11-13 C→B）：研发/销售约双休，产线基地间分化（一厂六休一、二厂五休二、三厂传四休三），二手证据不作避雷定性',
+          recommendColor: 'orange',
           insertAfter: 'leapmotor-card',
-          keywords: ['小米汽车', '小米汽车有限公司', 'Xiaomi Auto', 'XIAOMI AUTO', 'SU7', '新能源汽车', '造车新势力'],
+          keywords: ['小米汽车', '小米汽车有限公司', 'Xiaomi Auto', 'XIAOMI AUTO', 'SU7', '新能源汽车', '造车新势力', '澎湃OS', '澎湃'],
           category: '汽车制造',
-          grade: 'C级'
+          grade: 'B级'
+        },
+        {
+          id: 'gac-toyota-card',
+          name: '广汽丰田',
+          company: '广汽丰田汽车有限公司（广汽集团与丰田汽车合资整车企业）',
+          logo: null,
+          logoAlt: '广汽丰田',
+          logoText: '广汽丰田',
+          workPolicy: '研发/职能岗做五休二（招聘自述：5 天 8 小时、朝八晚五）；产线两班倒，2023 报道存在「欠班/补班」机制',
+          overtime: '招聘自述「加班有加班费」；产线补班期间拿不到加班工资（2023 报道）——两条口径冲突如实分列',
+          doubleRestRate: null,
+          offWorkTime: null,
+          voteCount: '0',
+          desc: '广汽集团与丰田汽车合资整车企业（铂智系列）：研发/职能岗招聘自述「5 天 8 小时、朝八晚五、加班有加班费」；产线两班倒，2023-09 媒体报道存在「欠班/补班、拿不到加班工资」机制，产线月休天数无可采信口径。判档：办公岗做五休二对应 A 档情形，产线无月休口径——C 档证据不足、A 档证据也不足，取 B 级（双休不稳）并按岗位分列，产线岗求职者请谨慎对待。真实双休率与平均下班时间无官方口径、无双休率统计，按规则留空显示「—」，不以估算值填充。站长提供的两条抖音品牌动态视频（召回超 10 万辆／高管回应 8 年电车）属品牌动态，与工时无关、不参与定档，按站规已同步登记进详情页证据链。（来源：招聘自述与媒体报道 2023-2026，本站未独立实测）',
+          tags: ['新能源汽车', '广汽丰田', '广丰', '丰田', '铂智', '汽车制造', '待复核'],
+          likeCount: '0',
+          dislikeCount: '0',
+          recommendText: '⚠️ B 级 · 双休不稳：研发/职能做五休二（招聘自述）、产线两班倒且 2023 被报道「欠班/补班」，产线月休无可采信口径',
+          recommendColor: 'orange',
+          cardNoteTitle: '站长备注（品牌动态·线索登记）',
+          cardNote: '站长收到两条抖音线索，直接放这里推广：①「广汽丰田召回超 10 万辆，仅因一颗螺母」——广丰追着车主兜底担责（视频 https://v.douyin.com/i_YDqfeSwmg/ ）；②「丰田高管正面回应：电车使用超 8 年后怎么办」——铂智 3X 车主关心的事有人接（视频 https://v.douyin.com/dTOnhdsLAPc/ ）。两条均为抖音线索，本站未独立核实；按站规（备注栏内容同步证据链）已登记进详情页证据来源，与工时无关、不参与定档。',
+          insertAfter: 'xiaomi-auto-card',
+          keywords: ['广汽丰田', '广丰', 'GAC Toyota', 'GTMC', '丰田', '铂智', '新能源汽车'],
+          category: '汽车制造',
+          grade: 'B级'
+        },
+        {
+          id: 'denza-card',
+          name: '腾势',
+          company: '腾势汽车销售服务有限公司（比亚迪系高端新能源品牌）',
+          logo: null,
+          logoAlt: '腾势',
+          logoText: '腾势',
+          workPolicy: '未核实（已尽合理检索：无任何员工月休/排班/双休公开口径）',
+          overtime: '未核实',
+          doubleRestRate: null,
+          offWorkTime: null,
+          voteCount: '0',
+          desc: '比亚迪系高端新能源品牌（D9/N/Z 系列），销售端「直营+经销商」并行。已尽合理检索：招聘平台、媒体报道与官网均无任何员工月休或双休口径——可查到的仅有 2025-11 直营门店转经销商的渠道变动报道（36氪：直营店生存状态不稳定、员工流动大；汽车家号：销售曝料待遇承诺缩水、官方未回应），均不涉及休息制度。按站规判 U 级（证据不足）：不作评级、不作褒贬定性、不估算；查不到不等于没有，企业公开披露休息制度或出现可核验一手证据后即可重新核实改档。站长提供的抖音视频（总经理李慧「我们注定造不出速成车」）属品牌公关动态，与工时无关，按站规已同步登记进详情页证据链。（来源：公开检索 2026-11-13，本站未独立实测）',
+          tags: ['新能源汽车', '腾势', 'Denza', '腾势D9', '汽车制造', '待复核'],
+          likeCount: '0',
+          dislikeCount: '0',
+          recommendText: '⚠️ U 级 · 证据不足：已尽合理检索无月休/双休口径，暂不评级（非褒非贬）',
+          recommendColor: 'neutral',
+          cardNoteTitle: '站长备注（品牌动态·线索登记）',
+          cardNote: '站长备注，视频直接放这里推广：腾势汽车总经理李慧——「我们注定造不出速成车，千锤百炼，只为让用户买车不烧心」（视频 https://v.douyin.com/VZQmh1wTZU8/ ，标签「媒体原创」）。该视频属品牌公关动态，与工时无关；本卡工时口径暂无可采信证据，标 U 级（证据不足）不评级。按站规（备注栏内容同步证据链）已登记进详情页证据来源。',
+          insertAfter: 'gac-toyota-card',
+          keywords: ['腾势', 'Denza', '腾势D9', '腾势N9', '腾势Z9', '比亚迪系', '新能源汽车'],
+          category: '汽车制造',
+          grade: 'U级'
         }
         // ==IMPORTED-CARDS-END==
       ];
@@ -8022,6 +8172,15 @@
         // 2026-11-03：D 级没有自带模板卡（bundle 只有 S/A/B/C 分支，D 由本页补丁/自定义卡渲染），
         // 借 C 级卡当克隆模板，徽章文案与深色样式在下方按 gLetter==='D' 单独覆盖。
         if (g === 'D') g = 'C';
+        // 2026-11-13：自定义卡 U 级支持（腾势卡）。bundle 无 U 分支模板，
+        // 显式用带 [data-sxg-ubadge] 的卡（三星/宏碁，u-grade-patch 注入）当模板；
+        // 即便徽章尚未注入导致下方文本扫描落空，也有确定模板可克隆——
+        // 徽章文案/配色由克隆后的校正逻辑统一重写，不依赖模板当时的档位。
+        if (g === 'U') {
+          for (var ucard of cards) {
+            if (ucard.querySelector('[data-sxg-ubadge]')) return ucard;
+          }
+        }
         for (var card of cards) {
           // h2/h3 都要查：SEO 修复会把 h3 换成 h2
           var title = card.querySelector('h2') || card.querySelector('h3');
@@ -8166,7 +8325,30 @@
           // 校正评级徽章（兼容徽章里的 "X级 · 描述" 结构）
           var badgeSpan = newCard.querySelector('span.inline-flex');
           var gLetter = String(config.grade).replace('级', '').trim();
-          if (badgeSpan && gLetter === 'D') {
+          if (gLetter === 'U') {
+            // 2026-11-13：自定义卡 U 级（腾势卡）。模板可能是任一档：S/A/B/C 模板自带
+            // span.inline-flex 徽章（改写即可）；三星/宏碁模板的徽章是 u-grade-patch
+            // 注入的 [data-sxg-ubadge]，克隆时被剥离表剥掉且无 inline-flex 类——
+            // 所以这里不依赖 badgeSpan 存在：有真档位徽章就改写，没有就在头部行新建
+            //（内联样式与 u-grade-patch 的 U 徽章完全一致，不赌 Tailwind 类在不在构建 CSS 里）。
+            var ub = (badgeSpan && /^[SABCDU]\s*级/.test(badgeSpan.textContent || '')) ? badgeSpan : null;
+            if (!ub) {
+              ub = document.createElement('span');
+              ub.setAttribute('style', 'display:inline-flex;align-items:center;gap:4px;padding:4px 10px;' +
+                'border-radius:8px;font-size:12px;font-weight:900;letter-spacing:.02em;' +
+                'background:#f1f5f9;color:#475569;border:2px solid #cbd5e1;' +
+                'margin-left:auto;white-space:nowrap;flex:none');
+              var uName = newCard.querySelector('h2') || newCard.querySelector('h3');
+              var uInfo = uName && uName.parentElement;
+              var uHead = uInfo && uInfo.parentElement;
+              (uHead || newCard).appendChild(ub);
+            }
+            ub.textContent = 'U级 · 证据不足';
+            ub.style.background = '#f1f5f9';
+            ub.style.color = '#475569';
+            ub.title = '本站已尽合理检索仍无可采信的月休/双休证据，不作评级（非褒非贬）；详见详情页「证据缺失说明」';
+            ub.setAttribute('data-sxg-ubadge', '1');
+          } else if (badgeSpan && gLetter === 'D') {
             // D 级（2026-11-03 起的存在形式：站长人工介入，当前仅 BOSS直聘 · 平台类目例外）
             // 克隆的是 C 卡，徽章颜色是 C 的玫红；这里整块换成 D 的近黑深红，文案标明人工介入。
             badgeSpan.textContent = 'D级 · 站长强制降级';
@@ -8355,6 +8537,12 @@
                 container.className = container.className.replace(/border-emerald-200/g, 'border-red-200');
                 container.className = container.className.replace(/bg-emerald-50/g, 'bg-red-50');
                 container.style.color = '#dc2626';
+              } else if (config.recommendColor === 'neutral') {
+                // 2026-11-13：U 级卡非褒非贬，模板绿框用内联样式压成中性灰
+                //（内联样式不赌 Tailwind 类是否在构建 CSS 里，见 AGENTS.md 老坑）
+                container.style.background = '#f8fafc';
+                container.style.borderColor = '#cbd5e1';
+                container.style.color = '#475569';
               }
               // 2026-10-31 起 gray（待核实不评级）色已随 U 级一并废除
             } else {
@@ -8363,6 +8551,10 @@
                 recommendBlock.className = recommendBlock.className.replace(/border-emerald-200/g, 'border-red-200');
                 recommendBlock.className = recommendBlock.className.replace(/bg-emerald-50/g, 'bg-red-50');
                 recommendBlock.style.color = '#dc2626';
+              } else if (config.recommendColor === 'neutral') {
+                recommendBlock.style.background = '#f8fafc';
+                recommendBlock.style.borderColor = '#cbd5e1';
+                recommendBlock.style.color = '#475569';
               }
               // 2026-10-31 起 gray（待核实不评级）色已随 U 级一并废除
             }
@@ -8372,10 +8564,16 @@
           // 此时主动创建一个与肯德基等卡片样式一致的警示框，插在标签行之后。
           if (!recommendBlock && config.recommendText) {
             var isRed = config.recommendColor === 'red'; // 2026-10-31 起仅剩 red/green 两色
+            var isNeutral = config.recommendColor === 'neutral'; // 2026-11-13：U 级卡中性灰
             var box = document.createElement('div');
             box.className = 'mt-3 rounded-xl border px-3 py-2 text-xs leading-relaxed ' +
               (isRed ? 'border-red-200 bg-red-50' : 'border-emerald-200 bg-emerald-50');
-            box.style.color = isRed ? '#dc2626' : '#047857';
+            box.style.color = isRed ? '#dc2626' : (isNeutral ? '#475569' : '#047857');
+            if (isNeutral) {
+              // 内联样式覆盖模板绿框：U 级非褒非贬，用中性灰（不赌 Tailwind 类是否在构建 CSS 里）
+              box.style.background = '#f8fafc';
+              box.style.borderColor = '#cbd5e1';
+            }
             box.style.fontWeight = '700';
             box.style.fontSize = '14px';
             box.innerHTML = '<div style="font-weight:900;font-size:14px;">' + config.recommendText + '</div>';
@@ -9483,21 +9681,21 @@
        2) 自定义品牌卡（DOM 克隆）没有 React onClick，补上「打卡」「详情证据」功能 -->
   <script defer src="./custom-card-actions.js?v=24"></script>
   <script defer src="./share-modal.js?v=6"></script>
-  <script defer src="./u-grade-patch.js?v=17"></script>
+  <script defer src="./u-grade-patch.js?v=18"></script>
   <script defer src="./luckin-note-patch.js?v=1"></script>
   <!-- 比亚迪卡片曝光登记（2026-11-09 站长线索 / 2026-11-10 视频下架补记）：
        内置卡数据在压缩 bundle 里不能改，用独立 DOM 补丁在渲染后挂红框说明。 -->
-  <script defer src="./byd-expose-patch.js?v=1"></script>
+  <script defer src="./byd-expose-patch.js?v=2"></script>
   <!-- 2026-11-10 新闻事件登记：罗技授权店铺侮辱消费者广告 / 星宇股份后续进展，内置卡渲染后 DOM 补丁 -->
-  <script defer src="./news-incident-patch.js?v=3"></script>
+  <script defer src="./news-incident-patch.js?v=4"></script>
   <!-- 每张卡详情弹窗底部「跳转到证据公示」：内置 React 弹窗与自定义卡弹窗
        一视同仁，完整定位到 #evidence-board 里该品牌的 <details> 条目。
        真相源是生成器产出的公示区 DOM，补丁不硬编码品牌清单。 -->
-  <script defer src="./evidence-jump-patch.js?v=2"></script>
+  <script defer src="./evidence-jump-patch.js?v=3"></script>
   <!-- 奶茶／新茶饮类 B/C 级平替统一推荐陆喜依（2026-11-08 站长指定） -->
   <script defer src="./luxiyi-alt-patch.js?v=2"></script>
   <script defer src="./search-clear-order-fix.js?v=3"></script>
-  <script defer src="./rating-stats-patch.js?v=9"></script>
+  <script defer src="./rating-stats-patch.js?v=12"></script>
   <script defer src="./ai-notice-patch.js?v=1"></script>
   <script defer src="./ad-text-width-fix.js?v=1"></script>
   <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
@@ -9509,7 +9707,7 @@
        所以这里只做「输入联想 + 回填」：给出候选，用户点了回填中文名，
        后续过滤仍走 React 原生搜索路径，渲染逻辑零改动。
        索引数据在 pinyin-index.js，必须先于本脚本加载。 -->
-  <script defer src="./pinyin-index.js?v=16"></script>
+  <script defer src="./pinyin-index.js?v=18"></script>
   <script defer src="./pinyin-search.js?v=6"></script>
 
   <!-- 彻底禁用数字搜索。2026-10-17 用户反馈：输入「1」「2」会搜出一堆无关卡片。
@@ -9554,7 +9752,7 @@
        零命中时（如搜「六休一」）summary 兜底展示，不空结果。
        必须在 stat-filter.js 之后：两补丁操作同一批卡片，本补丁的隐藏用
        class + !important，晚加载保证层级语义上「口径修正在档位筛选之上」。 -->
-  <script defer src="./search-scope-fix.js?v=3"></script>
+  <script defer src="./search-scope-fix.js?v=4"></script>
   <!-- 结果区切换 0.5s 高度模糊闪屏（2026-11-04 评级切换；2026-11-05 扩到搜索清空）：
        捕获阶段拦截评级按钮点击，或搜索框「非空 → 空」的清空动作，立刻盖一层
        blur(36px) frosted 遮罩 500ms，期间 bundle 即时重渲染 + filterCustomCards 的 100ms

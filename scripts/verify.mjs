@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 双休购 · 站点一致性校验（零依赖，纯 Node.js）
  *
  * 为什么需要这个：
@@ -585,8 +585,8 @@ check(virtual2e === 1, '虚拟对比卡恰 1 张（口径排除依据，id 变�
 // 这个数不是「随便写死」：它同时被 §2e 的四格统计、brand/ 页数、公告栏数字三处引用，
 // 任何一处生成器漏跑都会在这里对不上，所以必须保留为硬断言。
 const IMPORTED_CARD_COUNT = 107;
-check(customPairs2e.length === 20 + IMPORTED_CARD_COUNT,
-  `能解析全部自定义卡（${20 + IMPORTED_CARD_COUNT} 张 = 20 张手工卡含联通/小米汽车 + ${IMPORTED_CARD_COUNT} 张导入卡（104 榜单 + 2 独立来源））`,
+check(customPairs2e.length === 22 + IMPORTED_CARD_COUNT,
+  `能解析全部自定义卡（${22 + IMPORTED_CARD_COUNT} 张 = 22 张手工卡含联通/小米汽车/广汽丰田/腾势 + ${IMPORTED_CARD_COUNT} 张导入卡（104 榜单 + 2 独立来源））`,
   '实际 ' + customPairs2e.length);
 check(headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') === statTotal,
   '顶部「收录品牌」= 实名企业卡总数', '页面 ' + headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') + ' / 计算 ' + statTotal + '（改 bundle 顶部统计常数）');
@@ -632,7 +632,7 @@ const EXPECT_GRADE_2E = {
   // 2026-11-03 新增：中国联通 B 级（站长线下核实一个城市，月休 8 天以上，见 brand/unicom.html）。
   'unicom-card': 'B级',
   // 2026-11-05 新增：小米 B→A（爱企查公开知识条目「公司普遍每周双休」；原有线下销售岗单休备注保留）。
-  'xiaomi-card': 'A级',
+  'xiaomi-card': 'B级',
   // 2026-11-12 新增：广发银行 / 四川天府银行 A 级（站长指令建卡，网点轮班周休 2 天，见 brand/guangfa.html、brand/tianfu.html）。
   'guangfa-card': 'A级', 'tianfu-card': 'A级',
 };
@@ -641,18 +641,21 @@ const relockedU2e = locked2e
   .filter((c) => c.grade !== EXPECT_GRADE_2E[c.id])
   .map((c) => c.id + '=' + c.grade + '（应 ' + EXPECT_GRADE_2E[c.id] + '）');
 check(relockedU2e.length === 0,
-  '7 家银行 A 级（工/建/中/成都/农行/广发/天府）+ 小米 A 级 + 淘宝闪购 C 级 + BOSS直聘 D 级（锁定，不得回退）',
+  '7 家银行 A 级（工/建/中/成都/农行/广发/天府）+ 小米 B 级（2026-11-13 站长要求下调）+ 淘宝闪购 C 级 + BOSS直聘 D 级（锁定，不得回退）',
   relockedU2e.length ? relockedU2e.join(', ') : '锁定生效');
 check(locked2e.length === 11,
   '11 张锁定卡全部存在（删卡判红）', '实际 ' + locked2e.length);
 // 2026-11-02 起：A 级 / C 级计数含榜单导入卡（A 58 张、C 29 张）。
 // 断言仍然写成「基准 + 导入数」的算式，导入批次调整时改 IMPORTED_CARD_COUNT 一处即可，
 // 但两个基准值（4 / 11）必须保持 —— 那是手工卡的既有口径，动了就等于偷偷改档。
-check(byGrade2e('A级') === 8 + 58,
-  '自定义卡 A 级共 66 张（工/建/中/成都/农行 5 家银行 + 小米 2026-11-05 B→A + 2026-11-12 广发银行/四川天府银行 2 家 + 榜单导入 58 张）',
+// 2026-11-02 起：A 级 / C 级计数含榜单导入卡（A 58 张、C 29 张）。
+// 断言仍然写成「基准 + 导入数」的算式，导入批次调整时改 IMPORTED_CARD_COUNT 一处即可，
+// 但两个基准值（4 / 11）必须保持 —— 那是手工卡的既有口径，动了就等于偷偷改档。
+check(byGrade2e('A级') === 7 + 58,
+  '自定义卡 A 级共 65 张（工/建/中/成都/农行 5 家银行 + 2026-11-12 广发银行/四川天府银行 2 家 + 榜单导入 58 张；小米 2026-11-05 B→A、2026-11-13 站长要求下调回 B）',
   '实际 ' + byGrade2e('A级'));
-check(byGrade2e('C级') === 10 + 29 + 2,
-  '自定义卡 C 级共 41 张（手工 10 张 + 榜单导入 29 张 + 2026-11-12 新增零跑汽车 C 级 + 2026-11-13 新增小米汽车 C 级；农行 2026-11-04 由 C 转 A；BOSS直聘 2026-11-03 转入 D 级；2026-11-11 新增吉利汽车 C 级）',
+check(byGrade2e('C级') === 10 + 29 + 1,
+  '自定义卡 C 级共 40 张（手工 10 张 + 榜单导入 29 张 + 2026-11-12 新增零跑汽车 C 级；小米汽车 2026-11-13 建卡 C 级、同日站长人工介入上调 B 级；农行 2026-11-04 由 C 转 A；BOSS直聘 2026-11-03 转入 D 级；2026-11-11 新增吉利汽车 C 级）',
   '实际 ' + byGrade2e('C级'));
 // 2026-11-12 新增「零跑汽车」自定义卡（站长指令：新增品牌、证据链由联网核实公开报道；
 // 两条抖音短视频线索归属首页弹窗新版入口、不挂本卡证据链；备注栏必须注明内容存疑）。
@@ -1402,8 +1405,8 @@ if (cfgBlock) {
   }
 }
 const CUSTOM_COUNT = customCards.length;
-check(CUSTOM_COUNT === 20 + IMPORTED_CARD_COUNT,
-  `自定义卡 ${CUSTOM_COUNT} 张（20 张手工 + ${IMPORTED_CARD_COUNT} 张导入；2026-11-02 批量导入，2026-11-03 增联通 B 级，2026-11-08 增陆喜依 S 级，2026-11-12 增广发银行/四川天府银行 A 级 + 零跑汽车 C 级，2026-11-13 增小米汽车 C 级）`);
+check(CUSTOM_COUNT === 22 + IMPORTED_CARD_COUNT,
+  `自定义卡 ${CUSTOM_COUNT} 张（22 张手工 + ${IMPORTED_CARD_COUNT} 张导入；2026-11-02 批量导入，2026-11-03 增联通 B 级，2026-11-08 增陆喜依 S 级，2026-11-12 增广发银行/四川天府银行 A 级 + 零跑汽车 C 级，2026-11-13 增小米汽车（建卡 C 级、同日站长人工介入上调 B 级）+ 广汽丰田 B 级 + 腾势 U 级）`);
 
 // null 规则：双休率 / 下班时间不得为占位 0，也不得是字符串 '未知'
 customCards.forEach((c) => {
@@ -5809,10 +5812,10 @@ section('21b-2. 安全事件默认收起 + 分享弹窗接线');
     '改末句措辞/断行 → 站长指定的固定收尾句被破坏');
   // 脚本缓存号：改 u-grade-patch.js 必须同步 ?v=，否则线上仍是旧抵制区
   const idxUgp = readFileSync(join(ROOT, 'index.html'), 'utf8');
-  check(/u-grade-patch\.js\?v=17/.test(idxUgp)
-    && !/u-grade-patch\.js\?v=16/.test(idxUgp),
-    'index.html 引用 u-grade-patch.js?v=17（缓存号已随改动同步 +1）',
-    '漏 bump ?v 或仍写 15 → 浏览器命中旧缓存，新抵制区不生效');
+  check(/u-grade-patch\.js\?v=18/.test(idxUgp)
+    && !/u-grade-patch\.js\?v=17/.test(idxUgp),
+    'index.html 引用 u-grade-patch.js?v=18（缓存号已随改动同步 +1）',
+    '漏 bump ?v 或仍写旧值 → 浏览器命中旧缓存，新抵制区不生效');
 }
 
 // ---------- 21c. 首页滑到底部按钮 ----------
@@ -6638,8 +6641,8 @@ section('21c. 首页滑到底部按钮');
   check(/'D 级'/.test(rowTexts) && /'U 级'/.test(rowTexts),
     'stat-filter.js 评级行互斥枚举含「D 级」「U 级」（点 D/U 清五格筛选）',
     'stat-filter 没跟上 → 点 D/U 不清四格筛选，两套过滤层互相覆盖出现空面板');
-  check(/u-grade-patch\.js\?v=17/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
-    'u-grade-patch.js?v=17 / stat-filter.js?v=9（缓存号已随内容 bump）',
+  check(/u-grade-patch\.js\?v=18/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
+    'u-grade-patch.js?v=18 / stat-filter.js?v=9（缓存号已随内容 bump；11-13 U 计数动态刷新）',
     '缓存号没 bump → 用户拿旧补丁，D/U 按钮注入不生效（2026-11-01 拼音索引同类事故）');
   // 2026-11-03 站长实测 bug：点「D 级 / U 级」后拼音搜索框整块消失。
   // 根因：CARD_SEL（div.bg-white.rounded-2xl.border）命中面比品牌卡宽，
@@ -6877,18 +6880,20 @@ section('21c. 首页滑到底部按钮');
     `detail=${xmDetail.length} / card=${/id: 'xiaomi-card'/.test(xmIndex)}`);
   // 按「出现次数」锁，不按「文件里有没有」锁：故障注入首轮故意只抹掉一处，
   // 只查存在性的断言照样全绿（另外几处还写着），等于没拦住「某处被悄悄改回旧措辞」。
+  // 2026-11-13 站长要求下调 A→B 后详情页整段重写，重复表述收敛但仍保有 3 处口径。
   const xmDetailHits = (xmDetail.match(/官方授权直营店/g) || []).length;
   const xmIndexHits = (xmIndex.match(/官方授权直营店/g) || []).length;
-  check(/小米之家属于官方授权直营店/.test(xmDetail) && /上六休一/.test(xmDetail) && xmDetailHits >= 6,
-    '§21p 详情页按站长口径写明「小米之家属于官方授权直营店，上六休一」（6 处口径全在）',
+  check(/小米之家属于官方授权直营店/.test(xmDetail) && /上六休一/.test(xmDetail) && xmDetailHits >= 3,
+    '§21p 详情页按站长口径写明「小米之家属于官方授权直营店，上六休一」（口径全在）',
     `detailHits=${xmDetailHits}`);
   check(xmIndexHits >= 3,
     '§21p 首页卡片三处（休息制度 / 描述 / 红框）口径全在',
     `indexHits=${xmIndexHits}`);
-  check(/不是本次 A 级评级的依据/.test(xmDetail) && /不代为合并/.test(xmDetail),
-    '§21p 详情页标明门店备注不是 A 级评级依据、不代为合并口径');
-  check(/recommendText: '⚠️ 小米之家（官方授权直营店）上六休一/.test(xmIndex) &&
-        /小米之家（官方授权直营店）上六休一 \/ 客服轮班/.test(xmIndex),
+  check(/门店性质/.test(xmDetail) && /原有备注保留/.test(xmDetail)
+    && !/线下销售岗位单休」。/.test(xmDetail.replace(/（线下销售岗位单休）/g, '')),
+    '§21p 详情页标明门店备注性质（2026-11-06 口径保留；11-13 下调后岗位分化成为 B 级依据的一部分）');
+  check(/recommendText: '⚠️ B 级 · 双休不稳（2026-11-13 站长要求下调）/.test(xmIndex) &&
+        /小米之家（官方授权直营店）上六休一 \/ 客服轮班 \/ 工厂倒班 12 小时/.test(xmIndex),
     '§21p 首页卡片红框与休息制度字段与详情页同口径');
   check(/aiqicha\.baidu\.com\/details\/ugknowledge\?id=f5fe5b856c9a6bcf251add4319e48490/.test(xmDetail) &&
         /aiqicha\.baidu\.com\/details\/ugknowledge\?id=f5fe5b856c9a6bcf251add4319e48490/.test(xmIndex),
@@ -7222,8 +7227,8 @@ section('24. 白屏兜底与加载态（防用户误退出）');
   check(/--only/.test(impPy25) && /def guard_full_rebuild/.test(impPy25)
     && /重新生成已存在的卡片配置/.test(impPy25),
     '§25r 导入脚本有增量模式 + 全量重建保护 + 已存在卡可重新生成');
-  check(/'双休红榜':\s*86/.test(read('rating-stats-patch.js')),
-    '§25s 四格红榜补丁同步为 86（S/A 级 +2：广发/天府）');
+  check(/'双休红榜':\s*85/.test(read('rating-stats-patch.js')),
+    '§25s 四格红榜补丁同步为 85（2026-11-13 小米 A→B 站长要求下调）');
 }
 
 // ---------- 26. 淘宝评论补充说明 / 奶茶类 B/C 平替陆喜依 / 天猫链接隐私 / 别名直搜 ----------
@@ -7814,9 +7819,9 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§30a README 写死比亚迪曝光登记四条口径（卡片真挂载 / 死链不冒充 / 如实登记 / 随笔引用）',
     '规则只挂口头 → 又会出现「详情页写了、卡片没动」的静默失效');
 
-  check(p30.length > 0 && /<script defer src="\.\/byd-expose-patch\.js\?v=1"><\/script>/.test(idx30)
+  check(p30.length > 0 && /<script defer src="\.\/byd-expose-patch\.js\?v=2"><\/script>/.test(idx30)
     && /不能改 bundle|不能改\s*bundle/.test(p30),
-    '§30b 曝光补丁入库并挂进首页（?v=1），且写明不动压缩 bundle');
+    '§30b 曝光补丁入库并挂进首页（?v=2，2026-11-13 加第二只站长点评框），且写明不动压缩 bundle');
 
   check(/\^BYD\\s\*\\\(比亚迪\\\)/.test(p30) && /data-byd-expose/.test(p30)
     && /new MutationObserver\(schedule\)/.test(p30)
@@ -7843,12 +7848,13 @@ section('25. 成功案例专题页（QQ奶奶）');
     && /v\.douyin\.com\/kKmeU180irU\//.test(liByd30),
     '§30f 详情页如实登记视频下架，失效抖音短链降级为纯文本、不再冒充可点来源');
 
-  check(/data-n="4" data-l="2"/.test(evByd30)
+  check(/data-n="5" data-l="3"/.test(evByd30)
     && evByd30.indexOf('该视频现已删除') !== -1
     && evByd30.indexOf('原链接已失效') !== -1
     && evByd30.indexOf('轮毂装反') !== -1
+    && evByd30.indexOf('法务部') !== -1
     && (evByd30.match(/（本条无可点原始链接/g) || []).length === 2,
-    '§30g 公示区由生成器同步：ev-byd 4 条证据（新增澎湃轮毂装反报道）、可点链接 2 条、摘要仍写出视频下架');
+    '§30g 公示区由生成器同步：ev-byd 5 条证据（11-13 新增法务部悬赏线索，带链）、可点链接 3 条、摘要仍写出视频下架');
 
   check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     && /data-byd-expose/.test(p30),
@@ -7877,11 +7883,11 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§31a README 写死本批五条口径（两类弹窗一视同仁 / 完整定位 / 单一真相源 / 无条目如实降级 / 机器强制）',
     '规则只挂口头 → 又会出现「按钮有、跳过去却停在公示区顶部」的静默失效');
 
-  check(p31.length > 0 && /<script defer src="\.\/evidence-jump-patch\.js\?v=2"><\/script>/.test(idx31)
+  check(p31.length > 0 && /<script defer src="\.\/evidence-jump-patch\.js\?v=3"><\/script>/.test(idx31)
     && /不能改 bundle|不能改\s*bundle/.test(p31)
     && !/https?:\/\//.test(p31)
     && !/ev-patagonia|ev-icbc|ev-zhaoyiming|ev-byd/.test(p31),
-    '§31b 跳转补丁入库并挂进首页（?v=1）；不动压缩 bundle、不写死品牌 URL / 品牌 id 清单');
+    '§31b 跳转补丁入库并挂进首页（?v=3）；不动压缩 bundle、不写死品牌 URL / 品牌 id 清单');
 
   check(code31.indexOf('var isBuiltin =') !== -1
     && code31.indexOf('pt-2') !== -1 && code31.indexOf('justify-end') !== -1
@@ -7923,6 +7929,12 @@ section('25. 成功案例专题页（QQ奶奶）');
   check(exists('scripts/test-evidence-jump.cjs') && /test-evidence-jump\.cjs/.test(wf31)
     && /window\.__sxgEvidenceJump/.test(code31),
     '§31h 真 DOM 测试存在并挂进 CI（三层强制：规则 + 断言 + CI）');
+
+  check(/var CLOSE_ATTR = 'data-sxg-ev-close'/.test(code31)
+    && /function makeCloseButton\(/.test(code31)
+    && /isBuiltinFoot/.test(code31)
+    && code31.indexOf("'关闭'") !== -1,
+    '§31i 2026-11-13 站长统一口径：内置弹窗底排补「关闭」幽灵按钮，两类弹窗统一三键（跳转/小票/关闭）');
 }
 
 // ---------- 32. 2026-11-10 批次：公益广告位 / 6 秒倒计时 / 新闻登记 / 随笔年内上线 ----------
@@ -8028,13 +8040,13 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§32e 搜索删空强制 6 秒 + 倒计时 + 硬 deadline；两侧契约同改、缓存号都 bump');
 
   check(news32.length > 0
-    && /<script defer src="\.\/news-incident-patch\.js\?v=3"><\/script>/.test(idx32)
+    && /<script defer src="\.\/news-incident-patch\.js\?v=4"><\/script>/.test(idx32)
     && /var ITEMS = \[/.test(news32) && /key: 'logitech'/.test(news32) && /key: 'xingyu'/.test(news32)
-    && /key: 'geely'/.test(news32) && /key: 'lixiang'/.test(news32)
+    && /key: 'geely'/.test(news32) && /key: 'lixiang'/.test(news32) && /key: 'chery'/.test(news32)
     && /new MutationObserver\(schedule\)/.test(news32)
     && /不能改 bundle/.test(news32)
     && !/https?:\/\//.test(news32),
-    '§32f 新闻登记补丁配置驱动两张内置卡 + 两张车企卡（吉利/理想），幂等 + 重渲染兜底，卡片零外链、不碰 bundle');
+    '§32f 新闻登记补丁配置驱动两张内置卡 + 三张车企卡（吉利/理想/奇瑞），幂等 + 重渲染兜底，卡片零外链、不碰 bundle');
 
   check(/罗技中国就授权店铺侮辱消费者广告致歉/.test(logi32)
     && /总经理扣薪 12 个月、人力资源总监免职/.test(xing32)

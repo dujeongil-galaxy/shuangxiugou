@@ -29,6 +29,17 @@
   var NOTES_HREF = './notes.html';
   var NOTES_TEXT = '《站长随笔》第10章';
 
+  // 2026-11-13 站长第二条首页备注（卡面第二只框，琥珀色区分）：
+  // 「给比亚迪的证据链加备注……你大唐刚出事，你就开始发动法务部技能」。
+  // 事实：11-11 澎湃报道车主投诉「唐」前后轮毂装反（公示区在册）；11-13 法务部发文
+  // 悬赏 50 万–500 万征集「黑公关」线索。站长原话入框。外链不进卡面（§30e 口径），
+  // 抖音视频链接落在详情页证据来源与首页公示区（站规：备注栏内容同步证据链）。
+  var LEGAL_TITLE = '⚑ 站长点评 · 法务部悬赏征集「黑公关」线索（2026-11-13）';
+  var LEGAL_P1 = '2026-11-11 澎湃新闻刚报道多位车主投诉比亚迪「唐」前后轮毂装反（本页公示区在册），11-13 法务部即发文：为打击网络黑公关乱象，对通过 MCN 等有组织、有策划抹黑比亚迪的线索，一经查实给予 50 万元至 500 万元奖励。';
+  var LEGAL_P2 = '站长原话：「你大唐刚出事，你就开始发动法务部技能，那你确实很牛逼了。」——本条为站长主观点评，仅登记可核查事实（法务部发文）与公开报道（澎湃），不作事实认定；抖音视频线索（红V账号）已按站规同步登记进详情页证据链。';
+  var LEGAL_HREF = './brand/byd.html';
+  var LEGAL_LINK_TEXT = '查看证据链与视频链接';
+
   var BOX_STYLE = 'margin:2px 0 0;padding:10px 12px;border:1px solid #fecaca;' +
     'border-left:4px solid #dc2626;border-radius:10px;background:#fef2f2;' +
     'color:#991b1b;font-size:12.5px;line-height:1.75';
@@ -87,14 +98,46 @@
     return box;
   }
 
+  /* 2026-11-13 第二只框（琥珀色·站长点评）：法务部悬赏 + 站长原话。
+     与红色曝光框共用 data-byd-exose 幂等标记（同一容器一次插入两只框），
+     不新增标记 → 无需登记克隆剥离表。 */
+  function buildLegalBox() {
+    var box = document.createElement('div');
+    box.setAttribute('data-byd-expose', '1');
+    box.setAttribute('style', 'margin:6px 0 0;padding:10px 12px;border:1px solid #fde68a;' +
+      'border-left:4px solid #d97706;border-radius:10px;background:#fffbeb;' +
+      'color:#92400e;font-size:12.5px;line-height:1.75');
+
+    var head = document.createElement('div');
+    head.setAttribute('style', 'font-weight:800;font-size:13px;color:#b45309;margin:0 0 4px');
+    head.textContent = LEGAL_TITLE;
+    box.appendChild(head);
+
+    box.appendChild(makePara(LEGAL_P1));
+    box.appendChild(makePara(LEGAL_P2));
+
+    var link = makePara('');
+    var a = document.createElement('a');
+    a.setAttribute('href', LEGAL_HREF);
+    a.setAttribute('style', 'color:#b45309;font-weight:700;text-decoration:underline');
+    a.textContent = LEGAL_LINK_TEXT;
+    link.appendChild(a);
+    box.appendChild(link);
+    return box;
+  }
+
   function patchCard(card) {
     if (card.querySelector('[data-byd-expose]')) return true; // 幂等
     var inner = card.querySelector('div.p-5.space-y-3\\.5');
     var host = inner || card;
     var anchor = inner && inner.children.length > 1 ? inner.children[1] : null;
     try {
-      if (anchor) host.insertBefore(buildBox(), anchor);
-      else host.appendChild(buildBox());
+      // 2026-11-13 起一次插两只框（红色曝光登记 + 琥珀色站长点评）
+      var frag = document.createDocumentFragment();
+      frag.appendChild(buildBox());
+      frag.appendChild(buildLegalBox());
+      if (anchor) host.insertBefore(frag, anchor);
+      else host.appendChild(frag);
     } catch (e) {
       console.error('[双休购] 比亚迪曝光登记插入失败：', e);
       return false;

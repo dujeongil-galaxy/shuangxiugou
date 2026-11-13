@@ -2,6 +2,8 @@
 // 且必须**完整定位到该品牌对应的公示条目**（不是只打开公示区顶部）。
 // 真 DOM 验证（jsdom 加载 evidence-jump-patch.js）：内置 React 弹窗与自定义
 // .sxg-layer 弹窗各点一次，命中/无条目/幂等/重渲染/分享锚点全覆盖。
+// 2026-11-13 站长「卡片保持统一…全部统一为3个」回归：内置弹窗底排由补丁
+// 补上「关闭」幽灵按钮，两类弹窗统一三键【跳转】【小票】【关闭】。
 // 跑法：npm install --no-save jsdom && node scripts/test-evidence-jump.cjs
 const fs = require('fs');
 const path = require('path');
@@ -24,6 +26,7 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // 与线上真渲染 DOM 同构（CDP dump 2026-11-10）：
 // 内置弹窗 .fixed.inset-0 > 白框 > h2 + div.pt-2.flex.justify-end.gap-2 > 小票按钮
+//   （补丁注入后底排为：跳转 + 小票 + 关闭）
 // 自定义弹窗 .sxg-layer > .sxg-box > h2 + div.sxg-actions.right > 小票按钮 + 关闭
 const PAGE = `<!doctype html><html><head></head><body>
 <div id="root"></div>
@@ -124,8 +127,8 @@ function makeDom(hash) {
   const wf = read('.github/workflows/verify.yml');
   const rd = read('README.md');
   check('跳转补丁文件存在', exists('evidence-jump-patch.js'));
-  check('首页挂了跳转补丁（?v=2 防缓存）',
-    /<script defer src="\.\/evidence-jump-patch\.js\?v=2"><\/script>/.test(html));
+  check('首页挂了跳转补丁（?v=3 防缓存）',
+    /<script defer src="\.\/evidence-jump-patch\.js\?v=3"><\/script>/.test(html));
   check('真 DOM 测试挂进 CI 的 pinyin job', /test-evidence-jump\.cjs/.test(wf));
   check('README 写死两类弹窗一视同仁 + 完整定位口径',
     /详情弹窗证据链公示跳转/.test(rd) && /完整定位/.test(rd) && /内置.*自定义/.test(rd));
@@ -159,11 +162,26 @@ function makeDom(hash) {
   check('没有锚点按钮的其它弹窗（小票层）不会被误挂',
     !d.querySelector('#ticket-layer button[data-sxg-ev-jump]'));
 
+  // —— 2026-11-13 站长统一三键 ——
+  const cBuiltin = d.querySelector('#builtin-layer button[data-sxg-ev-close]');
+  check('内置弹窗底排补上「关闭」幽灵按钮（data-sxg-ev-close）',
+    !!cBuiltin && cBuiltin.textContent.trim() === '关闭');
+  check('内置底排三键顺序：跳转 → 小票 → 关闭',
+    !!bBuiltin && !!bBuiltin.nextElementSibling
+    && /生成我的投票小票/.test(bBuiltin.nextElementSibling.textContent)
+    && !!cBuiltin && !!cBuiltin.previousElementSibling
+    && /生成我的投票小票/.test(cBuiltin.previousElementSibling.textContent));
+  check('自定义弹窗不重复补关闭（本来就有关闭）',
+    !d.querySelector('#custom-layer button[data-sxg-ev-close]'));
+  check('小票层不误挂关闭', !d.querySelector('#ticket-layer button[data-sxg-ev-close]'));
+
   // 幂等 + React/自定义弹窗重渲染自愈
   d.body.appendChild(d.createElement('span'));
   await tick(120);
   check('重复触发 DOM 变动不会重复插按钮（幂等）',
     d.querySelectorAll('button[data-sxg-ev-jump]').length === 2);
+  check('重复触发不会重复插「关闭」（幂等）',
+    d.querySelectorAll('button[data-sxg-ev-close]').length === 1);
   const oldFoot = bBuiltin ? bBuiltin.parentElement : null;
   if (oldFoot) {
     const rebuilt = d.createElement('div');
@@ -177,6 +195,12 @@ function makeDom(hash) {
   check('补挂后按钮仍在小票按钮之前',
     !!reBtn && !!reBtn.nextElementSibling
     && reBtn.nextElementSibling.textContent.indexOf('生成我的投票小票') !== -1);
+  const reClose = d.querySelector('#builtin-layer button[data-sxg-ev-close]');
+  check('重渲染后「关闭」也自动补回（仍三键）',
+    !!reClose
+    && reClose.parentElement.querySelectorAll('button').length === 3
+    && !!reClose.previousElementSibling
+    && /生成我的投票小票/.test(reClose.previousElementSibling.textContent));
 
   // ─────────── 2. 卡片 → 公示条目解析（四层） ───────────
   console.log('\n--- 2. 卡片 → 公示条目解析 ---');
@@ -265,7 +289,21 @@ function makeDom(hash) {
   check('#evidence-board 原有导航锚点不会误触发 ev- 自动定位',
     (() => { const b2 = makeDom('#evidence-board'); return b2.w.location.hash === '#evidence-board'; })());
 
-  dom.window.close(); boot.dom.window.close();
+  // ─────────── 7. 2026-11-13 统一三键：内置弹窗补的「关闭」真能关弹窗 ───────────
+  console.log('\n--- 7. 内置弹窗补丁「关闭」按钮 ---');
+  const uni = makeDom();
+  await tick(150);
+  const uc = uni.d.querySelector('#builtin-layer button[data-sxg-ev-close]');
+  check('内置底排三键（跳转/小票/关闭）',
+    !!uc && uc.parentElement.querySelectorAll('button').length === 3);
+  uc.click();
+  await tick(120);
+  check('点补丁「关闭」→ 走弹窗头部 ✕ 卸载（不外部 removeChild React 节点）',
+    uni.w.__closedBuiltin === true);
+  check('弹窗已卸载', !uni.d.getElementById('builtin-layer'));
+  check('运行期无 JS 异常', uni.errors.length === 0, uni.errors.slice(0, 3));
+  // 全部断言跑完再关窗口（close 后遗留的 rAF 回调会在后续 await 里炸掉进程）
+  dom.window.close(); boot.dom.window.close(); uni.dom.window.close();
   console.log('\n' + '='.repeat(52));
   console.log(`通过 ${pass} 项，失败 ${fail} 项`);
   if (fail) console.log('失败项：\n  - ' + fails.join('\n  - '));
