@@ -4,6 +4,33 @@
 
 ---
 
+### chore：移除 Next 应用栈依赖，`npm audit` 8 项漏洞（1 critical / 5 high / 2 moderate）归零（2026-11-13 17:26 · 提交 `20ce506`）
+
+站长指令：`npm audit` 报 8 项漏洞，要求处理。此前已列过两个方案——A 移除 Next 应用栈、B 把 `next` 升到 `fixAvailable` 指向的 `next@16.4.6`——本次明确选 **A**。
+
+#### 为什么敢直接删
+
+- **8 项全在 `next` 树里**：`next` 本体 critical；`postcss` 为 direct high（`next` 的构建链依赖）；`sharp` / `browserslist` / `nanoid` / `source-map-js` 为 high 传递依赖；`postcss-selector-parser` / `baseline-browser-mapping` 为 moderate。删掉 `next`，整棵树一起消失，**不是绕过告警，是把不用的东西拆掉**。
+- **`next` 树在本仓库运行时零引用**：线上是根目录静态产物（`index.html` + `assets/index-YthXZ9eP.js` + css），GitHub Pages 直接发布，不经构建。
+- **CI 从不构建**：`.github/workflows/verify.yml` 只有 `npm install --no-save jsdom` 加一堆纯 node 脚本，`verify.mjs` 本身零依赖。
+- **README 早就写着禁止 `npm run build` 后部署**：`app/page.tsx` 渲染的是赞助商名单，与双休评级站点是两套数据，重建会覆盖主站。既然如此，构建脚本留着只有风险没有用途。
+
+#### 改动
+
+- **`package.json`**：整段删除 `dependencies`（`next` / `react` / `react-dom` / `framer-motion` / `tailwindcss-animate`）；`scripts` 删 `dev` / `build` / `start` / `lint` / `check-types` / `format:write` / `format:check`；`devDependencies` 只留 `jsdom` 与 `encoding`（跑 jsdom 回归必需）。保留 `verify` / `sync-version` / `precommit` / `seo` / `test:*` 等脚本，`precommit` 钩子行为不变。
+- **`package-lock.json` 重建**：182 → 62 个包，移除 173 个 Next 工具链包（`@babel/*`、`@swc/*`、`@types/react*`、`typescript`、`tailwindcss`、`autoprefixer`、`prettier`、`@ianvs/prettier-plugin-sort-imports` 等）；与旧 lock 重叠的包**版本一个都没动**（jsdom 仍 25.0.1），不存在"顺手升级"。
+- **CI 零改动**：workflow 里没有 `npm ci`，`npm install --no-save jsdom` 现在顺带少装整棵 Next 树，四个 job 的启动时间随之下降。
+- **文档同步（四处）**：README「六件最容易踩坑的事」第 3 条改为「`app/` 仅作历史留存、`npm run build` 已不存在」；README 把「🚀 本地开发与启动」（`npm install` / `npm run dev` / `npm run build` 三步）整节改写为「🚀 本地预览与校验」（静态服务 + `verify.mjs` + 需要跑 jsdom 回归时才 `npm install`）；`README-详情.md` 架构说明、`FORK_GUIDE.md` 第八节、`MAINTAINING.md` 三条硬性约束第 2 条同步。
+- **无前端产物改动**：不碰 `index.html` / `assets/`，**没有 bump 任何 `?v=N`**，页面版本号不动。
+
+#### 验证与一处如实记录
+
+- `npm audit --registry=https://registry.npmjs.org` → **0 漏洞**（此前 8 项）。
+- `node scripts/verify.mjs` → **1758 项全绿、0 红项**（上一批为 1759：本次删掉 `dev`/`build`/`start`/`lint`/`check-types`/`format:*` 并同步清掉文档里的对应命令文本后，以这些脚本/命令为遍历对象的检查项少 1 项，实测项数 1758；**非漏检，红项为 0**）。
+- CI 挂载的 50 个 `scripts/test-*.cjs` 逐个跑完，全 exit 0。
+- **一处如实记录**：50 个测试一口气串跑时，`test-luxiyi-logo.cjs` 红过一次——`waitCardsReady` 90s 超时，报「175 张未落齐（当前 180，batchFlag=true）」，即卡数已达标但 `flagStall` 连续计数被抖动打断。单独重跑两次均 **16 项全通过**（75.9s / 69.4s）。结论：属该断言对卡数抖动的敏感，**非本次依赖删除引入**（重叠包版本零变化可直接证伪），故**不为过检放宽超时或改判据**，只在此记录现象。
+- 未推送远端。
+
 ### chore：匿名邮箱入口换新地址，`anon-mail.js?v=4 → v=5`（2026-11-13 12:07 · 提交 `e03a6c8`）
 
 站长指令：把「匿名邮箱」入口的邮箱地址换成新地址。

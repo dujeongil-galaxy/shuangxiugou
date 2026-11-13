@@ -329,7 +329,15 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 **改动失败时往往完全不报错**（见 `PITFALLS.md`）。半年后回来看，唯一能判断
 「这行为什么长这样」的东西，就是当时的记录。
 
-> **近期改动入口**：最近一批（2026-11-13 · `22163f3`）站长「第四件事」——依据截图新建**「小米汽车」卡片**，由 AI 按仓库公开规则自主评级；同时把全仓计数口径、导航与 sitemap 一并收口。
+> **近期改动入口**：最近一批（2026-11-13 17:26 · `20ce506`）站长看到 `npm audit` 报 8 项漏洞，选**方案 A：移除 Next 应用栈依赖**，让漏洞面直接归零，而不是把 `next` 升到 16 再赌一轮。
+>
+> - **为什么能删**：8 项（1 critical / 5 high / 2 moderate）全在 `next` 依赖树（`next` 本体 critical、`postcss` direct high，`sharp`/`browserslist`/`nanoid`/`source-map-js`、`postcss-selector-parser`/`baseline-browser-mapping` 为传递依赖）；而 CI 从不构建、README 本就禁止 `npm run build` 部署、线上是根目录静态产物、`next` 树运行时零引用——**删它不改变任何线上行为**。
+> - **删了什么**：`dependencies` 整段移除（`next`/`react`/`react-dom`/`framer-motion`/`tailwindcss-animate`）；`scripts` 删 `dev`/`build`/`start`/`lint`/`check-types`/`format:*`；`devDependencies` 只留 `jsdom` + `encoding`，保留 `verify`/`sync-version`/`precommit`/`seo`/`test:*`。`package-lock.json` 182 → 62 个包（移除 173 个 Next 工具链包），重叠包版本零变化；CI 无需改动（本来就是 `npm install --no-save jsdom`）。
+> - **文档同步**：README 第 3 条踩坑项与「🚀 本地预览与校验」章节、`README-详情.md`、`FORK_GUIDE.md` 第八节、`MAINTAINING.md` 第 2 条，统一改写为「无构建步骤、`npm run build` 已不存在」。
+> - **无前端产物改动**：不碰 `index.html`/`assets/`，**没有 bump 任何 `?v=N`**，页面版本号不动。
+> - 复核：`npm audit` **0 漏洞**；`node scripts/verify.mjs` **1758 项全绿、0 红项**（上一批 1759，随被删脚本与文档命令文本同步微调，非漏检）；CI 挂载的 50 个 `test-*.cjs` 逐个全 exit 0（`test-luxiyi-logo.cjs` 在 50 连跑时曾因卡数抖动红一次，单独重跑 2 次 16/0，非依赖变更引入）。
+
+> **上一批**（2026-11-13 03:49 · `22163f3`）站长「第四件事」——依据截图新建**「小米汽车」卡片**，由 AI 按仓库公开规则自主评级；同时把全仓计数口径、导航与 sitemap 一并收口。
 >
 > - **新卡 `xiaomi-auto-card`**：`insertAfter: 'leapmotor-card'`（挂在同为造车新势力的零跑之后，**不与他人共用锚点**——共用会让两张卡互抢位置）；`logo: null` 走文字回退，不需要 PNG。既有「小米（手机）」卡未动。
 > - **自主评级 C 级**，主因「产线月休不足 6 天」：研发/销售/白领口径约双休（月休 8 天），产线/轮班为「上六休一」至「上 13 休 1」（月休 4-5 天）、部分基地连续 14 天白/夜班轮换；研发岗作息早 9 晚 10，产线加班费平时约 40 元/小时、周末约 50 元/小时。**判档只按公开规则的月休天数档位**（B=6-8 天、A=8 天以上、C=不足 6 天或拒不披露），不看企业名气，也不因研发岗双休就上调。
