@@ -1297,6 +1297,24 @@ section('2g. 首页证据链完整公示');
     // 公告栏折叠后，不想点「展开」的人得有别的路到证据链 —— 菜单里补一个页内锚点
     check(nm.includes("'#evidence-board'"),
       '悬浮菜单含「证据链公示」页内跳转（公告栏折叠后的补偿入口）');
+    /* 2026-11-14 站长：弹窗保持两枚按钮，随笔入口改挂右下角悬浮导航，双端统一叫
+       「手气不错」；只改按钮文字，notes.html 的标题 / 锁屏 / 加密正文一个字都不动。
+       ⚠️ 咬住 ITEMS 数组本身：上面的注释如实引用了站长原话（含「站长随笔」），
+       全文负向断言会把正确实现判红（PITFALLS 第六十三章的子串误伤）。 */
+    const navItems = (nm.match(/var ITEMS = \[([\s\S]*?)\];/) || [, ''])[1];
+    check(/label: '手气不错', href: '\.\/notes\.html'/.test(navItems)
+      && !/label: '站长随笔'/.test(navItems)
+      && exists('notes.html'),
+      '悬浮导航新增「手气不错」→ notes.html（PC 右下 dock / 手机二级菜单共用同一 ITEMS，双端同名）',
+      '入口缺失或写回「站长随笔」→ 弹窗改版丢掉的随笔按钮没补回来，或站长要求的改名没落地');
+    check((html.match(/nav-menu\.js\?v=7/g) || []).length === 2,
+      'index.html 的 nav-menu.js 预加载与脚本两处缓存号同步 bump 到 ?v=7',
+      '只 bump 一处 → 预加载旧脚本，用户拿到没有「手气不错」的旧菜单');
+    const dpNav = read('douyin-prompt.js');
+    check(!/手气不错/.test(dpNav)
+      && (dpNav.match(/class="dyp__(?:video|share)"/g) || []).length === 2,
+      '弹窗仍恰好两枚按钮（视频 / 分享文章），「手气不错」只进导航栏不回弹窗',
+      '站长明确「弹窗还是就 2 个按钮吧」，随笔按钮不许塞回弹窗');
     // 版本号由菜单承载（2026-11-02 第五轮）：公告栏已经彻底不写它了，
     // 所以「菜单读得到」这件事从"锦上添花"变成"唯一出口"。
     // 同理断言「读 DOM」而不是「有版本号」：JS 里另写死一份哈希也能过字面检查，
@@ -8664,7 +8682,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
 
   // ④ 挂载顺序：dock 脚本必须排在所有悬浮脚本之后。
   const mountOk = /<script defer src="\.\/fab-dock\.js\?v=3"><\/script>/.test(idx36q)
-    && idx36q.indexOf('fab-dock.js?v=3') > idx36q.indexOf('nav-menu.js?v=6')
+    && idx36q.indexOf('fab-dock.js?v=3') > idx36q.indexOf('nav-menu.js?v=7')
     && /mobile-fixes\.css\?v=22/.test(idx36q)
     && /header-menu-patch\.js\?v=11/.test(idx36q);
   check(mountOk,
