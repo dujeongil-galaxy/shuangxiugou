@@ -4,6 +4,16 @@
 
 ---
 
+### fix：还原分享按钮「换图标」误改，改补手型指针（cursor:pointer）（2026-11-14 12:21 · 提交 `663c0d2`）
+
+站长纠正：前面几个顶栏按钮 hover 时鼠标变成「手型」，但分享按钮不会（只有点击有响应）——要的是手型指针，不是换图标。上一条（95b043b）理解反了，整段换图标逻辑回滚。
+
+- **根因定位**：分享按钮是 `createElement('a')` 却**没设 `href`** 的 `<a>` 元素，浏览器默认不给手型指针；而 Star/Login 是真正的 `<a href>`/`<button>`（默认手型）、匿名邮箱靠自己注入的 `cursor:pointer` CSS——所以前面几个 hover 变手、分享不变。
+- **修复**：`share-entry.js` 给 `.sxg-share-entry-btn` 显式注入 `cursor:pointer`（与 anon-mail 同口径），hover 即显示手型，与顶栏其余按钮一致。不再动图标。
+- **回滚内容**：删除 `ICON_HOVER` 与 `mouseenter`/`mouseleave` 换图标逻辑，图标改回 `ICON` 直接内联（静止态仍 1 枚 svg），移除 `ICON_HOVER` 导出。`index.html` 挂载 `share-entry.js?v=3→4`（内容又变，必 bump）。
+- **断言同步**：`test-share-entry.cjs` 把 ② 段「hover 换图标」三项断言换成 `cursor:pointer` 断言——源码级（`.sxg-share-entry-btn\{cursor:pointer\}` 在 SHARE_SRC）+ 注入样式级（运行时 `<style id="sxg-share-entry-style">` 内含该规则）；用例 **40 → 39 项**（仍 0 失败）。`verify.mjs` §36w、`README.md` 三条禁令同步 `?v=4`。
+- 复核：verify **1772 项全绿**；`test-share-entry` **39/0**；本机 CDP 真渲染（Edge 无头，桌面 1440）读 `getComputedStyle(#sxg-share-entry-btn).cursor === 'pointer'`，移除首页抖音浮层后把真实鼠标移到按钮中心，`elementFromPoint` 命中按钮本身、`shareCursor` 仍为 `pointer` → `CURSOR_PASS=true`，与匿名邮箱/Login 三枚一致。
+
 ### feat：分享本站按钮 hover 换图标（静止「分享节点」→ 悬停「链环」）+ 比亚迪卡备注改写（2026-11-14 11:45 · 提交 `95b043b`）
 
 站长指令：顶栏带图标的按钮鼠标放上去都会变成另一个图标，但「分享本站」不会，要补上一致的 hover 反馈。
