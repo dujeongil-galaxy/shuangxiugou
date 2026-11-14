@@ -1985,16 +1985,24 @@ if (exists('notes.html')) {
   const dp = dpRaw
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/^\s*\/\/.*$/gm, '');
-  check(/站长随笔/.test(dp),
-    '弹窗底部有「站长随笔」入口',
-    '入口缺失 → 页面存在但无人能到');
-  // ⚠️ 2026-10-19 站长决定：notes.html 锁屏可直接访问（保留密码锁），
-  //    弹窗入口改为直接跳转，原「还在写」公告弹窗整体移除。
-  //    （2026-10-25 该入口文字还原为「站长随笔」，仍跳 notes.html。）
-  //    剥注释后再匹配，避免注释里的说明文字被当成真实跳转。
-  check(/href\s*=\s*["']\.\/notes\.html/.test(dp),
-    '「站长随笔」直接跳转到 notes.html',
-    '入口缺失或仍是弹公告 → 页面存在但无人能到');
+  // 2026-11-14 站长指令：弹窗内容整体替换为公众号式长文《别让"跟风买车"…》，
+  // 顶栏标签「劳工友好提醒」→「公益提醒」；底部保留站长新站外链（婚恋数据核查台）；
+  // 旧版的 站长随笔 / 压榨员工标题 / 抖音视频链接 / 切换旧版 全部撤掉。
+  check(/公益提醒/.test(dp) && !/劳工友好提醒/.test(dp),
+    '弹窗标签已更名「公益提醒」（旧「劳工友好提醒」清零）',
+    '标签没改 → 仍显示旧名');
+  check(/dyp--article/.test(dp) && /dyp__article/.test(dp),
+    '弹窗为文章版（.dyp--article 标记 + 正文容器，旧版抖音按钮不再注入）',
+    '缺文章版标记 → 旧版抖音按钮会重新注入弹窗');
+  check(/别让["“]跟风买车/.test(dp) && /比亚迪轮毂/.test(dp),
+    '弹窗正文已替换为新文章（标题 + 比亚迪轮毂事件）',
+    '正文不是新文章 → 替换没落地');
+  check(/婚恋数据核查台/.test(dp) && /dating-data-factcheck/.test(dp),
+    '弹窗底部保留站长新站外链「婚恋数据核查台」（dating-data-factcheck）',
+    '外链缺失 → 站长要求保留的推荐语被误删');
+  check(/去看看站长的新网站/.test(dp) && /我要分享此文章/.test(dp),
+    '弹窗底部两枚按钮齐备（去看看站长的新网站 / 我要分享此文章）',
+    '底部按钮缺失 → 分享/引流入口不完整');
   check(!/dyp--notice/.test(dp),
     '「还在写」公告弹窗已移除',
     'notes.html 已可直接访问（保留密码锁），公告弹窗不应再出现');
@@ -2027,12 +2035,9 @@ if (exists('notes.html')) {
   //   站长原话：「全程仅用 20 分钟，好像不能说他们有什么问题，还是还原吧」。
   //   —— 景区从故障到游客落地仅 20 分钟，处置及时，不宜当负面案例挂首页弹窗。
   //   ⚠️ dp 已剥注释 —— 注释里记沿革不算，只认代码本体。
-  check(/压榨员工的产品，最后买单的是谁/.test(dp),
-    '弹窗标题已还原为旧版（汽车 / 压榨员工的产品）',
-    '标题不是旧版 → 2026-11-03 的回退没落地，或又被换了别的内容');
-  check(/v\.douyin\.com\/37pbo6qxUbs/.test(dp),
-    '弹窗主链接指向旧版抖音视频',
-    '主链接不是抖音原视频 → 回退不完整（链接被改坏或仍指向微信原文）');
+  check(!/站长随笔/.test(dp) && !/压榨员工的产品/.test(dp) && !/v\.douyin\.com\/37pbo6qxUbs/.test(dp),
+    '旧版弹窗内容已清零（站长随笔 / 压榨员工标题 / 抖音旧链接）',
+    '旧内容残留 → 新文章与旧版会并存');
   check(!/景区飞椅/.test(dp) && !/mp\.weixin\.qq\.com/.test(dp) && !/阅读微信原文/.test(dp),
     '飞椅版内容在弹窗里已清零（标题/链接/按钮文案）',
     '仍有飞椅残留 → 2026-11-02 那版没退干净，两份内容会并存');
@@ -8041,7 +8046,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/z-index:9995/.test(ad32) && /padding:7px 0 14px/.test(ad32)
     && /background: rgba\(24, 20, 16, 0\.22\)/.test(dyp32)
     && /backdrop-filter: none/.test(dyp32)
-    && /douyin-prompt\.css\?v=13/.test(idx32),
+    && /douyin-prompt\.css\?v=14/.test(idx32),
     '§32d 广告位层级 9995 / 底部留白 14px；.dyp 遮罩减淡去模糊，弹窗引流功能原样保留');
 
   check(/var SEARCH_DURATION = 6000/.test(ff32)
@@ -8623,8 +8628,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   // ⑦ 挂载与 ?v 钉子（§21h 纪律），以及 jsdom 行为测试存在。
   check(/<script defer src="\.\/github-access-help\.js\?v=3"><\/script>/.test(idx36r)
     && /appeal-policy\.js\?v=4/.test(idx36r)
-    && /share-modal\.js\?v=8/.test(idx36r)
-    && /share-modal\.js\?v=8/.test(sp36r)
+    && /share-modal\.js\?v=9/.test(idx36r)
+    && /share-modal\.js\?v=9/.test(sp36r)
     && exists('scripts/test-github-access-help.cjs'),
     '§36r index.html 挂载 github-access-help.js?v=3 / appeal-policy.js?v=4，改动脚本 ?v 同步 bump，配套 jsdom 行为测试存在',
     '?v 没 bump → 浏览器/CDN 命中旧脚本，新文案与链接规整都不生效');
@@ -8743,10 +8748,10 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '按钮没进弹窗 / 回到顶栏 dock 落位 → 与站长「放在这个位置」不符');
 
   // ④ 挂载与 ?v 钉子 + jsdom 测试挂进 CI（§21o）。
-  check(/<script defer src="\.\/dyp-version-toggle\.js\?v=7"><\/script>/.test(idx36u)
+  check(/<script defer src="\.\/dyp-version-toggle\.js\?v=8"><\/script>/.test(idx36u)
     && exists('scripts/test-dyp-toggle.cjs')
     && wf36u.indexOf('node scripts/test-dyp-toggle.cjs') !== -1,
-    '§36u index.html 挂载 dyp-version-toggle.js?v=7，配套 jsdom 测试挂进 CI',
+    '§36u index.html 挂载 dyp-version-toggle.js?v=8，配套 jsdom 测试挂进 CI',
     '?v 没 bump / 测试没挂 CI → 转换逻辑静默失效没人拦');
 
   /* ⑥ 站长 2026-11-12：「切换旧版，请不要使用替换二字」。
@@ -8932,13 +8937,13 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '海外仍走横向清单行 → 上 5 下 10 不成立；图标容器改回圆角方形 → 与国内两套视觉分裂');
 
   // ⑤ ?v 同步 + jsdom 行为测试挂进 CI（§21h / §21o 纪律）。
-  check(/share-modal\.js\?v=8/.test(idx36v)
-    && /share-modal\.js\?v=8/.test(sp36v)
-    && !/share-modal\.js\?v=7/.test(idx36v)
-    && !/share-modal\.js\?v=7/.test(sp36v)
+  check(/share-modal\.js\?v=9/.test(idx36v)
+    && /share-modal\.js\?v=9/.test(sp36v)
+    && !/share-modal\.js\?v=8/.test(idx36v)
+    && !/share-modal\.js\?v=8/.test(sp36v)
     && exists('scripts/test-share-modal.cjs')
     && wf36v.indexOf('node scripts/test-share-modal.cjs') !== -1,
-    '§36v share-modal.js?v=8 在 index.html / sponsor.html 同步 bump，分享弹窗 jsdom 测试存在并挂进 CI',
+    '§36v share-modal.js?v=9 在 index.html / sponsor.html 同步 bump，分享弹窗 jsdom 测试存在并挂进 CI',
     '?v 没 bump → 线上仍跑旧脚本，加固等于没发；测试没挂 CI → 下次回退没人拦');
 }
 
@@ -9045,9 +9050,9 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/点右上角 × 关闭/.test(dp36x) && !/现在可以关闭了/.test(dp36x),
     '§36x 倒计时到点后提示改为「点右上角 × 关闭」',
     '提示仍写「可以关闭」却没说怎么关 → 用户会去点空白');
-  check(/<script defer src="\.\/douyin-prompt\.js\?v=18"><\/script>/.test(idx36x)
-    && !/douyin-prompt\.js\?v=17/.test(idx36x),
-    '§36x index.html 挂载 douyin-prompt.js?v=18（bump 缓存号）',
+  check(/<script defer src="\.\/douyin-prompt\.js\?v=19"><\/script>/.test(idx36x)
+    && !/douyin-prompt\.js\?v=18/.test(idx36x),
+    '§36x index.html 挂载 douyin-prompt.js?v=19（bump 缓存号）',
     '?v 没 bump → 线上仍跑旧脚本，改动等于没发');
 
   // 2026-11-13 站长追加：「不要 15 分钟冷却，刷新首页必弹」。

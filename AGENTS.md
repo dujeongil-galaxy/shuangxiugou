@@ -23,7 +23,6 @@
 | `index.html` | 首页。React 应用挂载在 `#root`，公告栏是静态 HTML |
 | `projects.html` | 同类项目导航（静态页） |
 | `sponsor.html` | 赞助页 |
-| `jiahua-fact-check.html` | 云南嘉华事件核查页 |
 | `notes.html` | 站长随笔。**正文加密**，见下方专节 |
 | `brand/*.html` | 62 个品牌详情页，title 格式 `{品牌名} 几点下班 双休率X%｜双休购` |
 | `friend-links-footer.js` | 首页页脚内容（友情链接、微博投票、搜索排名公示） |

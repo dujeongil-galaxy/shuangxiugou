@@ -121,6 +121,9 @@
   /* ---- 核心：把 .dyp__acts 调成目标版本（幂等可重入）---- */
   var appliedVersion = null;
   function applyDyp(version) {
+    // 文章版弹窗（.dyp--article）没有抖音短片 / 事实核查，转换按钮整体无意义，
+    // 直接跳过，避免往文章正文里注入 短片一/短片二/切换旧版。
+    if (document.querySelector('.dyp__panel.dyp--article')) return false;
     var acts = document.querySelector('.dyp__acts');
     if (!acts) return false;
     var go = acts.querySelector('.dyp__go');
@@ -163,6 +166,8 @@
 
   /* ---- 弹窗内转换按钮（贴在 .dyp__panel 右上角，× 左侧）---- */
   function ensureButton() {
+    // 文章版弹窗不挂转换按钮（见 applyDyp 同款守卫）
+    if (document.querySelector('.dyp__panel.dyp--article')) return null;
     var panel = document.querySelector('.dyp__panel');
     if (!panel) return null;                 // 弹窗还没 build（2.5s 延迟）
     var btn = panel.querySelector('#' + BTN_ID);

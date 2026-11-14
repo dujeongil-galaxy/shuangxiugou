@@ -11,7 +11,7 @@
         不在顶栏 / dock；带 .dyp__version-toggle
      ⑥ 弹窗未 build 时 sweep 不报错、不误建按钮
      ⑦ 点击转换按钮翻版本（new ↔ old）并记忆 localStorage
-     ⑧ index.html 引用 dyp-version-toggle.js?v=7（剥 HTML 注释再判）
+     ⑧ index.html 引用 dyp-version-toggle.js?v=8（剥 HTML 注释再判）
    ========================================================================== */
 'use strict';
 
@@ -184,8 +184,8 @@ function injectFactcheck(w) {
   console.log('\n⑧ index.html 引用');
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')
     .replace(/<!--[\s\S]*?-->/g, '');
-  check('index.html 已引用 dyp-version-toggle.js?v=7',
-    /<script defer src="\.\/dyp-version-toggle\.js\?v=7"><\/script>/.test(idx));
+  check('index.html 已引用 dyp-version-toggle.js?v=8',
+    /<script defer src="\.\/dyp-version-toggle\.js\?v=8"><\/script>/.test(idx));
 
   setTimeout(function () {
     console.log('\n========== 结果：' + passed + ' 项通过，' + failed + ' 项失败 ==========');

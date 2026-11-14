@@ -349,6 +349,112 @@
   75% { transform: translateX(4px); }
 }
 
+/* ==========================================================================
+   公益提醒弹窗（文章版，2026-11-14）：.dyp__panel.dyp--article
+   --------------------------------------------------------------------------
+   首页弹窗内容由「抖音短视频推荐」替换为一篇公众号式长文，面板加宽、正文区
+   可滚动，底部两枚按钮（去看看站长的新网站 / 我要分享此文章）。
+   ========================================================================== */
+
+/* 文章版面板加宽，给长文更舒适的阅读宽度 */
+.dyp--article {
+  width: min(94vw, 600px);
+}
+
+/* 正文区：固定高度内滚动，按钮常驻底部不被推走 */
+.dyp__article {
+  max-height: 52vh;
+  overflow-y: auto;
+  margin: 4px 0 14px;
+  padding-right: 6px;
+  color: #3a342c;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dyp__article .dyp__h1 {
+  margin: 2px 0 12px;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.4;
+  color: #2a2620;
+}
+
+.dyp__article h2 {
+  margin: 18px 0 8px;
+  font-size: 15.5px;
+  font-weight: 800;
+  line-height: 1.5;
+  color: #2e8b6f;
+}
+
+.dyp__article p {
+  margin: 0 0 11px;
+  font-size: 14px;
+  line-height: 1.85;
+  color: #4a443c;
+}
+
+.dyp__article strong {
+  color: #c0392b;
+  font-weight: 800;
+}
+
+.dyp__article ol {
+  margin: 0 0 11px;
+  padding-left: 22px;
+}
+
+.dyp__article ol li {
+  margin: 0 0 9px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #4a443c;
+}
+
+.dyp__article .dyp__sign {
+  margin: 14px 0 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #7d7367;
+  text-align: right;
+}
+
+/* 底部两枚按钮：复用 .dyp__acts > * 的统一尺寸规则，只补配色 */
+.dyp__visit {
+  background: linear-gradient(135deg, #3dad8a, #2e8b6f);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(61, 173, 138, 0.3);
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.dyp__visit:hover { filter: brightness(1.06); }
+.dyp__visit:active { transform: scale(0.98); }
+
+.dyp__share {
+  border: 1px solid #4fb389;
+  background: #d9efe5;
+  color: #175e48;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.dyp__share:hover {
+  background: #c9e8db;
+  border-color: #3ea87c;
+  color: #0f4a37;
+}
+
+.dyp__share:active { transform: scale(0.98); }
+
+/* 窄屏（贴底抽屉）时正文区高度收紧，避免把按钮挤到屏幕外 */
+@media (max-width: 520px) {
+  .dyp--article { width: 100%; }
+  .dyp__article { max-height: 46vh; }
+}
+
 /* 窄屏：面板贴底，拇指更容易够到按钮 */
 @media (max-width: 520px) {
   .dyp__panel {

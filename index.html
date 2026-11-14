@@ -139,7 +139,7 @@
     <!-- 星巴克 × WorkBuddy 联名推广（临时替换良配）：独立文件，改完请把 ?v=N 的 N +1 防缓存 -->
     <link rel="stylesheet" href="./starbucks-ad.css?v=1">
     <!-- 首页视频推荐弹窗（改完请把 ?v=N 的 N +1 防缓存） -->
-    <link rel="stylesheet" href="./douyin-prompt.css?v=13">
+    <link rel="stylesheet" href="./douyin-prompt.css?v=14">
     <!-- 移动端排版修复（须在主 CSS 之后：靠覆盖生效；改完请把 ?v=N 的 N +1） -->
     <link rel="stylesheet" href="./mobile-fixes.css?v=21">
   <!-- 黑卡预隐藏（2026-11-10 站长反馈「先加载黑色卡片，然后才出现广告位」）：
@@ -9620,7 +9620,7 @@
   <!-- 星巴克 × WorkBuddy 联名推广（临时替换良配）：注入 DOM + 活动海报弹窗 -->
   <script defer src="./starbucks-ad.js?v=1"></script>
   <!-- 首页视频推荐弹窗：延迟自动弹出，冷却期内不重复弹（localStorage） -->
-  <script defer src="./douyin-prompt.js?v=18"></script>
+  <script defer src="./douyin-prompt.js?v=19"></script>
   <!-- 品牌 LOGO 加密容器解密（2026-11-05 站长要求「LOGO 缓存 blob 容器、仓库不得明文、
        不引用站外来源」）：59 张核实过的官方 LOGO 打包在 assets/logos.enc（AES-256-GCM），
        本脚本浏览器本地解密成 Blob URL 回填 img[data-sxg-enc]。解密失败自动把 logo 框
@@ -9634,7 +9634,7 @@
        1) 顶部「打卡并生成小票」改为弹窗，引导去品牌档案卡打卡（原来默认给第一家品牌打卡，会误导）
        2) 自定义品牌卡（DOM 克隆）没有 React onClick，补上「打卡」「详情证据」功能 -->
   <script defer src="./custom-card-actions.js?v=24"></script>
-  <script defer src="./share-modal.js?v=8"></script>
+  <script defer src="./share-modal.js?v=9"></script>
   <script defer src="./u-grade-patch.js?v=19"></script>
   <script defer src="./luckin-note-patch.js?v=1"></script>
   <!-- 比亚迪卡片曝光登记（2026-11-09 站长线索 / 2026-11-10 视频下架补记）：
@@ -9652,8 +9652,6 @@
   <script defer src="./rating-stats-patch.js?v=13"></script>
   <script defer src="./ai-notice-patch.js?v=1"></script>
   <script defer src="./ad-text-width-fix.js?v=1"></script>
-  <!-- 为劳工友好弹窗追加第三个按钮「事实核查」，指向 jiahua-fact-check.html -->
-  <script defer src="./factcheck-button.js?v=1"></script>
   <!-- 拼音 / 首字母模糊搜索联想。
        背景：bundle 的搜索是纯 includes 硬匹配，输「ning」「ndsd」搜不到
        「宁德时代」。真要改就得动压缩产物 assets/index-YthXZ9eP.js，
@@ -9767,7 +9765,7 @@
        顶栏落在 anon-mail 同位置（Login GitHub 之后；≤640px 进 fab-dock），
        默认新版（2 个抖音链接 + 站长随笔、隐藏事实核查），点击切旧版（含事实核查）。
        独立文件补丁 .dyp__acts，不改 douyin-prompt.js / factcheck-button.js 本体。 -->
-  <script defer src="./dyp-version-toggle.js?v=7"></script>
+  <script defer src="./dyp-version-toggle.js?v=8"></script>
   <!-- 首页黑色「全网打工人已转移消费额」卡片改为「滚动式广告位」（2026-11-09 站长指令升级：黑卡不保留，原位放滚动式广告位轮播——两张站点自绘矢量设计稿，陆喜依广告图与 CTA 提示词都是真链接可点跳天猫支持双休企业；卡片内容居中、箭头移到卡片下方导航条不再压住招商卡标题；支持手动切换与自动轮播；不动其它架构） -->
   <!-- 广告位补丁已前移到 <head> 用 async 加载（2026-11-10 站长「超过 10 秒都没加载成功」）：
        原来它排在第 40 个 defer 脚本，必须等 692KB body 解析完 + 前 39 个脚本执行完才跑，

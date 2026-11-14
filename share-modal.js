@@ -75,13 +75,19 @@
   var ICON = {
     /* QQ（腾讯 QQ 蓝色 #12B7F5 圆形底 + 白色企鹅剪影；按钮文字按站长要求写「QQ」，
        分享目标为 QQ空间，与微信/朋友圈同口径走「复制 + 提示粘贴」）。 */
+    /* QQ：经典企鹅形象——黑身白肚 + 标志性红围巾 + 橙嘴橙脚（站长 2026-11-14 纠正：
+       之前的白企鹅剪影没有红围巾，不是 QQ 的正确图标）。 */
     qq: '<svg viewBox="0 0 24 24" aria-hidden="true">'
       + '<circle cx="12" cy="12" r="12" fill="#12B7F5"/>'
-      + '<path fill="#fff" d="M12 4c-3.1 0-5.2 2.3-5.2 5.4 0 1.5.4 2.5.6 3.8 0 1.3-.8 1.9-.8 3.2 0 1.4 1 2.2 2 2.2.3 1.3 1.6 2.2 3.4 2.2s3.1-.9 3.4-2.2c1 0 2-.8 2-2.2 0-1.3-.8-1.9-.8-3.2 0-1.3.6-2.3.6-3.8 0-3.1-2.1-5.4-5.2-5.4z"/>'
-      + '<circle cx="9.7" cy="9.9" r="1.2" fill="#1f2937"/>'
-      + '<circle cx="14.3" cy="9.9" r="1.2" fill="#1f2937"/>'
-      + '<path fill="#FF9D2E" d="M11 11.5l1 .8 1-.8-.5 2.1h-1z"/>'
-      + '<path stroke="#FF9D2E" stroke-width="1.8" stroke-linecap="round" d="M9.4 18l-.7 2.1M14.6 18l.7 2.1"/></svg>',
+      + '<path fill="#1f1f1f" d="M12 3.5c-3.6 0-6 3.2-6 7.2 0 3.3 1.8 6.2 4.2 7.3V20h3.6v-2.5c2.4-1.1 4.2-4 4.2-7.3 0-4-2.4-7.2-6-7.2z"/>'
+      + '<ellipse cx="12" cy="12.8" rx="4.1" ry="5.1" fill="#fff"/>'
+      + '<circle cx="10.2" cy="11.1" r="1.05" fill="#1f1f1f"/>'
+      + '<circle cx="13.8" cy="11.1" r="1.05" fill="#1f1f1f"/>'
+      + '<path fill="#FF9D2E" d="M11 12.8h2l-1 1.7z"/>'
+      + '<path fill="#E5392F" d="M6.5 14.7c1.7 1.7 3.6 2.4 5.5 2.4s3.8-.7 5.5-2.4c-.4 1.9-2.2 3.2-5.5 3.2s-5.1-1.3-5.5-3.2z"/>'
+      + '<path fill="#C62828" d="M14 17c1 .1 1.9-.1 2.4-.8.5 1.3 0 2.4-.7 3.2-1.1-.4-1.6-1.5-1.7-2.5z"/>'
+      + '<path stroke="#FF9D2E" stroke-width="1.8" stroke-linecap="round" fill="none" d="M9 20.4h2.1M12.9 20.4h2.1"/>'
+      + '</svg>',
     wechat: '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="#fff"><path d="M9.6 4.1C6 4.1 3 6.6 3 9.6c0 1.7.9 3.3 2.4 4.3l-.7 2.2 2.5-1.2c.7.2 1.5.3 2.3.3h.4c-.2-.5-.3-1.1-.3-1.7 0-2.9 2.8-5.2 6.2-5.2h.4C15.7 5.8 12.9 4.1 9.6 4.1z"/><path d="M21 13.4c0-2.5-2.5-4.5-5.5-4.5S10 10.9 10 13.4s2.5 4.5 5.5 4.5c.6 0 1.2-.1 1.8-.2l2 1-.6-1.7c1.4-.8 2.3-2.1 2.3-3.6z"/></g></svg>',
     douyin: '<svg viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(-.8,-.5)" fill="#25F4EE"><path d="' + D + '"/></g><g transform="translate(.8,.5)" fill="#FE2C55"><path d="' + D + '"/></g><path d="' + D + '" fill="#fff"/></svg>',
     xhs: '<svg viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="12.4" text-anchor="middle" dominant-baseline="middle" font-size="7.6" font-weight="700" fill="#fff" font-family="-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif">小红书</text></svg>',
