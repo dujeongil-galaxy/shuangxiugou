@@ -81,9 +81,11 @@ function fire(w, el, type) {
     && /var\s+ICON\s*=\s*'<svg/.test(SHARE_SRC));
   check('图标是内联 SVG（不引外部图片/字体，避免 404 与三端不一致）',
     /<svg[^>]*viewBox="0 0 24 24"/.test(SHARE_SRC) && !/https?:\/\/[^"']*\.(png|svg|woff)/.test(SHARE_SRC));
-  check('index.html 挂载 share-entry.js?v=3，且排在 anon-mail.js 之后',
+  check('share-entry.js 给分享按钮注入 cursor:pointer（hover 变手型，与顶栏按钮一致）',
+    /\.sxg-share-entry-btn\{cursor:pointer\}/.test(SHARE_SRC));
+  check('index.html 挂载 share-entry.js?v=4，且排在 anon-mail.js 之后',
     (function () {
-      const iShare = HTML.indexOf('./share-entry.js?v=3');
+      const iShare = HTML.indexOf('./share-entry.js?v=4');
       const iAnon = HTML.indexOf('./anon-mail.js?v=5');
       return iShare > 0 && iAnon > 0 && iShare > iAnon;
     })());
@@ -103,16 +105,10 @@ function fire(w, el, type) {
     check('内含 1 枚 SVG 图标、且不污染 textContent', !!share
       && share.querySelectorAll('svg').length === 1
       && share.textContent.trim() === '分享本站');
-    /* 悬停换图标（2026-11-14 站长要求：与顶栏其余带图标按钮一致的 hover 反馈）*/
-    const ico = share.querySelector('.sxg-share-ico');
-    check('图标包在 .sxg-share-ico 内、静止态是「分享节点」图标',
-      !!ico && !/M10 13a5/.test(ico.innerHTML));
-    fire(w, share, 'mouseenter');
-    check('鼠标移入 → 换成「链环」图标（另一个图标）',
-      !!ico && /M10 13a5/.test(ico.innerHTML));
-    fire(w, share, 'mouseleave');
-    check('鼠标移出 → 还原「分享节点」图标',
-      !!ico && !/M10 13a5/.test(ico.innerHTML));
+    /* 手型指针（2026-11-14 站长纠正：要的是 hover 变手型，不是换图标）*/
+    const style = d.getElementById('sxg-share-entry-style');
+    check('注入 .sxg-share-entry-btn{cursor:pointer}（鼠标悬停显示手型，与顶栏其它按钮一致）',
+      !!style && /\.sxg-share-entry-btn\{cursor:pointer\}/.test(style.textContent));
     check('role=button + 可聚焦 + aria-label', !!share
       && share.getAttribute('role') === 'button'
       && share.getAttribute('tabindex') === '0'
