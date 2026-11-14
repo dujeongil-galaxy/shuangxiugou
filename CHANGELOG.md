@@ -4,6 +4,19 @@
 
 ---
 
+### feat：首页弹窗整体替换为公益提醒长文 + 底部保留婚恋数据核查台推荐；QQ 图标改回红围巾企鹅；撤下并删除云南嘉华核查页（2026-11-14 13:49 · 提交 `1e2f8bc`）
+
+站长指令（截图指定）：① 分享弹窗的 QQ 图标不是红围巾企鹅，要换成经典 QQ 企鹅（黑身白肚 + 红围巾 + 橙嘴橙脚）；② 弹窗其他内容全部撤掉，换成一篇新文章《别让“跟风买车”，变成我们为“傲慢”买单》（比亚迪轮毂装反 / 法务部 500 万悬赏黑公关）；③ 推荐语「顺便推荐站长的新站『婚恋数据核查台』：给相亲数据做溯源核查 ↗」不删；④ 云南嘉华核查页（jiahua-fact-check.html）连同事实核查按钮一起下线删除；⑤ 标签「劳工友好提醒」→「公益提醒」。
+
+- **弹窗重写为文章版**：`douyin-prompt.js` 把旧抖音视频弹窗整段替换为公众号式长文（`ARTICLE_HTML`），面板加 `.dyp--article` 标记；标签 `公益提醒`；正文容器 `.dyp__article` 滚动（max-height 52vh）。底部两枚按钮：① `去看看站长的新网站`（→ `https://dujeongil-galaxy.github.io/dating-data-factcheck/`）② `我要分享此文章`（点开 `window.SXGShare.open()`，开前临时改写 `og:description` 为文章分享文案、开完即还原）。关闭方式仍是「点右上角 × 唯一出口」，8 秒锁定窗口 + 倒计时保留；推荐语落在 `.dyp__tip` 内（站长明示不删）。
+- **下游补丁自动让位**：`dyp-version-toggle.js` 在 `applyDyp()` / `ensureButton()` 顶部加 `if (document.querySelector('.dyp__panel.dyp--article')) return …`，文章版弹窗不再注入 短片一/短片二/切换旧版/事实核查；所有源码字符串（BYD/BYD2/短片一/短片二/切换旧版/替换禁止）保留，§36u 与 `test-dyp-toggle.cjs` 不受影响。
+- **QQ 图标改回红围巾企鹅**：`share-modal.js` 的 `ICON.qq` 由白企鹅剪影换成经典 QQ 企鹅（黑身 `#1f1f1f` + 白肚 + 红围巾 `#E5392F`/`#C62828` + 橙嘴橙脚 `#FF9D2E`），蓝圆底 `#12B7F5` 不变；`?v 8→9`（index.html / sponsor.html / verify §36r+§36v 同步）。
+- **撤下并删除云南嘉华核查页**：`git rm` 掉 `jiahua-fact-check.html` 与 `factcheck-button.js`，`index.html` 移除其挂载 `<script>` 与 stale 注释；`sitemap.xml`、`scripts/seo/generate-sitemap.py`、`AGENTS.md` 文件清单同步清理；`?v 7→8`（index.html / verify §36u 同步）。
+- **缓存号同步**：`douyin-prompt.css 13→14`、`douyin-prompt.js 18→19`；`verify.mjs` 重写弹窗内容断言（公益提醒标签 / 文章版标记 / 新文章标题+轮毂 / 婚恋外链保留 / 两枚底部按钮 / 旧版内容清零），并同步 §36r（share-modal ?v 9）、§36u（dyp-version-toggle ?v 8）、§36x（douyin-prompt ?v 19）钉子；`test-dyp-toggle.cjs` 同步 ?v=8。
+- **验收**：verify **1766 项全绿**；`test-share-modal` **36/0**、`test-dyp-toggle` **25/0**、`test-byd-expose` **57/0**；本机 CDP 真渲染（Edge 无头，桌面 1440 + 手机 390 双档）确认：公益提醒标签、长文渲染、婚恋外链保留、两枚底部按钮、分享弹窗可开、× 8 秒后关闭，`PAGEERRORS` 空。
+
+---
+
 ### feat：分享弹窗国内排序调整——朋友圈撤掉、原微信位换成 QQ（2026-11-14 12:56 · 提交 `d2d99f6`）
 
 站长要求（截图指定）：① 朋友圈直接改为「微信」（首格由微信占据，沿用微信绿双气泡图标）；② 原「微信」按钮替换为「QQ空间」，图标用 QQ 的蓝色企鹅、文字写「QQ」。
