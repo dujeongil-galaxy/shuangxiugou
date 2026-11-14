@@ -89,15 +89,25 @@
   color: #2a2620;
 }
 
+/* 顶栏标签：紧凑的圆角小徽标，不占满整行。
+   文章版面板 .dyp--article 是 flex 列，交叉轴 align-items 默认 stretch ——
+   inline-block 的标签会被拉伸成一条贯穿面板宽度的浅绿横幅（2026-11-14 站长截图：
+   「改成圆角的，不要一行直接占满」）。align-self:flex-start 把交叉轴还给内容宽度，
+   配合 width:fit-content 与 999px 圆角收成贴合文字的小胶囊。 */
 .dyp__tag {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  width: fit-content;
+  max-width: 100%;
   margin-bottom: 12px;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 999px;
   background: #d9eee5;
   color: #2e8b6f;
   font-size: 12px;
   font-weight: 700;
+  line-height: 1.5;
 }
 
 .dyp__title {

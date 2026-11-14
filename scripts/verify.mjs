@@ -2078,6 +2078,16 @@ if (exists('notes.html')) {
     && /gap-2:last-child\s*>\s*button\s*\{[^}]*flex:\s*1 1 auto/.test(mfX),
     '手机端右组三枚操作钮强制一行三等分（不再出现 2+1 孤行）',
     '右组 nowrap 或等分规则丢失 → 窄屏又把「详情证据」单独挤到第三行');
+  // ④b 顶栏「公益提醒」标签（2026-11-14 18:46 站长截图「改成圆角的，不要一行直接占满」）：
+  // 面板是 flex 列，交叉轴默认 stretch，只写 inline-block + border-radius 仍会被拉成
+  // 一条贯穿整行的浅绿横幅；必须显式 align-self:flex-start + fit-content 才是紧凑圆角徽标。
+  const tagRule = (dpcX.match(/\.dyp__tag\s*\{([^}]*)\}/) || [, ''])[1];
+  check(/align-self:\s*flex-start/.test(tagRule)
+    && /width:\s*fit-content/.test(tagRule)
+    && /border-radius:\s*999px/.test(tagRule)
+    && !/(?:^|[;{\s])width:\s*100%/.test(tagRule),
+    '顶栏「公益提醒」为紧凑圆角徽标（align-self:flex-start + fit-content，不占满一行）',
+    '标签缺 align-self 会被 flex 列 stretch 成整行绿横条 → 站长截图指出的问题回潮');
   // ⑤ 比亚迪车主专题报道页：独立 HTML、双休购旗下、三则故事齐全、不照抄原话。
   const br = exists('byd-report.html') ? read('byd-report.html') : '';
   check(br.length > 0 && /<html lang="zh-CN">/.test(br)
@@ -8151,7 +8161,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/z-index:9995/.test(ad32) && /padding:7px 0 14px/.test(ad32)
     && /background: rgba\(24, 20, 16, 0\.22\)/.test(dyp32)
     && /backdrop-filter: none/.test(dyp32)
-    && /douyin-prompt\.css\?v=17/.test(idx32),
+    && /douyin-prompt\.css\?v=18/.test(idx32),
     '§32d 广告位层级 9995 / 底部留白 14px；.dyp 遮罩减淡去模糊，弹窗引流功能原样保留');
 
   check(/var SEARCH_DURATION = 6000/.test(ff32)
