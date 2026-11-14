@@ -470,6 +470,14 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 **别动它**：删除遮罩或退回「`#root` 内占位」会让 FOUC 复发。若想让转圈更短，给 bundle 加 `<link rel="preload">` 提前拉取即可，不要改结构。
 
+### 近期 bug 根因（fix）：分享按钮 hover 不变手型——它是「无 href 的 <a>」不给手型指针，误改换图标后回滚（2026-11-14 12:21 · 提交 `663c0d2`）
+
+**起因**：站长指出顶栏前几个按钮 hover 时鼠标变手型，但「分享本站」不会（只有点击有响应）。首轮误把需求理解成「hover 换图标」，给按钮加了 `mouseenter`/`mouseleave` 换 SVG，被站长纠正。
+
+**根因**：分享按钮是 `createElement('a')` 却没设 `href` 的 `<a>` 元素，浏览器默认不给 `cursor:pointer`；而 Star/Login 是真正的 `<a href>`/`<button>`（默认手型）、匿名邮箱靠自己注入的 `cursor:pointer` CSS，所以前面几个 hover 变手、分享不变。
+
+**修复**：回滚整段换图标逻辑（删 `ICON_HOVER`、图标改回 `ICON` 直接内联），改给 `.sxg-share-entry-btn` 显式注入 `cursor:pointer`（与 anon-mail 同口径），hover 即显示手型，与顶栏其余按钮一致；`?v=3→4`。详见 [CHANGELOG.md](./CHANGELOG.md)。
+
 ### 近期 bug 根因（fix）：弹窗第二入口换链后两枚按钮都写「比亚迪」——同品牌并列，按钮该写差异点、且注释撞自家反查（2026-11-14 00:44 · 提交 `65b6807`）
 
 **起因**：站长把弹窗新版第二入口从「理想L8·高速方向盘拉不动」（`EHOOH9INCMk/`）换成「新车轮毂竟然能装错」的分享链（`fe8jmWjCmqY/`），两个入口都成了比亚迪片子，问「按钮如何优化文字」。
