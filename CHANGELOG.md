@@ -4,6 +4,16 @@
 
 ---
 
+### feat：分享本站按钮 hover 换图标（静止「分享节点」→ 悬停「链环」）+ 比亚迪卡备注改写（2026-11-14 11:45 · 提交 `8c6c196`）
+
+站长指令：顶栏带图标的按钮鼠标放上去都会变成另一个图标，但「分享本站」不会，要补上一致的 hover 反馈。
+
+- **实现**：`share-entry.js` 在静止态用原来的「分享节点」SVG；新增 `ICON_HOVER`（「链环 / link」SVG，同样的 currentColor 描边、内联无外链）。图标包进 `<span class="sxg-share-ico">`，绑定 `mouseenter`/`mouseleave`——进入时把该 span 的 `innerHTML` 换成链环图标、离开还原；两个事件只在进/出触发一次，不随鼠标在按钮内移动重复（`mouseover`/`mouseout` 会反复触发）。静止态仍是恰好 1 枚 svg，`share.querySelectorAll('svg').length === 1` 既有断言不受影响；导出 `ICON_HOVER` 便于复用与测试。
+- **缓存号**：`index.html` 挂载 `share-entry.js?v=2→3`；`README.md` 三条禁令章节同步把 `share-entry.js?v=2` 改成 `?v=3`；`verify.mjs` §36w 正则与描述同步 `?v=3`。
+- **断言同步**：`test-share-entry.cjs` 在 ② 桌面落位段新增三项——图标包在 `.sxg-share-ico` 内、静止态不含链环路径（`M10 13a5`）、`mouseenter` 后变链环、`mouseleave` 后还原；用例 **40 → 40 项**（含新三项，仍 0 失败）。
+- 复核：verify **1771 项全绿**；`test-share-entry` **40/0**；本机 CDP 真渲染桌面 1440 + 手机 390 双档 `svgCount:1 / svgVisible:true`；直接派发 `mouseenter`/`mouseleave` 确认 `ico.innerHTML` 由「分享节点」(`REST_LEN=407`) 切到「链环」(`HOVER_LEN=344`，含 `M10 13a5`)、移出再还原；截图 `share-rest.png`（分享节点）/ `share-hover.png`（链环）肉眼核对一致。
+- **顺手补交**：`brand/byd.html` 比亚迪卡备注栏删除《站长随笔》第10章引用，改为「(站长本人于2025年起持有比亚迪王朝，双休购是2026年上线的，预计11月14日更新站长故事。)」——该改动属此前「删除第10章引用」指令，但上次提交（a1b14d5）漏带，本次一并入库。
+
 ### feat：理想汽车卡备注栏挂回「L8 高速方向盘拉不动」证据链；卡面外链由「零外链」放开为 `extLinks` 白名单（2026-11-14 02:04 · 提交 `1ebd071`）
 
 站长指令：「还是放理想的证据链吧，备注那一栏也加入，文案你写」（附抖音媒体原创 https://v.douyin.com/nHGcAwzSXOU/ ，40 多万理想 L8 高速方向盘突然拉不动、称未开智驾却被系统干预、车主诉求「承认错误，不要赔偿」）。
