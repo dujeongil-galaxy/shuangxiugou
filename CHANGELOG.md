@@ -4,6 +4,17 @@
 
 ---
 
+### feat：首页弹窗「公益提醒」标签改紧凑圆角徽标，不再占满整行（2026-11-14 19:03 · 提交 `ee3cdbf`）
+
+站长 18:46 发来弹窗顶栏标签截图，指令「改成圆角的，不要一行直接占满」。截图里浅绿底横条贯穿整个面板宽度，只有左端呈大圆弧，看起来是横幅而不是标签。
+
+- **根因**：文章版面板 `.dyp--article` 是 `display:flex; flex-direction:column`，交叉轴 `align-items` 默认 `stretch`；`.dyp__tag` 原为 `display:inline-block`（进 flex 容器后被 blockify），即使写了 `border-radius:999px` 也会被拉伸到面板宽度，于是圆角只剩两端、整行占满。**只调 `border-radius` 治不了这个**。
+- **改动（`douyin-prompt.css`）**：`.dyp__tag` 改 `display:inline-flex; align-items:center; align-self:flex-start; width:fit-content; max-width:100%`，把交叉轴还给内容宽度；`padding 3px 10px→4px 12px`、补 `line-height:1.5`，保留 `#d9eee5` 浅绿底 / `#2e8b6f` 绿字 / `999px` 胶囊圆角。改动只在这一条规则，未碰压缩 bundle、未改弹窗 DOM 与逻辑。
+- **缓存号**：`douyin-prompt.css 17→18`（`index.html` 引用 + verify §32d 钉子同步）；`douyin-prompt.js` 未改，不动。
+- **机器强制**：`verify.mjs` 在 17:00 批次新增 ④b 断言，钉死 `.dyp__tag` 规则同时含 `align-self:flex-start` / `width:fit-content` / `border-radius:999px`，且不得写回 `width:100%`；负向断言按「属性起始位置」匹配，避免误伤 `max-width:100%`（踩坑见 PITFALLS 第六十三章）。
+- **验收**：verify **全绿、零错误**（§20g 版本号在「CI 同步补提交生成前」的中间态会让通过项在 1785 / 1786 两档间浮动，CI 同步后回到 1786）；**2 组故障注入 2/2 判红**（删掉 `align-self:flex-start` / `fit-content` 改回 `100%`），按字节还原后全绿、哈希一致；`test-dyp-toggle` 25/0、`test-share-modal` 36/0、`test-byd-expose` 57/0；CDP 真渲染桌面 1440 + 手机 390：`DESKTOP_OK/MOBILE_OK=true`、`PAGEERRORS` 空，标签实测 **69×25 / 72×26 px**，面板宽 576 / 390（占比 **0.12 / 0.185**），`alignSelf=flex-start`、`radius=999px`、CSS 实际加载 `v=18`；裁切放大截图肉眼确认：完整圆角胶囊，浅绿底只包住「公益提醒」四个字，不再向右延伸。
+- **记账**：本条为 `feat:` 提交，不触发 §21n 的 `fix:` 反查；CDP 验收脚本 `D:/WorkBuddy-Cache/tmp/cdp-dyp-tag.cjs` 与截图留本机，不入库、不挂 CI。
+
 ### feat：新建比亚迪车主专题报道页；弹窗首按钮改挂视频 + 绿色推荐语固定常驻；分享面板层级修复与 QQ 矢量图标；撤第三方推广；卡片按钮布局优化（2026-11-14 18:28 · 提交 `2591a8b`）
 
 站长 2026-11-14 17:00 批次（多项）：① 卡片操作按钮手机端布局优化，「PC 端都显示不完整，第一行溢出，自动滚去第二行，别搞得用户观感很差」；② 卡片红字备注预告的「站长故事」单独建页，「给比亚迪的专题报道页，允许像哈韩那个网站那样自己设计，但本质上还是双休购旗下的一个小的 html 页面，不是彻底改写 html 架构」，并给出三则故事（**禁止复制粘贴，优化，但不要改变意思**）；③「为什么点击分享，还要关闭弹窗，才能看见这个」逻辑不对；「QQ 的图标是这个，不过这好像像素不行，自己去找一个」；④ 第三方推广广告删除，对方明确不希望继续推广，README 留痕但一句话略过、不提对方名称；⑤ 抖音短链 `https://v.douyin.com/uBwf2Fbt0d8/` 写到首页第一个按钮，「至于新网站，保持旧版本那样，但是这一次注意一下，无论是否向下滚动，原本那句话（绿色）都会显示在文章下方，两个按钮的上方」。

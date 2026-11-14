@@ -3050,3 +3050,12 @@ HEAD 不是补提交，只是正文里引用了一下标记，同样被跳过。
 2. **老坑复发：源码写了 ≠ 卡片上真有**。这个站默认的静默失效方式是补丁 JS 加载了、配置也写了，渲染出来的卡片上却什么都没有（第十一章）。所以本次验收必须含真 DOM：`test-news-incident.cjs` 里加一张「理想汽车 (Li Auto)」卡进 jsdom，断言 `[data-sxg-news="lixiang-douyin"]` 真出现、框内恰好 1 条外链、`rel` 含 nofollow/noopener、`target=_blank`、文案含「不作推广」「未核实」。只比配置字符串的测试，在这类改动里等于没测。
 3. **「不加外链」与「要可核验」是一对矛盾，站长要的是后者**。抖音短链对搜索引擎基本无价值（JS 渲染 + 短链跳转），它真正的用途是**给读者可核验的原始出处**，所以这条外链必须挂 `rel="nofollow noopener"` + 新窗口：不把站内权重外泄，也不给 `window.opener` 反向利用的机会。详情页那条（`brand/lixiang.html` 证据来源 + 证据链）才是收录主体，卡面只是入口。
 4. **证据板会自己变，改完详情页必须重跑生成器**。改 `brand/lixiang.html` 后要跑 `scripts/gen-evidence-board.py`，本轮首页从「180 家 / 472 条 / 418 链接」变成「180 家 / 473 条 / 419 链接」，并自动多出一个「未归类（social_media）」分类桶——**这些数字写死在首页多处文案与 data 属性里，漏跑就是全站数字对不上**（第六十章）。
+
+## 第六十三章：flex 列里的「圆角标签」会被 stretch 拉成横幅；负向正则别写裸属性名（2026-11-14 标签胶囊 ee3cdbf）
+
+站长发来截图「改成圆角的，不要一行直接占满」：`.dyp__tag` 明明写着 `border-radius:999px`，渲染出来却是一条贯穿整个面板宽度的浅绿横幅。四条写死：
+
+1. **圆角是形状，宽度是布局，两回事**。文章版面板 `.dyp--article` 是 `display:flex; flex-direction:column`，交叉轴 `align-items` 默认 `stretch`；`display:inline-block` 的标签进 flex 容器会被 blockify 成 flex item，接着被拉到容器宽度。`border-radius` 再大也只作用在两端。**修法必须动交叉轴**：`align-self:flex-start` + `width:fit-content`（另留 `max-width:100%` 防长文案溢出）。**判据**：CDP 量测 `tagRect.width / panelRect.width`，本次桌面 69/576=0.12、手机 72/390=0.185；只看 CSS 源码「有 border-radius」等于没验。
+2. **负向断言写裸属性名会误伤带前缀的属性**。新断言里 `!/width:\s*100%/.test(rule)` 把 `max-width: 100%` 中的 `width: 100%` 当子串命中，导致**正确实现反被判红**（本次 verify 第一次跑就是这 1 项红）。改成锚定属性起始位置 `!/(?:^|[;{\s])width:\s*100%/`，或用 `[^-]width`。同理 `!/display:\s*flex/` 会误伤 `inline-flex` 一类写法——**所有「不许出现某声明」的负向正则，都要先问一句：会不会命中更长的属性名/值**。
+3. **故障注入在 Windows 上要按字节读写**。`pathlib.read_text()/write_text()` 默认文本模式会把 LF 换成 CRLF，改完再「还原」文件换行符全变，逐字节哈希对不上、还会污染下一轮断言；用 `read_bytes()/write_bytes()` + `sha256` 校验还原一致。
+4. **判红只看错误列表，别拿全文 `includes(断言文案)`**。verify 正常输出里也有 ✓ 行含同一句文案，全文匹配会假阳性；本次按 `out.split('错误 ')[-1]` 截错误段，再查断言文案，2 组注入（删 `align-self` / `fit-content` 改回 `100%`）才都是真红。
