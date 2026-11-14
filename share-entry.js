@@ -39,6 +39,15 @@
     + '<line x1="8.6" y1="10.6" x2="15.4" y2="6.4"/>'
     + '<line x1="8.6" y1="13.4" x2="15.4" y2="17.6"/></svg>';
 
+  /* 悬停图标：链环（link）——与静止态的「分享节点」图标明显不同，悬停时由
+     JS 把图标换成它，做出「鼠标放上去变成另一个图标」的效果（2026-11-14 站长要求，
+     与顶栏其余带图标按钮保持一致的 hover 反馈）。同为内联 SVG、currentColor 描边。 */
+  var ICON_HOVER = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" '
+    + 'stroke="currentColor" stroke-width="2" stroke-linecap="round" '
+    + 'stroke-linejoin="round" aria-hidden="true" focusable="false">'
+    + '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>'
+    + '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+
   function isNarrow() {
     if (window.matchMedia) return window.matchMedia(MQ).matches;
     return window.innerWidth <= 640;
@@ -126,7 +135,14 @@
     /* 窄屏撑开的宽条只有 68px，短标签由 mobile-fixes.css 的 ::after 读取 */
     btn.setAttribute('data-sxg-dock-label', '分享本站');
     /* SVG 是子元素、不产生文本节点 → btn.textContent 仍是「分享本站」 */
-    btn.innerHTML = ICON + '<span class="sxg-share-entry-txt">分享本站</span>';
+    btn.innerHTML = '<span class="sxg-share-ico">' + ICON + '</span>'
+      + '<span class="sxg-share-entry-txt">分享本站</span>';
+    /* 悬停换图标：静止态展示「分享节点」图标，鼠标移入换成「链环」图标，
+       移出还原。用 mouseenter/mouseleave（只在进入/离开时触发一次，不随
+       鼠标在按钮内移动重复触发）。静止态仍是 1 枚 svg，不破坏既有断言。 */
+    var ico = btn.querySelector('.sxg-share-ico');
+    btn.addEventListener('mouseenter', function () { if (ico) ico.innerHTML = ICON_HOVER; });
+    btn.addEventListener('mouseleave', function () { if (ico) ico.innerHTML = ICON; });
     btn.addEventListener('click', function (ev) {
       ev.preventDefault();
       ev.stopPropagation();
@@ -212,6 +228,7 @@
   window.SXGShareEntry = {
     BTN_ID: BTN_ID,
     ICON: ICON,
+    ICON_HOVER: ICON_HOVER,
     ENABLED: ENABLED,
     openShare: openShare,
     place: place,

@@ -8997,12 +8997,12 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '改成纯文字 → 丢失站长要的 LOGO；改掉「匿名邮箱」四个字 → test-anon-mail.cjs 与 dock 短标签一起判红');
 
   // ⑥ 挂载与 ?v：index.html 两个脚本同批 bump，sponsor.html 不挂分享入口（打赏页自己有分享逻辑）。
-  check(/<script defer src="\.\/share-entry\.js\?v=2"><\/script>/.test(idx36w)
-    && idx36w.indexOf('share-entry.js?v=2') > idx36w.indexOf('anon-mail.js?v=5')
+  check(/<script defer src="\.\/share-entry\.js\?v=3"><\/script>/.test(idx36w)
+    && idx36w.indexOf('share-entry.js?v=3') > idx36w.indexOf('anon-mail.js?v=5')
     && /anon-mail\.js\?v=5/.test(idx36w)
     && !/anon-mail\.js\?v=4/.test(idx36w)
     && !/share-entry\.js/.test(sp36w),
-    '§36w index.html 挂载 share-entry.js?v=2（排在 anon-mail.js?v=5 之后）；sponsor.html 不挂本入口（打赏页分享走自己的 shareUrl）',
+    '§36w index.html 挂载 share-entry.js?v=3（排在 anon-mail.js?v=5 之后）；sponsor.html 不挂本入口（打赏页分享走自己的 shareUrl）',
     '?v 没 bump → 线上仍跑旧脚本；把入口也挂到 sponsor.html → 打赏页多出一枚重复分享，与「打赏页分享指向首页」的逻辑打架');
 
   // ⑦ README 规则章节跟着改：六枚 + 第 6 枚落位规则 + 新开关行（避免半年后又「被吃掉」）。

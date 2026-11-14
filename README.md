@@ -284,7 +284,7 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 **三条禁令**：① 任何一枚不想要了，走上面的开关（隐藏），**不许删按钮本体或整段注入逻辑**——
 2026-11-12 白天那次直接把 `ENABLED` 置 `false`，当晚站长看图就以为「匿名邮箱被吃掉了」；
-② 动了任一开关，`index.html` 里的 `?v` 必须同步 bump（现 `anon-mail.js?v=5`、`share-entry.js?v=2`、
+② 动了任一开关，`index.html` 里的 `?v` 必须同步 bump（现 `anon-mail.js?v=5`、`share-entry.js?v=3`、
 `fab-dock.js?v=3`、`github-access-help.js?v=3`），不 bump 用户拿到的是旧缓存，等于没改；③ 改完跑 `node scripts/verify.mjs` 与
 `node scripts/test-anon-mail.cjs`、`node scripts/test-share-entry.cjs`，再用真浏览器核对六枚顺序与底色
 （匿名邮箱为深青 `rgb(15,118,110)`、位在 Login 之后；分享本站紧跟其后、浅色描边、与其它顶栏按钮同款）。
