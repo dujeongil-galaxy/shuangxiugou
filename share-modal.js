@@ -2,13 +2,16 @@
  * 用法：<script src="./share-modal.js?v=1" defer></script>
  *      window.SXGShare.open();
  *
- * 平台口径（站长 2026-11-04 指定，2026-11-14 追加 Tumblr）：
- *   国内：朋友圈 / 微信 / 抖音 / 小红书 / 微博（圆形图标，按站长给的样式）
+ * 平台口径（站长 2026-11-04 指定，2026-11-14 追加 Tumblr，2026-11-14 再调国内排序）：
+ *   国内：微信 / QQ / 抖音 / 小红书 / 微博（圆形图标，按站长给的样式）
+ *       2026-11-14 站长要求：原「朋友圈」撤掉、由「微信」占据首格；原「微信」位换成
+ *       「QQ」（腾讯 QQ 蓝企鹅图标，文字按站长要求写「QQ」，分享目标为 QQ空间）
  *   海外：Discord / Facebook / X / LinkedIn / Reddit / Telegram / KakaoTalk / Line /
  *        WhatsApp / Tumblr（汤不热）
  *   末尾：复制链接
- * 说明：微信、朋友圈、抖音、小红书、Discord、KakaoTalk 没有可用的网页分享接口，
- *       统一走「复制链接 + 提示粘贴」，不假装能一键跳转。
+ * 说明：微信、QQ、抖音、小红书、Discord、KakaoTalk 没有可用的网页分享接口
+ *       （QQ空间虽有网页端，但为与微信 / 朋友圈同口径，本站也统一走「复制链接 + 提示粘贴」），
+ *       不假装能一键跳转。
  *
  * 2026-11-14 站长要求「下面的做成圆形，上 5 下 10」：
  *   ① 图标一律圆形（48px 圆），国内 5 项一排、海外 10 项两排，整体 5 列网格；
@@ -70,7 +73,15 @@
     + '买东西、找工作前先查一查。';
 
   var ICON = {
-    moments: '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="8.6"/><path d="M12 3.4l6.4 8M20.6 12l-9 6.4M12 20.6l-6.4-8M3.4 12l9-6.4"/></g></svg>',
+    /* QQ（腾讯 QQ 蓝色 #12B7F5 圆形底 + 白色企鹅剪影；按钮文字按站长要求写「QQ」，
+       分享目标为 QQ空间，与微信/朋友圈同口径走「复制 + 提示粘贴」）。 */
+    qq: '<svg viewBox="0 0 24 24" aria-hidden="true">'
+      + '<circle cx="12" cy="12" r="12" fill="#12B7F5"/>'
+      + '<path fill="#fff" d="M12 4c-3.1 0-5.2 2.3-5.2 5.4 0 1.5.4 2.5.6 3.8 0 1.3-.8 1.9-.8 3.2 0 1.4 1 2.2 2 2.2.3 1.3 1.6 2.2 3.4 2.2s3.1-.9 3.4-2.2c1 0 2-.8 2-2.2 0-1.3-.8-1.9-.8-3.2 0-1.3.6-2.3.6-3.8 0-3.1-2.1-5.4-5.2-5.4z"/>'
+      + '<circle cx="9.7" cy="9.9" r="1.2" fill="#1f2937"/>'
+      + '<circle cx="14.3" cy="9.9" r="1.2" fill="#1f2937"/>'
+      + '<path fill="#FF9D2E" d="M11 11.5l1 .8 1-.8-.5 2.1h-1z"/>'
+      + '<path stroke="#FF9D2E" stroke-width="1.8" stroke-linecap="round" d="M9.4 18l-.7 2.1M14.6 18l.7 2.1"/></svg>',
     wechat: '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="#fff"><path d="M9.6 4.1C6 4.1 3 6.6 3 9.6c0 1.7.9 3.3 2.4 4.3l-.7 2.2 2.5-1.2c.7.2 1.5.3 2.3.3h.4c-.2-.5-.3-1.1-.3-1.7 0-2.9 2.8-5.2 6.2-5.2h.4C15.7 5.8 12.9 4.1 9.6 4.1z"/><path d="M21 13.4c0-2.5-2.5-4.5-5.5-4.5S10 10.9 10 13.4s2.5 4.5 5.5 4.5c.6 0 1.2-.1 1.8-.2l2 1-.6-1.7c1.4-.8 2.3-2.1 2.3-3.6z"/></g></svg>',
     douyin: '<svg viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(-.8,-.5)" fill="#25F4EE"><path d="' + D + '"/></g><g transform="translate(.8,.5)" fill="#FE2C55"><path d="' + D + '"/></g><path d="' + D + '" fill="#fff"/></svg>',
     xhs: '<svg viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="12.4" text-anchor="middle" dominant-baseline="middle" font-size="7.6" font-weight="700" fill="#fff" font-family="-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif">小红书</text></svg>',
@@ -89,8 +100,8 @@
   };
 
   var DOMESTIC = [
-    { k: 'moments', name: '朋友圈', bg: '#0B7A4B', copy: '文案和链接已复制，打开微信发朋友圈时粘贴' },
     { k: 'wechat', name: '微信', bg: '#07C160', copy: '文案和链接已复制，打开微信粘贴给好友' },
+    { k: 'qq', name: 'QQ', bg: '#12B7F5', copy: '文案和链接已复制，打开QQ空间粘贴分享' },
     { k: 'douyin', name: '抖音', bg: '#000000', copy: '文案和链接已复制，打开抖音粘贴给好友' },
     { k: 'xhs', name: '小红书', bg: '#FF2442', copy: '文案和链接已复制，打开小红书粘贴分享' },
     { k: 'weibo', name: '微博', bg: '#E6162D', url: 'weibo' }

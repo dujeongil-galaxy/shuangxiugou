@@ -82,7 +82,14 @@ console.log('\n① 平台清单恒定渲染（国内 5 + 海外 10，站长要�
   const mask = openModal(env);
   const dom5 = mask.querySelectorAll('.sxg-share-domestic .sxg-sd');
   const frn10 = mask.querySelectorAll('.sxg-share-foreign .sxg-sf');
-  check('国内平台 5 个（朋友圈/微信/抖音/小红书/微博）', dom5.length === 5, dom5.length);
+  check('国内平台 5 个（微信/QQ/抖音/小红书/微博）', dom5.length === 5, dom5.length);
+  // 2026-11-14 站长要求：原「朋友圈」撤掉由「微信」占首格，原「微信」位换成「QQ」
+  const domNames = Array.prototype.map.call(dom5, function (b) {
+    return (b.querySelector('.sxg-sd-name') || {}).textContent;
+  });
+  check('国内首按钮为「微信」（占原朋友圈首格）', domNames[0] === '微信', domNames);
+  check('国内次按钮为「QQ」（占原微信位，文字按站长要求写 QQ）', domNames[1] === 'QQ', domNames);
+  check('已无「朋友圈」按钮（被微信取代）', domNames.indexOf('朋友圈') === -1, domNames);
   check('海外平台 10 个（Discord/Facebook/X/LinkedIn/Reddit/Telegram/KakaoTalk/Line/WhatsApp/Tumblr）',
     frn10.length === 10, frn10.length);
   check('平台合计 15 项，一个不少（拦截事故的核心症状是「变少」）',

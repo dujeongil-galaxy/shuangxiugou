@@ -8623,8 +8623,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   // ⑦ 挂载与 ?v 钉子（§21h 纪律），以及 jsdom 行为测试存在。
   check(/<script defer src="\.\/github-access-help\.js\?v=3"><\/script>/.test(idx36r)
     && /appeal-policy\.js\?v=4/.test(idx36r)
-    && /share-modal\.js\?v=7/.test(idx36r)
-    && /share-modal\.js\?v=7/.test(sp36r)
+    && /share-modal\.js\?v=8/.test(idx36r)
+    && /share-modal\.js\?v=8/.test(sp36r)
     && exists('scripts/test-github-access-help.cjs'),
     '§36r index.html 挂载 github-access-help.js?v=3 / appeal-policy.js?v=4，改动脚本 ?v 同步 bump，配套 jsdom 行为测试存在',
     '?v 没 bump → 浏览器/CDN 命中旧脚本，新文案与链接规整都不生效');
@@ -8932,13 +8932,13 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '海外仍走横向清单行 → 上 5 下 10 不成立；图标容器改回圆角方形 → 与国内两套视觉分裂');
 
   // ⑤ ?v 同步 + jsdom 行为测试挂进 CI（§21h / §21o 纪律）。
-  check(/share-modal\.js\?v=7/.test(idx36v)
-    && /share-modal\.js\?v=7/.test(sp36v)
-    && !/share-modal\.js\?v=6/.test(idx36v)
-    && !/share-modal\.js\?v=6/.test(sp36v)
+  check(/share-modal\.js\?v=8/.test(idx36v)
+    && /share-modal\.js\?v=8/.test(sp36v)
+    && !/share-modal\.js\?v=7/.test(idx36v)
+    && !/share-modal\.js\?v=7/.test(sp36v)
     && exists('scripts/test-share-modal.cjs')
     && wf36v.indexOf('node scripts/test-share-modal.cjs') !== -1,
-    '§36v share-modal.js?v=7 在 index.html / sponsor.html 同步 bump，分享弹窗 jsdom 测试存在并挂进 CI',
+    '§36v share-modal.js?v=8 在 index.html / sponsor.html 同步 bump，分享弹窗 jsdom 测试存在并挂进 CI',
     '?v 没 bump → 线上仍跑旧脚本，加固等于没发；测试没挂 CI → 下次回退没人拦');
 }
 
