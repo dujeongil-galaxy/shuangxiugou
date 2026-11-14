@@ -7230,6 +7230,9 @@ section('22. 素材链接规则（blob 格式 / 素材不得明文入库）');
     'crypto-qr/sol.png', 'crypto-qr/usdc-polygon.png', 'crypto-qr/usdt-trc20.png',
     'crypto-qr/wemix.png', 'crypto-qr/xpla.png',
     'og-share.png', 'scripts/shot-local-note.png', 'sponsor-support.jpg',
+    // 随笔第11章（川西自驾游）内嵌的两张车道示意 GIF：由笔记解密后相对路径引用，
+    // 已随 5059512 提交进仓库；属站点自带功能图（非站长口述敏感素材），登记进白名单。
+    'ch11/ch11-incident-1.gif', 'ch11/ch11-incident-2.gif',
   ]);
   let tracked22 = '';
   try {
