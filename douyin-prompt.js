@@ -18,6 +18,12 @@
      「本文讨论的重点，不是反对悬赏打击黑公关这件事本身，而是在品控争议、
        车主质疑集中爆发的这个时间点高调发布悬赏，时机不妥，很容易引火烧身，
        造成舆论误解。」
+   2026-11-14 站长再追加：「之前的版本也保留吧，关闭那个位置旁边（左），去做一个
+   版本切换（切换新版、切换旧版）」——右上角 × 左侧加一枚药丸按钮，两态切换：
+     · 新版：上面这篇公益提醒长文（含文末加粗备注）。
+     · 旧版：13:49 整体替换前的「劳工友好提醒」弹窗内容，从 GitHub 仓库存档
+       取回、按文章版式重排；底部附存档说明（口径由站长给、措辞已优化不照抄）。
+       旧版只作留档查阅，不恢复抖音短片 / 事实核查 / 站长随笔等旧功能入口。
 
    弹出需求：每次刷新首页都必弹（站长 2026-11-13 指令「不要 15 分钟冷却，
    刷新首页必弹」）。不再用 localStorage 记时间戳、不再有冷却期，关掉再刷就再弹。
@@ -108,6 +114,68 @@
 
   var box = null;
 
+  // ── 旧版存档（2026-11-14 站长「之前的版本也保留吧」）──────────────────
+  // 内容取自 13:49 整体替换前的「劳工友好提醒」弹窗（Git 提交 1e2f8bc^ 的
+  // CONFIG：title / summary / points / tip），按文章版式重排；不恢复旧功能入口。
+  // 只在点「切换旧版」时展示，作为 GitHub 仓库留存的存档，随时可能清理。
+  // 换内容只需改 LEGACY_HTML 这一个常量，切换机制与新版共用。
+  var LEGACY_NOTE =
+    '本版本已下线，当前所见为 GitHub 仓库留存的历史存档，仅作留档查阅；' +
+    '本站可能随时清理，不作长期保留。';
+  var LEGACY_SHARE_TEXT =
+    '双休购·旧版存档《压榨员工的产品，最后买单的是谁？》：' +
+    '关于品控、加班与消费者安全的早期提醒。';
+  var LEGACY_HTML = [
+    '<h1 class="dyp__h1">压榨员工的产品，最后买单的是谁？</h1>',
+    '<p>一辆车有上千个零部件、上百道品控。当车企把员工压榨到连轴加班，精力耗尽——' +
+      '松半圈的螺丝、漏查的瑕疵、走形式的检测——最终都变成你行驶在路上的安全隐患。' +
+      '永远别买对员工刻薄的车企的产品。</p>',
+    '<h2>三个值得留意的点</h2>',
+    '<ol>',
+    '<li>连轴加班后，体力与精力耗尽，做不出高质量产品</li>',
+    '<li>敷衍的品控，最终由消费者用安全买单</li>',
+    '<li>越做越大的压榨型公司，可能就是你的下一个参照</li>',
+    '</ol>',
+    '<p>希望无论劳动者还是企业，都可以走到良性发展的道路上，让我们一起推动这件事，' +
+      '在此广纳贤言并期待听到你的声音；对，别回头，说的就是你！</p>',
+    '<p class="dyp__sign">双休购 · 旧版弹窗存档<br>2026-11-13 之前</p>',
+    '<p class="dyp__note dyp__note--archive"><strong>存档说明：' + LEGACY_NOTE +
+      '</strong></p>'
+  ].join('');
+
+  // ── 版本切换（按钮在 × 左侧；每次刷新都从新版开始，不做 localStorage 记忆）──
+  var currentVersion = 'new';
+
+  function versionLabel(v) { return v === 'new' ? '切换旧版' : '切换新版'; }
+  function versionTitle(v) {
+    return v === 'new'
+      ? '当前：新版公益提醒长文。点击切换到旧版仓库存档'
+      : '当前：旧版仓库存档。点击切换回新版';
+  }
+  function versionShareText(v) { return v === 'new' ? SHARE_TEXT : LEGACY_SHARE_TEXT; }
+
+  function setVersion(v) {
+    currentVersion = v === 'old' ? 'old' : 'new';
+    if (!box) return;
+    var art = box.querySelector('.dyp__article');
+    if (art) {
+      art.innerHTML = currentVersion === 'new' ? ARTICLE_HTML : LEGACY_HTML;
+      art.scrollTop = 0;
+    }
+    var btn = box.querySelector('.dyp__version-toggle');
+    if (btn) {
+      btn.textContent = versionLabel(currentVersion);
+      btn.setAttribute('title', versionTitle(currentVersion));
+      btn.setAttribute('aria-label', versionTitle(currentVersion));
+    }
+    box.classList.toggle('dyp--legacy', currentVersion === 'old');
+  }
+
+  function onToggleVersion(ev) {
+    if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+    setVersion(currentVersion === 'new' ? 'old' : 'new');
+  }
+
   function build() {
     box = document.createElement('div');
     box.className = 'dyp';
@@ -117,6 +185,8 @@
     box.innerHTML =
       '<div class="dyp__mask"></div>' +
       '<div class="dyp__panel dyp--article">' +
+        '<button class="dyp__version-toggle" type="button" ' +
+          'title="当前：新版公益提醒长文。点击切换到旧版仓库存档">切换旧版</button>' +
         '<button class="dyp__x" type="button" aria-label="关闭">&times;</button>' +
         '<div class="dyp__tag">公益提醒</div>' +
         '<div class="dyp__article" id="dyp-title">' + ARTICLE_HTML + '</div>' +
@@ -141,6 +211,10 @@
     share.textContent = '我要分享此文章';
     share.addEventListener('click', onShareArticle);
 
+    // 版本切换（× 左侧）：切正文、切按钮文字、切分享文案，不动倒计时与关闭锁。
+    box.querySelector('.dyp__version-toggle')
+      .addEventListener('click', onToggleVersion);
+
     // 关闭方式（2026-11-13 站长指令「先锁死」）：**只能点右上角 × 关闭**。
     // 原先遮罩点击、×、Esc 三条路都能关；现在遮罩与 Esc 一律不绑定 close，
     // 避免误点空白就把弹窗关掉。键盘用户仍可 Tab 到 ×（原生 <button>）按
@@ -150,14 +224,14 @@
     document.body.appendChild(box);
   }
 
-  // 底部「我要分享此文章」：打开分享弹窗，分享文案临时替换为文章标题（开完即还原）。
+  // 底部「我要分享此文章」：打开分享弹窗，分享文案按当前版本取（开完即还原）。
   // 分享弹窗 info() 读 og:description 作为分享说明，故开之前临时改写该 meta，
   // open() 同步 build 时会捕获到新文案，随后立即还原，无闪烁。
   function onShareArticle() {
     if (!window.SXGShare || !window.SXGShare.open) return;
     var od = document.querySelector('meta[property="og:description"]');
     var prev = od ? od.getAttribute('content') : '';
-    if (od) od.setAttribute('content', SHARE_TEXT);
+    if (od) od.setAttribute('content', versionShareText(currentVersion));
     try { window.SXGShare.open(); } finally {
       if (od) od.setAttribute('content', prev);
     }

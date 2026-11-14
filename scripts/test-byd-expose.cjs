@@ -33,8 +33,8 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   const rd = read('README.md');
 
   check('曝光补丁文件存在', exists('byd-expose-patch.js'));
-  check('首页挂了曝光补丁（?v=5 防缓存）',
-    /<script defer src="\.\/byd-expose-patch\.js\?v=5"><\/script>/.test(html));
+  check('首页挂了曝光补丁（?v=6 防缓存）',
+    /<script defer src="\.\/byd-expose-patch\.js\?v=6"><\/script>/.test(html));
   check('真 DOM 测试挂进 CI 的 pinyin job', /test-byd-expose\.cjs/.test(wf));
   check('README 写死曝光登记口径',
     /比亚迪卡片曝光登记/.test(rd) && /失效链接不得冒充可点来源/.test(rd));
@@ -139,11 +139,14 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   const bothBoxes = bydCard.querySelectorAll('[data-byd-expose]');
   const legalBox = bothBoxes[1];
   check('2026-11-13 起卡面共两只框（红色曝光登记 + 琥珀色站长点评）', bothBoxes.length === 2, bothBoxes.length);
-  check('点评框含站长原话（大唐 · 法务部技能）与悬赏事实',
+  check('点评框含优化后的站长点评（轮毂争议刚起 / 悬赏时点）与悬赏事实，且不照抄口语原话',
     !!legalBox
     && legalBox.textContent.indexOf('法务部悬赏') !== -1
-    && legalBox.textContent.indexOf('你大唐刚出事') !== -1
-    && legalBox.textContent.indexOf('50 万元至 500 万元') !== -1);
+    && legalBox.textContent.indexOf('轮毂装反争议刚发酵') !== -1
+    && legalBox.textContent.indexOf('着实令人「佩服」') !== -1
+    && legalBox.textContent.indexOf('50 万元至 500 万元') !== -1
+    && legalBox.textContent.indexOf('你大唐刚出事') === -1
+    && legalBox.textContent.indexOf('站长原话') === -1);
   // 2026-11-13 站长指令：备注栏链接换成当天那条抖音短链（原站内 byd.html 链接与旧短链不再使用）
   const legalA = legalBox && legalBox.querySelector('a');
   check('点评框链接是站长指定的抖音短链（5 秒视频那一条）',

@@ -431,6 +431,38 @@
   border-radius: 0 6px 6px 0;
 }
 
+/* 旧版存档备注（2026-11-14）：不沿用新版红色立场备注，改琥珀/灰棕表明留档性质 */
+.dyp__article .dyp__note--archive { background: #f7f3ea; border-left-color: #c2ab84; }
+.dyp__article .dyp__note--archive strong { color: #7a6136; }
+
+/* 版本切换按钮：紧贴右上角 × 左侧（.dyp__x 为 right:10px / width:32px） */
+.dyp__version-toggle {
+  position: absolute;
+  top: 10px;
+  right: 50px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #b9d7c9;
+  border-radius: 999px;
+  background: #eef7f1;
+  color: #2e8b6f;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 30px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.dyp__version-toggle:hover { background: #dcefe4; border-color: #93c6b1; color: #226b54; }
+.dyp__version-toggle:active { transform: scale(.97); }
+
+/* 旧版态：面板底色略偏存档纸色，与默认新版有可感知区别 */
+.dyp--legacy .dyp__panel { background: #fdfaf3; }
+@media (max-width: 360px) {
+  .dyp__version-toggle { right: 48px; padding: 0 9px; font-size: 11px; }
+}
+
 /* 底部两枚按钮：复用 .dyp__acts > * 的统一尺寸规则，只补配色 */
 .dyp__visit {
   background: linear-gradient(135deg, #3dad8a, #2e8b6f);

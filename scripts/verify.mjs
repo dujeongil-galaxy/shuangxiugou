@@ -1988,8 +1988,9 @@ if (exists('notes.html')) {
   // 2026-11-14 站长指令：弹窗内容整体替换为公众号式长文《别让"跟风买车"…》，
   // 顶栏标签「劳工友好提醒」→「公益提醒」；底部两枚按钮（新站引流 / 分享文章）；
   // 追加指令「已经有了按钮，就不要留那句话（绿色）」→ 绿色推荐小字撤掉、
-  // 文末补一句整句加粗的备注；旧版的 站长随笔 / 压榨员工标题 / 抖音视频链接 /
-  // 切换旧版 全部撤掉。
+  // 文末补一句整句加粗的备注；再追加「之前的版本也保留吧，× 左侧做版本切换」
+  // → 旧版作为 GitHub 仓库存档保留（LEGACY_HTML），默认只显示新版。
+  // 旧版弹窗的功能入口（站长随笔 / 抖音旧链接 / 以后再说 / 解锁彩蛋）仍清零。
   check(/公益提醒/.test(dp) && !/劳工友好提醒/.test(dp),
     '弹窗标签已更名「公益提醒」（旧「劳工友好提醒」清零）',
     '标签没改 → 仍显示旧名');
@@ -2013,6 +2014,22 @@ if (exists('notes.html')) {
   check(/去看看站长的新网站/.test(dp) && /我要分享此文章/.test(dp),
     '弹窗底部两枚按钮齐备（去看看站长的新网站 / 我要分享此文章）',
     '底部按钮缺失 → 分享/引流入口不完整');
+  check(/dyp__version-toggle/.test(dp) && /切换旧版/.test(dp) && /切换新版/.test(dp)
+    && /onToggleVersion/.test(dp) && /setVersion\(/.test(dp),
+    '× 左侧有版本切换按钮（两态文案「切换旧版 / 切换新版」+ 切换函数）',
+    '切换按钮缺失 → 站长要求的版本切换没落地');
+  check(/LEGACY_HTML/.test(dp) && /LEGACY_NOTE/.test(dp)
+    && /压榨员工的产品/.test(dp) && /currentVersion = 'new'/.test(dp),
+    '旧版内容作为独立存档常量保留，且默认从新版开始',
+    '旧版没留住 / 默认版本不是新版 → 之前的版本丢失或首屏显示错版');
+  check(/本版本已下线/.test(dp) && /GitHub 仓库留存/.test(dp) && /随时清理/.test(dp)
+    && !/此版本已删除，你现在看见的是GitHub仓库存档/.test(dp),
+    '旧版底部存档说明已优化措辞（不逐字照抄站长原话，三层意思都在）',
+    '存档说明照抄或漏意 → 用户不知道这是随时可能清理的仓库存档');
+  check(/versionShareText\(currentVersion\)/.test(dp)
+    && /art\.innerHTML = currentVersion === 'new' \? ARTICLE_HTML : LEGACY_HTML/.test(dp),
+    '切换时正文与分享文案按当前版本联动',
+    '切到旧版却仍分享新版文案 → 分享出去的标题与所见内容不符');
   check(!/dyp--notice/.test(dp),
     '「还在写」公告弹窗已移除',
     'notes.html 已可直接访问（保留密码锁），公告弹窗不应再出现');
@@ -2045,9 +2062,11 @@ if (exists('notes.html')) {
   //   站长原话：「全程仅用 20 分钟，好像不能说他们有什么问题，还是还原吧」。
   //   —— 景区从故障到游客落地仅 20 分钟，处置及时，不宜当负面案例挂首页弹窗。
   //   ⚠️ dp 已剥注释 —— 注释里记沿革不算，只认代码本体。
-  check(!/站长随笔/.test(dp) && !/压榨员工的产品/.test(dp) && !/v\.douyin\.com\/37pbo6qxUbs/.test(dp),
-    '旧版弹窗内容已清零（站长随笔 / 压榨员工标题 / 抖音旧链接）',
-    '旧内容残留 → 新文章与旧版会并存');
+  // 2026-11-14 口径变更：站长要求「之前的版本也保留」，旧版正文以 LEGACY_HTML
+  // 存档形式并存（见上面四条断言），故这里只封死旧版的**功能入口**。
+  check(!/站长随笔/.test(dp) && !/v\.douyin\.com\/37pbo6qxUbs/.test(dp),
+    '旧版弹窗的功能入口已清零（站长随笔 / 抖音旧链接）；旧版正文仅作存档保留',
+    '旧功能入口残留 → 存档版会把已下线的按钮/链接带回来');
   check(!/景区飞椅/.test(dp) && !/mp\.weixin\.qq\.com/.test(dp) && !/阅读微信原文/.test(dp),
     '飞椅版内容在弹窗里已清零（标题/链接/按钮文案）',
     '仍有飞椅残留 → 2026-11-02 那版没退干净，两份内容会并存');
@@ -7834,9 +7853,9 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§30a README 写死比亚迪曝光登记四条口径（卡片真挂载 / 死链不冒充 / 如实登记 / 随笔引用）',
     '规则只挂口头 → 又会出现「详情页写了、卡片没动」的静默失效');
 
-  check(p30.length > 0 && /<script defer src="\.\/byd-expose-patch\.js\?v=5"><\/script>/.test(idx30)
+  check(p30.length > 0 && /<script defer src="\.\/byd-expose-patch\.js\?v=6"><\/script>/.test(idx30)
     && /不能改 bundle|不能改\s*bundle/.test(p30),
-    '§30b 曝光补丁入库并挂进首页（?v=5，2026-11-14 备注栏括号文案替换「相关经历详见《站长随笔》第10章」），且写明不动压缩 bundle');
+    '§30b 曝光补丁入库并挂进首页（?v=6，2026-11-14 点评框措辞优化：不再逐字直录站长口语），且写明不动压缩 bundle');
 
   check(/\^BYD\\s\*\\\(比亚迪\\\)/.test(p30) && /data-byd-expose/.test(p30)
     && /new MutationObserver\(schedule\)/.test(p30)
@@ -8056,7 +8075,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/z-index:9995/.test(ad32) && /padding:7px 0 14px/.test(ad32)
     && /background: rgba\(24, 20, 16, 0\.22\)/.test(dyp32)
     && /backdrop-filter: none/.test(dyp32)
-    && /douyin-prompt\.css\?v=15/.test(idx32),
+    && /douyin-prompt\.css\?v=16/.test(idx32),
     '§32d 广告位层级 9995 / 底部留白 14px；.dyp 遮罩减淡去模糊，弹窗引流功能原样保留');
 
   check(/var SEARCH_DURATION = 6000/.test(ff32)
@@ -9066,9 +9085,9 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/点右上角 × 关闭/.test(dp36x) && !/现在可以关闭了/.test(dp36x),
     '§36x 倒计时到点后提示改为「点右上角 × 关闭」',
     '提示仍写「可以关闭」却没说怎么关 → 用户会去点空白');
-  check(/<script defer src="\.\/douyin-prompt\.js\?v=20"><\/script>/.test(idx36x)
-    && !/douyin-prompt\.js\?v=19/.test(idx36x),
-    '§36x index.html 挂载 douyin-prompt.js?v=20（bump 缓存号）',
+  check(/<script defer src="\.\/douyin-prompt\.js\?v=21"><\/script>/.test(idx36x)
+    && !/douyin-prompt\.js\?v=20/.test(idx36x),
+    '§36x index.html 挂载 douyin-prompt.js?v=21（bump 缓存号）',
     '?v 没 bump → 线上仍跑旧脚本，改动等于没发');
 
   // 2026-11-13 站长追加：「不要 15 分钟冷却，刷新首页必弹」。
