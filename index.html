@@ -9639,7 +9639,7 @@
   <script defer src="./luckin-note-patch.js?v=1"></script>
   <!-- 比亚迪卡片曝光登记（2026-11-09 站长线索 / 2026-11-10 视频下架补记）：
        内置卡数据在压缩 bundle 里不能改，用独立 DOM 补丁在渲染后挂红框说明。 -->
-  <script defer src="./byd-expose-patch.js?v=4"></script>
+  <script defer src="./byd-expose-patch.js?v=5"></script>
   <!-- 2026-11-10 新闻事件登记：罗技授权店铺侮辱消费者广告 / 星宇股份后续进展，内置卡渲染后 DOM 补丁 -->
   <script defer src="./news-incident-patch.js?v=5"></script>
   <!-- 每张卡详情弹窗底部「跳转到证据公示」：内置 React 弹窗与自定义卡弹窗
@@ -9767,7 +9767,7 @@
        顶栏落在 anon-mail 同位置（Login GitHub 之后；≤640px 进 fab-dock），
        默认新版（2 个抖音链接 + 站长随笔、隐藏事实核查），点击切旧版（含事实核查）。
        独立文件补丁 .dyp__acts，不改 douyin-prompt.js / factcheck-button.js 本体。 -->
-  <script defer src="./dyp-version-toggle.js?v=6"></script>
+  <script defer src="./dyp-version-toggle.js?v=7"></script>
   <!-- 首页黑色「全网打工人已转移消费额」卡片改为「滚动式广告位」（2026-11-09 站长指令升级：黑卡不保留，原位放滚动式广告位轮播——两张站点自绘矢量设计稿，陆喜依广告图与 CTA 提示词都是真链接可点跳天猫支持双休企业；卡片内容居中、箭头移到卡片下方导航条不再压住招商卡标题；支持手动切换与自动轮播；不动其它架构） -->
   <!-- 广告位补丁已前移到 <head> 用 async 加载（2026-11-10 站长「超过 10 秒都没加载成功」）：
        原来它排在第 40 个 defer 脚本，必须等 692KB body 解析完 + 前 39 个脚本执行完才跑，

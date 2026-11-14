@@ -33,8 +33,8 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   const rd = read('README.md');
 
   check('曝光补丁文件存在', exists('byd-expose-patch.js'));
-  check('首页挂了曝光补丁（?v=4 防缓存）',
-    /<script defer src="\.\/byd-expose-patch\.js\?v=4"><\/script>/.test(html));
+  check('首页挂了曝光补丁（?v=5 防缓存）',
+    /<script defer src="\.\/byd-expose-patch\.js\?v=5"><\/script>/.test(html));
   check('真 DOM 测试挂进 CI 的 pinyin job', /test-byd-expose\.cjs/.test(wf));
   check('README 写死曝光登记口径',
     /比亚迪卡片曝光登记/.test(rd) && /失效链接不得冒充可点来源/.test(rd));
@@ -51,7 +51,6 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
     ['不作事实认定', '不对指称内容作事实认定'],
     ['劳动法第九十六条', '《劳动法》第九十六条'],
     ['强制加班至晚十点', '强制加班至晚十点'],
-    ['随笔第10章', '《站长随笔》第10章'],
   ]) {
     check('详情页写了「' + label + '」', bydLi.indexOf(needle) !== -1 || detail.indexOf(needle) !== -1);
   }
@@ -79,7 +78,8 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
     && !/kKmeU180irU/.test(src)
     && !/LEGAL_HREF = 'https:\/\/v\.douyin\.com\/NrP3/.test(src));
   check('不抄站长口述、不写「日记」', !/日记/.test(src));
-  check('随笔引用走站内 ./notes.html', /var NOTES_HREF = '\.\/notes\.html'/.test(src));
+  check('P3 已改为纯文本括号，不再含 NOTES_HREF/notes.html 随笔引用',
+    !/NOTES_HREF|NOTES_TEXT/.test(src));
 
   // ─────────── 3. 真 DOM：渲染后卡片上真的挂了曝光框 ───────────
   console.log('\n--- 3. 真 DOM 渲染 ---');
@@ -127,14 +127,12 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
     ['原链接已失效', '原链接已失效'],
     ['受到了某种压力', '受到了某种压力'],
     ['不作事实认定', '不对指称内容作事实认定'],
-    ['《站长随笔》第10章', '《站长随笔》第10章'],
+    ['站长本人于2025年起持有比亚迪王朝', '站长本人于2025年起持有比亚迪王朝'],
   ]) {
     check('曝光框写了「' + label + '」', text.indexOf(needle) !== -1, text.slice(0, 160));
   }
   const notesLink = box.querySelector('a');
-  check('随笔引用是站内真链接 ./notes.html',
-    !!notesLink && notesLink.getAttribute('href') === './notes.html',
-    notesLink && notesLink.getAttribute('href'));
+  check('P3 段落改为纯文本括号，不再含站内 notes.html 随笔链接', !notesLink);
   check('曝光框内没有任何外链 / 图片',
     !/https?:\/\//.test(box.innerHTML) && !box.querySelector('img'));
   // 2026-11-13 第二只框：琥珀色「站长点评 · 法务部悬赏」（同一幂等标记，一次插入两只）

@@ -28,9 +28,7 @@
   var TITLE = '⚠️ 直营门店强制加班曝光（员工／社群反馈）';
   var P1 = '抖音账号「BYD直营员工维权」曾发布视频指称：某 BYD 直营门店店长要求员工强制加班至晚十点；发布者援引《劳动法》第九十六条（以暴力、威胁或者非法限制人身自由的手段强迫劳动，以及侮辱、体罚、殴打、非法搜查和拘禁劳动者的处罚规定）作为维权依据。';
   var P2 = '该视频现已删除、原链接已失效；站长判断发布者受到了某种压力，本站无从核实，也不作进一步推断。视频本体无法回看，这一条只按线索如实登记，不对指称内容作事实认定。';
-  var P3_PREFIX = '相关经历详见';
-  var NOTES_HREF = './notes.html';
-  var NOTES_TEXT = '《站长随笔》第10章';
+  var P3 = '(站长本人于2025年起持有比亚迪王朝，双休购是2026年上线的，预计11月14日更新站长故事。)';
 
   // 2026-11-13 站长第二条首页备注（卡面第二只框，琥珀色区分）：
   // 「给比亚迪的证据链加备注……你大唐刚出事，你就开始发动法务部技能」。
@@ -106,14 +104,7 @@
     box.appendChild(makePara(P1));
     box.appendChild(makePara(P2));
 
-    var last = makePara(P3_PREFIX);
-    var a = document.createElement('a');
-    a.setAttribute('href', NOTES_HREF);
-    a.setAttribute('style', LINK_STYLE);
-    a.textContent = NOTES_TEXT;
-    last.appendChild(a);
-    last.appendChild(document.createTextNode('。'));
-    box.appendChild(last);
+    box.appendChild(makePara(P3));
     return box;
   }
 

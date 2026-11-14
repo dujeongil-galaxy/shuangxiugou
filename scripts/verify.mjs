@@ -7819,9 +7819,9 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§30a README 写死比亚迪曝光登记四条口径（卡片真挂载 / 死链不冒充 / 如实登记 / 随笔引用）',
     '规则只挂口头 → 又会出现「详情页写了、卡片没动」的静默失效');
 
-  check(p30.length > 0 && /<script defer src="\.\/byd-expose-patch\.js\?v=4"><\/script>/.test(idx30)
+  check(p30.length > 0 && /<script defer src="\.\/byd-expose-patch\.js\?v=5"><\/script>/.test(idx30)
     && /不能改 bundle|不能改\s*bundle/.test(p30),
-    '§30b 曝光补丁入库并挂进首页（?v=4，2026-11-13 换卡面备注栏抖音短链 + 补全旗下子品牌标签），且写明不动压缩 bundle');
+    '§30b 曝光补丁入库并挂进首页（?v=5，2026-11-14 备注栏括号文案替换「相关经历详见《站长随笔》第10章」），且写明不动压缩 bundle');
 
   check(/\^BYD\\s\*\\\(比亚迪\\\)/.test(p30) && /data-byd-expose/.test(p30)
     && /new MutationObserver\(schedule\)/.test(p30)
@@ -7834,8 +7834,9 @@ section('25. 成功案例专题页（QQ奶奶）');
     && /受到了某种压力/.test(p30) && /不对指称内容作事实认定/.test(p30),
     '§30d 曝光框六条事实齐全（加班至晚十点 / 第96条 / 视频已删 / 链接失效 / 受压 / 不作事实认定）');
 
-  check(/var NOTES_TEXT = '《站长随笔》第10章'/.test(p30)
-    && /var NOTES_HREF = '\.\/notes\.html'/.test(p30)
+  check(/var P3 = '\(站长本人于2025年起持有比亚迪王朝，双休购是2026年上线的，预计11月14日更新站长故事。\)'/.test(p30)
+    && !/NOTES_TEXT/.test(p30)
+    && !/NOTES_HREF/.test(p30)
     && !/日记/.test(p30)
     && /var LEGAL_HREF = 'https:\/\/v\.douyin\.com\/3oI-7tZ12R8\/'/.test(p30)
     && (p30.match(/https?:\/\//g) || []).length === 1
@@ -7843,7 +7844,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     && /setAttribute\('target', '_blank'\)/.test(p30)
     && !/kKmeU180irU/.test(p30)
     && !/LEGAL_HREF = 'https:\/\/v\.douyin\.com\/NrP3/.test(p30),
-    '§30e 随笔引用只写「详见《站长随笔》第10章」且指站内 notes.html、不抄口述、不写「日记」；2026-11-13 站长指令后卡面备注栏只挂一条抖音短链（nofollow noopener + 新窗口打开），失效旧短链一律不进卡');
+    '§30e 卡面备注栏 P3 改为纯文本括号（站长本人于2025年起持有比亚迪王朝，双休购是2026年上线的，预计11月14日更新站长故事。），删掉站内 notes.html 随笔第10章链接；不抄口述、不写「日记」；卡面备注栏只挂一条抖音短链（nofollow noopener + 新窗口打开），失效旧短链一律不进卡');
 
   const evByd30 = (idx30.match(/<details id="ev-byd"[\s\S]*?<\/details>/) || [])[0] || '';
   const liByd30 = (byd30.match(/<li style="margin:0 0 12px"><strong>BYD 直营门店强制加班曝光[\s\S]*?<\/li>/) || [])[0] || '';
@@ -8742,10 +8743,10 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '按钮没进弹窗 / 回到顶栏 dock 落位 → 与站长「放在这个位置」不符');
 
   // ④ 挂载与 ?v 钉子 + jsdom 测试挂进 CI（§21o）。
-  check(/<script defer src="\.\/dyp-version-toggle\.js\?v=6"><\/script>/.test(idx36u)
+  check(/<script defer src="\.\/dyp-version-toggle\.js\?v=7"><\/script>/.test(idx36u)
     && exists('scripts/test-dyp-toggle.cjs')
     && wf36u.indexOf('node scripts/test-dyp-toggle.cjs') !== -1,
-    '§36u index.html 挂载 dyp-version-toggle.js?v=6，配套 jsdom 测试挂进 CI',
+    '§36u index.html 挂载 dyp-version-toggle.js?v=7，配套 jsdom 测试挂进 CI',
     '?v 没 bump / 测试没挂 CI → 转换逻辑静默失效没人拦');
 
   /* ⑥ 站长 2026-11-12：「切换旧版，请不要使用替换二字」。
@@ -8766,12 +8767,11 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   // 这里只认「整行以 // 开头」的行注释 + 块注释。
   const t36uCode = t36u.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/[^\n]*$/gm, '');
   //    2026-11-14：两个入口同属比亚迪后，按钮文字改按「部件 + 错误动作」区分——
-  //    轮辋装反 / 轮毂装错（各 4 字）。品牌名重复写两遍等于零信息量，且分不清是哪条片子。
-  const briefOk = /var NEW_GO_TEXT = '轮辋装反'/.test(t36uCode)
-    && /var NEW_D2_TEXT = '轮毂装错'/.test(t36uCode)
-    && !/短片/.test(t36uCode);
+  //    短片一 / 短片二（各 3 字）。品牌名重复写两遍等于零信息量，且分不清是哪条片子。
+  const briefOk = /var NEW_GO_TEXT = '短片一'/.test(t36uCode)
+    && /var NEW_D2_TEXT = '短片二'/.test(t36uCode);
   check(briefOk,
-    '§36u 新版按钮文案只留 4 字辨识词（轮辋装反 / 轮毂装错），不再重复品牌名，也不出现「短片」字样',
+    '§36u 新版按钮文案只留中性序号（短片一 / 短片二），不再重复品牌名',
     '文案又写长 → 三等分格子里被 ellipsis 截断（站长 11-12 已指出一次）');
   check(/@media \(min-width:521px\)\{\.dyp__acts\.dyp--new > \*\{flex:1 1 0\}\}/.test(t36u),
     '§36u 新版三按钮等宽（≥521px 生效，≤520px 保留官方纵向 flex:0 0 auto）',
