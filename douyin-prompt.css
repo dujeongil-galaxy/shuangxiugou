@@ -456,6 +456,17 @@
   border-radius: 0 6px 6px 0;
 }
 
+/* 红色加粗号召语（2026-11-14 站长「首页弹窗这句话，红色加粗」）：
+   和上面米色立场备注分层——浅红底 + 红左边框，整句 strong 写死红色 800 字重，
+   不依赖 .dyp__article strong 的继承，防止以后改正文粗体颜色时被带走。
+   新版文末与旧版存档里的同一句共用这个类名。 */
+.dyp__article .dyp__note--call {
+  margin: 10px 0 2px;
+  background: #fdf1ee;
+  border-left-color: #d96659;
+}
+.dyp__article .dyp__note--call strong { color: #c0392b; font-weight: 800; }
+
 /* 旧版存档备注（2026-11-14）：不沿用新版红色立场备注，改琥珀/灰棕表明留档性质 */
 .dyp__article .dyp__note--archive { background: #f7f3ea; border-left-color: #c2ab84; }
 .dyp__article .dyp__note--archive strong { color: #7a6136; }

@@ -353,6 +353,16 @@
     root.setAttribute('data-adslot-reserved', '1'); // 兼容 cdp-adcheck 验收
     root.setAttribute('data-adslot-kind', 'public-welfare');
     root.setAttribute('aria-label', '公益广告位');
+    /* 必应摘要排除（2026-11-14 站长「广告位的这个被抓取了，之前不是改过吗」）：
+       Bing 会渲染 JS 后从页面可见文本里算法挑一段当搜索结果摘要，meta
+       description 只是候选之一——首屏广告位文字密集，于是又被选中。
+       Bing 自 2025-10-15 起官方支持 data-nosnippet（官方用例明确点名
+       「把广告 / 推广内容排除出中性预览」），Google 同样支持：标记区块
+       照常被索引、照常参与排名，但不出现在摘要与 AI 回答里。
+       注意：Google 要求属性必须在元素**首次加入页面时**就带上，不许事后
+       用 JS 在已有节点上增删——这里 root 是新建节点、append 前设置，合规。
+       属性挂在根节点上，卡片、CTA、免责声明、alt/兜底文字整体覆盖。 */
+    root.setAttribute('data-nosnippet', '');
     root.innerHTML =
       '<div class="sxg-adslot__head">公益广告位 排名不分先后</div>' +
       '<div class="sxg-adslot__viewport">' +

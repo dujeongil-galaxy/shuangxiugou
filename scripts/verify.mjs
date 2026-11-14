@@ -2038,6 +2038,21 @@ if (exists('notes.html')) {
     && /高调发布悬赏，时机不妥/.test(dp) && /造成舆论误解/.test(dp),
     '文末加粗备注已落地（界定重点：不反对打击黑公关，而是这个时间点时机不妥）',
     '备注缺失或未加粗 → 文章立场容易被误读为反对悬赏');
+  // 2026-11-14 19:46 站长追加：「希望无论劳动者还是企业……对，别回头，说的就是你！」
+  // 整句红色加粗。新版文末压轴，旧版存档里的同一句共用 CALL_HTML（单一真相源），
+  // 不许只改一半、也不许悄悄改字。CSS 侧必须显式写死颜色与字重，不许靠继承。
+  const dpcCall = read('douyin-prompt.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  check(/var CALL_TEXT/.test(dp) && /var CALL_HTML/.test(dp)
+    && /dyp__note--call/.test(dp)
+    && /广纳贤言并期待听到你的声音/.test(dp) && /对，别回头，说的就是你！/.test(dp)
+    && /<strong>' \+ CALL_TEXT \+ '<\/strong>/.test(dp)
+    && (dp.match(/CALL_HTML/g) || []).length >= 3,
+    '弹窗红色加粗号召语已落地（新版文末 + 旧版存档共用 CALL_HTML 单一真相源）',
+    '号召语漏加粗 / 改字 / 只改一个版本 → 站长指定的红字没了或两版口径打架');
+  check(/\.dyp__article \.dyp__note--call strong\s*\{[^}]*color:\s*#c0392b[^}]*font-weight:\s*800/.test(dpcCall)
+    && /\.dyp__article \.dyp__note--call\s*\{[^}]*background:\s*#fdf1ee/.test(dpcCall),
+    '号召语样式真为红色加粗（浅红底 + 红左边框，不依赖 .dyp__article strong 继承）',
+    '颜色/字重没写死 → 以后改正文粗体颜色会把这句一起带走');
   check(/我要分享此文章/.test(dp) && /VIDEO_BTN_TEXT/.test(dp)
     && /https:\/\/v\.douyin\.com\/uBwf2Fbt0d8\//.test(dp)
     && /video\.href = VIDEO_LINK/.test(dp)
@@ -6738,8 +6753,8 @@ section('21c. 首页滑到底部按钮');
     '§33a2 广告位三张设计图首屏预热，且每张的 ?v 与 black-card-adslot.js 里的常量完全一致',
     '预热 URL 与脚本里的实际 URL 不一致 → 白预热，广告位照样「卡片先出来、图还是空的」');
 
-  check(/<script async src="\.\/black-card-adslot\.js\?v=21"><\/script>/.test(idx)
-    && idx.indexOf('black-card-adslot.js?v=21') < idx.indexOf('</head>')
+  check(/<script async src="\.\/black-card-adslot\.js\?v=22"><\/script>/.test(idx)
+    && idx.indexOf('black-card-adslot.js?v=22') < idx.indexOf('</head>')
     && !/script defer src="\.\/black-card-adslot\.js/.test(idx),
     '§33b 广告位补丁在 head 里 async 加载（不再排在第 40 个 defer，也不必等 692KB body 解析完）',
     '广告位补丁退回 defer 队列尾部 → 慢网又要 15 秒才冒出广告位');
@@ -7871,7 +7886,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
 
   check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
-    && /black-card-adslot\.js\?v=21/.test(idx29),
+    && /black-card-adslot\.js\?v=22/.test(idx29),
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 
   // —— 站长 2026-11-10 晚：胖东来广告卡（首页推荐位） ——
@@ -8118,8 +8133,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check((code32.match(/公益广告位/g) || []).length >= 4
     && !/广告位招商中|品牌展示|>广告位</.test(code32)
     && /data-adslot-kind', 'public-welfare'/.test(code32)
-    && /black-card-adslot\.js\?v=21/.test(idx32),
-    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 21');
+    && /black-card-adslot\.js\?v=22/.test(idx32),
+    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 22');
 
   // 站长 2026-11-10 二次纠正「广告图叫你重构，不是让你改成纯文字 / 文字明显重叠」：
   // 文案已全部画进 ad-recruit.svg 的 <text>（与图同坐标系同缩放，结构上不可能叠字），
@@ -8179,7 +8194,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/z-index:9995/.test(ad32) && /padding:7px 0 14px/.test(ad32)
     && /background: rgba\(24, 20, 16, 0\.22\)/.test(dyp32)
     && /backdrop-filter: none/.test(dyp32)
-    && /douyin-prompt\.css\?v=18/.test(idx32),
+    && /douyin-prompt\.css\?v=19/.test(idx32),
     '§32d 广告位层级 9995 / 底部留白 14px；.dyp 遮罩减淡去模糊，弹窗引流功能原样保留');
 
   check(/var SEARCH_DURATION = 6000/.test(ff32)
@@ -8343,7 +8358,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
 
   const preload35 = mob35.every(([f, , ver]) =>
     idx35.indexOf('<link rel="preload" as="image" href="./' + f + '?v=' + ver + '" media="(max-width:480px)" />') !== -1);
-  check(preload35 && /black-card-adslot\.js\?v=21/.test(idx35),
+  check(preload35 && /black-card-adslot\.js\?v=22/.test(idx35),
     '§35c 手机三图带 media 预热、?v 与脚本 *_MOBILE 常量一致，首页脚本已升 21（2026-11-12 政策文案改写后再 bump）',
     '预热漏 media 或 ?v 不一致 → 慢网首帧先出桌面稿再跳手机稿');
 
@@ -8476,7 +8491,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     'JEV 条目写成互惠/互挂 → 与「不要求互挂」矛盾');
 
   // ④ 两个脚本在 index.html 的 ?v 随内容变更 bump，否则浏览器缓存旧脚本
-  check(/black-card-adslot\.js\?v=21/.test(idx36f)
+  check(/black-card-adslot\.js\?v=22/.test(idx36f)
     && /friend-links-footer\.js\?v=16/.test(idx36f),
     '§36f 两个脚本在 index.html 的 ?v 已随内容变更 bump 到 16',
     '?v 没 bump → 浏览器缓存旧脚本，新文案 / 新友链不生效');
@@ -8516,7 +8531,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/n\.id\s*===\s*['"]sxg-flash-mask['"]/.test(ad36h),
     '§36h keepClear 按 id 排除闪屏遮罩 #sxg-flash-mask（不被当悬浮钮隐藏、整页磨砂不破洞）',
     'keepClear 漏排除闪屏遮罩 → 广告位相交时遮罩被隐藏、磨砂破洞、广告位穿模');
-  check(/black-card-adslot\.js\?v=21/.test(idx36h),
+  check(/black-card-adslot\.js\?v=22/.test(idx36h),
     '§36h black-card-adslot.js 的 ?v 已 bump 到 21（浏览器缓存旧脚本会吃掉本次修复）',
     '?v 没 bump → 旧脚本仍带 z-index:9995，修复不生效');
 }
@@ -8530,7 +8545,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(!/@media \(max-width:480px\)\{\.sxg-adslot__nav\{display:none\}/.test(ad36k),
     '§36k 手机端（≤480px）不再隐藏公益广告位左右翻页箭头（放出 prev/next 按钮）',
     '移动端媒体查询又把 .sxg-adslot__nav 设 display:none → 手机上看不到左右翻页箭头');
-  check(/black-card-adslot\.js\?v=21/.test(idx36k),
+  check(/black-card-adslot\.js\?v=22/.test(idx36k),
     '§36k black-card-adslot.js 的 ?v 已 bump 到 21（浏览器缓存旧脚本会吃掉本次改动）',
     '?v 没 bump → 旧脚本仍隐藏手机端箭头，改动不生效');
 }
@@ -8596,7 +8611,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     /中国大陆/.test(ad36n),
     '§36n 脚注已声明适用范围仅限中国大陆品牌与门店（本站意在改进国内用工状况，不评价境外）',
     '缺「仅限中国大陆」限定 → 读者会以为榜单对境外品牌也作同等评判');
-  check(/black-card-adslot\.js\?v=21/.test(idx36n),
+  check(/black-card-adslot\.js\?v=22/.test(idx36n),
     '§36n black-card-adslot.js 的 ?v 已 bump 到 21（浏览器缓存旧脚本会吃掉本次脚注）',
     '?v 没 bump → 旧脚本无脚注、本次改动不生效');
 }
@@ -9189,9 +9204,9 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/点右上角 × 关闭/.test(dp36x) && !/现在可以关闭了/.test(dp36x),
     '§36x 倒计时到点后提示改为「点右上角 × 关闭」',
     '提示仍写「可以关闭」却没说怎么关 → 用户会去点空白');
-  check(/<script defer src="\.\/douyin-prompt\.js\?v=22"><\/script>/.test(idx36x)
-    && !/douyin-prompt\.js\?v=21/.test(idx36x),
-    '§36x index.html 挂载 douyin-prompt.js?v=22（bump 缓存号）',
+  check(/<script defer src="\.\/douyin-prompt\.js\?v=23"><\/script>/.test(idx36x)
+    && !/douyin-prompt\.js\?v=22/.test(idx36x),
+    '§36x index.html 挂载 douyin-prompt.js?v=23（bump 缓存号）',
     '?v 没 bump → 线上仍跑旧脚本，改动等于没发');
 
   // 2026-11-13 站长追加：「不要 15 分钟冷却，刷新首页必弹」。
@@ -9199,6 +9214,38 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(!/inCooldown|cooldownMs|markShown|readLastShown|storageKey/.test(dpCode36x),
     '§36x 冷却逻辑已彻底移除（刷新首页必弹，不再 15 分钟只弹一次）',
     '又出现 inCooldown / cooldownMs / markShown / readLastShown / storageKey → 冷却回来了，刷新首页不会必弹');
+}
+
+// ---------- 36y. 必应动态摘要防护（2026-11-14 站长「广告位的这个被抓取了」） ----------
+// 11-04 曾排查过同一类问题（提交 835c9b1，当时抓的是大疆卡备注）：Bing 会渲染
+// JS 后从页面可见文本里算法挑摘要，meta description 只是候选之一。这次轮到首屏
+// 公益广告位；截图里「品牌展示 / 广告位招商中」在现网代码里早已清零，是旧索引快照。
+// 双管齐下：① 官方 data-nosnippet 把推广区块与弹窗长文排除出摘要与 AI 回答；
+// ② 首页 sitemap lastmod 刷新，给 Bing 一个明确的重抓信号（changefreq 被忽略）。
+{
+  const ad36y = read('black-card-adslot.js');
+  const dp36y = read('douyin-prompt.js');
+  const sm36y = read('sitemap.xml');
+  const gen36y = read('scripts/seo/generate-sitemap.py');
+  const strip36y = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  const adCode36y = strip36y(ad36y);
+  const dpCode36y = strip36y(dp36y);
+  check(/root\.setAttribute\('data-nosnippet',\s*''\)/.test(adCode36y),
+    '§36y 公益广告位根节点带 data-nosnippet（推广文案不进必应摘要 / AI 回答）',
+    '属性丢了 → 必应又把「陆喜依 · 站长指定 S 级 · 点此进入天猫旗舰店」抓成站点简介');
+  check(/box\.setAttribute\('data-nosnippet',\s*''\)/.test(dpCode36y),
+    '§36y 首页弹窗根节点带 data-nosnippet（长文不会被挑成站点简介）',
+    '弹窗漏标 → 自动弹出的长文段落又可能变成搜索摘要');
+  check(!/品牌展示|广告位招商中/.test(adCode36y),
+    '§36y 旧广告位文案确实不在现网代码里（必应截图属旧索引快照）',
+    '旧文案回流 → 不是索引没刷新，是代码自己又写回去了');
+  check(/<loc>https:\/\/dujeongil-galaxy\.github\.io\/shuangxiugou\/<\/loc>\s*<lastmod>2026-11-14<\/lastmod>/.test(sm36y),
+    '§36y sitemap.xml 首页 lastmod 已刷新到 2026-11-14（给 Bing 重抓信号）',
+    'lastmod 还停在 10-10 → Bing 缺少重抓依据，旧摘要一直挂着');
+  check(/LASTMOD_HOME\s*=\s*'2026-11-14'/.test(gen36y)
+    && /<lastmod>\{LASTMOD_HOME\}<\/lastmod>/.test(gen36y),
+    '§36y sitemap 生成器首页 lastmod 单一真相源同步（不是只手改 xml）',
+    '只改 xml 不改生成器 → 下次重建首页 lastmod 被打回 10-10');
 }
 
 // ---------- 汇总 ----------

@@ -18,6 +18,10 @@ idx = json.load(open('_brandindex.json', encoding='utf-8'))
 
 PRIORITY = {'S': '0.8', 'A': '0.8', 'B': '0.7', 'C': '0.7'}
 LASTMOD = '2026-10-10'
+# 首页单独维护 lastmod：首页几乎每次改动都会变，而 Bing 明确把 sitemap 的
+# lastmod 当作「优先重抓」信号（changefreq / priority 则被忽略）。2026-11-14
+# 修必应摘要时首页 lastmod 还停在 10-10，旧索引快照一直没被刷新。
+LASTMOD_HOME = '2026-11-14'
 BASE = 'https://dujeongil-galaxy.github.io/shuangxiugou'
 
 parts = [
@@ -28,7 +32,7 @@ parts = [
 # 首页
 parts.append(
     f'  <url>\n    <loc>{BASE}/</loc>\n'
-    f'    <lastmod>{LASTMOD}</lastmod>\n'
+    f'    <lastmod>{LASTMOD_HOME}</lastmod>\n'
     f'    <changefreq>daily</changefreq>\n'
     f'    <priority>1.0</priority>\n  </url>'
 )
