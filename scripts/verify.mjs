@@ -1708,7 +1708,9 @@ if (!Number.isFinite(commitCount) || commitCount < 30) {
   note(`检出历史仅 ${commitCount} 个提交（浅克隆），跳过「提交号真实性」检查以免误报`);
   note('完整校验需仓库含全部历史：git clone --depth=full，或在 CI 中设 fetch-depth: 0');
 } else {
-  for (const d of docs) {
+  // BUG-ROOT-CAUSES.md 是 2026-11-14 从 README 搬出去的 36 条 bug 明细，
+  // 里面每个章节标题都带真实哈希；不扫它等于给「编造哈希」留了一块无人区。
+  for (const d of [...docs, 'BUG-ROOT-CAUSES.md'].filter(exists)) {
     const t = read(d);
     // 提取反引号包裹的 7 位十六进制
     const hashes = [...new Set([...t.matchAll(/`([0-9a-f]{7})`/g)].map((x) => x[1]))];
@@ -6956,11 +6958,14 @@ section('21c. 首页滑到底部按钮');
     missing.slice(0, 4).join('；'));
 }
 
-// ---------- 21n. fix: 提交必须记进 README 相关页面 ----------
+// ---------- 21n. fix: 提交必须三处留痕（README 摘要 + BUG 专文 + 最近更新） ----------
 // 站长 2026-11-05：「根据 GitHub 规则，修复 bug 必须记录 README 相关页面」。
 // GitHub 仓库首页展示的就是 README，只写进 CHANGELOG 等于访客看不见。
+// 站长 2026-11-14 21:44 追加：「一堆 BUG 记录翻页都能累死个人……README 本身只写摘要」。
+// 于是明细整体外移到 BUG-ROOT-CAUSES.md：README 留摘要章节 + 链接 + 最近三条，
+// 专文为每个 fix 立一条完整章节，最近更新.md 顶部留条目。三处都要引用最近一次 fix 哈希。
 // 规则只写文档会漏（2026-10-19 血泪），这里按 Conventional Commits 的 fix:
-// 类型取 git log 里最近一次 bug 修复提交，强制 README.md 与 最近更新.md 都引用它。
+// 类型取 git log 里最近一次 bug 修复提交，反查三处。
 // ⚠️ 用 git log 而非 CHANGELOG 顶部条目：CHANGELOG 的哈希要「提交后回填」，
 //    拿顶部条目当基准会形成「先写文档、后拿哈希」的自指死结。
 {
@@ -6982,35 +6987,34 @@ section('21c. 首页滑到底部按钮');
     }
   } catch (e) { /* 非 git 环境 / shallow clone：下面走空集判红 */ }
 
+  const BUG_DOC = 'BUG-ROOT-CAUSES.md';
   const rd = exists('README.md') ? read('README.md') : '';
   const ru = exists(UPDATE_DOC) ? read(UPDATE_DOC) : '';
+  const rb = exists(BUG_DOC) ? read(BUG_DOC) : '';
   check(!!fixHash && fixCount >= 5,
     '§21n 真的扫到了 fix: 提交（git 历史 + 修复提交数双重空集防护）',
     'fixHash=' + fixHash + ' / fixCount=' + fixCount + ' → 断言在空跑');
-  check(rd.length > 1000 && ru.length > 1000,
-    '§21n README.md 与 最近更新.md 都读到了内容（空集防护）',
-    'README=' + rd.length + ' / 最近更新=' + ru.length);
+  check(rd.length > 1000 && ru.length > 1000 && rb.length > 1000,
+    '§21n README.md / 最近更新.md / BUG 专文都读到了内容（空集防护）',
+    'README=' + rd.length + ' / 最近更新=' + ru.length + ' / BUG 专文=' + rb.length);
 
-  // 不许只是「正文碰巧出现这串哈希」：必须落在某个「近期 bug 根因」章节里，
-  // 且至少要有两个这样的章节（新增章节被删掉也会判红）。
-  const headings = [...rd.matchAll(/^### 近期 bug 根因[^\n]*$/gm)].map(m => m.index);
+  // 2026-11-14 21:44 明细外移后，完整章节改去专文里找；至少两个章节，
+  // 且最新章节的**标题行**必须引用最近一次 fix 哈希（正文碰巧出现同串哈希不算）。
+  const headings = [...rb.matchAll(/^### 近期 bug 根因[^\n]*$/gm)].map(m => m.index);
   check(headings.length >= 2,
-    'README 至少有两个「近期 bug 根因」章节（章节被删也判红）',
+    'BUG-ROOT-CAUSES.md 至少有两个「近期 bug 根因」章节（章节被删也判红）',
     '当前 ' + headings.length + ' 个');
-  let newest = '';
-  if (headings.length) {
-    const rest = rd.slice(headings[0] + 1);
-    const nxt = rest.search(/\n#{2,3} /);
-    newest = nxt > 0 ? rest.slice(0, nxt) : rest;
-  }
-  // 只认**章节标题行**：正文里碰巧提到旧哈希、或只在别处摘要里提一嘴，都不算
-  // 「为这次 bug 立了条」。故障注入实测：从正文里删哈希容易被同串文本蒙混过关。
-  check(!!fixHash && newest.split('\n')[0].includes(fixHash),
-    `README「近期 bug 根因」最新章节标题记录了最近一次 fix 提交 ${fixHash}`,
-    '最新 bug 根因章节标题没引用 ' + fixHash + ' → 修了 bug 却没在 README 立条');
-  check(!!fixHash && rd.includes(fixHash) && ru.includes(fixHash),
-    `README.md 与 最近更新.md 都引用了最近一次 fix 提交 ${fixHash}`,
-    'README=' + rd.includes(fixHash) + ' / 最近更新=' + ru.includes(fixHash));
+  const newest = headings.length ? rb.slice(headings[0]).split('\n')[0] : '';
+  check(!!fixHash && newest.includes(fixHash),
+    `BUG 专文最新章节标题记录了最近一次 fix 提交 ${fixHash}`,
+    '最新 bug 根因章节标题没引用 ' + fixHash + ' → 修了 bug 却没在专文立条');
+  check(!!fixHash && rd.includes(fixHash) && ru.includes(fixHash) && rb.includes(fixHash),
+    `README.md / 最近更新.md / BUG 专文都引用了最近一次 fix 提交 ${fixHash}`,
+    'README=' + rd.includes(fixHash) + ' / 最近更新=' + ru.includes(fixHash)
+      + ' / BUG 专文=' + rb.includes(fixHash));
+  check(/近期 bug 根因（摘要）/.test(rd) && /BUG-ROOT-CAUSES\.md/.test(rd),
+    '§21n README 保留「近期 bug 根因（摘要）」章节并链接 BUG 专文（明细外移后访客仍有入口）',
+    '摘要章节或链接被删 → GitHub 首页看不到 bug 记录，等于把 §21n 的原始要求弄丢了');
 }
 
 // ---------- 21o. 未挂 CI 的 test-*.cjs 必须显式标「本机专用」 ----------
@@ -7294,11 +7298,33 @@ section('23. README 长段落摘要化（摘要 + 独立页面）');
     '§23d README-详情.md 归档了移出的完整原文（判档口径 / 架构说明 / 数据位置 / 锚点）',
     '归档页缺失或内容被删 → 摘要指向空页，长段落等于直接丢了');
 
-  check(!/同日更早（2026-11-07 09:37）/.test(rd23)
-    && !/上一批（2026-11-06）/.test(rd23)
-    && !/再上一批（2026-11-04）/.test(rd23),
-    '§23e README 不再堆叠逐批改动明细（完整版归 最近更新.md / CHANGELOG.md）',
-    '旧的「同日更早 / 上一批 / 再上一批」整坨明细回流 README');
+  // 2026-11-14 21:44 站长「这太难看了」：旧断言只钉死三个特定日期串，
+  // 结果「本批 / 上一批 / 更早一批」换个日期又堆回 121 行，36 条 bug 根因更没人管。
+  // 改成通用正则：任何逐批明细引用块、任何 bug 明细章节标题都不许回流 README。
+  check(!/^\s*>\s*\*\*(本批|上一批|更早一批|近期改动入口)/m.test(rd23)
+    && !/^\s*>\s*(本批|上一批|更早一批)（20\d\d-/m.test(rd23)
+    && !/^### 近期 bug 根因（fix）/m.test(rd23)
+    && !/^### 近期 bug 根因[^（\n]/m.test(rd23),
+    '§23e README 不再堆叠逐批改动明细与 bug 根因全文（通用正则，换日期也拦得住）',
+    '逐批明细或 bug 明细回流 README → 首页又要翻几百行');
+
+  const rdLines23 = rd23.split('\n').length;
+  check(rdLines23 <= 750,
+    `§23f README 总行数不超过 750 行（当前 ${rdLines23} 行）：过长就拆独立 md，外面只写摘要`,
+    'README 又膨胀了 → 按「文档分工」把明细外移，别靠人肉自觉');
+  const bug23 = exists('BUG-ROOT-CAUSES.md') ? read('BUG-ROOT-CAUSES.md') : '';
+  const bugHeads23 = (bug23.match(/^### 近期 bug 根因/gm) || []).length;
+  check(bugHeads23 >= 30 && /README\.md/.test(bug23) && /最近更新\.md/.test(bug23),
+    `§23g BUG 专文收存了完整明细（${bugHeads23} 条章节）并写明与 README / 最近更新的分工`,
+    '专文被清空或章节被删 → 摘要指向空页，明细等于直接丢了');
+  check(/BUG-ROOT-CAUSES\.md/.test(rd23) && /README-详情\.md/.test(rd23)
+    && /文档过长就拆/.test(rd23),
+    '§23h README 摘要写明「过长就拆」并链接 BUG 专文与长段落归档页',
+    '链接或规则文字被删 → 下次又会在 README 里堆长段落');
+  const bugLinks23 = [...bug23.matchAll(/\]\(\.\/([^)#]+)(?:#[^)]*)?\)/g)].map(m => m[1]);
+  check(bugLinks23.length >= 3 && bugLinks23.every(f => exists(f)),
+    '§23i BUG 专文的内部链接全部指向真实存在的文档',
+    '链接写错 → 访客从摘要点进去是 404');
 }
 
 // ---------- 24. 白屏兜底 + 加载态（站长 2026-11-08「删空搜索后整站白屏，怕用户误退出」） ----------
