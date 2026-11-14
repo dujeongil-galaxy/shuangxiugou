@@ -419,6 +419,18 @@
   text-align: right;
 }
 
+/* 文末备注（2026-11-14 站长追加）：整句加粗（沿用 .dyp__article strong 的
+   红色加粗），浅底左边框与正文区分；原先那行绿色推荐小字已撤，不复用其样式。 */
+.dyp__article .dyp__note {
+  margin: 16px 0 2px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.8;
+  background: #faf6ef;
+  border-left: 3px solid #c9b79c;
+  border-radius: 0 6px 6px 0;
+}
+
 /* 底部两枚按钮：复用 .dyp__acts > * 的统一尺寸规则，只补配色 */
 .dyp__visit {
   background: linear-gradient(135deg, #3dad8a, #2e8b6f);

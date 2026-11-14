@@ -1986,8 +1986,10 @@ if (exists('notes.html')) {
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/^\s*\/\/.*$/gm, '');
   // 2026-11-14 站长指令：弹窗内容整体替换为公众号式长文《别让"跟风买车"…》，
-  // 顶栏标签「劳工友好提醒」→「公益提醒」；底部保留站长新站外链（婚恋数据核查台）；
-  // 旧版的 站长随笔 / 压榨员工标题 / 抖音视频链接 / 切换旧版 全部撤掉。
+  // 顶栏标签「劳工友好提醒」→「公益提醒」；底部两枚按钮（新站引流 / 分享文章）；
+  // 追加指令「已经有了按钮，就不要留那句话（绿色）」→ 绿色推荐小字撤掉、
+  // 文末补一句整句加粗的备注；旧版的 站长随笔 / 压榨员工标题 / 抖音视频链接 /
+  // 切换旧版 全部撤掉。
   check(/公益提醒/.test(dp) && !/劳工友好提醒/.test(dp),
     '弹窗标签已更名「公益提醒」（旧「劳工友好提醒」清零）',
     '标签没改 → 仍显示旧名');
@@ -1997,9 +1999,17 @@ if (exists('notes.html')) {
   check(/别让["“]跟风买车/.test(dp) && /比亚迪轮毂/.test(dp),
     '弹窗正文已替换为新文章（标题 + 比亚迪轮毂事件）',
     '正文不是新文章 → 替换没落地');
-  check(/婚恋数据核查台/.test(dp) && /dating-data-factcheck/.test(dp),
-    '弹窗底部保留站长新站外链「婚恋数据核查台」（dating-data-factcheck）',
-    '外链缺失 → 站长要求保留的推荐语被误删');
+  check(!/顺便推荐站长的新站/.test(dp) && !/dyp__sitelink/.test(dp)
+    && !/dyp__tip/.test(dp) && !/SITE_LINK_TEXT/.test(dp),
+    '弹窗底部绿色推荐小字已撤（已有「去看看站长的新网站」按钮引流，不再重复）',
+    '绿色推荐语残留 → 与按钮功能重复，站长 2026-11-14 追加指令要求撤掉');
+  check(/dating-data-factcheck/.test(dp) && /去看看站长的新网站/.test(dp),
+    '新站引流仍由底部按钮承担（dating-data-factcheck 外链未丢）',
+    '按钮外链被误删 → 新站入口丢失');
+  check(/dyp__note/.test(dp) && /<strong>备注：本文讨论的重点/.test(dp)
+    && /高调发布悬赏，时机不妥/.test(dp) && /造成舆论误解/.test(dp),
+    '文末加粗备注已落地（界定重点：不反对打击黑公关，而是这个时间点时机不妥）',
+    '备注缺失或未加粗 → 文章立场容易被误读为反对悬赏');
   check(/去看看站长的新网站/.test(dp) && /我要分享此文章/.test(dp),
     '弹窗底部两枚按钮齐备（去看看站长的新网站 / 我要分享此文章）',
     '底部按钮缺失 → 分享/引流入口不完整');
@@ -8046,7 +8056,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/z-index:9995/.test(ad32) && /padding:7px 0 14px/.test(ad32)
     && /background: rgba\(24, 20, 16, 0\.22\)/.test(dyp32)
     && /backdrop-filter: none/.test(dyp32)
-    && /douyin-prompt\.css\?v=14/.test(idx32),
+    && /douyin-prompt\.css\?v=15/.test(idx32),
     '§32d 广告位层级 9995 / 底部留白 14px；.dyp 遮罩减淡去模糊，弹窗引流功能原样保留');
 
   check(/var SEARCH_DURATION = 6000/.test(ff32)
@@ -9036,8 +9046,14 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   const dpCode36x = dp36x.replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/^\s*\/\/.*$/gm, '');
 
+  // 2026-11-14 收紧：原判据「任意 click 监听后 160 字内出现 close」窗口太宽，
+  // 底部「我要分享此文章」的 addEventListener('click', onShareArticle) 后面正好
+  // 跟着 × 的 onclick=close；撤掉夹在中间的绿色推荐小字代码块后曾误判。
+  // 现在只认三种真实写法：遮罩 onclick=close / 把 close 直接注册成 click 回调 /
+  // 取到遮罩节点后在近处绑 close。
   check(!/\.dyp__mask[^\n]*\.onclick\s*=\s*close/.test(dpCode36x)
-    && !/addEventListener\(\s*['"]click['"][\s\S]{0,160}close/.test(dpCode36x),
+    && !/addEventListener\(\s*['"]click['"]\s*,\s*close\b/.test(dpCode36x)
+    && !/querySelector\(['"]\.dyp__mask['"]\)[\s\S]{0,120}close/.test(dpCode36x),
     '§36x 遮罩不再绑定 close（点空白不关弹窗）',
     '遮罩又绑回 close → 站长要的「锁死」失效，误点空白就关掉');
   check(!/addEventListener\(\s*['"]keydown['"]/.test(dpCode36x)
@@ -9050,9 +9066,9 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/点右上角 × 关闭/.test(dp36x) && !/现在可以关闭了/.test(dp36x),
     '§36x 倒计时到点后提示改为「点右上角 × 关闭」',
     '提示仍写「可以关闭」却没说怎么关 → 用户会去点空白');
-  check(/<script defer src="\.\/douyin-prompt\.js\?v=19"><\/script>/.test(idx36x)
-    && !/douyin-prompt\.js\?v=18/.test(idx36x),
-    '§36x index.html 挂载 douyin-prompt.js?v=19（bump 缓存号）',
+  check(/<script defer src="\.\/douyin-prompt\.js\?v=20"><\/script>/.test(idx36x)
+    && !/douyin-prompt\.js\?v=19/.test(idx36x),
+    '§36x index.html 挂载 douyin-prompt.js?v=20（bump 缓存号）',
     '?v 没 bump → 线上仍跑旧脚本，改动等于没发');
 
   // 2026-11-13 站长追加：「不要 15 分钟冷却，刷新首页必弹」。

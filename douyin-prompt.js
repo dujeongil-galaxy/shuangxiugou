@@ -6,15 +6,18 @@
    事件视角的消费者提醒）。要点：
      · 顶栏标签「劳工友好提醒」→「公益提醒」（站长原话「劳工友好提醒也不要了，
        直接替换为 公益提醒」）。
-     · 底部小字里「顺方便推荐站长的新站『婚恋数据核查台』」那句外链（站长
-       2026-11-01 原话要求挂、2026-11-14 强调「我说的那句话，不删！」）保留，
-       不删。
      · 弹窗旧版的所有其他内容（标题 / 摘要 / 要点 / 抖音短片按钮 / 站长随笔 /
        事实核查 / 切换旧版）全部撤掉——这些由 dyp-version-toggle.js 与
        factcheck-button.js 注入，本站用 .dyp--article 标记让它们自动不注入
        （保留脚本本体以便将来回退弹窗内容）。
      · 弹窗底部做成两枚按钮：①「去看看站长的新网站」（外链婚恋数据核查台）
        ②「我要分享此文章」（打开分享弹窗，文案带文章标题）。
+   2026-11-14 站长追加指令：「已经有了按钮，就不要留那句话（绿色）」——
+   原先挂在按钮上方那行绿色推荐小字（指向新站）撤下，引流交给按钮、不再重复；
+   改为在文章末尾加一句整句加粗的备注，界定本文讨论的重点：
+     「本文讨论的重点，不是反对悬赏打击黑公关这件事本身，而是在品控争议、
+       车主质疑集中爆发的这个时间点高调发布悬赏，时机不妥，很容易引火烧身，
+       造成舆论误解。」
 
    弹出需求：每次刷新首页都必弹（站长 2026-11-13 指令「不要 15 分钟冷却，
    刷新首页必弹」）。不再用 localStorage 记时间戳、不再有冷却期，关掉再刷就再弹。
@@ -25,11 +28,10 @@
 (function () {
   'use strict';
 
-  // 站长新站外链（2026-11-01 站长要求「这里挂一下 url，推我的新网站」，
-  // 2026-11-14 强调「我说的那句话，不删！」）：挂在弹窗底部提示小字里，
-  // 单独一行、同字号，不抢主按钮的视觉重量。
+  // 站长新站外链（2026-11-01 站长要求「这里挂一下 url，推我的新网站」）：
+  // 2026-11-14 追加指令「已经有了按钮，就不要留那句话（绿色）」——
+  // 原先底部那行绿色推荐小字撤掉，只由「去看看站长的新网站」按钮承担引流。
   var SITE_LINK = 'https://dujeongil-galaxy.github.io/dating-data-factcheck/';
-  var SITE_LINK_TEXT = '顺便推荐站长的新站「婚恋数据核查台」：给相亲数据做溯源核查 ↗';
 
   // 底部「我要分享此文章」打开分享弹窗时，临时写进 og:description 的分享文案
   // （分享弹窗 info() 读 og:description 作为分享说明，开完即还原）。
@@ -96,7 +98,12 @@
       '而是靠“真诚靠谱”来让你放心</strong>。</p>',
     '<p>如果你们身边也有准备买车、或者已经买了比亚迪 / 华为相关产品的家人朋友，欢迎把这篇' +
       '文章转发给他们。我们一起，做一个清醒的消费者。</p>',
-    '<p class="dyp__sign">双休购站长 dujeongil-galaxy<br>2026 年 11 月 14 日</p>'
+    '<p class="dyp__sign">双休购站长 dujeongil-galaxy<br>2026 年 11 月 14 日</p>',
+    // 文末备注（2026-11-14 站长追加）：整句加粗，界定本文讨论的重点，
+    // 避免被误读成「反对悬赏打击黑公关」。
+    '<p class="dyp__note"><strong>备注：本文讨论的重点，不是反对悬赏打击黑公关这件事' +
+      '本身，而是在品控争议、车主质疑集中爆发的这个时间点高调发布悬赏，时机不妥，' +
+      '很容易引火烧身，造成舆论误解。</strong></p>'
   ].join('');
 
   var box = null;
@@ -113,7 +120,6 @@
         '<button class="dyp__x" type="button" aria-label="关闭">&times;</button>' +
         '<div class="dyp__tag">公益提醒</div>' +
         '<div class="dyp__article" id="dyp-title">' + ARTICLE_HTML + '</div>' +
-        '<p class="dyp__tip"></p>' +
         '<div class="dyp__acts">' +
           '<a class="dyp__visit" target="_blank" rel="noopener noreferrer"></a>' +
           '<button type="button" class="dyp__share"></button>' +
@@ -125,7 +131,7 @@
         '</div>' +
       '</div>';
 
-    // 底部「去看看站长的新网站」——复用弹窗底部已有的新站外链目标
+    // 底部「去看看站长的新网站」——引流入口（原绿色推荐小字已撤，只留按钮）
     var visit = box.querySelector('.dyp__visit');
     visit.href = SITE_LINK;
     visit.textContent = '去看看站长的新网站';
@@ -134,18 +140,6 @@
     var share = box.querySelector('.dyp__share');
     share.textContent = '我要分享此文章';
     share.addEventListener('click', onShareArticle);
-
-    // 底部小字：只保留站长新站外链（2026-11-01 原话「推我的新网站」，站长 2026-11-14 指定不删）
-    var tipEl = box.querySelector('.dyp__tip');
-    if (SITE_LINK) {
-      var sl = document.createElement('a');
-      sl.className = 'dyp__sitelink';
-      sl.href = SITE_LINK;
-      sl.target = '_blank';
-      sl.rel = 'noopener noreferrer';
-      sl.textContent = SITE_LINK_TEXT;
-      tipEl.appendChild(sl);
-    }
 
     // 关闭方式（2026-11-13 站长指令「先锁死」）：**只能点右上角 × 关闭**。
     // 原先遮罩点击、×、Esc 三条路都能关；现在遮罩与 Esc 一律不绑定 close，
