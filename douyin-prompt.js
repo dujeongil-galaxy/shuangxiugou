@@ -24,6 +24,11 @@
      · 旧版：13:49 整体替换前的「劳工友好提醒」弹窗内容，从 GitHub 仓库存档
        取回、按文章版式重排；底部附存档说明（口径由站长给、措辞已优化不照抄）。
        旧版只作留档查阅，不恢复抖音短片 / 事实核查 / 站长随笔等旧功能入口。
+   2026-11-14 站长再追加（覆盖 15:39 的「不留那句话」）：底部第一枚按钮改挂
+   轮毂事件相关抖音视频（https://v.douyin.com/uBwf2Fbt0d8/），第二枚仍是
+   「我要分享此文章」；新站引流恢复「旧版本那样」——那行绿色推荐语重新挂回来，
+   且**固定在滚动正文之外**（文章下方、两枚按钮上方），无论正文滚到哪里都可见。
+   面板改 flex 列：正文可收缩并内部滚动，绿色行 / 按钮 / 倒计时常驻不被推走。
 
    弹出需求：每次刷新首页都必弹（站长 2026-11-13 指令「不要 15 分钟冷却，
    刷新首页必弹」）。不再用 localStorage 记时间戳、不再有冷却期，关掉再刷就再弹。
@@ -34,10 +39,17 @@
 (function () {
   'use strict';
 
-  // 站长新站外链（2026-11-01 站长要求「这里挂一下 url，推我的新网站」）：
-  // 2026-11-14 追加指令「已经有了按钮，就不要留那句话（绿色）」——
-  // 原先底部那行绿色推荐小字撤掉，只由「去看看站长的新网站」按钮承担引流。
+  // 站长新站外链（2026-11-01 站长要求「这里挂一下 url，推我的新网站」）。
+  // 2026-11-14 17:00 站长最新口径「至于新网站，保持旧版本那样」：第一枚按钮让位给
+  // 视频后，新站引流重新交回下面这行绿色推荐语（与 15:39 之前的旧版本同款文案）。
+  // 它挂在 .dyp__article 滚动容器**外面**，随面板 flex 布局常驻，不随正文滚走。
   var SITE_LINK = 'https://dujeongil-galaxy.github.io/dating-data-factcheck/';
+  var SITE_LINK_TEXT = '顺便推荐站长的新站「婚恋数据核查台」：给相亲数据做溯源核查 ↗';
+
+  // 底部第一枚按钮：轮毂事件相关视频（站长 2026-11-14 提供的抖音短链）。
+  // 第二枚「我要分享此文章」保持不动；按钮文字由本站自定，只说功能不堆叠标题。
+  var VIDEO_LINK = 'https://v.douyin.com/uBwf2Fbt0d8/';
+  var VIDEO_BTN_TEXT = '看轮毂事件相关视频';
 
   // 底部「我要分享此文章」打开分享弹窗时，临时写进 og:description 的分享文案
   // （分享弹窗 info() 读 og:description 作为分享说明，开完即还原）。
@@ -190,8 +202,9 @@
         '<button class="dyp__x" type="button" aria-label="关闭">&times;</button>' +
         '<div class="dyp__tag">公益提醒</div>' +
         '<div class="dyp__article" id="dyp-title">' + ARTICLE_HTML + '</div>' +
+        '<p class="dyp__tip" id="dyp-sitelink"></p>' +
         '<div class="dyp__acts">' +
-          '<a class="dyp__visit" target="_blank" rel="noopener noreferrer"></a>' +
+          '<a class="dyp__video" target="_blank" rel="noopener noreferrer"></a>' +
           '<button type="button" class="dyp__share"></button>' +
         '</div>' +
         '<div class="dyp__count" aria-live="polite">' +
@@ -201,15 +214,26 @@
         '</div>' +
       '</div>';
 
-    // 底部「去看看站长的新网站」——引流入口（原绿色推荐小字已撤，只留按钮）
-    var visit = box.querySelector('.dyp__visit');
-    visit.href = SITE_LINK;
-    visit.textContent = '去看看站长的新网站';
+    // 底部第一枚按钮：轮毂事件相关视频（外链抖音短链，新窗口打开）
+    var video = box.querySelector('.dyp__video');
+    video.href = VIDEO_LINK;
+    video.textContent = VIDEO_BTN_TEXT;
 
-    // 底部「我要分享此文章」——打开分享弹窗，文案带文章标题
+    // 底部第二枚「我要分享此文章」——打开分享弹窗，文案带文章标题
     var share = box.querySelector('.dyp__share');
     share.textContent = '我要分享此文章';
     share.addEventListener('click', onShareArticle);
+
+    // 绿色推荐语：放在 .dyp__article 滚动容器之外，文章下方 / 两枚按钮上方，
+    // 由面板 flex 列布局固定住——正文滚到文末或回到开头，这一行都在原位。
+    var tipEl = box.querySelector('.dyp__tip');
+    var sl = document.createElement('a');
+    sl.className = 'dyp__sitelink';
+    sl.href = SITE_LINK;
+    sl.target = '_blank';
+    sl.rel = 'noopener noreferrer';
+    sl.textContent = SITE_LINK_TEXT;
+    tipEl.appendChild(sl);
 
     // 版本切换（× 左侧）：切正文、切按钮文字、切分享文案，不动倒计时与关闭锁。
     box.querySelector('.dyp__version-toggle')

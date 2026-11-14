@@ -2000,20 +2000,35 @@ if (exists('notes.html')) {
   check(/别让["“]跟风买车/.test(dp) && /比亚迪轮毂/.test(dp),
     '弹窗正文已替换为新文章（标题 + 比亚迪轮毂事件）',
     '正文不是新文章 → 替换没落地');
-  check(!/顺便推荐站长的新站/.test(dp) && !/dyp__sitelink/.test(dp)
-    && !/dyp__tip/.test(dp) && !/SITE_LINK_TEXT/.test(dp),
-    '弹窗底部绿色推荐小字已撤（已有「去看看站长的新网站」按钮引流，不再重复）',
-    '绿色推荐语残留 → 与按钮功能重复，站长 2026-11-14 追加指令要求撤掉');
-  check(/dating-data-factcheck/.test(dp) && /去看看站长的新网站/.test(dp),
-    '新站引流仍由底部按钮承担（dating-data-factcheck 外链未丢）',
-    '按钮外链被误删 → 新站入口丢失');
+  // 2026-11-14 17:00 站长最新口径「至于新网站，保持旧版本那样，但是这一次注意
+  // 一下，无论是否向下滚动，原本那句话（绿色）都会显示在文章下方，两个按钮的上方」：
+  // 绿色推荐语恢复，且必须挂在 .dyp__article 滚动容器之外（DOM 顺序在正文之后、
+  // 按钮之前），由面板 flex 列固定住——覆盖 15:39 的「不留那句话」。
+  check(/顺便推荐站长的新站/.test(dp) && /SITE_LINK_TEXT/.test(dp)
+    && /dyp__sitelink/.test(dp) && /dyp__tip/.test(dp),
+    '弹窗绿色推荐语按最新指令恢复（站长新站「婚恋数据核查台」）',
+    '绿色推荐语缺失 → 第一个按钮让位给视频后，新站没有入口了');
+  // 必须精确盯「正文 </div> 闭合之后才是 .dyp__tip」：只查字符串先后顺序不够，
+  // 把 tip 塞进 article 内部时宽松的窗口正则仍会通过（故障注入实测到的漏洞）。
+  check(/ARTICLE_HTML \+ '<\/div>' \+[\s\S]{0,160}dyp__tip[\s\S]{0,240}dyp__acts/.test(dp),
+    '绿色推荐行位于滚动正文之外：文章下方、两枚按钮上方（不随正文滚走）',
+    '又把绿色句子塞回 .dyp__article 里 → 往下读文章时它就消失了');
+  check(/dating-data-factcheck/.test(dp) && /sl\.href = SITE_LINK/.test(dp),
+    '新站外链由固定绿色推荐行承担（dating-data-factcheck 未丢）',
+    '外链被误删 → 新站入口丢失');
   check(/dyp__note/.test(dp) && /<strong>备注：本文讨论的重点/.test(dp)
     && /高调发布悬赏，时机不妥/.test(dp) && /造成舆论误解/.test(dp),
     '文末加粗备注已落地（界定重点：不反对打击黑公关，而是这个时间点时机不妥）',
     '备注缺失或未加粗 → 文章立场容易被误读为反对悬赏');
-  check(/去看看站长的新网站/.test(dp) && /我要分享此文章/.test(dp),
-    '弹窗底部两枚按钮齐备（去看看站长的新网站 / 我要分享此文章）',
-    '底部按钮缺失 → 分享/引流入口不完整');
+  check(/我要分享此文章/.test(dp) && /VIDEO_BTN_TEXT/.test(dp)
+    && /https:\/\/v\.douyin\.com\/uBwf2Fbt0d8\//.test(dp)
+    && /video\.href = VIDEO_LINK/.test(dp)
+    && /dyp__video/.test(dp),
+    '弹窗底部两枚按钮：第一枚改挂轮毂事件抖音视频，第二枚仍是「我要分享此文章」',
+    '视频按钮缺失 / 短链写错 → 站长指定的视频没挂到首页第一个按钮');
+  check(/dyp__video[\s\S]{0,300}dyp__share/.test(dp),
+    '视频按钮排在分享按钮之前（第一个按钮是视频）',
+    '顺序反了 → 第一个按钮不是视频');
   check(/dyp__version-toggle/.test(dp) && /切换旧版/.test(dp) && /切换新版/.test(dp)
     && /onToggleVersion/.test(dp) && /setVersion\(/.test(dp),
     '× 左侧有版本切换按钮（两态文案「切换旧版 / 切换新版」+ 切换函数）',
@@ -2033,6 +2048,60 @@ if (exists('notes.html')) {
   check(!/dyp--notice/.test(dp),
     '「还在写」公告弹窗已移除',
     'notes.html 已可直接访问（保留密码锁），公告弹窗不应再出现');
+
+  /* ===== 2026-11-14 17:00 批次：固定推荐行 / 分享层级 / 专题页 / 卡片按钮 ===== */
+  // ① 面板 flex 列 + 正文可收缩，保证绿色推荐行与按钮真的不会被滚动带走。
+  const dpcX = read('douyin-prompt.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  check(/\.dyp--article\s*\{[^}]*display:\s*flex[^}]*flex-direction:\s*column[^}]*overflow:\s*hidden/.test(dpcX)
+    && /\.dyp__article\s*\{[^}]*flex:\s*0 1 auto/.test(dpcX),
+    '弹窗面板 flex 列 + 正文可收缩：绿色推荐行 / 两枚按钮 / 倒计时常驻不随正文滚动',
+    '缺 flex 列或正文不可收缩 → 窄屏按钮被裁掉，或绿色行又跟着正文滚走');
+  // ② 分享面板必须压过首页弹窗（站长「为什么点击分享还要关闭弹窗才能看见」）。
+  const smX = read('share-modal.js');
+  const dypZ = Number((dpcX.match(/\.dyp\s*\{[\s\S]*?z-index:\s*(\d+)/) || [])[1] || 0);
+  const smZ = Number((smX.match(/\.sxg-share-mask\{[^}]*z-index:\s*(\d+)/) || [])[1] || 0);
+  check(dypZ > 0 && smZ > dypZ,
+    '分享面板层级高于首页公益提醒弹窗（点分享立刻可见，不必先关文章弹窗）',
+    '分享面板 z-index 低于 .dyp → 又被盖住，用户要先关弹窗才看得见');
+  // ③ QQ 图标是矢量重绘的经典红围巾企鹅，不是放大发糊的位图。
+  check(/viewBox="0 0 48 48"/.test(smX) && /sxgQqScarf/.test(smX)
+    && /#C62828/.test(smX) && /#FF9D2E/.test(smX),
+    'QQ 图标为纯矢量重绘的经典红围巾企鹅（黑身白肚 + 红围巾 + 橙嘴橙脚）',
+    'QQ 图标又退回位图或丢了红围巾 → 站长截图指出的「像素不行」没解决');
+  // ④ 品牌卡底栏：按「组」整齐换行，不再第一行溢出、个别按钮掉到第二行。
+  const mfX = read('mobile-fixes.css');
+  check(/div\[class\*="border-t"\]\[class\*="bg-slate-50"\]\s*\{[^}]*flex-wrap:\s*wrap\s*!important/.test(mfX)
+    && /div\[class\*="border-t"\]\[class\*="bg-slate-50"\]\s*>\s*div\.flex\.items-center\.gap-2\s*\{[^}]*flex:\s*0 0 auto/.test(mfX),
+    '品牌卡底栏按钮按「组」整齐换行（flex-wrap + 组不收缩），不再零散断行',
+    '缺 wrap 或组仍会收缩 → 桌面窄卡片 / 手机端又出现 4+1 溢出');
+  check(/div\.flex\.items-center\.gap-2:last-child\s*\{[^}]*flex-wrap:\s*nowrap/.test(mfX)
+    && /gap-2:last-child\s*>\s*button\s*\{[^}]*flex:\s*1 1 auto/.test(mfX),
+    '手机端右组三枚操作钮强制一行三等分（不再出现 2+1 孤行）',
+    '右组 nowrap 或等分规则丢失 → 窄屏又把「详情证据」单独挤到第三行');
+  // ⑤ 比亚迪车主专题报道页：独立 HTML、双休购旗下、三则故事齐全、不照抄原话。
+  const br = exists('byd-report.html') ? read('byd-report.html') : '';
+  check(br.length > 0 && /<html lang="zh-CN">/.test(br)
+    && /双休购 · 专题报道/.test(br) && /返回双休购首页/.test(br),
+    '比亚迪专题报道页独立成页且明确属于双休购旗下（未改主站架构）',
+    '专题页缺失或没写归属 → 变成游离页面');
+  check(/2025 · 雨夜高速/.test(br) && /2026 · 保养之后/.test(br)
+    && /唐 EV 2026 款/.test(br) && /雨刮器/.test(br) && /方向盘/.test(br)
+    && /并不是这款车的车主/.test(br),
+    '专题页三则故事齐全（2025 雨刮器 / 2026 方向盘异响 / 唐 EV 车型澄清）',
+    '故事缺失 → 站长口述的三个要点没写全');
+  check(/github\.com\/dujeongil-galaxy\/shuangxiugou\/issues"/.test(br)
+    && /m\.kuku\.lu\/cn\.php/.test(br) && /AI 补充意见/.test(br)
+    && /第八十二条/.test(br) && /150 米/.test(br),
+    '专题页保留 Issues / 匿名邮箱请教入口，并写入 AI 补充意见（含法规与 150 米）',
+    '请教入口或 AI 意见缺失 → 站长「可以 issues 或匿名邮箱告诉站长」没落地');
+  check(!/狂喷水/.test(br) && !/差点想停在应急车道/.test(br)
+    && !/接二连三的出现这些小故障/.test(br) && !/很牛逼/.test(br),
+    '专题页措辞已优化、未复制粘贴站长口述原话（意思不变）',
+    '出现口述原句 → 违反「禁止复制粘贴，优化，但不要改变我说话的意思」');
+  check(/\/byd-report\.html/.test(read('sitemap.xml'))
+    && /STORY_HREF = '\.\/byd-report\.html'/.test(read('byd-expose-patch.js')),
+    '专题页已进 sitemap，且比亚迪卡片备注栏挂了跳转入口',
+    '缺 sitemap 或卡面入口 → 新页用户找不到');
   // ⑦ 防搬运锁（2026-11-04 站长指令）：随笔页禁 F12/右键/复制剪切选择拖拽，
   //    Ctrl/Shift/Alt/Meta 组合键全禁；密码输入框豁免 Shift（大写字母）与粘贴。
   //    盯行为关键点：事件名 + preventDefault 必须成对出现在 notes.html 里，
@@ -5834,21 +5903,27 @@ section('21b-2. 安全事件默认收起 + 分享弹窗接线');
   check(/“狗日的”Boss直聘<\/span>/.test(ugp) && !/[^”]狗日的Boss直聘/.test(ugp),
     '§21b-3 「狗日的」带中文弯引号（U+201C/U+201D），不得退回无引号原样',
     '粗口不加引号 → 读起来像本站/站长在这行直接骂人（站长 2026-11-07 明确要求）');
-  // 2026-11-06 站长指定：抵制区末尾追加「海比优」一句 + 固定末句
-  // （海比优文案由站长提供英文 Application Introduction，此处译写一句中文；
-  // 末句一字不改，含「；」不换行：应用商店搜索 + 与本站无关声明）
-  check(/海比优（Haibiyou）是一款认真做招聘的求职平台/.test(ugp)
-    && /为求职者筛选真实可靠的企业岗位，也帮企业快速找到优秀人才。/.test(ugp),
-    '抵制区末尾有海比优介绍句（站长英文 Application Introduction 译写）',
-    '删掉海比优句 → 站长指定的推广文案缺失');
-  check(/欢迎前往各大手机应用商店搜索（开发中，限号注册）；推广内容与本站无关，站长不会收取任何广告费。/.test(ugp),
-    '抵制区末句一字不改（应用商店搜索 + 与本站无关声明，含「；」不换行）',
-    '改末句措辞/断行 → 站长指定的固定收尾句被破坏');
-  // 脚本缓存号：改 u-grade-patch.js 必须同步 ?v=，否则线上仍是旧抵制区
+  // 2026-11-14 站长指令：抵制区末尾的第三方推广整段撤下（对方明确表示不希望
+  // 继续推广）。原「介绍句 + 固定末句」两条正向断言按新口径改成负向断言，
+  // 配套排版补丁连同首页挂载一起删除；README 只留一句中性留痕，不提对方名称。
   const idxUgp = readFileSync(join(ROOT, 'index.html'), 'utf8');
-  check(/u-grade-patch\.js\?v=19/.test(idxUgp)
-    && !/u-grade-patch\.js\?v=18/.test(idxUgp),
-    'index.html 引用 u-grade-patch.js?v=19（缓存号已随改动同步 +1）',
+  check(!/Haibiyou/.test(ugp) && !/认真做招聘的求职平台/.test(ugp)
+    && !/限号注册/.test(ugp) && !/推广内容与本站无关/.test(ugp)
+    && !/广告费/.test(ugp),
+    '抵制区末尾第三方推广已整段撤下（介绍句与固定末句均清零）',
+    '推广文案残留 → 对方已明确表示不希望继续推广');
+  check(!/ad-text-width-fix\.js/.test(idxUgp) && !exists('ad-text-width-fix.js'),
+    '推广配套排版补丁已撤挂载并删除（不再留只为广告服务的脚本）',
+    '补丁残留 → 广告撤了但废脚本仍在跑');
+  const rmAd = read('README.md');
+  check(/应合作方要求，首页一处第三方推广内容已整段撤下/.test(rmAd)
+    && !/Haibiyou/.test(rmAd) && !/海比优/.test(rmAd),
+    'README 留痕一句话略过且不提对方名称',
+    '留痕缺失或写出对方名称 → 不符合「直接一句话略过」的最新指令');
+  // 脚本缓存号：改 u-grade-patch.js 必须同步 ?v=，否则线上仍是旧抵制区
+  check(/u-grade-patch\.js\?v=20/.test(idxUgp)
+    && !/u-grade-patch\.js\?v=19/.test(idxUgp),
+    'index.html 引用 u-grade-patch.js?v=20（缓存号已随改动同步 +1）',
     '漏 bump ?v 或仍写旧值 → 浏览器命中旧缓存，新抵制区不生效');
 }
 
@@ -6675,8 +6750,8 @@ section('21c. 首页滑到底部按钮');
   check(/'D 级'/.test(rowTexts) && /'U 级'/.test(rowTexts),
     'stat-filter.js 评级行互斥枚举含「D 级」「U 级」（点 D/U 清五格筛选）',
     'stat-filter 没跟上 → 点 D/U 不清四格筛选，两套过滤层互相覆盖出现空面板');
-  check(/u-grade-patch\.js\?v=19/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
-    'u-grade-patch.js?v=19 / stat-filter.js?v=9（缓存号已随内容 bump；11-13 U 计数动态刷新）',
+  check(/u-grade-patch\.js\?v=20/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
+    'u-grade-patch.js?v=20 / stat-filter.js?v=9（缓存号已随内容 bump；11-13 U 计数动态刷新）',
     '缓存号没 bump → 用户拿旧补丁，D/U 按钮注入不生效（2026-11-01 拼音索引同类事故）');
   // 2026-11-03 站长实测 bug：点「D 级 / U 级」后拼音搜索框整块消失。
   // 根因：CARD_SEL（div.bg-white.rounded-2xl.border）命中面比品牌卡宽，
@@ -7853,7 +7928,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§30a README 写死比亚迪曝光登记四条口径（卡片真挂载 / 死链不冒充 / 如实登记 / 随笔引用）',
     '规则只挂口头 → 又会出现「详情页写了、卡片没动」的静默失效');
 
-  check(p30.length > 0 && /<script defer src="\.\/byd-expose-patch\.js\?v=6"><\/script>/.test(idx30)
+  check(p30.length > 0 && /<script defer src="\.\/byd-expose-patch\.js\?v=7"><\/script>/.test(idx30)
     && /不能改 bundle|不能改\s*bundle/.test(p30),
     '§30b 曝光补丁入库并挂进首页（?v=6，2026-11-14 点评框措辞优化：不再逐字直录站长口语），且写明不动压缩 bundle');
 
@@ -7868,7 +7943,8 @@ section('25. 成功案例专题页（QQ奶奶）');
     && /受到了某种压力/.test(p30) && /不对指称内容作事实认定/.test(p30),
     '§30d 曝光框六条事实齐全（加班至晚十点 / 第96条 / 视频已删 / 链接失效 / 受压 / 不作事实认定）');
 
-  check(/var P3 = '\(站长本人于2025年起持有比亚迪王朝，双休购是2026年上线的，预计11月14日更新站长故事。\)'/.test(p30)
+  check(/var P3 = '\(站长本人于2025年起持有比亚迪王朝，双休购是2026年上线的；车主亲历与近期车型澄清已整理成专题报道。\)'/.test(p30)
+    && /STORY_HREF = '\.\/byd-report\.html'/.test(p30)
     && !/NOTES_TEXT/.test(p30)
     && !/NOTES_HREF/.test(p30)
     && !/日记/.test(p30)
@@ -7878,7 +7954,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     && /setAttribute\('target', '_blank'\)/.test(p30)
     && !/kKmeU180irU/.test(p30)
     && !/LEGAL_HREF = 'https:\/\/v\.douyin\.com\/NrP3/.test(p30),
-    '§30e 卡面备注栏 P3 改为纯文本括号（站长本人于2025年起持有比亚迪王朝，双休购是2026年上线的，预计11月14日更新站长故事。），删掉站内 notes.html 随笔第10章链接；不抄口述、不写「日记」；卡面备注栏只挂一条抖音短链（nofollow noopener + 新窗口打开），失效旧短链一律不进卡');
+    '§30e 卡面备注栏 P3 保留车主身份说明、改挂比亚迪专题报道页（./byd-report.html）入口；删掉站内 notes.html 随笔第10章链接；不抄口述、不写「日记」；卡面备注栏只挂一条抖音短链（nofollow noopener + 新窗口打开），失效旧短链一律不进卡');
 
   const evByd30 = (idx30.match(/<details id="ev-byd"[\s\S]*?<\/details>/) || [])[0] || '';
   const liByd30 = (byd30.match(/<li style="margin:0 0 12px"><strong>BYD 直营门店强制加班曝光[\s\S]*?<\/li>/) || [])[0] || '';
@@ -8075,7 +8151,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/z-index:9995/.test(ad32) && /padding:7px 0 14px/.test(ad32)
     && /background: rgba\(24, 20, 16, 0\.22\)/.test(dyp32)
     && /backdrop-filter: none/.test(dyp32)
-    && /douyin-prompt\.css\?v=16/.test(idx32),
+    && /douyin-prompt\.css\?v=17/.test(idx32),
     '§32d 广告位层级 9995 / 底部留白 14px；.dyp 遮罩减淡去模糊，弹窗引流功能原样保留');
 
   check(/var SEARCH_DURATION = 6000/.test(ff32)
@@ -8393,7 +8469,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '公告仍是居中 inline-block 且无处预留右列宽 → 窄屏右缘压在右侧悬浮钮上（站长截图）');
   /* §36t 又改了同一份 CSS（顶栏全部常显），?v 随每次改动继续往上走；
      这里与 §36q / §36s 的钉子必须同步，别只改其中一处。 */
-  check(/mobile-fixes\.css\?v=21/.test(idx36g),
+  check(/mobile-fixes\.css\?v=22/.test(idx36g),
     '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 21（卡片三枚操作钮基线统一，顺延）',
     '?v 没 bump → 浏览器缓存旧 CSS，预留列宽不生效');
 }
@@ -8579,10 +8655,10 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   // ④ 挂载顺序：dock 脚本必须排在所有悬浮脚本之后。
   const mountOk = /<script defer src="\.\/fab-dock\.js\?v=3"><\/script>/.test(idx36q)
     && idx36q.indexOf('fab-dock.js?v=3') > idx36q.indexOf('nav-menu.js?v=6')
-    && /mobile-fixes\.css\?v=21/.test(idx36q)
+    && /mobile-fixes\.css\?v=22/.test(idx36q)
     && /header-menu-patch\.js\?v=11/.test(idx36q);
   check(mountOk,
-    '§36q index.html 已挂载 fab-dock.js?v=3 且排在所有悬浮脚本之后，mobile-fixes.css?v=21 / header-menu-patch.js?v=11 同步 bump',
+    '§36q index.html 已挂载 fab-dock.js?v=3 且排在所有悬浮脚本之后，mobile-fixes.css?v=22 / header-menu-patch.js?v=11 同步 bump',
     '挂载顺序错了 → dock 执行时按钮还没建好，收编为空；?v 没 bump → 浏览器缓存旧 CSS');
 }
 
@@ -8657,8 +8733,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   // ⑦ 挂载与 ?v 钉子（§21h 纪律），以及 jsdom 行为测试存在。
   check(/<script defer src="\.\/github-access-help\.js\?v=3"><\/script>/.test(idx36r)
     && /appeal-policy\.js\?v=4/.test(idx36r)
-    && /share-modal\.js\?v=9/.test(idx36r)
-    && /share-modal\.js\?v=9/.test(sp36r)
+    && /share-modal\.js\?v=10/.test(idx36r)
+    && /share-modal\.js\?v=10/.test(sp36r)
     && exists('scripts/test-github-access-help.cjs'),
     '§36r index.html 挂载 github-access-help.js?v=3 / appeal-policy.js?v=4，改动脚本 ?v 同步 bump，配套 jsdom 行为测试存在',
     '?v 没 bump → 浏览器/CDN 命中旧脚本，新文案与链接规整都不生效');
@@ -8720,7 +8796,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/<script defer src="\.\/anon-mail\.js\?v=5"><\/script>/.test(idx36s)
     && idx36s.indexOf('anon-mail.js?v=5') > idx36s.indexOf('fab-dock.js?v=3')
     && /fab-dock\.js\?v=3/.test(idx36s)
-    && /mobile-fixes\.css\?v=21/.test(idx36s)
+    && /mobile-fixes\.css\?v=22/.test(idx36s)
     && /header-menu-patch\.js\?v=11/.test(idx36s)
     && exists('scripts/test-anon-mail.cjs')
     && wf36s.indexOf('node scripts/test-anon-mail.cjs') !== -1,
@@ -8886,7 +8962,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '只修 ≤640px → 平板横屏 / 窄桌面窗口按钮仍被挤成不可读的竖条');
 
   // ⑦ ?v 钉子（§21h）+ 新 jsdom 测试挂进 CI（§21o）。
-  check(/mobile-fixes\.css\?v=21/.test(idx36t)
+  check(/mobile-fixes\.css\?v=22/.test(idx36t)
     && /header-menu-patch\.js\?v=11/.test(idx36t)
     && /github-access-help\.js\?v=3/.test(idx36t)
     && /appeal-policy\.js\?v=4/.test(idx36t)
@@ -8966,13 +9042,13 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '海外仍走横向清单行 → 上 5 下 10 不成立；图标容器改回圆角方形 → 与国内两套视觉分裂');
 
   // ⑤ ?v 同步 + jsdom 行为测试挂进 CI（§21h / §21o 纪律）。
-  check(/share-modal\.js\?v=9/.test(idx36v)
-    && /share-modal\.js\?v=9/.test(sp36v)
-    && !/share-modal\.js\?v=8/.test(idx36v)
-    && !/share-modal\.js\?v=8/.test(sp36v)
+  check(/share-modal\.js\?v=10/.test(idx36v)
+    && /share-modal\.js\?v=10/.test(sp36v)
+    && !/share-modal\.js\?v=9/.test(idx36v)
+    && !/share-modal\.js\?v=9/.test(sp36v)
     && exists('scripts/test-share-modal.cjs')
     && wf36v.indexOf('node scripts/test-share-modal.cjs') !== -1,
-    '§36v share-modal.js?v=9 在 index.html / sponsor.html 同步 bump，分享弹窗 jsdom 测试存在并挂进 CI',
+    '§36v share-modal.js?v=10 在 index.html / sponsor.html 同步 bump，分享弹窗 jsdom 测试存在并挂进 CI',
     '?v 没 bump → 线上仍跑旧脚本，加固等于没发；测试没挂 CI → 下次回退没人拦');
 }
 
@@ -9085,9 +9161,9 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/点右上角 × 关闭/.test(dp36x) && !/现在可以关闭了/.test(dp36x),
     '§36x 倒计时到点后提示改为「点右上角 × 关闭」',
     '提示仍写「可以关闭」却没说怎么关 → 用户会去点空白');
-  check(/<script defer src="\.\/douyin-prompt\.js\?v=21"><\/script>/.test(idx36x)
-    && !/douyin-prompt\.js\?v=20/.test(idx36x),
-    '§36x index.html 挂载 douyin-prompt.js?v=21（bump 缓存号）',
+  check(/<script defer src="\.\/douyin-prompt\.js\?v=22"><\/script>/.test(idx36x)
+    && !/douyin-prompt\.js\?v=21/.test(idx36x),
+    '§36x index.html 挂载 douyin-prompt.js?v=22（bump 缓存号）',
     '?v 没 bump → 线上仍跑旧脚本，改动等于没发');
 
   // 2026-11-13 站长追加：「不要 15 分钟冷却，刷新首页必弹」。

@@ -33,8 +33,8 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   const rd = read('README.md');
 
   check('曝光补丁文件存在', exists('byd-expose-patch.js'));
-  check('首页挂了曝光补丁（?v=6 防缓存）',
-    /<script defer src="\.\/byd-expose-patch\.js\?v=6"><\/script>/.test(html));
+  check('首页挂了曝光补丁（?v=7 防缓存）',
+    /<script defer src="\.\/byd-expose-patch\.js\?v=7"><\/script>/.test(html));
   check('真 DOM 测试挂进 CI 的 pinyin job', /test-byd-expose\.cjs/.test(wf));
   check('README 写死曝光登记口径',
     /比亚迪卡片曝光登记/.test(rd) && /失效链接不得冒充可点来源/.test(rd));
@@ -131,8 +131,11 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   ]) {
     check('曝光框写了「' + label + '」', text.indexOf(needle) !== -1, text.slice(0, 160));
   }
-  const notesLink = box.querySelector('a');
-  check('P3 段落改为纯文本括号，不再含站内 notes.html 随笔链接', !notesLink);
+  const storyLink = box.querySelector('a');
+  check('P3 段落不再指向 notes.html 随笔，改挂比亚迪专题报道页（站内相对链接）',
+    !!storyLink
+    && /byd-report\.html/.test(storyLink.getAttribute('href') || '')
+    && !/notes\.html/.test(storyLink.getAttribute('href') || ''));
   check('曝光框内没有任何外链 / 图片',
     !/https?:\/\//.test(box.innerHTML) && !box.querySelector('img'));
   // 2026-11-13 第二只框：琥珀色「站长点评 · 法务部悬赏」（同一幂等标记，一次插入两只）

@@ -28,7 +28,12 @@
   var TITLE = '⚠️ 直营门店强制加班曝光（员工／社群反馈）';
   var P1 = '抖音账号「BYD直营员工维权」曾发布视频指称：某 BYD 直营门店店长要求员工强制加班至晚十点；发布者援引《劳动法》第九十六条（以暴力、威胁或者非法限制人身自由的手段强迫劳动，以及侮辱、体罚、殴打、非法搜查和拘禁劳动者的处罚规定）作为维权依据。';
   var P2 = '该视频现已删除、原链接已失效；站长判断发布者受到了某种压力，本站无从核实，也不作进一步推断。视频本体无法回看，这一条只按线索如实登记，不对指称内容作事实认定。';
-  var P3 = '(站长本人于2025年起持有比亚迪王朝，双休购是2026年上线的，预计11月14日更新站长故事。)';
+  // 2026-11-14 站长指令：原先预告的「站长故事」单独建一个专题页承载，卡面备注栏
+  // 改为指向该页（站内相对链接，不新增外链口径；§30e 的「卡面只挂一条抖音短链」
+  // 指第二只框的外链，这里只是站内跳转）。
+  var P3 = '(站长本人于2025年起持有比亚迪王朝，双休购是2026年上线的；车主亲历与近期车型澄清已整理成专题报道。)';
+  var STORY_HREF = './byd-report.html';
+  var STORY_LINK_TEXT = '打开专题报道：一辆王朝车，两年，三件小事 →';
 
   // 2026-11-13 站长第二条首页备注（卡面第二只框，琥珀色区分）：
   // 事实：11-11 澎湃报道车主投诉「唐」前后轮毂装反（公示区在册）；11-13 法务部发文
@@ -108,6 +113,18 @@
     box.appendChild(makePara(P2));
 
     box.appendChild(makePara(P3));
+
+    // 专题报道入口（2026-11-14 站长「这个单独去建立页面」）：
+    // 站内相对链接、新窗口打开；不带 http，避免破坏「曝光框内无外链」口径。
+    var storyLine = makePara('');
+    var storyLink = document.createElement('a');
+    storyLink.setAttribute('href', STORY_HREF);
+    storyLink.setAttribute('target', '_blank');
+    storyLink.setAttribute('rel', 'noopener');
+    storyLink.setAttribute('style', 'color:#991b1b;font-weight:700;text-decoration:underline');
+    storyLink.textContent = STORY_LINK_TEXT;
+    storyLine.appendChild(storyLink);
+    box.appendChild(storyLine);
     return box;
   }
 

@@ -238,25 +238,14 @@
         + ' style="color:#1d4ed8;text-decoration:underline">这里</a>阅读 '
         + '<span style="color:#d97706;font-weight:bold">“狗日的”Boss直聘</span>';
       p.appendChild(r);
-      /* 2026-11-06 站长指定：抵制区末尾追加「海比优」一句 + 固定末句。
-         海比优文案由站长提供英文 Application Introduction，此处译写一句中文；
-         末句一字不改（含「；」不换行）：应用商店搜索（开发中，限号注册）+ 与本站无关声明。 */
-      var h = document.createElement('div');
-      h.setAttribute('style', 'margin-top:6px;font-size:13px;text-align:center;'
-        + 'line-height:1.7;color:#475569');
-      h.textContent = '海比优（Haibiyou）是一款认真做招聘的求职平台，'
-        + '为求职者筛选真实可靠的企业岗位，也帮企业快速找到优秀人才。';
-      p.appendChild(h);
-      var f = document.createElement('div');
-      f.setAttribute('style', 'margin-top:4px;font-size:13px;text-align:center;'
-        + 'line-height:1.7;color:#475569');
-      f.textContent = '欢迎前往各大手机应用商店搜索（开发中，限号注册）；推广内容与本站无关，站长不会收取任何广告费。';
-      p.appendChild(f);
+      /* 2026-11-14 站长指令：此前挂在抵制区末尾的第三方推广整段撤下
+         （对方明确表示不希望继续推广）。这里不再创建任何推广文案节点，
+         抵制区自身内容保持原样；配套排版补丁 ad-text-width-fix.js 一并撤下。 */
     }
     /* 2026-11-13：U 卡计数动态刷新——自定义卡是分批注入的，首批扫描时
        后注入的自定义 U 卡可能尚未落地；早先「创建后不再更新」会把「另有 N 家」
        冻在旧值（本轮真踩：说明停在 2 家，实际 3 家）。这里只刷新首行计数文本，
-       不动下方抵制区/海比优等固定块。 */
+       不动下方抵制区等固定块。 */
     if (p.firstChild && p.firstChild.nodeType === 3
       && p.firstChild.textContent !== statNoteText(n)) {
       p.firstChild.textContent = statNoteText(n);

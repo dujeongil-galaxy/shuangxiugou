@@ -263,18 +263,24 @@
   color: #4a4239;
 }
 
+/* 绿色推荐语常驻行（2026-11-14 17:00 站长要求恢复并固定）：
+   位于滚动正文之外、两枚按钮之上；给一点淡绿底与上边线，明确它是
+   面板里的固定信息，而不是文章里会被滚走的一段。 */
 .dyp__tip {
-  margin: 12px 0 0;
+  margin: 0 0 12px;
+  padding: 8px 10px;
   font-size: 12px;
   color: #9b8f80;
   text-align: center;
+  background: #f2faf6;
+  border-top: 1px solid #dcefe5;
+  border-radius: 0 0 8px 8px;
 }
 
 /* 站长新站外链（2026-11-01）：跟提示小字同一字号、单独一行居中，
-   只做「顺带一提」的分量，不抢三个主按钮的视觉重量。 */
+   只做「顺带一提」的分量，不抢两枚主按钮的视觉重量。 */
 .dyp__sitelink {
   display: block;
-  margin-top: 6px;
   font-size: 12px;
   font-weight: 600;
   color: #3dad8a;
@@ -356,13 +362,22 @@
    可滚动，底部两枚按钮（去看看站长的新网站 / 我要分享此文章）。
    ========================================================================== */
 
-/* 文章版面板加宽，给长文更舒适的阅读宽度 */
+/* 文章版面板加宽，给长文更舒适的阅读宽度。
+   2026-11-14 17:00 站长「无论是否向下滚动，原本那句话（绿色）都会显示在文章下方、
+   两个按钮的上方」：面板改 flex 列、自身不滚，正文是唯一可滚动且可收缩的项，
+   绿色推荐行 / 两枚按钮 / 倒计时全是 flex-shrink:0 的常驻项。 */
 .dyp--article {
   width: min(94vw, 600px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
+.dyp--article > *:not(.dyp__article) { flex: 0 0 auto; }
 
 /* 正文区：固定高度内滚动，按钮常驻底部不被推走 */
 .dyp__article {
+  flex: 0 1 auto;
+  min-height: 0;
   max-height: 52vh;
   overflow-y: auto;
   margin: 4px 0 14px;
@@ -463,8 +478,10 @@
   .dyp__version-toggle { right: 48px; padding: 0 9px; font-size: 11px; }
 }
 
-/* 底部两枚按钮：复用 .dyp__acts > * 的统一尺寸规则，只补配色 */
-.dyp__visit {
+/* 底部两枚按钮：复用 .dyp__acts > * 的统一尺寸规则，只补配色。
+   第一枚是视频（2026-11-14 由「去看看站长的新网站」改挂轮毂事件抖音短链），
+   第二枚是分享；新站引流已交回上方常驻的绿色推荐语。 */
+.dyp__video {
   background: linear-gradient(135deg, #3dad8a, #2e8b6f);
   color: #fff;
   text-decoration: none;
@@ -473,8 +490,8 @@
   transition: filter 0.15s ease, transform 0.15s ease;
 }
 
-.dyp__visit:hover { filter: brightness(1.06); }
-.dyp__visit:active { transform: scale(0.98); }
+.dyp__video:hover { filter: brightness(1.06); }
+.dyp__video:active { transform: scale(0.98); }
 
 .dyp__share {
   border: 1px solid #4fb389;

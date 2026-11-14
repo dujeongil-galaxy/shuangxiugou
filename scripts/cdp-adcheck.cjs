@@ -113,7 +113,7 @@ function cdp(ws, method, params = {}) {
     r.reservedText=slot?slot.innerText.replace(/\\s+/g,' ').trim():null;
     r.stats174=body.indexOf('174')!==-1;
     r.stats84=body.indexOf('84')!==-1;
-    r.haibiyou=body.indexOf('海比优')!==-1;
+    r.thirdPartyPromoGone = body.indexOf('推广内容与本站无关')===-1;
     r.liangpei=!!document.querySelector('.lp-ad');
     r.nav=document.querySelector('nav')?true:false;
     r.filterBar=(body.indexOf('筛选')!==-1)||!!document.querySelector('[class*=filter]');

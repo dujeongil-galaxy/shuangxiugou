@@ -39,7 +39,11 @@
   }
 
   var CSS = [
-    '.sxg-share-mask{position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:20px}',
+    /* 2026-11-14 站长反馈「为什么点击分享，还要关闭弹窗才能看见这个」：
+       首页公益提醒弹窗 .dyp 是 z-index:100000，原来分享面板 9999 被它整块盖住，
+       用户必须先把文章弹窗关掉才看得到分享卡片。分享面板要压过全站最高的弹窗，
+       这里提到 100010（toast 再高一档），保证「点分享 → 立刻看见分享面板」。 */
+    '.sxg-share-mask{position:fixed;inset:0;z-index:100010;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:20px}',
     '.sxg-share-mask.on{display:flex}',
     '.sxg-share-card{position:relative;width:100%;max-width:400px;max-height:88vh;overflow-y:auto;background:#fff;border-radius:18px;padding:22px 20px 14px;box-shadow:0 24px 60px rgba(0,0,0,.28);-webkit-overflow-scrolling:touch}',
     '.sxg-share-x{position:absolute;top:9px;right:9px;width:32px;height:32px;border:none;background:none;border-radius:50%;font-size:22px;line-height:1;color:#9ca3af;cursor:pointer}',
@@ -59,7 +63,7 @@
     '.sxg-share-copy:hover{background:#f8fafc}',
     '.sxg-share-copy .sxg-sf-ico{flex:0 0 22px;width:22px;height:22px;box-shadow:none}',
     '.sxg-share-copy .sxg-sf-ico svg{width:22px;height:22px}',
-    '.sxg-share-toast{position:fixed;left:50%;bottom:40px;transform:translate(-50%,12px);z-index:10000;max-width:86vw;padding:10px 18px;border-radius:999px;background:rgba(17,24,39,.92);color:#fff;font-size:13px;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease}',
+    '.sxg-share-toast{position:fixed;left:50%;bottom:40px;transform:translate(-50%,12px);z-index:100020;max-width:86vw;padding:10px 18px;border-radius:999px;background:rgba(17,24,39,.92);color:#fff;font-size:13px;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease}',
     '.sxg-share-toast.on{opacity:1;transform:translate(-50%,0)}',
     '@media (max-width:420px){.sxg-sd-ico,.sxg-sf-ico{width:44px;height:44px}.sxg-sd-ico svg{width:25px;height:25px}.sxg-sd-name,.sxg-sf-name{font-size:10px}.sxg-share-card{padding:20px 16px 12px}}'
   ].join('');
@@ -73,20 +77,37 @@
     + '买东西、找工作前先查一查。';
 
   var ICON = {
-    /* QQ（腾讯 QQ 蓝色 #12B7F5 圆形底 + 白色企鹅剪影；按钮文字按站长要求写「QQ」，
-       分享目标为 QQ空间，与微信/朋友圈同口径走「复制 + 提示粘贴」）。 */
-    /* QQ：经典企鹅形象——黑身白肚 + 标志性红围巾 + 橙嘴橙脚（站长 2026-11-14 纠正：
-       之前的白企鹅剪影没有红围巾，不是 QQ 的正确图标）。 */
-    qq: '<svg viewBox="0 0 24 24" aria-hidden="true">'
-      + '<circle cx="12" cy="12" r="12" fill="#12B7F5"/>'
-      + '<path fill="#1f1f1f" d="M12 3.5c-3.6 0-6 3.2-6 7.2 0 3.3 1.8 6.2 4.2 7.3V20h3.6v-2.5c2.4-1.1 4.2-4 4.2-7.3 0-4-2.4-7.2-6-7.2z"/>'
-      + '<ellipse cx="12" cy="12.8" rx="4.1" ry="5.1" fill="#fff"/>'
-      + '<circle cx="10.2" cy="11.1" r="1.05" fill="#1f1f1f"/>'
-      + '<circle cx="13.8" cy="11.1" r="1.05" fill="#1f1f1f"/>'
-      + '<path fill="#FF9D2E" d="M11 12.8h2l-1 1.7z"/>'
-      + '<path fill="#E5392F" d="M6.5 14.7c1.7 1.7 3.6 2.4 5.5 2.4s3.8-.7 5.5-2.4c-.4 1.9-2.2 3.2-5.5 3.2s-5.1-1.3-5.5-3.2z"/>'
-      + '<path fill="#C62828" d="M14 17c1 .1 1.9-.1 2.4-.8.5 1.3 0 2.4-.7 3.2-1.1-.4-1.6-1.5-1.7-2.5z"/>'
-      + '<path stroke="#FF9D2E" stroke-width="1.8" stroke-linecap="round" fill="none" d="M9 20.4h2.1M12.9 20.4h2.1"/>'
+    /* QQ：经典红围巾企鹅（站长 2026-11-14「QQ 的图标是这个，不过像素不行，
+       自己去找一个」）。站长给的是一张放大发糊的小位图；这里换成纯矢量重绘，
+       轮廓参照 simple-icons 收录的 QQ 官方企鹅剪影（CC0），按经典配色还原：
+       黑身白肚 + 红围巾（含飘带）+ 橙嘴橙脚 + 一只眨眼 + 蓝圆底 #12B7F5。
+       48×48 坐标系、渐变与高光都在矢量里，缩到 28px 或放大都不糊。
+       按钮文字按站长要求写「QQ」，分享目标为 QQ空间，走「复制 + 提示粘贴」。 */
+    qq: '<svg viewBox="0 0 48 48" aria-hidden="true">'
+      + '<defs>'
+      + '<linearGradient id="sxgQqScarf" x1="0" y1="0" x2="0" y2="1">'
+      + '<stop offset="0" stop-color="#FF4B3E"/><stop offset="1" stop-color="#C62828"/>'
+      + '</linearGradient>'
+      + '</defs>'
+      + '<circle cx="24" cy="24" r="24" fill="#12B7F5"/>'
+      /* 整体再放大 10%：28px 显示时企鹅不显得缩在圆里，红围巾才看得清。 */
+      + '<g transform="translate(24 24) scale(1.1) translate(-24 -24)">'
+      + '<path fill="#FF9D2E" d="M14.5 38.6c-2.3 0-4.2 1.2-4.2 2.6h9.2c0-1.4-2-2.6-5-2.6z"/>'
+      + '<path fill="#FF9D2E" d="M33.5 38.6c-3 0-5 1.2-5 2.6h9.2c0-1.4-1.9-2.6-4.2-2.6z"/>'
+      + '<ellipse cx="24" cy="17.8" rx="11.2" ry="10.8" fill="#1f1f1f"/>'
+      + '<ellipse cx="24" cy="30.2" rx="13.2" ry="12.2" fill="#1f1f1f"/>'
+      + '<path fill="#141414" d="M11.6 25c-2.2 2-3.2 4.7-2.8 7 .3 1.7 1.4 2.4 2.3 2 1-.4 1.2-1.7.8-3.4-.5-2-.4-4 .4-5.4z"/>'
+      + '<path fill="#141414" d="M36.4 25c2.2 2 3.2 4.7 2.8 7-.3 1.7-1.4 2.4-2.3 2-1-.4-1.2-1.7-.8-3.4.5-2 .4-4-.4-5.4z"/>'
+      + '<ellipse cx="24" cy="30.4" rx="8.6" ry="9.7" fill="#fff"/>'
+      + '<ellipse cx="20" cy="17.4" rx="2.9" ry="3.6" fill="#fff"/>'
+      + '<circle cx="20.5" cy="18" r="1.55" fill="#171717"/>'
+      + '<circle cx="21" cy="17.4" r=".5" fill="#fff"/>'
+      + '<path d="M26 17.6c1.3-1.9 3.3-1.9 4.6 0" stroke="#fff" stroke-width="1.7" stroke-linecap="round" fill="none"/>'
+      + '<path fill="#FF9D2E" d="M21.6 21.5h4.8L24 24.3z"/>'
+      + '<path fill="url(#sxgQqScarf)" d="M11.4 24.2c3.7 2.7 7.9 3.8 12.6 3.8s8.9-1.1 12.6-3.8l-.6 3.9c-3.4 2.5-7.5 3.5-12 3.5s-8.6-1-12-3.5z"/>'
+      + '<path fill="#C62828" d="M33.4 27.2c2.7.2 4.8-.7 5.7-2.7.9 3.4-.5 6.3-2.6 7.9-1.7-1-2.9-3.2-3.1-5.2z"/>'
+      + '<path d="M17.6 10.2c1.8-1.7 4-2.6 6.5-2.6" stroke="rgba(255,255,255,.28)" stroke-width="1.6" stroke-linecap="round" fill="none"/>'
+      + '</g>'
       + '</svg>',
     wechat: '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="#fff"><path d="M9.6 4.1C6 4.1 3 6.6 3 9.6c0 1.7.9 3.3 2.4 4.3l-.7 2.2 2.5-1.2c.7.2 1.5.3 2.3.3h.4c-.2-.5-.3-1.1-.3-1.7 0-2.9 2.8-5.2 6.2-5.2h.4C15.7 5.8 12.9 4.1 9.6 4.1z"/><path d="M21 13.4c0-2.5-2.5-4.5-5.5-4.5S10 10.9 10 13.4s2.5 4.5 5.5 4.5c.6 0 1.2-.1 1.8-.2l2 1-.6-1.7c1.4-.8 2.3-2.1 2.3-3.6z"/></g></svg>',
     douyin: '<svg viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(-.8,-.5)" fill="#25F4EE"><path d="' + D + '"/></g><g transform="translate(.8,.5)" fill="#FE2C55"><path d="' + D + '"/></g><path d="' + D + '" fill="#fff"/></svg>',

@@ -57,6 +57,14 @@ parts.append(
     f'    <priority>0.7</priority>\n  </url>'
 )
 
+# 比亚迪车主专题报道（2026-11-14 站长要求单独建页，双休购旗下独立 HTML）
+parts.append(
+    f'  <url>\n    <loc>{BASE}/byd-report.html</loc>\n'
+    f'    <lastmod>2026-11-14</lastmod>\n'
+    f'    <changefreq>monthly</changefreq>\n'
+    f'    <priority>0.7</priority>\n  </url>'
+)
+
 # 品牌详情页
 for b in sorted(idx, key=lambda x: x['tier']):
     parts.append(

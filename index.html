@@ -128,7 +128,7 @@
     <link rel="stylesheet" crossorigin href="./assets/index-BgVofs0W.css">
     <!-- 预加载关键补丁脚本（与 HTML 解析并行下载，减少隐私窗口无缓存时 RTT 等待） -->
     <link rel="preload" href="./custom-card-actions.js?v=24" as="script">
-    <link rel="preload" href="./u-grade-patch.js?v=19" as="script">
+    <link rel="preload" href="./u-grade-patch.js?v=20" as="script">
     <link rel="preload" href="./search-clear-order-fix.js?v=3" as="script">
     <link rel="preload" href="./logo-vault.js?v=1" as="script">
     <link rel="preload" href="./stat-filter.js?v=9" as="script">
@@ -139,9 +139,9 @@
     <!-- 星巴克 × WorkBuddy 联名推广（临时替换良配）：独立文件，改完请把 ?v=N 的 N +1 防缓存 -->
     <link rel="stylesheet" href="./starbucks-ad.css?v=1">
     <!-- 首页视频推荐弹窗（改完请把 ?v=N 的 N +1 防缓存） -->
-    <link rel="stylesheet" href="./douyin-prompt.css?v=16">
+    <link rel="stylesheet" href="./douyin-prompt.css?v=17">
     <!-- 移动端排版修复（须在主 CSS 之后：靠覆盖生效；改完请把 ?v=N 的 N +1） -->
-    <link rel="stylesheet" href="./mobile-fixes.css?v=21">
+    <link rel="stylesheet" href="./mobile-fixes.css?v=22">
   <!-- 黑卡预隐藏（2026-11-10 站长反馈「先加载黑色卡片，然后才出现广告位」）：
        bundle 渲染的黑卡（class 含唯一子串 rounded-2xl p-5 shadow-xl，全 bundle 仅黑卡用）
        在 black-card-adslot.js 下载完成并替换之前会先画一帧 → 慢网下肉眼可见闪现。
@@ -9620,7 +9620,7 @@
   <!-- 星巴克 × WorkBuddy 联名推广（临时替换良配）：注入 DOM + 活动海报弹窗 -->
   <script defer src="./starbucks-ad.js?v=1"></script>
   <!-- 首页视频推荐弹窗：延迟自动弹出，冷却期内不重复弹（localStorage） -->
-  <script defer src="./douyin-prompt.js?v=21"></script>
+  <script defer src="./douyin-prompt.js?v=22"></script>
   <!-- 品牌 LOGO 加密容器解密（2026-11-05 站长要求「LOGO 缓存 blob 容器、仓库不得明文、
        不引用站外来源」）：59 张核实过的官方 LOGO 打包在 assets/logos.enc（AES-256-GCM），
        本脚本浏览器本地解密成 Blob URL 回填 img[data-sxg-enc]。解密失败自动把 logo 框
@@ -9634,12 +9634,12 @@
        1) 顶部「打卡并生成小票」改为弹窗，引导去品牌档案卡打卡（原来默认给第一家品牌打卡，会误导）
        2) 自定义品牌卡（DOM 克隆）没有 React onClick，补上「打卡」「详情证据」功能 -->
   <script defer src="./custom-card-actions.js?v=24"></script>
-  <script defer src="./share-modal.js?v=9"></script>
-  <script defer src="./u-grade-patch.js?v=19"></script>
+  <script defer src="./share-modal.js?v=10"></script>
+  <script defer src="./u-grade-patch.js?v=20"></script>
   <script defer src="./luckin-note-patch.js?v=1"></script>
   <!-- 比亚迪卡片曝光登记（2026-11-09 站长线索 / 2026-11-10 视频下架补记）：
        内置卡数据在压缩 bundle 里不能改，用独立 DOM 补丁在渲染后挂红框说明。 -->
-  <script defer src="./byd-expose-patch.js?v=6"></script>
+  <script defer src="./byd-expose-patch.js?v=7"></script>
   <!-- 2026-11-10 新闻事件登记：罗技授权店铺侮辱消费者广告 / 星宇股份后续进展，内置卡渲染后 DOM 补丁 -->
   <script defer src="./news-incident-patch.js?v=5"></script>
   <!-- 每张卡详情弹窗底部「跳转到证据公示」：内置 React 弹窗与自定义卡弹窗
@@ -9651,7 +9651,8 @@
   <script defer src="./search-clear-order-fix.js?v=3"></script>
   <script defer src="./rating-stats-patch.js?v=13"></script>
   <script defer src="./ai-notice-patch.js?v=1"></script>
-  <script defer src="./ad-text-width-fix.js?v=1"></script>
+  <!-- 2026-11-14：第三方推广文案整段撤下（对方不希望继续推广），
+       仅为该推广服务的排版补丁与首页挂载同步移除。 -->
   <!-- 拼音 / 首字母模糊搜索联想。
        背景：bundle 的搜索是纯 includes 硬匹配，输「ning」「ndsd」搜不到
        「宁德时代」。真要改就得动压缩产物 assets/index-YthXZ9eP.js，
