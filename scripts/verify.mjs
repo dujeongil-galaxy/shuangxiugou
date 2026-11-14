@@ -2038,8 +2038,9 @@ if (exists('notes.html')) {
     && /高调发布悬赏，时机不妥/.test(dp) && /造成舆论误解/.test(dp),
     '文末加粗备注已落地（界定重点：不反对打击黑公关，而是这个时间点时机不妥）',
     '备注缺失或未加粗 → 文章立场容易被误读为反对悬赏');
-  // 2026-11-14 19:46 站长追加：「希望无论劳动者还是企业……对，别回头，说的就是你！」
-  // 整句红色加粗。新版文末压轴，旧版存档里的同一句共用 CALL_HTML（单一真相源），
+  // 2026-11-14 19:46 站长追加「希望无论劳动者还是企业……对，别回头，说的就是你！」；
+  // 20:28 改口：新版那句要绿色、旧版存档保持红色，且旧版签名删掉「日期+之前」。
+  // 整句仍加粗，新版文末压轴，旧版存档里的同一句共用 CALL_HTML（单一真相源），
   // 不许只改一半、也不许悄悄改字。CSS 侧必须显式写死颜色与字重，不许靠继承。
   const dpcCall = read('douyin-prompt.css').replace(/\/\*[\s\S]*?\*\//g, '');
   check(/var CALL_TEXT/.test(dp) && /var CALL_HTML/.test(dp)
@@ -2047,12 +2048,22 @@ if (exists('notes.html')) {
     && /广纳贤言并期待听到你的声音/.test(dp) && /对，别回头，说的就是你！/.test(dp)
     && /<strong>' \+ CALL_TEXT \+ '<\/strong>/.test(dp)
     && (dp.match(/CALL_HTML/g) || []).length >= 3,
-    '弹窗红色加粗号召语已落地（新版文末 + 旧版存档共用 CALL_HTML 单一真相源）',
-    '号召语漏加粗 / 改字 / 只改一个版本 → 站长指定的红字没了或两版口径打架');
-  check(/\.dyp__article \.dyp__note--call strong\s*\{[^}]*color:\s*#c0392b[^}]*font-weight:\s*800/.test(dpcCall)
-    && /\.dyp__article \.dyp__note--call\s*\{[^}]*background:\s*#fdf1ee/.test(dpcCall),
-    '号召语样式真为红色加粗（浅红底 + 红左边框，不依赖 .dyp__article strong 继承）',
-    '颜色/字重没写死 → 以后改正文粗体颜色会把这句一起带走');
+    '弹窗加粗号召语已落地（新版文末 + 旧版存档共用 CALL_HTML 单一真相源）',
+    '号召语漏加粗 / 改字 / 只改一个版本 → 两版口径打架');
+  check(/\.dyp__article \.dyp__note--call strong\s*\{[^}]*color:\s*#2e8b6f[^}]*font-weight:\s*800/.test(dpcCall)
+    && /\.dyp__article \.dyp__note--call\s*\{[^}]*background:\s*#eef7f1/.test(dpcCall),
+    '新版号召语为真绿色加粗（浅绿底 + 绿左边框，颜色写死不靠 .dyp__article strong 继承）',
+    '新版没改绿 / 颜色靠继承 → 站长 20:28 指定的绿色会被正文红色粗体带走');
+  check(/\.dyp--legacy \.dyp__article \.dyp__note--call strong\s*\{[^}]*color:\s*#c0392b/.test(dpcCall)
+    && /\.dyp--legacy \.dyp__article \.dyp__note--call\s*\{[^}]*background:\s*#fdf1ee/.test(dpcCall)
+    && /classList\.toggle\('dyp--legacy'/.test(dp),
+    '旧版存档仍为红色加粗（.dyp--legacy 祖先覆盖回浅红底 + 红字，且切换时真挂上这个类）',
+    '旧版被一起改绿 / 覆盖规则丢失 → 站长明确要求「这里红色」没落地');
+  check(/<p class="dyp__sign">双休购 · 旧版弹窗存档<\/p>/.test(dp)
+    && !/2026-11-13 之前/.test(dp) && !/旧版弹窗存档<br>/.test(dp)
+    && /2026 年 11 月 14 日/.test(dp),
+    '旧版签名已删掉「日期+之前」，只留存档名；新版署名日期不受影响',
+    '日期又被写回 / 连新版日期一起删 → 站长 20:28 的删改要求没落地');
   check(/我要分享此文章/.test(dp) && /VIDEO_BTN_TEXT/.test(dp)
     && /https:\/\/v\.douyin\.com\/uBwf2Fbt0d8\//.test(dp)
     && /video\.href = VIDEO_LINK/.test(dp)
@@ -8194,7 +8205,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/z-index:9995/.test(ad32) && /padding:7px 0 14px/.test(ad32)
     && /background: rgba\(24, 20, 16, 0\.22\)/.test(dyp32)
     && /backdrop-filter: none/.test(dyp32)
-    && /douyin-prompt\.css\?v=19/.test(idx32),
+    && /douyin-prompt\.css\?v=20/.test(idx32),
     '§32d 广告位层级 9995 / 底部留白 14px；.dyp 遮罩减淡去模糊，弹窗引流功能原样保留');
 
   check(/var SEARCH_DURATION = 6000/.test(ff32)
@@ -9204,9 +9215,9 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/点右上角 × 关闭/.test(dp36x) && !/现在可以关闭了/.test(dp36x),
     '§36x 倒计时到点后提示改为「点右上角 × 关闭」',
     '提示仍写「可以关闭」却没说怎么关 → 用户会去点空白');
-  check(/<script defer src="\.\/douyin-prompt\.js\?v=23"><\/script>/.test(idx36x)
-    && !/douyin-prompt\.js\?v=22/.test(idx36x),
-    '§36x index.html 挂载 douyin-prompt.js?v=23（bump 缓存号）',
+  check(/<script defer src="\.\/douyin-prompt\.js\?v=24"><\/script>/.test(idx36x)
+    && !/douyin-prompt\.js\?v=23/.test(idx36x),
+    '§36x index.html 挂载 douyin-prompt.js?v=24（bump 缓存号）',
     '?v 没 bump → 线上仍跑旧脚本，改动等于没发');
 
   // 2026-11-13 站长追加：「不要 15 分钟冷却，刷新首页必弹」。

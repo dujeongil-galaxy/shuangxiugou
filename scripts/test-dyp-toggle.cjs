@@ -12,6 +12,7 @@
      ⑥ 弹窗未 build 时 sweep 不报错、不误建按钮
      ⑦ 点击转换按钮翻版本（new ↔ old）并记忆 localStorage
      ⑧ index.html 引用 dyp-version-toggle.js?v=8（剥 HTML 注释再判）
+     ⑨ 弹窗号召语：新版绿色 / 旧版红色分版本配色，旧版签名不含日期（文本钉子）
    ========================================================================== */
 'use strict';
 
@@ -186,6 +187,25 @@ function injectFactcheck(w) {
     .replace(/<!--[\s\S]*?-->/g, '');
   check('index.html 已引用 dyp-version-toggle.js?v=8',
     /<script defer src="\.\/dyp-version-toggle\.js\?v=8"><\/script>/.test(idx));
+
+  /* ⑨ 20:28 站长改配色：新版绿 / 旧版红；旧版签名删掉「日期+之前」 */
+  console.log('\n⑨ 号召语配色与旧版签名');
+  const dpj = fs.readFileSync(path.join(ROOT, 'douyin-prompt.js'), 'utf8');
+  const dpc = fs.readFileSync(path.join(ROOT, 'douyin-prompt.css'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  check('新版号召语基础样式为绿色加粗',
+    /\.dyp__article \.dyp__note--call strong\s*\{[^}]*color:\s*#2e8b6f[^}]*font-weight:\s*800/.test(dpc)
+    && /\.dyp__article \.dyp__note--call\s*\{[^}]*background:\s*#eef7f1/.test(dpc));
+  check('旧版由 .dyp--legacy 覆盖回红色，且切换时真挂上该类',
+    /\.dyp--legacy \.dyp__article \.dyp__note--call strong\s*\{[^}]*color:\s*#c0392b/.test(dpc)
+    && /\.dyp--legacy \.dyp__article \.dyp__note--call\s*\{[^}]*background:\s*#fdf1ee/.test(dpc)
+    && /classList\.toggle\('dyp--legacy'/.test(dpj));
+  check('两版共用 CALL_HTML，文字逐字未改',
+    (dpj.match(/CALL_HTML/g) || []).length >= 3
+    && /广纳贤言并期待听到你的声音/.test(dpj) && /对，别回头，说的就是你！/.test(dpj));
+  check('旧版签名只留存档名，日期与「之前」已删；新版日期仍在',
+    /<p class="dyp__sign">双休购 · 旧版弹窗存档<\/p>/.test(dpj)
+    && !/2026-11-13 之前/.test(dpj) && /2026 年 11 月 14 日/.test(dpj));
 
   setTimeout(function () {
     console.log('\n========== 结果：' + passed + ' 项通过，' + failed + ' 项失败 ==========');
