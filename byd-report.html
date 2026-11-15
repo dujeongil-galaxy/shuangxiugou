@@ -101,6 +101,38 @@
   .btns .primary:hover{background:var(--brand-dark)}
   .btns .ghost{border:1px solid #bfd3cc;color:var(--brand-dark);background:#fff}
   .btns .ghost:hover{background:var(--brand-soft)}
+  .ask-mail{margin:14px 0 0;font-size:12.5px;color:var(--ink-3);line-height:1.75}
+  .ask-mail code{color:var(--brand-dark);font:600 12.5px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;
+    background:var(--brand-soft);padding:1px 7px;border-radius:5px}
+  /* 匿名邮箱访问告知弹窗（口径与首页 anon-mail.js 一致，自包含在本页） */
+  #ask-am-modal{position:fixed;inset:0;z-index:10050;box-sizing:border-box;
+    background:rgba(15,23,42,.48);display:flex;align-items:center;justify-content:center;padding:16px}
+  #ask-am-modal .card{box-sizing:border-box;width:min(420px,100%);max-height:86vh;overflow-y:auto;
+    background:#fff;border-radius:16px;padding:20px;box-shadow:0 20px 60px rgba(15,23,42,.3);
+    font:14px/1.6 system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif}
+  #ask-am-modal .hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+  #ask-am-modal .hd h3{margin:0;font-size:17px;color:#0f172a}
+  #ask-am-modal .x{border:none;background:#f1f5f9;color:#64748b;width:30px;height:30px;
+    border-radius:8px;font-size:20px;line-height:1;cursor:pointer}
+  #ask-am-modal .warn{margin:0 0 14px;padding:11px 12px;border:1px solid #fecaca;
+    border-left:3px solid #dc2626;border-radius:10px;background:#fef2f2;
+    color:#7f1d1d;font-size:13px;line-height:1.7}
+  #ask-am-modal .warn b{display:block;font-size:14px;margin-bottom:3px}
+  #ask-am-modal .label{display:block;margin-bottom:6px;font-size:12px;color:#64748b}
+  #ask-am-modal .mail{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px}
+  #ask-am-modal .mail code{flex:1 1 auto;min-width:0;word-break:break-all;color:#0f766e;
+    font:600 13.5px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace}
+  #ask-am-modal .copy{flex:none;border:1px solid #0f766e;background:#fff;color:#0f766e;
+    border-radius:8px;padding:6px 10px;font-size:12.5px;cursor:pointer}
+  #ask-am-modal .note{margin:10px 0 16px;font-size:12px;color:#94a3b8;line-height:1.6}
+  #ask-am-modal .acts{display:flex;gap:10px}
+  #ask-am-modal .acts>*{flex:1;display:inline-flex;align-items:center;justify-content:center;
+    padding:11px 8px;border-radius:10px;font-size:14px;font-weight:600;
+    text-decoration:none;cursor:pointer;box-sizing:border-box}
+  #ask-am-modal .cancel{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+  #ask-am-modal .go{background:#0f766e;color:#fff;border:1px solid #0f766e}
+  @media (max-width:360px){#ask-am-modal .acts{flex-direction:column}}
 
   /* AI 补充意见 */
   .aiop{background:var(--amber-soft);border:1px solid #ecd9b7;border-radius:14px;
@@ -225,8 +257,9 @@
       能附上条文出处或实际处理经历更好。</p>
     <div class="btns">
       <a class="primary" href="https://github.com/dujeongil-galaxy/shuangxiugou/issues" target="_blank" rel="noopener noreferrer">在 GitHub Issues 告诉我们</a>
-      <a class="ghost" href="https://m.kuku.lu/cn.php" target="_blank" rel="noopener noreferrer">或通过匿名邮箱私下说</a>
+      <a class="ghost" id="ask-am-btn" href="https://m.kuku.lu/cn.php" target="_blank" rel="noopener noreferrer">或通过匿名邮箱私下说</a>
     </div>
+    <p class="ask-mail">不方便用 GitHub，也可以发到站长的匿名邮箱 <code data-ask-mail="tensi2026@choco.la">tensi2026@choco.la</code>。这是境外临时邮箱，需要 VPN / 代理才能访问——点上面的按钮会先把这件事说清楚。</p>
   </section>
 
   <section class="aiop">
@@ -245,6 +278,84 @@
       另外补一句实在话：真看不清路的时候，别把「怕扣分」排在「先把车停到安全位置」前面。</p>
     <p class="fine">以上为 AI 依据公开科普资料给出的参考意见，不构成法律意见或执法依据；具体条文与执行口径以现行法规及交管部门解释为准。</p>
   </section>
+
+  <!-- 匿名邮箱访问告知弹窗：与首页 anon-mail.js 同口径，自包含在本页，不改压缩 bundle。
+       邮箱地址单一真相源 = 上面 .ask-mail code[data-ask-mail]，脚本不再写死第二份。 -->
+  <script>
+  (function () {
+    'use strict';
+    var BTN = document.getElementById('ask-am-btn');
+    var MODAL_ID = 'ask-am-modal';
+    var SITE = 'https://m.kuku.lu/cn.php';
+    if (!BTN) return;
+    var mailEl = document.querySelector('[data-ask-mail]');
+    var MAIL = mailEl ? (mailEl.getAttribute('data-ask-mail') || mailEl.textContent) : '';
+
+    function close() {
+      var m = document.getElementById(MODAL_ID);
+      if (m && m.parentNode) m.parentNode.removeChild(m);
+    }
+    function copyMail(btn) {
+      function done(ok) {
+        var old = btn.textContent;
+        btn.textContent = ok ? '已复制' : '复制失败';
+        window.setTimeout(function () { btn.textContent = old; }, 1600);
+      }
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(MAIL).then(function () { done(true); }, function () { fb(); });
+          return;
+        }
+      } catch (e) {}
+      fb();
+      function fb() {
+        var ok = false;
+        try {
+          var ta = document.createElement('textarea');
+          ta.value = MAIL; ta.setAttribute('readonly', '');
+          ta.style.cssText = 'position:fixed;left:-9999px;top:0;';
+          document.body.appendChild(ta); ta.select();
+          ok = document.execCommand && document.execCommand('copy');
+          document.body.removeChild(ta);
+        } catch (e) { ok = false; }
+        done(!!ok);
+      }
+    }
+    function open() {
+      close();
+      var wrap = document.createElement('div');
+      wrap.id = MODAL_ID;
+      var card = document.createElement('div');
+      card.className = 'card';
+      card.setAttribute('role', 'dialog');
+      card.setAttribute('aria-modal', 'true');
+      card.setAttribute('aria-label', '匿名邮箱访问提示');
+      card.innerHTML =
+        '<div class="hd"><h3>匿名邮箱</h3><button type="button" class="x" aria-label="关闭">×</button></div>'
+        + '<div class="warn"><b>没有 VPN（或代理）就无法访问</b>'
+        + '这个临时邮箱站点在境外，大陆网络直接点开通常只会一直转圈或显示连接失败。'
+        + '请先确认自己有可用的网络环境，再决定要不要过去。</div>'
+        + '<span class="label">站长最新匿名邮箱</span>'
+        + '<div class="mail"><code>' + MAIL + '</code>'
+        + '<button type="button" class="copy">复制邮箱</button></div>'
+        + '<p class="note">目标站点 m.kuku.lu 是境外临时邮箱服务；若以后更换地址，以这里显示为准。</p>'
+        + '<div class="acts">'
+        + '<button type="button" class="cancel">先不去</button>'
+        + '<a class="go" href="' + SITE + '" target="_blank" rel="noopener noreferrer">仍要前往 ↗</a>'
+        + '</div>';
+      card.querySelector('.x').addEventListener('click', close);
+      card.querySelector('.cancel').addEventListener('click', close);
+      card.querySelector('.go').addEventListener('click', close);
+      card.querySelector('.copy').addEventListener('click', function () { copyMail(this); });
+      wrap.appendChild(card);
+      wrap.addEventListener('click', function (ev) { if (ev.target === wrap) close(); });
+      document.body.appendChild(wrap);
+    }
+    BTN.addEventListener('click', function (ev) { ev.preventDefault(); open(); });
+    document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') close(); });
+    window.SXGBydAnonMail = { open: open, close: close, MAIL: MAIL, SITE: SITE };
+  })();
+  </script>
 
 </main>
 

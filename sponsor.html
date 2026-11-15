@@ -360,6 +360,60 @@
       }
       .note strong { color: #374151; }
 
+      /* ===== 顺手推荐：Ferry 摆渡（2026-11-15 站长加入）=====
+         维护者本人在用的 AI 聊天站，邀请码注册站长有分成收益（如实披露，不写「无分成」）。
+         定位成「不花钱的另一种支持方式」，与页面「不接广告」口径明确区分。 */
+      .ferry-promo {
+        width: 100%;
+        max-width: 452px;
+        padding: 16px 18px;
+        border: 1px dashed #99f6e4;
+        border-radius: 14px;
+        background: #f0fdfa;
+        text-align: left;
+        font-size: 13px;
+        line-height: 1.8;
+        color: #374151;
+      }
+      .ferry-promo .ferry-title {
+        margin: 0 0 6px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #0f766e;
+      }
+      .ferry-promo p { margin: 6px 0 0; }
+      .ferry-promo b { color: #0f766e; }
+      .ferry-code {
+        display: inline-block;
+        margin: 0 3px;
+        padding: 1px 9px;
+        border: 1px solid #0f766e;
+        border-radius: 6px;
+        background: #fff;
+        color: #0f766e;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-weight: 700;
+        letter-spacing: .5px;
+      }
+      .ferry-promo .ferry-btn {
+        display: inline-block;
+        margin-top: 10px;
+        padding: 9px 18px;
+        border-radius: 9px;
+        background: #0f766e;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background .15s ease;
+      }
+      .ferry-promo .ferry-btn:hover { background: #115e59; }
+      .ferry-promo .ferry-fine {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #6b7280;
+      }
+
       /* 地址首尾各6 字符标蓝：转账前后肉眼核对，防止地址被篡改/抄错。
          .hl 由 JS 按 chain.hlSpec 切分生成，这里只定颜色。 */
       #addr .hl, .multi-item code .hl {
@@ -469,6 +523,26 @@
           <p class="invite-note">用下方 UID <b>34868411</b> 转账，<b>0 手续费</b></p>
           <a class="invite-btn" id="inviteBtn" href="#" target="_blank" rel="noopener noreferrer nofollow">立即注册</a>
         </div>
+    </div>
+
+    <!-- 顺手推荐：Ferry 摆渡（2026-11-15 站长加入）。邀请码注册站长有分成收益，如实披露；
+         明确标注并给出 skip 提示，与页面「不接广告」的口径区分开。 -->
+    <div class="ferry-promo">
+      <p class="ferry-title">顺手推荐：Ferry 摆渡（一个 AI 聊天站）</p>
+      <p>
+        维护者本人在用、觉得还不错的一个 AI 聊天站。官网把它说得挺玄——「创造了一个存在」，
+        说白了就是<b>云端 DeepSeek大肥鱼</b>，一个能陪你聊天、还能记住你之前说过的话的 AI。
+        它还支持接入微信、QQ（开发者建议优先接入 QQ，微信这块不太稳定）。
+        想了解就直接点下面，不用也没关系。
+      </p>
+      <p>
+        注册时填我的邀请码 <span class="ferry-code">Q84H38</span>，
+        <b>你我双方都能领到聊天点数</b>——算是对本站的另一种支持。
+      </p>
+      <a class="ferry-btn" href="https://www.ferrychatai.cn/" target="_blank" rel="noopener noreferrer nofollow">去 Ferry 摆渡看看</a>
+      <p class="ferry-fine">
+        这是维护者个人推荐，你用邀请码注册，我能拿到一点收益分成——这点如实说明、不藏着；用不用随你，不影响你使用本站任何功能。
+      </p>
     </div>
 
     <div class="actions">
