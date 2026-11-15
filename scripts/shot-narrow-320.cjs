@@ -1,5 +1,5 @@
-/**
 const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
+/**
  * shot-narrow-320.cjs —— 首页窄屏（默认 320px，可传宽度参数）真渲染验收
  * --------------------------------------------------------------------------
  * 由 2026-11-03 的 320px 修复而来：良配吸底条在 320px 下竖排爆炸（356px 高），
@@ -7,7 +7,9 @@ const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
  *   ① 吸底条实际高度（--sxg-bar-h）——320px 修复后应回落到 ~100px 以内
  *   ② 提醒按钮是否在视口内、底下压的是什么元素
  *   ③ 文档横向溢出（docOverflowX 必须 0）
- * 折叠态 / 公告栏展开态各测一轮、各截一张（含隐藏按钮的对照图）。
+ * 2026-11-15 起公告栏改为「单行横向滚动 + 右侧最新新增按钮」：
+ * 折叠态/展开态两轮截图作废，改为单行态 + 隐藏按钮对照 + 打开面板一轮。
+ * 探针顺带量化公告栏是否真的一行、滚动副本是否同源、按钮是否在槽内。
  * 跑法：node scripts/shot-narrow-320.cjs [宽度，默认 320]
  * 注意：必须走 http —— file:// 下 React 挂不上，测到的是 .sxg-boot 占位符。
  */
@@ -20,7 +22,7 @@ const WIDTH = parseInt(process.argv[2], 10) || 320;
 const ROOT = path.resolve(__dirname, '..');
 const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const PORT = 9477;
-const SHOT_DIR = 'D:/WebArchive/_shots/remind-320';
+const SHOT_DIR = cacheDir('shots/remind-320');
 fs.mkdirSync(SHOT_DIR, { recursive: true });
 
 const getJson = (p) => new Promise((res, rej) => {
@@ -124,7 +126,39 @@ const server = http.createServer((req, res) => {
         btn: { left: Math.round(rb.left), right: Math.round(rb.right), top: Math.round(rb.top), bottom: Math.round(rb.bottom) },
         under: under,
         barH: getComputedStyle(document.documentElement).getPropertyValue('--sxg-bar-h'),
-        checked: (document.getElementById('notice-more') || {}).checked,
+        marquee: (function(){
+          var n=document.getElementById('site-notice');
+          var t=document.getElementById('notice-track');
+          var s=document.getElementById('evidence-notice');
+          var slot=document.getElementById('sxg-recent-slot');
+          var vp=document.getElementById('notice-viewport');
+          if(!n||!t||!s) return null;
+          var c=t.querySelector('.notice-copy');
+          var rb=slot?slot.getBoundingClientRect():null;
+          var rn=n.getBoundingClientRect();
+          return {
+            isMarquee: n.classList.contains('is-marquee'),
+            copies: t.querySelectorAll('.notice-copy').length,
+            copySameText: !!c && c.textContent===s.textContent,
+            noticeH: Math.round(rn.height),
+            viewportH: vp?Math.round(vp.getBoundingClientRect().height):null,
+            btnInSlot: !!slot && !!slot.querySelector('#sxg-recent-btn'),
+            slotRight: rb?Math.round(rb.right):null,
+            panelOpen: (function(){var p=document.getElementById('sxg-recent-panel');return !!p && getComputedStyle(p).display!=='none';})()
+          };
+        })(),
+        box: (function(){
+          var n=document.getElementById('site-notice');
+          var v=document.getElementById('notice-viewport');
+          var s=document.getElementById('sxg-recent-slot');
+          var b=document.getElementById('sxg-recent-btn');
+          function r(e){if(!e)return null;var x=e.getBoundingClientRect();return {l:Math.round(x.left),r:Math.round(x.right),w:Math.round(x.width)};}
+          return {notice:r(n),viewport:r(v),slot:r(s),btn:r(b),
+            justify:getComputedStyle(n).justifyContent,
+            vpFlex:getComputedStyle(v).flex,
+            vpMinWidth:getComputedStyle(v).minWidth,
+            slotFlex:getComputedStyle(s).flex};
+        })(),
         scrollY: Math.round(window.scrollY),
         docOverflowX: document.documentElement.scrollWidth - document.documentElement.clientWidth
       };
@@ -133,24 +167,21 @@ const server = http.createServer((req, res) => {
     return g;
   };
 
-  // 折叠态
+  // 单行滚动态：公告栏高度应为一行，右侧槽里有按钮，轨道里有一份同源副本
   await ev(`window.scrollTo(0,0)`);
   await new Promise((r) => setTimeout(r, 300));
-  await shot(`1-collapsed-${WIDTH}`);
-  await probe('【折叠态】');
-  // 折叠态：按钮盖住的区域（把按钮藏起来对照截图）
+  await shot(`1-marquee-${WIDTH}`);
+  await probe('【单行滚动态】');
+  // 对照：把「提醒」悬浮按钮藏起来，看公告栏有没有被压住
   await ev(`document.getElementById('sxg-remind-btn').style.display='none'`);
-  await shot(`1b-collapsed-nobtn-${WIDTH}`);
+  await shot(`1b-marquee-nobtn-${WIDTH}`);
   await ev(`document.getElementById('sxg-remind-btn').style.display=''`);
 
-  // 展开态
-  await ev(`var cb=document.getElementById('notice-more'); if(cb){cb.checked=true; cb.dispatchEvent(new Event('change',{bubbles:true}));}`);
+  // 点开右侧「最新新增的企业」按钮，确认面板层级没被公益提醒 / 广告位盖住
+  await ev(`var b=document.getElementById('sxg-recent-btn'); if(b) b.click();`);
   await new Promise((r) => setTimeout(r, 400));
-  await shot(`2-expanded-${WIDTH}`);
-  await probe('【展开态】');
-  await ev(`document.getElementById('sxg-remind-btn').style.display='none'`);
-  await shot(`2b-expanded-nobtn-${WIDTH}`);
-  await ev(`document.getElementById('sxg-remind-btn').style.display=''`);
+  await shot(`2-recent-panel-${WIDTH}`);
+  await probe('【最新新增面板】');
 
   ws.close();
   p.kill();

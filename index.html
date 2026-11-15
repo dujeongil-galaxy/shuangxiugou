@@ -141,7 +141,9 @@
     <!-- 首页视频推荐弹窗（改完请把 ?v=N 的 N +1 防缓存） -->
     <link rel="stylesheet" href="./douyin-prompt.css?v=20">
     <!-- 移动端排版修复（须在主 CSS 之后：靠覆盖生效；改完请把 ?v=N 的 N +1） -->
-    <link rel="stylesheet" href="./mobile-fixes.css?v=22">
+    <link rel="stylesheet" href="./mobile-fixes.css?v=23">
+    <!-- 顶部公告栏单行滚动（2026-11-15 取代手机端折叠）：改完请把 ?v=N 的 N +1 -->
+    <link rel="stylesheet" href="./notice-marquee.css?v=1">
   <!-- 黑卡预隐藏（2026-11-10 站长反馈「先加载黑色卡片，然后才出现广告位」）：
        bundle 渲染的黑卡（class 含唯一子串 rounded-2xl p-5 shadow-xl，全 bundle 仅黑卡用）
        在 black-card-adslot.js 下载完成并替换之前会先画一帧 → 慢网下肉眼可见闪现。
@@ -174,17 +176,19 @@
         }, 50);
       })();
     </script>
-    <!-- 顶部公告栏：本站数据证据链说明（白底红字，可随页面滚动） -->
-    <div id="site-notice" style="background:#ffffff;color:#dc2626;text-align:center;font-size:12px;line-height:1.5;padding:6px 12px;border-bottom:1px solid #fee2e2;font-weight:600;position:relative;z-index:999;">
-      <!-- 手机端「展开 / 收起」开关：checkbox + label 纯 CSS 实现，不依赖脚本
-           （脚本挂了公告栏照样能展开）。跑马灯与逐字输出两案已否，理由见
-           mobile-fixes.css 对应的 2026-11-02 段落。 -->
-      <!-- 不写 aria-label：开关的可读名交给 label 文字（展开 / 收起），
-           display:none 的那一半不进无障碍树，名字会随状态自己变；
-           写死 aria-label 反而一直是「展开」，收起后就读错了。 -->
-      <input type="checkbox" id="notice-more" class="notice-more-cb">
-      <span id="evidence-notice">本站全部数据均附公开证据链：181 家企业 481 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 5 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice -->
-      <label for="notice-more" class="notice-more-lbl"><span class="t-more">展开</span><span class="t-less">收起</span></label>
+    <!-- 顶部公告栏：本站数据证据链说明（白底红字，可随页面滚动）
+         2026-11-15 站长改口径：「算了，滚动起来，别展开折叠了」「至于最近新增，
+         不如放在展开的那个位置？就是右侧加按钮算了，弄成一行看看？」
+         → 整条固定一行：左边正文横向无缝滚动，右边是「最新新增的企业」按钮槽。
+         原先手机端的 checkbox + label 折叠开关整体撤掉（2026-11-02 定稿作废）；
+         跑马灯当年被否是因为句子里有超链接「移动的东西点不准」，如今公告栏
+         零超链接、点的是右侧固定按钮，该前提已不成立，详见 notice-marquee.css。
+         正文仍由 scripts/gen-evidence-board.py 托管（只换 #evidence-notice 的文本），
+         且 DOM 里永远是完整一句话：滚动副本由 notice-marquee.js 运行时克隆，
+         不在静态 HTML 里复制第二份，爬虫/读屏拿到的是全本且只有一份。 -->
+    <div id="site-notice" style="background:#ffffff;color:#dc2626;text-align:left;font-size:12px;line-height:1.5;padding:6px 12px;border-bottom:1px solid #fee2e2;font-weight:600;position:relative;z-index:999;display:flex;align-items:center;gap:8px;">
+      <span class="notice-viewport" id="notice-viewport"><span class="notice-track" id="notice-track"><span id="evidence-notice">本站全部数据均附公开证据链：181 家企业 481 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 5 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice --></span></span>
+      <span id="sxg-recent-slot"></span>
     </div>
     <!-- 版本号唯一真相源（2026-11-02 第五轮，站长：「版本号不要写这里了，加入三横菜单吧」）
          —— 不再出现在公告栏，改由右下角悬浮菜单显示：PC 常显 dock 末尾、手机三横菜单末尾。
@@ -193,7 +197,7 @@
          这个锚点回写与校验，删节点等于让每日版本号同步静默失效。
          用 hidden 而不是删掉：hidden 只影响渲染，textContent 照样可读，
          nav-menu.js 运行时读它，菜单里不另存哈希（两份数据没有比对源，必然漂）。 -->
-<span id="site-version" hidden><span class="notice-ver">当前版本号 37dd662</span></span>
+<span id="site-version" hidden><span class="notice-ver">当前版本号 f44aeb5</span></span>
     <div id="root">
       <!-- 首屏占位：React 大包解析期间先显示「加载中」，避免 #root 为空把下方证据链区块
            甩到视口顶部造成白屏闪烁（FOUC）。React 挂载后自动替换本节点。 -->
@@ -9745,13 +9749,18 @@
        索引数据在 pinyin-index.js，必须先于本脚本加载。 -->
   <script defer src="./pinyin-index.js?v=20"></script>
   <script defer src="./pinyin-search.js?v=6"></script>
+  <!-- 顶部公告栏正文单行无缝滚动（2026-11-15）：运行时克隆一份同源副本做循环，
+       脚本没加载时退化为可手动横滑的一行，不会出现半截空白。
+       尊重 prefers-reduced-motion。绝不改压缩 bundle。 -->
+  <script defer src="./notice-marquee.js?v=1"></script>
   <!-- 首页「最新新增的企业」入口（2026-11-15 站长指令）：
        展示**最新 5 条**登记（按日期倒序），因为品牌新增不是每天都有，按天窗口会经常空面板。
        真相源 data/recent-brands.json → scripts/gen-recent-brands.py → recent-brands-data.js；
-       渲染由独立 DOM 补丁 recent-brands.js 挂在 #site-notice 静态区之后（React 管不到，无需 MO 自愈）。
+       渲染由独立 DOM 补丁 recent-brands.js 注入 #site-notice 右侧的 #sxg-recent-slot，
+       与滚动正文同一行（不再另占一条 bar），React 管不到，无需 MO 自愈。
        绝不改压缩 bundle。新增登记后重跑生成器，并同步 bump 两个 ?v。 -->
   <script defer src="./recent-brands-data.js?v=1"></script>
-  <script defer src="./recent-brands.js?v=2"></script>
+  <script defer src="./recent-brands.js?v=3"></script>
 
   <!-- 彻底禁用数字搜索。2026-10-17 用户反馈：输入「1」「2」会搜出一堆无关卡片。
        根因：bundle 的搜索是纯子串匹配，条件含 name/companyName/category/

@@ -7,8 +7,13 @@
  * 理由：品牌新增不是每天都有，按天窗口会经常空面板；按条数永远有内容。
  *
  * 铁律：首页由压缩 bundle（assets/index-YthXZ9eP.js）渲染，**绝不改 bundle**。
- * 本脚本挂在 #site-notice 静态公告栏之后——该节点在 #root 之外，React 重渲染
- * 不会清掉，因此不需要 MutationObserver 自愈（2026-10-31 证据公示区同款做法）。
+ * 本脚本挂进 #site-notice 静态公告栏里的右侧槽 #sxg-recent-slot ——该节点在
+ * #root 之外，React 重渲染不会清掉，因此不需要 MutationObserver 自愈
+ * （2026-10-31 证据公示区同款做法）。
+ *
+ * 2026-11-15 站长第二轮：「不如放在展开的那个位置？就是右侧加按钮算了，弄成一行看看？」
+ * → 撤掉原先另占一行的青底公告条，按钮与横向滚动的公告正文挤在**同一行**，
+ *   行内不再放「按登记日期倒序 · 最新 5 条」提示（说明留在弹窗副标题里）。
  *
  * 数据来自 recent-brands-data.js（由 scripts/gen-recent-brands.py 从
  * data/recent-brands.json 生成），本脚本不硬编码品牌清单，避免两处漂移。
@@ -21,20 +26,20 @@
   var DATA = window.__SXG_RECENT__;
   if (!DATA || !DATA.items || !DATA.items.length) return;
 
-  var BAR_ID = 'sxg-recent-bar';
+  var SLOT_ID = 'sxg-recent-slot';
+  var BTN_ID = 'sxg-recent-btn';
   var PANEL_ID = 'sxg-recent-panel';
   var STYLE_ID = 'sxg-recent-style';
   var N = DATA.displayCount || 5;
 
   var CSS = [
-    '#sxg-recent-bar{background:#f0fdfa;border-bottom:1px solid #ccfbf1;',
-    '  text-align:center;padding:7px 12px;font-size:12px;color:#115e59}',
+    /* 按钮常驻公告栏右侧，固定不动（正文在左边滚动，点它不用追着字跑）。
+       窄屏 320px 也要一行放得下：11px 字 + 9px 内边距，7 个字约 95px。 */
     '#sxg-recent-btn{display:inline-block;background:#0f766e;color:#fff;border:0;',
-    '  border-radius:999px;padding:5px 14px;font-size:12px;font-weight:700;',
-    '  cursor:pointer;margin-right:10px;vertical-align:middle}',
+    '  border-radius:999px;padding:4px 9px;font-size:11px;font-weight:700;',
+    '  line-height:1.5;white-space:nowrap;cursor:pointer;vertical-align:middle}',
     '#sxg-recent-btn:hover{background:#115e59}',
     '#sxg-recent-btn:focus-visible{outline:2px solid #0f766e;outline-offset:2px}',
-    '.sxg-rec-hint{vertical-align:middle;color:#0f766e}',
     /* 层级必须高于首页自动弹出的「公益提醒」.dyp（100000）与广告位卡片（100010），
        否则点开面板会被那两层的全屏遮罩整块盖住（2026-11-15 无头 Edge 实拍踩到）。 */
     '#sxg-recent-panel{position:fixed;inset:0;z-index:100020;display:none}',
@@ -59,8 +64,7 @@
     '.sxg-rec-note{font-size:13px;color:#374151;line-height:1.7;margin:7px 0 0}',
     '.sxg-rec-foot{font-size:12px;color:#6b7280;border-top:1px dashed #e5e7eb;',
     '  padding-top:10px;margin:12px 0 0;line-height:1.7}',
-    '@media(max-width:480px){.sxg-rec-card{padding:16px 14px;margin:5vh auto 0}',
-    '  .sxg-rec-hint{display:none}}'
+    '@media(max-width:480px){.sxg-rec-card{padding:16px 14px;margin:5vh auto 0}}'
   ].join('\n');
 
   function esc(s) {
@@ -110,9 +114,9 @@
   }
 
   function install() {
-    if (document.getElementById(BAR_ID)) return true;
-    var notice = document.getElementById('site-notice');
-    if (!notice) return false;
+    if (document.getElementById(BTN_ID)) return true;
+    var slot = document.getElementById(SLOT_ID);
+    if (!slot) return false;
 
     if (!document.getElementById(STYLE_ID)) {
       var st = document.createElement('style');
@@ -121,12 +125,9 @@
       document.head.appendChild(st);
     }
 
-    var bar = document.createElement('div');
-    bar.id = BAR_ID;
-    bar.innerHTML = '<button type="button" id="sxg-recent-btn" aria-haspopup="dialog">' +
-      '最新新增的企业</button>' +
-      '<span class="sxg-rec-hint">按登记日期倒序 · 最新 ' + N + ' 条</span>';
-    notice.parentNode.insertBefore(bar, notice.nextSibling);
+    // 按钮直接进公告栏右侧槽：与滚动正文同一行，不另起一条 bar。
+    slot.innerHTML = '<button type="button" id="' + BTN_ID + '" aria-haspopup="dialog">' +
+      '最新新增的企业</button>';
 
     var panel = document.createElement('div');
     panel.id = PANEL_ID;
@@ -134,7 +135,7 @@
     panel.innerHTML = panelHtml();
     document.body.appendChild(panel);
 
-    document.getElementById('sxg-recent-btn').addEventListener('click', openPanel);
+    document.getElementById(BTN_ID).addEventListener('click', openPanel);
     document.getElementById('sxg-recent-close').addEventListener('click', closePanel);
     panel.addEventListener('click', function (ev) {
       if (ev.target && ev.target.getAttribute('data-sxg-rec-close') === '1') closePanel();

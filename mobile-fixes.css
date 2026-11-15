@@ -393,154 +393,26 @@ div[class*="border-t"][class*="bg-slate-50"] > div.flex.items-center.gap-2 {
    ≤1439px 段里（那条规则属于广告条自身，且本文件新增断点会让
    verify §13b-5 的三按钮区间核查误判为「该断点未覆盖顶栏按钮」）。 */
 /* --------------------------------------------------------------------------
-   2026-11-02：手机端公告栏折叠成一行（站长：仍然占了 3–4 行）
+   顶部公告栏：2026-11-02 的「两行折叠 + 展开」已整体作废（2026-11-15 改口径）
    --------------------------------------------------------------------------
-   站长提过两个方案，都试过、都否了，记在这里免得下次又绕回来：
+   站长新指令：「算了，滚动起来，别展开折叠了」「至于最近新增，不如放在展开的
+   那个位置？就是右侧加按钮算了，弄成一行看看？」
 
-   ✗ 横向滚动（跑马灯）
-     字在动 → 永远读不完整句，只能反复等它转回来；而且**移动的东西点不准**，
-     那个「68 家企业 179 条证据」的跳转等于被迫放弃。
-     prefers-reduced-motion 的用户更是直接看不到后半句。原生 <marquee> 也已废弃。
+   现在整条公告栏固定一行：正文横向无缝滚动，「最新新增的企业」按钮固定在右侧。
+   所有相关样式与降级策略都搬到独立文件 notice-marquee.css / notice-marquee.js，
+   本文件**不再对 #site-notice 做任何布局**（旧的那套 checkbox + label、
+   line-clamp 两行、展开态让位悬浮按钮组，全部删除，不留死代码）。
 
-   ✗ 逐字输出
-     得等它吐完才能读，读完前不能点；**吐完之后占的还是 3–4 行** ——
-     只是把同一个问题延后三秒，行数一点没省。
-
-   ✓ 采用：单行折叠 + 展开
-     默认 1 行（超长省略号），右侧一个「展开」；点开看全文，全文里那个
-     #evidence-board 超链接照旧可点（站长要求保留这个 url）。
-     顺带把跳转也放进三横菜单（nav-menu.js），不想展开的人一次点击也能到证据链。
-
-   实现：checkbox + label 纯 CSS 开关，没有脚本依赖 —— nav-menu.js 挂了、
-   bundle 报错、甚至 JS 全禁，公告栏都还能展开。所以不做成 JS 组件。
-
-   ⚠️ 不加新断点宽度：verify §13b-5 会把每个 @media 宽度从首次出现到文件末
-   当作区间，核对顶栏三按钮的 nowrap 覆盖；凭空多一个宽度会凭空多三条红。
+   ⚠️ 当年否掉跑马灯的旧理由（字在动读不完整 / 超链接点不准）在零超链接、
+      右侧固定按钮的新结构下已不成立，别再把这段旧结论当现行规则搬回来。
+      verify §9b 有一组反向断言专门拦「折叠开关回流」。
    -------------------------------------------------------------------------- */
 
-/* 开关本体：视觉隐藏但仍在焦点顺序里（不能用 hidden / display:none，
-   那样键盘用户按 Tab 永远到不了，等于只有鼠标能用） */
-.notice-more-cb {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* 桌面端不折叠：整句放得下，多一个「展开」反而是噪音 */
-.notice-more-lbl {
-  display: none;
-}
-
-.notice-more-lbl .t-less {
-  display: none;
-}
-
-/* 公告栏正文 = 证据链**原句**，一个字都不改写（2026-11-02 第四轮，站长：
-   「我要的是这句完整的话，最多两行，或者做折叠，你看着办吧，别问我了」）。
-   上一轮手机换了一句 21 字的改写句（「全站 N 家企业 M 条证据已公示」），
-   读着是省事，但那已经不是我本站的证据链口径了 —— 站长要的是原句。
-   所以：正文只有一段，桌面整段铺开；手机端用 line-clamp 压到两行 + 「展开」，
-   截断只发生在 CSS 层，DOM 里、爬虫拿到的、读屏念出来的都是完整一句话。
-   ⚠️ 别再把句子改短：改短等于换了一套口径（verify §9 有「原句四个分句一个不少」
+/* 公告栏正文 = 证据链**原句**，一个字都不改写。
+   2026-11-15 起不再用 line-clamp 截断：DOM 里、爬虫拿到的、读屏念出来的
+   仍是完整一句话，视觉上由 notice-marquee.css 做单行横向滚动。
+   ⚠️ 别把句子改短：改短等于换了一套口径（verify §9 有「原句四个分句一个不少」
    的断言，改短会判红）。 */
-
-@media (max-width: 640px) {
-  /* 用 flex 而不是默认 block：正文要能被压到 1 行，而「展开」必须留在同一行右侧。
-     block 布局下 -webkit-line-clamp 的盒子是块级，label 只能掉到下一行（多占一行）。 */
-  #site-notice {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: center;
-    padding: 5px 10px;
-  }
-
-  /* 正文：整句原话压到**两行**（不再是替换成短句）。
-     两行 ≈ 43 字，320px 下能读到「…已在本页完整公示（招聘口径、员工反馈」这个主干，
-     点「展开」看全（约 5 行）。 */
-  #evidence-notice {
-    flex: 1 1 0%;
-    min-width: 0;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
-    text-align: left;
-  }
-
-  /* 展开态：回到普通块级（line-clamp 只对 -webkit-box 生效，换掉即解除）。
-     右侧让位给**整列**悬浮按钮，不只是「提醒」那一个：
-     实测 320×720（--sxg-bar-h=356px，来自底部 lp-ad 的高度）时右列从 y=46 一路排到
-     y=316 —— 提醒(257,46,49×46)、ai-fab(250,98,56×56)、bottom(260,164,46×46)、
-     top(262,224,44×44)、video(245,274,61×42)，z 全是 9000，公告栏 999 压根盖不住。
-     折叠态只有两行（y 0–42），按钮从 y46 起，不压字；展开后高 120，第 3–5 行整段在
-     右列底下，所以展开态必须让位。64px = 320 - 10(自身右内边距) - 250(最左的 ai-fab)
-     + 4 余量；实测让位后正文右边缘 246 < 250，五档宽度（320/375/390/414）全部无压字。 */
-  .notice-more-cb:checked ~ #evidence-notice {
-    display: block;
-    overflow: visible;
-    -webkit-line-clamp: none;
-    min-width: 100%;
-    padding-right: 64px;
-  }
-
-  /* 展开后「收起」不再贴右：右列被悬浮按钮占着，贴在右下角会被 ai-fab 压掉一半
-     （320×720 实测 label 落在 y≈96–114，正好是 ai-fab 的 98–154）。
-     改到正文下方左对齐，离右列 200px 以上，任何悬浮组合都压不到。
-     分隔竖线是「跟在省略号后面」才需要的，独占一行时只会显得突兀，一起去掉。 */
-  .notice-more-cb:checked ~ .notice-more-lbl {
-    margin-left: 0;
-    padding-left: 0;
-    border-left: 0;
-    margin-top: 2px;
-  }
-
-  .notice-more-lbl {
-    display: inline-block;
-    flex: 0 0 auto;
-    /* margin-left:auto 而不是固定 4px：
-       收起状态下文本是 flex:1，auto 拿到 0，label 紧贴右端；
-       展开后文本换行独占一块，label 单独一行 —— auto 会把它推到右端，
-       位置和展开前一致，不会出现「点一下按钮跳到屏幕中间」的跳动。 */
-    margin-left: auto;
-    padding-left: 10px;
-    /* 淡竖线把「展开」跟正文省略号隔开：原先 4px 间距实测贴在一起，
-       「…已在本页…展开」读起来像连写的半个词（2026-11-02 站长看截图指出）。 */
-    border-left: 1px solid #fecaca;
-    color: #0f766e;
-    font-size: 11px;
-    font-weight: 700;
-    text-decoration: underline;
-    white-space: nowrap;
-    cursor: pointer;
-  }
-
-  .notice-more-cb:checked ~ .notice-more-lbl .t-more {
-    display: none;
-  }
-
-  .notice-more-cb:checked ~ .notice-more-lbl .t-less {
-    display: inline;
-  }
-
-  /* 键盘聚焦时给出可见焦点环（label 不是控件，靠兄弟选择器把环画在它身上） */
-  .notice-more-cb:focus-visible ~ .notice-more-lbl {
-    outline: 2px solid #0f766e;
-    outline-offset: 2px;
-  }
-
-  /* 版本号：2026-11-02 第五轮已从公告栏 DOM 里整体移出（站长「版本号不要写这里了，
-     加入三横菜单吧」），所以这里不再需要「手机端隐藏 .notice-ver」那条规则 ——
-     节点已不在 #site-notice 内，留着就是死代码，还容易让人以为公告栏里仍有版本号。
-     版本号的新家是页面级隐藏节点 #site-version（见 index.html 与文末规则），
-     PC 与手机两端都由 nav-menu.js 读它并在悬浮菜单里显示。 */
-}
 
 /* 版本号真相源节点（2026-11-02 第五轮）：HTML 上已带 hidden，这里再兜一条。
    hidden 只是 UA 样式，任何一份样式表给 span 加 display 声明都能把它顶出来，

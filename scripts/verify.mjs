@@ -1202,17 +1202,22 @@ section('2g. 首页证据链完整公示');
       '版本号召回源是 #site-version（hidden 隐藏，菜单运行时读文本）',
       '没找到 <span id="site-version" hidden><span class="notice-ver"> 这层结构');
 
-      /* 手机端折叠：站长三轮口令的最终形态
-         —— 第二轮「仍然占了 3–4 行」→ 第三轮「你确定手机版一行文字就能显示完？
-            不考虑设备屏幕大小吗？」→ 第四轮「我要的是这句完整的话，最多两行，
-            或者做折叠，你看着办吧，别问我了」。
-       定稿：正文永远是**原句**，手机端压两行 + 展开看全，开关是纯 CSS 的
-       checkbox + label（不依赖脚本）。三件缺一件就等于没折叠或折叠了打不开：
-         ① 开关控件、② 指向它的 label、③ 真正生效的 clamp 规则。 */
-    check(/id="notice-more"/.test(noticeDiv[0]),
-      '公告栏带折叠开关控件（#notice-more）');
-    check(/<label[^>]*for="notice-more"/.test(noticeDiv[0]),
-      '折叠开关有可点的 label（纯 CSS 开关，脚本挂了也能展开）');
+      /* 2026-11-15 站长口令反转：「算了，滚动起来，别展开折叠了」「至于最近新增，
+         不如放在展开的那个位置？就是右侧加按钮算了，弄成一行看看？」
+         原 2026-11-02 的「两行 clamp + checkbox/label 展开」整套作废。
+         这里把断言方向反过来：折叠开关**不许回流**，滚动视口/轨道/按钮槽三件
+         缺一件就等于没有一行滚动；正文完整原句的四条断言仍在下面保留。 */
+    check(!/notice-more|notice-more-cb|notice-more-lbl|<label/i.test(noticeDiv[0]),
+      '★ 公告栏已撤掉展开/收起折叠开关（回流即判红）',
+      '又写回 checkbox + label → 站长 2026-11-15「别展开折叠了」被推翻');
+    check(/id="notice-viewport"/.test(noticeDiv[0])
+      && /id="notice-track"/.test(noticeDiv[0])
+      && /id="sxg-recent-slot"/.test(noticeDiv[0]),
+      '公告栏单行结构齐备：滚动视口 + 轨道 + 右侧「最新新增」按钮槽');
+    check(/display:\s*flex/.test(noticeDiv[0]) && /text-align:\s*left/.test(noticeDiv[0])
+      && /align-items:\s*center/.test(noticeDiv[0]),
+      '公告栏整体 flex 单行（正文与右侧按钮同一行、垂直居中）',
+      '退回 block 或居中 → 按钮会掉到第二行，站长要的「弄成一行」落空');
 
     /* 第四轮定稿：正文是**原句**，不许再改写成短句。
        —— 第三轮曾把手机文本换成 21 字改写句「全站 N 家企业 M 条证据已公示」，
@@ -1246,45 +1251,60 @@ section('2g. 首页证据链完整公示');
       '正文含省略号：' + nb.trim().slice(-24));
     // 改写句必须彻底消失：HTML 与 CSS 都清掉，否则「手机显示的是哪一句」有两个答案
     // （真机谁赢取决于具体实现，验不了 = 等于没验）。
-    if (exists('mobile-fixes.css')) {
+    {
       const mfc = stripCssComments(read('mobile-fixes.css'));
+      const mqCss = stripCssComments(read('notice-marquee.css'));
+      const mqJs = read('notice-marquee.js');
+      const gen9b = read('scripts/gen-evidence-board.py');
       check(!/notice-short/.test(html) && !/notice-short/.test(mfc),
         '不再有「手机改写短句」机制（notice-short 已从 HTML 与 CSS 一并清除）',
         'notice-short 残留：' + (/notice-short/.test(html) ? 'index.html ' : '')
           + (/notice-short/.test(mfc) ? 'mobile-fixes.css' : ''));
-      check(/-webkit-line-clamp:\s*2/.test(mfc)
-        && /\.notice-more-cb:checked\s*~\s*#evidence-notice\s*\{[^}]*(?:display:\s*block|-webkit-line-clamp:\s*none)/.test(mfc),
-        '手机端公告栏默认压成 2 行、展开态解除 clamp（mobile-fixes.css）',
-        'line-clamp:2 或展开态解除规则缺失');
-    // 展开态必须给「提醒」悬浮按钮让位：按钮是 right:14 固定定位，纵向位置由
-    // bottom:calc(--sxg-bar-h + 272px) 决定 —— 实测 320×720（--sxg-bar-h=356px）时
-    // 按钮矩形 left 257 / top 46 / 49×46，正好压在展开后第 3–4 行上。
-    // 折叠态只有两行（y 0–49）只蹭到内边距不压字，所以只需在展开态让位。
-    const expandRule = mfc.match(/\.notice-more-cb:checked\s*~\s*#evidence-notice\s*\{([^}]*)\}/);
-    const padR = expandRule && expandRule[1].match(/padding-right:\s*(\d+)px/);
-    check(!!padR && Number(padR[1]) >= 50,
-      '展开态右侧给「提醒」悬浮按钮让位（padding-right ≥50px，否则压住第 3–4 行）',
-      padR ? `padding-right 只有 ${padR[1]}px` : '展开态没有 padding-right，正文会钻到按钮底下');
-      // 「2 行」不是写个 2 就够：clamp 只在 -webkit-box 上生效，
-      // 有人把 display 改回 block，clamp 会静默失效 → 公告栏又变回 5 行。
-      const noticeBox = mfc.match(/#evidence-notice\s*\{([^}]*)\}/);
-      check(!!noticeBox && /display:\s*-webkit-box/.test(noticeBox[1])
-        && /-webkit-box-orient:\s*vertical/.test(noticeBox[1]),
-        '两行折叠的前提条件在位（display:-webkit-box + box-orient:vertical）',
-        '缺 -webkit-box 布局，clamp 会静默失效');
-      // 第五轮（2026-11-02）：版本号已整体移出公告栏，不再靠「手机端隐藏它」这条规则。
-      // 现在要的保证反过来了 —— 那个真相源节点在任何端都不可见。
-      // HTML 已带 hidden，但 hidden 只是 UA 样式，任何一份给 span 加 display 的
-      // 样式表都能把它顶出来（它的位置在公告栏与 #root 之间，顶出来就是页面顶部
-      // 多一行莫名其妙的版本号），所以必须有 id 级 CSS 兜底。
+      // 版本号真相源节点在任何端都不可见：HTML 的 hidden 只是 UA 样式，
+      // 任何一份给 span 加 display 的样式表都能把它顶出来，必须有 id 级兜底。
       check(/#site-version\s*\{[^}]*display:\s*none/.test(mfc),
         '版本号真相源节点有 CSS 隐藏兜底（#site-version{display:none}）',
         '只靠 HTML 的 hidden 属性，一旦有样式表给 span 加 display 就会露出来');
-      // 「展开」原先 padding-left 只有 4px，实测跟省略号贴在一起，
-      // 「…已在本页…展开」读起来像连写（2026-11-02 站长看截图指出）。
-      // 判据两条：间距抬到 ≥8px + 左边界有一条分隔线。
-      check(/\.notice-more-lbl\s*\{[^}]*padding-left:\s*(?:[89]|1[0-9])px[^}]*border-left:\s*1px solid/.test(mfc),
-        '折叠开关与正文有视觉分隔（间距 ≥8px + 左侧分隔线）');
+      // 旧折叠规则必须整体清空：留着就是两套布局互相顶，且「谁生效」取决于断点。
+      check(!/notice-more-cb|notice-more-lbl|-webkit-line-clamp:\s*2/.test(mfc),
+        '★ mobile-fixes.css 已清空折叠开关与两行 clamp 规则（不留死代码）',
+        '旧折叠样式还在 → 公告栏不再是单行滚动，或宽度断点下样式互相打架');
+
+      /* ---- 单行横向滚动：脚本 + 样式 + 生成器三层都钉住 ----
+         只断言「index.html 里有 viewport」是不够的：把动画删了、副本写死文案、
+         或把 -50% 改成 -100%，页面照样有这些 id，但用户看到的是空白/旧数字。 */
+      check(/@keyframes\s+sxg-notice-scroll/.test(mqCss)
+        && /translateX\(-50%\)/.test(mqCss)
+        && /animation:\s*sxg-notice-scroll\s+[\d.]+s\s+linear\s+infinite/.test(mqCss)
+        && /#site-notice\.is-marquee\s+\.notice-track\s*\{[^}]*animation/.test(mqCss),
+        '滚动动画真生效（两份等宽文本 + translateX(-50%) 无缝，仅 is-marquee 启播）',
+        '删动画 / 改成 -100% / 无条件启播 → 循环处空白或脚本挂了滚成空条');
+      check(/overflow-x:\s*auto/.test(mqCss) && /prefers-reduced-motion:\s*reduce/.test(mqCss)
+        && /\.notice-copy\s*\{\s*display:\s*none/.test(mqCss),
+        '降级齐备：脚本挂了可手动横滑，reduced-motion 停动画并隐藏副本');
+      check(/\.notice-viewport\s*\{[^}]*flex:\s*1\s+1\s+auto/.test(mqCss)
+        && /#sxg-recent-slot\s*\{[^}]*flex:\s*0\s+0\s+auto/.test(mqCss),
+        '滚动视口吃掉剩余宽度、按钮槽固定不压缩（真的一行）',
+        '按钮槽写成 flex:1 或视口不伸缩 → 320px 下按钮会被挤到第二行');
+      check(/getElementById\('evidence-notice'\)/.test(mqJs)
+        && /copy\.textContent\s*=\s*src\.textContent/.test(mqJs)
+        && /setAttribute\('aria-hidden',\s*'true'\)/.test(mqJs),
+        '★ 循环副本运行时克隆同源正文（不硬编码第二份，读屏只读一份）',
+        '把句子复制进 JS 或静态 HTML → 生成器改数字后副本永远是旧口径');
+      check(/classList\.add\('is-marquee'\)/.test(mqJs)
+        && /animationDuration/.test(mqJs)
+        && /prefers-reduced-motion/.test(mqJs)
+        && /querySelector\('\.notice-copy'\)/.test(mqJs),
+        '补丁具备启播条件、按宽度算时长、reduced-motion 与幂等');
+      check(/<link rel="stylesheet" href="\.\/notice-marquee\.css\?v=1">/.test(html)
+        && /<script defer src="\.\/notice-marquee\.js\?v=1"><\/script>/.test(html),
+        '首页挂载公告栏滚动样式与脚本（各 ?v=1，改后须 bump）',
+        '脚本/样式没挂 → 页面看着还是静态一行，滚动静默失效');
+      check(/'id="notice-viewport"'\s+not in cur/.test(gen9b)
+        && /'id="notice-more"'\s+in cur/.test(gen9b)
+        && /'id="sxg-recent-slot"'\s+not in cur/.test(gen9b),
+        '生成器 --check 同步钉住单行结构、拦折叠开关回流',
+        '只有 verify 会判红、生成器不判 → 重跑生成器时结构漂移无人发现');
     }
   }
 
@@ -8550,11 +8570,15 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(ruleOk,
     '§36g 手机端 [data-ai-notice]（AI 开通公告）改块级，右列 76px 由 body 统一预留（§36j 上移）',
     '公告仍是居中 inline-block 且无处预留右列宽 → 窄屏右缘压在右侧悬浮钮上（站长截图）');
-  /* §36t 又改了同一份 CSS（顶栏全部常显），?v 随每次改动继续往上走；
-     这里与 §36q / §36s 的钉子必须同步，别只改其中一处。 */
-  check(/mobile-fixes\.css\?v=22/.test(idx36g),
-    '§36g mobile-fixes.css 的 ?v 已随本次改动 bump 到 21（卡片三枚操作钮基线统一，顺延）',
-    '?v 没 bump → 浏览器缓存旧 CSS，预留列宽不生效');
+  /* §36t 又改了同一份 CSS（顶栏全部常显），?v 随每次改动继续往上走。
+     2026-11-15 撤折叠改滚动后又一次 bump 到 23：这里不再写死 22，
+     改成「读当前号 + 下限断言」——原来 §36g/§36q/§36s/§36t 四处写死同一个
+     数字，每次改 CSS 都要同步四处，漏一处就整片判红（本次实测踩到）。
+     真正的「内容改了必须 bump」由 §11 通用检查负责，这里只保证不倒退。 */
+  const mfcVer36g = Number((idx36g.match(/mobile-fixes\.css\?v=(\d+)/) || [])[1] || 0);
+  check(mfcVer36g >= 23,
+    '§36g mobile-fixes.css 的 ?v 已随公告栏改版 bump 到 ≥23（卡片三枚操作钮基线统一，顺延）',
+    '?v 没 bump 或被改小 → 浏览器缓存旧 CSS，预留列宽不生效');
 }
 
 // ---------- 36h. 广告位不再穿透搜索-删空全屏磨砂（z-index 写死低于闪屏遮罩，2026-11-11 站长） ----------
@@ -8738,10 +8762,10 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   // ④ 挂载顺序：dock 脚本必须排在所有悬浮脚本之后。
   const mountOk = /<script defer src="\.\/fab-dock\.js\?v=3"><\/script>/.test(idx36q)
     && idx36q.indexOf('fab-dock.js?v=3') > idx36q.indexOf('nav-menu.js?v=7')
-    && /mobile-fixes\.css\?v=22/.test(idx36q)
+    && Number((idx36q.match(/mobile-fixes\.css\?v=(\d+)/) || [])[1] || 0) >= 23
     && /header-menu-patch\.js\?v=11/.test(idx36q);
   check(mountOk,
-    '§36q index.html 已挂载 fab-dock.js?v=3 且排在所有悬浮脚本之后，mobile-fixes.css?v=22 / header-menu-patch.js?v=11 同步 bump',
+    '§36q index.html 已挂载 fab-dock.js?v=3 且排在所有悬浮脚本之后，mobile-fixes.css 带 ?v 缓存号 / header-menu-patch.js?v=11 同步 bump',
     '挂载顺序错了 → dock 执行时按钮还没建好，收编为空；?v 没 bump → 浏览器缓存旧 CSS');
 }
 
@@ -8879,7 +8903,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/<script defer src="\.\/anon-mail\.js\?v=5"><\/script>/.test(idx36s)
     && idx36s.indexOf('anon-mail.js?v=5') > idx36s.indexOf('fab-dock.js?v=3')
     && /fab-dock\.js\?v=3/.test(idx36s)
-    && /mobile-fixes\.css\?v=22/.test(idx36s)
+    && Number((idx36s.match(/mobile-fixes\.css\?v=(\d+)/) || [])[1] || 0) >= 23
     && /header-menu-patch\.js\?v=11/.test(idx36s)
     && exists('scripts/test-anon-mail.cjs')
     && wf36s.indexOf('node scripts/test-anon-mail.cjs') !== -1,
@@ -9045,7 +9069,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '只修 ≤640px → 平板横屏 / 窄桌面窗口按钮仍被挤成不可读的竖条');
 
   // ⑦ ?v 钉子（§21h）+ 新 jsdom 测试挂进 CI（§21o）。
-  check(/mobile-fixes\.css\?v=22/.test(idx36t)
+  check(Number((idx36t.match(/mobile-fixes\.css\?v=(\d+)/) || [])[1] || 0) >= 23
     && /header-menu-patch\.js\?v=11/.test(idx36t)
     && /github-access-help\.js\?v=3/.test(idx36t)
     && /appeal-policy\.js\?v=4/.test(idx36t)
@@ -9338,18 +9362,30 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '改了 JSON 没重跑生成器 → 面板展示的还是旧清单');
 
   check(/<script defer src="\.\/recent-brands-data\.js\?v=1"><\/script>/.test(idx37a)
-    && /<script defer src="\.\/recent-brands\.js\?v=2"><\/script>/.test(idx37a),
-    '§37a 首页按序挂载数据文件与补丁脚本（data ?v=1 / 补丁 ?v=2）',
+    && /<script defer src="\.\/recent-brands\.js\?v=3"><\/script>/.test(idx37a),
+    '§37a 首页按序挂载数据文件与补丁脚本（data ?v=1 / 补丁 ?v=3）',
     '脚本没挂或顺序反了 → 补丁读不到数据，按钮静默不出现');
   check(/最新新增的企业<\/button>/.test(js37a) && /<b>最新新增的企业<\/b>/.test(js37a)
-    && (js37a.match(/最新新增的企业/g) || []).length >= 3 && /sxg-recent-bar/.test(js37a),
-    '§37a 补丁脚本按钮文案与面板标题逐字钉死（含幂等容器 id）',
+    && (js37a.match(/最新新增的企业/g) || []).length >= 3 && /getElementById\(BTN_ID\)/.test(js37a),
+    '§37a 补丁脚本按钮文案与面板标题逐字钉死（含幂等按钮 id）',
     '仅按总出现次数计数会被注释里的同名字样糊弄过去，必须钉具体标签');
-  check(/site-notice/.test(js37a) && /getElementById\(BAR_ID\)/.test(js37a)
+  /* 2026-11-15 第二轮：按钮挪进公告栏右侧槽，与滚动正文同一行。
+     旧版另起一条 #sxg-recent-bar（青底整行），现在是「弄成一行看看」，
+     所以断言同时钉正向（有槽、有注入）与反向（旧 bar 不许回来）。 */
+  check(/getElementById\(SLOT_ID\)/.test(js37a) && /slot\.innerHTML\s*=/.test(js37a)
+    && !/sxg-recent-bar/.test(js37a)
+    && /id="sxg-recent-slot"/.test(idx37a),
+    '★ §37a 按钮注入 #site-notice 右侧槽（不再另起一条 bar）',
+    '又写回独立 bar → 公告栏变两行，站长「右侧加按钮、弄成一行」被推翻');
+  check(/site-notice/.test(js37a) && /getElementById\(BTN_ID\)\.addEventListener\('click', openPanel\)/.test(js37a)
     && /aria-haspopup="dialog"/.test(js37a) && /data-nosnippet/.test(js37a) && /Escape/.test(js37a)
     && /z-index:100020/.test(js37a),
     '§37a 补丁挂静态区、幂等、可访问性、Esc 与高层级齐备',
     '挂进 #root 会被 React 清掉；z-index 低于 .dyp(100000)/广告位(100010) 会被整块盖住');
+  check(/#sxg-recent-btn\{[^}]*white-space:\s*nowrap/.test(js37a)
+    && /#sxg-recent-btn\{[^}]*font-size:11px/.test(js37a),
+    '§37a 行内按钮紧凑且不折行（320px 下与滚动正文挤得进同一行）',
+    '字号放回 12px / 允许折行 → 按钮自己先占两行，破坏单行布局');
 
   const rumor37a = b37a.match(/<section class="rumor" id="hikvision-rumor">([\s\S]*?)<\/section>/);
   const rh37a = rumor37a ? rumor37a[1] : '';

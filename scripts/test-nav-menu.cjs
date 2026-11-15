@@ -50,18 +50,20 @@ function until(condFn, timeoutMs) {
 }
 
 /** 造一个页面：onlyMobile=true 时 matchMedia 只对 max-width:640 命中。
- *  withVersion=true 时带上**线上真实结构**（2026-11-02 第五轮）：
- *  公告栏 #site-notice 里只有正文与展开开关，版本号搬到页面级隐藏节点
- *  #site-version。仍用旧结构做桩的话，测的是「老 HTML 的兼容回退」，
- *  新路径反而永远测不到（救绿形态）。 */
+ *  withVersion=true 时带上**线上真实结构**：公告栏 #site-notice 已是
+ *  2026-11-15 的单行滚动版（视口 + 轨道 + 右侧按钮槽，无折叠开关），
+ *  版本号仍在页面级隐藏节点 #site-version。仍用旧结构做桩的话，
+ *  测的是「老 HTML 的兼容回退」，新路径反而永远测不到（救绿形态）。 */
 function mkDom(onlyMobile, withVersion) {
   const version = withVersion
     ? '<span id="site-version" hidden>'
       + '<span class="notice-ver">当前版本号 abc1234</span></span>'
     : '';
   const dom = new JSDOM('<!DOCTYPE html><html><head></head><body>'
-    + '<div id="site-notice"><span id="evidence-notice">本站全部数据均附公开证据链</span>'
-    + '<label for="notice-more" class="notice-more-lbl">展开</label></div>'
+    + '<div id="site-notice" style="display:flex"><span class="notice-viewport" id="notice-viewport">'
+    + '<span class="notice-track" id="notice-track">'
+    + '<span id="evidence-notice">本站全部数据均附公开证据链</span></span></span>'
+    + '<span id="sxg-recent-slot"></span></div>'
     + version
     + '<div id="root"></div></body></html>',
     { runScripts: 'outside-only', url: 'https://dujeongil-galaxy.github.io/shuangxiugou/' });

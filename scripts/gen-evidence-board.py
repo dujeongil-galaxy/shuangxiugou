@@ -488,6 +488,12 @@ def render_board(rows, generated_note):
 #   首页导航（同类项目导航 / 成功案例）改由右下角悬浮菜单 nav-menu.js 承担。
 #   → verify.mjs §2g 相应改为「公告栏内不许出现 href」，方向反过来锁死。
 #
+#   2026-11-15 变更（站长：「滚动起来，别展开折叠了」「右侧加按钮，弄成一行」）：
+#   手机端的两行折叠 + 展开开关整体撤掉，公告栏固定一行；正文在滚动视口里
+#   横向循环，右侧槽放「最新新增的企业」按钮。本生成器**只管那句正文的
+#   数字与分句**，不动布局；--check 里补了结构断言，防止有人把结构改回去
+#   却忘了同步公告栏口径。
+#
 # 为什么用 marker span 而不是直接正则替换原句：
 #   替换必须幂等——第二次跑生成器时原句已经不存在了，直接匹配原句会报错。
 #   包一层固定 id 的 span，之后每轮只换 span 的内容，跑几次都收敛到同一结果。
@@ -514,12 +520,11 @@ def render_notice(total_brands, total_items, weak_count):
     现在的口径：整条 #site-notice 零超链接；跳转入口只有悬浮菜单里的
     「证据链公示」（verify §9b 正向判零、§9c 正向判菜单必须有）。
     """
-    # 只出一段正文：**原句**，不另写短句。
-    # 2026-11-02 第四轮（站长：「我要的是这句完整的话，最多两行，或者做折叠，
-    # 你看着办吧，别问我了」）——上一版手机换了一句 21 字的改写句，读着省事，
-    # 但那是另写的一句话，不是证据链的原话。站长要原句本身，所以我撤掉短句，
-    # 改成「整句保留 + 手机压两行 + 展开看全」，截断只发生在 CSS 层（line-clamp），
-    # 正文永远是完整一句话，爬虫与读屏拿到的都是全本。
+    # 只出一段正文：**原句**，不另写短句、不在这里复制第二份。
+    # 2026-11-02 第四轮要求「我要的是这句完整的话」，这条至今有效；
+    # 2026-11-15 起展示方式改为单行横向滚动（notice-marquee.js 运行时克隆副本），
+    # 截断/循环都发生在视觉层，正文永远是一句完整的话，
+    # 爬虫、读屏、复制粘贴拿到的都是全本，且只有一份。
     text = ('本站全部数据均附公开证据链：'
             '%d 家企业 %d 条证据已在本页完整公示'
             '（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；'
@@ -608,6 +613,14 @@ def main():
             bad.append('公告栏缺 evidence-notice 标记（证据链口号未变成可点入口）')
         elif m.group(0) != '<span id="%s">%s</span><!-- /notice -->' % (NOTICE_ID, want_notice):
             bad.append('公告栏证据条数与 brand/ 实况不一致')
+        # 2026-11-15 单行滚动结构：容器缺位或被改回折叠，都算公告栏口径漂移。
+        # 这里只判结构，不判样式（样式归 verify §9b 与 notice-marquee.css）。
+        if 'id="notice-viewport"' not in cur or 'id="notice-track"' not in cur:
+            bad.append('公告栏缺单行滚动视口 / 轨道（notice-viewport / notice-track）')
+        if 'id="sxg-recent-slot"' not in cur:
+            bad.append('公告栏缺右侧按钮槽（sxg-recent-slot）')
+        if 'id="notice-more"' in cur or 'class="notice-more-lbl"' in cur:
+            bad.append('公告栏折叠开关回流（2026-11-15 已改为单行滚动）')
         if bad:
             print('FAIL: ' + '；'.join(bad))
             print('      修：python scripts/gen-evidence-board.py')

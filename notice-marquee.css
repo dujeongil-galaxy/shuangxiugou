@@ -1,0 +1,86 @@
+/* --------------------------------------------------------------------------
+   顶部公告栏：单行横向无缝滚动（2026-11-15 站长改口径）
+   --------------------------------------------------------------------------
+   站长原话：「算了，滚动起来，别展开折叠了」「至于最近新增，不如放在展开的
+   那个位置？就是右侧加按钮算了，弄成一行看看？」
+
+   历史口径作废说明（别把旧否决理由当现行规则）：
+     2026-11-02 这里曾否掉跑马灯，理由有两条 —— ① 字在动读不完整句；
+     ② 句子里那个跳 #evidence-board 的超链接「移动的东西点不准」。
+     如今公告栏早已零超链接（跳转走右下角悬浮菜单），可点的只有右侧
+     **固定不动**的「最新新增的企业」按钮；正文本身仍是完整一句话，
+     运行时克隆的副本只是视觉循环用（aria-hidden），不进无障碍树。
+     所以两条否决前提都不成立了，按站长新口令改成单行滚动。
+
+   结构（index.html，全部是 span，不许塞 <div> —— verify §9b 用
+   `/<div id="site-notice">[\s\S]*?<\/div>/` 截整条公告栏）：
+     #site-notice (flex 一行)
+       ├─ .notice-viewport  可滚动视口（JS 没加载时可手动横滑）
+       │    └─ .notice-track 轨道（两份等宽文本，位移 -50% 无缝）
+       │         ├─ #evidence-notice 生成器托管的完整原句
+       │         └─ .notice-copy     运行时克隆的同源副本
+       └─ #sxg-recent-slot  右侧按钮槽（recent-brands.js 注入）
+
+   无缝的关键：两份文本各自的 padding-right 相同 → 轨道宽度恰为两倍单份宽度，
+   translateX(-50%) 正好把第二份送到第一份的起点，循环处不会出现空档。
+   若写成 translateX(-100%) 或只放一份文本，滚完就会闪一段空白。
+   -------------------------------------------------------------------------- */
+
+.notice-viewport {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: block;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  scrollbar-width: none;          /* Firefox：手动横滑时也不冒一条滚动条 */
+}
+.notice-viewport::-webkit-scrollbar { display: none; }
+
+.notice-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* 两份文本必须等宽：padding-right 给循环之间留出固定间隔。
+   #evidence-notice 是生成器的 marker span，里面只能有纯文本，不许套标签。 */
+#evidence-notice,
+.notice-copy {
+  display: inline-block;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  padding-right: 56px;
+}
+
+#sxg-recent-slot {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* 只有 JS 成功克隆出副本、加上 is-marquee 之后才启动动画。
+   脚本挂了 / 数据没到 → 保持可手动横滑的一行，绝不会把唯一一份文本滚成空白。 */
+#site-notice.is-marquee .notice-viewport { overflow: hidden; }
+#site-notice.is-marquee .notice-track {
+  animation: sxg-notice-scroll 26s linear infinite;
+  /* 首屏先让完整句首在左边缘停 1.2 秒，再开始左滚，别一上来就把开头切掉。
+     时长会由 notice-marquee.js 按实际宽度改写，delay 只管入场。 */
+  animation-delay: 1.2s;
+  will-change: transform;
+}
+@keyframes sxg-notice-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* 故意不做 :hover 暂停：鼠标常停在页面顶部，一暂停就会被误读成「根本没滚动」。
+   想读全句等下一圈即可；系统级 reduced-motion 才是真正该停的场景（见下方兜底）。 */
+
+/* 尊重系统「减少动态效果」：停动画、去掉副本、退回可手动横滑的一行。
+   notice-marquee.js 也会在启动时直接 return，这里再兜一层运行期切换。 */
+@media (prefers-reduced-motion: reduce) {
+  #site-notice.is-marquee .notice-track { animation: none; transform: none; }
+  #site-notice.is-marquee .notice-viewport { overflow-x: auto; }
+  .notice-copy { display: none; }
+}
