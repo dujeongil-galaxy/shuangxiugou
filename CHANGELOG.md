@@ -4,6 +4,19 @@
 
 ---
 
+### feat：新增「沪上阿姨」C 级品牌卡（门店招聘月休 2 天，独立来源证据链）（2026-11-15 22:26 · 提交 `382f6aa`）
+
+站长指令：点了杯沪上阿姨（玩笑称「沪上少妇」），问「这家店说月休 2 天？去调查，然后新增卡片」。
+
+- **调查结论（2026-11-15 联网检索）**：五地门店公开招聘 JD 口径一致写明月休 2 天——佳木斯人才市场「早班 8:30–20:30，每月带薪休息 2 天」、成州家乡通「长期月休 2 天（节假日周末除外）」、清河信息港「每月两天公休」、二丫直聘公主岭荣超店「月休 2 天」、BOSS 直聘乌兰察布集宁店「月休 2 天（不休换算工资）」（工商信息为个体工商户）。品牌官网投资者关系页自述「以加盟为重点的业务模式」，故限定为**加盟门店自主用工口径，不等于总部统一制度**。《劳动法》第三十六条（每日≤8h／每周≤44h）、第三十八条（每周至少休息一日，约合月休≥4 天）、第四十一条（月加班≤36h）为公开法条，仅作标准参照，本站不作违法认定。
+- **定级 C 级**：按本站档位（A≥8 天／B 6–8 天／C 不足 6 天或严重超时），月休 2 天 + 10–12 小时班次判 C；「真实双休率」「平均下班时间」一律留空为「未核实」，不估算。数据条目 `data/imported-brands.json` 走 `sourceOverride` 独立来源（非榜单导入），带 6 条证据链 + 8 条可点原文链接，用 `scripts/import-brands.py --only hushangayi` 增量生成，既有 105 张卡／页逐字不动。
+- **派生文件重生成而非手改**：新建 `brand/hushangayi.html`；`gen-evidence-board.py` 重生成公示区（181 家 / 481 条证据 / 427 条链接）；`gen-pinyin-index.py` 重生成拼音索引（179 品牌 / 129 自定义卡）；`projects.html`、`sitemap.xml`、noscript 双清单由增量脚本追加。
+- **计数联动收口（16 处）**：`verify.mjs` `IMPORTED_CARD_COUNT` 107→108、C 级断言 40→41；`rating-stats-patch.js` 避雷预警 58→59；`index.html` 漏改的一处「共 N 家」；`scripts/test-stat-filter.cjs` 基数（badge 182 / 可见 181 / C 58 / 避雷 59 / hidden 97）；README / FORK_GUIDE / MAINTAINING / PITFALLS / 员工实测清单自定义卡 128→129、合计 182 张、收录 181 家；新详情页 `ai-chat.js?v=18→28` 钉齐首页；`pinyin-index.js?v=19→20`、`rating-stats-patch.js?v=13→14`。
+- **压缩 bundle 说明**：`assets/index-YthXZ9eP.js` 仅按 §2e 历史惯例替换**两个等长的纯数字常数**（顶部「收录品牌」与 tab 角标 `children:180→181`，字节数不变、未动任何逻辑字符）；这是 verify §2e 明确要求的动作，历史每次新增卡同样处理。页面行为脚本一个字节未改。
+- **复核**：`verify.mjs` **1807 项全绿**；`test-stat-filter` 38/38、`test-pinyin-e2e / pinyin-search / evidence-jump / empty-state-sync / virtual-card-remove / molina-card / render-page` 全通过；首页 `--dump-dom` 命中「沪上阿姨」20 处（卡片确实注入）；无头 Edge 实拍详情页，C 级徽标、口径说明、证据链排版正常。已知 `test-ai-anchor` 在**未改动基线上同样失败**（jsdom 无布局导致几何断言），与本次无关。
+
+---
+
 ### feat：byd 专题页匿名邮箱补邮箱地址 + VPN 告知弹窗；sponsor 页 Ferry 推荐文案修正（2026-11-15 19:42 · 提交 `95e3f00`）
 
 - **byd-report.html「想请教懂行的朋友」**：站长指出「或通过匿名邮箱私下说」按钮既没写邮箱地址、也没像首页那样预先告知需 VPN。
