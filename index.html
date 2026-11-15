@@ -9745,6 +9745,13 @@
        索引数据在 pinyin-index.js，必须先于本脚本加载。 -->
   <script defer src="./pinyin-index.js?v=20"></script>
   <script defer src="./pinyin-search.js?v=6"></script>
+  <!-- 首页「最新新增的企业」入口（2026-11-15 站长指令）：
+       展示**最新 5 条**登记（按日期倒序），因为品牌新增不是每天都有，按天窗口会经常空面板。
+       真相源 data/recent-brands.json → scripts/gen-recent-brands.py → recent-brands-data.js；
+       渲染由独立 DOM 补丁 recent-brands.js 挂在 #site-notice 静态区之后（React 管不到，无需 MO 自愈）。
+       绝不改压缩 bundle。新增登记后重跑生成器，并同步 bump 两个 ?v。 -->
+  <script defer src="./recent-brands-data.js?v=1"></script>
+  <script defer src="./recent-brands.js?v=2"></script>
 
   <!-- 彻底禁用数字搜索。2026-10-17 用户反馈：输入「1」「2」会搜出一堆无关卡片。
        根因：bundle 的搜索是纯子串匹配，条件含 name/companyName/category/

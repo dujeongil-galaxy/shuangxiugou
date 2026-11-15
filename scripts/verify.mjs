@@ -9288,6 +9288,85 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '只改 xml 不改生成器 → 下次重建首页 lastmod 被打回 10-10');
 }
 
+// ---------- 37a. 首页「最新新增的企业」入口 + 海康网传登记卡（2026-11-15） ----------
+// 站长指令：「在首页找个地方挂一下按钮，叫『最新新增的企业』；展示最近 x 天还是最新 x 条你决定」
+// → 采用最新 5 条（按登记日期倒序）。本段把「真相源 → 生成器 → 数据文件 → 补丁 → 详情页」
+//   五层全钉住：任何一层漏改/漂移都必须判红，不能靠人肉记得。
+{
+  const f37a = (p) => readFileSync(join(ROOT, p), 'utf8');
+  const idx37a = f37a('index.html');
+  const js37a = f37a('recent-brands.js');
+  const dy37a = f37a('recent-brands-data.js');
+  const gen37a = f37a('scripts/gen-recent-brands.py');
+  const b37a = f37a('brand/hikvision.html');
+
+  let cfg37a = null;
+  try { cfg37a = JSON.parse(f37a('data/recent-brands.json')); } catch (e) { cfg37a = null; }
+  const ent37a = cfg37a && Array.isArray(cfg37a.entries) ? cfg37a.entries : [];
+  const dates37a = ent37a.map((e) => e.date);
+
+  check(!!cfg37a && cfg37a.displayCount === 5 && ent37a.length >= 5,
+    '§37a 最新新增清单 displayCount=5 且登记条数≥5（按条数不按天窗口）',
+    '改回按天窗口或只留几条 → 面板会经常空的，这条规则是站长授权的口径');
+  check(dates37a.length > 0 && dates37a.join('|') === dates37a.slice().sort().reverse().join('|'),
+    '§37a 登记条目按 date 倒序排列（同日保持文件顺序）',
+    '顺序乱了 → 面板显示的「最新」不成立');
+  check(ent37a.every((e) => ['slug', 'name', 'date', 'kind', 'grade', 'note', 'href'].every((k) => typeof e[k] === 'string' && e[k].trim())),
+    '§37a 每条登记的 7 个字段齐全且非空',
+    '字段缺失 → 渲染出空白条目或 undefined');
+  check(ent37a.every((e) => existsSync(join(ROOT, 'brand', e.slug + '.html'))),
+    '§37a 每条登记的 slug 都有对应品牌详情页',
+    'slug 写错或页面被删 → 面板点进去 404');
+  check(ent37a.every((e) => existsSync(join(ROOT, e.href.split('#')[0].replace(/^\.\//, '')))),
+    '§37a 每条登记的 href 指向真实文件（锚点部分不计）',
+    '链接写错 → 用户点了跳空');
+
+  check(/displayCount/.test(gen37a) && /reverse=True\)\[:n\]/.test(gen37a) && /--check/.test(gen37a),
+    '§37a 生成器具备「按日期倒序取前 N 条」与 --check 自检',
+    '生成器被改成全量输出或丢掉 --check → 数据文件漂移无人发现');
+  check(/^\/\* 本文件由 scripts\/gen-recent-brands\.py 自动生成/m.test(dy37a),
+    '§37a recent-brands-data.js 带生成器署名（禁止手改）',
+    '手改数据文件 → 下次重跑被覆盖，两处清单漂移');
+
+  const m37a = dy37a.match(/window\.__SXG_RECENT__\s*=\s*([\s\S]*?);\s*$/m);
+  let payload37a = null;
+  try { payload37a = m37a ? JSON.parse(m37a[1]) : null; } catch (e) { payload37a = null; }
+  const expect37a = ent37a.slice().sort((x, y) => y.date.localeCompare(x.date)).slice(0, 5);
+  check(!!payload37a && payload37a.displayCount === 5 && payload37a.items.length === 5
+    && JSON.stringify(payload37a.items.map((i) => i.slug)) === JSON.stringify(expect37a.map((e) => e.slug)),
+    '§37a 数据文件与 JSON 完全一致（最新 5 条、顺序一致）',
+    '改了 JSON 没重跑生成器 → 面板展示的还是旧清单');
+
+  check(/<script defer src="\.\/recent-brands-data\.js\?v=1"><\/script>/.test(idx37a)
+    && /<script defer src="\.\/recent-brands\.js\?v=2"><\/script>/.test(idx37a),
+    '§37a 首页按序挂载数据文件与补丁脚本（data ?v=1 / 补丁 ?v=2）',
+    '脚本没挂或顺序反了 → 补丁读不到数据，按钮静默不出现');
+  check(/最新新增的企业<\/button>/.test(js37a) && /<b>最新新增的企业<\/b>/.test(js37a)
+    && (js37a.match(/最新新增的企业/g) || []).length >= 3 && /sxg-recent-bar/.test(js37a),
+    '§37a 补丁脚本按钮文案与面板标题逐字钉死（含幂等容器 id）',
+    '仅按总出现次数计数会被注释里的同名字样糊弄过去，必须钉具体标签');
+  check(/site-notice/.test(js37a) && /getElementById\(BAR_ID\)/.test(js37a)
+    && /aria-haspopup="dialog"/.test(js37a) && /data-nosnippet/.test(js37a) && /Escape/.test(js37a)
+    && /z-index:100020/.test(js37a),
+    '§37a 补丁挂静态区、幂等、可访问性、Esc 与高层级齐备',
+    '挂进 #root 会被 React 清掉；z-index 低于 .dyp(100000)/广告位(100010) 会被整块盖住');
+
+  const rumor37a = b37a.match(/<section class="rumor" id="hikvision-rumor">([\s\S]*?)<\/section>/);
+  const rh37a = rumor37a ? rumor37a[1] : '';
+  check(!!rumor37a && /网友爆料登记/.test(rh37a) && /待核实/.test(rh37a)
+    && /11\/20/.test(rh37a) && /2027-12-14/.test(rh37a)
+    && /评级维持 B 级/.test(rh37a) && /不作为评级依据/.test(rh37a),
+    '§37a 海康详情页「网传登记卡」六条事实钉子齐全（含待验证时间与评级不变声明）',
+    '少写「待核实」或删掉评级不变 → 网传被当成已落地事实，是本站最忌的失真');
+  check(!!rumor37a && !/<li style="margin:0 0 12px">/.test(rh37a),
+    '§37a 网传登记卡不伪装成证据条目（不触发公示区计数漂移）',
+    '写成证据 li → gen-evidence-board 会把它算进 481 条，计数断言大面积判红');
+  check(!!rumor37a && (rh37a.match(/target="_blank"/g) || []).length ===
+      (rh37a.match(/rel="noopener noreferrer nofollow"/g) || []).length,
+    '§37a 网传登记卡外链一律带 rel 安全属性',
+    '外链漏 rel → 新窗口可通过 opener 反向操作本站');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {

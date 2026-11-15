@@ -1,0 +1,60 @@
+{
+  "_note": "首页「最新新增的企业」面板的单一真相源。按 date 倒序取 displayCount 条展示（同日保持本文件顺序）。新增品牌卡或登记重要动态后，请在 entries 追加一条并重跑 python scripts/gen-recent-brands.py。",
+  "displayCount": 5,
+  "entries": [
+    {
+      "slug": "hikvision",
+      "name": "海康威视",
+      "date": "2026-11-15",
+      "kind": "网传登记（待核实）",
+      "grade": "B",
+      "note": "网友爆料「965 全员双休、取消大小周」；截至 11-15 无官方公告，11/20 待验证，评级维持 B 级",
+      "href": "brand/hikvision.html#hikvision-rumor"
+    },
+    {
+      "slug": "hushangayi",
+      "name": "沪上阿姨",
+      "date": "2026-11-15",
+      "kind": "新增品牌卡",
+      "grade": "C",
+      "note": "五地门店招聘 JD 交叉：月休 2 天、班次 10–12 小时；加盟门店口径，非总部统一制度",
+      "href": "brand/hushangayi.html"
+    },
+    {
+      "slug": "gac-toyota",
+      "name": "广汽丰田",
+      "date": "2026-11-13",
+      "kind": "新增品牌卡",
+      "grade": "B",
+      "note": "按公开口径建卡，卡面备注栏挂两条公开视频线索并同步证据链",
+      "href": "brand/gac-toyota.html"
+    },
+    {
+      "slug": "xiaomi-auto",
+      "name": "小米汽车",
+      "date": "2026-11-13",
+      "kind": "新增品牌卡",
+      "grade": "B",
+      "note": "建卡初评 C 级，站长当日人工介入上调 B 级（双休不稳 · 大小周观察）",
+      "href": "brand/xiaomi-auto.html"
+    },
+    {
+      "slug": "leapmotor",
+      "name": "零跑汽车",
+      "date": "2026-11-12",
+      "kind": "新增品牌卡",
+      "grade": "C",
+      "note": "新增 C 级自定义卡；卡面备注注明「内容真实性存疑，请注意甄别」",
+      "href": "brand/leapmotor.html"
+    },
+    {
+      "slug": "luxiyi",
+      "name": "陆喜依",
+      "date": "2026-11-08",
+      "kind": "新增品牌卡",
+      "grade": "S",
+      "note": "站长指定 S 级，五源证据链；新茶饮 B/C 级平替统一推荐",
+      "href": "brand/luxiyi.html"
+    }
+  ]
+}
