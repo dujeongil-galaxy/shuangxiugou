@@ -132,7 +132,7 @@
     <link rel="preload" href="./search-clear-order-fix.js?v=3" as="script">
     <link rel="preload" href="./logo-vault.js?v=1" as="script">
     <link rel="preload" href="./stat-filter.js?v=9" as="script">
-    <link rel="preload" href="./pinyin-index.js?v=19" as="script">
+    <link rel="preload" href="./pinyin-index.js?v=20" as="script">
     <link rel="preload" href="./nav-menu.js?v=7" as="script">
     <!-- 良配 · 限时推广广告位：2026-11-12 临时下线（保留文件便于恢复；恢复时取消下方注释） -->
     <!-- <link rel="stylesheet" href="./liangpei-ad.css?v=13"> -->
@@ -183,7 +183,7 @@
            display:none 的那一半不进无障碍树，名字会随状态自己变；
            写死 aria-label 反而一直是「展开」，收起后就读错了。 -->
       <input type="checkbox" id="notice-more" class="notice-more-cb">
-      <span id="evidence-notice">本站全部数据均附公开证据链：180 家企业 473 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 5 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice -->
+      <span id="evidence-notice">本站全部数据均附公开证据链：181 家企业 481 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 5 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice -->
       <label for="notice-more" class="notice-more-lbl"><span class="t-more">展开</span><span class="t-less">收起</span></label>
     </div>
     <!-- 版本号唯一真相源（2026-11-02 第五轮，站长：「版本号不要写这里了，加入三横菜单吧」）
@@ -211,7 +211,7 @@
      本区块由 scripts/gen-evidence-board.py 自动生成，请勿手改。
      改证据请改 brand/*.html 详情页，然后重跑：python scripts/gen-evidence-board.py
      单一真相源在 brand/ 页；scripts/verify.mjs 有防漂移断言逐条比对。
-     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：180 家企业 / 473 条证据 / 419 条带原始链接 / 5 家证据薄弱。 -->
+     由 scripts/gen-evidence-board.py 从 brand/*.html 自动汇总：181 家企业 / 481 条证据 / 427 条带原始链接 / 5 家证据薄弱。 -->
 <style>#evidence-board{max-width:960px;margin:0 auto;padding:28px 16px 40px;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.75;color:#1f2937;font-size:14px}
 #evidence-board h2{font-size:20px;font-weight:700;margin:0 0 6px;color:#0f172a;line-height:1.4}
 #evidence-board a{color:#0f766e}
@@ -260,15 +260,15 @@
 #evidence-board .ev-more{margin-top:10px;font-size:12px}
 #evidence-board .ev-foot{margin:16px 0 0;font-size:12.5px;color:#64748b}
 @media(max-width:640px){#evidence-board{padding:20px 12px 32px}#evidence-board .ev-stat{flex:1 1 44%}#evidence-board .ct{margin-left:0;width:100%}}</style>
-<section id="evidence-board" data-ev-brands="180" data-ev-total="473" data-ev-linked="419" data-ev-weak="5">
-  <h2>全站证据链公示（180 家企业 · 473 条证据）</h2>
+<section id="evidence-board" data-ev-brands="181" data-ev-total="481" data-ev-linked="427" data-ev-weak="5">
+  <h2>全站证据链公示（181 家企业 · 481 条证据）</h2>
   <p class="ev-lead">站长要求「证据链必须首页完整公示，口说无凭」——以下是站内每一条评级的取证清单，含证据类型、取证日期、文书编号与可点击的原始来源链接。数据由各品牌详情页（<code>brand/*.html</code>）自动汇总生成，两处不一致会被 <code>scripts/verify.mjs</code> 判红。</p>
   <p class="ev-lead" style="margin:-8px 0 16px;font-size:13px">其中 <strong>41 家</strong>目前仅有一条来源（第三方榜单聚合，2026-07-11，二手、未抓原文），属<strong>榜单口径换算</strong>而非实测：这些企业的真实双休率未核实，详情页已逐家公示「证据链」——来源、日期、原话、以及尚缺哪几类证据。补齐任一类证据后即重新核实改档。</p>
   <div class="ev-stats">
-    <div class="ev-stat"><b style="color:#0f766e">473</b><i>证据总条数</i></div>
-    <div class="ev-stat"><b style="color:#1d4ed8">419</b><i>带原始链接</i></div>
+    <div class="ev-stat"><b style="color:#0f766e">481</b><i>证据总条数</i></div>
+    <div class="ev-stat"><b style="color:#1d4ed8">427</b><i>带原始链接</i></div>
     <div class="ev-stat"><b style="color:#b45309">54</b><i>无可点链接</i></div>
-    <div class="ev-stat"><b style="color:#475569">7/78/35/57/1</b><i>S/A/B/C/D 家数</i></div>
+    <div class="ev-stat"><b style="color:#475569">7/78/35/58/1</b><i>S/A/B/C/D 家数</i></div>
     <div class="ev-stat"><b style="color:#450a0a">1 家</b><i>D 级（站长强制降级）</i></div>
     <div class="ev-stat"><b style="color:#64748b">2 家</b><i>U 级（证据不足）</i></div>
     <div class="ev-stat"><b style="color:#be123c">5 家</b><i>证据薄弱企业</i></div>
@@ -293,6 +293,9 @@
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（social_media，媒体转述、未核实） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（third_party） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（上市公司年报（高置信）） <b>1</b></span>
+      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（企业官网） <b>1</b></span>
+      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（公开招聘信息（多源交叉）+ 法规原文 + 品牌官网口径） <b>1</b></span>
+      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（公开招聘信息） <b>5</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（员工/社群反馈） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体报道（二手，未抓原文）） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（媒体报道（含员工爆料，二手）） <b>1</b></span>
@@ -302,6 +305,7 @@
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（招聘平台口径） <b>86</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（招聘自述（二手，未抓原文）） <b>1</b></span>
       <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（暗访） <b>1</b></span>
+      <span class="ev-pill" style="border-color:#94a3b8;color:#475569">未归类（法规原文） <b>1</b></span>
     </div>
     <div class="ev-note">司法裁判文书与劳动监察通报为最高强度证据；招聘平台自述属「招聘方口径」，只证明企业怎么说、不证明实际怎么排班；社群匿名反馈与旁证汇总强度最低，本站不用它们单独定档。</div>
   </div>
@@ -331,7 +335,7 @@
     </ul>
   </div>
   <div class="ev-list">
-    <div class="ev-listhead">按档位排列 · 点击企业名展开该企业的全部证据条目（共 180 家）</div>
+    <div class="ev-listhead">按档位排列 · 点击企业名展开该企业的全部证据条目（共 181 家）</div>
     <details id="ev-luxiyi" data-b="luxiyi" data-g="S" data-n="5" data-l="5">
       <summary><span class="g" style="background:#7c3aed">S</span><span class="bn">陆喜依</span><span class="co">陆喜依</span><span class="ct">5 条证据</span></summary>
       <div class="ev-body">
@@ -3318,6 +3322,62 @@
         <div class="ev-more"><a href="./brand/yidiandian.html">查看 一点点 (1点点) 完整详情页 →</a></div>
       </div>
     </details>
+    <details id="ev-hushangayi" data-b="hushangayi" data-g="C" data-n="8" data-l="8">
+      <summary><span class="g" style="background:#be123c">C</span><span class="bn">沪上阿姨</span><span class="co">沪上阿姨</span><span class="ct">8 条证据</span></summary>
+      <div class="ev-body">
+        <ol class="ev-items">
+          <li>
+            <div class="t">沪上阿姨多地门店招聘 JD 交叉：月休 2 天、班次 10–12 小时（2026-11-15 检索）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（公开招聘信息（多源交叉）+ 法规原文 + 品牌官网口径）</span> <span class="raw">原标注：公开招聘信息（多源交叉）+ 法规原文 + 品牌官网口径</span> <span class="d">2026-11-15</span></div>
+            <div class="s">佳木斯人才市场「沪上阿姨店员（月休2天+工作餐）」写明早班 8:30–20:30、每月带薪休息 2 天；成州家乡通「长期月休2天（节假日周末除外）」、清河信息港「每月两天公休」、二…</div>
+            <div class="u"><a href="https://job0454.com/job/35636" rel="nofollow noopener" target="_blank">job0454.com/job/35636</a></div>
+          </li>
+          <li>
+            <div class="t">沪上阿姨店员（月休2天+工作餐）· 佳木斯人才市场</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（公开招聘信息）</span> <span class="raw">原标注：公开招聘信息</span> <span class="d">2026-11-15 检索</span></div>
+            <div class="s">早班 8:30–20:30、每月带薪休息 2 天、无责底薪 3000 + 满勤 200、免费工作餐；工作地址佳木斯市郊区胜利华城 D 栋 103 室。</div>
+            <div class="u"><a href="https://job0454.com/job/35636" rel="nofollow noopener" target="_blank">job0454.com/job/35636</a></div>
+          </li>
+          <li>
+            <div class="t">沪上阿姨招聘店员/营业员 · 成州家乡通</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（公开招聘信息）</span> <span class="raw">原标注：公开招聘信息</span> <span class="d">2026-11-09</span></div>
+            <div class="s">「长期月休2天（节假日周末除外）」，工作时长 8–9 小时（吃饭时间包含在内），薪资 2900–4000，加班另算；凯龙广场店。</div>
+            <div class="u"><a href="http://www.cz.ccoo.cn/post/zhaopin/8881113x.html" rel="nofollow noopener" target="_blank">cz.ccoo.cn/post/zhaopin/8881113x.html</a></div>
+          </li>
+          <li>
+            <div class="t">沪上阿姨（奶茶饮品）招聘长期员工 · 清河信息港</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（公开招聘信息）</span> <span class="raw">原标注：公开招聘信息</span> <span class="d">2026-11-11</span></div>
+            <div class="s">「每月两天公休」，薪资 3000 + 饮品补贴 150 + 提成 + 绩效，包住；清河武松中街店。</div>
+            <div class="u"><a href="http://m.qinghe.ccoo.cn/post/job/jobshow.aspx?id=8347203" rel="nofollow noopener" target="_blank">m.qinghe.ccoo.cn/post/job/jobshow.aspx?id=8347203</a></div>
+          </li>
+          <li>
+            <div class="t">沪上阿姨（公主岭荣超店）调饮师 · 二丫直聘</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（公开招聘信息）</span> <span class="raw">原标注：公开招聘信息</span> <span class="d">2026-10-10</span></div>
+            <div class="s">早班 07:00–17:30、晚班 12:00–22:30，每班中间午休 1 小时，月休 2 天，综合月薪 3000–4000；企业已通过平台实地认证。</div>
+            <div class="u"><a href="https://www.gzlrck.com/job/43192.html" rel="nofollow noopener" target="_blank">gzlrck.com/job/43192.html</a></div>
+          </li>
+          <li>
+            <div class="t">集宁区沪上阿姨「奶茶店店员」· BOSS 直聘</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（公开招聘信息）</span> <span class="raw">原标注：公开招聘信息</span> <span class="d">2026-11-15 检索</span></div>
+            <div class="s">「3200 基本工资 + 全勤 300 + 餐补 300，月休 2 天（不休换算工资）」；工商信息显示主体为「集宁区沪上阿姨」个体工商户，佐证加盟门店自主用工。</div>
+            <div class="u"><a href="https://www.zhipin.com/job_detail/67f8ad007236343203Z82Ni9GVdQ.html" rel="nofollow noopener" target="_blank">zhipin.com/job_detail/67f8ad007236343203Z82Ni9GVdQ.html</a></div>
+          </li>
+          <li>
+            <div class="t">沪上阿姨（上海）实业股份有限公司 · 投资者关系（官网）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（企业官网）</span> <span class="raw">原标注：企业官网</span> <span class="d">2026-11-15 检索</span></div>
+            <div class="s">官网自述「聚焦于下沉市场并采取以加盟为重点的业务模式」「全面的加盟商支持平台及互利共赢的加盟模式」，用于限定本页口径为加盟门店用工、非总部统一制度。</div>
+            <div class="u"><a href="https://ir.hsay.com/?lang=zh-cn" rel="nofollow noopener" target="_blank">ir.hsay.com/?lang=zh-cn</a></div>
+          </li>
+          <li>
+            <div class="t">《中华人民共和国劳动法》第四章 工作时间和休息休假 · 国务院公报（gov.cn）</div>
+            <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">未归类（法规原文）</span> <span class="raw">原标注：法规原文</span> <span class="d">1995-01-01 施行（2018 修正）</span></div>
+            <div class="s">第三十六条：每日≤8 小时、平均每周≤44 小时；第三十八条：用人单位应当保证劳动者每周至少休息一日；第四十一条：延长工作时间每月不得超过 36 小时。仅作公开标准参照，本站不作违…</div>
+            <div class="u"><a href="http://www.gov.cn/govweb/gongbao/shuju/1994/gwyb199416.pdf" rel="nofollow noopener" target="_blank">gov.cn/govweb/gongbao/shuju/1994/gwyb199416.pdf</a></div>
+          </li>
+        </ol>
+        <div class="ev-more"><a href="./brand/hushangayi.html">查看 沪上阿姨 完整详情页 →</a></div>
+      </div>
+    </details>
     <details id="ev-zhaoyiming" data-b="zhaoyiming" data-g="C" data-n="8" data-l="8">
       <summary><span class="g" style="background:#be123c">C</span><span class="bn">赵一鸣 / 零食很忙</span><span class="co">湖南鸣鸣很忙商业连锁股份有限公司</span><span class="ct">8 条证据</span></summary>
       <div class="ev-body">
@@ -4677,7 +4737,7 @@
           <strong>U 级（证据不足）</strong>：已尽合理检索仍无可采信证据时使用，卡面标「U级 · 证据不足」。它不评级、不猜测，<strong>不以「查不到」代替「没有」</strong>；单独列示、不并入上方四格统计，且必须附证据缺失说明（该企业查过哪些渠道、缺哪一类证据）。企业公开披露休息制度后即可重新核实改档。
         </p>
 
-        <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">已收录企业双休评级与平均下班时间（共 180 家）</h2>
+        <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">已收录企业双休评级与平均下班时间（共 181 家）</h2>
         <p style="margin:0 0 8px">
           下表按评级与真实双休率列出。判定口径是「每周能完整休满两天的员工占比」；
           平均下班时间取员工实际离岗点的众数，连锁门店取晚班打烊／交班点，不以门店营业时间代替。
@@ -4819,7 +4879,7 @@
           按证据强度分项标注。本站数据仅供个人择业与消费偏好参考，不构成商业背书或法律定性。
         </p>
 
-                <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">全部品牌详细页（180 个）</h2>
+                <h2 style="font-size:18px;font-weight:600;margin:24px 0 8px">全部品牌详细页（181 个）</h2>
         <p style="margin:0 0 8px">每个品牌都有独立页面，含完整评级说明、判定依据与证据来源链接：</p>
         <ul style="margin:0 0 16px;padding-left:22px">
           <li><a href="./brand/patagonia.html">Patagonia (巴塔哥尼亚)</a> —— S 级 · 双休率 98% · 平均下班 17:45</li>
@@ -5003,6 +5063,7 @@
           <li><strong><a href="./brand/jdb.html">加多宝</a></strong>：C 级 · 真实双休率 0%（口径换算） · 平均下班 —</li> <a href="./brand/jdb.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/jml.html">今麦郎</a></strong>：C 级 · 真实双休率 25%（推算） · 平均下班 —</li> <a href="./brand/jml.html" style="color:#0F766E">详细→</a>
           <li><strong><a href="./brand/luxiyi.html">陆喜依</a></strong>：S 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/luxiyi.html" style="color:#0F766E">详细→</a>
+          <li><strong><a href="./brand/hushangayi.html">沪上阿姨</a></strong>：C 级 · 真实双休率 未核实 · 平均下班 —</li> <a href="./brand/hushangayi.html" style="color:#0F766E">详细→</a>
 <!-- IMPORTED-NOSCRIPT-END -->
         </ul>
 
@@ -8090,6 +8151,28 @@
           keywords: ['广汽丰田', '广丰', 'GAC Toyota', 'GTMC', '丰田', '铂智', '新能源汽车'],
           category: '汽车制造',
           grade: 'B级'
+        },
+        {
+          id: 'hushangayi-card',
+          name: '沪上阿姨',
+          company: '沪上阿姨（上海）实业股份有限公司（品牌方）；门店用工主体多为加盟商／个体工商户，本页未逐一核实工商登记',
+          logo: null,
+          logoAlt: '沪上阿姨',
+          workPolicy: '门店招聘口径：月休 2 天（多地 JD 写「每月带薪休息 2 天」「两天公休」「月休2天（不休换算工资）」）；非品牌总部统一制度',
+          overtime: '门店班次常见 8:30–20:30（12 小时）或两班 7:00–17:30 / 12:00–22:30（各约 10 小时，含 1 小时休息）；部分 JD 写「加班另算」，未见官方加班费口径',
+          doubleRestRate: null,
+          offWorkTime: null,
+          voteCount: '0',
+          desc: '现制茶饮连锁，官网写明「以加盟为重点的业务模式」。2026-11-15 检索多地门店招聘：佳木斯店员「早班 8:30–20:30，每月带薪休息 2 天」，成州店「长期月休2天（节假日周末除外）」，清河店「每月两天公休」，公主岭荣超店「月休2天」，集宁店「月休 2 天（不休换算工资）」——五地口径一致，按本站 A≥8 天 / B=6–8 天 / C=不足 6 天 的档位判 C 级。《劳动法》第三十八条要求每周至少休息一日（约合月休 4 天以上），第三十六条为每日≤8 小时、每周≤44 小时。限定：这些是加盟门店自主招聘口径，不能推定为品牌总部或全体门店的统一制度；未找到总部作息公示，真实双休率与平均下班时间均留空。（证据链与 5 条原文链接见「证据来源」）',
+          tags: ['食品饮品', '沪上阿姨', '待复核'],
+          likeCount: '0',
+          dislikeCount: '0',
+          recommendText: '⚠️ 单休或严重超时',
+          recommendColor: 'red',
+          insertAfter: 'luxiyi-card',
+          keywords: ['沪上阿姨', '食品饮品'],
+          category: '食品饮品',
+          grade: 'C级'
         }
         // ==IMPORTED-CARDS-END==
       ];
@@ -9649,7 +9732,7 @@
   <!-- 奶茶／新茶饮类 B/C 级平替统一推荐陆喜依（2026-11-08 站长指定） -->
   <script defer src="./luxiyi-alt-patch.js?v=2"></script>
   <script defer src="./search-clear-order-fix.js?v=3"></script>
-  <script defer src="./rating-stats-patch.js?v=13"></script>
+  <script defer src="./rating-stats-patch.js?v=14"></script>
   <script defer src="./ai-notice-patch.js?v=1"></script>
   <!-- 2026-11-14：第三方推广文案整段撤下（对方不希望继续推广），
        仅为该推广服务的排版补丁与首页挂载同步移除。 -->
@@ -9660,7 +9743,7 @@
        所以这里只做「输入联想 + 回填」：给出候选，用户点了回填中文名，
        后续过滤仍走 React 原生搜索路径，渲染逻辑零改动。
        索引数据在 pinyin-index.js，必须先于本脚本加载。 -->
-  <script defer src="./pinyin-index.js?v=19"></script>
+  <script defer src="./pinyin-index.js?v=20"></script>
   <script defer src="./pinyin-search.js?v=6"></script>
 
   <!-- 彻底禁用数字搜索。2026-10-17 用户反馈：输入「1」「2」会搜出一堆无关卡片。
