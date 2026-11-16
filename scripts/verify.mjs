@@ -1785,17 +1785,17 @@ if (exists('CHANGELOG.md')) {
 
   const noStamp = [];
   entries.forEach((title) => {
-    const m = title.match(/（(\d{4}-\d{2}-\d{2} \d{2}:\d{2})\s*·\s*提交\s*`[0-9a-f]{7,9}`(?:[^）]*)）\s*$/);
+    const m = title.match(/（(\d{4}-\d{2}-\d{2})\s*·\s*提交\s*`[0-9a-f]{7,9}`(?:[^）]*)）\s*$/);
     if (!m) noStamp.push(title.slice(0, 50));
   });
   check(noStamp.length === 0,
-    `CHANGELOG ${entries.length} 条改动记录全部带「时间 · 提交哈希」`,
+    `CHANGELOG ${entries.length} 条改动记录全部带「日期 · 提交哈希」（只记日期，不写时刻）`,
     noStamp.length ? `缺时间戳或哈希：\n      - ${noStamp.join('\n      - ')}` : '');
 
   // 解析时间戳并检查严格倒序（第一条最新）
   const stamps = entries
     .map((title) => {
-      const m = title.match(/（(\d{4}-\d{2}-\d{2} \d{2}:\d{2})\s*·\s*提交/);
+      const m = title.match(/（(\d{4}-\d{2}-\d{2})\s*·\s*提交/);
       return m ? { t: m[1], title: title.slice(0, 40) } : null;
     })
     .filter(Boolean);
@@ -2127,6 +2127,9 @@ if (exists('notes.html')) {
     && !/压榨员工的产品/.test(dp) && !/LEGACY_NOTE/.test(dp),
     '第二篇公益文章进旧槽位（标题 + 「自己刷到」澄清），最早旧存档已彻底删除，默认仍从新版开始',
     '文章没换 / 仍写「朋友发我」/ 旧存档没删 / 默认版本不对 → 站长本轮指令没落地');
+  check(/买车之前，先看清谁在替比亚迪说话（2026-11-16 晚）<\/h1>/.test(dp),
+    '第二篇文章标题带日期与「（晚）」标记（2026-11-16 站长指令）',
+    '标题没打日期 / 漏「（晚）」→ 站长要求没落地');
   check(!/本版本已下线/.test(dp) && !/GitHub 仓库留存/.test(dp) && !/随时清理/.test(dp)
     && !/此版本已删除，你现在看见的是GitHub仓库存档/.test(dp),
     '旧槽位已无「仓库留存 / 随时清理」存档说明（现在是正式第二篇，不是临时存档）',
@@ -6966,8 +6969,9 @@ section('21c. 首页滑到底部按钮');
       //    做法：时间戳先平移 +8h，再用 getUTC* 读取 —— 无论机器在哪个时区，
       //    输出的都是 UTC+8 的墙上时间。
       const d = new Date(sec * 1000 + 8 * 3600 * 1000);
-      timeMap[t.slice(0, k)] = d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate())
-        + ' ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes());
+      // 2026-11-16 站长死命令：文档只记日期、不记时刻（不暴露站长作息）。
+      // 映射与比对都只到「日期」这一级，时刻一律不写进文档、也不参与比对。
+      timeMap[t.slice(0, k)] = d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate());
     }
   } catch (e) { /* 非 git 环境：下面会因为 map 为空而走 missing 分支 */ }
 
@@ -6982,7 +6986,10 @@ section('21c. 首页滑到底部按钮');
 
   // 7~40 位：git 短哈希长度会随仓库规模自动变（不一定正好 7 位），
   // 只认 7 位会让「把哈希写成 8 位乱码」这种错误整个逃过扫描（故障注入实测）。
-  const PAT = /(\d{4}-\d{2}-\d{2} \d{2}:\d{2})([^`]{0,120}?)`([0-9a-f]{7,40})`/g;
+  // 只记日期（2026-11-16 死命令）：正则不再要求 HH:MM，改为匹配纯日期 + 哈希。
+  // ⚠️ 必须限制在同一行（[^\n`]）：纯日期比「日期+时刻」常见得多，允许跨行会把
+  //    正文里的任意日期跨几十行配到后面的哈希上，误报一堆「时间不符」（实测 7 处误报）。
+  const PAT = /(\d{4}-\d{2}-\d{2})([^\n`]{0,120}?)`([0-9a-f]{7,40})`/g;
   const bad = [];
   const missing = [];
   let checked = 0;
@@ -7002,11 +7009,38 @@ section('21c. 首页滑到底部按钮');
     '时间戳断言真的扫到了记账条目（git 时间映射 + 匹配数双重空集防护）',
     '映射 ' + Object.keys(timeMap).length + ' 条 / 匹配 ' + checked + ' 处 → 断言在空跑');
   check(bad.length === 0,
-    '记账条目写的时间 = 该提交的真实 commit 时间（三个记账文件全量比对）',
+    '记账条目写的日期 = 该提交的真实 commit 日期（只记日期，三个记账文件全量比对）',
     bad.slice(0, 4).join('；') + (bad.length > 4 ? '（共 ' + bad.length + ' 处）' : ''));
   check(missing.length === 0,
     '记账引用的哈希在仓库里都真实存在（防 rebase 后忘记回填新哈希）',
     missing.slice(0, 4).join('；'));
+}
+
+// ---------- 21m-2. 死命令：对外文档只记日期，不准写时刻（2026-11-16 站长令）----------
+// 站长：「删时间，只记录日期……不要过多暴露站长……这一条也写进 README 死命令，
+// 以后都不准做了！」时刻（HH:MM / HH:MM:SS）会暴露站长作息，一律不许出现在
+// 对外 markdown 文档。保留 T 分隔的技术配置常量（如 UNLOCK=...T14:00+08:00），
+// 那是代码里的定值、不是记账时刻。
+{
+  const DOCS = ['README.md', 'README-详情.md', 'CHANGELOG.md',
+    '\u6700\u8fd1\u66f4\u65b0.md', 'BUG-ROOT-CAUSES.md', 'PITFALLS.md'];
+  // 空格分隔的「日期+时刻」= 记账时刻 → 禁止；T 分隔的不算（技术常量）
+  const TIME_RE = /\d{4}-\d{2}-\d{2} \d{2}:\d{2}(?::\d{2})?/g;
+  const leaks = [];
+  let docCount = 0;
+  for (const f of DOCS) {
+    if (!exists(f)) continue;
+    docCount++;
+    const txt = read(f);
+    const m = txt.match(TIME_RE);
+    if (m) leaks.push(f + ' 共 ' + m.length + ' 处，例：' + m[0]);
+  }
+  check(docCount >= 5,
+    '§21m-2 真的扫到了全部对外文档（空集防护）',
+    '只读到 ' + docCount + ' 个文档 → 断言在空跑');
+  check(leaks.length === 0,
+    '§21m-2 对外文档只有日期、没有时刻（不暴露站长作息，死命令长期强制）',
+    leaks.join('；'));
 }
 
 // ---------- 21n. fix: 提交必须三处留痕（README 摘要 + BUG 专文 + 最近更新） ----------
@@ -9379,9 +9413,9 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/点右上角 × 关闭/.test(dp36x) && !/现在可以关闭了/.test(dp36x),
     '§36x 倒计时到点后提示改为「点右上角 × 关闭」',
     '提示仍写「可以关闭」却没说怎么关 → 用户会去点空白');
-  check(/<script defer src="\.\/douyin-prompt\.js\?v=25"><\/script>/.test(idx36x)
-    && !/douyin-prompt\.js\?v=24/.test(idx36x),
-    '§36x index.html 挂载 douyin-prompt.js?v=25（bump 缓存号）',
+  check(/<script defer src="\.\/douyin-prompt\.js\?v=26"><\/script>/.test(idx36x)
+    && !/douyin-prompt\.js\?v=25/.test(idx36x),
+    '§36x index.html 挂载 douyin-prompt.js?v=26（bump 缓存号）',
     '?v 没 bump → 线上仍跑旧脚本，改动等于没发');
 
   // 2026-11-13 站长追加：「不要 15 分钟冷却，刷新首页必弹」。
