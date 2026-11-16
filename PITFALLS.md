@@ -3111,3 +3111,10 @@ HEAD 不是补提交，只是正文里引用了一下标记，同样被跳过。
 
 本批新增／反转的断言共做 **12 组故障注入，12/12 判红**（含把折叠开关塞回公告栏、把 `-50%` 改成 `-100%`、把副本写成硬编码句子、把按钮改回独立 bar、删掉滚动脚本挂载等），逐组按字节恢复，详见 CHANGELOG 同批条目。
 
+## 第六十九章：随笔插图一轮的四个坑——草稿 ≠ 正式正文、规则断言要改到本意、document.write 后别靠 JS、CDP 截图两个老坑（2026-11-16 309ebd7）
+
+1. **同名文件两份，草稿用的是「简版」不是正式正文**。`C:/Users/dujeo/WorkBuddy/2026-10-13-03-23-38/notes-plaintext.md`（父目录，约 280 行纯片段）与 `.../shuangxiugou/notes-plaintext.md`（仓库根，1314 行完整 HTML）**不是同一个文件**：前者标题是「2025 川西自驾游」、句子是「我在左边车道，右边本来不堵」；后者标题带「十一、」、句子是「我在 A 车道，就是最左边那条，也是堵得最死的」。本地带图草稿取的是父目录简版，若把草稿的 `<article>` 整段替换进正式正文，会把已定稿的措辞偷偷改回旧版。**判据**：改随笔前先读 `encrypt-notes.mjs` 里的 `SOURCE`（`path.resolve(__dirname,'..')/notes-plaintext.md`），一切以它为准；插图只按锚点替换两处 `<figure>`，段落文字与章节标题一个字都不动，替换后核对 `<h2>` 数量。
+2. **规则断言与站长新指令冲突时，改到「规则本意」，别绕断言救绿**。§22b 原写「加密随笔正文不许出现 `<img>`」，但站长明确要求把 12 张图发进随笔；若把图改写成 CSS `background-image` 躲开 `<img\b`，属于典型「注释救绿」——断言还在，人已经被骗过去。规则本意是「素材不上传」：`data:` URI 随正文一起进 AES 密文，仓库里没有可打开的明文图片，反而比原先引用 `./ch11/*.gif` 更符合。**正解**：把判据改成「只拦非 `data:` 的 `img src` 与 `./ch11/`、`./assets/` 路径」，README 规则文字、§22b、§22c 白名单三处同步，并做故障注入。另：正文是密文，注入必须**改明文 → 重新加密 → 判红 → 按字节还原明文 → 再加密 → 全绿**，直接改 `notes.html` 是无效的。
+3. **`document.write` 重写文档后，别把交互押在新增脚本上**。随笔点「读全文」是 `document.open(); document.write(decrypted); document.close();`，页面被整篇重写；正文 `<style>` 一定生效，新增 `<script>` 的执行时机与既有三段正文脚本互相影响，风险高得多。本次切换用 `radio` + `:checked` + 兄弟选择器 + `<label>` 圆圈，零脚本，`PAGEERRORS 0`。**判据**：往「解锁后 document.write」的正文里加交互，优先纯 CSS；确实需要 JS 时先 CDP 真跑一遍完整解锁链路。
+4. **本机 CDP 验收两个老坑同批复现**。① ROOT 用正斜杠字符串、`path.join` 在 Windows 生成反斜杠路径 → `fp.startsWith(ROOT)` 全部误判越界 → 整站 404（`bodyLen≈67`），必须 `path.resolve` 归一化；② 正文 CSS 有 `scroll-behavior:smooth`，`scrollIntoView` 还在动画中就截图，截到的是别的章节（第一张图截成了第七章）。先 `document.documentElement.style.scrollBehavior='auto'`，再用绝对 `window.scrollTo` 把目标行推到视口中部、等一帧再截，且**滚动后不要带 `clip` 参数**（会截白）。
+
