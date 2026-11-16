@@ -184,17 +184,52 @@
       }
       .opt:disabled { opacity: .38; cursor: not-allowed; }
 
+      /* 2026-11-16 站长指令：二维码不再默认出现。用户主动选了交易所/地址后才
+         显示；新地址先播 2-3 秒「二维码生成中」再显形（同一地址靠 cookie 记住，
+         生成过就不再重播）。qr-wrap 承担原先 .qr 的外边距，动画层叠在图片上方。 */
+      .qr-wrap {
+        position: relative;
+        width: 100%;
+        max-width: 262px;
+        margin: 18px auto 0;
+      }
       .qr {
         display: block;
         width: 100%;
-        max-width: 262px;
         height: auto;
-        margin: 18px auto 0;
+        margin: 0;
         padding: 12px;
         border: 1px solid #e5e7eb;
         border-radius: 12px;
         background: #fff;
       }
+      .qr-gen {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 220px;
+        padding: 12px;
+        border: 1px dashed #0f766e;
+        border-radius: 12px;
+        background: #fff;
+        color: #0f766e;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .qr-gen[hidden] { display: none; }
+      .qr-gen::before {
+        content: '';
+        width: 15px;
+        height: 15px;
+        border: 2px solid #0f766e;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: sxg-qr-spin .8s linear infinite;
+      }
+      @keyframes sxg-qr-spin { to { transform: rotate(360deg); } }
       /* 多地址区块：每个网络一个收款块 */
       .multi { display: none; }
       .multi.show { display: block; margin-top: 18px; }
@@ -205,7 +240,7 @@
         font-weight: 700;
         color: #0f766e;
       }
-      .multi .qr { margin-top: 0; }
+      .multi .qr-wrap { margin-top: 0; }
 
       .addr {
         display: flex;
@@ -394,6 +429,15 @@
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-weight: 700;
         letter-spacing: .5px;
+        /* 2026-11-16 站长指令：邀请码框点一下就复制 */
+        cursor: pointer;
+        user-select: none;
+        transition: background .15s, color .15s;
+      }
+      .ferry-code:hover, .ferry-code:focus-visible {
+        background: #0f766e;
+        color: #fff;
+        outline: none;
       }
       .ferry-promo .ferry-btn {
         display: inline-block;
@@ -503,7 +547,10 @@
         <div class="opts" id="chainOpts" role="group" aria-label="网络"></div>
       </div>
 
-      <img class="qr" id="qr" alt="收款码" />
+      <div class="qr-wrap" id="qrWrap">
+        <img class="qr" id="qr" alt="收款码" />
+        <div class="qr-gen" id="qrGen" hidden>二维码生成中…</div>
+      </div>
 
       <!-- 多网络收款：一个币种对应多个地址时显示，单地址时隐藏 -->
       <div class="multi" id="multi"></div>
@@ -536,7 +583,7 @@
         想了解就直接点下面，不用也没关系。
       </p>
       <p>
-        注册时填我的邀请码 <span class="ferry-code">Q84H38</span>，
+        注册时填我的邀请码 <span class="ferry-code" id="ferryCode" title="点击复制邀请码" role="button" tabindex="0">Q84H38</span>，
         <b>你我双方都能领到聊天点数</b>——算是对本站的另一种支持。
       </p>
       <a class="ferry-btn" href="https://www.ferrychatai.cn/" target="_blank" rel="noopener noreferrer nofollow">去 Ferry 摆渡看看</a>
@@ -913,9 +960,66 @@
         }
       ];
 
-var selEx = 'gate';
-      var selCoin = 'btc';
+/* 2026-11-16 站长指令：不再默认勾选 Gate。用户未主动选交易所前不显示二维码。 */
+      var selEx = null;
+      var selCoin = null;
       var selChain = null;
+
+      /* 二维码生成缓存：地址在用户设备上生成过就记住（cookie，跟随设备）。
+         同一地址再次出现直接显示；地址变了才重新播 2-3 秒「生成中」动画。 */
+      var QR_COOKIE = 'sxg_qr_addr=';
+      function qrSeen(addr) {
+        try {
+          var parts = document.cookie.split(';');
+          for (var i = 0; i < parts.length; i++) {
+            var p = parts[i].trim();
+            if (p.indexOf(QR_COOKIE) === 0) {
+              return p.slice(QR_COOKIE.length).split(',').indexOf(addr) !== -1;
+            }
+          }
+        } catch (e) {}
+        return false;
+      }
+      function qrRemember(addr) {
+        try {
+          var seen = [];
+          var parts = document.cookie.split(';');
+          for (var i = 0; i < parts.length; i++) {
+            var p = parts[i].trim();
+            if (p.indexOf(QR_COOKIE) === 0) {
+              seen = p.slice(QR_COOKIE.length).split(',').filter(Boolean);
+            }
+          }
+          if (seen.indexOf(addr) === -1) seen.push(addr);
+          // 365 天，path=/ 全站；地址多为 base58/hex，逗号不会出现在地址里
+          document.cookie = QR_COOKIE + seen.join(',') + ';path=/;max-age=31536000;SameSite=Lax';
+        } catch (e) {}
+      }
+      var qrTimers = {};   // addr -> timer，切走时取消未完成的动画
+      /* 显示二维码：若该地址已缓存过就直接出图，否则先播动画再出图。 */
+      function revealQr(el, addr, src, alt) {
+        var gen = document.getElementById('qrGen');
+        if (qrTimers[addr]) { clearTimeout(qrTimers[addr]); delete qrTimers[addr]; }
+        // 单地址模式才有共享遮罩；多地址模式每个块自己带遮罩
+        var genEl = gen && el.id === 'qr' ? gen : null;
+        var wrap = el.parentNode;
+        var localGen = wrap && wrap.classList && wrap.classList.contains('qr-wrap')
+          ? wrap.querySelector('.qr-gen') : null;
+        var overlay = genEl || localGen;
+        var show = function () {
+          el.src = src;
+          el.alt = alt;
+          el.style.visibility = 'visible';
+          if (overlay) overlay.hidden = true;
+          qrRemember(addr);
+          delete qrTimers[addr];
+        };
+        if (qrSeen(addr)) { show(); return; }
+        el.style.visibility = 'hidden';
+        if (overlay) overlay.hidden = false;
+        var delay = 2000 + Math.floor(Math.random() * 1001); // 2-3 秒
+        qrTimers[addr] = setTimeout(show, delay);
+      }
 
       function findEx(id) {
         for (var i = 0; i < EXCHANGES.length; i++) if (EXCHANGES[i].id === id) return EXCHANGES[i];
@@ -991,6 +1095,9 @@ var selEx = 'gate';
           } else {
             b.setAttribute('aria-pressed', selEx === ex.id ? 'true' : 'false');
             b.onclick = function () {
+              // 切换交易所：取消上一个地址尚未完成的生成动画，避免旧地址图片盖到新地址上
+              Object.keys(qrTimers).forEach(function (k) { clearTimeout(qrTimers[k]); });
+              qrTimers = {};
               selEx = ex.id;
               renderEx(); renderCoin(); renderChain(); renderCoinInfo(); renderInvite();
             };
@@ -1035,7 +1142,11 @@ var selEx = 'gate';
           b.className = 'opt';
           b.textContent = c.name;
           b.setAttribute('aria-pressed', selCoin === c.id ? 'true' : 'false');
-          b.onclick = function () { selCoin = c.id; renderCoin(); renderChain(); renderCoinInfo(); };
+          b.onclick = function () {
+            Object.keys(qrTimers).forEach(function (k) { clearTimeout(qrTimers[k]); });
+            qrTimers = {};
+            selCoin = c.id; renderCoin(); renderChain(); renderCoinInfo();
+          };
           box.appendChild(b);
         });
       }
@@ -1079,7 +1190,11 @@ var selEx = 'gate';
             b.setAttribute('aria-pressed', 'false');
           } else {
             b.setAttribute('aria-pressed', selChain === ch.id ? 'true' : 'false');
-            b.onclick = function () { selChain = ch.id; renderChain(); renderCoinInfo(); };
+            b.onclick = function () {
+              Object.keys(qrTimers).forEach(function (k) { clearTimeout(qrTimers[k]); });
+              qrTimers = {};
+              selChain = ch.id; renderChain(); renderCoinInfo();
+            };
           }
           box.appendChild(b);
         });
@@ -1113,9 +1228,20 @@ var selEx = 'gate';
 
       function renderCoinInfo() {
         var c = findCoin(selCoin);
-        if (!c) return;
+        // 用户尚未主动选交易所：二维码/地址/网络都不显示
+        if (!selEx || !c) {
+          var wrap0 = document.getElementById('qrWrap');
+          if (wrap0) wrap0.style.display = 'none';
+          document.getElementById('addr').parentNode.style.display = 'none';
+          document.getElementById('multi').classList.remove('show');
+          document.getElementById('multi').innerHTML = '';
+          document.getElementById('meta').innerHTML = '';
+          document.getElementById('note').innerHTML = '';
+          return;
+        }
         var multi = document.getElementById('multi');
         var singleQr = document.getElementById('qr');
+        document.getElementById('qrWrap').style.display = '';
         var singleAddr = document.getElementById('addr').parentNode;
 
         if (c.notice) {
@@ -1132,17 +1258,20 @@ var selEx = 'gate';
           multi.innerHTML = c.addrs.map(function (a) {
             return '<div class="multi-item">' +
               '<p class="multi-nets">' + a.nets + '</p>' +
-              '<img class="qr" src="' + a.qr + '" alt="' + c.name + ' 收款码(' + a.nets + ')" />' +
+              '<div class="qr-wrap"><img class="qr" data-src="' + a.qr + '" alt="' + c.name + ' 收款码(' + a.nets + ')" />' +
+              '<div class="qr-gen" hidden>二维码生成中…</div></div>' +
               '<div class="addr"><code data-addr="' + a.addr + '"></code>' +
               '<button class="copy" type="button">复制</button></div>' +
               '</div>';
           }).join('');
-          // 绑定各块的复制按钮，并按 hlSpec 渲染首尾标蓝
+          // 绑定各块的复制按钮，并按 hlSpec 渲染首尾标蓝；二维码走生成动画
           Array.prototype.forEach.call(multi.querySelectorAll('.multi-item'), function (item, i) {
             item.querySelector('.copy').onclick = function () {
               copyText(c.addrs[i].addr, this);
             };
             renderAddr(item.querySelector('code'), c.addrs[i]);
+            revealQr(item.querySelector('.qr'), c.addrs[i].addr,
+                     c.addrs[i].qr, c.name + ' 收款码(' + c.addrs[i].nets + ')');
           });
         } else {
           // 单地址模式：沿用原有的单个二维码 + 地址
@@ -1159,8 +1288,8 @@ var selEx = 'gate';
             multi.classList.remove('show');
             multi.innerHTML = '';
             if (!ch0) return;
-            singleQr.src = ch0.qr;
-            singleQr.alt = c.name + '(' + ch0.name + ') 收款码';
+            // 二维码改走 revealQr：同地址已生成过直接出图，否则播 2-3 秒动画
+            revealQr(singleQr, ch0.addr, ch0.qr, c.name + '(' + ch0.name + ') 收款码');
             // 带 hlSpec 的链把首尾各若干字符包进 <span class="hl"> 标蓝；
             // 复制走copyText读 textContent，<span> 不影响取到的纯文本地址。
             renderAddr(document.getElementById('addr'), ch0);
@@ -1225,6 +1354,18 @@ var selEx = 'gate';
       renderChain();
       renderCoinInfo();
       renderInvite();
+
+      /* 2026-11-16 站长指令：邀请码框点一下就复制。
+         复用上面的 copyText（同步 execCommand + clipboard API 双路兜底），
+         复制的文本就是框内邀请码本身（单一真相源：读 textContent）。 */
+      var ferryCode = document.getElementById('ferryCode');
+      if (ferryCode) {
+        var doCopyCode = function () { copyText(ferryCode.textContent.trim(), null); };
+        ferryCode.addEventListener('click', doCopyCode);
+        ferryCode.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doCopyCode(); }
+        });
+      }
     </script>
   <!-- AI 劳动法小助手（全站挂载） -->
   <script src="./ai-config.js?v=2"></script>

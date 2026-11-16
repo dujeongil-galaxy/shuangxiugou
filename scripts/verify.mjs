@@ -6000,6 +6000,13 @@ section('21b-2. 安全事件默认收起 + 分享弹窗接线');
     && /color:#d97706/.test(ugp),
     '抵制行下方有 BOSS直聘详情页入口（这里=链接，“狗日的”Boss直聘换色标注）',
     '删掉入口行 → 站长指定的阅读链接缺失');
+  // 2026-11-16 站长指令：点「这里」直接定位到「站长备注：为什么我要人为干涉这一条」，
+  // 链接带 #note-manual-override，目标页同名 h2 必须有这个 id，否则锚点落空回页顶。
+  const bossManual = readFileSync(join(ROOT, 'brand', 'bosszhipin.html'), 'utf8');
+  check(/bosszhipin\.html#note-manual-override/.test(ugp)
+    && /<h2 id="note-manual-override">站长备注：为什么我要人为干涉这一条<\/h2>/.test(bossManual),
+    '§21b-4 「这里」链接带 #note-manual-override 锚点，目标页 h2 有同名 id（点进去直达站长备注）',
+    '锚点或 id 缺一边 → 点进去仍落在页顶，站长要看的「人为干涉」那节找不到');
   check(/“狗日的”Boss直聘<\/span>/.test(ugp) && !/[^”]狗日的Boss直聘/.test(ugp),
     '§21b-3 「狗日的」带中文弯引号（U+201C/U+201D），不得退回无引号原样',
     '粗口不加引号 → 读起来像本站/站长在这行直接骂人（站长 2026-11-07 明确要求）');
@@ -6021,9 +6028,9 @@ section('21b-2. 安全事件默认收起 + 分享弹窗接线');
     'README 留痕一句话略过且不提对方名称',
     '留痕缺失或写出对方名称 → 不符合「直接一句话略过」的最新指令');
   // 脚本缓存号：改 u-grade-patch.js 必须同步 ?v=，否则线上仍是旧抵制区
-  check(/u-grade-patch\.js\?v=20/.test(idxUgp)
-    && !/u-grade-patch\.js\?v=19/.test(idxUgp),
-    'index.html 引用 u-grade-patch.js?v=20（缓存号已随改动同步 +1）',
+  check(/u-grade-patch\.js\?v=21/.test(idxUgp)
+    && !/u-grade-patch\.js\?v=20/.test(idxUgp),
+    'index.html 引用 u-grade-patch.js?v=21（缓存号已随改动同步 +1）',
     '漏 bump ?v 或仍写旧值 → 浏览器命中旧缓存，新抵制区不生效');
 }
 
@@ -6850,8 +6857,8 @@ section('21c. 首页滑到底部按钮');
   check(/'D 级'/.test(rowTexts) && /'U 级'/.test(rowTexts),
     'stat-filter.js 评级行互斥枚举含「D 级」「U 级」（点 D/U 清五格筛选）',
     'stat-filter 没跟上 → 点 D/U 不清四格筛选，两套过滤层互相覆盖出现空面板');
-  check(/u-grade-patch\.js\?v=20/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
-    'u-grade-patch.js?v=20 / stat-filter.js?v=9（缓存号已随内容 bump；11-13 U 计数动态刷新）',
+  check(/u-grade-patch\.js\?v=21/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
+    'u-grade-patch.js?v=21 / stat-filter.js?v=9（缓存号已随内容 bump；11-16 锚点直达站长备注）',
     '缓存号没 bump → 用户拿旧补丁，D/U 按钮注入不生效（2026-11-01 拼音索引同类事故）');
   // 2026-11-03 站长实测 bug：点「D 级 / U 级」后拼音搜索框整块消失。
   // 根因：CARD_SEL（div.bg-white.rounded-2xl.border）命中面比品牌卡宽，
@@ -9505,6 +9512,54 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
       (rh37a.match(/rel="noopener noreferrer nofollow"/g) || []).length,
     '§37a 网传登记卡外链一律带 rel 安全属性',
     '外链漏 rel → 新窗口可通过 opener 反向操作本站');
+}
+
+// ---------- 37b. 随笔置顶+目录日期 / 打赏二维码生成动画 / 邀请码点击复制（2026-11-16 站长） ----------
+section('37b. 随笔强制置顶与目录日期、打赏二维码假生成、邀请码点击复制');
+{
+  const sp37b = read('sponsor.html');
+  // 图3：进正文强制置顶（解密后文档本体里 scrollRestoration=manual + scrollTo(0,0)）
+  const plain37b = exists('notes.html') ? decryptNotes(read('notes.html')) : null;
+  check(plain37b === null || (
+      /scrollRestoration'\s+in\s+history\) history\.scrollRestoration\s*=\s*'manual'/.test(plain37b)
+      && /window\.scrollTo\(0,\s*0\)/.test(plain37b)),
+    '§37b 随笔正文加载即强制回顶（scrollRestoration=manual + scrollTo(0,0)）',
+    '删掉置顶 → 浏览器记住上次滚动位置，一进正文就停在中间某节');
+  // 图4：目录每项独立换行 + 日期红色加粗（toc__date 从 section-date 单一真相源取）
+  check(plain37b === null || (
+      /\.toc__date\s*\{/.test(plain37b)
+      && /className = 'toc__date'/.test(plain37b)
+      && /color:\s*#c0392b/.test(plain37b)
+      && /dEl\.classList\.contains\('section-date'\)/.test(plain37b)
+      && /d\.textContent\s*=\s*dEl\.textContent\.trim\(\)/.test(plain37b)),
+    '§37b 目录每项下面写日期（红色 #c0392b 加粗，取正文 section-date）',
+    '日期不写/不改红/另起数据源 → 站长要看的目录日期缺失或口径打架');
+  // 图5：不默认勾选 Gate + 点击后 2-3 秒假动画 + cookie 记住已生成地址
+  check(/var selEx = null;/.test(sp37b)
+    && !/var selEx = 'gate';/.test(sp37b),
+    '§37b 打赏页不再默认勾选 Gate（selEx 初值 null）',
+    '默认 gate → 一进来就高亮交易所并出二维码，违反「不主动点击不显示」');
+  check(/if \(!selEx \|\| !c\)/.test(sp37b)
+    && /wrap0\.style\.display = 'none'/.test(sp37b),
+    '§37b 未选交易所时隐藏二维码（qrWrap display:none）',
+    '未选仍出二维码 → 站长明确要求「不主动点击下面就不显示」');
+  check(/function revealQr/.test(sp37b)
+    && /二维码生成中/.test(sp37b)
+    && /2000 \+ Math\.floor\(Math\.random\(\) \* 1001\)/.test(sp37b),
+    '§37b 二维码先播 2-3 秒「生成中」再显形（随机 2000~3000ms）',
+    '动画/时长缺失 → 点击后瞬间出图或卡死，假生成效果没有');
+  check(/var QR_COOKIE = 'sxg_qr_addr=';/.test(sp37b)
+    && /function qrSeen/.test(sp37b) && /function qrRemember/.test(sp37b)
+    && /max-age=31536000/.test(sp37b)
+    && /if \(qrSeen\(addr\)\) \{ show\(\); return; \}/.test(sp37b),
+    '§37b 生成过的地址存 cookie（365 天），同址再次出现直接出图不重播',
+    '无 cookie 记忆 → 每次切回来都重播动画，或地址变了也不重新生成');
+  // 图6：邀请码框点击复制（复用 copyText，读框内文本单一真相源）
+  check(/id="ferryCode"/.test(sp37b)
+    && /ferryCode\.addEventListener\('click', doCopyCode\)/.test(sp37b)
+    && /copyText\(ferryCode\.textContent\.trim\(\), null\)/.test(sp37b),
+    '§37b 邀请码框点一下自动复制（读框内文本为单一真相源）',
+    '复制未绑定 → 站长要求「点了就自动复制」落空');
 }
 
 // ---------- 汇总 ----------

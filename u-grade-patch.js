@@ -234,7 +234,9 @@
          表示这是引用文章标题里的用词，不是本站/站长在这行骂人。 */
       var r = document.createElement('div');
       r.setAttribute('style', 'margin-top:4px;font-size:13px;text-align:center;line-height:1.6');
-      r.innerHTML = '点击<a href="./brand/bosszhipin.html"'
+      // 2026-11-16 站长指令：点「这里」进去后直接定位到「站长备注：为什么我要
+      // 人为干涉这一条」那一节（该 h2 的 id=note-manual-override），不再落在页顶。
+      r.innerHTML = '点击<a href="./brand/bosszhipin.html#note-manual-override"'
         + ' style="color:#1d4ed8;text-decoration:underline">这里</a>阅读 '
         + '<span style="color:#d97706;font-weight:bold">“狗日的”Boss直聘</span>';
       p.appendChild(r);
