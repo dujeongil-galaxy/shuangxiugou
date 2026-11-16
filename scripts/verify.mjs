@@ -7235,9 +7235,16 @@ section('22. 素材链接规则（blob 格式 / 素材不得明文入库）');
   if (plain22 === null) {
     notes.push('跳过「§22b 随笔正文无素材引用」（未提供 NOTES_KEY，密文未解密）');
   } else {
-    check(!/<img\b/i.test(plain22) && !/\.\/assets\//.test(plain22),
-      '§22b 加密随笔正文不放图片、不引用仓库内素材（素材一律不上传）',
-      '正文里出现 img 或仓库内素材路径 → 违反「素材不上传、只走 blob 解密渲染」');
+    // 2026-11-16 站长定稿：第11章两处 GIF 换成 12 张静态帧，图片以 data: URI
+    // 内联在加密正文里（不新增仓库明文素材）。规则本意是「素材不上传」，
+    // 因此只拦非 data: 的 img src 与仓库内素材路径，不再一刀切禁 img 标签。
+    const badRef22 =
+      /<img\b[^>]*\bsrc\s*=\s*["'](?!data:)[^"']*["']/i.test(plain22)
+      || /\.\/assets\//.test(plain22)
+      || /\.\/ch11\//.test(plain22);
+    check(!badRef22,
+      '§22b 随笔正文不放仓库内/外部素材引用（图只允许随正文加密的 data: URI 内联）',
+      '正文里出现非 data: 的 img src，或 ./ch11/、./assets/ 等仓库内素材路径 → 违反「素材不上传」');
   }
 
   // 历史存量：站点自带的功能图（打赏二维码 / 分享图 / 既有测试截图）与
@@ -7250,9 +7257,8 @@ section('22. 素材链接规则（blob 格式 / 素材不得明文入库）');
     'crypto-qr/sol.png', 'crypto-qr/usdc-polygon.png', 'crypto-qr/usdt-trc20.png',
     'crypto-qr/wemix.png', 'crypto-qr/xpla.png',
     'og-share.png', 'scripts/shot-local-note.png', 'sponsor-support.jpg',
-    // 随笔第11章（川西自驾游）内嵌的两张车道示意 GIF：由笔记解密后相对路径引用，
-    // 已随 5059512 提交进仓库；属站点自带功能图（非站长口述敏感素材），登记进白名单。
-    'ch11/ch11-incident-1.gif', 'ch11/ch11-incident-2.gif',
+    // 2026-11-16 站长定稿：随笔第11章两处 GIF 已撤，改 12 张静态帧以 data: URI
+    // 内联在加密正文里；ch11/ 下两个 .gif 已 git rm，白名单同步移除（不留悬空登记）。
   ]);
   let tracked22 = '';
   try {

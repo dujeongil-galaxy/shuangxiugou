@@ -225,9 +225,9 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 参照本仓库 `why-shuangxiugou.html` 的「照片彩蛋」：仓库里只放 `.enc` 密文容器（`scripts/encrypt-photos.mjs` 生成，PBKDF2-SHA256 21 万次 + AES-256-GCM），页面 `<img>` 只写 `data-enc`、不写 `src`，浏览器本地解密成 Blob 后用 `URL.createObjectURL` 生成 `blob:` 地址写进 `img.src`。页面源码与仓库里都没有可直接打开的静态图片地址。**不要再向站长索要「blog 地址」，也不要把素材塞进站内目录用完整 https 链接引用**——站长 2026-11-07 说的是 blob，当时被误听成 blog，据此做过的一轮站内目录迁移已撤销。
 
-范围：这条管的是**站长口述／提供的素材**。品牌 logo 等站点自带的设计素材（`assets/` 下历史存量）不在此列；加密随笔 `notes.html` 的正文里也不放图片、不放素材外链（正文只有密文，素材一律不上传）。对面站点 `dating-data-factcheck/picks.html` 的两张评论区截图已按此规则用 `.enc` + blob 落地（`shot-vault.js` + `scripts/encrypt-shots.mjs`）。
+范围：这条管的是**站长口述／提供的素材**。品牌 logo 等站点自带的设计素材（`assets/` 下历史存量）不在此列；加密随笔 `notes.html` 的正文里不放素材外链、不引用仓库内素材路径（正文只有密文，素材一律不上传）。**例外（2026-11-16 站长定稿）**：第 11 章的车道示意静态帧按站长明确要求改为 `data:` URI 内联，图片数据随正文一起进 AES 密文，仓库里没有可直接打开的明文图片；两处 GIF 及 `ch11/` 目录已撤。对面站点 `dating-data-factcheck/picks.html` 的两张评论区截图已按此规则用 `.enc` + blob 落地（`shot-vault.js` + `scripts/encrypt-shots.mjs`）。
 
-配套机器强制：`scripts/verify.mjs` §22 检查本规则原文存在、随笔正文不含素材引用、仓库根与非 `assets/` 目录不得新增明文素材（用 `git ls-files` 只看已跟踪文件）。对面站点 `dating-data-factcheck` 的 `.github/scripts/check_site.py` 另有一份更严的同源检查（含密文容器结构、口令一致性、`createObjectURL` 链路）。规则不能只写在文档里——**改规则、加素材都要同步改断言并做故障注入**，否则等于没记。
+配套机器强制：`scripts/verify.mjs` §22 检查本规则原文存在、随笔正文不含仓库内／外部素材引用（只拦非 `data:` 的 `img src` 与 `./ch11/`、`./assets/` 等路径）、仓库根与非 `assets/` 目录不得新增明文素材（用 `git ls-files` 只看已跟踪文件）。对面站点 `dating-data-factcheck` 的 `.github/scripts/check_site.py` 另有一份更严的同源检查（含密文容器结构、口令一致性、`createObjectURL` 链路）。规则不能只写在文档里——**改规则、加素材都要同步改断言并做故障注入**，否则等于没记。
 
 ---
 
