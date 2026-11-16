@@ -30,7 +30,9 @@
 - **真渲染**（`D:/WorkBuddy-Cache/tmp/sxg-notice-font/cdp-notice-font.cjs`，无头 Edge + CDP，静态服务走 http）：1440×900 与 320×640 两档均 `fontSize=13px`、`fontWeight=700`、`color=rgb(220,38,38)`；公告栏高 37.5px、桌面宽 1440px 铺满；右侧「最新新增的企业」按钮 95×25、`btnWrapped=false`、右边界 1428 / 232；`overflowX=0`；`is-marquee=true`、副本 1 份。截图放大后肉眼确认红字明显加粗、按钮完整、无裁切无遮挡。
 - **既有布局对照**：320px 下公告栏宽 244px、屏幕右侧留 76px，是 `body{padding-right:76px}` 给右侧悬浮按钮列预留（PITFALLS 第六十八章第 5 条已记）。本轮在 CDP 里把内联字号**动态改回 12px/600** 同屏对照：`width13=244 / width12=244`、`btnRight13=232 / btnRight12=232`，两档完全一致，确认空白带与本次改动无关，未改布局。
 
-**产物**：`D:/WorkBuddy-Cache/shots/sxg-notice-font/{desktop-full,desktop-bar,mobile-320-full,mobile-320-bar}.png` 与 `probe.json`。踩坑全文见 `PITFALLS.md` 第七十章。按站长惯例**仅本地提交，未推送**；首页版本号等推送后由 `sync-version.yml` 自动补提交。
+**产物**：`D:/WorkBuddy-Cache/shots/sxg-notice-font/{desktop-full,desktop-bar,mobile-320-full,mobile-320-bar}.png` 与 `probe.json`。踩坑全文见 `PITFALLS.md` 第七十章。按站长惯例**仅本地提交，未推送**。
+
+**版本号补提交**：两笔本地提交落地后，页面版本号仍停在上一批已推送的 `309ebd7`，相对新 HEAD 落后 3 拍，§20g 判红 1 项（与字号改动本身无关）。用仓库自带的 `node scripts/sync-version.mjs` 写回当时 HEAD，并与文档补丁合进同一笔**机器补提交**，落地后该哈希正好成为 `HEAD~1`，verify 恢复全绿；推送后 `sync-version.yml` 会再自动同步一次。此坑记入 PITFALLS 第七十章第 5 条。
 
 ---
 
