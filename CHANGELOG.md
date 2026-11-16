@@ -4,6 +4,36 @@
 
 ---
 
+### style：首页公告栏文字加粗 + 加大一号（2026-11-16 15:45 · 提交 `d30d6ba`）
+
+**站长指令**：「加粗，字体也稍微加大一号，看着真难受啊！！！！」，随消息附首页截图。截图中公告栏是白底红字单行滚动，字号明显偏小、笔画偏细。
+
+**改了哪些文件**
+
+| 文件 | 改动 |
+| --- | --- |
+| `index.html` | `<div id="site-notice">` 内联样式 `font-size:12px → 13px`、`font-weight:600 → 700`；上方注释补写 2026-11-16 口径与「600 会回落 400」的原因 |
+| `scripts/verify.mjs` | §9b 在 `noticeDiv` 块内新增两条断言：字号 ≥13px、字重 ≥700，并在 `detail` 里回报实际值；注释说明为何用下限 |
+| `最近更新.md` | 顶部新增本条，标题区间补到 11-16 |
+| `PITFALLS.md` | 新增第七十章 |
+
+**没动的部分**：公告栏正句（181 家 / 481 条 / 5 家如实单列）一字未改；`.notice-viewport` / `.notice-track` / `.notice-copy` 的无缝滚动结构、首屏 1.2s 入场、reduced-motion 兜底、右侧 `#sxg-recent-slot` 按钮（由 `recent-brands.js` 注入）全部原样；`notice-marquee.css/js`、`mobile-fixes.css?v=23` 无改动，因此没有 bump 任何资源 `?v`。`gen-evidence-board.py` 的 `NOTICE_SPAN_RE` 只替换 `<span id="evidence-notice">…</span><!-- /notice -->`，不碰外层 div 的 style，改动不会被生成器回写覆盖。
+
+**根因**：中文系统字体（PingFang / 微软雅黑 / Segoe UI 中文回落）通常只提供 400 与 700 两档字重，`font-weight:600` 是 semibold 空缺档，浏览器按 CSS 字重匹配规则回落到 400。于是「写了 600」在中文上等于没加粗，叠 12px 小字更吃力。改 700 才真正命中粗体；字号按站长「稍微加大一号」从 12px 提到 13px（+1），`line-height:1.5` 与 `padding:6px 12px` 保持不变，公告栏高度由约 36px 变成 37.5px。
+
+**机器强制**：新断言写成**下限**（`Number(...) >= 13` / `>= 700`）而非等值，避免以后想继续加大却被自己拦住，同时能拦住任何回退；`detail` 输出实际值便于定位。校验器只从 `noticeDiv[0]`（整条公告栏的 style 属性所在片段）取值，不受页面别处 `font-size` 干扰。
+
+**怎么验证的**
+
+- `node scripts/verify.mjs` → **通过 1830 项 / 全部检查通过**；`node scripts/test-verify-self.cjs` → 6/0；`py -3 scripts/gen-evidence-board.py --check` → OK（181 家 / 481 条一致）。
+- **故障注入 5/5 按设计生效**（`D:/WorkBuddy-Cache/tmp/sxg-notice-font/fault-inject-notice-font.py`）：① 字号退回 12px → 「★ 公告栏字号 ≥13px」判红；② 字重退回 600 → 「★ 公告栏字重 ≥700」判红；③ 删掉字号声明 → 同①；④ 删掉字重声明 → 同②；⑤ 改成 14px/800 → **不该判红且确实全绿**（证明是下限不是写死等值）。判据严格到「期望标签必须出现在 ✗ 那一行上」，不靠「反正 verify 红了」蒙混；每组按字节读写、逐组还原，末尾 `RESTORED byte-for-byte`。
+- **真渲染**（`D:/WorkBuddy-Cache/tmp/sxg-notice-font/cdp-notice-font.cjs`，无头 Edge + CDP，静态服务走 http）：1440×900 与 320×640 两档均 `fontSize=13px`、`fontWeight=700`、`color=rgb(220,38,38)`；公告栏高 37.5px、桌面宽 1440px 铺满；右侧「最新新增的企业」按钮 95×25、`btnWrapped=false`、右边界 1428 / 232；`overflowX=0`；`is-marquee=true`、副本 1 份。截图放大后肉眼确认红字明显加粗、按钮完整、无裁切无遮挡。
+- **既有布局对照**：320px 下公告栏宽 244px、屏幕右侧留 76px，是 `body{padding-right:76px}` 给右侧悬浮按钮列预留（PITFALLS 第六十八章第 5 条已记）。本轮在 CDP 里把内联字号**动态改回 12px/600** 同屏对照：`width13=244 / width12=244`、`btnRight13=232 / btnRight12=232`，两档完全一致，确认空白带与本次改动无关，未改布局。
+
+**产物**：`D:/WorkBuddy-Cache/shots/sxg-notice-font/{desktop-full,desktop-bar,mobile-320-full,mobile-320-bar}.png` 与 `probe.json`。踩坑全文见 `PITFALLS.md` 第七十章。按站长惯例**仅本地提交，未推送**；首页版本号等推送后由 `sync-version.yml` 自动补提交。
+
+---
+
 ### feat：随笔第11章两处 GIF 换 12 张静态帧 + 圆形数字切换（2026-11-16 13:39 · 提交 `309ebd7`）
 
 **站长指令**：「就这样吧，按这个版本的 HTML 推送，删掉 gif，前女友那个别推，我再改改」。经确认：以**加密随笔**形式发布、本地 6 个待推提交**一起推**、C 盘只清已知临时残留。前女友草稿未推送、未并入正文。
