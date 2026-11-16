@@ -2275,14 +2275,9 @@ if (exists('notes.html')) {
     'douyin-prompt.css 已清掉 .dyp__archive 死样式',
     '存档行节点没了但样式还留着 → 死代码堆积，下次再加节点会莫名带上旧样式');
 
-  // 写作进度面板的小节提取必须限定在 .wrap 内。
-  //
-  // 背景：明文里锁定提示的标题「站长随笔还在写」也是 <h2>，
-  // 但它不在正文容器里。早先版本用 querySelectorAll('h2') 全量取，
-  // 进度面板里就多出一个不存在的「待写」章节（截图实证）。
-  //
-  // ⚠️ 这段逻辑在 notes.html 里（由 encrypt-notes.mjs 的模板生成），
-  //    不在 douyin-prompt.js —— 后者是首页弹窗，与进度面板无关。
+  // 2026-11-17 站长指令：删掉「写作进度」中间页，输对密码直接读全文。
+  // 旧机制：解密后先 renderPanel() 停在进度面板，点「读全文」才换页。
+  // 新机制：解密后直接 document.write(decrypted) 进正文，面板整块删除。
   const encRaw = exists('notes.html') ? read('notes.html') : '';
   // ⚠️ 剥掉注释再匹配 —— 说明文字里提到旧写法是正常的，
   //    全文匹配会把注释当成「旧机制还在」。
@@ -2291,12 +2286,19 @@ if (exists('notes.html')) {
     .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/^\s*\/\/.*$/gm, '');
-  check(/\.wrap h2/.test(encCode),
-    '进度面板只扫 .wrap 内的小节',
-    '锁定提示的标题也是 h2，不限定范围会多出一个假的「待写」章节');
-  check(!/querySelectorAll\(['"]h2['"]\)/.test(encCode),
-    '进度面板不再全量扫 h2',
-    '全量扫会把锁定提示的标题当成章节列出');
+  check(!/id="panel"|renderPanel\s*\(|buildOutline|goRead|saveNote|statDone|notes_progress_note/.test(encCode),
+    '写作进度中间页已彻底删除（面板 DOM + 函数 + 绑定的备注缓存）',
+    '面板残留 → 输密码后仍会停在中间页，站长要求的「直接读全文」没落地');
+  check(/decrypted = new TextDecoder\(\)\.decode\(plain\);[\s\S]{0,160}?document\.write\(decrypted\)/.test(encCode),
+    '密码 + 同意校验通过后直接 document.write 解密正文进全文',
+    '解密后没直接换页 → 又停在某个中间界面');
+  // 正文目录仍须限定 .wrap（明文里锁定提示的标题也是 h2，不限定会多出一个假章节）。
+  // 该逻辑随密文正文解锁后运行，脚本源码在明文源 notes-plaintext.md 中。
+  const plainSrc = exists('notes-plaintext.md') ? read('notes-plaintext.md') : '';
+  check(/\.wrap h2/.test(plainSrc)
+    && !/querySelectorAll\(['"]h2['"]\)/.test(plainSrc),
+    '正文目录仍只扫 .wrap 内的小节（锁定提示的 h2 不算章节）',
+    '不限定 .wrap → 目录多出一个假的「待写」章节');
 
   // ⑧ notes.html 不得点名收录企业。
   //
