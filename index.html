@@ -185,8 +185,11 @@
          零超链接、点的是右侧固定按钮，该前提已不成立，详见 notice-marquee.css。
          正文仍由 scripts/gen-evidence-board.py 托管（只换 #evidence-notice 的文本），
          且 DOM 里永远是完整一句话：滚动副本由 notice-marquee.js 运行时克隆，
-         不在静态 HTML 里复制第二份，爬虫/读屏拿到的是全本且只有一份。 -->
-    <div id="site-notice" style="background:#ffffff;color:#dc2626;text-align:left;font-size:12px;line-height:1.5;padding:6px 12px;border-bottom:1px solid #fee2e2;font-weight:600;position:relative;z-index:999;display:flex;align-items:center;gap:8px;">
+         不在静态 HTML 里复制第二份，爬虫/读屏拿到的是全本且只有一份。
+         2026-11-16 站长：「加粗，字体也稍微加大一号，看着真难受啊！！！！」
+         → 12px/600 定稿改成 13px/700。中文系统字体大多只有 400/700 两档，
+           写 600 常被回落到 400，看着就是又细又小；verify §9b 有下限断言锁着。 -->
+    <div id="site-notice" style="background:#ffffff;color:#dc2626;text-align:left;font-size:13px;line-height:1.5;padding:6px 12px;border-bottom:1px solid #fee2e2;font-weight:700;position:relative;z-index:999;display:flex;align-items:center;gap:8px;">
       <span class="notice-viewport" id="notice-viewport"><span class="notice-track" id="notice-track"><span id="evidence-notice">本站全部数据均附公开证据链：181 家企业 481 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 5 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice --></span></span>
       <span id="sxg-recent-slot"></span>
     </div>

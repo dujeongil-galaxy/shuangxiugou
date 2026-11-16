@@ -1172,6 +1172,18 @@ section('2g. 首页证据链完整公示');
   const noticeDiv = html.match(/<div id="site-notice"[\s\S]*?<\/div>/);
   check(!!noticeDiv, '顶部公告栏容器 #site-notice 在位');
   if (noticeDiv) {
+    // 2026-11-16 站长：「加粗，字体也稍微加大一号，看着真难受啊！！！！」
+    // 原来 12px/600 在中文系统字体下多半被回落成 400（中文字体常只有 400/700
+    // 两档，600 是 semibold 空缺档），视觉上就是又细又小。定稿 13px/700。
+    // 这里写「下限」而非等值：以后想继续加大/加粗不拦，但回退到旧值必须判红。
+    const noticeFontSize = /font-size:\s*(\d+(?:\.\d+)?)px/.exec(noticeDiv[0]);
+    const noticeFontWeight = /font-weight:\s*(\d+)/.exec(noticeDiv[0]);
+    check(!!noticeFontSize && Number(noticeFontSize[1]) >= 13,
+      '★ 公告栏字号 ≥13px（2026-11-16 站长加大一号，不许退回 12px）',
+      '实际：' + (noticeFontSize ? noticeFontSize[1] + 'px' : '整条没有 font-size 声明'));
+    check(!!noticeFontWeight && Number(noticeFontWeight[1]) >= 700,
+      '★ 公告栏字重 ≥700（真正加粗，不许退回 600 让中文字体回落成 400）',
+      '实际：' + (noticeFontWeight ? noticeFontWeight[1] : '整条没有 font-weight 声明'));
     const anchors = noticeDiv[0].match(/<a\s[^>]*>/gi) || [];
     check(anchors.length === 0,
       '★ 公告栏整条零超链接（顶部只放文字，跳转归悬浮菜单）',
