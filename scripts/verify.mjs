@@ -2041,8 +2041,9 @@ if (exists('notes.html')) {
   // 顶栏标签「劳工友好提醒」→「公益提醒」；底部两枚按钮（新站引流 / 分享文章）；
   // 追加指令「已经有了按钮，就不要留那句话（绿色）」→ 绿色推荐小字撤掉、
   // 文末补一句整句加粗的备注；再追加「之前的版本也保留吧，× 左侧做版本切换」
-  // → 旧版作为 GitHub 仓库存档保留（LEGACY_HTML），默认只显示新版。
-  // 旧版弹窗的功能入口（站长随笔 / 抖音旧链接 / 以后再说 / 解锁彩蛋）仍清零。
+  // → 旧槽位（LEGACY_HTML）先作 GitHub 存档；2026-11-16 站长令最早那份存档彻底
+  //   删除，整篇换成 Hy4 的《买车之前，先看清谁在替比亚迪说话》，默认仍显示新版。
+  // 弹窗的功能入口（站长随笔 / 抖音旧链接 / 以后再说 / 解锁彩蛋）仍清零。
   check(/公益提醒/.test(dp) && !/劳工友好提醒/.test(dp),
     '弹窗标签已更名「公益提醒」（旧「劳工友好提醒」清零）',
     '标签没改 → 仍显示旧名');
@@ -2074,16 +2075,18 @@ if (exists('notes.html')) {
     '备注缺失或未加粗 → 文章立场容易被误读为反对悬赏');
   // 2026-11-14 19:46 站长追加「希望无论劳动者还是企业……对，别回头，说的就是你！」；
   // 20:28 改口：新版那句要绿色、旧版存档保持红色，且旧版签名删掉「日期+之前」。
-  // 整句仍加粗，新版文末压轴，旧版存档里的同一句共用 CALL_HTML（单一真相源），
+  // 整句仍加粗，新版文末压轴；旧槽位 2026-11-16 起换成第二篇文章、不再共用这句。
   // 不许只改一半、也不许悄悄改字。CSS 侧必须显式写死颜色与字重，不许靠继承。
   const dpcCall = read('douyin-prompt.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  // 2026-11-16：旧版存档已换成 Hy4 的第二篇公益文章，那篇按原文收尾、不带
+  // 号召语；CALL_HTML 只剩「定义 + 新版文末」两处，单一真相源约束仍成立。
   check(/var CALL_TEXT/.test(dp) && /var CALL_HTML/.test(dp)
     && /dyp__note--call/.test(dp)
     && /广纳贤言并期待听到你的声音/.test(dp) && /对，别回头，说的就是你！/.test(dp)
     && /<strong>' \+ CALL_TEXT \+ '<\/strong>/.test(dp)
-    && (dp.match(/CALL_HTML/g) || []).length >= 3,
-    '弹窗加粗号召语已落地（新版文末 + 旧版存档共用 CALL_HTML 单一真相源）',
-    '号召语漏加粗 / 改字 / 只改一个版本 → 两版口径打架');
+    && (dp.match(/CALL_HTML/g) || []).length >= 2,
+    '弹窗加粗号召语已落地（新版文末压轴；旧版换成第二篇文章后不再共用）',
+    '号召语漏加粗 / 改字 / 新版丢掉 → 站长指定的压轴句没了');
   check(/\.dyp__article \.dyp__note--call strong\s*\{[^}]*color:\s*#2e8b6f[^}]*font-weight:\s*800/.test(dpcCall)
     && /\.dyp__article \.dyp__note--call\s*\{[^}]*background:\s*#eef7f1/.test(dpcCall),
     '新版号召语为真绿色加粗（浅绿底 + 绿左边框，颜色写死不靠 .dyp__article strong 继承）',
@@ -2093,11 +2096,13 @@ if (exists('notes.html')) {
     && /classList\.toggle\('dyp--legacy'/.test(dp),
     '旧版存档仍为红色加粗（.dyp--legacy 祖先覆盖回浅红底 + 红字，且切换时真挂上这个类）',
     '旧版被一起改绿 / 覆盖规则丢失 → 站长明确要求「这里红色」没落地');
-  check(/<p class="dyp__sign">双休购 · 旧版弹窗存档<\/p>/.test(dp)
-    && !/2026-11-13 之前/.test(dp) && !/旧版弹窗存档<br>/.test(dp)
+  // 2026-11-16：旧版存档整篇换成 Hy4 的第二篇文章，签名改「双休购 · 公益提醒」，
+  // 不再有「存档」字样；新版署名日期仍保留。
+  check(/<p class="dyp__sign">双休购 · 公益提醒<\/p>/.test(dp)
+    && !/旧版弹窗存档/.test(dp) && !/仓库留存/.test(dp)
     && /2026 年 11 月 14 日/.test(dp),
-    '旧版签名已删掉「日期+之前」，只留存档名；新版署名日期不受影响',
-    '日期又被写回 / 连新版日期一起删 → 站长 20:28 的删改要求没落地');
+    '旧版签名已随内容替换改为「双休购 · 公益提醒」，无存档字样；新版署名日期不受影响',
+    '又写回存档签名 / 连新版日期一起删 → 旧版替换或站长 20:28 的删改要求没落地');
   check(/我要分享此文章/.test(dp) && /VIDEO_BTN_TEXT/.test(dp)
     && /https:\/\/v\.douyin\.com\/uBwf2Fbt0d8\//.test(dp)
     && /video\.href = VIDEO_LINK/.test(dp)
@@ -2107,18 +2112,25 @@ if (exists('notes.html')) {
   check(/dyp__video[\s\S]{0,300}dyp__share/.test(dp),
     '视频按钮排在分享按钮之前（第一个按钮是视频）',
     '顺序反了 → 第一个按钮不是视频');
-  check(/dyp__version-toggle/.test(dp) && /切换旧版/.test(dp) && /切换新版/.test(dp)
-    && /onToggleVersion/.test(dp) && /setVersion\(/.test(dp),
-    '× 左侧有版本切换按钮（两态文案「切换旧版 / 切换新版」+ 切换函数）',
-    '切换按钮缺失 → 站长要求的版本切换没落地');
-  check(/LEGACY_HTML/.test(dp) && /LEGACY_NOTE/.test(dp)
-    && /压榨员工的产品/.test(dp) && /currentVersion = 'new'/.test(dp),
-    '旧版内容作为独立存档常量保留，且默认从新版开始',
-    '旧版没留住 / 默认版本不是新版 → 之前的版本丢失或首屏显示错版');
-  check(/本版本已下线/.test(dp) && /GitHub 仓库留存/.test(dp) && /随时清理/.test(dp)
+  // 2026-11-16 站长「右上角按钮你看着改，最好控制在6个字以内」：
+  // 旧存档已删，按钮两态改「看另一篇 / 看回前篇」（各 4 字）。
+  check(/dyp__version-toggle/.test(dp) && /看另一篇/.test(dp) && /看回前篇/.test(dp)
+    && /onToggleVersion/.test(dp) && /setVersion\(/.test(dp)
+    && !/切换旧版/.test(dp) && !/切换新版/.test(dp),
+    '× 左侧切换按钮文案为「看另一篇 / 看回前篇」（各 4 字，≤6 字）+ 切换函数',
+    '按钮文案没改 / 超过 6 字 / 切换函数缺失 → 站长本轮指令没落地');
+  // 2026-11-16：最早那份「压榨员工」旧存档整篇删除，槽位换成 Hy4 的
+  // 《买车之前，先看清谁在替比亚迪说话》；站长澄清不是朋友分享、是自己刷到的。
+  check(/LEGACY_HTML/.test(dp) && /currentVersion = 'new'/.test(dp)
+    && /买车之前，先看清谁在替比亚迪说话/.test(dp)
+    && /最近我自己刷到一个抖音号/.test(dp)
+    && !/压榨员工的产品/.test(dp) && !/LEGACY_NOTE/.test(dp),
+    '第二篇公益文章进旧槽位（标题 + 「自己刷到」澄清），最早旧存档已彻底删除，默认仍从新版开始',
+    '文章没换 / 仍写「朋友发我」/ 旧存档没删 / 默认版本不对 → 站长本轮指令没落地');
+  check(!/本版本已下线/.test(dp) && !/GitHub 仓库留存/.test(dp) && !/随时清理/.test(dp)
     && !/此版本已删除，你现在看见的是GitHub仓库存档/.test(dp),
-    '旧版底部存档说明已优化措辞（不逐字照抄站长原话，三层意思都在）',
-    '存档说明照抄或漏意 → 用户不知道这是随时可能清理的仓库存档');
+    '旧槽位已无「仓库留存 / 随时清理」存档说明（现在是正式第二篇，不是临时存档）',
+    '存档说明回流 → 读者以为看到的第二篇是随时清理的旧档');
   check(/versionShareText\(currentVersion\)/.test(dp)
     && /art\.innerHTML = currentVersion === 'new' \? ARTICLE_HTML : LEGACY_HTML/.test(dp),
     '切换时正文与分享文案按当前版本联动',
@@ -9360,9 +9372,9 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/点右上角 × 关闭/.test(dp36x) && !/现在可以关闭了/.test(dp36x),
     '§36x 倒计时到点后提示改为「点右上角 × 关闭」',
     '提示仍写「可以关闭」却没说怎么关 → 用户会去点空白');
-  check(/<script defer src="\.\/douyin-prompt\.js\?v=24"><\/script>/.test(idx36x)
-    && !/douyin-prompt\.js\?v=23/.test(idx36x),
-    '§36x index.html 挂载 douyin-prompt.js?v=24（bump 缓存号）',
+  check(/<script defer src="\.\/douyin-prompt\.js\?v=25"><\/script>/.test(idx36x)
+    && !/douyin-prompt\.js\?v=24/.test(idx36x),
+    '§36x index.html 挂载 douyin-prompt.js?v=25（bump 缓存号）',
     '?v 没 bump → 线上仍跑旧脚本，改动等于没发');
 
   // 2026-11-13 站长追加：「不要 15 分钟冷却，刷新首页必弹」。
