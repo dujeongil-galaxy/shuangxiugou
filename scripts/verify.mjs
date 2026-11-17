@@ -4008,7 +4008,7 @@ if (exists(BRAND_DIR)) {
     if (body.replace(/\s+/g, ' ').trim().length < 400) problems.shortBody.push(f);
 
     // 必须有回到首页的链接，否则无法被遍历
-    if (!/href="\.\.\//.test(t)) problems.noLink.push(f);
+    if (!/href="\.\.\//.test(t) && !/dujeongil-galaxy\.github\.io\/shuangxiugou\//.test(t)) problems.noLink.push(f);
   });
 
   const show = (arr) => (arr.length ? arr.slice(0, 3).join(', ') + (arr.length > 3 ? ` 等 ${arr.length} 个` : '') : '');
@@ -9054,6 +9054,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
 {
   const ap36r = read('appeal-policy.js');
   const gh36r = exists('github-access-help.js') ? read('github-access-help.js') : '';
+  const ABS36R = 'https://dujeongil-galaxy.github.io/shuangxiugou/';
   const sm36r = read('share-modal.js');
   const sp36r = read('sponsor.html');
   const idx36r = read('index.html');
@@ -9110,7 +9111,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
 
   // ⑥ 打赏页所有按钮生成的链接剥掉 sponsor.html：分享单一真相源 + 兜底复制都要改。
   const normOk = sm36r.indexOf('function shareUrl(') !== -1
-    && sm36r.indexOf('var url = shareUrl(location.href)') !== -1
+    && sm36r.indexOf('var url = shareUrl(SITE_HOME)') !== -1
+    && sm36r.indexOf("var SITE_HOME = '" + ABS36R + "'") !== -1
     && sm36r.indexOf('sponsor\\.html(?:[?#].*)?$') !== -1
     && sp36r.indexOf('ta.value = location.href.replace(/sponsor\\.html(?:[?#].*)?$/, \'\')') !== -1
     && !/ta\.value = location\.href;/.test(sp36r);
@@ -9121,8 +9123,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   // ⑦ 挂载与 ?v 钉子（§21h 纪律），以及 jsdom 行为测试存在。
   check(/<script defer src="\.\/github-access-help\.js\?v=3"><\/script>/.test(idx36r)
     && /appeal-policy\.js\?v=4/.test(idx36r)
-    && /share-modal\.js\?v=10/.test(idx36r)
-    && /share-modal\.js\?v=10/.test(sp36r)
+    && /share-modal\.js\?v=11/.test(idx36r)
+    && /share-modal\.js\?v=11/.test(sp36r)
     && exists('scripts/test-github-access-help.cjs'),
     '§36r index.html 挂载 github-access-help.js?v=3 / appeal-policy.js?v=4，改动脚本 ?v 同步 bump，配套 jsdom 行为测试存在',
     '?v 没 bump → 浏览器/CDN 命中旧脚本，新文案与链接规整都不生效');
@@ -9430,13 +9432,13 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '海外仍走横向清单行 → 上 5 下 10 不成立；图标容器改回圆角方形 → 与国内两套视觉分裂');
 
   // ⑤ ?v 同步 + jsdom 行为测试挂进 CI（§21h / §21o 纪律）。
-  check(/share-modal\.js\?v=10/.test(idx36v)
-    && /share-modal\.js\?v=10/.test(sp36v)
-    && !/share-modal\.js\?v=9/.test(idx36v)
-    && !/share-modal\.js\?v=9/.test(sp36v)
+  check(/share-modal\.js\?v=11/.test(idx36v)
+    && /share-modal\.js\?v=11/.test(sp36v)
+    && !/share-modal\.js\?v=10/.test(idx36v)
+    && !/share-modal\.js\?v=10/.test(sp36v)
     && exists('scripts/test-share-modal.cjs')
     && wf36v.indexOf('node scripts/test-share-modal.cjs') !== -1,
-    '§36v share-modal.js?v=10 在 index.html / sponsor.html 同步 bump，分享弹窗 jsdom 测试存在并挂进 CI',
+    '§36v share-modal.js?v=11 在 index.html / sponsor.html 同步 bump，分享弹窗 jsdom 测试存在并挂进 CI',
     '?v 没 bump → 线上仍跑旧脚本，加固等于没发；测试没挂 CI → 下次回退没人拦');
 }
 

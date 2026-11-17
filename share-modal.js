@@ -178,12 +178,16 @@
      sponsor.html。分享弹窗（微博 / X / Telegram / LINE / WhatsApp / 复制链接）
      全部读 info().url，所以只在这一处规整，全平台一起生效。
      只剥路径末尾的 sponsor.html（连同其后的 query / hash），其它页面 URL 原样保留。 */
+  /* 2026-11-18 站长指令：分享本站统一指向主站首页（不带子页面路径）；
+     sponsor 剥离规则保留，历史调用仍安全。 */
+  var SITE_HOME = 'https://dujeongil-galaxy.github.io/shuangxiugou/';
+
   function shareUrl(href) {
     return String(href || '').replace(/sponsor\.html(?:[?#].*)?$/, '');
   }
 
   function info() {
-    var url = shareUrl(location.href);
+    var url = shareUrl(SITE_HOME);
     var title = document.title || '双休购 ShuangxiuGo';
     var og = document.querySelector('meta[property="og:title"]');
     if (og && og.getAttribute('content')) title = og.getAttribute('content');

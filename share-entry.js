@@ -114,7 +114,9 @@
     var api = window.SXGShare;
     if (api && typeof api.open === 'function') { api.open(); return; }
     /* 弹窗脚本没就绪：退化为复制地址，用户仍能拿到链接去粘贴。 */
-    var url = (api && typeof api.shareUrl === 'function') ? api.shareUrl() : location.href;
+    /* 2026-11-18 站长指令：兜底分享链接也统一指向主站首页 */
+    var SITE_FALLBACK = 'https://dujeongil-galaxy.github.io/shuangxiugou/';
+    var url = (api && typeof api.info === 'function') ? api.info().url : SITE_FALLBACK;
     copyText(url, function (ok) { toast(ok ? '链接已复制，可粘贴分享' : '复制失败，请手动复制地址栏链接'); });
   }
 
