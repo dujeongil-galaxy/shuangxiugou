@@ -8861,9 +8861,87 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     && /为什么说宁等网约车也不要坐出租车/.test(fd),
     '§36m 视频区新增「宁等网约车也不要坐出租车」（短链 + 标题均就位）',
     '站长 11-12 给的科普短视频没进 VIDEOS 数组 → 视频区少一条');
-  check(/featured-douyin\.js\?v=6/.test(idx36m),
-    '§36m featured-douyin.js 的 ?v 已 bump 到 6（浏览器缓存旧脚本会吃掉本次改动）',
+  // 2026-11-17 站长提供「卧底快递王国：谁抢走了快递员的奶酪？」（讲快递加盟商抽成，
+  // 未点名具体品牌，只进视频区）。活动类标签（# 抖音精选App / # 创作阶梯计划）不收，
+  // 那是平台活动标签，不是内容分类，挂上去读者会误以为是本站的活动。
+  // ⚠️ 判据只看**渲染字符串**（title/sub 字段值），不看源码注释：
+  //    注释里写明「为什么不收活动标签」是必要的说明，把它也判红会让说明与校验互斥。
+  const ikwBlock = (fd.match(/\{[\s\S]*?ikwJurpCaGk\/[\s\S]*?\}/) || [''])[0];
+  const ikwStrings = (ikwBlock.match(/'[^']*'/g) || []).join('');
+  check(/v\.douyin\.com\/ikwJurpCaGk\//.test(fd)
+    && /卧底快递王国/.test(ikwStrings)
+    && !/抖音精选App/.test(ikwStrings),
+    '§36m 视频区新增「卧底快递王国」（短链 + 标题就位，且不夹带平台活动标签）',
+    '站长 11-17 给的产业揭秘视频没进 VIDEOS 数组，或把 #抖音精选App 这类活动标签挂进了题目/副标题');
+  check(/featured-douyin\.js\?v=7/.test(idx36m),
+    '§36m featured-douyin.js 的 ?v 已 bump 到 7（浏览器缓存旧脚本会吃掉本次改动）',
     '?v 没 bump → 旧脚本仍按旧 VIDEOS 渲染，新视频与 dead 标记都不生效');
+}
+
+
+// ---------- 36v. 留言与参与准则：全站可达 + 只写本站真正能执行的处置（2026-11-17 站长） ----------
+// 站长原意：Google AdSense 后台那条「因乌克兰发生战争…暂停其变现资格」的公告要照着写一条
+// 站内公告，但不许提变现，处置手段换成本站真有的（GitHub 拉黑）。
+// 落点判断：本站零账号、零评论区，公开互动只有 GitHub Issues 与匿名邮箱两条，
+// 所以「公告」做成一个常驻法务页（community-rules.html），挂全站页脚，而不是首页顶部跑马灯——
+// 跑马灯只承载证据链一句话，塞进去会把首页唯一的高优先级信息稀释掉。
+// 断言只钉语义要素（通道 / 不予处理 / 拉黑 / 不收变现字样），不钉原句，便于日后润色。
+{
+  const cr36v = exists('community-rules.html') ? read('community-rules.html') : '';
+  /* 可见正文（去 HTML 注释、去标签）：注释里写「AdSense 接入准备」这类工程备注
+     是合理的，不该被当成为读者写的制度；正文才受下面两条「不许写什么」约束。 */
+  const crBody = cr36v
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<script[\s\S]*?<\/script>/g, '')
+    .replace(/<[^>]+>/g, ' ');
+  check(cr36v.length > 0, '§36v 留言与参与准则页 community-rules.html 在位',
+    '准则页被删 → 全站页脚链接全部 404');
+  check(/github\.com\/dujeongil-galaxy\/shuangxiugou/.test(cr36v) && /Issues/.test(cr36v)
+    && /匿名邮箱|匿名通道/.test(cr36v),
+    '§36v 准则页写明本站的两条真实通道（GitHub Issues + 匿名邮箱），不虚构站内评论区',
+    '准则页承诺了本站并不存在的互动场所 → 读者照着去找会落空');
+  check(/辱骂|人身攻击/.test(cr36v) && /人肉|挂人/.test(cr36v) && /刷屏/.test(cr36v),
+    '§36v 准则页明确不予处理的三类内容（辱骂攻击 / 人肉挂人 / 刷屏带节奏）',
+    '准则页没写清边界 → 删帖与屏蔽都会被质疑「凭什么」');
+  check(/GitHub/.test(cr36v) && /屏蔽|拉黑/.test(cr36v),
+    '§36v 严重违规处置落到「GitHub 屏蔽 / 拉黑」（本站实际能执行的动作）',
+    '准则页写了本站执行不了的处罚（禁言时长 / 封号 / 处罚公示），等于空口威胁');
+  /* ⚠️ 上面那条「有屏蔽/拉黑」还不够：正文别处提到「被屏蔽」也能骗过去
+     （2026-11-17 故障注入实测：把标题里的「拉黑」改成「禁言」后仍全绿）。
+     补一条只扫**处置章节标题**的断言——章节标题是这条规则的落点，必须自证是 GitHub 动作。 */
+  const crActionHead = (cr36v.match(/<h2>\d+\.\s*严重违规[^<]*<\/h2>/) || [''])[0];
+  check(crActionHead.length > 0 && /GitHub/.test(crActionHead)
+    && /屏蔽|拉黑/.test(crActionHead),
+    '§36v 「严重违规」章节标题本身就写明处置是 GitHub 屏蔽/拉黑（不接受只写「禁言/封号」）',
+    `处置章节标题不合格：${crActionHead || '（找不到严重违规章节）'}`);
+  check(!/站内禁言|封号|永久禁言|处罚公示/.test(crBody),
+    '§36v 准则页不承诺本站执行不了的处罚（无站内账号 = 无禁言、无封号）',
+    '出现「禁言 / 封号 / 处罚公示」字样 → 本站没有账号系统，这类处罚根本执行不了，属空口威胁');
+  check(/匿名邮箱/.test(cr36v) && /证据[^。]{0,40}(仍会|照常|受理)/.test(cr36v),
+    '§36v 被屏蔽后仍保留匿名邮箱递证据的通道（证据优先于说话的人）',
+    '一旦屏蔽就断掉证据通道 → 真实纠错进不来，只剩情绪');
+  /* 站长明确要求不写变现：AdSense 那条公告的触发条件是变现资格，
+     本站没有广告主关系，写「暂停变现资格」是照抄别人的制度，且会把商业条款
+     绑进内容治理（等于承认可以为了收入删帖）。这条断言防的就是日后有人「补全」回去。 */
+  check(!/变现资格|广告收入|暂停.{0,6}收入|变现/.test(crBody),
+    '§36v 准则页正文不提变现 / 广告收入（站长 2026-11-17 明确要求，内容治理与商业条款脱钩）',
+    '准则页正文出现变现字样 → 照抄了 AdSense 公告的商业条款，治理逻辑被挂到收入上');
+  // 全站可达：19 个顶层页 + 181 张品牌页，一个都不能漏（页脚是唯一入口）
+  const crPages = ['index.html', '404.html', 'about.html', 'contact.html', 'disclaimer.html',
+    'privacy.html', 'projects.html', 'sponsor.html', 'labor-ai.html'].filter((p) => exists(p));
+  const crMissing = crPages.filter((p) => !read(p).includes('community-rules.html'));
+  check(crMissing.length === 0,
+    `§36v 法务页脚已挂「留言准则」入口（抽查 ${crPages.length} 个顶层页无一遗漏）`,
+    `这些页面页脚缺入口：${crMissing.join(', ')}`);
+  const crBrandNo = readdirSync(join(ROOT, 'brand'))
+    .filter((f) => f.endsWith('.html'))
+    .filter((f) => !read(join('brand', f)).includes('../community-rules.html'));
+  check(crBrandNo.length === 0,
+    '§36v 全部品牌详情页页脚也挂「留言准则」（相对路径 ../community-rules.html）',
+    `这些品牌页缺入口或相对路径写错：${crBrandNo.slice(0, 5).join(', ')}`);
+  check(/community-rules\.html/.test(read('sitemap.xml')),
+    '§36v 准则页已进 sitemap.xml（能被搜索引擎发现）',
+    '新页没进 sitemap → 只有从页脚点进来的人知道它存在');
 }
 
 
