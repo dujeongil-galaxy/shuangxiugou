@@ -6265,6 +6265,27 @@ section('21c. 首页滑到底部按钮');
       '未解锁国内线路时默认走 Cloudflare');
     check((la.match(/不构成法律意见/g) || []).length >= 1,
       '新页面含免责声明「不构成法律意见」');
+    // 国内线路 Key 必须已配置（2026-11-17）：运行时解码 _SEG 还原出的 Key 需为合法 sk- 串。
+    // 不把明文写进校验/文档——这里用页面同款算法还原后只校验「格式」，防回退成占位串无人发现。
+    {
+      const mMask = la.match(/var _MASK = \[([^\]]+)\]/);
+      const mOrder = la.match(/var _ORDER = \[([^\]]+)\]/);
+      const mSeg = la.match(/var _SEG = (\[[^\]]+\])/);
+      let restored = '';
+      try {
+        const mask = mMask[1].split(',').map(x => parseInt(x.trim(), 16) || 0);
+        const order = mOrder[1].split(',').map(x => parseInt(x.trim(), 10));
+        const seg = JSON.parse(mSeg[1]);
+        const ordered = [];
+        for (let k = 0; k < 5; k++) ordered[k] = seg[order.indexOf(k)];
+        const bin = Buffer.from(ordered.join(''), 'base64').toString('binary');
+        let rev = '';
+        for (let i = 0; i < bin.length; i++) rev += String.fromCharCode((bin.charCodeAt(i) - mask[i % mask.length] + 256) % 256);
+        restored = rev.split('').reverse().join('');
+      } catch (e) { restored = ''; }
+      check(/^sk-[A-Za-z0-9]{40,}$/.test(restored) && restored.indexOf('PLACEHOLDER') < 0,
+        '国内线路 API Key 已配置（_SEG 还原为合法 sk- 串，非占位）');
+    }
   }
   // 卡通形象（2026-10-26 站长指令）：多头像文件架构（AVATARS 数组 + avatarSrc 从 .svg 加载），不用 emoji
   check(/var AVATARS = \[/.test(aiChat) && /function avatarSrc\(id\)/.test(aiChat) && /AVATAR_BASE/.test(aiChat),
