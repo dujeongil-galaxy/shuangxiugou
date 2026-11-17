@@ -4,6 +4,11 @@
 
 ---
 
+### feat(adsense)：全站挂载 Auto Ads 脚本——自动广告覆盖子域全部页面（2026-11-17 · 提交 `01629f3`）
+
+- **起因**：站长提供 Auto Ads 代码，要求全站接入；Auto Ads 按已验证主机全域生效，无需逐页广告单元。
+- **改动**：主仓库 198 页 <head> 幂等插入 adsbygoogle.js（notes.html 跳过）；根仓库 index.html 挂载。
+- **验证**：verify 全绿（模拟 CI）；线上抽查脚本在位。根仓库单独提交推送。
 ### feat(adsense)：全站 <head> 挂 google-adsense-account 元标记——站点所有权验证（2026-11-17 · 提交 `17d3796`）
 
 - **起因**：AdSense 添加站点只接受域名/子域名（输入子路径提示「网址必须是有效的顶级域名」），站点以 dujeongil-galaxy.github.io 登记；元标记验证要求每页 <head> 携带 google-adsense-account 标记。
