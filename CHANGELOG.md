@@ -4,7 +4,7 @@
 
 ---
 
-### fix(ci)：run #717 判红修复——notes 断言环境守卫、§21g 节号去重、test-ai-anchor/test-dyp-toggle 对齐（2026-11-17 · 提交 `642ae52`）
+### fix(ci)：run #717 判红修复——notes 断言环境守卫、§21g 节号去重、test-ai-anchor/test-dyp-toggle 对齐（2026-11-17 · 提交 `ef1104e`）
 
 - **起因**：`aa53f8a` 推送触发站点一致性校验 run #717，verify.mjs 静态校验与「校验脚本自检」两个 job 同时判红。经对比 run 历史（run #716 于 11-16 绿灯，11-17 当日站长提交推送时均为 [skip ci] 机器人提交、从未触发 CI），确认全部判红为当日新增/改动遗留的存量问题，与法务四页（`aa53f8a`）无关；本次按 WRFFMB 死命令立即修复。
 - **改动**：① verify.mjs notes 目录断言加环境缺席守卫（`notes-plaintext.md` 为 gitignore 本机文件，缺席时跳过并标注「断言缺席跳过」，本机仍强制）；② 15e8966 新增挂载断言的节号 `21g` 与 2026-10-26 原节重复，改为 `21g-2`（时间序在 21g-1 双线路之后）；③ test-ai-anchor.cjs 按新架构重写（验收对象由内嵌面板改为 ai-link.js 圆钮：真渲染、href、点击真跳转 labor-ai.html、旧面板移除确认、桌面/手机无重叠，保留「本机专用」标记）；④ test-dyp-toggle.cjs ⑨ 两条断言对齐 5c3fbc3（旧存档换第二篇）与 dcc3fa0（标题加日期）后的现实（CALL_HTML 共 2 处、第二篇签名「公益提醒」、标题带日期）。
