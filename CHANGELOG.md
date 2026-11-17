@@ -4,6 +4,16 @@
 
 ---
 
+### feat：星巴克联名活动到期彻底下线，恢复良配广告 + 站内喜茶 logo（2026-11-18 · 提交 `cd81cb4`）
+
+- **起因**：站长看到活动截图（11/12 8:00 — 11/16 23:59 的星巴克 × WorkBuddy 海报）说「哦，到期了，那就把代码删掉吧，彻底抹除。还是用之前喜茶的广告，良配那个，注意 logo 也用本站已有的喜茶 logo」。「喜茶的广告，良配那个」指的是良配文案「注册即送**喜茶** 20 元无门槛消费红包」；此前 11-12 那次替换（提交 `1e3bac7`）只是把良配注释下线、文件留仓，正好可直接恢复。
+- **抹除**：删除 `starbucks-promo.css`、`starbucks-promo.js`、`scripts/test-starbucks-ad.cjs`、`scripts/cdp-starbucks-ad.cjs`、`assets/workbuddy-mp-code.png`（活动专用真码），CI 去掉对应测试步骤。**未误删**：`assets/starbucks.svg`（品牌卡同款）、星巴克品牌卡与消费公告注入代码，它们与限时推广无关。
+- **恢复与换标**：`index.html` 取消良配 css/js 注释并 bump `?v=13→14` / `?v=11→12`；`liangpei-ad.js` 增 `logoSrc: './assets/heytea.png'` + `logoHtml()` 渲染 `<img>`（onerror 回退文字「良配」）；`liangpei-ad.css` LOGO 容器改白底 + 新增 `.lp-ad__logo__img{object-fit:contain}`，原紫底白字移到 `.is-fallback` 兜底段。`douyin-prompt.css` 里提「星巴克推广吸底条」的注释改为通用的「吸底推广条 .lp-ad」，并 bump `v21→22`。
+- **机器强制**：verify §20q 整段反转——钉死 7 个星巴克推广文件不存在、index.html 无 `starbucks-promo|sxg-promo|sb-modal|workbuddy-mp-code` 字样、CI 无残留测试、良配 css/js 活跃引用且版本号为 v14/v12、`assets/heytea.png` 存在且 `logoSrc`/DOM/CSS 真引用、白底 + `object-fit:contain` + fallback、品牌卡专用 `starbucks.svg` 保留、窄屏 `--sxg-bar-h` 避让延续。`test-ad-logo.cjs` 从「良配两字横排」改为「喜茶图真引用 + 兜底文字仍不竖排」；`scripts/cdp-liangpei-ad.cjs` 由旧活动验收脚本改为本机真渲染验收。§32d 历史钉子里硬编码的 `douyin-prompt.css?v=21` 同步为 v22。
+- **验证**：verify **1875 项全绿**；4 组故障注入（星巴克引用回潮 / 良配重新注释 / LOGO 换回星巴克 / 推广文件复活）**4/4 判红**并逐组按字节还原；`test-ad-logo.cjs` 27/0；CDP 桌面 1440（右侧卡 176×279）与手机 390（吸底条 390×113）实测 `logoNatural=[750,750]`、`logoBg=rgb(255,255,255)`、`barVar` 0px/113px、`sbPromo:false`、`PAGEERRORS=[]`，截图肉眼确认喜茶 logo 与良配文案正常、无星巴克推广残留。
+
+---
+
 ### fix：手机端顶栏四枚全收右侧 dock + 星巴克推广条 `visibility` 卡 hidden 真不可见（2026-11-18 · 提交 `0da3a15`）
 
 - **起因**：站长看 393px 截图——顶栏四枚排两行、「分享本站」掉第三行，「要不行的话就全部丢右边去吧，我是说手机端」；另反馈底部广告「网页都出来一会了才开始加载」。
