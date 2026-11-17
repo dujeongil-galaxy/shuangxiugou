@@ -69,6 +69,17 @@ parts.append(
     f'    <priority>0.7</priority>\n  </url>'
 )
 
+# 法务与信息页（2026-11-17 AdSense 接入准备：隐私政策/免责声明/关于/联系）
+LASTMOD_LEGAL = '2026-11-17'
+for slug, pri in [('privacy.html', '0.3'), ('disclaimer.html', '0.3'),
+                  ('about.html', '0.5'), ('contact.html', '0.3')]:
+    parts.append(
+        f'  <url>\n    <loc>{BASE}/{slug}</loc>\n'
+        f'    <lastmod>{LASTMOD_LEGAL}</lastmod>\n'
+        f'    <changefreq>monthly</changefreq>\n'
+        f'    <priority>{pri}</priority>\n  </url>'
+    )
+
 # 品牌详情页
 for b in sorted(idx, key=lambda x: x['tier']):
     parts.append(

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>隐私政策｜双休购 ShuangxiuGo</title>
+<meta name="description" content="双休购 ShuangxiuGo 隐私政策：本站不设账号系统，投票与偏好仅存于你的浏览器本地；AI 问答的数据流向、GitHub 登录用途、广告 Cookie（含 Google AdSense）与退出方式，全部写清楚。">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://dujeongil-galaxy.github.io/shuangxiugou/privacy.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="隐私政策｜双休购 ShuangxiuGo">
+<meta property="og:description" content="双休购不收集个人信息：投票数据只存本地浏览器，AI 问答经本站自部署服务端转发处理，广告 Cookie 政策与退出入口见本文。">
+<meta property="og:url" content="https://dujeongil-galaxy.github.io/shuangxiugou/privacy.html">
+<meta property="og:image" content="https://dujeongil-galaxy.github.io/shuangxiugou/assets/og-cover.png">
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+line-height:1.85;color:#1f2937;background:#f3f4f6}
+.wrap{max-width:760px;margin:0 auto;padding:28px 18px 60px;background:#fff;min-height:100vh}
+h1{font-size:25px;font-weight:800;margin:0 0 6px;line-height:1.35}
+.sub{color:#6b7280;font-size:14px;margin:0 0 20px}
+h2{font-size:19px;font-weight:700;margin:28px 0 10px}
+p{margin:0 0 12px;line-height:1.85}
+ul{margin:0 0 12px;padding-left:22px}
+li{margin:0 0 6px;line-height:1.8}
+a{color:#0F766E}
+.box{background:#f9fafb;border-left:4px solid #0F766E;padding:14px 16px;border-radius:0 8px 8px 0;margin:0 0 16px}
+code{background:#f3f4f6;border-radius:4px;padding:1px 6px;font-size:14px}
+.nav{font-size:14px;margin:0 0 20px;padding-bottom:14px;border-bottom:1px solid #e5e7eb}
+footer{margin-top:36px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:13px;color:#6b7280;line-height:1.8}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="nav">
+  <a href="./">← 返回双休购首页</a>
+  <a href="./projects.html">同类项目导航</a>
+  <a href="./contact.html">联系站长</a>
+</nav>
+
+<h1>隐私政策</h1>
+<p class="sub">生效日期：2026-11-17 · 适用范围：本站全部页面（dujeongil-galaxy.github.io/shuangxiugou）</p>
+
+<div class="box">
+<p style="margin:0">一句话版本：<strong>本站不设账号系统、不要求注册，你的投票与偏好只存在你自己的浏览器里。</strong>下文写清楚每一个例外。</p>
+</div>
+
+<h2>1. 我们不收集什么</h2>
+<ul>
+  <li>没有注册/登录本站账号一说，没有用户数据库；</li>
+  <li>不要求填写手机号、邮箱、真实姓名；</li>
+  <li>当前未接入任何第三方统计 SDK（无站点级访问者画像）。</li>
+</ul>
+
+<h2>2. 存在你浏览器本地的数据（localStorage）</h2>
+<p>以下数据只保存在你的浏览器本地（localStorage / sessionStorage），<strong>不会上传到本站或任何服务器</strong>，清除浏览器数据即彻底删除：</p>
+<ul>
+  <li>员工投票、打卡视角数据——刷新或清除即失效，站长侧不可见；</li>
+  <li>搜索偏好、界面设置；</li>
+  <li>GitHub 登录状态键：<code>sxg_github_logged_in</code>、<code>sxg_github_has_star</code>、<code>sxg_star_days</code>（用途见下一条）。</li>
+</ul>
+
+<h2>3. GitHub 登录与 Star 判定</h2>
+<p>部分功能（如 AI 助手解锁）需要判定你是否给开源仓库点过 Star。点击「Login GitHub」走的是 <strong>GitHub 官方 OAuth</strong> 流程，本站只读取公开的 Star 状态用于解锁判断，不读取你的私有仓库、邮箱或关注列表。该过程同时适用 GitHub 的隐私政策。</p>
+
+<h2>4. AI 劳动法小助手（labor-ai.html）</h2>
+<p>你在 AI 对话里输入的问题文本，会经<strong>本站自行部署的服务端</strong>（Cloudflare Workers / 阿里云函数计算）转发给大模型 API 处理后返回。请注意：</p>
+<ul>
+  <li>不要在对话里输入可识别你身份的信息（公司名+你的岗位组合也算）；</li>
+  <li>对话内容用于生成回答，不用于向你推送广告；</li>
+  <li>服务端日志由 Cloudflare / 阿里云按其各自的隐私政策处理。</li>
+</ul>
+
+<h2>5. 匿名邮箱</h2>
+<p>你可以通过匿名邮箱 <code>tensi2026@choco.la</code> 联系站长。邮件按普通电子邮件传输与存储，如需更高匿名性，建议配合一次性匿名邮箱服务（本站「匿名邮箱」入口弹窗已提示网络可达性注意事项）。</p>
+
+<h2>6. 广告与第三方 Cookie（含 Google AdSense）</h2>
+<p>本站为开源项目，可能通过广告维持运营（当前计划接入 Google AdSense；接入后本条款即适用）：</p>
+<ul>
+  <li>第三方供应商（包括 Google）会使用 Cookie 向你投放广告，依据是你对本站及其他网站的访问记录；</li>
+  <li>Google 可借此展示基于你既往访问的广告；</li>
+  <li>你可以在 <a href="https://adssettings.google.com" rel="nofollow noopener" target="_blank">Google 广告设置</a> 关闭个性化广告，或在 <a href="https://www.aboutads.info" rel="nofollow noopener" target="_blank">www.aboutads.info</a> 管理第三方供应商的广告 Cookie；</li>
+  <li>本站自身不读取、不交叉比对广告 Cookie，也不向任何一方出售数据。</li>
+</ul>
+
+<h2>7. 数据不出售</h2>
+<p>本站不出售、不租借、不以广告画像为目的共享你的任何数据。本站的收入来源（赞助页、开源捐赠）均不依赖个人信息。</p>
+
+<h2>8. 数据保留与安全</h2>
+<p>本站没有服务器端个人资料库；GitHub Pages 的访问日志由 GitHub 按 <a href="https://docs.github.com/site/privacy" rel="nofollow noopener" target="_blank">GitHub 隐私政策</a> 处理。全站通过 HTTPS 传输。</p>
+
+<h2>9. 儿童隐私</h2>
+<p>本站面向求职者与消费者，不面向 14 岁以下儿童，也不有意收集儿童个人信息。</p>
+
+<h2>10. 政策变更</h2>
+<p>本页更新即视为生效，页首「生效日期」随之更新；涉及广告接入等重大变化时会在首页公告栏提示。</p>
+
+<h2>11. 如何联系我们</h2>
+<p>对本政策或本站数据有任何疑问：<a href="https://github.com/dujeongil-galaxy/shuangxiugou/issues" rel="noopener" target="_blank">GitHub Issues（公开、可追溯，推荐）</a>，或匿名邮箱 <code>tensi2026@choco.la</code>。更多方式见<a href="./contact.html">联系站长</a>页。</p>
+
+<footer>
+  本站为基于 <a href="https://github.com/ZhiqingHeyi/shuangxiugou">ZhiqingHeyi/shuangxiugou</a>（MIT 协议）
+  二次开发的开源项目，数据核实与日常维护由 dujeongil-galaxy 负责。<br>
+  查看全部企业的双休评级：<a href="./">双休购总表</a> ·
+  <a href="./projects.html">同类项目导航</a>
+</footer>
+</div>
+
+<!-- sxg-legal-links（全站法务与信息页链接；2026-11-17 AdSense 接入准备） -->
+<footer class="sxg-legal" style="margin:18px auto 8px;max-width:760px;padding:0 18px;font-size:13px;line-height:1.9;text-align:center;color:#6b7280">
+  <a href="./privacy.html" style="color:#0F766E">隐私政策</a> · <a href="./disclaimer.html" style="color:#0F766E">免责声明</a> · <a href="./about.html" style="color:#0F766E">关于本站</a> · <a href="./contact.html" style="color:#0F766E">联系站长</a>
+</footer>
+</body>
+</html>
