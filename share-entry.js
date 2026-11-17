@@ -6,9 +6,11 @@
    · 点击：直接调 share-modal.js 暴露的 window.SXGShare.open()；弹窗脚本
      还没就绪（慢网 / 被拦）时退化为「复制当前地址 + 按钮文字临时反馈」，
      绝不做成死按钮。
-   · ≤640px：与「匿名邮箱」同口径挂进 #sxg-fab-dock（顶栏第二行已铺满，
-     再塞一枚会挤成第三行），短标签由 mobile-fixes.css 的
-     `content: attr(data-sxg-dock-label)` 读取；dock 内 svg 由同一份 CSS 隐藏。
+   · ≤640px：2026-11-13 曾按站长要求留顶栏，2026-11-18 真机截图显示四枚按钮
+     排两行、「分享本站」孤零零掉第三行，站长改口「全部丢右边」——恢复与
+     「匿名邮箱」同口径挂进 #sxg-fab-dock（前三枚由 header-to-dock.js 搬），
+     短标签由 mobile-fixes.css 的 `content: attr(data-sxg-dock-label)` 读取；
+     dock 内 svg 由同一份 CSS 隐藏。桌面端仍留顶栏第 6 枚。
    · 不许隐藏：不提供删除路径，只留 ENABLED 一键互切（与 anon-mail.js 一致）。
    ========================================================================== */
 (function () {
@@ -154,22 +156,32 @@
       btn.setAttribute('data-sxg-share-hidden', '1');
     }
 
-    /* 桌面与手机端同口径：分享本站都留在顶栏（2026-11-13 站长口径：手机端
-       顶栏四枚 = 提交数据申诉 / Star / 赞助 / 分享本站；其余才收进 dock）。
-       桌面紧跟「匿名邮箱」之后；手机端匿名 / Login 已在 dock，锚点退到赞助之后。 */
-    var inDock = function (el) { return !!el && !!document.getElementById(DOCK_ID) && el.parentNode === document.getElementById(DOCK_ID); };
-    var anchor = document.getElementById(ANON_ID);
-    if (isNarrow() || inDock(anchor)) {
-      anchor = document.getElementById('sponsor-entry-btn')
-        || document.getElementById('login-github-btn');
+    /* 2026-11-18 站长口径更新（手机端顶栏排版凌乱，「分享本站」孤零零掉第三行）：
+       手机端四枚顶栏按钮**全部收进右侧 dock**——前三枚（提交 / Star / 赞助）
+       由 header-to-dock.js 搬，本文件的「分享本站」自己进 dock，分工明确不打架。
+       桌面端保持原样：紧跟匿名邮箱之后逐级兜底。 */
+    if (isNarrow()) {
+      var dock = document.getElementById(DOCK_ID);
+      if (!dock) {                       // dock 还没建好：先挂 body 藏好，下一轮 sweep 安置
+        if (btn.parentNode !== document.body) document.body.appendChild(btn);
+        btn.setAttribute('data-sxg-share-slot', 'pending');
+        return false;
+      }
+      btn.className = HEADER_CLASS + ' sxg-share-entry-btn';
+      btn.style.whiteSpace = 'nowrap';
+      btn.setAttribute('data-sxg-dock-label', '分享');
+      btn.setAttribute('data-sxg-share-slot', 'dock');
+      if (btn.parentNode !== dock) dock.appendChild(btn);
+      return true;
     }
-    /* 桌面兜底：匿名缺失时退 Login → 赞助；与旧逐级兜底口径一致。 */
-    if (!anchor) anchor = document.getElementById('login-github-btn')
+
+    var anchor = document.getElementById(ANON_ID)
+      || document.getElementById('login-github-btn')
       || document.getElementById('sponsor-entry-btn');
-    if (!anchor) anchor = document.getElementById(ANON_ID);
     if (!anchor || !anchor.parentNode) return false;
     btn.className = HEADER_CLASS + ' sxg-share-entry-btn';
     btn.style.whiteSpace = 'nowrap';
+    btn.removeAttribute('data-sxg-dock-label');
     var targetParent = anchor.parentNode;
     var wantNext = anchor.nextSibling;
     if (targetParent === btn) return true;

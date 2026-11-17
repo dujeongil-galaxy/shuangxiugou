@@ -35,6 +35,9 @@
   font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   color: var(--sb-text);
   line-height: 1.5;
+  /* 显式可见态：is-hidden 用 display:none 硬隐藏，移除后这里给出明确的
+     visible，配合 JS reveal() 的强制重排把广告放出来（2026-11-18 修）。 */
+  visibility: visible;
 }
 
 .sxg-promo *,
@@ -43,10 +46,15 @@
   box-sizing: border-box;
 }
 
-/* 初始隐藏：用 opacity + visibility 而非 display:none，便于移除 is-hidden 时淡入 */
+/* 初始隐藏：display:none 是最可靠的一刀切。
+   2026-11-18 揪出的真 bug：原用 visibility:hidden + transition:visibility，
+   移除 is-hidden 后 computed visibility 在无头 Edge 里一直卡在 hidden
+   （opacity 已 1、内联 visible 都压不过），广告 DOM 早建好却永远不可见 ——
+   这就是站长反复说「广告看不见 / 加载慢」的根因。改用 display:none 后，
+   reveal 直接 display:flex + opacity 淡入，无任何过渡竞态。 */
 .sxg-promo.is-hidden {
+  display: none !important;
   opacity: 0;
-  visibility: hidden;
   pointer-events: none;
 }
 
@@ -375,7 +383,7 @@
     background: var(--sb-surface);
     box-shadow: 0 10px 30px rgba(0, 112, 74, 0.14);
     text-align: center;
-    transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    transition: opacity 0.35s ease, transform 0.25s ease, box-shadow 0.25s ease;
   }
 
   .sxg-promo:hover {
@@ -416,7 +424,7 @@
     border-top: 1px solid var(--sb-border);
     background: var(--sb-surface);
     box-shadow: 0 -6px 22px rgba(31, 42, 36, 0.1);
-    transition: opacity 0.35s ease, visibility 0.35s ease;
+    transition: opacity 0.35s ease;
   }
 
   /* 内容避让吸底条：由 JS 实测 offsetHeight 写入 --sxg-bar-h */

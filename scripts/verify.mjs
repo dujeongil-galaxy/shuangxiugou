@@ -5236,10 +5236,10 @@ section('20q. 良配临时下线 + 星巴克临时上线');
     'index.html 已引用 starbucks-promo.css');
   check(/<script[^>]*starbucks-promo\.js[^>]*>/i.test(idxNoCmt),
     'index.html 已引用 starbucks-promo.js');
-  check(/starbucks-promo\.css\?v=2/.test(idxHtml),
-    'starbucks-promo.css 版本号 ?v=2（2026-11-17 白底 + 真小程序码改版，必须 bump 破缓存）');
-  check(/starbucks-promo\.js\?v=2/.test(idxHtml),
-    'starbucks-promo.js 版本号 ?v=2（同上，v1 会被浏览器缓存吃掉本次改动）');
+  check(/starbucks-promo\.css\?v=3/.test(idxHtml),
+    'starbucks-promo.css 版本号 ?v=3（2026-11-18 推广条即时出现改版，必须 bump 破缓存）');
+  check(/starbucks-promo\.js\?v=3/.test(idxHtml),
+    'starbucks-promo.js 版本号 ?v=3（同上，v2 会被浏览器缓存吃掉本次改动）');
 
   // 2b) 2026-11-17 站长 PC 端"看不见广告"第三轮排查的根因与对策（防回退）
   //  根因1：文件名 starbucks-ad.js / 类名 .sb-ad 命中广告拦截器默认规则（含 ad 字样）
@@ -5273,10 +5273,20 @@ section('20q. 良配临时下线 + 星巴克临时上线');
       '星巴克脚本沿用 1440px 断点避让（与良配同款 --sxg-bar-h 语义）');
     check(/var h = \(wide \|\| aside\.classList\.contains\('is-hidden'\)\) \? 0 : aside\.offsetHeight;/.test(sbJs),
       '星巴克脚本 ≥1440px / 隐藏时 --sxg-bar-h 写 0（桌面无吸底条可让位）');
-    // 2026-11-17 站长反馈"广告又不见了"：6 秒淡入空窗太长 + 弹窗遮挡 → 缩短到 1.5 秒。
-    // 钉死具体值，防下次又悄悄改回 6000 造成"打开几秒看不到广告"的错觉。
-    check(/showAfter:\s*1500\b/.test(sbJs),
-      '星巴克广告 showAfter = 1500ms（1.5 秒淡入，非 6000ms 长空窗）');
+    // 2026-11-18 站长反馈「网页都出来一会了，底部广告才开始加载」：1.5 秒空窗太长 → 200ms。
+    // 钉死具体值，防下次又悄悄改回 6000/1500 造成「慢半拍」错觉；也不许改成 0（加载即弹老坑）。
+    check(/showAfter:\s*200\b/.test(sbJs),
+      '星巴克广告 showAfter = 200ms（近乎即时，非 1500ms 慢半拍 / 6000ms 长空窗 / 0ms 加载即弹）');
+    // 2026-11-18 揪出的真 bug：visibility 过渡卡在 hidden，DOM 建好了但永远看不见。
+    // 之前的校验只看 showAfter / DOM 存在，全绿却漏了这个 —— 必须钉死「能真正放出来」。
+    check(/void aside\.offsetWidth/.test(sbJs)
+      && /setProperty\('visibility',\s*'visible',\s*'important'\)/.test(sbJs),
+      '§20q reveal 强制重排 + 内联 visibility:visible !important（visibility 过渡卡 hidden 的 undo）',
+      '只 remove is-hidden → computed visibility 卡在 hidden，广告 DOM 在但永远不可见（2026-11-18 站长「广告加载慢/看不见」真根因）');
+    check(!/\.sxg-promo\.is-hidden\s*\{[^}]*visibility:\s*hidden/.test(sbCss)
+      && /\.sxg-promo\.is-hidden\s*\{[^}]*display:\s*none/.test(sbCss),
+      '§20q is-hidden 用 display:none 硬隐藏（不再用 transition:visibility，避免过渡竞态）',
+      'visibility:hidden + transition 会在移除 class 后卡住；display:none 一刀切无竞态');
     check(/\.sb-modal\s*\{/.test(sbCss),
       '星巴克 CSS 含活动海报弹窗 .sb-modal');
     check(/\.sb-poster__date\s*\{/.test(sbCss),
@@ -9499,17 +9509,19 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '§36w 点击分享 → 复用 window.SXGShare.open()（唯一实现），脚本缺席时退化为复制地址 + 气泡；不另造弹窗、不在本文件里写外链',
     '各写一套弹窗 → 平台清单两处漂移，又是「平台变少」事故；本文件塞外链 → 被扩展拦截即整块消失');
 
-  // ③ 落位（2026-11-13 站长口径）：分享本站两端都留顶栏；桌面紧跟匿名邮箱之后，
-  // 窄屏锚点退到赞助之后（匿名 / Login 已收进 dock）。锚点逐级兜底，不进「菜单▼」。
+  // ③ 落位（2026-11-18 站长口径更新）：桌面留顶栏第 6 枚（紧跟匿名邮箱逐级兜底）；
+  // 手机端四枚顶栏按钮全部收进右侧 dock —— 分享本站自搬，前三枚由 header-to-dock.js 搬。
   check(/getElementById\(ANON_ID\)/.test(se36w)
     && /getElementById\('login-github-btn'\)/.test(se36w)
     && /getElementById\('sponsor-entry-btn'\)/.test(se36w)
     && /targetParent\.insertBefore\(btn,\s*wantNext\s*\|\|\s*null\)/.test(se36w)
     && /data-sxg-share-slot/.test(se36w)
-    && !/dock\.insertBefore\(btn/.test(se36w)
+    && /dock\.appendChild\(btn\)/.test(se36w)
+    && /if \(isNarrow\(\)\) \{\s*var dock = document\.getElementById\(DOCK_ID\)/.test(se36w)
+    && /data-sxg-dock-label',\s*'分享'/.test(se36w)
     && !/menu\.appendChild\(btn\)/.test(se36w),
-    '§36w 落位：分享本站两端都留顶栏；桌面紧跟匿名邮箱（锚点 anon → login → sponsor 逐级兜底），窄屏退到赞助之后，不进 #sxg-fab-dock、不进「菜单▼」',
-    '锚点写死一枚 → 匿名邮箱被隐藏或脚本没加载就悬空/消失；窄屏又进 dock → 顶栏少一枚站长点名要留的分享入口');
+    '§36w 落位：桌面分享本站留顶栏第 6 枚（anon → login → sponsor 逐级兜底）；手机端进 #sxg-fab-dock 并显示短标签「分享」（前三枚由 header-to-dock.js 搬，四枚同归 dock）',
+    '手机端又塞回顶栏 → 四枚按钮排两行、「分享本站」孤零零掉第三行（2026-11-18 站长截图判丑）；桌面锚点写死一枚 → 匿名缺失时悬空');
 
   // ④ 隐藏开关机制：只隐藏不删（与 §36s 同口径），!important 压过 dock 的 display:flex。
   check(/data-sxg-share-hidden="1"\]\{display:none !important\}/.test(se36w)
@@ -9526,12 +9538,12 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '改成纯文字 → 丢失站长要的 LOGO；改掉「匿名邮箱」四个字 → test-anon-mail.cjs 与 dock 短标签一起判红');
 
   // ⑥ 挂载与 ?v：index.html 两个脚本同批 bump，sponsor.html 不挂分享入口（打赏页自己有分享逻辑）。
-  check(/<script defer src="\.\/share-entry\.js\?v=4"><\/script>/.test(idx36w)
-    && idx36w.indexOf('share-entry.js?v=4') > idx36w.indexOf('anon-mail.js?v=5')
+  check(/<script defer src="\.\/share-entry\.js\?v=5"><\/script>/.test(idx36w)
+    && idx36w.indexOf('share-entry.js?v=5') > idx36w.indexOf('anon-mail.js?v=5')
     && /anon-mail\.js\?v=5/.test(idx36w)
     && !/anon-mail\.js\?v=4/.test(idx36w)
     && !/share-entry\.js/.test(sp36w),
-    '§36w index.html 挂载 share-entry.js?v=4（排在 anon-mail.js?v=5 之后）；sponsor.html 不挂本入口（打赏页分享走自己的 shareUrl）',
+    '§36w index.html 挂载 share-entry.js?v=5（排在 anon-mail.js?v=5 之后）；sponsor.html 不挂本入口（打赏页分享走自己的 shareUrl）',
     '?v 没 bump → 线上仍跑旧脚本；把入口也挂到 sponsor.html → 打赏页多出一枚重复分享，与「打赏页分享指向首页」的逻辑打架');
 
   // ⑦ README 规则章节跟着改：六枚 + 第 6 枚落位规则 + 新开关行（避免半年后又「被吃掉」）。
@@ -9547,6 +9559,49 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     && wf36w.indexOf('node scripts/test-share-entry.cjs') !== -1,
     '§36w 新增 jsdom 行为测试 test-share-entry.cjs（39 项）并挂进 CI；真渲染验收 cdp-share-entry.cjs 五档 1440/900/660/390/360 在本机跑',
     '测试不挂 CI → 下次谁把按钮挪走没人拦');
+}
+
+// ---------- 36y. 手机端顶栏四枚全进右侧 dock（2026-11-18 站长「全部丢右边去吧」） ----------
+// 站长看 393px 真机截图：顶栏四枚按钮排成两行、「分享本站」孤零零掉第三行，判定排版不合格。
+// 前三枚（提交 / Star / 赞助）由 header-to-dock.js 搬，第四枚分享由 share-entry.js 自搬。
+// 静态断言盯源码，真行为由手机视口 CDP 截图验收。
+{
+  const hd36y = exists('header-to-dock.js') ? read('header-to-dock.js') : '';
+  const idx36y = read('index.html');
+
+  check(exists('header-to-dock.js'),
+    '§36y header-to-dock.js 存在（手机端顶栏三枚原生按钮的搬移脚本）',
+    '脚本缺失 → 只有分享进 dock，提交 / Star / 赞助仍挤在顶栏两行');
+
+  check(/DOCK_ID\s*=\s*'sxg-fab-dock'/.test(hd36y)
+    && /var MQ\s*=\s*'\(max-width: 640px\)'/.test(hd36y)
+    && /var ATTR\s*=\s*'data-hdr-acts'/.test(hd36y),
+    '§36y 搬移脚本锚点正确：dock id / 640px 断点 / 顶栏容器 data 属性三者与现有机制对齐',
+    '锚点写错 → 搬不进 dock 或桌面端也被误搬');
+
+  check(/提交数据/.test(hd36y) && /Star on GitHub/.test(hd36y)
+    && /打赏赞助\|赞助本项目/.test(hd36y)
+    && /SHARE_ID\s*=\s*'sxg-share-entry-btn'/.test(hd36y)
+    && /el\.id === SHARE_ID\) continue/.test(hd36y),
+    '§36y 三枚原生按钮按文字识别、显式跳过分享按钮（分工不打架：分享归 share-entry.js 自搬）',
+    '不跳过分享 → 两个 observer 互搬，按钮在 dock 与顶栏之间抖动');
+
+  check(/homes\.push\(\{\s*el:\s*el,\s*parent:\s*box,\s*index:\s*i\s*\}\)/.test(hd36y)
+    && /moveOut\(box\)/.test(hd36y)
+    && /box\.insertBefore\(h\.el,\s*ref\)/.test(hd36y)
+    && /removeAttribute\('data-sxg-dock-label'\)/.test(hd36y),
+    '§36y 断点切回桌面按原 index 还原三枚按钮并移除 dock 短标签（可逆、不留痕）',
+    '只搬不还原 → 用户从手机切到桌面后顶栏永久少三枚按钮');
+
+  check(/setAttribute\('data-sxg-dock-label',\s*lab\)/.test(hd36y)
+    && /dock\.appendChild\(el\)/.test(hd36y),
+    '§36y 进 dock 的按钮打中文短标签并追加进容器（dock CSS 靠 ::after + data 属性显示文字）',
+    '不打标签 → 68px 按钮里文字被 font-size:0 收起后一片空白');
+
+  check(/<script defer src="\.\/header-to-dock\.js\?v=1"><\/script>/.test(idx36y)
+    && idx36y.indexOf('header-to-dock.js?v=1') > idx36y.indexOf('share-entry.js?v=5'),
+    '§36y index.html 挂载 header-to-dock.js?v=1，排在 share-entry.js?v=5 之后（dock 已建好一次到位）',
+    '?v 缺失或顺序颠倒 → 线上跑旧逻辑 / dock 未就绪时搬失败');
 }
 
 // ---------- 36x. 首页弹窗只允许点 × 关闭（2026-11-13 站长「先锁死」） ----------

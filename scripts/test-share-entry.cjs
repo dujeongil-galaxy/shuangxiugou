@@ -6,7 +6,7 @@
      ① 常量与开关：BTN_ID / ENABLED / 内联 SVG，不依赖外部图片
      ② 桌面落位：紧跟「匿名邮箱」之后、带 sxg-header-btn、slot=header
      ③ 锚点缺失兜底：没有匿名邮箱时退到 Login GitHub / 赞助，绝不悬空
-     ④ 手机落位：分享本站留顶栏，排在赞助之后（匿名 / Login 在 dock）
+     ④ 手机落位：2026-11-18 起进 dock（顶栏四枚全收右边），桌面仍留顶栏
      ⑤ 点击：拦下默认行为、调 window.SXGShare.open()，不自己拼第二套弹窗
      ⑥ 弹窗脚本缺席：退化为复制当前地址 + 气泡提示，按钮不做成死的
      ⑦ 键盘可达：Enter / 空格同样能打开
@@ -83,9 +83,9 @@ function fire(w, el, type) {
     /<svg[^>]*viewBox="0 0 24 24"/.test(SHARE_SRC) && !/https?:\/\/[^"']*\.(png|svg|woff)/.test(SHARE_SRC));
   check('share-entry.js 给分享按钮注入 cursor:pointer（hover 变手型，与顶栏按钮一致）',
     /\.sxg-share-entry-btn\{cursor:pointer\}/.test(SHARE_SRC));
-  check('index.html 挂载 share-entry.js?v=4，且排在 anon-mail.js 之后',
+  check('index.html 挂载 share-entry.js?v=5，且排在 anon-mail.js 之后',
     (function () {
-      const iShare = HTML.indexOf('./share-entry.js?v=4');
+      const iShare = HTML.indexOf('./share-entry.js?v=5');
       const iAnon = HTML.indexOf('./anon-mail.js?v=5');
       return iShare > 0 && iAnon > 0 && iShare > iAnon;
     })());
@@ -127,26 +127,23 @@ function fire(w, el, type) {
   }
 
   /* ---------------- ④ 手机落位 ---------------- */
-  console.log('④ 手机落位（≤640px）：分享本站留顶栏（2026-11-13 站长口径）');
+  console.log('④ 手机落位（≤640px）：2026-11-18 站长「全部丢右边」→ 进 dock');
   {
     const { w } = mkDom({ narrow: true, dock: true });
     const d = w.document;
     const share = d.getElementById('sxg-share-entry-btn');
-    const sponsor = d.getElementById('sponsor-entry-btn');
     const dock = d.getElementById('sxg-fab-dock');
-    check('留在顶栏（不进 dock）', !!share && share.parentNode !== dock);
-    check('slot=header', !!share && share.getAttribute('data-sxg-share-slot') === 'header');
-    check('排在赞助之后（匿名 / Login 已在 dock，顶栏锚点退到赞助）',
-      !!share && !!sponsor && sponsor.nextElementSibling === share);
-    check('保留 sxg-header-btn（顶栏同款外观）',
-      !!share && share.classList.contains('sxg-header-btn'));
+    check('进 dock（不再留顶栏）', !!share && share.parentNode === dock);
+    check('slot=dock', !!share && share.getAttribute('data-sxg-share-slot') === 'dock');
+    check('短标签「分享」就位（dock CSS 靠 ::after 显示）',
+      !!share && share.getAttribute('data-sxg-dock-label') === '分享');
   }
   {
-    /* 手机端分享留顶栏：即使 dock 未就绪也不藏进 pending，挂顶栏锚点即可 */
+    /* dock 还没建好：先挂 body + pending 藏起，下一轮 sweep 安置 */
     const { w } = mkDom({ narrow: true, dock: false });
     const share = w.document.getElementById('sxg-share-entry-btn');
-    check('dock 未就绪时仍 slot=header（不 pending 藏起）',
-      !!share && share.getAttribute('data-sxg-share-slot') === 'header');
+    check('dock 未就绪 → pending 藏起（不裸奔）',
+      !!share && share.getAttribute('data-sxg-share-slot') === 'pending');
   }
 
   /* ---------------- ⑤ 点击调分享弹窗 ---------------- */
@@ -191,7 +188,7 @@ function fire(w, el, type) {
   }
 
   /* ---------------- ⑧ 断点来回切 ---------------- */
-  console.log('⑧ 断点手机 ↔ 桌面（分享两端都留顶栏）');
+  console.log('⑧ 断点手机 ↔ 桌面（桌面顶栏 / 手机 dock，可逆切换）');
   {
     const { w, state } = mkDom({ narrow: false, dock: true });
     const d = w.document;
@@ -200,7 +197,7 @@ function fire(w, el, type) {
     check('起点在顶栏', share.parentNode && share.parentNode.tagName === 'HEADER');
     state.narrow = true;
     w.dispatchEvent(new w.Event('resize'));
-    check('切窄屏 → 仍留顶栏（不进 dock）', share.parentNode !== dock);
+    check('切窄屏 → 进 dock', share.parentNode === dock);
     state.narrow = false;
     w.dispatchEvent(new w.Event('resize'));
     check('切回桌面 → 回顶栏且仍在匿名邮箱之后',
@@ -208,8 +205,8 @@ function fire(w, el, type) {
       && d.getElementById('sxg-anon-mail-btn').nextElementSibling === share);
     state.narrow = true;
     w.dispatchEvent(new w.Event('resize'));
-    check('再切窄屏 → 按钮不丢、不重复创建',
-      share.parentNode !== dock && d.querySelectorAll('#sxg-share-entry-btn').length === 1);
+    check('再切窄屏 → 重新进 dock、按钮不丢不重复',
+      share.parentNode === dock && d.querySelectorAll('#sxg-share-entry-btn').length === 1);
   }
 
   /* ---------------- ⑨ ENABLED 开关 ---------------- */

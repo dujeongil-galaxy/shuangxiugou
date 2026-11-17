@@ -45,9 +45,11 @@
 
     storageKey: 'sb_ad_dismissed_at',
     reappearAfter: 7 * 24 * 60 * 60 * 1000,
-    // 延迟淡入，先让用户看清首页内容（2026-11-17 站长反馈广告"又不见了"，6000→1500：
-    // 6 秒空窗太长，叠加首页弹窗遮挡，用户前几秒扫一眼以为没有；缩到 1.5 秒仍不突兀）
-    showAfter: 1500
+    // 2026-11-18 站长反馈「网页都出来一会了，底部广告才开始加载」：
+    // 1500ms 在快网下等于页面渲染完还空 1.5 秒，观感就是「慢半拍」。
+    // 降到 200ms —— 保留约一帧延迟 + CSS 的 opacity 淡入（不加载即弹），
+    // 但基本与首屏同步出现。0ms 会撞回 2026-10-29 修掉的「加载即弹」老坑。
+    showAfter: 200
   };
 
   var LOGO_TEXT = '星巴克';
@@ -91,6 +93,7 @@
     aside.querySelector('.sxg-promo__close').addEventListener('click', function () {
       markDismissed();
       aside.classList.add('is-hidden');
+      aside.style.visibility = '';   // 清掉 reveal 写的内联值，让 is-hidden 生效
       updateBarVar();
     });
 
@@ -112,10 +115,22 @@
     // ---- 活动海报弹窗 ----
     buildModal();
 
-    setTimeout(function () {
+    function reveal() {
       aside.classList.remove('is-hidden');
+      /* 真机实测（2026-11-18）：只改 class 时 visibility 过渡会卡在 hidden
+         （opacity 已 1、DOM 已建好，但广告始终不可见 —— 站长反复反馈的
+         「广告看不见 / 加载慢」就是这个）。强制重排一次打断过渡帧，
+         再写内联 visible 兜底，两道一起才稳定放出来。 */
+      void aside.offsetWidth;                    // 强制 reflow，打断卡住的过渡帧
+      aside.style.setProperty('visibility', 'visible', 'important');
       updateBarVar();
-    }, CONFIG.showAfter);
+    }
+    setTimeout(reveal, CONFIG.showAfter);
+    /* 兜底：万一 reveal 那帧被浏览器合并/延后，load 后再强制一次 */
+    window.addEventListener('load', function () {
+      if (aside.classList.contains('is-hidden')) reveal();
+      else aside.style.visibility = 'visible';
+    }, { once: true });
   }
 
   var modalEl = null;
