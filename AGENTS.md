@@ -22,6 +22,7 @@
 |---|---|
 | `index.html` | 首页。React 应用挂载在 `#root`，公告栏是静态 HTML |
 | `projects.html` | 同类项目导航（静态页） |
+| `privacy.html` / `disclaimer.html` / `about.html` / `contact.html` | 法务与信息页（2026-11-17 新增，AdSense 接入准备）；全站页脚有统一入口（幂等标记 `<!-- sxg-legal-links`） |
 | `sponsor.html` | 赞助页 |
 | `notes.html` | 站长随笔。**正文加密**，见下方专节 |
 | `brand/*.html` | 62 个品牌详情页，title 格式 `{品牌名} 几点下班 双休率X%｜双休购` |

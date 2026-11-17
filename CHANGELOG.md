@@ -20,6 +20,16 @@
 
 ---
 
+### fix(ci)：run #717 判红修复——notes 断言环境守卫、§21g 节号去重、test-ai-anchor/test-dyp-toggle 对齐（2026-11-17 · 提交 `ef1104e`）
+
+- **起因**：`aa53f8a` 推送触发站点一致性校验 run #717，verify.mjs 静态校验与「校验脚本自检」两个 job 同时判红。经对比 run 历史（run #716 于 11-16 绿灯，11-17 当日站长提交推送时均为 [skip ci] 机器人提交、从未触发 CI），确认全部判红为当日新增/改动遗留的存量问题，与法务四页（`aa53f8a`）无关；本次按 WRFFMB 死命令立即修复。
+- **改动**：① verify.mjs notes 目录断言加环境缺席守卫（`notes-plaintext.md` 为 gitignore 本机文件，缺席时跳过并标注「断言缺席跳过」，本机仍强制）；② 15e8966 新增挂载断言的节号 `21g` 与 2026-10-26 原节重复，改为 `21g-2`（时间序在 21g-1 双线路之后）；③ test-ai-anchor.cjs 按新架构重写（验收对象由内嵌面板改为 ai-link.js 圆钮：真渲染、href、点击真跳转 labor-ai.html、旧面板移除确认、桌面/手机无重叠，保留「本机专用」标记）；④ test-dyp-toggle.cjs ⑨ 两条断言对齐 5c3fbc3（旧存档换第二篇）与 dcc3fa0（标题加日期）后的现实（CALL_HTML 共 2 处、第二篇签名「公益提醒」、标题带日期）。
+- **验证**：test-verify-self.cjs 6/6；全部 56 组 test-*.cjs 退出码 0；本机模拟 CI（sync-version HEAD~1 → verify.mjs）exit 0。改动 3 个文件 +85/-95。
+### feat(legal)：新增隐私政策/免责声明/关于/联系四页并全站页脚接入——AdSense 接入准备（2026-11-17 · 提交 `aa53f8a`）
+
+- **起因**：AdSense 审核要求站点具备隐私政策与完整的信息页；实测 `/privacy.html`、`/about.html`、`/contact.html`、`/disclaimer.html` 全部 404，品牌详情页可见文本也偏薄、缺少关于/联系入口。
+- **改动**：① 新增 4 个静态法务页（隐私政策含 localStorage 键名、GitHub OAuth 用途、AI 问答数据流（Cloudflare/阿里云服务端转发）、匿名邮箱、Google AdSense Cookie 条款与 adssettings.google.com 退出入口；免责声明含评级性质、证据强度分级、匿名反馈局限、企业异议通道；关于本站含评级口径徽章与运营者归属；联系页含 GitHub Issues 与匿名邮箱双渠道）；② 12 个静态页 + 181 个品牌页页脚幂等插入统一法务链接条（标记 `<!-- sxg-legal-links`，首页用深色配色，404 用绝对链接，notes.html 不动）；③ `index.html` 补 meta description；④ `sitemap.xml` 增补 4 条；⑤ `scripts/seo/generate-sitemap.py`、`AGENTS.md` 结构表同步。
+- **验证**：verify.mjs 1848 项通过；唯一判红为 notes 目录断言（依赖本机 gitignore 的 `notes-plaintext.md`，克隆环境缺失所致，HEAD 同样判红，非本次引入）。改动文件共 200 个；全站幂等标记复核 skip=0/patched=193。
 ### feat(labor-ai)：国内线路配置真实 API Key——_SEG 字符干扰串替换占位，浏览器实测可回话（2026-11-17 · 提交 `a5a84a3`）
 
 - **起因**：站长提供硅基流动 `sk-` Key，为劳动法助手 `labor-ai.html` 的「国内直连」线路配置真 Key（此前 `_SEG` 为占位串，检测到只提示「未配置」不发请求）。
