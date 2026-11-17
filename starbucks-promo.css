@@ -12,10 +12,12 @@
      ≥1440px  → 右侧竖排悬浮卡片（贴近容器右侧留白，不遮挡正文）
      <1440px  → 底部横向吸底条（含手机，避免遮挡内容）
 
-   ⚠️ 海报里的二维码：本站无法凭空生成真实可扫的二维码。
-      若站长把真实活动海报（含二维码）放到 ./assets/starbucks-poster.jpg，
-      弹窗会自动改用该图片（含真二维码）；否则显示下方 CSS 复原版海报 +
-      占位「扫码参与」框。恢复真实二维码只需放图，无需改代码。
+   2026-11-17 站长三点修正（对应 starbucks-promo.js 里的同名说明）：
+     ① 海报容器改**白底**：原来照抄活动页深色截图，贴在本站浅色页面像块黑砖；
+     ② 撤掉我凭空画的绿黑棋盘格假码（扫不出来）——改用站长 11-12 原图里那个
+        真实微信小程序码（assets/workbuddy-mp-code.png，白底、可扫）；
+        三张原图没有可复制的口令文本，所以不摆口令、不造假码；
+     ③ logo 直接借站内 ./assets/starbucks.svg（首页品牌卡同一份），不再用文字凑。
    ========================================================================== */
 
 .sxg-promo {
@@ -60,7 +62,42 @@
   font-weight: 800;
   letter-spacing: 0.02em;
   white-space: nowrap;
+  overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 112, 74, 0.32);
+}
+
+/* 站内真实 logo（assets/starbucks.svg，48×48 圆形徽标）：
+   白底圆 + 图片，缩到 28px 仍能认出来；图片挂了才退回文字标 */
+.sxg-promo__logo__img,
+.sb-poster__sb__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.sxg-promo__logo:not(.is-fallback),
+.sb-poster__sb:not(.is-fallback) {
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 100, 64, 0.18);
+}
+
+.sxg-promo__logo.is-fallback,
+.sb-poster__sb.is-fallback {
+  background: linear-gradient(135deg, var(--sb-primary), var(--sb-primary-dark));
+  color: #fff;
+}
+
+.sb-poster__sb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: #ffffff;
+  overflow: hidden;
+  flex: 0 0 auto;
 }
 
 .sxg-promo__brand {
@@ -124,33 +161,6 @@
   color: var(--sb-text);
 }
 
-/* ---------- 复制/提示 toast（备用，活动链接可用时启用） ---------- */
-.sxg-promo-toast {
-  position: fixed;
-  left: 50%;
-  bottom: calc(var(--sxg-bar-h, 0px) + 96px);
-  z-index: 10001;
-  max-width: min(88vw, 340px);
-  padding: 11px 16px;
-  border-radius: 12px;
-  background: rgba(31, 42, 36, 0.93);
-  color: #fff;
-  font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  font-size: 13px;
-  line-height: 1.6;
-  text-align: center;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
-  transform: translate(-50%, 8px);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.22s ease, transform 0.22s ease;
-}
-
-.sxg-promo-toast.is-show {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-
 /* ---------- 活动海报弹窗 ---------- */
 .sb-modal {
   position: fixed;
@@ -175,7 +185,8 @@
   width: min(92vw, 400px);
   max-height: 90vh;
   overflow: auto;
-  background: #0a0a0a;
+  /* 白底（站长 2026-11-17）：深色卡片贴在本站浅色页面像外链截图，不像站内内容 */
+  background: #ffffff;
   border-radius: 18px;
   padding: 18px 16px 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
@@ -198,6 +209,19 @@
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
+  z-index: 2;
+}
+
+/* 白底卡片上的关闭按钮需要深色，否则白字白底看不清 */
+@media (max-width: 520px) {
+  .sb-modal__close {
+    position: sticky;
+    top: 0;
+    float: right;
+    margin: -6px -4px 0 0;
+    background: rgba(31, 42, 36, 0.06);
+    color: #1f2a24;
+  }
 }
 
 /* 真实海报图（站长放入 ./assets/starbucks-poster.jpg 后生效） */
@@ -207,10 +231,12 @@
   border-radius: 12px;
 }
 
-/* CSS 复原版海报（未放入真实图片时的兜底） */
+/* CSS 复原版海报（白底；未放入真实图片时的兜底）
+   配色从荧光绿改成深绿系：白底上荧光绿（#00E676）对比度只有 1.9:1，读不清。
+   --sb-accent 只留给需要「品牌荧光」的小面积点缀（如 × 号），正文一律用深色。 */
 .sb-poster {
   text-align: center;
-  color: var(--sb-accent);
+  color: var(--sb-primary);
   font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
 
@@ -223,25 +249,13 @@
   font-weight: 800;
 }
 
-.sb-poster__sb {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  background: var(--sb-primary);
-  color: #fff;
-  font-size: 12px;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-.sb-poster__x { font-size: 20px; color: var(--sb-accent); }
+.sb-poster__x { font-size: 20px; color: var(--sb-primary); }
 
 .sb-poster__wb {
-  color: #4fc3f7;
-  font-size: 15px;
+  color: var(--sb-text);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 .sb-poster__date {
@@ -250,78 +264,82 @@
   line-height: 1.25;
   letter-spacing: 0.01em;
   margin: 6px 0 12px;
+  color: var(--sb-text);
 }
 
 .sb-poster__line {
   font-size: 15px;
   line-height: 1.7;
-  color: #d6ffe6;
+  color: var(--sb-text-2);
 }
 
 .sb-poster__reward {
   margin: 8px 0 4px;
   font-size: 18px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--sb-primary);
 }
 
 .sb-poster__qty {
   font-size: 14px;
-  color: var(--sb-accent);
+  color: var(--sb-text-2);
   margin-bottom: 12px;
 }
 
+/* ---------- 真实微信小程序码入口（替代我画的假棋盘格） ---------- */
 .sb-poster__qr {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  margin: 8px auto 12px;
+  gap: 8px;
+  margin: 12px auto 14px;
 }
 
-.sb-poster__qrbox {
-  width: 132px;
-  height: 132px;
-  border-radius: 10px;
-  background:
-    repeating-linear-gradient(0deg, #00e676 0 6px, #0a0a0a 6px 12px),
-    repeating-linear-gradient(90deg, #00e676 0 6px, #0a0a0a 6px 12px);
-  background-blend-mode: difference;
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.sb-poster__qrbox::after {
-  content: '☕';
-  font-size: 40px;
-  background: #0a0a0a;
-  border-radius: 8px;
-  padding: 4px 10px;
+.sb-poster__qr-img {
+  display: block;
+  width: min(52%, 170px);
+  height: auto;
+  /* 真码是圆形的：圆形裁切顺带去掉原图四角的背景人像，只留干净的码 */
+  border-radius: 50%;
 }
 
 .sb-poster__scan {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--sb-primary);
+}
+
+.sb-poster__entry-tip {
+  margin-top: 8px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--sb-text-3);
+  text-align: center;
+}
+
+.sb-poster__entry-tip--plain {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f4f6f5;
+  color: var(--sb-text-2);
+  font-size: 12.5px;
 }
 
 .sb-poster__foot {
   font-size: 11px;
   line-height: 1.5;
-  color: #7fe0a8;
+  color: var(--sb-text-3);
   margin-top: 4px;
 }
 
 .sb-modal__copy {
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid var(--sb-border);
   text-align: center;
   font-size: 13.5px;
   line-height: 1.6;
-  color: #e8fff0;
+  color: var(--sb-text-2);
 }
 
 .sb-modal__cta {
@@ -368,11 +386,11 @@
   .sxg-promo__body { display: block; position: relative; }
 
   .sxg-promo__logo {
-    width: 72px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     margin: 0 auto 8px;
-    font-size: 14px;
-    white-space: nowrap;
+    flex: 0 0 auto;
+    font-size: 13px;
   }
 
   .sxg-promo__brand { font-size: 14px; }
@@ -407,12 +425,10 @@
   .sxg-promo__body { display: flex; align-items: center; gap: 10px; flex: 1 1 auto; min-width: 0; }
 
   .sxg-promo__logo {
-    width: 56px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     margin: 0;
     flex: 0 0 auto;
-    font-size: 13px;
-    white-space: nowrap;
   }
 
   .sxg-promo__text { min-width: 0; }
@@ -439,21 +455,12 @@
 @media (max-width: 374px) {
   .sxg-promo { gap: 8px; padding: 10px 34px 10px 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
   .sxg-promo__body { gap: 8px; }
-  .sxg-promo__logo { width: 44px; height: 36px; font-size: 11px; white-space: nowrap; }
+  .sxg-promo__logo { width: 34px; height: 34px; }
   .sxg-promo__brand { font-size: 13px; }
   .sxg-promo__title { font-size: 11.5px; line-height: 1.4; }
   .sxg-promo__cta { padding: 9px 10px; font-size: 13px; }
 }
 
-@media (min-width: 1440px) {
-  .sxg-promo-toast {
-    bottom: auto;
-    top: 50%;
-    transform: translate(-50%, calc(-50% + 8px));
-  }
-  .sxg-promo-toast.is-show { transform: translate(-50%, -50%); }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .sxg-promo, .sxg-promo__cta, .sb-modal, .sb-modal__card, .sxg-promo-toast { transition: none; }
+  .sxg-promo, .sxg-promo__cta, .sb-modal, .sb-modal__card { transition: none; }
 }

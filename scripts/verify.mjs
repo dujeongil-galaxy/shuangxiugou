@@ -5236,10 +5236,10 @@ section('20q. 良配临时下线 + 星巴克临时上线');
     'index.html 已引用 starbucks-promo.css');
   check(/<script[^>]*starbucks-promo\.js[^>]*>/i.test(idxNoCmt),
     'index.html 已引用 starbucks-promo.js');
-  check(/starbucks-promo\.css\?v=1/.test(idxHtml),
-    'starbucks-promo.css 版本号 ?v=1（新文件名 starbucks-promo，2026-11-17 去 ad 避拦截器）');
-  check(/starbucks-promo\.js\?v=1/.test(idxHtml),
-    'starbucks-promo.js 版本号 ?v=1');
+  check(/starbucks-promo\.css\?v=2/.test(idxHtml),
+    'starbucks-promo.css 版本号 ?v=2（2026-11-17 白底 + 真小程序码改版，必须 bump 破缓存）');
+  check(/starbucks-promo\.js\?v=2/.test(idxHtml),
+    'starbucks-promo.js 版本号 ?v=2（同上，v1 会被浏览器缓存吃掉本次改动）');
 
   // 2b) 2026-11-17 站长 PC 端"看不见广告"第三轮排查的根因与对策（防回退）
   //  根因1：文件名 starbucks-ad.js / 类名 .sb-ad 命中广告拦截器默认规则（含 ad 字样）
@@ -5281,6 +5281,25 @@ section('20q. 良配临时下线 + 星巴克临时上线');
       '星巴克 CSS 含活动海报弹窗 .sb-modal');
     check(/\.sb-poster__date\s*\{/.test(sbCss),
       '星巴克 CSS 含完整日期节点 .sb-poster__date');
+
+    // 2026-11-17 站长三点修正（白底 / 真小程序码 / 现成 logo），逐条钉死防回退。
+    // 起因：弹窗照抄活动页深色截图，且我凭空画了个绿黑棋盘格假码写「扫码参与」——
+    // 假码扫不出来，站长原话「何来扫码？」。真入口是站长 11-12 原图里那个微信小程序码。
+    check(/\.sb-modal__card\s*\{[^}]*background:\s*#ffffff/i.test(sbCss),
+      '星巴克弹窗卡片白底（background:#ffffff，不再照抄深色活动页截图）',
+      '弹窗回退成深色底 → 与站点浅色页面割裂，站长 11-17 明确要白底');
+    check(exists('assets/workbuddy-mp-code.png')
+      && /mpCode:\s*'\.\/assets\/workbuddy-mp-code\.png'/.test(sbJs)
+      && /sb-poster__qr-img/.test(sbJs),
+      '星巴克入口用真·微信小程序码（assets/workbuddy-mp-code.png 存在且被引用）',
+      '真码图缺失或没被引用 → 弹窗没有可扫入口，又回到讲不清怎么参与的旧问题');
+    check(!/qrbox|repeating-linear-gradient|sb-poster__scan['"]?\s*:\s*['"]扫码参与/.test(sbJs + sbCss),
+      '星巴克组件内不再有凭空画的假二维码（qrbox/棋盘格渐变）',
+      '假码回退 → 扫不出来，正是站长 11-17 骂「何来扫码」的那个东西');
+    check(/logoSrc:\s*'\.\/assets\/starbucks\.svg'/.test(sbJs)
+      && exists('assets/starbucks.svg'),
+      '星巴克 logo 借用站内现成 assets/starbucks.svg（不自己画文字标）',
+      'logo 回退成文字「星巴克」或换成别的图 → 违反站长 11-17「直接借用现成 logo」');
   } else {
     err('缺少 starbucks-promo.js / starbucks-promo.css', '星巴克活动位无法上线');
   }

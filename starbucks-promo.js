@@ -4,8 +4,13 @@
    架构与 liangpei-ad.js 完全一致：独立 IIFE，经 index.html 引用，不碰压缩 bundle。
    复用 --sxg-bar-h 避让语义（≥1440px 写 0，吸底条写实测高度，隐藏写 0）。
 
-   ⚠️ 真实二维码：把活动海报（含二维码）放到 ./assets/starbucks-poster.jpg，
-      弹窗会自动改用该图（含真二维码）。否则显示 CSS 复原版海报 + 占位「扫码参与」。
+   2026-11-17 站长三点修正：
+   ① 海报改**白底**（原来照抄了活动页深色截图，贴在本站浅色页面像块黑砖）；
+   ② 撤掉我凭空画的绿黑棋盘格假码（扫不出来，纯属搞笑）——改用站长 11-12 给的
+      原图里那个**真实微信小程序码**，已从原图裁出存 assets/workbuddy-mp-code.png。
+      真码扫进「腾讯WorkBuddy」小程序即可领券；三张原图里没有可复制的口令文本，
+      所以不做「复制口令」那套（免得编造不存在的口令）；
+   ③ logo 不再用文字「星巴克」凑，直接借站内 `./assets/starbucks.svg`（首页品牌卡同一个）。
    ========================================================================== */
 (function () {
   'use strict';
@@ -27,8 +32,16 @@
 
     // 弹窗主行动按钮（可选）：填了真实活动链接才显示并跳转
     activityUrl: '',
-    // 真实海报图（含二维码）：放在 ./assets/starbucks-poster.jpg 后自动启用
+    // 活动入口 = 站长 2026-11-12 给的原图里那个**真实微信小程序码**（圆形、带 WorkBuddy 图标，
+    // 扫它进「腾讯WorkBuddy」小程序领券）。已从原图裁出存 assets/workbuddy-mp-code.png。
+    // 2026-11-17 站长纠正：「何来扫码？」——指的是我之前凭空画的绿黑棋盘格假码，
+    // 不是这张真码。真码可扫、是官方入口，保留「微信扫一扫」说明。
+    mpCode: './assets/workbuddy-mp-code.png',
+    mpName: '腾讯 WorkBuddy',
+    // 真实海报图（可选）：放进 ./assets/starbucks-poster.jpg 后整块替换 CSS 复原版
     posterImg: '',
+    // 站内现成 logo（首页品牌卡同一份），不自己画
+    logoSrc: './assets/starbucks.svg',
 
     storageKey: 'sb_ad_dismissed_at',
     reappearAfter: 7 * 24 * 60 * 60 * 1000,
@@ -38,6 +51,15 @@
   };
 
   var LOGO_TEXT = '星巴克';
+  var LOGO_ALT = '星巴克';
+
+  /* 品牌小圆标：优先用站内现成 SVG；图片加载失败才退回文字标（离线/换图不至于开天窗） */
+  function logoHtml(cls) {
+    return '<span class="' + cls + '" aria-hidden="true">' +
+      '<img class="' + cls + '__img" src="' + CONFIG.logoSrc + '" alt="' + LOGO_ALT + '" ' +
+        'onerror="this.style.display=\'none\';this.parentNode.classList.add(\'is-fallback\');this.parentNode.textContent=\'' + LOGO_TEXT + '\'">' +
+    '</span>';
+  }
 
   // 点关闭只隐藏本次页面，刷新后重新出现（与良配一致，不做 7 天记忆）
   function isDismissedRecently() { return false; }
@@ -51,7 +73,7 @@
     aside.innerHTML =
       '<button class="sxg-promo__close" type="button" aria-label="关闭广告">&times;</button>' +
       '<div class="sxg-promo__body">' +
-        '<div class="sxg-promo__logo" aria-hidden="true">' + LOGO_TEXT + '</div>' +
+        logoHtml('sxg-promo__logo') +
         '<div class="sxg-promo__text">' +
           '<div class="sxg-promo__brand">' + CONFIG.brand + ' × WorkBuddy</div>' +
           '<div class="sxg-promo__title">' + CONFIG.title + '</div>' +
@@ -106,13 +128,24 @@
     var posterInner;
     if (CONFIG.posterImg) {
       posterInner = '<img class="sb-modal__poster-img" src="' + CONFIG.posterImg +
-        '" alt="星巴克 × WorkBuddy 联名活动海报（含二维码）">';
+        '" alt="星巴克 × WorkBuddy 联名活动海报">';
     } else {
-      // CSS 复原版海报（未放入真实图片时的兜底）
+      // CSS 复原版海报（白底；未放入真实图片时的兜底）
+      // 入口 = 站长原图里的真·微信小程序码（不是我自己画的假棋盘格）。
+      // 真码图片加载失败才退回纯文字说明，绝不摆假码冒充可扫。
+      var entryInner = CONFIG.mpCode
+        ? '<div class="sb-poster__qr">' +
+            '<img class="sb-poster__qr-img" src="' + CONFIG.mpCode +
+              '" alt="' + CONFIG.mpName + ' 微信小程序码，微信扫一扫参与领券">' +
+            '<div class="sb-poster__scan">微信扫一扫 · 打开 ' + CONFIG.mpName + ' 小程序参与</div>' +
+          '</div>'
+        : '<div class="sb-poster__entry-tip sb-poster__entry-tip--plain">活动入口在微信小程序「' +
+            CONFIG.mpName + '」内，进小程序后在活动页领取</div>';
+
       posterInner =
         '<div class="sb-poster">' +
           '<div class="sb-poster__head">' +
-            '<span class="sb-poster__sb">星巴克</span>' +
+            logoHtml('sb-poster__sb') +
             '<span class="sb-poster__x">×</span>' +
             '<span class="sb-poster__wb">WorkBuddy</span>' +
           '</div>' +
@@ -121,10 +154,7 @@
           '<div class="sb-poster__line">完成指定 AI 任务</div>' +
           '<div class="sb-poster__reward">' + CONFIG.reward + '</div>' +
           '<div class="sb-poster__qty">' + CONFIG.qty + '</div>' +
-          '<div class="sb-poster__qr">' +
-            '<div class="sb-poster__qrbox" aria-hidden="true"></div>' +
-            '<div class="sb-poster__scan">扫码参与</div>' +
-          '</div>' +
+          '<div class="sb-poster__entry-wrap">' + entryInner + '</div>' +
           '<div class="sb-poster__foot">' + CONFIG.foot + '</div>' +
         '</div>';
     }

@@ -5,8 +5,8 @@
 // 采用「小悬浮卡 + 点击弹出活动海报弹窗」。站长唯一硬约束：活动日期必须完整显示。
 //
 // 本测试用 jsdom + 真实 CSS 计算，断言：
-//   1) 星巴克 LOGO「星巴克」三字永远横排（容器宽 > 文字宽 + 余量，nowrap）
-//   2) 弹窗里含完整活动日期、活动文案、扫码参与
+//   1) 星巴克 LOGO 借用站内现成 assets/starbucks.svg（图片非文字，2026-11-17 站长要求）
+//   2) 弹窗里含完整活动日期、活动文案、真·微信小程序码入口（非我画的假码）
 //   3) index.html 中良配引用已注释下线、星巴克引用已上线
 const fs = require('fs');
 const path = require('path');
@@ -50,45 +50,42 @@ check('LOGO 是「星巴克」', brandM && brandM[1] === '星巴克', brandM && 
 const ctaM = /cta:\s*'([^']*)'/.exec(js);
 check('悬浮卡 CTA 文案为「查看活动」', ctaM && ctaM[1] === '查看活动', ctaM && ctaM[1]);
 
-// ---------- 3. LOGO 横排（容器宽 > 文字宽 + 余量，nowrap） ----------
-console.log('\n--- LOGO 横排 ---');
+// ---------- 3. LOGO：借用站内现成 svg（2026-11-17 站长要求，不再用文字标） ----------
+console.log('\n--- LOGO（站内现成 svg） ---');
 function parseBlock(cssText, selector, from = 0) {
   const i = cssText.indexOf(selector, from);
   if (i === -1) return null;
   return cssText.slice(i, cssText.indexOf('}', i) + 1);
 }
-const genIdx = css.indexOf('.sxg-promo__logo {');
-check('找得到通用段 .sxg-promo__logo', genIdx > 0);
-const genBlock = css.slice(genIdx, css.indexOf('}', genIdx) + 1);
-check('通用段设了 white-space: nowrap', /white-space:\s*nowrap/.test(genBlock));
-
-const charCount = brandM ? brandM[1].length : 0; // 3
+check('assets/starbucks.svg 存在', fs.existsSync(path.join(ROOT, 'assets/starbucks.svg')));
+check('JS 配置 logoSrc 指向站内 starbucks.svg', /logoSrc:\s*'\.\/assets\/starbucks\.svg'/.test(js));
+check('JS 用 logoHtml() 渲染 <img>（含 onerror 兜底）',
+  /logoHtml\(/.test(js) && /onerror/.test(js));
+check('CSS 有 logo 图片等比缩放规则', /\.sxg-promo__logo__img[^{]*\{[^}]*object-fit:\s*contain/s.test(css));
 const blocks = [
-  ['≥1440px 右侧竖排卡片', parseBlock(css, '.sxg-promo__logo {', css.indexOf('@media (min-width: 1440px)'))],
-  ['<1440px 底部吸底条', parseBlock(css, '.sxg-promo__logo {', css.indexOf('@media (max-width: 1439px)'))],
-  ['≤374px 超窄屏', parseBlock(css, '.sxg-promo__logo {', css.indexOf('@media (max-width: 374px)'))],
+  ['≥1440px 右侧竖排卡片', css.indexOf('@media (min-width: 1440px)')],
+  ['<1440px 底部吸底条', css.indexOf('@media (max-width: 1439px)')],
+  ['≤374px 超窄屏', css.indexOf('@media (max-width: 374px)')],
 ];
-for (const [label, block] of blocks) {
+for (const [label, from] of blocks) {
+  const block = parseBlock(css, '.sxg-promo__logo {', from);
   if (!block) { check(`${label}：找得到 logo 样式`, false); continue; }
   const wM = /width:\s*(\d+(?:\.\d+)?)px/.exec(block);
-  const fM = /font-size:\s*(\d+(?:\.\d+)?)px/.exec(block);
-  check(`${label}：能解析出 width 与 font-size`, !!wM && !!fM, { w: wM && wM[1], f: fM && fM[1] });
-  if (!wM || !fM) continue;
-  const width = parseFloat(wM[1]);
-  const fontSize = parseFloat(fM[1]);
-  const needed = charCount * fontSize;
-  const slack = width - needed;
-  check(`${label}：容器(${width}px) 比 ${charCount} 字所需(${needed}px) 至少宽 8px`, slack >= 8, { width, fontSize, needed, slack });
-  check(`${label}：本段也设了 nowrap（兜底）`, /white-space:\s*nowrap/.test(block));
+  const hM = /height:\s*(\d+(?:\.\d+)?)px/.exec(block);
+  check(`${label}：logo 容器为正方或近方（图片用，不是长条文字底）`,
+    !!wM && !!hM && Math.abs(parseFloat(wM[1]) - parseFloat(hM[1])) <= 6,
+    { w: wM && wM[1], h: hM && hM[1] });
 }
 
 // ---------- 4. 弹窗与海报关键节点 ----------
 console.log('\n--- 弹窗与海报 ---');
 check('CSS 含 .sb-modal（活动海报弹窗）', /\.sb-modal\s*\{/.test(css));
 check('CSS 含 .sb-poster__date（完整日期节点）', /\.sb-poster__date\s*\{/.test(css));
-check('CSS 含 .sb-poster__scan（扫码参与）', /\.sb-poster__scan\s*\{/.test(css));
+check('CSS 含 .sb-poster__scan（微信扫一扫说明）', /\.sb-poster__scan\s*\{/.test(css));
+check('真·微信小程序码图片存在', fs.existsSync(path.join(ROOT, 'assets/workbuddy-mp-code.png')));
+check('JS 引用真码 mpCode 并渲染 <img>', /mpCode:\s*'\.\/assets\/workbuddy-mp-code\.png'/.test(js) && /sb-poster__qr-img/.test(js));
+check('弹窗文案为「微信扫一扫」而非假「扫码参与」', /微信扫一扫/.test(js) && !/扫码参与/.test(js));
 check('JS 构建弹窗时写入完整日期', /CONFIG\.activityDateFull/.test(js));
-check('JS 弹窗含「扫码参与」文案', /扫码参与/.test(js));
 check('JS 弹窗含底部规则说明', /CONFIG\.foot/.test(js));
 
 // ---------- 5. 避让语义（沿用良配 --sxg-bar-h） ----------
@@ -113,8 +110,8 @@ check('良配 js 注释块仍保留（便于恢复）', html.includes('liangpei-
 // 星巴克：必须已上线
 check('index.html 引用 starbucks-promo.css', /<link[^>]*starbucks-promo\.css[^>]*>/i.test(html));
 check('index.html 引用 starbucks-promo.js', /<script[^>]*starbucks-promo\.js[^>]*>/i.test(html));
-check('starbucks-promo.css 版本号 ?v=1', /starbucks-promo\.css\?v=1/.test(html));
-check('starbucks-promo.js 版本号 ?v=1', /starbucks-promo\.js\?v=1/.test(html));
+check('starbucks-promo.css 版本号 ?v=2', /starbucks-promo\.css\?v=2/.test(html));
+check('starbucks-promo.js 版本号 ?v=2', /starbucks-promo\.js\?v=2/.test(html));
 check('星巴克广告 showAfter = 1500ms（1.5 秒淡入，非 6000ms 长空窗）', /showAfter:\s*1500\b/.test(js));
 
 // ---------- 7. jsdom 真渲染：logo 不折行声明 ----------
@@ -128,10 +125,9 @@ const dom = new JSDOM(`<!doctype html><html><head><style>${css}</style></head>
 const doc = dom.window.document;
 const logoEl = doc.querySelector('.sxg-promo__logo');
 check('渲染出了 logo 元素', !!logoEl);
-check('logo 元素文本是「星巴克」', logoEl && logoEl.textContent === '星巴克');
 const sheetText = Array.from(doc.styleSheets).flatMap((s) => Array.from(s.cssRules).map((r) => r.cssText)).join('\n');
-check('样式表里 logo 规则含 nowrap', /\.sxg-promo__logo[^{]*\{[^}]*white-space:\s*nowrap/s.test(sheetText));
-check('样式表里没有把 logo 的 nowrap 改回 normal', !/\.sxg-promo__logo[^{]*\{[^}]*white-space:\s*normal/s.test(sheetText));
+check('样式表有 logo 图片等比规则（object-fit:contain）', /\.sxg-promo__logo__img[^{]*\{[^}]*object-fit:\s*contain/s.test(sheetText));
+check('logo 容器白底（.is-fallback 之外背景 #ffffff，图片看得清）', /\.sxg-promo__logo:not\(\.is-fallback\)[^{]*\{[^}]*background:\s*#ffffff/s.test(sheetText));
 
 console.log('\n' + '='.repeat(52));
 console.log(`通过 ${pass} 项，失败 ${fail} 项`);
