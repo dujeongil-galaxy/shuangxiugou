@@ -9,6 +9,18 @@
 
 ---
 
+### 近期 bug 根因（fix）：合并 origin/main 时 index.html 残留冲突标记，`#site-version` 真相源出现两份（2026-11-17 · 提交 `96b54bd`）
+
+**现象**：verify 报「版本号真相源节点唯一且带 7 位哈希」判红，`grep -n "当前版本号" index.html` 同时打出两行 `id="site-version"`（`d4bb012` 与 `b25a82d`），两行之间还夹着 `<<<<<<< HEAD` / `=======` / `>>>>>>> origin/main` 三行标记。
+
+**根因**：远端 `01629f3`（Auto Ads 挂载）与本地 `b236a19`（视频区 + 留言准则页）都在 `index.html` 的「版本号唯一真相源」注释块之后插入同一节点，merge 按行级冲突处理；我在合并瞬间用了 `git add -A` 把带冲突标记的文件一并加进索引并提交，等于跳过人工看过一眼这一步。`#site-version` 是 `sync-version.mjs` 的回写锚点、`verify §20g` 的判据、`.github/workflows/sync-version.yml` 的写入目标，两处同时存在时「取哪一份」不确定（`60cee9a` 已因远端 rebase 残留标记踩过一次，本次同类复发）。
+
+**修法**：删 3 行冲突标记与多出的那份 `<span id="site-version">`，保留远端 `b25a82d` 那一份交由 `sync-version.mjs` 回写；`grep -c 'id="site-version"'` 必须为 1。
+
+**教训**：冲突标记本身并不是「文件被改坏」的唯一信号——冲突段落在**结构上合法**时（这里是一行独立 span），页面照样渲染、肉眼也看不出异常，只有靠断言才抓得住。合并后应立刻 `grep -rln '<<<<<<< HEAD'` 扫全仓，而不是等 verify。
+
+---
+
 
 ### 近期 bug 根因（fix）：星巴克推广「PC 上看不见」第三轮收口——文件名/类名含 `ad` 被广告拦截器误杀 + 窄屏弹窗贴底压住吸底条（2026-11-17 · 提交 `cc16a91`）
 

@@ -373,6 +373,8 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 **修 bug 三处留痕（§21n 机器反查）**：`README.md` 本节摘要、`BUG-ROOT-CAUSES.md` 新增章节、`最近更新.md` 顶部条目，都要带真实提交哈希与 commit 时间；verify 按 `git log` 最近一次 `fix:` 提交反查，缺一处判红。最近三条：
 
+- **2026-11-17 · 提交 `96b54bd`**：合并 `origin/main` 时 `index.html` 残留 4 行冲突标记、`#site-version` 真相源出现两份——两侧同点插入同一节点，`git add -A` 把带标记的文件一并加进索引导致合并瞬间没被人看一眼；两份会让 `sync-version` 回写锚点、`verify §20g` 与 CI 同步工作流取到错的哈希（`60cee9a` 已踩过一次）。删标记、恢复唯一节点后同步版本号；verify 全绿。
+
 - **2026-11-17 · 提交 `cc16a91`**：星巴克推广「PC 仍看不见」第三轮收口——真渲染定位到 `elementFromPoint` 命中抖音弹窗 `.dyp`（`z-index:100000` vs 推广 `9990`）；同时把文件名 `starbucks-ad.*` 与类名 `.sb-ad*` 全部去掉 `ad` 字样改 `starbucks-promo.*` / `.sxg-promo*`（避广告拦截器误杀），并让窄屏弹窗用 `--sxg-bar-h` 避让吸底推广条；verify 新增 5 断言、3 组故障注入全判红；详见专文。
 - **2026-11-17 · 提交 `ef1104e`**：run #717 CI 判红四项一次修完——verify 的 notes 目录断言加环境缺席守卫（notes-plaintext.md 为 gitignore 本机文件，CI 永远没有）、§21g 节号重复改 21g-2、test-ai-anchor 按 ai-link 新架构重写（圆钮真渲染/真跳转/旧面板移除确认）、test-dyp-toggle ⑨ 对齐 11-16/11-17 两次站长指令后的口径；本地 56 组测试全绿。详见专文。
 - **2026-11-17 · 提交 `a242cd8`**：星巴克 × WorkBuddy 广告「之前有、现在突然不见了」——代码其实一直在，是 6 秒淡入空窗 + 首页弹窗遮罩造成「看不见」的错觉，叠加 js/css `?v=1` 从上线起没破过缓存（Service Worker cache-first）；已把 showAfter 缩到 1.5 秒、版本号升 v2，专文新增章节锁值 + 故障注入；详见专文。
