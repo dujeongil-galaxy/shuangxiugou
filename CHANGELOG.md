@@ -4,6 +4,12 @@
 
 ---
 
+### fix(ad)：星巴克 × WorkBuddy 广告「之前有现在没」——缩短淡入空窗 + 破缓存（2026-11-17 · 提交 `a242cd8`）
+
+- **起因**：站长「PC 端星巴克和 WorkBuddy 的广告呢，怎么又不见了，放出来」。线上 1440px 真渲染截图显示广告一直在，代码/引用/§20q 断言全在，复现不出「消失」。判定「看得见的消失」：① `CONFIG.showAfter=6000`，广告初始 `is-hidden`，要等 6 秒才淡入，叠加首页比亚迪公益弹窗遮罩，打开头几秒扫一眼以为没有；② css/js `?v=1` 自 11-12 上线起未变，`sw.js` 对静态资源 cache-first（`sxg-static-v1`），旧帧难自更新。文件名/类名带 `ad`，不排除用户端广告拦截插件，但无法从站点侧验证，本次未处理。
+- **修复**：① `starbucks-ad.js` `showAfter` 6000 → 1500（1.5 秒淡入，仍守 §20n「不加载即弹」）；② `index.html` 里 `starbucks-ad.css?v=1→v2`、`starbucks-ad.js?v=1→v2` 破缓存；③ verify §20q 版本号断言同步 v2，§20q 与 `test-starbucks-ad.cjs` 各新增 `showAfter:1500` 锁值断言防回退。
+- **验证**：`verify.mjs` 1848 项全绿（+1 为新增锁值断言）；`test-starbucks-ad.cjs` 40 项全绿；故障注入 2 组（版本号回退 v1 / showAfter 改回 6000）2/2 判红并逐字节还原；无头 Edge + CDP 改后重渲染，右上角广告卡片在位无遮挡、左下 AI 图标共存、`PAGEERRORS=[]`。三处留痕见 README 摘要 / 最近更新 / BUG-ROOT-CAUSES.md 顶部章节。
+
 ### feat：AI 挂件改跳独立页 labor-ai.html（双线路 + Star 满 7 天解锁国内直连）（2026-11-17 · 提交 `15e8966`）
 
 - **站长指令**：内嵌 AI 对话挂件多余，撤掉，点左下角 AI 图标直接跳新页面；原 Cloudflare 配置转移到新页面，仍允许切换线路：不登录 GitHub 并 Star 走 Cloudflare，Star 满 7 天可用国内线路。
