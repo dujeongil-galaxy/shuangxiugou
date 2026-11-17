@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    test-dyp-toggle.cjs —— 首页弹窗「新版 / 旧版」转换按钮 行为测试
    --------------------------------------------------------------------------
    被测：dyp-version-toggle.js（浏览器 IIFE，jsdom 真跑）
@@ -200,12 +200,17 @@ function injectFactcheck(w) {
     /\.dyp--legacy \.dyp__article \.dyp__note--call strong\s*\{[^}]*color:\s*#c0392b/.test(dpc)
     && /\.dyp--legacy \.dyp__article \.dyp__note--call\s*\{[^}]*background:\s*#fdf1ee/.test(dpc)
     && /classList\.toggle\('dyp--legacy'/.test(dpj));
-  check('两版共用 CALL_HTML，文字逐字未改',
-    (dpj.match(/CALL_HTML/g) || []).length >= 3
-    && /广纳贤言并期待听到你的声音/.test(dpj) && /对，别回头，说的就是你！/.test(dpj));
-  check('旧版签名只留存档名，日期与「之前」已删；新版日期仍在',
-    /<p class="dyp__sign">双休购 · 旧版弹窗存档<\/p>/.test(dpj)
-    && !/2026-11-13 之前/.test(dpj) && /2026 年 11 月 14 日/.test(dpj));
+  // 2026-11-16 站长指令（5c3fbc3）：最早的旧版存档整体不要，换成《买车之前…》第二篇 →
+  // CALL_HTML 只剩定义 + 新版文末一处使用（共 2 处）；旧版签名也随 11-16/11-17 两次指令
+  // 变为「公益提醒」且标题带日期（dcc3fa0）。断言对齐这两次站长指令后的现实。
+  check('号召语单一真相源 CALL_HTML：定义+新版文末一处，逐字站长原话',
+    (dpj.match(/CALL_HTML/g) || []).length === 2
+    && /在此广纳贤言并期待听到你的声音；对，别回头，说的就是你！/.test(dpj));
+  check('新版签名带日期；第二篇签名「公益提醒」且标题带 2026-11-16 日期',
+    /<p class="dyp__sign">双休购站长 dujeongil-galaxy<br>2026 年 11 月 14 日<\/p>/.test(dpj)
+    && /<p class="dyp__sign">双休购 · 公益提醒<\/p>/.test(dpj)
+    && /买车之前，先看清谁在替比亚迪说话（2026-11-16 晚）/.test(dpj)
+    && !/2026-11-13 之前/.test(dpj));
 
   setTimeout(function () {
     console.log('\n========== 结果：' + passed + ' 项通过，' + failed + ' 项失败 ==========');

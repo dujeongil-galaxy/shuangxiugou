@@ -2295,9 +2295,15 @@ if (exists('notes.html')) {
   // 正文目录仍须限定 .wrap（明文里锁定提示的标题也是 h2，不限定会多出一个假章节）。
   // 该逻辑随密文正文解锁后运行，脚本源码在明文源 notes-plaintext.md 中。
   const plainSrc = exists('notes-plaintext.md') ? read('notes-plaintext.md') : '';
-  check(/\.wrap h2/.test(plainSrc)
-    && !/querySelectorAll\(['"]h2['"]\)/.test(plainSrc),
-    '正文目录仍只扫 .wrap 内的小节（锁定提示的 h2 不算章节）',
+  // notes-plaintext.md 是 gitignore 的本机文件（.gitignore），CI 与任何克隆环境都没有它。
+  // 文件缺席时断言无从校验 → 按环境缺席跳过；本机存在明文源时仍强制校验。
+  // 不加守卫 CI 永远判红（2026-11-17 run #717 实测：本断言新增当日从未在 CI 上跑过）。
+  check(plainSrc === ''
+    || (/\.wrap h2/.test(plainSrc)
+      && !/querySelectorAll\(['"]h2['"]\)/.test(plainSrc)),
+    plainSrc === ''
+      ? '正文目录只扫 .wrap 内的小节（notes-plaintext.md 不在本环境，断言缺席跳过）'
+      : '正文目录仍只扫 .wrap 内的小节（锁定提示的 h2 不算章节）',
     '不限定 .wrap → 目录多出一个假的「待写」章节');
 
   // ⑧ notes.html 不得点名收录企业。
@@ -6203,7 +6209,9 @@ section('21c. 首页滑到底部按钮');
   // ---- 前端图标跳转脚本 + 品牌页挂载（2026-11-17 改版：内嵌对话撤掉，AI 图标跳独立页 labor-ai.html）----
   check(exists('ai-link.js') && exists('labor-ai.html'),
     'AI 图标跳转脚本与新页面存在（ai-link.js / labor-ai.html）');
-  section('21g. 劳动法小助手（图标跳独立页 + Worker 代理兜底）');
+  // 2026-11-17 改版断言独立成节；原沿用 21g 节号与上方重复（test-verify-self 判红），
+  // 改 21g-2（时间序在 21g-1 双线路之后）。
+  section('21g-2. 劳动法小助手（图标跳独立页 + Worker 代理兜底）');
   // 品牌页全量挂载：数 brand/*.html 里引用 ai-link.js 的页数 == 品牌页总数
   const brandDir = join(ROOT, 'brand');
   let brandPages = 0, mounted = 0;
