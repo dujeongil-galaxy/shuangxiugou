@@ -5230,10 +5230,10 @@ section('20q. 良配临时下线 + 星巴克临时上线');
     'index.html 已引用 starbucks-ad.css');
   check(/<script[^>]*starbucks-ad\.js[^>]*>/i.test(idxNoCmt),
     'index.html 已引用 starbucks-ad.js');
-  check(/starbucks-ad\.css\?v=1/.test(idxHtml),
-    'starbucks-ad.css 版本号 ?v=1（缓存防穿透）');
-  check(/starbucks-ad\.js\?v=1/.test(idxHtml),
-    'starbucks-ad.js 版本号 ?v=1');
+  check(/starbucks-ad\.css\?v=2/.test(idxHtml),
+    'starbucks-ad.css 版本号 ?v=2（缓存防穿透；2026-11-17 从 v1 升 v2 破缓存）');
+  check(/starbucks-ad\.js\?v=2/.test(idxHtml),
+    'starbucks-ad.js 版本号 ?v=2');
 
   // 3) 星巴克组件自身：完整活动日期 + 避让语义
   if (exists('starbucks-ad.js') && exists('starbucks-ad.css')) {
@@ -5247,6 +5247,10 @@ section('20q. 良配临时下线 + 星巴克临时上线');
       '星巴克脚本沿用 1440px 断点避让（与良配同款 --sxg-bar-h 语义）');
     check(/var h = \(wide \|\| aside\.classList\.contains\('is-hidden'\)\) \? 0 : aside\.offsetHeight;/.test(sbJs),
       '星巴克脚本 ≥1440px / 隐藏时 --sxg-bar-h 写 0（桌面无吸底条可让位）');
+    // 2026-11-17 站长反馈"广告又不见了"：6 秒淡入空窗太长 + 弹窗遮挡 → 缩短到 1.5 秒。
+    // 钉死具体值，防下次又悄悄改回 6000 造成"打开几秒看不到广告"的错觉。
+    check(/showAfter:\s*1500\b/.test(sbJs),
+      '星巴克广告 showAfter = 1500ms（1.5 秒淡入，非 6000ms 长空窗）');
     check(/\.sb-modal\s*\{/.test(sbCss),
       '星巴克 CSS 含活动海报弹窗 .sb-modal');
     check(/\.sb-poster__date\s*\{/.test(sbCss),

@@ -113,8 +113,9 @@ check('良配 js 注释块仍保留（便于恢复）', html.includes('liangpei-
 // 星巴克：必须已上线
 check('index.html 引用 starbucks-ad.css', /<link[^>]*starbucks-ad\.css[^>]*>/i.test(html));
 check('index.html 引用 starbucks-ad.js', /<script[^>]*starbucks-ad\.js[^>]*>/i.test(html));
-check('starbucks-ad.css 版本号 ?v=1', /starbucks-ad\.css\?v=1/.test(html));
-check('starbucks-ad.js 版本号 ?v=1', /starbucks-ad\.js\?v=1/.test(html));
+check('starbucks-ad.css 版本号 ?v=2', /starbucks-ad\.css\?v=2/.test(html));
+check('starbucks-ad.js 版本号 ?v=2', /starbucks-ad\.js\?v=2/.test(html));
+check('星巴克广告 showAfter = 1500ms（1.5 秒淡入，非 6000ms 长空窗）', /showAfter:\s*1500\b/.test(js));
 
 // ---------- 7. jsdom 真渲染：logo 不折行声明 ----------
 console.log('\n--- 浏览器实测 ---');
