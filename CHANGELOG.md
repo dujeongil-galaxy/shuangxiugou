@@ -4,6 +4,11 @@
 
 ---
 
+### feat(legal)：新增隐私政策/免责声明/关于/联系四页并全站页脚接入——AdSense 接入准备（2026-11-17 · 提交 `aa53f8a`）
+
+- **起因**：AdSense 审核要求站点具备隐私政策与完整的信息页；实测 `/privacy.html`、`/about.html`、`/contact.html`、`/disclaimer.html` 全部 404，品牌详情页可见文本也偏薄、缺少关于/联系入口。
+- **改动**：① 新增 4 个静态法务页（隐私政策含 localStorage 键名、GitHub OAuth 用途、AI 问答数据流（Cloudflare/阿里云服务端转发）、匿名邮箱、Google AdSense Cookie 条款与 adssettings.google.com 退出入口；免责声明含评级性质、证据强度分级、匿名反馈局限、企业异议通道；关于本站含评级口径徽章与运营者归属；联系页含 GitHub Issues 与匿名邮箱双渠道）；② 12 个静态页 + 181 个品牌页页脚幂等插入统一法务链接条（标记 `<!-- sxg-legal-links`，首页用深色配色，404 用绝对链接，notes.html 不动）；③ `index.html` 补 meta description；④ `sitemap.xml` 增补 4 条；⑤ `scripts/seo/generate-sitemap.py`、`AGENTS.md` 结构表同步。
+- **验证**：verify.mjs 1848 项通过；唯一判红为 notes 目录断言（依赖本机 gitignore 的 `notes-plaintext.md`，克隆环境缺失所致，HEAD 同样判红，非本次引入）。改动文件共 200 个；全站幂等标记复核 skip=0/patched=193。
 ### feat(labor-ai)：国内线路配置真实 API Key——_SEG 字符干扰串替换占位，浏览器实测可回话（2026-11-17 · 提交 `a5a84a3`）
 
 - **起因**：站长提供硅基流动 `sk-` Key，为劳动法助手 `labor-ai.html` 的「国内直连」线路配置真 Key（此前 `_SEG` 为占位串，检测到只提示「未配置」不发请求）。
