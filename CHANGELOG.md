@@ -4,6 +4,17 @@
 
 ---
 
+### feat：AI 挂件改跳独立页 labor-ai.html（双线路 + Star 满 7 天解锁国内直连）（2026-11-17 · 提交 `15e8966`）
+
+- **站长指令**：内嵌 AI 对话挂件多余，撤掉，点左下角 AI 图标直接跳新页面；原 Cloudflare 配置转移到新页面，仍允许切换线路：不登录 GitHub 并 Star 走 Cloudflare，Star 满 7 天可用国内线路。
+- **落位**：
+  - 新增 `labor-ai.html`（独立单页，双击可用）：双线路切换条。国内线路 = 硅基流动前端直连（明文 Key 字符干扰，防君子，模型名抽成 `CFG.cn.model` 一行可换）；Cloudflare 线路 = fetch 现有 Worker（`ai-worker`，Key 藏服务端、CORS 白名单、限流全不动）。请求分发 `askCN`（SSE 流式）/ `askCF`（`{question,history,route}` 非流式）。
+  - Star 判定读首页 OAuth 回调写入的 localStorage（`sxg_github_logged_in` / `sxg_github_has_star` / `sxg_star_days`），门槛 `STAR_MIN_DAYS=7`，与 `header-menu-patch.js` 同源对齐；未解锁时国内按钮锁定、默认走 Cloudflare，点击给「去点 Star」提示。两处免责声明保留。
+  - 新增 `ai-link.js`：复刻原 AI 圆钮外观与左下角/移动端避让/safe-area，点击跳 `labor-ai.html`（首页 `./`、品牌页 `../` 按路径自动推断）。首页 + 181 张品牌页挂载由 `ai-chat.js?v=28` 换成 `ai-link.js?v=1`；`ai-chat.js` / `ai-config.js` / 两套 Worker 文件保留在仓库不删。
+  - `verify.mjs` §21g 挂载断言改为 ai-link.js + labor-ai.html 存在、双线路/Star 判定/默认 CF 校验；Worker 安全层与 §21g-1 双线路断言照旧。
+- **验证**：`verify.mjs` **1847 项全绿**；4 组故障注入（破坏跳转目标 / 篡改 Star 门槛 7→30 / 默认线路改 cn / 首页改回旧挂件）**4/4 判红**并逐字节还原，还原后 1847 项全绿。4 组 AI 回归测试全过（test-ai-chat 35 / test-ai-route 31 / test-ai-worker 37 / test-ai-worker-aliyun 46）。CDP 真渲染：新页面线路条/解锁切换/未解锁提示/移动端布局全对、无 JS 报错；首页与品牌页 AI 图标为 `<a href>` 且真点击跳到 `labor-ai.html`、无内嵌面板。
+- **待办**：国内线路的硅基流动 Key 尚未配置（`_SEG` 仍是占位串），拿到真 Key 后做字符干扰填入即可启用；未配置时国内线路不可用，Cloudflare 线路不受影响。
+
 ### feat(notes)：随笔 4.10 补一句——10 月底市教育局投诉，昨日问政四川显示市委书记在处理（2026-11-17 · 提交 `08707e1`）
 
 - **站长指令**：4.10 补一句「关于 10 月底的那个针对市教育局的投诉，昨天再次访问问政四川，发现是市委书记在处理这个投诉」，点到为止、太详细容易暴露自己。
