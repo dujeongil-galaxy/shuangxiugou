@@ -5209,116 +5209,75 @@ if (exists(ADJS) && exists(ADCSS) && exists('ai-chat.js')) {
   err('缺少 liangpei-ad.js / liangpei-ad.css / ai-chat.js', '桌面悬浮层避让无法校验');
 }
 
-// ---------- 20q. 良配临时下线 + 星巴克临时上线（2026-11-12 站长指令） ----------
-// 站长要求把「良配」限时推广临时下线（注释 index.html 引用、文件保留便于恢复），
-// 换成星巴克 × WorkBuddy 联名活动。本段机器钉住这个「临时替换」状态，
-// 防止有人手滑把良配取消注释、或星巴克上线后引用丢失。
-// 2026-11-12 恢复访问时发现：本节原编 20p，与 §20p「品牌 LOGO 加密容器」撞号，
-// test-verify-self.cjs 的「节号无重复」判红（CI run #668 起连红）——改回 20q。
-section('20q. 良配临时下线 + 星巴克临时上线');
+// ---------- 20q. 良配广告恢复上线 + 星巴克推广彻底移除（2026-11-18 站长指令） ----------
+// 背景：星巴克 × WorkBuddy 联名活动 11/16 23:59 已结束。站长要求「把代码删掉，
+// 彻底抹除」，恢复之前的良配限时推广（文案：注册送喜茶 20 元红包），
+// 且 LOGO 改用站内现成 assets/heytea.png。
+// 本节机器钉死：星巴克推广代码零残留、良配活跃上线、喜茶 LOGO 真被引用。
+// 2026-11-12 本节原编 20p，与「品牌 LOGO 加密容器」撞号导致 CI 连红，改回 20q。
+section('20q. 良配广告恢复上线 + 星巴克推广彻底移除');
 {
   const idxHtml = exists('index.html') ? read('index.html') : '';
-  // 剥 HTML 注释：良配引用被包在 <!-- ... --> 内，裸正则会误判为活跃引用
+  // 剥 HTML 注释：判断「活跃引用」必须先去注释，避免注释块被误判为上线
   const idxNoCmt = idxHtml.replace(/<!--[\s\S]*?-->/g, '');
 
-  // 1) 良配必须已注释下线（无活跃 link/script 引用），且文件仍保留（可恢复）
-  check(!/<link[^>]*liangpei-ad\.css[^>]*>/i.test(idxNoCmt),
-    'index.html 中良配 css 已注释下线（无活跃引用）',
-    '良配推广临时下线，若仍活跃引用会与星巴克活动位冲突');
-  check(!/<script[^>]*liangpei-ad\.js[^>]*>/i.test(idxNoCmt),
-    'index.html 中良配 js 已注释下线（无活跃引用）');
-  check(exists('liangpei-ad.css') && exists('liangpei-ad.js'),
-    '良配文件仍保留在仓库（便于一键恢复：取消 index.html 注释即可）',
-    '站长要求「注释而非删除」，文件删了就无法快速恢复');
-
-  // 2) 星巴克必须已上线
-  check(/<link[^>]*starbucks-promo\.css[^>]*>/i.test(idxNoCmt),
-    'index.html 已引用 starbucks-promo.css');
-  check(/<script[^>]*starbucks-promo\.js[^>]*>/i.test(idxNoCmt),
-    'index.html 已引用 starbucks-promo.js');
-  check(/starbucks-promo\.css\?v=3/.test(idxHtml),
-    'starbucks-promo.css 版本号 ?v=3（2026-11-18 推广条即时出现改版，必须 bump 破缓存）');
-  check(/starbucks-promo\.js\?v=3/.test(idxHtml),
-    'starbucks-promo.js 版本号 ?v=3（同上，v2 会被浏览器缓存吃掉本次改动）');
-
-  // 2b) 2026-11-17 站长 PC 端"看不见广告"第三轮排查的根因与对策（防回退）
-  //  根因1：文件名 starbucks-ad.js / 类名 .sb-ad 命中广告拦截器默认规则（含 ad 字样）
-  //  根因2：窄屏弹窗 .dyp__panel 贴底 bottom:0，被 z-index 更高的 .dyp(100000) 压住吸底条
-  //  对策：文件名去 ad → starbucks-promo.*、类名去 ad → .sxg-promo、弹窗贴底时避让 --sxg-bar-h
-  {
-    check(!exists('starbucks-ad.js') && !exists('starbucks-ad.css'),
-      '旧文件名 starbucks-ad.js/css 已移除（避免广告拦截器按 ad 关键字误杀）');
-    const promoJs = exists('starbucks-promo.js') ? read('starbucks-promo.js') : '';
-    const promoCss = exists('starbucks-promo.css') ? read('starbucks-promo.css') : '';
-    const sbAdLeft = (promoJs.match(/sb-ad/g) || []).length + (promoCss.match(/sb-ad/g) || []).length;
-    check(sbAdLeft === 0,
-      '星巴克组件内不再出现 sb-ad 类名（全改为 sxg-promo，防拦截器匹配）',
-      `残留 sb-ad 出现 ${sbAdLeft} 次`);
-    check(/\.sxg-promo\s*\{/.test(promoCss) && /sxg-promo__logo/.test(promoCss),
-      '星巴克 CSS 主类名已改为 .sxg-promo（含 sxg-promo__logo 子类）');
-    const dypCssNow = exists('douyin-prompt.css') ? read('douyin-prompt.css') : '';
-    check(/bottom:\s*calc\(var\(--sxg-bar-h, 0px\)\s*\+\s*env\(safe-area-inset-bottom, 0px\)\)/.test(dypCssNow),
-      '窄屏弹窗 .dyp__panel 贴底时避让吸底推广条（用 --sxg-bar-h 上移，不再被整条压住）');
+  // 1) 星巴克 × WorkBuddy 推广代码彻底抹除。
+  //    注意：assets/starbucks.svg、星巴克品牌卡、星巴克消费公告与这次活动无关，必须保留。
+  const sbuxPromoFiles = [
+    'starbucks-promo.css', 'starbucks-promo.js',
+    'starbucks-ad.css', 'starbucks-ad.js',
+    'scripts/test-starbucks-ad.cjs', 'scripts/cdp-starbucks-ad.cjs',
+    'assets/workbuddy-mp-code.png'
+  ];
+  for (const f of sbuxPromoFiles) {
+    check(!exists(f), `星巴克推广残留已抹除：${f}`,
+      '活动 11/16 已到期，站长要求彻底删除，代码留着只会误导后来人');
   }
-
-  // 3) 星巴克组件自身：完整活动日期 + 避让语义
-  if (exists('starbucks-promo.js') && exists('starbucks-promo.css')) {
-    const sbJs = read('starbucks-promo.js');
-    const sbCss = read('starbucks-promo.css');
-    const dM = /activityDateFull:\s*'([^']*)'/.exec(sbJs);
-    check(!!dM && /11月12日\s*8:00\s*[—-]\s*11月16日\s*23:59/.test(dM ? dM[1] : ''),
-      '星巴克活动日期完整显示（含起止时分 11月12日8:00-11月16日23:59）',
-      dM ? `当前：${dM[1]}` : '找不到 activityDateFull');
-    check(/matchMedia\('\(min-width: 1440px\)'\)\.matches/.test(sbJs),
-      '星巴克脚本沿用 1440px 断点避让（与良配同款 --sxg-bar-h 语义）');
-    check(/var h = \(wide \|\| aside\.classList\.contains\('is-hidden'\)\) \? 0 : aside\.offsetHeight;/.test(sbJs),
-      '星巴克脚本 ≥1440px / 隐藏时 --sxg-bar-h 写 0（桌面无吸底条可让位）');
-    // 2026-11-18 站长反馈「网页都出来一会了，底部广告才开始加载」：1.5 秒空窗太长 → 200ms。
-    // 钉死具体值，防下次又悄悄改回 6000/1500 造成「慢半拍」错觉；也不许改成 0（加载即弹老坑）。
-    check(/showAfter:\s*200\b/.test(sbJs),
-      '星巴克广告 showAfter = 200ms（近乎即时，非 1500ms 慢半拍 / 6000ms 长空窗 / 0ms 加载即弹）');
-    // 2026-11-18 揪出的真 bug：visibility 过渡卡在 hidden，DOM 建好了但永远看不见。
-    // 之前的校验只看 showAfter / DOM 存在，全绿却漏了这个 —— 必须钉死「能真正放出来」。
-    check(/void aside\.offsetWidth/.test(sbJs)
-      && /setProperty\('visibility',\s*'visible',\s*'important'\)/.test(sbJs),
-      '§20q reveal 强制重排 + 内联 visibility:visible !important（visibility 过渡卡 hidden 的 undo）',
-      '只 remove is-hidden → computed visibility 卡在 hidden，广告 DOM 在但永远不可见（2026-11-18 站长「广告加载慢/看不见」真根因）');
-    check(!/\.sxg-promo\.is-hidden\s*\{[^}]*visibility:\s*hidden/.test(sbCss)
-      && /\.sxg-promo\.is-hidden\s*\{[^}]*display:\s*none/.test(sbCss),
-      '§20q is-hidden 用 display:none 硬隐藏（不再用 transition:visibility，避免过渡竞态）',
-      'visibility:hidden + transition 会在移除 class 后卡住；display:none 一刀切无竞态');
-    check(/\.sb-modal\s*\{/.test(sbCss),
-      '星巴克 CSS 含活动海报弹窗 .sb-modal');
-    check(/\.sb-poster__date\s*\{/.test(sbCss),
-      '星巴克 CSS 含完整日期节点 .sb-poster__date');
-
-    // 2026-11-17 站长三点修正（白底 / 真小程序码 / 现成 logo），逐条钉死防回退。
-    // 起因：弹窗照抄活动页深色截图，且我凭空画了个绿黑棋盘格假码写「扫码参与」——
-    // 假码扫不出来，站长原话「何来扫码？」。真入口是站长 11-12 原图里那个微信小程序码。
-    check(/\.sb-modal__card\s*\{[^}]*background:\s*#ffffff/i.test(sbCss),
-      '星巴克弹窗卡片白底（background:#ffffff，不再照抄深色活动页截图）',
-      '弹窗回退成深色底 → 与站点浅色页面割裂，站长 11-17 明确要白底');
-    check(exists('assets/workbuddy-mp-code.png')
-      && /mpCode:\s*'\.\/assets\/workbuddy-mp-code\.png'/.test(sbJs)
-      && /sb-poster__qr-img/.test(sbJs),
-      '星巴克入口用真·微信小程序码（assets/workbuddy-mp-code.png 存在且被引用）',
-      '真码图缺失或没被引用 → 弹窗没有可扫入口，又回到讲不清怎么参与的旧问题');
-    check(!/qrbox|repeating-linear-gradient|sb-poster__scan['"]?\s*:\s*['"]扫码参与/.test(sbJs + sbCss),
-      '星巴克组件内不再有凭空画的假二维码（qrbox/棋盘格渐变）',
-      '假码回退 → 扫不出来，正是站长 11-17 骂「何来扫码」的那个东西');
-    check(/logoSrc:\s*'\.\/assets\/starbucks\.svg'/.test(sbJs)
-      && exists('assets/starbucks.svg'),
-      '星巴克 logo 借用站内现成 assets/starbucks.svg（不自己画文字标）',
-      'logo 回退成文字「星巴克」或换成别的图 → 违反站长 11-17「直接借用现成 logo」');
-  } else {
-    err('缺少 starbucks-promo.js / starbucks-promo.css', '星巴克活动位无法上线');
-  }
-
-  // 4) 行为测试接入
-  check(exists('scripts/test-starbucks-ad.cjs'), '存在星巴克活动位行为测试');
+  check(!/starbucks-promo|starbucks-ad|sxg-promo|sb-modal|workbuddy-mp-code/.test(idxHtml),
+    'index.html 无星巴克推广引用（CSS/JS/类名/弹窗/真码全部清零）');
   if (exists('.github/workflows/verify.yml')) {
-    check(read('.github/workflows/verify.yml').includes('test-starbucks-ad.cjs'),
-      'CI 里已接入星巴克活动位测试');
+    check(!read('.github/workflows/verify.yml').includes('test-starbucks-ad.cjs'),
+      'CI 里已移除星巴克联名活动位测试');
+  }
+  check(exists('assets/starbucks.svg'),
+    '保留 assets/starbucks.svg（星巴克品牌卡 LOGO，非活动推广资产）');
+
+  // 2) 良配广告恢复活跃上线（不再是注释状态），版本号必须 bump 破缓存
+  check(/<link[^>]*liangpei-ad\.css\?v=14[^>]*>/i.test(idxNoCmt),
+    'index.html 活跃引用 liangpei-ad.css?v=14（恢复上线且 bump 破缓存）');
+  check(/<script[^>]*liangpei-ad\.js\?v=12[^>]*>/i.test(idxNoCmt),
+    'index.html 活跃引用 liangpei-ad.js?v=12（恢复上线且 bump 破缓存）');
+  check(exists('liangpei-ad.css') && exists('liangpei-ad.js'),
+    '良配推广文件仍在仓库');
+
+  // 3) LOGO 用站内现成喜茶图（站长 2026-11-18 明确要求）
+  const lpJs = exists('liangpei-ad.js') ? read('liangpei-ad.js') : '';
+  const lpCss = exists('liangpei-ad.css') ? read('liangpei-ad.css') : '';
+  check(exists('assets/heytea.png'), '站内现成喜茶 LOGO assets/heytea.png 存在');
+  check(/logoSrc:\s*'\.\/assets\/heytea\.png'/.test(lpJs),
+    '良配 JS 的 logoSrc 指向站内 assets/heytea.png（不自己画标）');
+  check(/lp-ad__logo__img/.test(lpJs) && /'<div class="lp-ad__logo"[^>]*>' \+ logoHtml\(\)/.test(lpJs),
+    '良配 DOM 真的用 logoHtml() 渲染图片，不只是配置里写了路径');
+  check(/\.lp-ad__logo__img\s*\{[^}]*object-fit:\s*contain/s.test(lpCss),
+    '喜茶 LOGO 等比缩放 object-fit:contain（不拉伸变形）');
+  check(/\.lp-ad__logo\s*\{[^}]*background:\s*#fff/s.test(lpCss),
+    'LOGO 容器白底（喜茶是黑白标识，紫底会吃掉图）');
+  check(/\.lp-ad__logo\.is-fallback\s*\{[^}]*background:\s*linear-gradient/s.test(lpCss)
+    && /is-fallback/.test(lpJs),
+    '图片加载失败时回退紫底白字「良配」（离线不开天窗）');
+
+  // 4) 窄屏弹窗避让吸底条：良配同样发布 --sxg-bar-h，这条规则继续生效
+  const dypCssNow = exists('douyin-prompt.css') ? read('douyin-prompt.css') : '';
+  check(/bottom:\s*calc\(var\(--sxg-bar-h, 0px\)\s*\+\s*env\(safe-area-inset-bottom, 0px\)\)/.test(dypCssNow),
+    '窄屏弹窗 .dyp__panel 继续避让吸底推广条（--sxg-bar-h，良配同样发布该变量）');
+  check(/var h = \(wide \|\| aside\.classList\.contains\('is-hidden'\)\) \? 0 : aside\.offsetHeight;/.test(lpJs),
+    '良配脚本 ≥1440px / 隐藏时 --sxg-bar-h 写 0（避让语义延续）');
+
+  // 5) 行为测试接入
+  check(exists('scripts/test-ad-logo.cjs'), '存在广告位 LOGO 行为测试');
+  if (exists('.github/workflows/verify.yml')) {
+    check(read('.github/workflows/verify.yml').includes('test-ad-logo.cjs'),
+      'CI 里已接入广告位 LOGO 测试');
   }
 }
 
@@ -8498,7 +8457,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/z-index:9995/.test(ad32) && /padding:7px 0 14px/.test(ad32)
     && /background: rgba\(24, 20, 16, 0\.22\)/.test(dyp32)
     && /backdrop-filter: none/.test(dyp32)
-    && /douyin-prompt\.css\?v=21/.test(idx32),
+    && /douyin-prompt\.css\?v=22/.test(idx32),
     '§32d 广告位层级 9995 / 底部留白 14px；.dyp 遮罩减淡去模糊，弹窗引流功能原样保留');
 
   check(/var SEARCH_DURATION = 6000/.test(ff32)

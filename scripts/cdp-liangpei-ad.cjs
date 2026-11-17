@@ -1,7 +1,9 @@
-// 【本机专用 · 不挂 CI】真渲染验收：星巴克 × WorkBuddy 联名活动位
-// 本地起静态服务 + 无头 Edge CDP，在手机(390)与桌面(1440)两种视口下：
-//   1) 确认小悬浮卡出现（LOGO「星巴克」、CTA「查看活动」、活动日期）
-//   2) 点击 CTA 打开活动海报弹窗，确认弹窗含完整日期、星巴克、扫码参与
+// 【本机专用 · 不挂 CI】真渲染验收：良配广告位恢复上线 + 喜茶 LOGO。
+// 本地起静态服务 + 无头 Edge CDP，在桌面(1440)与手机(390)两种视口下确认：
+//   1) .lp-ad 真的出现（良配 showAfter=6000ms，所以等 9 秒）
+//   2) LOGO 是站内 assets/heytea.png 图片，且 naturalWidth > 0（真加载出来）
+//   3) 容器白底、文案含「喜茶 20 元」、CTA「立即注册」
+//   4) 页面无星巴克 × WorkBuddy 推广残留
 // 产物落 D:/WorkBuddy-Cache/shots/（见 _cache-dir.cjs）。
 const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
 const { spawn } = require('child_process');
@@ -11,8 +13,8 @@ const path = require('path');
 const WebSocket = require('ws');
 
 const ROOT = path.resolve(__dirname, '..');
-const HTTP_PORT = 8731;          // 静态服务端口（与调试端口分离）
-const DBG_PORT = 9231;           // CDP 远程调试端口
+const HTTP_PORT = 8741;
+const DBG_PORT = 9241;
 const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const URL = `http://127.0.0.1:${HTTP_PORT}/`;
 
@@ -60,7 +62,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   await new Promise((r) => server.listen(HTTP_PORT, r));
   const edge = spawn(EDGE, [
     '--headless=new', `--remote-debugging-port=${DBG_PORT}`,
-    '--user-data-dir=' + path.join(cacheRoot(), '.edge-sxg-promocheck'),
+    '--user-data-dir=' + path.join(cacheRoot(), 'edge-profiles/liangpei-ad'),
     '--no-proxy-server', '--disable-gpu', 'about:blank'
   ], { stdio: 'ignore' });
 
@@ -97,15 +99,15 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   await cdp(ws, 'Page.enable');
   await cdp(ws, 'Runtime.enable');
   await cdp(ws, 'Page.navigate', { url: URL });
-  await sleep(10000); // 等 bundle + 补丁 triple-fallback + 广告延迟淡入(6000ms)
+  await sleep(9500); // bundle + 良配延迟淡入 6000ms + 余量
 
-  // 仅隐藏抖音弹窗（.dyp），不要隐藏本活动的 dialog/modal
+  // 只隐藏抖音弹窗（.dyp），它会遮住页面；不碰广告卡本身
   await cdp(ws, 'Runtime.evaluate', { expression:
     `var s=document.createElement('style');s.textContent='.dyp{display:none!important}';document.head.appendChild(s);` });
 
   const viewports = [
-    { name: 'mobile', w: 390, h: 844, mobile: true, bar: 'shots/sb-mobile-bar.png', modal: 'shots/sb-mobile-modal.png' },
-    { name: 'desktop', w: 1440, h: 900, mobile: false, bar: 'shots/sb-desktop-card.png', modal: 'shots/sb-desktop-modal.png' },
+    { name: 'desktop', w: 1440, h: 900, mobile: false, shot: 'shots/liangpei-desktop.png' },
+    { name: 'mobile', w: 390, h: 844, mobile: true, shot: 'shots/liangpei-mobile.png' },
   ];
 
   for (const vp of viewports) {
@@ -115,79 +117,44 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
     });
     await sleep(1200);
 
-    const barInfo = await cdp(ws, 'Runtime.evaluate', { expression: `(function(){
-      var a=document.querySelector('.sxg-promo');
+    const info = await cdp(ws, 'Runtime.evaluate', { expression: `(function(){
+      var a=document.querySelector('.lp-ad');
       if(!a) return {present:false};
-      var r={present:true, hidden:a.classList.contains('is-hidden'),
-        logo:(a.querySelector('.sxg-promo__logo')||{}).textContent,
-        brand:(a.querySelector('.sxg-promo__brand')||{}).textContent,
-        cta:(a.querySelector('.sxg-promo__cta')||{}).textContent,
-        title:(a.querySelector('.sxg-promo__title')||{}).innerText};
-      var lp=document.querySelector('.lp-ad');
-      r.liangpeiStillActive=!!lp;
+      var img=a.querySelector('.lp-ad__logo__img');
+      var cs=getComputedStyle(a.querySelector('.lp-ad__logo'));
+      var r={present:true,
+        hidden:a.classList.contains('is-hidden'),
+        display:getComputedStyle(a).display,
+        visibility:getComputedStyle(a).visibility,
+        opacity:getComputedStyle(a).opacity,
+        rect:{x:Math.round(a.getBoundingClientRect().x),y:Math.round(a.getBoundingClientRect().y),
+              w:Math.round(a.getBoundingClientRect().width),h:Math.round(a.getBoundingClientRect().height)},
+        logoImg:!!img,
+        logoSrc:img?img.getAttribute('src'):null,
+        logoNatural:img?[img.naturalWidth,img.naturalHeight]:null,
+        logoBg:cs.backgroundColor,
+        title:(a.querySelector('.lp-ad__title')||{}).innerText,
+        cta:(a.querySelector('.lp-ad__cta')||{}).textContent,
+        brand:(a.querySelector('.lp-ad__brand')||{}).textContent,
+        barVar:getComputedStyle(document.documentElement).getPropertyValue('--sxg-bar-h').trim(),
+        sbPromo:!!document.querySelector('.sxg-promo, .sb-ad, #sb-modal, .sb-modal')
+      };
       return r;
     })()`, returnByValue: true });
-    const bi = barInfo.result ? barInfo.result.value : null;
-    console.log(`[${vp.name}] BAR=` + JSON.stringify(bi));
+    const rv = info.result && info.result.result ? info.result.result.value : null;
+    console.log(`[${vp.name}] AD=` + JSON.stringify(rv));
 
     try {
-      const vp2 = await cdp(ws, 'Page.getLayoutMetrics', {});
-      const cs = (vp2.result && vp2.result.cssContentSize) ? vp2.result.cssContentSize : { width: vp.w, height: vp.h };
       const shot = await cdp(ws, 'Page.captureScreenshot', {
         format: 'png', fromSurface: true, captureBeyondViewport: false,
         clip: { x: 0, y: 0, width: vp.w, height: vp.h, scale: 1 }
       });
       if (shot.result && shot.result.data) {
-        const out = cacheDir(vp.bar);
+        const out = cacheDir(vp.shot);
         fs.writeFileSync(out, Buffer.from(shot.result.data, 'base64'));
-        console.log(`[${vp.name}] BAR_SHOT=${out}`);
+        console.log(`[${vp.name}] SHOT=${out}`);
       }
-    } catch (e) { console.log(`[${vp.name}] BAR_SHOT_ERR=` + e.message); }
-
-    // 打开弹窗
-    const opened = await cdp(ws, 'Runtime.evaluate', { expression: `(function(){
-      var c=document.querySelector('.sxg-promo__cta');
-      if(!c) return {clicked:false};
-      c.click();
-      var m=document.getElementById('sb-modal');
-      return {clicked:true, modalOpen: m?m.classList.contains('is-open'):false};
-    })()`, returnByValue: true });
-    const op = opened.result ? opened.result.value : null;
-    console.log(`[${vp.name}] OPEN=` + JSON.stringify(op));
-    await sleep(900);
-
-    const modalInfo = await cdp(ws, 'Runtime.evaluate', { expression: `(function(){
-      var m=document.getElementById('sb-modal');
-      if(!m) return {present:false};
-      var t=m.innerText.replace(/\\s+/g,' ').trim();
-      return {present:true, open:m.classList.contains('is-open'),
-        text:t,
-        hasDate:/11月12日\\s*8:00[\\s\\S]*11月16日\\s*23:59/.test(t),
-        hasStarbucks:t.indexOf('星巴克')!==-1,
-        hasWorkBuddy:t.indexOf('WorkBuddy')!==-1,
-        hasScan:t.indexOf('扫码参与')!==-1,
-        hasFree:t.indexOf('完全免费')!==-1,
-        hasReward:t.indexOf('美式咖啡券')!==-1};
-    })()`, returnByValue: true });
-    const mi = modalInfo.result ? modalInfo.result.value : null;
-    console.log(`[${vp.name}] MODAL=` + JSON.stringify(mi));
-
-    try {
-      const shot2 = await cdp(ws, 'Page.captureScreenshot', {
-        format: 'png', fromSurface: true, captureBeyondViewport: false,
-        clip: { x: 0, y: 0, width: vp.w, height: vp.h, scale: 1 }
-      });
-      if (shot2.result && shot2.result.data) {
-        const out = cacheDir(vp.modal);
-        fs.writeFileSync(out, Buffer.from(shot2.result.data, 'base64'));
-        console.log(`[${vp.name}] MODAL_SHOT=${out}`);
-      }
-    } catch (e) { console.log(`[${vp.name}] MODAL_SHOT_ERR=` + e.message); }
-
-    // 关闭弹窗，准备下一个视口
-    await cdp(ws, 'Runtime.evaluate', { expression:
-      `var m=document.getElementById('sb-modal');if(m)m.classList.remove('is-open');` });
-    await sleep(300);
+    } catch (e) { console.log(`[${vp.name}] SHOT_ERR=` + e.message); }
   }
 
   console.log('PAGEERRORS=' + JSON.stringify(errors.slice(0, 10)));

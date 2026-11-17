@@ -52,9 +52,11 @@
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--lp-primary), var(--lp-primary-dark));
-  color: #fff;
-  /* LOGO 为「良配」两字，字号较单字时调小 */
+  /* 2026-11-18 站长要求：LOGO 改用站内现成 assets/heytea.png（黑白标识），
+     紫底白字会把图吃掉，所以默认白底；图片加载失败才退回原来的紫底白字。 */
+  background: #fff;
+  color: #1f2937;
+  /* 兜底文字「良配」两字，字号较单字时调小 */
   font-size: 17px;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -63,6 +65,20 @@
      从根上禁止折行，具体容器尺寸交给各断点段决定。 */
   white-space: nowrap;
   box-shadow: 0 4px 12px rgba(61, 173, 138, 0.32);
+}
+
+/* 喜茶 LOGO 等比缩放填满容器，不拉伸变形 */
+.lp-ad__logo__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* 图片挂了（离线/换图）才回退原来的紫底白字「良配」标，避免开天窗 */
+.lp-ad__logo.is-fallback {
+  background: linear-gradient(135deg, var(--lp-primary), var(--lp-primary-dark));
+  color: #fff;
 }
 
 .lp-ad__limit {

@@ -32,6 +32,9 @@
     note: '微信小程序 · 推广合作',
     scheme: '#小程序://良配/B1ZcfI0N4ii3skj',
     storageKey: 'lp_ad_dismissed_at',
+    // 2026-11-18 站长要求：LOGO 用站内现成的喜茶 logo（首页品牌卡同一份），
+    // 不再自己画紫底白字「良配」。图片加载失败才退回文字。
+    logoSrc: './assets/heytea.png',
     // 关闭后多久再展示（毫秒），7 天
     reappearAfter: 7 * 24 * 60 * 60 * 1000,
     // 2026-10-29 修复：广告不再在页面加载瞬间弹出（用户误以为是点品牌卡触发的
@@ -40,6 +43,15 @@
   };
 
   var LOGO_TEXT = '良配';
+  var LOGO_ALT = '喜茶';
+
+  /* 品牌 LOGO：优先用站内现成喜茶图（assets/heytea.png），
+     加载失败退回文字「良配」，离线或换图时不至于开天窗。
+     onerror 必须在 img 标签内联：外部 JS 兜底时图片往往已经报过错。 */
+  function logoHtml() {
+    return '<img class="lp-ad__logo__img" src="' + CONFIG.logoSrc + '" alt="' + LOGO_ALT + '" ' +
+      'onerror="this.style.display=\'none\';this.parentNode.classList.add(\'is-fallback\');this.parentNode.textContent=\'' + LOGO_TEXT + '\'">';
+  }
 
   // 2026-10-18 站长指示：不再做「关闭后 7 天不再显示」的记忆 ——
   // 点关闭只隐藏本次页面，刷新后广告重新出现（原 localStorage 逻辑停用）。
@@ -167,7 +179,7 @@
       '<div class="lp-ad__body">' +
         // 限时推广：竖排卡片里独立一行、靠左，压在 LOGO 上方（不是品牌行的一部分）
         '<div class="lp-ad__limit">' + CONFIG.limitLine + '</div>' +
-        '<div class="lp-ad__logo" aria-hidden="true">' + LOGO_TEXT + '</div>' +
+        '<div class="lp-ad__logo" aria-hidden="true">' + logoHtml() + '</div>' +
         '<div class="lp-ad__text">' +
           '<div class="lp-ad__brand">' + CONFIG.brandLine + '</div>' +
           '<div class="lp-ad__title">' + CONFIG.title + '</div>' +
