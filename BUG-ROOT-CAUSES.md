@@ -9,6 +9,21 @@
 
 ---
 
+### 近期 bug 根因（fix）：星巴克推广条 DOM 已建好却永远不可见——`visibility` 过渡卡在 hidden；手机端顶栏四枚挤两行（2026-11-18 · 提交 `0da3a15`）
+
+**现象**：站长 2026-11-18 两句话——① 手机截图里顶栏四枚按钮排两行，「分享本站」孤零零掉第三行：「这个要不行的话就全部丢右边去吧，我是说手机端」；②「底部那个弹窗，加载有点慢，网页都出来一会了，底部广告才开始加载」。
+
+**根因（推广条这条是关键）**：前几轮一直以为是延迟问题（6000→1500ms），这次真渲染才揪出——`reveal()` 只做 `classList.remove('is-hidden')`，而 `.sxg-promo.is-hidden` 用 `visibility:hidden` + `transition: opacity .35s, visibility .35s`。移除 class 后 **computed `visibility` 一直停在 `hidden`**：`opacity` 已到 1、DOM 尺寸正常、`barH` 也写了 89px，但元素始终不可见。探针实测：连 `style.setProperty('visibility','visible','important')` 都一度压不过——只有先 `display:none → flex` 强制重排才生效。也就是说：**广告不是加载慢，是渲染帧卡住导致永远出不来**；此前改延迟、改白底、改假码全是在外围打转。
+
+**修法**：
+- `reveal()`：`void aside.offsetWidth` 强制 reflow 打断卡住的过渡帧，再 `setProperty('visibility','visible','important')` 兜底；`showAfter` 1500→200ms（近乎即时，仍留一帧避免加载即弹）。
+- CSS：`.sxg-promo.is-hidden` 改 `display:none !important` 硬隐藏；两处 `.sxg-promo` 的 `transition` 拿掉 `visibility`，只保留 opacity 淡入。
+- 手机顶栏：新建 `header-to-dock.js` 把三枚原生按钮（提交数据/申诉、Star、打赏赞助）搬进 `#sxg-fab-dock`，记录原 index 可逆还原；`share-entry.js` 改窄屏自搬分享进 dock（显式跳过，避免两个 observer 互搬抖动）。桌面端六枚原位不动。
+
+**验证**：手机视口 CDP 真渲染——顶栏高 128→65px、`acts:[]`（按钮全离开顶栏）、dock 8→12 枚、推广条 `vis:true`，截图肉眼确认底部白条 + 左侧真星巴克 logo + 右侧「查看活动」。verify 新增 8 项断言（§20q reveal 重排/display 隐藏、§36y 搬移脚本 6 项、§36w 落位改口径），8/8 故障注入判红。
+
+**教训**：「看不见」不等于「没加载」。DOM 在、opacity 对，还要看 `visibility` 的 computed 值——**过渡属性（visibility）比静态值更容易卡帧**；修这类问题必须真渲染截图，光看 showAfter / DOM 存在的断言全绿也会漏。故障注入里 B2 曾假绿（把 `if(isNarrow())` 改成 `if(false)` 仍通过，因为源码别处有 `isNarrow()` 字样），判据要钉住整个分支而非单个函数名。
+
 ### 近期 bug 根因（fix）：星巴克弹窗照抄深色截图 + 凭空画假二维码充「扫码参与」（2026-11-17 · 提交 `2f6c1d7`）
 
 **现象**：站长看弹窗截图三点反馈——①「弄成白色背底」（深色卡片贴在本站浅色页面像块外链黑砖）；②「何来扫码？我一开始给的不是一个微信小程序的链接吗？你在搞笑！」——弹窗里那个绿黑棋盘格二维码 +「扫码参与」根本扫不出来；③「本站有现成的星巴克 logo，直接借用」。

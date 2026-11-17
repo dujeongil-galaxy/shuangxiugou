@@ -4,6 +4,19 @@
 
 ---
 
+### fix：手机端顶栏四枚全收右侧 dock + 星巴克推广条 `visibility` 卡 hidden 真不可见（2026-11-18 · 提交 `0da3a15`）
+
+- **起因**：站长看 393px 截图——顶栏四枚排两行、「分享本站」掉第三行，「要不行的话就全部丢右边去吧，我是说手机端」；另反馈底部广告「网页都出来一会了才开始加载」。
+- **根因**：推广条 `reveal()` 只 remove `is-hidden`，但 `.sxg-promo.is-hidden` 用 `visibility:hidden` + `transition: opacity/visibility .35s`；移除 class 后 computed visibility 卡在 hidden，opacity 已 1、DOM 尺寸正常，广告却永远不可见。前几轮 6000→1500ms 的延迟调整全是外围，真 bug 在渲染帧。
+- **修法**：
+  - `starbucks-promo.js`：`reveal()` 加 `void aside.offsetWidth` 强制重排 + `setProperty('visibility','visible','important')`；`showAfter` 1500→200ms；close 时清内联值让 is-hidden 重新生效；load 兜底。
+  - `starbucks-promo.css`：基础规则补 `visibility:visible`；`.is-hidden` 改 `display:none !important`；两处 transition 去掉 visibility。
+  - 新建 `header-to-dock.js`：≤640px 搬三枚原生顶栏按钮（提交/Star/赞助）进 dock，按 index 可逆还原；`share-entry.js?v=5` 窄屏自搬「分享本站」进 dock（显式跳过分享防互搬），桌面端不动。
+  - `index.html`：挂 `header-to-dock.js?v=1`，推广条 css/js v2→v3。
+- **验证**：手机视口 CDP 真渲染 header 128→65px、dock 8→12 枚、推广条 vis:true 且截图可见（白条+真星巴克 logo+查看活动）；verify §36w 落位改口径 + §36y 新增 6 项 + §20q 新增 2 项，8/8 故障注入判红（B2 假绿后收紧为钉住整个 if 分支）；test-starbucks-ad 37 / test-share-entry 38 / test-anon-mail 40 / test-header-expand 31 全绿。
+
+---
+
 ### fix：星巴克弹窗白底 + 真小程序码 + 站内现成 logo（2026-11-17 · 提交 `2f6c1d7`）
 
 - **起因**：站长看弹窗截图三点反馈——「弄成白色背底」「何来扫码？我一开始给的不是一个微信小程序的链接吗？你在搞笑！」「本站有现成的星巴克 logo，直接借用」。

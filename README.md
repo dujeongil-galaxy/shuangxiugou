@@ -373,6 +373,7 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 **修 bug 三处留痕（§21n 机器反查）**：`README.md` 本节摘要、`BUG-ROOT-CAUSES.md` 新增章节、`最近更新.md` 顶部条目，都要带真实提交哈希与 commit 时间；verify 按 `git log` 最近一次 `fix:` 提交反查，缺一处判红。最近三条：
 
+- **2026-11-18 · 提交 `0da3a15`**：手机端顶栏四枚按钮排两行、「分享本站」掉第三行，站长「全部丢右边」→ 三枚原生按钮由新脚本 `header-to-dock.js` 搬进右侧 dock、分享自搬（桌面端不动）。同轮揪出推广条真 bug：reveal 只 remove `is-hidden` 时 computed `visibility` 卡在 hidden（opacity 已 1、内联 visible 都压不过），广告 DOM 早建好却永远不可见——这才是「加载慢/看不见」的根因；加强制重排 + `visibility:visible !important`、`is-hidden` 改 `display:none`，showAfter 1500→200ms。verify 新增 8 断言、故障注入 8/8 判红。详见专文。
 - **2026-11-17 · 提交 `2f6c1d7`**：星巴克弹窗三处「凭空补细节」被站长当场抓包——深色底照抄活动页截图（改成白 `#ffffff`）、凭空画绿黑棋盘格假二维码 +「扫码参与」（根本扫不出来，改用站长原图里那个真·微信小程序码 `assets/workbuddy-mp-code.png`）、logo 用文字凑（改用站内现成 `assets/starbucks.svg`）。根因：原图里就有可扫的真码我没用，还另造假货；三张原图没有口令文本，不编造「复制口令」。顺带删掉覆盖白底版的旧深色文案 CSS；verify 加 4 断言、注入 5 例全判红。素材里有的真东西永远比画的假货可靠。
 - **2026-11-17 · 提交 `96b54bd`**：合并 `origin/main` 时 `index.html` 残留 4 行冲突标记、`#site-version` 真相源出现两份——两侧同点插入同一节点，`git add -A` 把带标记的文件一并加进索引导致合并瞬间没被人看一眼；两份会让 `sync-version` 回写锚点、`verify §20g` 与 CI 同步工作流取到错的哈希（`60cee9a` 已踩过一次）。删标记、恢复唯一节点后同步版本号；verify 全绿。
 
