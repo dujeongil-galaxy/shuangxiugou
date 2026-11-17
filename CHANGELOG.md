@@ -4,6 +4,22 @@
 
 ---
 
+### fix(ad)：星巴克推广「PC 仍看不见」第三轮收口——文件名/类名去 ad 避广告拦截器 + 窄屏弹窗避让吸底条（2026-11-17 · 提交 `cc16a91`）
+
+**触发**：站长第二次反馈「PC 这里我还是看不见广告」，附 1080px 视口截图，右侧仅「提醒/视频/下载/TOP」悬浮列，无推广条与卡片。
+
+**真渲染定位**：无头 Edge 1080×620 打开首页，`elementFromPoint` 在广告中心命中 `DIV.dyp__panel dyp--article`。广告 `rect` y=531 h=89、`opacity:1`、无 `is-hidden`，即**已淡入且可见**，但被 `.dyp`（`z-index:100000`）压住，推广仅 `9990`。移除 `.dyp` 后 `topEl` 立即变为 `DIV.sxg-promo__body`。
+
+**改动**：
+- 文件改名 `starbucks-ad.js/css` → `starbucks-promo.js/css`；类名 `.sb-ad*` → `.sxg-promo*`（CSS 43 处、JS 11 处，0 残留）；`index.html` 两处引用同步，版本号重置 `?v=1`（新文件名天然破缓存）。
+- `douyin-prompt.css` 窄屏段 `.dyp__panel`：`bottom:0` → `bottom: calc(var(--sxg-bar-h, 0px) + env(safe-area-inset-bottom, 0px))`，让面板避让吸底推广条；`?v=20` → `?v=21`。
+- `scripts/cdp-starbucks-ad.cjs` 探测选择器同步改 `.sxg-promo*`。
+- `verify.mjs` §20q 新增 5 条断言：旧文件名已移除 / 组件内 0 个 `sb-ad` 残留 / 主类名已是 `.sxg-promo` / 窄屏弹窗避让吸底条 / 旧文件名不得复活；§32d 的 `douyin-prompt.css?v` 断言同步 21。`test-starbucks-ad.cjs` 全部类名与文件名引用同步。
+
+**验证**：verify **1853 项全绿**（+5）；单测 **40 项全绿**；故障注入 **3 组 3/3 判红**并逐字节还原；CDP 真渲染桌面 1440 右上卡片 + 移动端底部横条均正常、`PAGEERRORS=[]`。
+
+---
+
 ### feat(labor-ai)：国内线路配置真实 API Key——_SEG 字符干扰串替换占位，浏览器实测可回话（2026-11-17 · 提交 `a5a84a3`）
 
 - **起因**：站长提供硅基流动 `sk-` Key，为劳动法助手 `labor-ai.html` 的「国内直连」线路配置真 Key（此前 `_SEG` 为占位串，检测到只提示「未配置」不发请求）。
