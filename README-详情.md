@@ -12,12 +12,12 @@
 
 ## 1. 项目定位与两站数据关系
 
-**项目定位：本仓库是「双休购」主站**（线上应用，GitHub Pages 部署）。请与账号下另外两个双休购相关仓库区分：
+**项目定位：本仓库是「双休购」主站**（线上应用，GitHub Pages 部署）。账号下另有两个双休相关存档仓库，**已于 2026-11-17 按站长决定全部下线删除**（站长「仅保留 ShuangXiuGo，其他双休相关的都删了，我没精力维护」），此处保留记录备查：
 
-- **shuangxiugou-guide**（[仓库](https://github.com/dujeongil-galaxy/shuangxiugou-guide)）→ 「双休购 2.0」公开资料站（[线上](https://dujeongil-galaxy.github.io/shuangxiugou-guide/)）的全量**纯静态备份**，收录 246 条企业/品牌线索（调研基准日 2026-09-09）。该仓库未做任何二次开发，无提交改动记录，内容与上游 [FuzzyLogic112/shuangxiugou-guide](https://github.com/FuzzyLogic112/shuangxiugou-guide) 保持一致。
-- **shuangxiu-go-archive**（[仓库](https://github.com/dujeongil-galaxy/shuangxiu-go-archive)）→ 第三方网站「双休GO」(shuangxiu-go.cn) 的全量静态存档备份，与本主站数据无关联。
+- **shuangxiugou-guide**（已下线，原仓库与 Pages 均删除）→ 「双休购 2.0」公开资料站的全量**纯静态备份**，收录 246 条企业/品牌线索（调研基准日 2026-09-09）。该仓库未做任何二次开发，无提交改动记录，内容与上游 [FuzzyLogic112/shuangxiugou-guide](https://github.com/FuzzyLogic112/shuangxiugou-guide) 保持一致。
+- **shuangxiu-go-archive**（已下线，原仓库已删除）→ 第三方网站「双休GO」(shuangxiu-go.cn) 的全量静态存档备份，与本主站数据无关联。
 
-**两站数据的关系**：guide 站的 246 条是**研究线索**，按证据强度分为 A 公开确认 / B 媒体报道 / C 汇总候选 / 风险提示 / 作息待核验五档，其中大部分尚未取得一手证据。本主站只收录其中证据链完整、足以支撑评级结论的条目，其余线索保留在 guide 站作为待核实素材，因此两站收录数量不同是预期结果，并非数据冲突。
+**与已下线 guide 站数据的关系**（存档已删，以下为历史口径）：guide 站的 246 条曾是**研究线索**，按证据强度分为 A 公开确认 / B 媒体报道 / C 汇总候选 / 风险提示 / 作息待核验五档，其中大部分尚未取得一手证据。本主站只收录其中证据链完整、足以支撑评级结论的条目，其余线索保留在 guide 站作为待核实素材，因此两站收录数量不同是预期结果，并非数据冲突。
 
 <a id="grading"></a>
 
