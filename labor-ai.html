@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>劳动法小助手</title>
+<style>
+:root{
+  --bg:#eef1f6; --card:#ffffff; --ink:#1d2433; --sub:#5b6478;
+  --line:#e2e7f0; --brand:#28456f; --brand2:#1b3255;
+  --accent:#d9822b; --user:#28456f; --ai:#ffffff;
+  --warn-bg:#fff6e6; --warn-ink:#8a5a12; --ok:#2f8f5b; --err:#c0392b;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--ink);font-size:15px;line-height:1.7;
+  min-height:100vh;display:flex;flex-direction:column;
+}
+header{
+  background:var(--brand);background:linear-gradient(135deg,var(--brand2),var(--brand));
+  color:#fff;padding:18px 20px 16px;text-align:center;flex:0 0 auto;
+}
+.hd-wrap{max-width:760px;margin:0 auto}
+.logo{width:40px;height:40px;margin:0 auto 8px;display:block}
+h1{font-size:20px;margin:0 0 3px;font-weight:600;letter-spacing:.5px}
+.sub{font-size:12.5px;opacity:.82;margin:0}
+.warn{
+  background:var(--warn-bg);color:var(--warn-ink);font-size:12px;
+  padding:9px 16px;text-align:center;line-height:1.55;flex:0 0 auto;
+  border-bottom:1px solid #f0e2c4;
+}
+main{
+  flex:1 1 auto;width:100%;max-width:760px;margin:0 auto;
+  padding:18px 14px 8px;display:flex;flex-direction:column;overflow:hidden;
+}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;justify-content:center}
+.chip{
+  background:#fff;border:1px solid var(--line);color:var(--brand);
+  padding:6px 13px;border-radius:20px;font-size:13px;cursor:pointer;
+  transition:.15s;box-shadow:0 1px 2px rgba(20,30,60,.04)
+}
+.chip:hover{border-color:var(--brand);background:#f7f9fd;transform:translateY(-1px)}
+.chip:active{transform:translateY(0)}
+#chat{flex:1 1 auto;overflow-y:auto;padding:2px 2px 14px;display:flex;flex-direction:column;gap:14px}
+.msg{max-width:86%;display:flex;flex-direction:column}
+.msg.user{align-self:flex-end;align-items:flex-end}
+.msg.ai{align-self:flex-start;align-items:flex-start}
+.who{font-size:11px;color:var(--sub);margin:0 6px 4px}
+.bubble{
+  padding:11px 14px;border-radius:14px;box-shadow:0 2px 8px rgba(20,30,60,.06);
+  word-break:break-word;white-space:pre-wrap;font-size:14.5px;
+}
+.msg.user .bubble{background:var(--user);color:#fff;border-bottom-right-radius:4px}
+.msg.ai .bubble{background:var(--ai);color:var(--ink);border-bottom-left-radius:4px;border:1px solid var(--line)}
+.bubble b,.bubble strong{color:var(--brand2)}
+.cursor{display:inline-block;width:7px;height:15px;background:var(--accent);vertical-align:-2px;animation:bl .8s infinite}
+@keyframes bl{0%,49%{opacity:1}50%,100%{opacity:0}}
+.empty{color:var(--sub);text-align:center;margin:auto 0;font-size:14px;padding:30px 10px}
+.empty .big{font-size:34px;display:block;margin-bottom:8px;opacity:.5}
+.composer{
+  flex:0 0 auto;background:#fff;border:1px solid var(--line);border-radius:16px;
+  padding:10px 12px;box-shadow:0 4px 18px rgba(20,30,60,.08);margin-top:6px;
+}
+.composer textarea{
+  width:100%;border:0;outline:0;resize:none;font-size:14.5px;line-height:1.6;
+  font-family:inherit;color:var(--ink);background:transparent;min-height:52px;max-height:140px;
+}
+.composer textarea::placeholder{color:#9aa3b5}
+.row{display:flex;align-items:center;justify-content:space-between;margin-top:6px;gap:10px}
+.hint{font-size:11.5px;color:#9aa3b5}
+#send{
+  background:var(--brand);color:#fff;border:0;border-radius:10px;
+  padding:9px 20px;font-size:14px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap
+}
+#send:hover{background:var(--brand2)}
+#send:disabled{opacity:.5;cursor:not-allowed}
+footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;flex:0 0 auto}
+.err-card{border:1px solid #f0c9c3;background:#fff5f3;color:var(--err)}
+.route-bar{
+  background:#fff;border-bottom:1px solid var(--line);padding:8px 14px;
+  display:flex;align-items:center;gap:8px;justify-content:center;flex-wrap:wrap;flex:0 0 auto
+}
+.route-bar .rb-label{font-size:11.5px;color:var(--sub);margin-right:2px}
+.route-btn{
+  border:1px solid var(--line);background:#fff;color:var(--sub);
+  padding:5px 12px;border-radius:16px;font-size:12.5px;cursor:pointer;transition:.15s;font-family:inherit
+}
+.route-btn.active{background:var(--brand);color:#fff;border-color:var(--brand);font-weight:600}
+.route-btn.locked{opacity:.55;cursor:not-allowed}
+.route-tip{font-size:11px;color:var(--warn-ink);text-align:center;padding:0 16px 6px;flex:0 0 auto}
+.route-tip a{color:var(--brand);text-decoration:underline}
+@media(max-width:520px){
+  header{padding:14px 14px 12px}h1{font-size:18px}
+  main{padding:12px 10px 6px}
+  .msg{max-width:92%}
+  .chip{font-size:12.5px;padding:5px 11px}
+  .bubble{font-size:14px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-wrap">
+    <svg class="logo" viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M24 4 L41 11 V24 C41 34 33 41 24 44 C15 41 7 34 7 24 V11 Z" fill="rgba(255,255,255,.14)" stroke="#fff" stroke-width="2"/>
+      <path d="M24 13 V34 M15 19 H33 M15 19 L11 28 H19 Z M33 19 L29 28 H37 Z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <h1>劳动法小助手</h1>
+    <p class="sub">欠薪 · 辞退赔偿 · 未签合同 · 工伤 · 社保</p>
+  </div>
+</header>
+
+<div class="warn">⚠️ 本工具由 AI 生成回答，仅供参考，<b>不构成法律意见</b>。复杂情况请咨询律师或拨打 12333。</div>
+
+<div class="route-bar" id="routeBar">
+  <span class="rb-label">线路</span>
+  <button class="route-btn" id="btnCF">Cloudflare（默认）</button>
+  <button class="route-btn" id="btnCN">国内直连 · 需 Star 满 7 天</button>
+</div>
+<div class="route-tip" id="routeTip"></div>
+
+<main>
+  <div class="chips" id="chips">
+    <button class="chip" data-q="公司拖欠工资三个月，怎么要回来？">被欠薪</button>
+    <button class="chip" data-q="公司违法辞退我，能要多少赔偿？">违法辞退</button>
+    <button class="chip" data-q="入职半年一直没签劳动合同，怎么办？">未签合同</button>
+    <button class="chip" data-q="上班时受伤了，算工伤吗？怎么申请？">工伤</button>
+    <button class="chip" data-q="公司没给我交社保，可以要求补缴吗？">社保补缴</button>
+  </div>
+
+  <div id="chat">
+    <div class="empty" id="empty">
+      <span class="big">⚖️</span>
+      说说你遇到的情况，我帮你梳理思路、找法律依据
+    </div>
+  </div>
+
+  <div class="composer">
+    <textarea id="inp" rows="2" placeholder="描述你的情况，比如：干了 8 个月被辞退，没签合同，工资还压着…"></textarea>
+    <div class="row">
+      <span class="hint">Enter 发送 · Shift+Enter 换行</span>
+      <button id="send">发送</button>
+    </div>
+  </div>
+</main>
+
+<footer>回答仅供参考，不替代专业法律意见</footer>
+
+<script>
+/* ===== 双线路配置：换模型 / 换地址只改这里 ===== */
+var CFG = {
+  // 国内直连（前端直连硅基流动，明文 Key 字符干扰，防君子）
+  cn: {
+    endpoint: "https://api.siliconflow.cn/v1/chat/completions",
+    model: "Qwen/Qwen2.5-7B-Instruct",   // 免费模型；想换更强的改这行
+    max_tokens: 1600,
+    temperature: 0.6
+  },
+  // Cloudflare（服务端 Worker 代理，Key 藏在 Worker，前端无 Key）
+  cf: {
+    endpoint: "https://shuangxiugou-ai-worker.ovpj01-hk.workers.dev",
+    route: "cf"
+  }
+};
+
+/* Star 满 7 天解锁国内线路的门槛（与 header-menu-patch.js 写入的 localStorage 对齐） */
+var STAR_MIN_DAYS = 7;
+var REPO_URL = "https://github.com/dujeongil-galaxy/shuangxiugou";
+
+var SYSTEM_PROMPT = [
+  "你是「劳动法小助手」，熟悉中国大陆劳动法律的顾问。用户会描述劳动纠纷。",
+  "请用中文回答，并做到：",
+  "1. 先判断属于哪类争议（欠薪/违法解除/未签合同/工伤/社保等）。",
+  "2. 说明可能适用的法律（《劳动合同法》《劳动法》《工伤保险条例》等），讲清条款要点，别编造条号。",
+  "3. 给出具体可操作的步骤：协商→投诉（劳动监察）→劳动仲裁→诉讼的顺序、去哪里、准备哪些材料。",
+  "4. 提醒关键时效，例如劳动仲裁申请一般是一年。",
+  "5. 立场站在劳动者一侧，语气温和，但不承诺结果。",
+  "6. 结尾提醒：以上仅供参考，不替代专业法律意见，复杂情况咨询律师或拨打12333。",
+  "与劳动法无关的问题，礼貌拒绝并拉回主题。"
+].join("\n");
+
+/* ===== Key 字符干扰：分段 + 位移 + 乱序，运行时还原（防君子，不防高手） ===== */
+var _MASK = [0x37,0x91,0x5c,0xc3,0x0e];
+var _ORDER = [3,0,4,1,2];
+var _SEG = ["4IUoPgpAhR","kNan8Fp41q","eN2s8Hmq","7wVovas/BT","etKoE1OJvq"];
+function _restoreKey(){
+  var ordered = [];
+  for (var k=0;k<5;k++) ordered[k] = _SEG[_ORDER.indexOf(k)];
+  var bin = atob(ordered.join(""));
+  var rev = "";
+  for (var i=0;i<bin.length;i++) rev += String.fromCharCode((bin.charCodeAt(i)-_MASK[i%_MASK.length]+256)%256);
+  return rev.split("").reverse().join("");
+}
+
+/* ===== 界面逻辑 ===== */
+var chat = document.getElementById("chat");
+var inp  = document.getElementById("inp");
+var send = document.getElementById("send");
+var chatLog = [];
+var busy = false;
+
+/* ===== Star 满 7 天判定（读首页 OAuth 回调写入的 localStorage）===== */
+function starStatus(){
+  var logged = localStorage.getItem('sxg_github_logged_in') === '1';
+  var hasStar = localStorage.getItem('sxg_github_has_star') === '1';
+  var days = parseInt(localStorage.getItem('sxg_star_days') || '0', 10) || 0;
+  var date = localStorage.getItem('sxg_star_date') || '';
+  return { logged: logged, star: hasStar, days: days, date: date, unlocked: logged && hasStar && days >= STAR_MIN_DAYS };
+}
+
+/* 当前线路：默认 cf；未解锁国内线路时强制 cf */
+var currentRoute = 'cf';
+var routeEl   = document.getElementById('routeBar');
+var btnCF     = document.getElementById('btnCF');
+var btnCN     = document.getElementById('btnCN');
+var routeTip  = document.getElementById('routeTip');
+
+function renderRoute(){
+  var st = starStatus();
+  btnCF.classList.toggle('active', currentRoute === 'cf');
+  btnCN.classList.toggle('active', currentRoute === 'cn');
+  btnCN.classList.toggle('locked', !st.unlocked);
+  btnCN.textContent = st.unlocked ? '国内直连 ✓已解锁' : '国内直连 · 需 Star 满 7 天';
+  if (st.unlocked){
+    routeTip.innerHTML = '国内线路已解锁（Star ' + st.days + ' 天' + (st.date ? ' · ' + esc(st.date) : '') + '），可自由切换。';
+  } else if (st.logged && st.star){
+    routeTip.innerHTML = '你已 Star（' + st.days + '/7 天），还差 ' + (STAR_MIN_DAYS - st.days) + ' 天解锁国内直连。当前走 Cloudflare。';
+  } else {
+    routeTip.innerHTML = '默认走 Cloudflare 线路。<a href="' + REPO_URL + '" target="_blank" rel="noopener noreferrer">登录 GitHub 并给本仓库点 Star</a>，满 7 天可解锁国内直连。';
+  }
+}
+btnCF.addEventListener('click', function(){ currentRoute = 'cf'; renderRoute(); });
+btnCN.addEventListener('click', function(){
+  var st = starStatus();
+  if (!st.unlocked){
+    var progress = st.logged ? '（' + (st.star ? st.days + '/7 天' : '未 Star') + '）' : '';
+    routeTip.innerHTML = '国内直连需<b>登录 GitHub 并 Star 满 7 天</b>。<a href="' + REPO_URL + '" target="_blank" rel="noopener noreferrer">去点 Star</a>' + progress + '。';
+    return;
+  }
+  currentRoute = 'cn'; renderRoute();
+});
+renderRoute();
+
+function esc(s){
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function md(s){
+  return esc(s)
+    .replace(/\*\*(.+?)\*\*/g,"<b>$1</b>")
+    .replace(/^(\d+)\./gm,"<b>$1.</b>");
+}
+function scrollBottom(){ chat.scrollTop = chat.scrollHeight; }
+
+function addMsg(role, text, isError){
+  var empty = document.getElementById("empty");
+  if (empty) empty.remove();
+  var wrap = document.createElement("div");
+  wrap.className = "msg " + role;
+  var who = document.createElement("div");
+  who.className = "who";
+  who.textContent = role === "user" ? "我" : "劳动法小助手";
+  var bub = document.createElement("div");
+  bub.className = "bubble" + (isError ? " err-card" : "");
+  bub.innerHTML = role === "user" ? esc(text) : (text === "" ? '<span class="cursor"></span>' : md(text));
+  wrap.appendChild(who); wrap.appendChild(bub);
+  chat.appendChild(wrap);
+  scrollBottom();
+  return bub;
+}
+
+document.getElementById("chips").addEventListener("click", function(e){
+  var b = e.target.closest(".chip");
+  if (!b) return;
+  inp.value = b.dataset.q;
+  inp.focus();
+});
+
+inp.addEventListener("keydown", function(e){
+  if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); doSend(); }
+});
+send.addEventListener("click", doSend);
+
+async function doSend(){
+  if (busy) return;
+  var q = inp.value.trim();
+  if (!q) return;
+  inp.value = "";
+  busy = true; send.disabled = true; send.textContent = "回复中…";
+  addMsg("user", q);
+  chatLog.push({role:"user", content:q});
+  var bub = addMsg("ai", "");
+  var full = "";
+
+  /* 国内线路需要 Key；未解锁时 currentRoute 恒为 cf，这里只是双保险 */
+  if (currentRoute === 'cn'){
+    var key = _restoreKey();
+    if (!key || key.indexOf("PLACEHOLDER") >= 0){
+      bub.innerHTML = '<b>国内线路还没配置 API Key。</b>\n请切回 Cloudflare，或让站长配置 Key 后重试。';
+      chatLog.pop(); busy=false; send.disabled=false; send.textContent="发送"; return;
+    }
+  }
+
+  try{
+    if (currentRoute === 'cn'){
+      await askCN(chatLog, bub, function(piece){ full += piece; bub.innerHTML = md(full); scrollBottom(); });
+    } else {
+      /* CF：只发问题 + 历史（最近 4 轮），Worker 自己锁角色、自己限流 */
+      var hist = chatLog.slice(0, -1).slice(-8).map(function(m){ return {role:m.role, content:m.content.slice(0,200)}; });
+      var ans = await askCF(q, hist);
+      full = ans;
+      bub.innerHTML = md(full); scrollBottom();
+    }
+    if (!full) bub.innerHTML = "（没有收到内容，请稍后重试）";
+    chatLog.push({role:"assistant", content:full});
+  }catch(err){
+    bub.className = "bubble err-card";
+    bub.textContent = "出错了：" + (err && err.message ? err.message : err);
+    chatLog.pop();
+  }finally{
+    busy = false; send.disabled = false; send.textContent = "发送";
+    inp.focus();
+  }
+}
+
+/* 国内线路：硅基流动 OpenAI 兼容，SSE 流式 */
+async function askCN(log, bub, onPiece){
+  var key = _restoreKey();
+  var res = await fetch(CFG.cn.endpoint, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json", "Authorization":"Bearer " + key },
+    body: JSON.stringify({
+      model: CFG.cn.model,
+      messages: [{role:"system",content:SYSTEM_PROMPT}].concat(log),
+      stream: true, max_tokens: CFG.cn.max_tokens, temperature: CFG.cn.temperature
+    })
+  });
+  if (!res.ok){ var t = await res.text(); throw new Error("国内线路返回 " + res.status + "：" + t.slice(0,180)); }
+  var reader = res.body.getReader();
+  var dec = new TextDecoder("utf-8");
+  var buf = "";
+  while (true){
+    var r = await reader.read();
+    if (r.done) break;
+    buf += dec.decode(r.value, {stream:true});
+    var lines = buf.split("\n");
+    buf = lines.pop();
+    for (var i=0;i<lines.length;i++){
+      var line = lines[i].trim();
+      if (!line || line.indexOf("data:") !== 0) continue;
+      var data = line.slice(5).trim();
+      if (data === "[DONE]") continue;
+      try{
+        var obj = JSON.parse(data);
+        var delta = obj.choices && obj.choices[0] && obj.choices[0].delta;
+        var piece = delta && (delta.content || "");
+        if (piece) onPiece(piece);
+      }catch(err){}
+    }
+  }
+}
+
+/* Cloudflare 线路：Worker 代理，非流式 JSON {answer, route} */
+async function askCF(question, history){
+  var res = await fetch(CFG.cf.endpoint, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ question: question, history: history, route: CFG.cf.route })
+  });
+  if (!res.ok){
+    var t = await res.text();
+    var msg = t.slice(0,200);
+    if (res.status === 429) msg = "Cloudflare 线路今日额度已用完或请求过于频繁，请稍后再试或切换线路。";
+    throw new Error("Cloudflare 线路返回 " + res.status + "：" + msg);
+  }
+  var obj = await res.json();
+  if (obj.error === 'daily-quota-exhausted') throw new Error("Cloudflare 线路今日额度已用完（UTC 00:00 重置），请稍后再试。");
+  if (!obj.answer) throw new Error("Cloudflare 线路未返回内容：" + JSON.stringify(obj).slice(0,120));
+  return obj.answer;
+}
+</script>
+</body>
+</html>

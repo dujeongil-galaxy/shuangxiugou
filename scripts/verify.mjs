@@ -6196,56 +6196,71 @@ section('21c. 首页滑到底部按钮');
   const worker = exists('ai-worker/src/worker.js') ? read('ai-worker/src/worker.js') : '';
   section('21g. 劳动法小助手（Worker 代理 + 品牌页挂件）');
 
-  // ---- 前端挂件与品牌页挂载 ----
-  check(exists('ai-chat.js') && exists('ai-config.js'),
-    '挂件与配置脚本存在（ai-chat.js / ai-config.js）');
-  // 品牌页全量挂载：数 brand/*.html 里引用 ai-chat.js 的页数 == 品牌页总数
+  // ---- 前端图标跳转脚本 + 品牌页挂载（2026-11-17 改版：内嵌对话撤掉，AI 图标跳独立页 labor-ai.html）----
+  check(exists('ai-link.js') && exists('labor-ai.html'),
+    'AI 图标跳转脚本与新页面存在（ai-link.js / labor-ai.html）');
+  section('21g. 劳动法小助手（图标跳独立页 + Worker 代理兜底）');
+  // 品牌页全量挂载：数 brand/*.html 里引用 ai-link.js 的页数 == 品牌页总数
   const brandDir = join(ROOT, 'brand');
   let brandPages = 0, mounted = 0;
   if (exists('brand')) {
     for (const f of readdirSync(brandDir)) {
       if (!f.endsWith('.html')) continue;
       brandPages++;
-      if (readFileSync(join(brandDir, f), 'utf8').includes('ai-chat.js?v=')) mounted++;
+      if (readFileSync(join(brandDir, f), 'utf8').includes('ai-link.js?v=')) mounted++;
     }
   }
   check(brandPages > 0 && mounted === brandPages,
-    `62 张品牌页全部挂载挂件（实际 ${mounted}/${brandPages}）`);
-  // 品牌页 ai-chat.js 的 ?v 必须与首页同值（2026-11-13）：
-  // 这之前的 AI 分流批把 ai-chat.js 升到 v28，首页改了，179 张品牌页却仍钉在 v19，
-  // 品牌页访客会读到浏览器缓存里的旧聊天脚本（缺 endpointCN 分流与线路条），
-  // 且没有任何断言会红 —— 静默失效。此处把「版本号必须一致」变成硬约束。
+    `${brandPages} 张品牌页全部挂载 AI 跳转脚本（实际 ${mounted}/${brandPages}）`);
+  // 品牌页 ai-link.js 的 ?v 必须与首页同值（2026-11-17 沿用旧纪律）：
+  // 版本不一致会让品牌页访客读到缓存里的旧跳转脚本（仍弹内嵌对话）。
   {
-    const chatV = (html.match(/ai-chat\.js\?v=(\d+)/) || [])[1];
+    const chatV = (html.match(/ai-link\.js\?v=(\d+)/) || [])[1];
     const staleV = [];
     if (exists('brand')) {
       for (const f of readdirSync(brandDir)) {
         if (!f.endsWith('.html')) continue;
         const t = readFileSync(join(brandDir, f), 'utf8');
-        const v = (t.match(/ai-chat\.js\?v=(\d+)/) || [])[1];
+        const v = (t.match(/ai-link\.js\?v=(\d+)/) || [])[1];
         if (v !== chatV) staleV.push(`${f}@${v}`);
       }
     }
     check(chatV && staleV.length === 0,
-      `品牌页 ai-chat.js ?v 与首页一致（首页 v${chatV}，不一致 ${staleV.length} 张${staleV.length ? '：' + staleV.slice(0, 5).join(' / ') : ''}）`);
+      `品牌页 ai-link.js ?v 与首页一致（首页 v${chatV}，不一致 ${staleV.length} 张${staleV.length ? '：' + staleV.slice(0, 5).join(' / ') : ''}）`);
   }
-  // 挂载顺序：config 在 chat 前（chat 读 window.SXG_AI_CONFIG，顺序反了首帧读不到）
+  // 挂载顺序：config 在 link 前（保留旧纪律，link 不读 config 但顺序稳定）
   {
     const acer = readFileSync(join(ROOT, 'brand/acer.html'), 'utf8');
     const cfgPos = acer.indexOf('ai-config.js?v=');
-    const chatPos = acer.indexOf('ai-chat.js?v=');
+    const chatPos = acer.indexOf('ai-link.js?v=');
     check(cfgPos !== -1 && chatPos !== -1 && cfgPos < chatPos,
-      '挂载顺序：ai-config.js 在 ai-chat.js 之前');
+      '挂载顺序：ai-config.js 在 ai-link.js 之前');
   }
-  // ---- 首页也挂（2026-10-26 站长指令：保证手机端可见——手机用户主要逛首页） ----
+  // 首页也挂（手机端主入口）
   check(/<script(?:\s+defer)? src="\.\/ai-config\.js\?v=\d+"><\/script>/.test(html)
-    && /<script(?:\s+defer)? src="\.\/ai-chat\.js\?v=\d+"><\/script>/.test(html),
-    '首页 index.html 也挂载了挂件（手机端主入口）');
+    && /<script(?:\s+defer)? src="\.\/ai-link\.js\?v=\d+"><\/script>/.test(html),
+    '首页 index.html 也挂载了 AI 跳转脚本（手机端主入口）');
   {
     const cfgPos = html.indexOf('ai-config.js?v=');
-    const chatPos = html.indexOf('ai-chat.js?v=');
+    const chatPos = html.indexOf('ai-link.js?v=');
     check(cfgPos !== -1 && chatPos !== -1 && cfgPos < chatPos,
-      '首页挂载顺序：ai-config.js 在 ai-chat.js 之前');
+      '首页挂载顺序：ai-config.js 在 ai-link.js 之前');
+  }
+  // ai-link.js 必须：建 AI 圆钮 + 点击跳 labor-ai.html（相对路径按目录推断）
+  const aiLink = exists('ai-link.js') ? read('ai-link.js') : '';
+  check(/sxg-ai-fab/.test(aiLink) && /labor-ai\.html/.test(aiLink) && /targetHref/.test(aiLink),
+    'ai-link.js 复刻 AI 圆钮并跳转 labor-ai.html');
+  // labor-ai.html 必须：双线路 + Star 满 7 天判定 + 两处免责声明
+  {
+    const la = read('labor-ai.html');
+    check(/sxg_github_logged_in/.test(la) && /sxg_star_days/.test(la) && /STAR_MIN_DAYS = 7/.test(la),
+      '新页面读取 Star 解锁状态（logged/star/days + 7 天门槛）');
+    check(/askCN/.test(la) && /askCF/.test(la) && /api\.siliconflow\.cn/.test(la) && /workers\.dev/.test(la),
+      '新页面双线路齐备（国内硅基流动 + Cloudflare Worker）');
+    check(/currentRoute = 'cf'/.test(la) && /unlocked/.test(la),
+      '未解锁国内线路时默认走 Cloudflare');
+    check((la.match(/不构成法律意见/g) || []).length >= 1,
+      '新页面含免责声明「不构成法律意见」');
   }
   // 卡通形象（2026-10-26 站长指令）：多头像文件架构（AVATARS 数组 + avatarSrc 从 .svg 加载），不用 emoji
   check(/var AVATARS = \[/.test(aiChat) && /function avatarSrc\(id\)/.test(aiChat) && /AVATAR_BASE/.test(aiChat),
