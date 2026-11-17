@@ -5226,19 +5226,39 @@ section('20q. 良配临时下线 + 星巴克临时上线');
     '站长要求「注释而非删除」，文件删了就无法快速恢复');
 
   // 2) 星巴克必须已上线
-  check(/<link[^>]*starbucks-ad\.css[^>]*>/i.test(idxNoCmt),
-    'index.html 已引用 starbucks-ad.css');
-  check(/<script[^>]*starbucks-ad\.js[^>]*>/i.test(idxNoCmt),
-    'index.html 已引用 starbucks-ad.js');
-  check(/starbucks-ad\.css\?v=2/.test(idxHtml),
-    'starbucks-ad.css 版本号 ?v=2（缓存防穿透；2026-11-17 从 v1 升 v2 破缓存）');
-  check(/starbucks-ad\.js\?v=2/.test(idxHtml),
-    'starbucks-ad.js 版本号 ?v=2');
+  check(/<link[^>]*starbucks-promo\.css[^>]*>/i.test(idxNoCmt),
+    'index.html 已引用 starbucks-promo.css');
+  check(/<script[^>]*starbucks-promo\.js[^>]*>/i.test(idxNoCmt),
+    'index.html 已引用 starbucks-promo.js');
+  check(/starbucks-promo\.css\?v=1/.test(idxHtml),
+    'starbucks-promo.css 版本号 ?v=1（新文件名 starbucks-promo，2026-11-17 去 ad 避拦截器）');
+  check(/starbucks-promo\.js\?v=1/.test(idxHtml),
+    'starbucks-promo.js 版本号 ?v=1');
+
+  // 2b) 2026-11-17 站长 PC 端"看不见广告"第三轮排查的根因与对策（防回退）
+  //  根因1：文件名 starbucks-ad.js / 类名 .sb-ad 命中广告拦截器默认规则（含 ad 字样）
+  //  根因2：窄屏弹窗 .dyp__panel 贴底 bottom:0，被 z-index 更高的 .dyp(100000) 压住吸底条
+  //  对策：文件名去 ad → starbucks-promo.*、类名去 ad → .sxg-promo、弹窗贴底时避让 --sxg-bar-h
+  {
+    check(!exists('starbucks-ad.js') && !exists('starbucks-ad.css'),
+      '旧文件名 starbucks-ad.js/css 已移除（避免广告拦截器按 ad 关键字误杀）');
+    const promoJs = exists('starbucks-promo.js') ? read('starbucks-promo.js') : '';
+    const promoCss = exists('starbucks-promo.css') ? read('starbucks-promo.css') : '';
+    const sbAdLeft = (promoJs.match(/sb-ad/g) || []).length + (promoCss.match(/sb-ad/g) || []).length;
+    check(sbAdLeft === 0,
+      '星巴克组件内不再出现 sb-ad 类名（全改为 sxg-promo，防拦截器匹配）',
+      `残留 sb-ad 出现 ${sbAdLeft} 次`);
+    check(/\.sxg-promo\s*\{/.test(promoCss) && /sxg-promo__logo/.test(promoCss),
+      '星巴克 CSS 主类名已改为 .sxg-promo（含 sxg-promo__logo 子类）');
+    const dypCssNow = exists('douyin-prompt.css') ? read('douyin-prompt.css') : '';
+    check(/bottom:\s*calc\(var\(--sxg-bar-h, 0px\)\s*\+\s*env\(safe-area-inset-bottom, 0px\)\)/.test(dypCssNow),
+      '窄屏弹窗 .dyp__panel 贴底时避让吸底推广条（用 --sxg-bar-h 上移，不再被整条压住）');
+  }
 
   // 3) 星巴克组件自身：完整活动日期 + 避让语义
-  if (exists('starbucks-ad.js') && exists('starbucks-ad.css')) {
-    const sbJs = read('starbucks-ad.js');
-    const sbCss = read('starbucks-ad.css');
+  if (exists('starbucks-promo.js') && exists('starbucks-promo.css')) {
+    const sbJs = read('starbucks-promo.js');
+    const sbCss = read('starbucks-promo.css');
     const dM = /activityDateFull:\s*'([^']*)'/.exec(sbJs);
     check(!!dM && /11月12日\s*8:00\s*[—-]\s*11月16日\s*23:59/.test(dM ? dM[1] : ''),
       '星巴克活动日期完整显示（含起止时分 11月12日8:00-11月16日23:59）',
@@ -5256,7 +5276,7 @@ section('20q. 良配临时下线 + 星巴克临时上线');
     check(/\.sb-poster__date\s*\{/.test(sbCss),
       '星巴克 CSS 含完整日期节点 .sb-poster__date');
   } else {
-    err('缺少 starbucks-ad.js / starbucks-ad.css', '星巴克活动位无法上线');
+    err('缺少 starbucks-promo.js / starbucks-promo.css', '星巴克活动位无法上线');
   }
 
   // 4) 行为测试接入
@@ -8441,7 +8461,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/z-index:9995/.test(ad32) && /padding:7px 0 14px/.test(ad32)
     && /background: rgba\(24, 20, 16, 0\.22\)/.test(dyp32)
     && /backdrop-filter: none/.test(dyp32)
-    && /douyin-prompt\.css\?v=20/.test(idx32),
+    && /douyin-prompt\.css\?v=21/.test(idx32),
     '§32d 广告位层级 9995 / 底部留白 14px；.dyp 遮罩减淡去模糊，弹窗引流功能原样保留');
 
   check(/var SEARCH_DURATION = 6000/.test(ff32)

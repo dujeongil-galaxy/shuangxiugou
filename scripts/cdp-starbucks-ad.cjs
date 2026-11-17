@@ -60,7 +60,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   await new Promise((r) => server.listen(HTTP_PORT, r));
   const edge = spawn(EDGE, [
     '--headless=new', `--remote-debugging-port=${DBG_PORT}`,
-    '--user-data-dir=' + path.join(cacheRoot(), '.edge-sb-adcheck'),
+    '--user-data-dir=' + path.join(cacheRoot(), '.edge-sxg-promocheck'),
     '--no-proxy-server', '--disable-gpu', 'about:blank'
   ], { stdio: 'ignore' });
 
@@ -116,13 +116,13 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
     await sleep(1200);
 
     const barInfo = await cdp(ws, 'Runtime.evaluate', { expression: `(function(){
-      var a=document.querySelector('.sb-ad');
+      var a=document.querySelector('.sxg-promo');
       if(!a) return {present:false};
       var r={present:true, hidden:a.classList.contains('is-hidden'),
-        logo:(a.querySelector('.sb-ad__logo')||{}).textContent,
-        brand:(a.querySelector('.sb-ad__brand')||{}).textContent,
-        cta:(a.querySelector('.sb-ad__cta')||{}).textContent,
-        title:(a.querySelector('.sb-ad__title')||{}).innerText};
+        logo:(a.querySelector('.sxg-promo__logo')||{}).textContent,
+        brand:(a.querySelector('.sxg-promo__brand')||{}).textContent,
+        cta:(a.querySelector('.sxg-promo__cta')||{}).textContent,
+        title:(a.querySelector('.sxg-promo__title')||{}).innerText};
       var lp=document.querySelector('.lp-ad');
       r.liangpeiStillActive=!!lp;
       return r;
@@ -146,7 +146,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
     // 打开弹窗
     const opened = await cdp(ws, 'Runtime.evaluate', { expression: `(function(){
-      var c=document.querySelector('.sb-ad__cta');
+      var c=document.querySelector('.sxg-promo__cta');
       if(!c) return {clicked:false};
       c.click();
       var m=document.getElementById('sb-modal');

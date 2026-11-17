@@ -545,16 +545,19 @@
   .dyp__article { max-height: 46vh; }
 }
 
-/* 窄屏：面板贴底，拇指更容易够到按钮 */
+/* 窄屏：面板贴底，拇指更容易够到按钮
+   2026-11-17：星巴克推广吸底条（.sxg-promo，z-index 9990）也贴在底部，
+   弹窗原先 bottom:0 会把它整条压住（站长反馈"PC 上看不见广告"的窄屏同源问题）。
+   这里用推广条实测发布的 --sxg-bar-h 让面板上移，条高为 0（无条/隐藏）时退回 bottom:0。 */
 @media (max-width: 520px) {
   .dyp__panel {
     top: auto;
-    bottom: 0;
+    bottom: calc(var(--sxg-bar-h, 0px) + env(safe-area-inset-bottom, 0px));
     left: 0;
     transform: none;
     width: 100%;
     max-height: 82vh;
-    padding: 22px 18px calc(16px + env(safe-area-inset-bottom, 0px));
+    padding: 22px 18px 16px;
     border-radius: 18px 18px 0 0;
     animation: dyp-slide 0.26s cubic-bezier(0.2, 0.9, 0.3, 1);
   }

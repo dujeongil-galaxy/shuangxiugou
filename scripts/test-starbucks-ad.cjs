@@ -24,14 +24,14 @@ const check = (l, c, x) => {
 
 console.log('=== 星巴克 × WorkBuddy 联名推广 验证 ===\n');
 
-const css = read('starbucks-ad.css');
-const js = read('starbucks-ad.js');
+const css = read('starbucks-promo.css');
+const js = read('starbucks-promo.js');
 const html = read('index.html');
 
 // ---------- 1. 文件存在 ----------
 console.log('--- 文件 ---');
-check('starbucks-ad.css 存在', fs.existsSync(path.join(ROOT, 'starbucks-ad.css')));
-check('starbucks-ad.js 存在', fs.existsSync(path.join(ROOT, 'starbucks-ad.js')));
+check('starbucks-promo.css 存在', fs.existsSync(path.join(ROOT, 'starbucks-promo.css')));
+check('starbucks-promo.js 存在', fs.existsSync(path.join(ROOT, 'starbucks-promo.js')));
 
 // ---------- 2. 配置：完整活动日期 + 文案 ----------
 console.log('\n--- 配置与文案 ---');
@@ -57,16 +57,16 @@ function parseBlock(cssText, selector, from = 0) {
   if (i === -1) return null;
   return cssText.slice(i, cssText.indexOf('}', i) + 1);
 }
-const genIdx = css.indexOf('.sb-ad__logo {');
-check('找得到通用段 .sb-ad__logo', genIdx > 0);
+const genIdx = css.indexOf('.sxg-promo__logo {');
+check('找得到通用段 .sxg-promo__logo', genIdx > 0);
 const genBlock = css.slice(genIdx, css.indexOf('}', genIdx) + 1);
 check('通用段设了 white-space: nowrap', /white-space:\s*nowrap/.test(genBlock));
 
 const charCount = brandM ? brandM[1].length : 0; // 3
 const blocks = [
-  ['≥1440px 右侧竖排卡片', parseBlock(css, '.sb-ad__logo {', css.indexOf('@media (min-width: 1440px)'))],
-  ['<1440px 底部吸底条', parseBlock(css, '.sb-ad__logo {', css.indexOf('@media (max-width: 1439px)'))],
-  ['≤374px 超窄屏', parseBlock(css, '.sb-ad__logo {', css.indexOf('@media (max-width: 374px)'))],
+  ['≥1440px 右侧竖排卡片', parseBlock(css, '.sxg-promo__logo {', css.indexOf('@media (min-width: 1440px)'))],
+  ['<1440px 底部吸底条', parseBlock(css, '.sxg-promo__logo {', css.indexOf('@media (max-width: 1439px)'))],
+  ['≤374px 超窄屏', parseBlock(css, '.sxg-promo__logo {', css.indexOf('@media (max-width: 374px)'))],
 ];
 for (const [label, block] of blocks) {
   if (!block) { check(`${label}：找得到 logo 样式`, false); continue; }
@@ -111,27 +111,27 @@ check('良配 css 注释块仍保留（便于恢复）', html.includes('liangpei
 check('良配 js 注释块仍保留（便于恢复）', html.includes('liangpei-ad.js?v=11') && html.includes('<!-- <script defer src="./liangpei-ad.js'));
 
 // 星巴克：必须已上线
-check('index.html 引用 starbucks-ad.css', /<link[^>]*starbucks-ad\.css[^>]*>/i.test(html));
-check('index.html 引用 starbucks-ad.js', /<script[^>]*starbucks-ad\.js[^>]*>/i.test(html));
-check('starbucks-ad.css 版本号 ?v=2', /starbucks-ad\.css\?v=2/.test(html));
-check('starbucks-ad.js 版本号 ?v=2', /starbucks-ad\.js\?v=2/.test(html));
+check('index.html 引用 starbucks-promo.css', /<link[^>]*starbucks-promo\.css[^>]*>/i.test(html));
+check('index.html 引用 starbucks-promo.js', /<script[^>]*starbucks-promo\.js[^>]*>/i.test(html));
+check('starbucks-promo.css 版本号 ?v=1', /starbucks-promo\.css\?v=1/.test(html));
+check('starbucks-promo.js 版本号 ?v=1', /starbucks-promo\.js\?v=1/.test(html));
 check('星巴克广告 showAfter = 1500ms（1.5 秒淡入，非 6000ms 长空窗）', /showAfter:\s*1500\b/.test(js));
 
 // ---------- 7. jsdom 真渲染：logo 不折行声明 ----------
 console.log('\n--- 浏览器实测 ---');
 const dom = new JSDOM(`<!doctype html><html><head><style>${css}</style></head>
-  <body><aside class="sb-ad"><div class="sb-ad__body">
-    <div class="sb-ad__logo">${brandM ? brandM[1] : ''}</div>
-    <div class="sb-ad__text"><div class="sb-ad__brand">${brandM ? brandM[1] : ''} × WorkBuddy</div></div>
+  <body><aside class="sxg-promo"><div class="sxg-promo__body">
+    <div class="sxg-promo__logo">${brandM ? brandM[1] : ''}</div>
+    <div class="sxg-promo__text"><div class="sxg-promo__brand">${brandM ? brandM[1] : ''} × WorkBuddy</div></div>
   </div></aside></body></html>`,
   { pretendToBeVisual: true });
 const doc = dom.window.document;
-const logoEl = doc.querySelector('.sb-ad__logo');
+const logoEl = doc.querySelector('.sxg-promo__logo');
 check('渲染出了 logo 元素', !!logoEl);
 check('logo 元素文本是「星巴克」', logoEl && logoEl.textContent === '星巴克');
 const sheetText = Array.from(doc.styleSheets).flatMap((s) => Array.from(s.cssRules).map((r) => r.cssText)).join('\n');
-check('样式表里 logo 规则含 nowrap', /\.sb-ad__logo[^{]*\{[^}]*white-space:\s*nowrap/s.test(sheetText));
-check('样式表里没有把 logo 的 nowrap 改回 normal', !/\.sb-ad__logo[^{]*\{[^}]*white-space:\s*normal/s.test(sheetText));
+check('样式表里 logo 规则含 nowrap', /\.sxg-promo__logo[^{]*\{[^}]*white-space:\s*nowrap/s.test(sheetText));
+check('样式表里没有把 logo 的 nowrap 改回 normal', !/\.sxg-promo__logo[^{]*\{[^}]*white-space:\s*normal/s.test(sheetText));
 
 console.log('\n' + '='.repeat(52));
 console.log(`通过 ${pass} 项，失败 ${fail} 项`);
