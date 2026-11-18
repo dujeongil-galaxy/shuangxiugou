@@ -22,6 +22,7 @@
   --lp-text-2: #7d7367;
   --lp-text-3: #9b8f80;
 
+  visibility: visible;   /* 基础态显式可见；隐藏由 .is-hidden 的 display:none 负责 */
   box-sizing: border-box;
   font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   color: var(--lp-text);
@@ -34,11 +35,13 @@
   box-sizing: border-box;
 }
 
-/* 初始隐藏：用 opacity + visibility 而非 display:none，便于移除 is-hidden 时淡入。
-   2026-10-29 修复：配合 JS 的延迟 reveal，广告加载后延迟淡入，不再瞬间弹出。 */
+/* 初始隐藏：2026-11-18 改用 display:none 硬隐藏。
+   旧写法 opacity:0 + visibility:hidden + transition:visibility 会在移除 class 后
+   把 computed visibility 卡在 hidden（0da3a15 星巴克真根因）——DOM 在、opacity 1，
+   广告却永远不可见。display:none 一刀切无过渡竞态；淡入交给基础态 opacity。 */
 .lp-ad.is-hidden {
+  display: none !important;
   opacity: 0;
-  visibility: hidden;
   pointer-events: none;
 }
 
@@ -248,7 +251,7 @@
     background: var(--lp-surface);
     box-shadow: 0 10px 30px rgba(61, 173, 138, 0.14);
     text-align: center;
-    transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    transition: opacity 0.35s ease, transform 0.25s ease, box-shadow 0.25s ease;
   }
 
   .lp-ad:hover {
@@ -340,7 +343,7 @@
     border-top: 1px solid var(--lp-border);
     background: var(--lp-surface);
     box-shadow: 0 -6px 22px rgba(42, 38, 32, 0.1);
-    transition: opacity 0.35s ease, visibility 0.35s ease;
+    transition: opacity 0.35s ease;
   }
 
   /* 2026-11-01：内容避让吸底条。

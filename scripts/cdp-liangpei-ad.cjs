@@ -98,8 +98,12 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   });
   await cdp(ws, 'Page.enable');
   await cdp(ws, 'Runtime.enable');
+  const navAt = Date.now();
   await cdp(ws, 'Page.navigate', { url: URL });
-  await sleep(9500); // bundle + 良配延迟淡入 6000ms + 余量
+  // 2026-11-18 秒级验收：200ms 延迟 + 首屏渲染余量即可，绝不等到旧的 6000ms。
+  // 若这里截图已见广告，才证明站长要的「秒级显示」真的落地。
+  await sleep(1200);
+  console.log('ELAPSED_MS=' + (Date.now() - navAt));
 
   // 只隐藏抖音弹窗（.dyp），它会遮住页面；不碰广告卡本身
   await cdp(ws, 'Runtime.evaluate', { expression:
@@ -156,6 +160,19 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
       }
     } catch (e) { console.log(`[${vp.name}] SHOT_ERR=` + e.message); }
   }
+
+  // 关闭按钮：reveal 写过内联 visibility:visible，close 必须清掉它，
+  // 否则 .is-hidden 的 display:none 会被内联值压过（2026-11-18 新逻辑）。
+  const closed = await cdp(ws, 'Runtime.evaluate', { expression: `(function(){
+    var b=document.querySelector('.lp-ad__close');
+    if(!b) return {clicked:false};
+    b.click();
+    var a=document.querySelector('.lp-ad');
+    return {clicked:true, hidden:a.classList.contains('is-hidden'),
+            display:getComputedStyle(a).display, inlineVis:a.style.visibility};
+  })()`, returnByValue: true });
+  const cv = closed.result && closed.result.result ? closed.result.result.value : null;
+  console.log('CLOSE=' + JSON.stringify(cv));
 
   console.log('PAGEERRORS=' + JSON.stringify(errors.slice(0, 10)));
   try { ws.close(); } catch (e) {}

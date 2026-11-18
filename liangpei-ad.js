@@ -37,9 +37,11 @@
     logoSrc: './assets/heytea.png',
     // 关闭后多久再展示（毫秒），7 天
     reappearAfter: 7 * 24 * 60 * 60 * 1000,
-    // 2026-10-29 修复：广告不再在页面加载瞬间弹出（用户误以为是点品牌卡触发的
-    // 侵入式弹窗）。改为加载后延迟 showAfter 毫秒再淡入，先让用户看清首页内容。
-    showAfter: 6000
+    // 2026-11-18 站长反馈：恢复上线后广告仍要等一会儿才出现，要求秒级显示。
+    // 6000ms 是 2026-10-29 为躲「加载即弹」误判设的，如今首屏渲染早已稳定。
+    // 沿用 0da3a15（星巴克推广条）已真渲染验证的方案：200ms 近乎即时，
+    // 仍留约一帧 + CSS opacity 淡入，不回退到 0ms 的「加载即弹」老坑。
+    showAfter: 200
   };
 
   var LOGO_TEXT = '良配';
@@ -215,6 +217,7 @@
     aside.querySelector('.lp-ad__close').addEventListener('click', function () {
       markDismissed();
       aside.classList.add('is-hidden');
+      aside.style.visibility = '';   // 清掉 reveal 写的内联值，让 is-hidden 生效
       updateBarVar();
     });
 
@@ -270,13 +273,22 @@
       wideQuery.addListener(syncBreaks);
     }
 
-    // 2026-10-29 修复（非侵入式）：不在加载瞬间弹出，延迟 showAfter 毫秒后
-    // 再移除 is-hidden，配合 CSS 淡入。这样广告不会在首页一打开/一点击品牌卡时
-    // 立刻盖上来，用户先看清内容；is-hidden 用 opacity 过渡实现淡入而非 display:none。
-    setTimeout(function () {
+    // 2026-11-18：与星巴克推广条同一套机制，这里一并修掉 visibility 卡帧。
+    // 只 remove('is-hidden') 时，computed visibility 会卡在 hidden（DOM 在、
+    // opacity 已 1，但永远不可见）——0da3a15 真根因。强制重排打断过渡帧，
+    // 再写内联 visible 兜底，两道一起才稳定放出来。
+    function reveal() {
       aside.classList.remove('is-hidden');
+      void aside.offsetWidth;                                  // 强制 reflow
+      aside.style.setProperty('visibility', 'visible', 'important');
       updateBarVar();
-    }, CONFIG.showAfter);
+    }
+    setTimeout(reveal, CONFIG.showAfter);
+    /* 兜底：万一 reveal 那帧被浏览器合并/延后，load 后再强制一次 */
+    window.addEventListener('load', function () {
+      if (aside.classList.contains('is-hidden')) reveal();
+      else aside.style.visibility = 'visible';
+    }, { once: true });
   }
 
   function init() {

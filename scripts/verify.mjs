@@ -5146,34 +5146,40 @@ if (exists(ADC) && exists(ADJ)) {
   }
 }
 
-// ---------- 20g. 良配广告必须延迟淡入（不得加载即弹） ----------
-// 起因（用户截图 + 真机复现）：liangpei-ad.js 的 init() 在 DOMContentLoaded 后
-// 无条件 build()，旧实现用 requestAnimationFrame 立刻移除 is-hidden，导致广告在
-// 首页加载瞬间就浮层弹出，盖在品牌卡片上（用户误以为是点品牌卡触发的侵入式弹窗）。
-// 2026-10-29 改为：延迟 CONFIG.showAfter 毫秒后再移除 is-hidden（配合 CSS opacity
-// 淡入），先让用户看清首页内容。本段守住「不得加载即弹」这个回归点。
-section('20n. 良配广告延迟淡入');
+// ---------- 20n. 良配广告秒级显示（不加载即弹、也不卡 visibility） ----------
+// 起因：2026-10-29 旧实现用 requestAnimationFrame 立即移除 is-hidden，广告在首页
+// 加载瞬间弹出盖住品牌卡；改成延迟 showAfter 毫秒。2026-11-18 站长反馈恢复后仍要
+// 等一会儿：6000ms 长空窗 → 200ms。同时发现旧 is-hidden 的 visibility:hidden +
+// transition 会卡 computed visibility（0da3a15 星巴克真根因），改 display:none 硬隐藏。
+// 本段守住「秒级可见且不在首屏瞬间弹出」两个边界。
+section('20n. 良配广告秒级显示');
 const ADJS = 'liangpei-ad.js';
 const ADCSS = 'liangpei-ad.css';
 if (exists(ADJS) && exists(ADCSS)) {
   const adj = read(ADJS);
   const adc = read(ADCSS);
-  // 1) reveal 必须是延迟的（setTimeout 包裹 is-hidden 移除），不允许加载即 rAF 立即移除
-  check(/setTimeout\([\s\S]*?classList\.remove\('is-hidden'\)/.test(adj),
-    '广告 reveal 由 setTimeout 延迟触发（非加载即弹）',
-    '旧实现用 requestAnimationFrame 立即移除 is-hidden，首页一打开就弹出广告');
+  // 1) reveal 必须由 setTimeout(reveal, CONFIG.showAfter) 触发。
+  //    旧断言 /setTimeout\([\s\S]*?classList.remove\('is-hidden'\)/ 会跨行匹配到
+  //    showToast 里另一个 setTimeout，属于假绿；这里钉住真实调用 + 函数体。
+  check(/setTimeout\(reveal,\s*CONFIG\.showAfter\)/.test(adj)
+    && /function reveal\(\)\s*\{[\s\S]*?classList\.remove\('is-hidden'\)/.test(adj),
+    '广告 reveal 由 setTimeout(reveal, CONFIG.showAfter) 延迟触发（非加载即弹）',
+    '旧断言跨行瞎匹配会假绿；必须钉住真实调用与 reveal 函数体');
   check(!/requestAnimationFrame\(\s*function[\s\S]*?classList\.remove\('is-hidden'\)/.test(adj),
     '广告 reveal 不再用 requestAnimationFrame 立即移除 is-hidden',
     'rAF 立即移除 is-hidden = 加载即弹，正是 2026-10-29 修掉的 bug');
-  check(/showAfter\s*:/.test(adj),
-    'CONFIG 里存在 showAfter 延迟配置（可调）');
-  // 2) is-hidden 必须用 opacity/visibility 实现淡入，不能再用 display:none（否则无过渡）
+  check(/showAfter:\s*200\b/.test(adj),
+    'CONFIG.showAfter = 200ms（秒级显示，非 6000ms 长空窗 / 0ms 加载即弹）');
+  // 2) 2026-11-18 反转：is-hidden 必须 display:none 硬隐藏。
+  //    旧口径「用 opacity/visibility 淡入」有 visibility 过渡卡帧的致命 bug：
+  //    DOM 在、opacity 1，但 computed visibility 卡在 hidden，广告永远不可见。
+  //    淡入改由基础态 opacity + 200ms 延迟实现，不依赖 visibility 过渡。
   const ihM = adc.match(/\.lp-ad\.is-hidden\s*\{([\s\S]*?)\}/);
   check(!!ihM, 'CSS 中存在 .lp-ad.is-hidden 规则');
   if (ihM) {
-    check(!/display\s*:\s*none/.test(ihM[1]),
-      '.lp-ad.is-hidden 不再用 display:none（改用 opacity/visibility 以淡入）',
-      'display:none 无法做淡入过渡，且会让「加载即弹」回潮');
+    check(/display\s*:\s*none/.test(ihM[1]),
+      '.lp-ad.is-hidden 用 display:none 硬隐藏（2026-11-18 反转 opacity/visibility 旧口径）',
+      'visibility:hidden + transition 会卡在 hidden，广告 DOM 在却永远不可见');
   }
 } else {
   err('liangpei-ad.js / liangpei-ad.css 缺失', '广告位文件被删会导致首页推广位彻底失效');
@@ -5243,10 +5249,10 @@ section('20q. 良配广告恢复上线 + 星巴克推广彻底移除');
     '保留 assets/starbucks.svg（星巴克品牌卡 LOGO，非活动推广资产）');
 
   // 2) 良配广告恢复活跃上线（不再是注释状态），版本号必须 bump 破缓存
-  check(/<link[^>]*liangpei-ad\.css\?v=14[^>]*>/i.test(idxNoCmt),
-    'index.html 活跃引用 liangpei-ad.css?v=14（恢复上线且 bump 破缓存）');
-  check(/<script[^>]*liangpei-ad\.js\?v=12[^>]*>/i.test(idxNoCmt),
-    'index.html 活跃引用 liangpei-ad.js?v=12（恢复上线且 bump 破缓存）');
+  check(/<link[^>]*liangpei-ad\.css\?v=15[^>]*>/i.test(idxNoCmt),
+    'index.html 活跃引用 liangpei-ad.css?v=15（秒级显示改版 bump 破缓存）');
+  check(/<script[^>]*liangpei-ad\.js\?v=13[^>]*>/i.test(idxNoCmt),
+    'index.html 活跃引用 liangpei-ad.js?v=13（秒级显示改版 bump 破缓存）');
   check(exists('liangpei-ad.css') && exists('liangpei-ad.js'),
     '良配推广文件仍在仓库');
 
@@ -5265,6 +5271,30 @@ section('20q. 良配广告恢复上线 + 星巴克推广彻底移除');
   check(/\.lp-ad__logo\.is-fallback\s*\{[^}]*background:\s*linear-gradient/s.test(lpCss)
     && /is-fallback/.test(lpJs),
     '图片加载失败时回退紫底白字「良配」（离线不开天窗）');
+
+  // 3b) 2026-11-18 站长要求秒级显示：6000ms 长空窗 + visibility 卡帧一并修掉。
+  //     沿用 0da3a15 星巴克推广条已真渲染验证的那套方案，逐条钉死防回退。
+  //     剥注释再判 transition：注释里写了「旧写法 transition:visibility」作说明，
+  //     不剥会把解释文字当成残留规则。
+  const lpCssNoCmt = lpCss.replace(/\/\*[\s\S]*?\*\//g, '');
+  check(/showAfter:\s*200\b/.test(lpJs),
+    '良配广告 showAfter = 200ms（秒级显示，非 6000ms 长空窗 / 0ms 加载即弹）');
+  check(/function reveal\(\)/.test(lpJs)
+    && /void aside\.offsetWidth/.test(lpJs)
+    && /setProperty\('visibility',\s*'visible',\s*'important'\)/.test(lpJs),
+    'reveal 强制重排 + 内联 visibility:visible !important（visibility 过渡卡 hidden 的 undo）',
+    '只 remove is-hidden → computed visibility 卡在 hidden，广告 DOM 在却永远不可见');
+  check(!/\.lp-ad\.is-hidden\s*\{[^}]*visibility:\s*hidden/.test(lpCssNoCmt)
+    && /\.lp-ad\.is-hidden\s*\{[^}]*display:\s*none/.test(lpCssNoCmt),
+    '.is-hidden 用 display:none 硬隐藏（不再用 visibility:hidden，避免过渡竞态）');
+  check(!/transition:[^;}]*visibility/.test(lpCssNoCmt),
+    'CSS transition 里不再有 visibility（两处断点都已去掉）',
+    'transition:visibility 会让移除 is-hidden 后 computed visibility 卡在 hidden');
+  check(/aside\.style\.visibility\s*=\s*''/.test(lpJs),
+    'close 时清内联 visibility，保证 is-hidden 重新生效（否则内联 visible 压过隐藏）');
+  check(/window\.addEventListener\('load',\s*function/.test(lpJs)
+    && /if \(aside\.classList\.contains\('is-hidden'\)\) reveal\(\)/.test(lpJs),
+    'load 兜底：reveal 帧被合并/延后时再强制一次');
 
   // 4) 窄屏弹窗避让吸底条：良配同样发布 --sxg-bar-h，这条规则继续生效
   const dypCssNow = exists('douyin-prompt.css') ? read('douyin-prompt.css') : '';
