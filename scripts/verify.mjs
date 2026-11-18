@@ -5311,18 +5311,20 @@ section('20q. 良配广告恢复上线 + 星巴克推广彻底移除');
 section('20r. 顶栏下方站点政策声明条');
 const PNS = 'policy-notice.js';
 const POLICY_HREF = 'https://dujeongil-galaxy.github.io/';
-const POLICY_BEFORE = '因乌克兰发生战争，对于利用、无视或纵容这场战争的言论（包括但不限于issues、匿名邮箱来信等），我们将采取零容忍，点击';
+const POLICY_BEFORE = '因乌克兰发生战争，对于利用、无视或纵容这场战争的言论（包括但不限于issues、匿名邮箱来信等），我们将采取零容忍原则，点击';
 const POLICY_AFTER = '查看本站政策';
 if (exists(PNS)) {
   const pn = read(PNS);
   const idxActive = read('index.html').replace(/<!--[\s\S]*?-->/g, '');
-  check(/<script[^>]*policy-notice\.js\?v=1[^>]*>/.test(idxActive),
-    'index.html 活跃引用 policy-notice.js?v=1（非注释）');
+  check(/<script[^>]*policy-notice\.js\?v=2[^>]*>/.test(idxActive),
+    'index.html 活跃引用 policy-notice.js?v=2（非注释）');
   check(read('index.html').indexOf(PNS) > read('index.html').indexOf('header-to-dock.js'),
     '排在 header-to-dock.js 之后（同属 header 下游补丁）');
   check(pn.includes(POLICY_BEFORE),
-    '声明文案前半段一字不差（含「零容忍」「issues」「匿名邮箱来信」「点击」收尾）',
+    '声明文案前半段一字不差（含「零容忍原则」「issues」「匿名邮箱来信」「点击」收尾）',
     '文案被软化或截断 → 声明失去原意');
+  check(/零容忍原则/.test(pn) && !/采取零容忍[，,]/.test(pn),
+    '「零容忍」补全为「零容忍原则」（站长强调是原则，不是软化）');
   check(/var LINK_TEXT = '这里'/.test(pn),
     '链接文字恰好是「这里」两字');
   check(pn.includes("var TEXT_AFTER = '" + POLICY_AFTER + "'"),
@@ -5345,10 +5347,14 @@ if (exists(PNS)) {
     '不往 #site-notice 滚动栏插（零超链接硬约定）');
   check(/setTimeout\(sweep,\s*300\)/.test(pn) && /new MutationObserver/.test(pn),
     'header 未挂载时定时重试 + MutationObserver 自愈');
-  check(/background:#fff;color:#dc2626/.test(pn)
+  check(/background:#7f1d1d;color:#ffffff/.test(pn)
     && /text-decoration:underline/.test(pn)
     && /@media \(max-width:640px\)/.test(pn),
-    '白底红字 + 链接下划线 + 移动端字号下调');
+    '深红底白字（非浅底）+ 链接下划线 + 移动端字号下调');
+  check(!/background:#fff;color:#dc2626/.test(pn),
+    '不再是旧的浅底红字（站长：浅色看不清，已换深色底）');
+  check(/a\{color:#fde047;text-decoration:underline/.test(pn),
+    '「这里」链接为亮黄 #fde047 + 下划线（深红底上可辨可点，非旧红）');
   check(exists('scripts/test-policy-notice.cjs'), '存在政策声明条行为测试');
   if (exists('.github/workflows/verify.yml')) {
     check(read('.github/workflows/verify.yml').includes('test-policy-notice.cjs'),

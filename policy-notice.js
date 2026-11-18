@@ -13,6 +13,8 @@
 
    技术红线：只插静态 DOM、不动压缩 bundle（assets/index-YthXZ9eP.js）。
    文案用 textContent 分段 + <a> 元素拼装，不写 innerHTML，避免注入面。
+   2026-11-18 再改：① 文案「零容忍」补全为「零容忍原则」（站长强调是原则）；
+   ② 配色由白底红字换深红底白字（站长：浅色看不清）。
 
    幂等 / 自愈：按 id 判重；header 由 React 渲染，脚本执行时可能还没挂载，
    故用定时重试 + MutationObserver 等待；若后续 React 重渲染清掉了声明条，
@@ -26,20 +28,22 @@
   var LINK_HREF = 'https://dujeongil-galaxy.github.io/';
 
   /* 站长给定原文，按「这里」切成三段；两段纯文本 + 中间一个真 <a>。 */
-  var TEXT_BEFORE = '因乌克兰发生战争，对于利用、无视或纵容这场战争的言论（包括但不限于issues、匿名邮箱来信等），我们将采取零容忍，点击';
+  var TEXT_BEFORE = '因乌克兰发生战争，对于利用、无视或纵容这场战争的言论（包括但不限于issues、匿名邮箱来信等），我们将采取零容忍原则，点击';
   var LINK_TEXT = '这里';
   var TEXT_AFTER = '查看本站政策';
 
   var CSS = [
     '#' + BAR_ID + '{',
-    '  max-width:1100px;margin:0 auto;background:#fff;color:#dc2626;',
+    /* 2026-11-18 站长：换深色底（浅底红字看不清）。深红底 + 白字，深色非浅色，
+       白字在深红上对比清晰；链接用亮黄，深底上一眼可辨可点。 */
+    '  max-width:1100px;margin:0 auto;background:#7f1d1d;color:#ffffff;',
     '  text-align:center;font-size:13px;line-height:1.6;font-weight:700;',
-    '  padding:8px 16px;border-bottom:1px solid #fee2e2;',
+    '  padding:8px 16px;border-bottom:1px solid #450a0a;',
     '  position:relative;z-index:1;',
     '}',
-    '#' + BAR_ID + ' a{color:#b91c1c;text-decoration:underline;font-weight:700;}',
-    '#' + BAR_ID + ' a:hover{color:#991b1b;}',
-    '#' + BAR_ID + ' a:focus-visible{outline:2px solid #dc2626;outline-offset:2px;}',
+    '#' + BAR_ID + ' a{color:#fde047;text-decoration:underline;font-weight:700;}',
+    '#' + BAR_ID + ' a:hover{color:#fef08a;}',
+    '#' + BAR_ID + ' a:focus-visible{outline:2px solid #fde047;outline-offset:2px;}',
     '@media (max-width:640px){',
     '  #' + BAR_ID + '{font-size:12px;padding:7px 12px;line-height:1.55;}',
     '}'
