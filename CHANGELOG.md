@@ -4,6 +4,17 @@
 
 ---
 
+### feat：旧版 AI 挂件代码彻底删除（非注释）+ 开通公告文案优化（2026-11-18 · 提交 `2387523`）
+
+- **起因**：站长明确「旧版本的代码是彻底删干净，不是注释」。上一轮 `e27110e` 只把 182 页的 `ai-config.js` 引用换掉，但 `ai-chat.js` / `ai-config.js` 文件本体仍在仓库、181 页仍留着「endpoint 配在 ai-config.js」的注释块——是「注释保留」而非真删，站长再次进入 `projects.html` / `notes.html` 仍可能看到旧版残留。同时要求开通公告：保留 `2026-11-07` 开通日期不删，补上 11-18 全面升级 + 旧版历史遗留代码彻底清除，措辞重新组织、不照抄指令原句。
+- **物理删除（13 项资产）**：`ai-chat.js`（31KB 内嵌挂件主体）、`ai-config.js`（开关配置）、`assets/ai-avatar.svg` + `assets/ai-avatars/A.svg`~`F.svg`（旧挂件六形象头像；新版 `ai-link.js` 用 emoji 🤖，不依赖头像）、旧挂件专属测试 `scripts/test-ai-chat.cjs` / `test-ai-route.cjs` / `shot-ai-chat.cjs` / `shot-ai-mobile.cjs` / `shot-ai-stub.cjs`。全部 `git rm`，不是注释。
+- **HTML 清理**：写字节级脚本处理 187 个 HTML，删 79 个「劳动法小助手…endpoint 配在 ai-config.js」注释块 + 182 条 `<script src=...ai-config.js?v=2>` 引用（181 品牌页 + index）。复查全站 HTML 的 `ai-chat` / `ai-config` 字符串残留 = 0。
+- **保留的后端**：`ai-worker/`（Cloudflare，新版 `labor-ai.html` 的 `askCF` 仍传 `route:'cf'` 实时在用）、`ai-worker-aliyun/`（可选国内线路脚手架）。CI 移除「AI 挂件行为测试」「AI 分流行为测试」两步，保留两个 Worker 逻辑测试。verify §21g-1 从「旧挂件形象 A-F 分流」改写为「双线路后端」口径，删掉全部 `aiChat`/`aiCfg` 前端断言，保留 Worker route 白名单 + 阿里云脚手架断言。
+- **公告文案**：`ai-notice-patch.js` 的 `NOTICE_TEXT` 改为「📢 本站 2026-11-07 上线 AI 劳动法小助手，11-18 完成全面升级，旧版历史遗留代码已彻底清除；点右下角 🤖 即可咨询劳动法问题」——开通日保留、两件新事实写入、行动指引保留，措辞自组织未照抄指令。v1→v2 破缓存。
+- **版本 bump**：`ai-link.js` v2→v3（全站 196 页：首页 `./` + 181 品牌页 `../` + 14 顶层页同步）、`mobile-fixes.css` v24→v25、`liangpei-ad.js` v13→v14；verify §21h 与 `test-ad-logo.cjs` 里的硬编码版本号同步。
+- **校验改写**：§20o 去旧挂件锚定/避让两条断言；§21g 头改新版架构 + 新增 13 个旧资产「已物理删除」断言 + 测试/CI 改口径；§21g-1 前端分流断言全删只留后端；新增 §21g-3 公告文案 7 条断言（保留 11-07 / 写 11-18 升级 / 写旧版彻底清除 / 留行动指引 / 长度 ≤120 / 活跃引用非注释）。`ai-link.js` / `liangpei-ad.js` / `mobile-fixes.css` 里过时的「保留在仓库」「由 ai-chat.js 写入」注释更正。
+- **验证**：`verify.mjs` **1887 项全绿**；6/6 故障注入判红（旧文件复活 / 删开通日 / 软化清除为「持续优化」 / 删升级事实 / 注释掉公告脚本 / CI 加回旧测试），逐组按字节还原后全绿；`test-ai-global` / `test-ad-logo` / `test-ai-worker` / `test-ai-worker-aliyun` / `test-ai-anchor` / `test-policy-notice` 六组全过；CDP 无头 Edge 真渲染 7 页，确认首页公告新文案完整显示、AI 圆钮 href 正确（根页 `./labor-ai.html`、品牌页 `../labor-ai.html`）、`labor-ai.html` 自身与 404 无按钮、所有页面 `#sxg-ai-panel` 与旧脚本零出现。
+
 ### feat：AI 按钮全局化——全站统一新版跳转，老版挂件清零，阅读态不复活（2026-11-18 · 提交 `e27110e`）
 
 - **起因**：站长进 `projects.html` / `notes.html` 仍是老版内嵌 AI（`ai-chat.js`），要求全局检查 + 左下角 AI 按钮做成全局所有页面都有。经站长确认边界：全站统一新版跳转按钮；`notes.html` 首页保留但「阅读全文」正文不能有；`labor-ai.html` 自身、404、discussion-closed、notes-plaintext-preview、google 验证文件不加。
