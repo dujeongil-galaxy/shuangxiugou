@@ -7670,6 +7670,39 @@ section('23. README 长段落摘要化（摘要 + 独立页面）');
       + ' → 私人对话原句暴露表达习惯，改成结论句');
 }
 
+// ---------- 23m. 奶茶品牌备注月休口径统一为「月休4天」（2026-11-18 站长给最新数据） ----------
+// 站长更新数据：奶茶品牌（沪上阿姨除外——它本就是月休2天）备注里的「月休不足4天」
+// 一律改为「月休4天」。实际命中该文案的奶茶品牌是茶百道、兵立王两个。
+// 判据写成通用扫描：这两个品牌的详情页 / index.html 卡面 / 备注补丁 / SEO 生成器 / 核实清单
+// 都不许再出现「月休不足4天」，且必须出现「月休4天」；评级 C 级不变（月休4天仍属不足6天）。
+section('23m. 奶茶品牌备注月休口径统一为月休4天');
+{
+  const idx23M = exists('index.html') ? read('index.html') : '';
+  const rate23M = exists('rate-note-patch.js') ? read('rate-note-patch.js') : '';
+  const teaPages23M = ['brand/chabaidao.html', 'brand/bingliw.html',
+    'brand/lingshiyouming.html', 'brand/meiyijia.html', 'brand/molina.html',
+    'brand/yidiandian.html'];
+  const bad23M = /月休不足\s*4\s*天|单休都算不上/;
+  const good23M = /月休\s*4\s*天|月休4天/;
+  const teaBadFiles23M = teaPages23M.filter(f => exists(f) && bad23M.test(read(f)));
+  check(teaPages23M.every(f => exists(f))
+      && teaBadFiles23M.length === 0
+      && teaPages23M.slice(0, 2).every(f => good23M.test(read(f))),
+    '§23m 茶百道/兵立王等奶茶品牌页备注统一「月休4天」，零「月休不足4天」',
+    '回潮文件：' + teaBadFiles23M.join(',') + ' → 旧口径未清干净');
+  const cdbCard23M = idx23M.slice(idx23M.indexOf("id: 'chabaidao-card'"), idx23M.indexOf("id: 'chabaidao-card'") + 1600);
+  const blwCard23M = idx23M.slice(idx23M.indexOf("id: 'bingliw-card'"), idx23M.indexOf("id: 'bingliw-card'") + 1600);
+  check(/workPolicy: '月休4天'/.test(cdbCard23M) && /workPolicy: '月休4天'/.test(blwCard23M)
+      && !/月休不足\s*4\s*天|单休都算不上/.test(cdbCard23M + blwCard23M),
+    '§23m index.html 茶百道/兵立王自定义卡 workPolicy 均为月休4天，无旧文案残留',
+    '卡片仍写「月休不足4天」→ 首页卡面备注与最新数据打架');
+  check(!/月休不足\s*4\s*天/.test(rate23M)
+      && /门店月休 4 天/.test(rate23M)
+      && /rate-note-patch\.js\?v=3/.test(idx23M),
+    '§23m 备注补丁两品牌改月休4天且缓存号 bump 到 v3',
+    '补丁文案或 ?v 没跟上 → 浏览器拿旧缓存，卡面仍显示旧口径');
+}
+
 // ---------- 24. 白屏兜底 + 加载态（站长 2026-11-08「删空搜索后整站白屏，怕用户误退出」） ----------
 // 双层防御：① filter-flash.js 的近白磨砂层内加「转圈 + 加载中…」明确加载态（§17b 守）；
 //           ② white-screen-guard.js 盯 #root，真被 React 卸载时显示恢复卡片，不再永久白屏。
