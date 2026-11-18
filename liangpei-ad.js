@@ -223,8 +223,9 @@
 
     document.body.appendChild(aside);
 
-    // 2026-11-01：把广告条真实高度发布成 CSS 变量 --sxg-bar-h，供右侧悬浮按钮组
-    // （top / bottom / remind / ai-chat / featured-douyin 五个脚本）动态避让。
+    // 2026-11-01：把广告条真实高度发布成 CSS 变量 --sxg-bar-h，供左侧悬浮按钮组
+    // （top / bottom / remind / ai-link / featured-douyin 五个脚本）动态避让。
+    // 2026-11-18：原 ai-chat 已彻底删除，改为 ai-link（全站 AI 跳转圆钮）。
     // 移动端广告条会随推广文案折行而变高（390px 下实测 113px，不再是固定的 76px），
     // 固定偏移会让最下方的视频 / TOP 按钮压到条上。各 FAB 用
     // calc(var(--sxg-bar-h, 0px) + Npx) 即随条高自动上移，且彼此间距保持不变。

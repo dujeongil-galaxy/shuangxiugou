@@ -45,7 +45,7 @@ const htmlNoComments = html.replace(/<!--[\s\S]*?-->/g, '');
 check('index.html 活跃引用良配 CSS（恢复上线，非注释）',
   /<link[^>]*liangpei-ad\.css\?v=15[^>]*>/i.test(htmlNoComments));
 check('index.html 活跃引用良配 JS（恢复上线，非注释）',
-  /<script[^>]*liangpei-ad\.js\?v=13[^>]*>/i.test(htmlNoComments));
+  /<script[^>]*liangpei-ad\.js\?v=14[^>]*>/i.test(htmlNoComments));
 
 // ---------- 2. 图片等比、白底 ----------
 console.log('\n--- 图片样式 ---');

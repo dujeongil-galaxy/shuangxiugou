@@ -206,17 +206,12 @@ jobs:
       - name: 虚拟卡下线测试
         run: node scripts/test-virtual-card-remove.cjs
 
-      # 劳动法小助手（2026-10-26）：前端挂件行为（降级/渲染/问答/错误文案）
-      # + Worker 后端逻辑（CORS/校验/限流/提示词，桩 env.AI 不联网）。
-      - name: AI 挂件行为测试
-        run: node scripts/test-ai-chat.cjs
+      # 劳动法小助手：旧版内嵌挂件（ai-chat.js/ai-config.js）及其前端测试已于
+      # 2026-11-18 彻底删除；新版为独立页 labor-ai.html + 全站跳转按钮 ai-link.js。
+      # 这里只保留仍在服务新版的后端逻辑测试（桩 env.AI 不联网）。
       - name: AI Worker 逻辑测试
         run: node scripts/test-ai-worker.cjs
 
-      # AI 形象按线路分流（2026-11-13）：A-C 走 Cloudflare / D-F 走阿里云，
-      # endpointCN 缺失回落且可见提示、请求体 route 字段、两线路异常文案分开。
-      - name: AI 分流行为测试
-        run: node scripts/test-ai-route.cjs
       # 阿里云函数计算线路（2026-11-13）：桩 fetch 验 CORS/校验/限流/契约对齐。
       - name: 阿里云线路逻辑测试
         run: node scripts/test-ai-worker-aliyun.cjs

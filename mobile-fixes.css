@@ -569,9 +569,9 @@ div[class*="border-t"][class*="bg-slate-50"] > div.flex.items-center.gap-2 {
      原来按 bottom 反推（bar-h + dock-h 288 + 24），算式里 dock 那 288px 是「屏幕底部
      常驻按钮堆」的高度——键盘一弹，visual viewport 只剩 ~420px，这个算式直接变负数，
      面板被顶到 top:-7px、高 2px（实测等于消失，正是站长图 1 的样子）。
-     改法：top 锚定。--sxg-ai-top 由 ai-chat.js 实测 header 下沿写入，--sxg-ai-vh 由
-     visualViewport 实时写（无 visualViewport 时退回 100dvh），键盘弹出只让面板变矮，
-     位置不再漂。 */
+     改法：top 锚定。--sxg-ai-top 取 header 下沿（旧版由 ai-chat.js 实测写入；该挂件
+     2026-11-18 已彻底删除，现走默认值 72px），--sxg-ai-vh 由 visualViewport 实时写
+     （无 visualViewport 时退回 100dvh），键盘弹出只让面板变矮，位置不再漂。 */
   #sxg-ai-panel {
     left: 14px !important;
     right: 14px !important;

@@ -142,7 +142,7 @@
     <!-- 首页视频推荐弹窗（改完请把 ?v=N 的 N +1 防缓存） -->
     <link rel="stylesheet" href="./douyin-prompt.css?v=22">
     <!-- 移动端排版修复（须在主 CSS 之后：靠覆盖生效；改完请把 ?v=N 的 N +1） -->
-    <link rel="stylesheet" href="./mobile-fixes.css?v=24">
+    <link rel="stylesheet" href="./mobile-fixes.css?v=25">
     <!-- 顶部公告栏单行滚动（2026-11-15 取代手机端折叠）：改完请把 ?v=N 的 N +1 -->
     <link rel="stylesheet" href="./notice-marquee.css?v=1">
   <!-- 黑卡预隐藏（2026-11-10 站长反馈「先加载黑色卡片，然后才出现广告位」）：
@@ -9711,7 +9711,7 @@
   <script defer src="./discussion-to-404.js?v=2"></script>
   <!-- 良配 · 限时推广广告位：注入 DOM + 微信小程序 scheme 分环境处理
        2026-11-18 恢复上线（星巴克联名活动已到期下线）；LOGO 改用站内 assets/heytea.png -->
-  <script defer src="./liangpei-ad.js?v=13"></script>
+  <script defer src="./liangpei-ad.js?v=14"></script>
   <!-- 首页视频推荐弹窗：延迟自动弹出，冷却期内不重复弹（localStorage） -->
   <script defer src="./douyin-prompt.js?v=26"></script>
   <!-- 品牌 LOGO 加密容器解密（2026-11-05 站长要求「LOGO 缓存 blob 容器、仓库不得明文、
@@ -9743,7 +9743,7 @@
   <script defer src="./luxiyi-alt-patch.js?v=2"></script>
   <script defer src="./search-clear-order-fix.js?v=3"></script>
   <script defer src="./rating-stats-patch.js?v=14"></script>
-  <script defer src="./ai-notice-patch.js?v=1"></script>
+  <script defer src="./ai-notice-patch.js?v=2"></script>
   <!-- 2026-11-14：第三方推广文案整段撤下（对方不希望继续推广），
        仅为该推广服务的排版补丁与首页挂载同步移除。 -->
   <!-- 拼音 / 首字母模糊搜索联想。
@@ -9838,12 +9838,7 @@
        DOM 层移除该卡 + noscript 清单同步删行 + MutationObserver
        兜底 React 重渲染（搜索/筛选/切标签会把卡挂回来）。 -->
   <script defer src="./virtual-card-remove.js?v=1"></script>
-  <!-- 劳动法小助手（2026-10-26 站长指令）：挂 body（React 只管 #root，
-       照 bottom-button 纪律不碰它管的地盘）；endpoint 配在 ai-config.js
-       （未配置时按钮照常显示，stub 模式）。2026-11-05 站长拍板：
-       挂件整体挪到左下角（手机端在导航主按钮上方），不再与右列浮钮挤。 -->
-  <script defer src="./ai-config.js?v=2"></script>
-  <script defer src="./ai-link.js?v=2"></script>
+  <script defer src="./ai-link.js?v=3"></script>
   <!-- 右下角悬浮导航菜单（2026-11-02 站长指令）：顶部公告栏不许再挂超链接，
        同类项目导航 / 成功案例 收到这里；2026-11-14 起随笔入口也挂这里，按钮文字
        统一「手气不错」→ ./notes.html（弹窗仍维持两枚按钮，notes.html 本身不改）。

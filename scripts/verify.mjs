@@ -5185,34 +5185,25 @@ if (exists(ADJS) && exists(ADCSS)) {
   err('liangpei-ad.js / liangpei-ad.css 缺失', '广告位文件被删会导致首页推广位彻底失效');
 }
 
-// ---------- 20o. 桌面悬浮层互不遮挡（广告卡 × AI 面板） ----------
+// ---------- 20o. 桌面悬浮层互不遮挡（广告卡 × AI 按钮） ----------
+// 2026-11-18：旧版 AI 挂件 ai-chat.js 已彻底删除（含文件、引用、头像），
+// 本段原「AI 面板锚定/避让」两条断言随旧挂件作废并移除；保留广告 --sxg-bar-h
+// 语义断言（新版 AI 圆钮 ai-link.js 同样读这个变量避让吸底条）。
 section('20o. 桌面悬浮层互不遮挡');
-if (exists(ADJS) && exists(ADCSS) && exists('ai-chat.js')) {
+if (exists(ADJS) && exists(ADCSS)) {
   const adj = read(ADJS);
-  const adc = read(ADCSS);
-  const aic = read('ai-chat.js');
 
-  // 1) --sxg-bar-h 的语义是「底部吸底条占位」。≥1440px 广告是右上竖排卡片，
-  //    根本不在底部，却照样把卡片高度（实测 279px）写进变量 —— 整列 FAB 与 AI 面板
-  //    被抬高一个卡片高度飘到页面中部，面板还被卡片压住右半屏（2026-11-02 站长截图）。
+  // --sxg-bar-h 的语义是「底部吸底条占位」。≥1440px 广告是右上竖排卡片，
+  // 根本不在底部，却照样把卡片高度（实测 279px）写进变量 —— 整列 FAB 与 AI 圆钮
+  // 被抬高一个卡片高度飘到页面中部（2026-11-02 站长截图）。
   check(/matchMedia\('\(min-width: 1440px\)'\)\.matches/.test(adj),
     '广告脚本按 1440px 断点判断「是否吸底」（读 matchMedia 结果）',
     '不判断断点 → 桌面把右上卡片的高度也写进 --sxg-bar-h');
   check(/var h = \(wide \|\| aside\.classList\.contains\('is-hidden'\)\) \? 0 : aside\.offsetHeight;/.test(adj),
     '≥1440px 或广告隐藏时 --sxg-bar-h 恒为 0（桌面没有吸底条可让位）',
-    '桌面仍写卡片高度 → 悬浮按钮组与 AI 面板被整体抬高 279px');
-
-  // 2) 2026-11-05 站长拍板：AI 挂件整体挪到左下角。按钮 left:14 锚定；
-  //    面板改左锚定后与右上广告卡不再同列，旧的 :has() 避让规则必须拔掉，
-  //    残留即死规则 —— 谁把面板改回右锚定而不删它，这里判红。
-  check(/'#' \+ BTN_ID \+ '\{position:fixed;left:14px;/.test(aic),
-    'AI 按钮左下角锚定（left:14px，2026-11-05 站长拍板）',
-    'AI 按钮仍锚右侧 → 与「回到顶部」钮（≥1440 距底 6px）同心叠住（2026-11-05 站长截图）');
-  check(!/body:has\(\.lp-ad/.test(aic),
-    '面板避让规则已拔除（面板左锚定后与右上广告卡不再同列）',
-    '旧 :has() 避让规则残留 —— 面板已不贴右，规则成了永不生效的死代码');
+    '桌面仍写卡片高度 → 悬浮按钮组与 AI 圆钮被整体抬高 279px');
 } else {
-  err('缺少 liangpei-ad.js / liangpei-ad.css / ai-chat.js', '桌面悬浮层避让无法校验');
+  err('缺少 liangpei-ad.js / liangpei-ad.css', '桌面悬浮层避让无法校验');
 }
 
 // ---------- 20q. 良配广告恢复上线 + 星巴克推广彻底移除（2026-11-18 站长指令） ----------
@@ -5251,8 +5242,8 @@ section('20q. 良配广告恢复上线 + 星巴克推广彻底移除');
   // 2) 良配广告恢复活跃上线（不再是注释状态），版本号必须 bump 破缓存
   check(/<link[^>]*liangpei-ad\.css\?v=15[^>]*>/i.test(idxNoCmt),
     'index.html 活跃引用 liangpei-ad.css?v=15（秒级显示改版 bump 破缓存）');
-  check(/<script[^>]*liangpei-ad\.js\?v=13[^>]*>/i.test(idxNoCmt),
-    'index.html 活跃引用 liangpei-ad.js?v=13（秒级显示改版 bump 破缓存）');
+  check(/<script[^>]*liangpei-ad\.js\?v=14[^>]*>/i.test(idxNoCmt),
+    'index.html 活跃引用 liangpei-ad.js?v=14（文案 bump 破缓存）');
   check(exists('liangpei-ad.css') && exists('liangpei-ad.js'),
     '良配推广文件仍在仓库');
 
@@ -6289,14 +6280,12 @@ section('21c. 首页滑到底部按钮');
     'JSON-LD FAQPage 答案同步含 VPN 提示（结构化数据不漏）');
 }
 
-// ---------- 21g. 劳动法小助手（Worker 代理 + 品牌页挂件，2026-10-26 站长指令） ----------
-// 架构：静态站不能藏 API key → Cloudflare Worker（env.AI binding 零 key，
-// ai-worker/）做代理；品牌页右侧挂 ai-chat.js 聊天气泡；ai-config.js
-// 是唯一开关（endpoint 空 = 挂件不渲染，先推前端不出半截 UI）。
-// 断言分三组：挂件挂载、降级开关、Worker 安全层。
+// ---------- 21g. 劳动法小助手（Worker 代理 + 全站跳转按钮） ----------
+// 2026-11-18 架构：旧版内嵌挂件 ai-chat.js / ai-config.js 已彻底删除（文件、
+// 引用、头像、专属测试全清）；现为独立页 labor-ai.html（双线路：国内硅基流动
+// 直连 + Cloudflare Worker 代理）+ 全站跳转按钮 ai-link.js。Cloudflare Worker
+// （env.AI binding 零 key，ai-worker/）仍服务新版 CF 线路，安全层断言保留。
 {
-  const aiChat = exists('ai-chat.js') ? read('ai-chat.js') : '';
-  const aiCfg = exists('ai-config.js') ? read('ai-config.js') : '';
   const worker = exists('ai-worker/src/worker.js') ? read('ai-worker/src/worker.js') : '';
   section('21g. 劳动法小助手（Worker 代理 + 品牌页挂件）');
 
@@ -6334,24 +6323,14 @@ section('21c. 首页滑到底部按钮');
     check(chatV && staleV.length === 0,
       `品牌页 ai-link.js ?v 与首页一致（首页 v${chatV}，不一致 ${staleV.length} 张${staleV.length ? '：' + staleV.slice(0, 5).join(' / ') : ''}）`);
   }
-  // 挂载顺序：config 在 link 前（保留旧纪律，link 不读 config 但顺序稳定）
-  {
-    const acer = readFileSync(join(ROOT, 'brand/acer.html'), 'utf8');
-    const cfgPos = acer.indexOf('ai-config.js?v=');
-    const chatPos = acer.indexOf('ai-link.js?v=');
-    check(cfgPos !== -1 && chatPos !== -1 && cfgPos < chatPos,
-      '挂载顺序：ai-config.js 在 ai-link.js 之前');
-  }
-  // 首页也挂（手机端主入口）
-  check(/<script(?:\s+defer)? src="\.\/ai-config\.js\?v=\d+"><\/script>/.test(html)
-    && /<script(?:\s+defer)? src="\.\/ai-link\.js\?v=\d+"><\/script>/.test(html),
-    '首页 index.html 也挂载了 AI 跳转脚本（手机端主入口）');
-  {
-    const cfgPos = html.indexOf('ai-config.js?v=');
-    const chatPos = html.indexOf('ai-link.js?v=');
-    check(cfgPos !== -1 && chatPos !== -1 && cfgPos < chatPos,
-      '首页挂载顺序：ai-config.js 在 ai-link.js 之前');
-  }
+  // 旧版 ai-config.js 已彻底删除：全站任何页面不得再挂这个开关脚本。
+  // 曾有「config 在 link 前」的挂载顺序纪律，config 删除后一并作废。
+  check(!/<script[^>]*ai-config\.js/.test(html)
+    && !/<script[^>]*ai-config\.js/.test(readFileSync(join(ROOT, 'brand/acer.html'), 'utf8')),
+    '首页与品牌页均不再挂载 ai-config.js（旧开关随挂件彻底删除）');
+  // 首页也挂新版跳转（手机端主入口）
+  check(/<script(?:\s+defer)? src="\.\/ai-link\.js\?v=\d+"><\/script>/.test(html),
+    '首页 index.html 挂载 AI 跳转脚本（手机端主入口）');
   // ai-link.js 必须：建 AI 圆钮 + 点击跳 labor-ai.html（相对路径按目录推断）
   const aiLink = exists('ai-link.js') ? read('ai-link.js') : '';
   check(/sxg-ai-fab/.test(aiLink) && /labor-ai\.html/.test(aiLink) && /targetHref/.test(aiLink),
@@ -6400,6 +6379,29 @@ section('21c. 首页滑到底部按钮');
     '★ 阅读态守卫：正文（#toc）里移除 AI 按钮并跳过构建（解锁后不复活）',
     '删守卫 → notes.html 解锁进「阅读全文」后左下角 AI 按钮仍在，违反站长要求');
 
+  // ---- AI 开通公告文案（2026-11-18 站长优化）----
+  // 保留开通日期 2026-11-07 不删；补上当日全面升级 + 旧版历史遗留代码彻底清除。
+  // 措辞由站长给定含义、脚本自组织，不许照抄指令、也不许把两件事实删掉。
+  section('21g-3. AI 开通公告文案');
+  const noticeJs = exists('ai-notice-patch.js') ? read('ai-notice-patch.js') : '';
+  const noticeM = noticeJs.match(/var NOTICE_TEXT = '([^']*)'/);
+  check(!!noticeM, '公告脚本存在且定义 NOTICE_TEXT');
+  if (noticeM) {
+    const nt = noticeM[1];
+    check(/2026-11-07/.test(nt), '公告保留开通日期 2026-11-07（站长：日期不删）');
+    check(/11-18/.test(nt) && /全面升级/.test(nt),
+      '公告写明 11-18 完成全面升级');
+    check(/旧版/.test(nt) && /(彻底清除|彻底移除|彻底删除)/.test(nt) && /代码/.test(nt),
+      '公告写明旧版历史遗留代码已彻底清除（不是「优化/更新」软话）');
+    check(/点右下角/.test(nt) && /咨询劳动法/.test(nt),
+      '公告保留「点右下角 🤖 咨询劳动法」的行动指引');
+    check(nt.length <= 120,
+      `公告长度可控，不撑破首页 hero 徽章（当前 ${nt.length} 字）`);
+  }
+  const noticeHtmlNoCmt = html.replace(/<!--[\s\S]*?-->/g, '');
+  check(/<script[^>]*src="\.\/ai-notice-patch\.js\?v=2"/.test(noticeHtmlNoCmt),
+    '首页活跃引用 ai-notice-patch.js?v=2（非注释，文案变更 bump 破缓存）');
+
   // labor-ai.html 必须：双线路 + Star 满 7 天判定 + 两处免责声明
   {
     const la = read('labor-ai.html');
@@ -6433,48 +6435,17 @@ section('21c. 首页滑到底部按钮');
         '国内线路 API Key 已配置（_SEG 还原为合法 sk- 串，非占位）');
     }
   }
-  // 卡通形象（2026-10-26 站长指令）：多头像文件架构（AVATARS 数组 + avatarSrc 从 .svg 加载），不用 emoji
-  check(/var AVATARS = \[/.test(aiChat) && /function avatarSrc\(id\)/.test(aiChat) && /AVATAR_BASE/.test(aiChat),
-    '卡通形象为多头像文件架构（AVATARS 数组 + avatarSrc 加载 .svg，非单内联 base64）');
-  check(/headAvatar\.src = avatarSrc\(/.test(aiChat) && /im\.src = avatarSrc\(a\.id\)/.test(aiChat),
-    '按钮与面板头部都用卡通形象（emoji 已替换，按头像 id 加载 .svg）');
-  check(exists('assets/ai-avatar.svg'),
-    '形象源文件 assets/ai-avatar.svg 在仓库（换形象的单一权威来源）');
-  // 手机端适配（2026-10-26 站长指令：保证手机端可用）
-  check(/@media \(max-width:640px\)/.test(aiChat) && /font-size:16px/.test(aiChat),
-    '手机端媒体查询在位（输入 16px 防 iOS 聚焦缩放）');
-  check(/env\(safe-area-inset-bottom, 0px\)/.test(aiChat),
-    '按钮/面板底距带 safe-area 安全区（刘海屏不贴边）');
-  // 手机端 AI 钮必须抬到左下导航主按钮（bar-h+48 起 46px 高）上方：bar-h+104
-  check(/\+ 104px \+ env\(safe-area-inset-bottom/.test(aiChat) && /\+ 170px \+ env\(safe-area-inset-bottom/.test(aiChat),
-    '手机端 AI 钮/面板抬高到导航主按钮上方（钮 +104 / 面板 +170）',
-    '手机端 AI 钮停在距底 14px → 与左下导航主按钮（+48..94）重叠');
-  check(/z-index:9000/.test(aiChat) && /z-index:9001/.test(aiChat),
-    'z-index 9000/9001 与浮钮家族平级（广告条 9990 之下，不盖广告）');
-
-  // ---- stub 模式（endpoint 空 = 按钮照常显示 + 面板提示开通中）----
-  // 2026-10-26 站长实测反馈：旧设计「endpoint 空 = 整体隐身」让站长以为
-  // 图标坏了。改为永远显示；stub 提示「开通中」+ 表单禁用 + ask() 双保险。
-  check(/var STUB = !ENDPOINT && !ENDPOINT_CN;/.test(aiChat),
-    'stub 模式标记（两条线路都不可用时按钮仍渲染）');
-  check(/if \(STUB\) return; \/\/ 未接入：不 fetch/.test(aiChat),
-    'ask() 的 stub 守卫（不 fetch，双保险）');
-  check(/AI 服务正在开通中/.test(aiChat) && /AI 开通中，暂不可提问/.test(aiChat),
-    'stub 面板有「开通中」提示文案（欢迎语 + 占位符）');
-  check(/input\.disabled = true/.test(aiChat) && /send\.disabled = true/.test(aiChat),
-    'stub 模式输入框与发送按钮禁用');
-  check(/endpoint: '(?:https?:\/\/[^']+)?'/.test(aiCfg),
-    'ai-config.js endpoint 为合法字符串（空串=关闭，或 https Worker 地址=开启）');
-  check(/window\.SXG_AI_CONFIG/.test(aiCfg) && /window\.SXG_AI_CONFIG \|\| \{\}/.test(aiChat),
-    '配置读取走 window.SXG_AI_CONFIG（两侧同源）');
-
-  // ---- 挂件行为要点 ----
-  check(/maxLength = 500/.test(aiChat) && /MAX_HISTORY = 8/.test(aiChat),
-    '输入 500 字上限 + 历史 8 条上限（前端第一道，Worker 有二道）');
-  check(/daily-quota-exhausted/.test(aiChat) && /额度已用完/.test(aiChat),
-    '配额耗尽有中文文案（用户能看懂为什么答不了）');
-  check(/不构成法律意见/.test(aiChat),
-    '挂件内声明「不构成法律意见」（合规口径与 Worker 提示词一致）');
+  // ---- 旧版挂件彻底删除（2026-11-18 站长：「彻底删干净，不是注释」）----
+  // 这些文件/测试/头像曾服务旧版内嵌挂件，新版独立页 + 跳转按钮完全不依赖，
+  // 必须物理删除而非注释保留，否则站长再次误入旧版、或被人当死代码复活。
+  for (const dead of ['ai-chat.js', 'ai-config.js',
+    'assets/ai-avatar.svg', 'assets/ai-avatars/A.svg', 'assets/ai-avatars/B.svg',
+    'assets/ai-avatars/C.svg', 'assets/ai-avatars/D.svg', 'assets/ai-avatars/E.svg',
+    'assets/ai-avatars/F.svg',
+    'scripts/test-ai-chat.cjs', 'scripts/test-ai-route.cjs',
+    'scripts/shot-ai-chat.cjs', 'scripts/shot-ai-mobile.cjs']) {
+    check(!exists(dead), `旧版挂件资产已物理删除：${dead}`);
+  }
 
   // ---- Worker 安全层（防的是「endpoint 公开」带来的滥用面）----
   check(exists('ai-worker/src/worker.js') && exists('ai-worker/wrangler.json'),
@@ -6501,13 +6472,13 @@ section('21c. 首页滑到底部按钮');
   check(/不构成对企业的法律定性/.test(worker) && /12333/.test(worker),
     '系统提示词含站点口径与 12333 转介（合规两件套）');
 
-  // ---- 测试与 CI ----
-  check(exists('scripts/test-ai-chat.cjs') && exists('scripts/test-ai-worker.cjs'),
-    '存在挂件行为测试 + Worker 逻辑测试');
+  // ---- 测试与 CI（旧挂件测试已删，只留服务新版的 Worker 测试）----
+  check(exists('scripts/test-ai-worker.cjs'),
+    '存在 Worker 逻辑测试（旧挂件行为测试已随挂件删除）');
   if (exists('.github/workflows/verify.yml')) {
     const ci = read('.github/workflows/verify.yml');
-    check(ci.includes('test-ai-chat.cjs') && ci.includes('test-ai-worker.cjs'),
-      'CI 里已接入两个 AI 测试');
+    check(ci.includes('test-ai-worker.cjs') && !ci.includes('test-ai-chat.cjs'),
+      'CI 接入 Worker 测试且不再挂已删除的挂件测试');
   }
   check(exists('ai-worker/README.md') && /wrangler deploy/.test(read('ai-worker/README.md')),
     'Worker 有部署指南（站长两分钟可部署）');
@@ -6559,58 +6530,15 @@ section('21c. 首页滑到底部按钮');
   }
 }
 
-// ---------- 21g-1. AI 形象按线路分流（CF / 阿里云双线路，2026-11-13 站长指令） ----------
-// 站长要求：前 3 个形象（A-C，索引 0-2）走 Cloudflare，后 3 个（D-F，索引 3-5）走阿里云；
-// 阿里云地址未配不许静默——回落 CF 但必须在面板里明说；线路标识随请求带给服务端；
-// 两条线路的网络异常文案要分开写（阿里云那条不能提 VPN，国内用户看了莫名其妙）。
+// ---------- 21g-1. AI 双线路后端（CF Worker + 阿里云可选线路） ----------
+// 2026-11-18：旧版「形象 A-F 按索引分流」（A-C 走 CF / D-F 走阿里云）的前端逻辑
+// 随内嵌挂件 ai-chat.js / ai-config.js / 头像一起彻底删除。新版 labor-ai.html
+// 的双线路是「国内硅基流动直连 + Cloudflare Worker」，由 §21g-2 校验；本段只守
+// 后端：CF Worker 的 route 白名单（新版 askCF 仍传 route:'cf'）+ 阿里云可选脚手架。
 {
-  const aiChat = exists('ai-chat.js') ? read('ai-chat.js') : '';
-  const aiCfg = exists('ai-config.js') ? read('ai-config.js') : '';
   const worker = exists('ai-worker/src/worker.js') ? read('ai-worker/src/worker.js') : '';
   const aliyun = exists('ai-worker-aliyun/index.mjs') ? read('ai-worker-aliyun/index.mjs') : '';
-  section('21g-1. AI 形象按线路分流（cf / cn 双线路）');
-
-  // ---- 配置层：两个接入点 ----
-  check(/endpointCN\s*:/.test(aiCfg),
-    'ai-config.js 增加第二个接入点 endpointCN（阿里云函数计算地址）');
-  check(/endpoint\s*:/.test(aiCfg) && /endpointCN\s*:/.test(aiCfg),
-    '两个接入点并存（endpoint=Cloudflare / endpointCN=阿里云）');
-
-  // ---- 分流规则：索引 0-2 → cf，3-5 → cn ----
-  check(/var ROUTE_SPLIT = 3;/.test(aiChat),
-    '分界点 ROUTE_SPLIT = 3（A/B/C 走 cf，D/E/F 走 cn）');
-  check(/avatarIndex\(id\) < ROUTE_SPLIT \? 'cf' : 'cn'/.test(aiChat),
-    '分流按形象索引判定（<3 走 cf，其余走 cn）');
-  check(/ENDPOINT_CN = normUrl\(CFG\.endpointCN\)/.test(aiChat),
-    '前端读取 endpointCN 并做 URL 归一化');
-
-  // ---- 空则回落 + 可见提示（不许静默） ----
-  check(/function resolveRoute\(id\)/.test(aiChat) && /fallback: true/.test(aiChat),
-    'resolveRoute 返回 fallback 标记（目标线路缺失时切另一条）');
-  check(/syncRouteBadge/.test(aiChat) && /sxg-ai-route/.test(aiChat),
-    '面板顶部有线路条（sxg-ai-route）并可同步更新');
-  check(/回落/.test(aiChat),
-    '回落时给用户可见提示文案（不静默降级）');
-  check(/syncRouteBadge\(resolveRoute\(currentAvatarId\(\)\)\)/.test(aiChat),
-    '切换形象后同步刷新线路条（切 D 后立刻显示实际线路）');
-
-  // ---- 请求体线路标识 ----
-  check(/route: route/.test(aiChat),
-    '请求体带线路标识字段 route（供服务端如实说明/排查）');
-  check(/fetch\(endpointOf\(rs\.route\)|fetch\(endpointOf\(route\)|endpointOf\(/.test(aiChat),
-    '请求打到当前线路对应的 endpoint（不是写死 CF）');
-
-  // ---- 网络异常文案分线路 ----
-  check(/NET_ERR/.test(aiChat) && /route === 'cn'|rs\.route === 'cn'|\[route\]/.test(aiChat),
-    '网络异常文案按线路分别措辞（NET_ERR 表）');
-  {
-    // 阿里云那条不得出现 VPN（国内直连，提 VPN 是错的）
-    const idx = aiChat.indexOf('NET_ERR');
-    const block = aiChat.slice(idx, idx + 900);
-    const cnLine = block.split('\n').filter(l => /cn\s*:/.test(l)).join('\n');
-    check(cnLine.length > 0 && !/VPN/i.test(cnLine),
-      '阿里云线路的失败文案不提 VPN');
-  }
+  section('21g-1. AI 双线路后端（CF Worker + 阿里云可选线路）');
 
   // ---- Worker 端线路说明 ----
   check(/function routeNotice\(route\)/.test(worker) && /线路标识/.test(worker),
@@ -6634,20 +6562,18 @@ section('21c. 首页滑到底部按钮');
     check(/环境变量/.test(rd) && /DASHSCOPE_API_KEY/.test(rd),
       'README 写清环境变量配置');
     check(/endpointCN/.test(rd),
-      'README 指回 ai-config.js 的 endpointCN（闭环）');
+      'README 仍写明 endpointCN 接入点（阿里云线路可选备用，不依赖已删的旧挂件）');
     check(/fcapp\.run|自定义域名/.test(rd),
       'README 写清公网地址/自定义域名获取方式');
   }
 
-  // ---- 测试与 CI ----
-  check(exists('scripts/test-ai-route.cjs'),
-    '存在分流行为测试（test-ai-route.cjs）');
+  // ---- 测试与 CI（旧分流前端测试已删，只留阿里云后端逻辑测试）----
   check(exists('scripts/test-ai-worker-aliyun.cjs'),
     '存在阿里云线路逻辑测试（test-ai-worker-aliyun.cjs）');
   if (exists('.github/workflows/verify.yml')) {
     const ci = read('.github/workflows/verify.yml');
-    check(ci.includes('test-ai-route.cjs') && ci.includes('test-ai-worker-aliyun.cjs'),
-      'CI 里已接入分流与阿里云线路两个测试');
+    check(ci.includes('test-ai-worker-aliyun.cjs') && !ci.includes('test-ai-route.cjs'),
+      'CI 接入阿里云后端测试且不再挂已删除的分流前端测试');
   }
 }
 
