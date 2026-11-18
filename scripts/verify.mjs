@@ -7144,7 +7144,7 @@ section('21c. 首页滑到底部按钮');
 // 对外 markdown 文档。保留 T 分隔的技术配置常量（如 UNLOCK=...T14:00+08:00），
 // 那是代码里的定值、不是记账时刻。
 {
-  const DOCS = ['README.md', 'README-详情.md', 'CHANGELOG.md',
+  const DOCS = ['README.md', 'README-详情.md', 'README-细则.md', 'CHANGELOG.md',
     '\u6700\u8fd1\u66f4\u65b0.md', 'BUG-ROOT-CAUSES.md', 'PITFALLS.md'];
   // 空格分隔的「日期+时刻」= 记账时刻 → 禁止；T 分隔的不算（技术常量）
   const TIME_RE = /\d{4}-\d{2}-\d{2} \d{2}:\d{2}(?::\d{2})?/g;
@@ -7615,6 +7615,24 @@ section('23. README 长段落摘要化（摘要 + 独立页面）');
   check(bugLinks23.length >= 3 && bugLinks23.every(f => exists(f)),
     '§23i BUG 专文的内部链接全部指向真实存在的文档',
     '链接写错 → 访客从摘要点进去是 404');
+
+  // 2026-11-18：站长再查 README，「六件最容易踩坑的事」第 6 条等长段落仍堆在首页。
+  // 按同一条规则推广：长段落原文进 README-细则.md，README 每处只留摘要 + 锚点链接。
+  // 锚点用显式 <a id="..."> 钉住，避免中文标题自动 slug 漂移造成「点了 404」。
+  const rules23 = exists('README-细则.md') ? read('README-细则.md') : '';
+  const anchors23 = ['pitfalls-react', 'adslot', 'byd', 'evidence', 'batch-1110',
+    'brand-scope', 'assets-blob', 'notes-style', 'header', 'share', 'bookkeeping',
+    'import-brands', 'doc-split', 'ai-rules', 'u-grade', 'rate-zero'];
+  const noAnchor23 = anchors23.filter(a => !rules23.includes('<a id="' + a + '"></a>'));
+  const noLink23 = anchors23.filter(a => !rd23.includes('./README-细则.md#' + a));
+  check(anchors23.length >= 12 && noAnchor23.length === 0 && noLink23.length === 0,
+    '§23j README 长段落已拆到 README-细则.md，且每个锚点都有摘要入口链接',
+    '缺锚点：' + noAnchor23.join(',') + ' / 缺链接：' + noLink23.join(',')
+      + ' → 摘要点不进全文，等于原文丢了');
+
+  check(rdLines23 <= 500 && rules23.length > 12000,
+    `§23k README 只留精简摘要（当前 ${rdLines23} 行 ≤ 500），完整原文在 README-细则.md`,
+    'README 又堆回长段落 → 按分工外移，不要在首页靠人肉节制');
 }
 
 // ---------- 24. 白屏兜底 + 加载态（站长 2026-11-08「删空搜索后整站白屏，怕用户误退出」） ----------
