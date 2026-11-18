@@ -1,0 +1,107 @@
+/* ==========================================================================
+   顶栏下方 · 站点政策声明条（policy-notice.js）
+   --------------------------------------------------------------------------
+   站长 2026-11-18 指令：在首页顶栏（logo + 那排按钮）正下方的空白横条加一条
+   社区治理声明，措辞由站长给定；其中「这里」两字是**可点击链接**，指向
+   https://dujeongil-galaxy.github.io/
+
+   为什么不塞进 #site-notice 滚动公告栏：
+     · 那条是单行横向无缝滚动（notice-marquee.js/.css），项目有硬约定
+       「零超链接」—— 移动的文字上的链接点不准，2026-11-02 当年就因此否掉
+       过带链接的公告。本条含可点的「这里」，必须做成**静态**条，另起一行。
+     · #site-notice 在 #root 之外，本条插在 React 渲染的 <header> 之后。
+
+   技术红线：只插静态 DOM、不动压缩 bundle（assets/index-YthXZ9eP.js）。
+   文案用 textContent 分段 + <a> 元素拼装，不写 innerHTML，避免注入面。
+
+   幂等 / 自愈：按 id 判重；header 由 React 渲染，脚本执行时可能还没挂载，
+   故用定时重试 + MutationObserver 等待；若后续 React 重渲染清掉了声明条，
+   下一轮 sweep 会重新插回（有次数上限，避免与宿主互相触发自激）。
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  var BAR_ID = 'sxg-policy-notice';
+  var STYLE_ID = 'sxg-policy-notice-style';
+  var LINK_HREF = 'https://dujeongil-galaxy.github.io/';
+
+  /* 站长给定原文，按「这里」切成三段；两段纯文本 + 中间一个真 <a>。 */
+  var TEXT_BEFORE = '因乌克兰发生战争，对于利用、无视或纵容这场战争的言论（包括但不限于issues、匿名邮箱来信等），我们将采取零容忍，点击';
+  var LINK_TEXT = '这里';
+  var TEXT_AFTER = '查看本站政策';
+
+  var CSS = [
+    '#' + BAR_ID + '{',
+    '  max-width:1100px;margin:0 auto;background:#fff;color:#dc2626;',
+    '  text-align:center;font-size:13px;line-height:1.6;font-weight:700;',
+    '  padding:8px 16px;border-bottom:1px solid #fee2e2;',
+    '  position:relative;z-index:1;',
+    '}',
+    '#' + BAR_ID + ' a{color:#b91c1c;text-decoration:underline;font-weight:700;}',
+    '#' + BAR_ID + ' a:hover{color:#991b1b;}',
+    '#' + BAR_ID + ' a:focus-visible{outline:2px solid #dc2626;outline-offset:2px;}',
+    '@media (max-width:640px){',
+    '  #' + BAR_ID + '{font-size:12px;padding:7px 12px;line-height:1.55;}',
+    '}'
+  ].join('');
+
+  function ensureStyle() {
+    if (document.getElementById(STYLE_ID)) return;
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = CSS;
+    (document.head || document.documentElement).appendChild(s);
+  }
+
+  function buildBar() {
+    var bar = document.createElement('div');
+    bar.id = BAR_ID;
+    bar.setAttribute('role', 'note');
+    bar.appendChild(document.createTextNode(TEXT_BEFORE));
+    var a = document.createElement('a');
+    a.href = LINK_HREF;
+    a.textContent = LINK_TEXT;
+    a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer');
+    bar.appendChild(a);
+    bar.appendChild(document.createTextNode(TEXT_AFTER));
+    return bar;
+  }
+
+  function sweep() {
+    try {
+      var header = document.querySelector('header');
+      if (!header) return;                       // React 还没挂载，下一轮再来
+      ensureStyle();
+      var bar = document.getElementById(BAR_ID);
+      if (bar && bar.parentNode === header.parentNode && bar.previousSibling === header) return; // 已在位
+      if (!bar) bar = buildBar();
+      // 插在 <header> 之后、#root 内其余内容之前 —— 真渲染里正是红框那条空白。
+      header.parentNode.insertBefore(bar, header.nextSibling);
+    } catch (e) { /* 下游补丁不因宿主状态异常抛错 */ }
+  }
+
+  window.addEventListener('resize', sweep);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', sweep);
+  } else {
+    sweep();
+  }
+  /* React 渲染 header 要等；与同类补丁同批重试 */
+  window.setTimeout(sweep, 300);
+  window.setTimeout(sweep, 900);
+  window.setTimeout(sweep, 2200);
+  if (window.MutationObserver) {
+    var tries = 0;
+    var obs = new MutationObserver(function () {
+      sweep();                                   // 幂等：已在位则空转，不自激
+      if (++tries > 90) obs.disconnect();
+    });
+    try { obs.observe(document.body, { childList: true, subtree: true }); } catch (e) {}
+  }
+
+  window.SXGPolicyNotice = {
+    sweep: sweep, BAR_ID: BAR_ID, LINK_HREF: LINK_HREF,
+    TEXT_BEFORE: TEXT_BEFORE, LINK_TEXT: LINK_TEXT, TEXT_AFTER: TEXT_AFTER
+  };
+})();

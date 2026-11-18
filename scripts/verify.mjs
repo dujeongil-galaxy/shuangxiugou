@@ -5311,6 +5311,62 @@ section('20q. 良配广告恢复上线 + 星巴克推广彻底移除');
   }
 }
 
+// ---------- 20r. 顶栏下方站点政策声明条 ----------
+// 起因（2026-11-18 站长截图）：在顶栏正下方的空白横条画红框，要求加一条
+// 社区治理声明，措辞由站长给定，其中「这里」两字是**可点击链接**。
+// 不能塞进 #site-notice 滚动栏 —— 那条有「零超链接」硬约定（移动文字上的
+// 链接点不准，2026-11-02 当年就因此否掉过带链接公告）。故独立脚本插在
+// React 的 <header> 之后。文案/链接/插入位置任一漂移都会让声明形同虚设。
+section('20r. 顶栏下方站点政策声明条');
+const PNS = 'policy-notice.js';
+const POLICY_HREF = 'https://dujeongil-galaxy.github.io/';
+const POLICY_BEFORE = '因乌克兰发生战争，对于利用、无视或纵容这场战争的言论（包括但不限于issues、匿名邮箱来信等），我们将采取零容忍，点击';
+const POLICY_AFTER = '查看本站政策';
+if (exists(PNS)) {
+  const pn = read(PNS);
+  const idxActive = read('index.html').replace(/<!--[\s\S]*?-->/g, '');
+  check(/<script[^>]*policy-notice\.js\?v=1[^>]*>/.test(idxActive),
+    'index.html 活跃引用 policy-notice.js?v=1（非注释）');
+  check(read('index.html').indexOf(PNS) > read('index.html').indexOf('header-to-dock.js'),
+    '排在 header-to-dock.js 之后（同属 header 下游补丁）');
+  check(pn.includes(POLICY_BEFORE),
+    '声明文案前半段一字不差（含「零容忍」「issues」「匿名邮箱来信」「点击」收尾）',
+    '文案被软化或截断 → 声明失去原意');
+  check(/var LINK_TEXT = '这里'/.test(pn),
+    '链接文字恰好是「这里」两字');
+  check(pn.includes("var TEXT_AFTER = '" + POLICY_AFTER + "'"),
+    '后半段是「查看本站政策」');
+  check(pn.includes("var LINK_HREF = '" + POLICY_HREF + "'"),
+    '「这里」链接精确指向站长给定网址（不是占位符/仓库主页）',
+    '写成 example/#/github.com 主页都算错，站长要的是指定 URL');
+  check(/createElement\('a'\)/.test(pn) && /a\.href\s*=\s*LINK_HREF/.test(pn)
+    && /a\.textContent\s*=\s*LINK_TEXT/.test(pn),
+    '用 DOM API 建真 <a>（textContent/href），不写 innerHTML');
+  check(!/\.innerHTML\s*=/.test(pn),
+    '脚本没有 innerHTML 赋值（无注入面）');
+  check(/querySelector\('header'\)/.test(pn)
+    && /insertBefore\(bar,\s*header\.nextSibling\)/.test(pn),
+    '插在 React <header> 之后（红框那条空白）');
+  check(/bar\.previousSibling === header/.test(pn),
+    '幂等：已在 header 后面就 return');
+  check(!/getElementById\('site-notice'\)/.test(pn)
+    && !/querySelector\('#site-notice'\)/.test(pn),
+    '不往 #site-notice 滚动栏插（零超链接硬约定）');
+  check(/setTimeout\(sweep,\s*300\)/.test(pn) && /new MutationObserver/.test(pn),
+    'header 未挂载时定时重试 + MutationObserver 自愈');
+  check(/background:#fff;color:#dc2626/.test(pn)
+    && /text-decoration:underline/.test(pn)
+    && /@media \(max-width:640px\)/.test(pn),
+    '白底红字 + 链接下划线 + 移动端字号下调');
+  check(exists('scripts/test-policy-notice.cjs'), '存在政策声明条行为测试');
+  if (exists('.github/workflows/verify.yml')) {
+    check(read('.github/workflows/verify.yml').includes('test-policy-notice.cjs'),
+      'CI 里已接入政策声明条测试');
+  }
+} else {
+  err(PNS + ' 不存在', '顶栏下方的政策声明条会整条消失，站长指定的治理口径不再展示');
+}
+
 // ---------- 20e. 校验脚本自检 ----------
 // 今天在同一天内两次把 check(cond, msg, detail) 写成 check(msg, cond)，
 // 症状是输出里出现「✓ true」—— 标签被当成条件打印，
