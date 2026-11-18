@@ -9,6 +9,22 @@
 
 ---
 
+### 近期 bug 根因（fix）：良配广告「等一会儿才出现」——6000ms 长空窗 + `visibility` 过渡卡 hidden（2026-11-18 · 提交 `0996542`）
+
+**现象**：站长在上批恢复良配广告、换喜茶 logo 后反馈「良配的广告仍然有延迟，要等待一会儿才会被加载，无法实现秒级显示吗？」
+
+**根因（两处叠加，第二处是老坑复发）**：
+1. `CONFIG.showAfter = 6000`（2026-10-29 为躲「加载即弹」误判设的）意味着 DOMContentLoaded 后整整 6 秒才开始淡入，观感就是「网页出来一会了广告才来」。
+2. 更隐蔽的是良配沿用了和星巴克推广条 `0da3a15` **完全相同的错误机制**：`.lp-ad.is-hidden { opacity:0; visibility:hidden; pointer-events:none }`，两处断点 `.lp-ad` 的 `transition` 含 `visibility 0.35s`，而 JS 只 `classList.remove('is-hidden')`。这种写法在移除 class 后，**computed `visibility` 可能一直卡在 `hidden`**——DOM 已建好、opacity 已到 1，广告却永远不可见。上次星巴克就是这个真根因，当时我只修了星巴克那份，没有顺手检查同结构的良配，等于把坑留到了恢复上线的这一刻。
+
+**修法**（照搬 `0da3a15` 已真渲染验证的方案）：
+- `showAfter: 6000 → 200`：留约一帧 + CSS opacity 淡入，不回退到 0ms 的「加载即弹」老坑。
+- `reveal()` 内 `void aside.offsetWidth` 强制重排打断卡住的过渡帧，再 `setProperty('visibility','visible','important')` 内联兜底；`window.load` 再加一次兜底。
+- `.lp-ad.is-hidden` 改 `display:none !important`（硬隐藏，无过渡竞态）；两处 `transition` 拿掉 `visibility`；`.lp-ad` 基础态显式 `visibility:visible`。
+- close 时 `aside.style.visibility = ''` 清掉内联值，否则 reveal 写的 `visible !important` 会压过 `.is-hidden`，导致「关不掉」。
+
+**验证与教训**：verify 1881 项全绿；6 组故障注入全判红——F1 延迟改回 6000、F2 删强制重排、F3 退回 `visibility:hidden`、F4 恢复 `transition:visibility`、F5 删 close 清内联、F6 把 `setTimeout(reveal, …)` 改写回「内联 remove class」。F6 专门复现旧断言的**假绿**：原判据 `/setTimeout\([\s\S]*?classList\.remove\('is-hidden'\)/` 会跨行匹配到 `showToast` 里另一个 `setTimeout`，明明改坏了却照样通过；已收紧为钉住真实调用 `setTimeout(reveal, CONFIG.showAfter)` 加 `reveal` 函数体。CDP 在导航后 **1.28 秒**（不是旧的 9.5 秒）截图，桌面 1440 右侧卡与手机 390 吸底条均 `visibility:visible` / `opacity:1` / 喜茶图 `naturalWidth=750`，点击关闭后 `display:none`、`inlineVis:''`，`PAGEERRORS=[]`。**同构组件必须一起排查**：修好 A 却漏掉结构相同的 B，B 迟早在恢复上线时复现同一个 bug。
+
 ### 近期 bug 根因（fix）：星巴克推广条 DOM 已建好却永远不可见——`visibility` 过渡卡在 hidden；手机端顶栏四枚挤两行（2026-11-18 · 提交 `0da3a15`）
 
 **现象**：站长 2026-11-18 两句话——① 手机截图里顶栏四枚按钮排两行，「分享本站」孤零零掉第三行：「这个要不行的话就全部丢右边去吧，我是说手机端」；②「底部那个弹窗，加载有点慢，网页都出来一会了，底部广告才开始加载」。

@@ -4,6 +4,16 @@
 
 ---
 
+### fix：良配广告秒级显示——6000ms→200ms + 修 `visibility` 卡帧（2026-11-18 · 提交 `0996542`）
+
+- **起因**：站长反馈上批恢复的良配广告仍要等一会儿才出现，问「无法实现秒级显示吗」。
+- **根因**：① `showAfter` 仍是旧版为躲「加载即弹」设的 6000ms；② 良配和此前修过的星巴克推广条是同构组件，却沿用了那套有致命 bug 的显示机制——`.is-hidden` 用 `visibility:hidden` + `transition:visibility`，JS 只 remove class，computed visibility 可能卡在 hidden（DOM 在、opacity 1，却永远不可见）。上次只修星巴克，漏了良配。
+- **修法**：`showAfter` 6000→200（留一帧 + opacity 淡入，不回 0ms）；`reveal()` 加 `void aside.offsetWidth` 强制重排 + `setProperty('visibility','visible','important')` + load 兜底；`.lp-ad.is-hidden` 改 `display:none !important`，CSS 两处 transition 去掉 visibility，基础态显式 `visibility:visible`；close 时清内联值防止 reveal 的 `!important` 压过隐藏。`index.html` bump css v14→15 / js v12→13。
+- **机器强制**：verify §20n 口径反转（is-hidden 必须 display:none）并收紧旧假绿断言（`/setTimeout\([\s\S]*?classList.remove\('is-hidden'\)/` 会跨行匹配到 `showToast` 的另一个 setTimeout），钉住真实调用 `setTimeout(reveal, CONFIG.showAfter)` + reveal 函数体；§20q 新增 6 条（showAfter=200 / 强制重排+内联 visible / display:none / 无 visibility transition / close 清内联 / load 兜底）；`test-ad-logo.cjs` 同步 v15/v13，`cdp-liangpei-ad.cjs` 截图时点从 9.5s 缩到 1.2s 并加关闭按钮验收。
+- **验证**：verify **1881 项全绿**；6/6 故障注入判红（延迟回退 / 删重排 / 退回 visibility:hidden / 恢复 visibility transition / 删 close 清内联 / F6 复现旧假绿写法），逐组按字节还原；CDP 导航后 **1.28s** 桌面 1440 与手机 390 均 `visibility:visible` / `opacity:1` / 喜茶图 750×750，`CLOSE` 后 `display:none` 且 `inlineVis:''`，`PAGEERRORS=[]`，截图肉眼确认。三处留痕：README 摘要、BUG 专文新章节、最近更新顶部条目，均附哈希 `0996542` 与真实时间。
+
+---
+
 ### feat(share)：全站「返回首页」改绝对地址 + 分享本站统一指向主站首页（2026-11-18 · 提交 `75199f0`）
 
 - **起因**：根页面重建后 `../` 相对路径落到域名根落地页；站长指令所有返回首页链接统一为 `https://dujeongil-galaxy.github.io/shuangxiugou/`，分享本站按钮统一分享主站首页。

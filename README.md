@@ -373,6 +373,7 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 **修 bug 三处留痕（§21n 机器反查）**：`README.md` 本节摘要、`BUG-ROOT-CAUSES.md` 新增章节、`最近更新.md` 顶部条目，都要带真实提交哈希与 commit 时间；verify 按 `git log` 最近一次 `fix:` 提交反查，缺一处判红。最近三条：
 
+- **2026-11-18 · 提交 `0996542`**：良配广告恢复后仍要等一会儿才出现，站长问「无法实现秒级显示吗」。真因两处：① `showAfter` 还是 6000ms 长空窗；② `is-hidden` 用 `visibility:hidden` + `transition:visibility`，JS 只 remove class 时 computed visibility 会卡在 hidden（`0da3a15` 星巴克同款根因）。改成 200ms + `void aside.offsetWidth` 强制重排 + 内联 `visibility:visible !important`，`.is-hidden` 换 `display:none`，close 清内联值防压过隐藏。verify §20n 口径反转并修掉一处跨行假绿断言，6/6 故障注入判红；CDP 导航后 1.28 秒截图桌面/手机均已完整可见，关闭后 `display:none`。详见专文。
 - **2026-11-18 · 提交 `0da3a15`**：手机端顶栏四枚按钮排两行、「分享本站」掉第三行，站长「全部丢右边」→ 三枚原生按钮由新脚本 `header-to-dock.js` 搬进右侧 dock、分享自搬（桌面端不动）。同轮揪出推广条真 bug：reveal 只 remove `is-hidden` 时 computed `visibility` 卡在 hidden（opacity 已 1、内联 visible 都压不过），广告 DOM 早建好却永远不可见——这才是「加载慢/看不见」的根因；加强制重排 + `visibility:visible !important`、`is-hidden` 改 `display:none`，showAfter 1500→200ms。verify 新增 8 断言、故障注入 8/8 判红。详见专文。
 - **2026-11-17 · 提交 `2f6c1d7`**：星巴克弹窗三处「凭空补细节」被站长当场抓包——深色底照抄活动页截图（改成白 `#ffffff`）、凭空画绿黑棋盘格假二维码 +「扫码参与」（根本扫不出来，改用站长原图里那个真·微信小程序码 `assets/workbuddy-mp-code.png`）、logo 用文字凑（改用站内现成 `assets/starbucks.svg`）。根因：原图里就有可扫的真码我没用，还另造假货；三张原图没有口令文本，不编造「复制口令」。顺带删掉覆盖白底版的旧深色文案 CSS；verify 加 4 断言、注入 5 例全判红。素材里有的真东西永远比画的假货可靠。
 - **2026-11-17 · 提交 `96b54bd`**：合并 `origin/main` 时 `index.html` 残留 4 行冲突标记、`#site-version` 真相源出现两份——两侧同点插入同一节点，`git add -A` 把带标记的文件一并加进索引导致合并瞬间没被人看一眼；两份会让 `sync-version` 回写锚点、`verify §20g` 与 CI 同步工作流取到错的哈希（`60cee9a` 已踩过一次）。删标记、恢复唯一节点后同步版本号；verify 全绿。
@@ -603,6 +604,7 @@ U 级 = **证据缺失级**：仅当已尽合理检索（招聘平台 / 媒体�
 
 ### 本轮要点（摘要）
 
+- **2026-11-18 · 提交 `0996542`**：良配广告改为秒级显示——`showAfter` 6000→200ms，并修掉 `visibility` 过渡卡帧（与 `0da3a15` 星巴克同款根因）：reveal 加强制重排 + 内联 `visible !important`，`.is-hidden` 用 `display:none` 硬隐藏，close 清内联值。verify 1881 项全绿、6/6 故障注入判红，CDP 导航后 1.28 秒真渲染确认桌面/手机广告已完整可见。
 - **2026-11-18 · 提交 `cd81cb4`**：星巴克 × WorkBuddy 联名活动 11/16 到期，按站长要求**彻底删除**推广代码（css/js/测试/活动专用真码，品牌卡与站内 logo 保留），恢复之前的良配广告（注册送喜茶 20 元红包）；LOGO 按指示改用站内现成 `assets/heytea.png`（白底等比，图片挂了回退文字「良配」）。verify §20q 反转为「零残留 + 活跃上线 + 真 logo」，**1875 项全绿**、4/4 故障注入判红，CDP 桌面/手机真渲染确认喜茶图加载成功且无星巴克推广。
 
 - **2026-11-17 · 提交 `b236a19`**：视频区新增「卧底快递王国」（先做「卧底」题材的产业揭秘长片，站长 11-17 提供，只进弹窗、不点名品牌；平台活动标签 `# 抖音精选App` 刻意不收，避免被误读成站内活动）。同时按站长要求把 AdSense 后台那条「因乌克兰战争…暂停变现资格」的公告**照着写一条站内版但不写变现**——本站零账号零评论区，公开互动只有 GitHub Issues 与匿名邮箱，故做成常驻法务页 [`community-rules.html`](./community-rules.html)（六节：互动场所／不予处理的内容／严重违规移交 GitHub 屏蔽或拉黑／被屏蔽后仍可递证据／对写进来的人的态度／准则可改），处置只承诺 GitHub 拉黑（本书能执行的、效力仅限本仓库），不承诺禁言封号。19 个顶层页 + 181 张品牌页页脚挂入口，sitemap 补一条。verify **1863 全绿**（+13 条断言），故障注入 **8/8 判红**（含一例原假绿，据此加了章节标题级断言）。

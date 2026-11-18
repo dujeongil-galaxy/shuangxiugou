@@ -3165,3 +3165,13 @@ HEAD 不是补提交，只是正文里引用了一下标记，同样被跳过。
 4. **CDP `Runtime.evaluate` 的返回值比想象中多套一层**。脚本里取 `info.result.value` 拿到的是 `null`（截图却一切正常），因为标准响应是 `{id, result:{result:{type,value}}}`——真实值在 `info.result.result.value`。这类错误不会报错、不会让脚本失败，只会静默打印 `null`，很容易被误读成「广告没渲染出来」而瞎改代码。**判据**：新写 CDP 探针时先打印一次完整响应对象确认层级；断言不能只看「脚本退出码 0」，要检查取到的字段非 null（本轮靠截图先确认广告其实正常，才定位到取值层级写错）。
 
 本批 §20q 反转断言做了 **4 组故障注入，4/4 判红**（星巴克引用回潮 / 良配重新注释 / LOGO 换回星巴克 / 推广文件复活），逐组按字节还原；CDP 桌面与手机两档真渲染 + 截图肉眼复核，详见 CHANGELOG 同批条目 `cd81cb4`。
+
+## 第七十四章：同构组件只修一个必然复发；跨行正则会假绿；验收时点要跟着需求改（2026-11-18 0996542）
+
+站长问「良配的广告仍然有延迟，无法实现秒级显示吗」。这轮的技术改动不大，但踩了三个可复用的坑：
+
+1. **同构组件修一处漏一处，等于没修**。`0da3a15` 已经揪出星巴克推广条的真根因——`is-hidden` 用 `visibility:hidden` + `transition:visibility`，JS 只 remove class 时 computed visibility 卡在 hidden；当时只改了星巴克那份，**完全没检查结构几乎逐行相同的 `liangpei-ad.*`**。结果上批一恢复良配广告，`visibility` 卡帧连同 6000ms 延迟一起复现，站长再次反馈。**判据**：修完一个组件，立刻 `grep` 同类写法（本例是 `transition:[^;}]*visibility` + `classList.remove('is-hidden')`），确认所有同构实现一并处理；写 verify 时也要给同构组件各自钉一条，别以为「上批加过断言」就够了。
+2. **跨行 `[\s\S]*?` 正则会让断言假绿**。旧判据 `/setTimeout\([\s\S]*?classList\.remove\('is-hidden'\)/` 的本意是「reveal 必须延迟触发」，但 `showToast` 里另有 `setTimeout(function(){...})`，正则从那个 `setTimeout(` 开始跨行一路扫到 reveal 函数体内的 `remove('is-hidden')`，照样匹配成功——把整段改成错的也可能全绿（本次 F6 故障注入专门复现了这一点，改回「setTimeout 内联 remove class」后旧断言仍然放过）。**判据**：钉「真实调用 + 函数体」的具体形态（本例 `setTimeout(reveal, CONFIG.showAfter)` 与 `function reveal(){…remove…}` 同时出现），不要用一个宽泛起点跨行找终点；故障注入里必须有一组「专门打旧断言」的用例，否则假绿发现不了。
+3. **需求改成「秒级」后，验收脚本的截图时点也得跟着改**。旧 `cdp-liangpei-ad.cjs` 沿用了星巴克时代的 `sleep(9500)`（为了等 6000ms 淡入）。若继续用它验收 200ms 新版，广告当然可见，但**根本证明不了秒级**——这只是把旧延迟又等了一遍。**判据**：改完延迟类需求，把探针等待时间压到新阈值附近（本例 1200ms）并打印 `ELAPSED_MS`，用截图 + `visibility/opacity` 实测值一起作证；同时记得旧断言「is-hidden 不许用 display:none」与新机制冲突时要**反转到规则本意**（防卡帧），而不是删断言救绿。
+
+本批 6/6 故障注入判红（含 F6 旧断言假绿复现），verify 1881 项全绿；CDP 导航后 1.28 秒真渲染 + 关闭按钮验收，详见 CHANGELOG / BUG 专文同批条目 `0996542`。
