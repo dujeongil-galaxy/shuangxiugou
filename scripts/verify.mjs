@@ -9961,6 +9961,104 @@ section('37b. 随笔强制置顶与目录日期、打赏二维码假生成、邀
     '复制未绑定 → 站长要求「点了就自动复制」落空');
 }
 
+// ---------- 38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档（2026-11-19） ----------
+section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
+{
+  const ug38 = exists('ua-guard.js') ? read('ua-guard.js') : '';
+
+  // 38a. 主站拦截脚本识别独立 QQ 浏览器（MQQBrowser / QQBrowser 两种 token）
+  check(/MQQBrowser\\\/\[\\d\.\]\+/i.test(ug38)
+      && /QQBrowser\\\/\[\\d\.\]\+/i.test(ug38)
+      && /isQQBrowser/.test(ug38)
+      && /!isWeChat && !isQQ && !isQQBrowser/.test(ug38),
+    '§38a ua-guard.js 识别独立 QQ 浏览器并纳入硬拦截条件',
+    '缺 MQQBrowser/QQBrowser 识别或未并入拦截条件 → QQ 浏览器仍可正常访问，扩围落空');
+
+  // 38b. 提示文案提到 QQ 浏览器（不能只改代码不改文案）
+  check(/QQ 浏览器访问/.test(ug38) && /微信 \/ QQ 的内置浏览器/.test(ug38),
+    '§38b 拦截层提示文案同时覆盖微信/QQ 内置浏览器与独立 QQ 浏览器',
+    '文案仍只写内置浏览器 → 用户看不懂为何被拦');
+
+  // 38c. 全站引用版本号统一升到 v=2，notes.html 仍排除
+  {
+    const htmlRefs38 = [];
+    function walk38(d) {
+      for (const e of readdirSync(join(ROOT, d), { withFileTypes: true })) {
+        if (e.name === 'node_modules' || e.name === '.git' || e.name === 'archive') continue;
+        const rel = join(d, e.name);
+        if (e.isDirectory()) walk38(rel);
+        else if (e.name.endsWith('.html')) htmlRefs38.push(rel);
+      }
+    }
+    walk38('.');
+    const withGuard38 = htmlRefs38.filter((p) => {
+      try { return /ua-guard\.js\?v=/.test(readFileSync(join(ROOT, p), 'utf8')); } catch { return false; }
+    });
+    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=1\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=2\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    check(withGuard38.length >= 190 && oldV38.length === 0 && newV38.length === withGuard38.length,
+      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=2、无残留 v=1`,
+      `旧版 ${oldV38.length} 页 / 新版 ${newV38.length} 页 → 缓存不刷新，用户拿到旧拦截脚本`);
+    check(!/ua-guard/.test(exists('notes.html') ? read('notes.html') : ''),
+      '§38c notes.html 仍不挂 ua-guard（沿用 AdSense 跳过先例）',
+      'notes 被误挂拦截层 → 加密笔记页在微信里也打不开');
+  }
+
+  // 38d. 微信文章存档：目录、正文图、完整 HTML、转录、来源清单齐全
+  const ADIR = 'archive/wechat-liciaotiao-2023';
+  const wantFiles38 = [
+    [ADIR + '/README.md', null],
+    [ADIR + '/01-letter/page.html', 3747226],
+    [ADIR + '/01-letter/body.jpg', 425226],
+    [ADIR + '/01-letter/transcript.md', null],
+    [ADIR + '/02-my-view/page.html', 3746395],
+    [ADIR + '/02-my-view/body.png', 1431313],
+    [ADIR + '/02-my-view/transcript.md', null]
+  ];
+  const badFiles38 = wantFiles38.filter(([p, size]) => {
+    if (!exists(p)) return true;
+    if (size !== null && readFileSync(join(ROOT, p)).length !== size) return true;
+    return false;
+  });
+  check(badFiles38.length === 0,
+    `§38d 李跳跳两篇微信文章存档齐全（7 份文件，图片字节数锁定）`,
+    '缺失/字节漂移：' + badFiles38.map((x) => x[0]).join(', ') + ' → 微信删文后无从恢复');
+
+  // 38e. 图片 SHA-256 与存档清单登记值一致（内容级防篡改）
+  {
+    const hashes38 = {
+      [ADIR + '/01-letter/page.html']: '1cc1c99d9b6b1c40e0a41700738f5824cf0ad2f68c5d1fe094f91210273d5684',
+      [ADIR + '/01-letter/body.jpg']: 'b039668ca5d846ca4bd517a166df035136422b46e56c3fee88c1e4ddd65b4358',
+      [ADIR + '/02-my-view/page.html']: '873b7379b5af09a2f5d1ca07453f7fe82b274a025079a24d12b3ef6f822b13b8',
+      [ADIR + '/02-my-view/body.png']: 'c986da366fa7500cb84a6c493eebbaa5b38968d8dacfbc390e95dbb845ffed6b'
+    };
+    const badHash38 = Object.entries(hashes38).filter(([p, h]) => {
+      if (!exists(p)) return true;
+      return crypto.createHash('sha256').update(readFileSync(join(ROOT, p))).digest('hex') !== h;
+    });
+    check(badHash38.length === 0,
+      '§38e 存档原件 SHA-256 与 README 登记表一致（内容防篡改）',
+      '哈希漂移：' + badHash38.map((x) => x[0]).join(', ') + ' → 存档被替换或传输损坏');
+  }
+
+  // 38f. 存档 README 含两篇原文 URL 与发布时间，转录覆盖关键事实
+  {
+    const ar38 = exists(ADIR + '/README.md') ? read(ADIR + '/README.md') : '';
+    const t138 = exists(ADIR + '/01-letter/transcript.md') ? read(ADIR + '/01-letter/transcript.md') : '';
+    const t238 = exists(ADIR + '/02-my-view/transcript.md') ? read(ADIR + '/02-my-view/transcript.md') : '';
+    check(/ha6hHr40umlj-ExHdGFXXw/.test(ar38) && /gsC9STZlGrPNNEKUV4btkA/.test(ar38)
+        && /2023-08-24/.test(ar38) && /大小姐李跳跳/.test(ar38),
+      '§38f 存档 README 记录两篇原文 URL、公众号与发布时间',
+      '来源信息缺失 → 将来无法回溯原文、无法证明是当时版本');
+    check(/48 小时内/.test(t138) && /不正当竞争/.test(t138) && /第十二条/.test(t138),
+      '§38f 律师函转录覆盖核心事实（48 小时下架、不正当竞争、法条）',
+      '转录缺关键事实 → 只剩图片难以检索，存档价值下降');
+    check(/没有联网/.test(t238) && /薅厂商的羊毛/.test(t238) && /广受用户喜欢/.test(t238),
+      '§38f 作者回应转录覆盖核心观点（无联网无盈利、厂商薅羊毛、用户喜欢）',
+      '转录缺关键观点 → 双方记录不对等');
+  }
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {

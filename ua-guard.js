@@ -1,16 +1,17 @@
-/* ua-guard.js — 微信 / QQ 内置浏览器拦截层（2026-11-18 站长指令）
+/* ua-guard.js — 微信 / QQ 内置浏览器 / 独立 QQ 浏览器拦截层（2026-11-18 建立，11-19 扩围）
  *
- * 背景与口径（站长原话拆解）：
- *   「主域名不管」          → 根页面 dujeongil-galaxy.github.io/ 不拦截；
- *   「通过主域名点击『访问双休购』的按钮…全部拦截」→ 根页面按钮点击时由根仓库内联脚本拦截；
- *   「在 QQ、微信上直接通过域名访问的行为，全部进行拦截，要求复制以后
- *    打开系统浏览器访问」 → 本脚本：站内所有页面（notes.html 除外，沿用
- *    AdSense 跳过先例）在微信/QQ 内置浏览器里一律弹全屏拦截层。
+ * 背景与口径：
+ *   2026-11-18：根页面自身不拦，站内所有页面（notes.html 除外）在微信/QQ 内置
+ *     浏览器里一律弹全屏拦截层，要求复制地址到系统浏览器打开。
+ *   2026-11-19：拦截范围扩到独立的「QQ 浏览器」App。依据是当日站长指定的两份
+ *     微信文章存档（archive/wechat-liciaotiao-2023/）：一份为腾讯方律师函，
+ *     主张「李跳跳」屏蔽 QQ 浏览器广告构成不正当竞争；另一份为作者回应。
+ *     本站据此把 QQ 浏览器与微信/QQ 内置浏览器同等对待，统一要求系统浏览器打开。
  *
  * 识别方式：纯 UA 特征，不做任何网络请求。
  *   - 微信 / 企业微信：MicroMessenger（wxwork 也会带它或单独出现）
- *   - QQ 内置浏览器：  QQ/x.x.x（注意「QQ/数字」形态；QQBrowser 独立浏览器
- *     不带这个 token，不会被误伤——用户可以用 QQ 浏览器正常访问）
+ *   - QQ 内置浏览器：  QQ/x.x.x（「QQ/数字」形态）
+ *   - 独立 QQ 浏览器： MQQBrowser/x.x（手机 QQ 浏览器 App 的标识）
  *   - TIM：            Tim/x.x
  *
  * 实现要点：
@@ -29,7 +30,8 @@
     var ua = navigator.userAgent || '';
     var isWeChat = /MicroMessenger/i.test(ua) || /wxwork/i.test(ua);
     var isQQ = /\bQQ\/[\d.]+/.test(ua) || /\/Tim\//.test(ua);
-    if (!isWeChat && !isQQ) return; // 正常浏览器：什么都不做
+    var isQQBrowser = /MQQBrowser\/[\d.]+/i.test(ua) || /QQBrowser\/[\d.]+/i.test(ua);
+    if (!isWeChat && !isQQ && !isQQBrowser) return; // 正常浏览器：什么都不做
 
     var doc = document;
     var root = doc.documentElement;
@@ -87,7 +89,7 @@
 
       var reason = doc.createElement('p');
       reason.className = 'sxg-ua-reason';
-      reason.textContent = '你正在用微信 / QQ 的内置浏览器访问，本站在这里容易被拦截或显示异常。复制地址到系统浏览器，一步就能正常打开：';
+      reason.textContent = '你正在用微信 / QQ 的内置浏览器，或 QQ 浏览器访问，本站在这里容易被拦截或显示异常。复制地址到系统浏览器，一步就能正常打开：';
 
       var steps = doc.createElement('ul');
       steps.className = 'sxg-ua-steps';
