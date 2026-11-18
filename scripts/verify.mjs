@@ -7481,6 +7481,10 @@ section('22. 素材链接规则（blob 格式 / 素材不得明文入库）');
     'og-share.png', 'scripts/shot-local-note.png', 'sponsor-support.jpg',
     // 2026-11-16 站长定稿：随笔第11章两处 GIF 已撤，改 12 张静态帧以 data: URI
     // 内联在加密正文里；ch11/ 下两个 .gif 已 git rm，白名单同步移除（不留悬空登记）。
+    // 2026-11-19 微信文章存档：第三方公众号正文长图，不是站长提供的口述素材，
+    // 属公开证据原件，必须保留原图供核验；路径钉死，新增其它明文图仍判红。
+    'archive/wechat-liciaotiao-2023/01-letter/body.jpg',
+    'archive/wechat-liciaotiao-2023/02-my-view/body.png',
   ]);
   let tracked22 = '';
   try {
@@ -10056,6 +10060,16 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     check(/没有联网/.test(t238) && /薅厂商的羊毛/.test(t238) && /广受用户喜欢/.test(t238),
       '§38f 作者回应转录覆盖核心观点（无联网无盈利、厂商薅羊毛、用户喜欢）',
       '转录缺关键观点 → 双方记录不对等');
+  }
+
+  // 38g. 存档原图是第三方公开证据，登记进 §22c 白名单；其余明文素材仍不许新增
+  {
+    const vSrc38 = read('scripts/verify.mjs');
+    const regd38 = /'archive\/wechat-liciaotiao-2023\/01-letter\/body\.jpg'/.test(vSrc38)
+      && /'archive\/wechat-liciaotiao-2023\/02-my-view\/body\.png'/.test(vSrc38);
+    check(regd38,
+      '§38g 两张存档原图登记进 §22c 明文素材白名单（第三方证据原件，非站长口述素材）',
+      '未登记 → §22c 把证据原图当违规明文素材判红；登记入口丢失');
   }
 }
 
