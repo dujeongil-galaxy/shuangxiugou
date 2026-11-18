@@ -4,6 +4,13 @@
 
 ---
 
+### feat：顶栏下方新增站点政策声明条（「这里」可点，指向指定网址）（2026-11-18 · 提交 `8deb60d`）
+
+- **起因**：站长在首页顶栏（logo + 按钮行）正下方画红框，要求加一条社区治理声明，措辞由站长给定，其中「这里」两字必须是**可点击链接** → `https://dujeongil-galaxy.github.io/`。
+- **落位**：新增 `policy-notice.js`，在 React 渲染的 `<header>` 之后插静态声明条。**不塞进 `#site-notice` 滚动公告栏**——那条有「零超链接」硬约定（移动的文字上的链接点不准，2026-11-02 因此否掉过带链接公告）。文案用 `textContent` 三段拼接 + `createElement('a')`，不写 `innerHTML`；幂等 + 定时重试 + MutationObserver 自愈（React 重渲染清掉会补回）；白底红字 + 链接下划线 + ≤640px 字号下调。
+- **挂载/校验**：`index.html` 挂 `policy-notice.js?v=1`（排在 header-to-dock.js 后）；CI 接入 `test-policy-notice.cjs`。verify 新增 §20r 共 15 条断言（文案一字不差 /「零容忍」不软化 / href 精确 / 插在 header 后 / DOM API / 幂等 / 样式 / CI）；`test-policy-notice.cjs` 34 项含 jsdom 真渲染与自愈。
+- **验证**：verify **1896 项全绿**；**6/6 故障注入判红**（占位 URL / 软化文案 / 插回滚动栏 / 链接文字改错 / innerHTML / 脚本注释），还原后全绿；CDP 桌面 1100 与手机 390 真渲染确认 `barTop == headerBottom == 103`、文案完整、「这里」href 正确带下划线、无遮挡、`PAGEERRORS=[]`，截图肉眼复核通过。
+
 ### feat(guard)：微信/QQ 内置浏览器访问站内页一律拦截（2026-11-18 · 提交 `42d1369`）
 
 - **起因**：站长指令——主域名不管，但从根页面点进入双休购的按钮、以及 QQ/微信内直接通过域名访问的行为全部拦截，要求复制地址到系统浏览器打开（UA 识别）。
