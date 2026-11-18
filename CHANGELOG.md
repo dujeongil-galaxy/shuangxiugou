@@ -4,6 +4,12 @@
 
 ---
 
+### feat(nav)：手机端 dock 内导航面板锚定整个 dock 上方 + 滚动自动收起（2026-11-18 · 提交 `b2d07fe`）
+
+- **起因**：站长手机截图反馈滚动后点「导航」面板错位顶到页首。根因是 nav 根被收编进高 dock 后，面板仍以 dock 首行为锚向上展开。
+- **改动**：① mobile-fixes.css `#sxg-fab-dock > #sxg-nav > #sxg-nav-panel` 改 `position:fixed` + `--sxg-dock-h` 锚定 + `max-height` 自适应 + 内部滚动；② nav-menu.js 滚动自动收起（capture，面板内部滚动除外）；③ `nav-menu.js?v=8`（两处）/`mobile-fixes.css?v=24` 破缓存；④ verify §36q 面板钉子演进为 position:fixed + --sxg-dock-h，9c 节 nav-menu 钉子 v7→v8。
+- **验证**：本地模拟 CI 全绿；test-nav-menu 全过。改动 4 文件 +27/-7。
+
 ### fix：良配广告秒级显示——6000ms→200ms + 修 `visibility` 卡帧（2026-11-18 · 提交 `0996542`）
 
 - **起因**：站长反馈上批恢复的良配广告仍要等一会儿才出现，问「无法实现秒级显示吗」。
