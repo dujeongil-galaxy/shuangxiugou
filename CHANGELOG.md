@@ -4,6 +4,13 @@
 
 ---
 
+### feat：AI 按钮全局化——全站统一新版跳转，老版挂件清零，阅读态不复活（2026-11-18 · 提交 `e27110e`）
+
+- **起因**：站长进 `projects.html` / `notes.html` 仍是老版内嵌 AI（`ai-chat.js`），要求全局检查 + 左下角 AI 按钮做成全局所有页面都有。经站长确认边界：全站统一新版跳转按钮；`notes.html` 首页保留但「阅读全文」正文不能有；`labor-ai.html` 自身、404、discussion-closed、notes-plaintext-preview、google 验证文件不加。
+- **全局盘点**：6 页仍用 `ai-chat.js`（404 / discussion-closed / notes / projects / sponsor / usdt-guide）；181 品牌页 + 首页用 `ai-link.js`；10 顶层页无按钮。改造：4 页（notes/projects/sponsor/usdt-guide）`ai-config`+`ai-chat` 换 `ai-link.js?v=2`；2 页（404/discussion-closed）删旧引用不补；10 页补装；全站 196 页版本统一 v2，`ai-chat.js` 引用清零。
+- **★ 阅读态守卫**：实测 `document.open/write/close` 换页后，先前 `appendChild` 的按钮仍在、800/1800ms 兜底定时器仍会触发——不能指望换页自然清场。故 `ai-link.js` 的 `boot()` 先判 `isReaderMode()`（存在 `#toc` 目录），是正文就 `removeChild(stale)` 并 return，锁屏态（无 `#toc`）照常建按钮。
+- **校验/验证**：verify §21g-2 新增 4 条断言（14 应有页全挂 / 5 特例页不挂 / 全站零 ai-chat / 阅读态守卫），`test-ai-global.cjs` 12 项含 jsdom 行为，CI 接入；verify **1900 全绿**；**5/5 故障注入判红**（应挂页删链接 / 特例页误挂 / 旧挂件回潮 / 守卫移除 / 版本不一致）还原后全绿；CDP 9 页真渲染按钮有无与 href 全对（根页 `./labor-ai.html`、品牌页 `../labor-ai.html`）；用真实密码走 notes 解锁全流程，锁屏有按钮 → 正文 `#toc` 出现且按钮消失 → 5 秒后仍不复活。
+
 ### feat：顶栏下方新增站点政策声明条（「这里」可点，指向指定网址）（2026-11-18 · 提交 `8deb60d`）
 
 - **起因**：站长在首页顶栏（logo + 按钮行）正下方画红框，要求加一条社区治理声明，措辞由站长给定，其中「这里」两字必须是**可点击链接** → `https://dujeongil-galaxy.github.io/`。
