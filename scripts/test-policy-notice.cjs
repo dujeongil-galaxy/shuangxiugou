@@ -32,8 +32,8 @@ const htmlNoComments = html.replace(/<!--[\s\S]*?-->/g, '');
 // ---------- 1. 脚本挂载 ----------
 console.log('--- 挂载 ---');
 check('policy-notice.js 存在', fs.existsSync(path.join(ROOT, 'policy-notice.js')));
-check('index.html 活跃引用 policy-notice.js?v=2（非注释）',
-  /<script[^>]*policy-notice\.js\?v=2[^>]*>/i.test(htmlNoComments));
+check('index.html 活跃引用 policy-notice.js?v=3（非注释）',
+  /<script[^>]*policy-notice\.js\?v=3[^>]*>/i.test(htmlNoComments));
 check('脚本排在 header-to-dock.js 之后（同属 header 下游补丁）',
   html.indexOf('policy-notice.js') > html.indexOf('header-to-dock.js'));
 
@@ -89,12 +89,15 @@ check('header 未挂载时定时重试 + MutationObserver 自愈',
   && /new MutationObserver/.test(js)
   && /obs\.observe/.test(js));
 
-// ---------- 5. 样式：深红底白字（浅色看不清）、移动端可读 ----------
+// ---------- 5. 样式：浅黄底深红字（站长最终定稿）、移动端可读 ----------
 console.log('\n--- 样式 ---');
-check('声明条深红底白字（非浅底，站长换色避免看不清）', /background:#7f1d1d;color:#ffffff/.test(js));
-check('不再是旧的浅底红字', !/background:#fff;color:#dc2626/.test(js));
-check('链接亮色 + 下划线（深底上可点可辨）',
-  /color:#fde047/.test(js) && /text-decoration:underline/.test(js));
+check('声明条浅黄底深红字（浅底配深色文字，不牺牲可读性）',
+  /background:#fef3c7;color:#7f1d1d/.test(js));
+check('不再是深红底白字，也不是更早的浅底红字',
+  !/background:#7f1d1d;color:#ffffff/.test(js) && !/background:#fff;color:#dc2626/.test(js));
+check('链接深红 + 下划线（浅底上可点可辨，非亮黄）',
+  /color:#991b1b/.test(js) && /text-decoration:underline/.test(js)
+  && !/color:#fde047/.test(js));
 check('有 ≤640px 移动端字号下调', /@media \(max-width:640px\)/.test(js)
   && /font-size:12px/.test(js));
 

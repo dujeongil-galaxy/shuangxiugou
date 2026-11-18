@@ -5316,8 +5316,8 @@ const POLICY_AFTER = '查看本站政策';
 if (exists(PNS)) {
   const pn = read(PNS);
   const idxActive = read('index.html').replace(/<!--[\s\S]*?-->/g, '');
-  check(/<script[^>]*policy-notice\.js\?v=2[^>]*>/.test(idxActive),
-    'index.html 活跃引用 policy-notice.js?v=2（非注释）');
+  check(/<script[^>]*policy-notice\.js\?v=3[^>]*>/.test(idxActive),
+    'index.html 活跃引用 policy-notice.js?v=3（非注释）');
   check(read('index.html').indexOf(PNS) > read('index.html').indexOf('header-to-dock.js'),
     '排在 header-to-dock.js 之后（同属 header 下游补丁）');
   check(pn.includes(POLICY_BEFORE),
@@ -5347,14 +5347,18 @@ if (exists(PNS)) {
     '不往 #site-notice 滚动栏插（零超链接硬约定）');
   check(/setTimeout\(sweep,\s*300\)/.test(pn) && /new MutationObserver/.test(pn),
     'header 未挂载时定时重试 + MutationObserver 自愈');
-  check(/background:#7f1d1d;color:#ffffff/.test(pn)
+  // 2026-11-18 站长看真渲染后改口：「不如换成浅黄色背底，真的」。
+  // 浅底必须配深色字才看得清，故文字/链接都改深红系，亮黄链接一并撤掉。
+  check(/background:#fef3c7;color:#7f1d1d/.test(pn)
     && /text-decoration:underline/.test(pn)
     && /@media \(max-width:640px\)/.test(pn),
-    '深红底白字（非浅底）+ 链接下划线 + 移动端字号下调');
-  check(!/background:#fff;color:#dc2626/.test(pn),
-    '不再是旧的浅底红字（站长：浅色看不清，已换深色底）');
-  check(/a\{color:#fde047;text-decoration:underline/.test(pn),
-    '「这里」链接为亮黄 #fde047 + 下划线（深红底上可辨可点，非旧红）');
+    '浅黄底 #fef3c7 + 深红字 #7f1d1d（浅底配深色，不牺牲可读性）+ 链接下划线 + 移动端字号下调');
+  check(!/background:#7f1d1d;color:#ffffff/.test(pn)
+    && !/background:#fff;color:#dc2626/.test(pn),
+    '既不是深红底白字，也不是更早的浅底红字（站长最终定稿：浅黄底深红字）');
+  check(/a\{color:#991b1b;text-decoration:underline/.test(pn)
+    && !/a\{color:#fde047/.test(pn),
+    '「这里」链接为深红 #991b1b + 下划线（浅底上可辨可点，非亮黄）');
   check(exists('scripts/test-policy-notice.cjs'), '存在政策声明条行为测试');
   if (exists('.github/workflows/verify.yml')) {
     check(read('.github/workflows/verify.yml').includes('test-policy-notice.cjs'),
