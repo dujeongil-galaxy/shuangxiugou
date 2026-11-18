@@ -1339,8 +1339,8 @@ section('2g. 首页证据链完整公示');
       && exists('notes.html'),
       '悬浮导航新增「手气不错」→ notes.html（PC 右下 dock / 手机二级菜单共用同一 ITEMS，双端同名）',
       '入口缺失或写回「站长随笔」→ 弹窗改版丢掉的随笔按钮没补回来，或站长要求的改名没落地');
-    check((html.match(/nav-menu\.js\?v=8/g) || []).length === 2,
-      'index.html 的 nav-menu.js 预加载与脚本两处缓存号同步 bump 到 ?v=8',
+    check((html.match(/nav-menu\.js\?v=9/g) || []).length === 2,
+      'index.html 的 nav-menu.js 预加载与脚本两处缓存号同步 bump 到 ?v=9',
       '只 bump 一处 → 预加载旧脚本，用户拿到没有「手气不错」的旧菜单');
     const dpNav = read('douyin-prompt.js');
     check(!/手气不错/.test(dpNav)
@@ -6138,9 +6138,9 @@ section('21b-2. 安全事件默认收起 + 分享弹窗接线');
     'README 留痕一句话略过且不提对方名称',
     '留痕缺失或写出对方名称 → 不符合「直接一句话略过」的最新指令');
   // 脚本缓存号：改 u-grade-patch.js 必须同步 ?v=，否则线上仍是旧抵制区
-  check(/u-grade-patch\.js\?v=21/.test(idxUgp)
-    && !/u-grade-patch\.js\?v=20/.test(idxUgp),
-    'index.html 引用 u-grade-patch.js?v=21（缓存号已随改动同步 +1）',
+  check(/u-grade-patch\.js\?v=22/.test(idxUgp)
+    && !/u-grade-patch\.js\?v=21/.test(idxUgp),
+    'index.html 引用 u-grade-patch.js?v=22（缓存号已随改动同步 +1）',
     '漏 bump ?v 或仍写旧值 → 浏览器命中旧缓存，新抵制区不生效');
 }
 
@@ -6986,8 +6986,8 @@ section('21c. 首页滑到底部按钮');
   check(/'D 级'/.test(rowTexts) && /'U 级'/.test(rowTexts),
     'stat-filter.js 评级行互斥枚举含「D 级」「U 级」（点 D/U 清五格筛选）',
     'stat-filter 没跟上 → 点 D/U 不清四格筛选，两套过滤层互相覆盖出现空面板');
-  check(/u-grade-patch\.js\?v=21/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
-    'u-grade-patch.js?v=21 / stat-filter.js?v=9（缓存号已随内容 bump；11-16 锚点直达站长备注）',
+  check(/u-grade-patch\.js\?v=22/.test(idx) && /stat-filter\.js\?v=9/.test(idx),
+    'u-grade-patch.js?v=22 / stat-filter.js?v=9（缓存号已随内容 bump；11-16 锚点直达站长备注）',
     '缓存号没 bump → 用户拿旧补丁，D/U 按钮注入不生效（2026-11-01 拼音索引同类事故）');
   // 2026-11-03 站长实测 bug：点「D 级 / U 级」后拼音搜索框整块消失。
   // 根因：CARD_SEL（div.bg-white.rounded-2xl.border）命中面比品牌卡宽，
@@ -7637,6 +7637,37 @@ section('23. README 长段落摘要化（摘要 + 独立页面）');
   check(rdLines23 <= 500 && rules23.length > 12000,
     `§23k README 只留精简摘要（当前 ${rdLines23} 行 ≤ 500），完整原文在 README-细则.md`,
     'README 又堆回长段落 → 按分工外移，不要在首页靠人肉节制');
+
+  // §23l 禁止逐字引用站长口述（2026-11-18 定规）。判据写成通用正则，不枚举具体句子：
+  //   ① 标注式："原话/口述" + 引号；② 包裹式："站长/指令/要求..." + 20 字以上长引语。
+  // 扫描面：9 份对外文档 + index.html 里所有 ?v= 引用的根目录补丁脚本注释。
+  // 第三方证据、榜单原文等外部引语不受限——那是证据链，不是私人对话，故只针对"站长/指令"等主体词。
+  const quoteDocs23L = ['README.md', 'README-细则.md', 'README-详情.md', 'AGENTS.md',
+    '最近更新.md', 'CHANGELOG.md', 'PITFALLS.md', 'BUG-ROOT-CAUSES.md', 'SEO-RANKING.md'];
+  const quotePats23L = [
+    /原话\s*[：:]\s*[「『"]/,
+    /口述\s*[：:]\s*[「『"]/,
+    /站长[^\n。；：]{0,12}?「[^」]{20,}」/,
+    /(?:指令|要求|追问|反馈|指出|强调)[^\n。；：]{0,8}[：:]\s*「[^」]{20,}」/
+  ];
+  const quoteFiles23L = quoteDocs23L.filter(f => exists(f)).slice();
+  {
+    const idx23L = exists('index.html') ? read('index.html') : '';
+    const scripts23L = [...new Set([...idx23L.matchAll(/src=["']\.\/([^/]+\.js)\?v=\d+/g)]
+      .map(m => m[1]))];
+    for (const s of scripts23L) if (exists(s) && !quoteFiles23L.includes(s)) quoteFiles23L.push(s);
+  }
+  const quoteHits23L = [];
+  for (const f of quoteFiles23L) {
+    const lines23L = read(f).split('\n');
+    for (let i = 0; i < lines23L.length; i++) {
+      if (quotePats23L.some(p => p.test(lines23L[i]))) quoteHits23L.push(f + ':' + (i + 1));
+    }
+  }
+  check(quoteFiles23L.length >= 9 && quoteHits23L.length === 0,
+    '§23l 对外文档与 ?v 补丁脚本零逐字口述引用（只写第三人称要点）',
+    '命中：' + quoteHits23L.slice(0, 12).join(' / ')
+      + ' → 私人对话原句暴露表达习惯，改成结论句');
 }
 
 // ---------- 24. 白屏兜底 + 加载态（站长 2026-11-08「删空搜索后整站白屏，怕用户误退出」） ----------
@@ -8562,7 +8593,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   //   ③ 详情页 brand/lixiang.html 同步登记同一条链接（站规：备注栏内容同步证据链）。
   const newsLinks32 = [...news32.matchAll(/https?:\/\/[^'"\s)]+/g)].map((x) => x[0]);
   check(news32.length > 0
-    && /<script defer src="\.\/news-incident-patch\.js\?v=5"><\/script>/.test(idx32)
+    && /<script defer src="\.\/news-incident-patch\.js\?v=6"><\/script>/.test(idx32)
     && /var ITEMS = \[/.test(news32) && /key: 'logitech'/.test(news32) && /key: 'xingyu'/.test(news32)
     && /key: 'geely'/.test(news32) && /key: 'lixiang'/.test(news32) && /key: 'chery'/.test(news32)
     && /key: 'lixiang-douyin'/.test(news32)
@@ -9210,8 +9241,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   // ⑦ 挂载与 ?v 钉子（§21h 纪律），以及 jsdom 行为测试存在。
   check(/<script defer src="\.\/github-access-help\.js\?v=3"><\/script>/.test(idx36r)
     && /appeal-policy\.js\?v=4/.test(idx36r)
-    && /share-modal\.js\?v=11/.test(idx36r)
-    && /share-modal\.js\?v=11/.test(sp36r)
+    && /share-modal\.js\?v=12/.test(idx36r)
+    && /share-modal\.js\?v=12/.test(sp36r)
     && exists('scripts/test-github-access-help.cjs'),
     '§36r index.html 挂载 github-access-help.js?v=3 / appeal-policy.js?v=4，改动脚本 ?v 同步 bump，配套 jsdom 行为测试存在',
     '?v 没 bump → 浏览器/CDN 命中旧脚本，新文案与链接规整都不生效');
@@ -9519,13 +9550,13 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '海外仍走横向清单行 → 上 5 下 10 不成立；图标容器改回圆角方形 → 与国内两套视觉分裂');
 
   // ⑤ ?v 同步 + jsdom 行为测试挂进 CI（§21h / §21o 纪律）。
-  check(/share-modal\.js\?v=11/.test(idx36v)
-    && /share-modal\.js\?v=11/.test(sp36v)
-    && !/share-modal\.js\?v=10/.test(idx36v)
-    && !/share-modal\.js\?v=10/.test(sp36v)
+  check(/share-modal\.js\?v=12/.test(idx36v)
+    && /share-modal\.js\?v=12/.test(sp36v)
+    && !/share-modal\.js\?v=11/.test(idx36v)
+    && !/share-modal\.js\?v=11/.test(sp36v)
     && exists('scripts/test-share-modal.cjs')
     && wf36v.indexOf('node scripts/test-share-modal.cjs') !== -1,
-    '§36v share-modal.js?v=11 在 index.html / sponsor.html 同步 bump，分享弹窗 jsdom 测试存在并挂进 CI',
+    '§36v share-modal.js?v=12 在 index.html / sponsor.html 同步 bump，分享弹窗 jsdom 测试存在并挂进 CI',
     '?v 没 bump → 线上仍跑旧脚本，加固等于没发；测试没挂 CI → 下次回退没人拦');
 }
 
@@ -9683,9 +9714,9 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/点右上角 × 关闭/.test(dp36x) && !/现在可以关闭了/.test(dp36x),
     '§36x 倒计时到点后提示改为「点右上角 × 关闭」',
     '提示仍写「可以关闭」却没说怎么关 → 用户会去点空白');
-  check(/<script defer src="\.\/douyin-prompt\.js\?v=26"><\/script>/.test(idx36x)
-    && !/douyin-prompt\.js\?v=25/.test(idx36x),
-    '§36x index.html 挂载 douyin-prompt.js?v=26（bump 缓存号）',
+  check(/<script defer src="\.\/douyin-prompt\.js\?v=27"><\/script>/.test(idx36x)
+    && !/douyin-prompt\.js\?v=26/.test(idx36x),
+    '§36x index.html 挂载 douyin-prompt.js?v=27（bump 缓存号）',
     '?v 没 bump → 线上仍跑旧脚本，改动等于没发');
 
   // 2026-11-13 站长追加：「不要 15 分钟冷却，刷新首页必弹」。
