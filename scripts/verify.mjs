@@ -6393,14 +6393,16 @@ section('21c. 首页滑到底部按钮');
       '公告写明 11-18 完成全面升级');
     check(/旧版/.test(nt) && /(彻底清除|彻底移除|彻底删除)/.test(nt) && /代码/.test(nt),
       '公告写明旧版历史遗留代码已彻底清除（不是「优化/更新」软话）');
-    check(/点右下角/.test(nt) && /咨询劳动法/.test(nt),
-      '公告保留「点右下角 🤖 咨询劳动法」的行动指引');
+    check(/Ai 对话图标/.test(nt) && /咨询劳动法/.test(nt),
+      '公告用统一叫法「Ai 对话图标」给出咨询劳动法指引（不写位置）');
+    check(!/(右下角|左下角|左下|右下|🤖)/.test(nt),
+      '公告不含任何方位词或 🤖（PC 常显右侧 dock / 手机收在别处，写死位置会误导）');
     check(nt.length <= 120,
       `公告长度可控，不撑破首页 hero 徽章（当前 ${nt.length} 字）`);
   }
   const noticeHtmlNoCmt = html.replace(/<!--[\s\S]*?-->/g, '');
-  check(/<script[^>]*src="\.\/ai-notice-patch\.js\?v=2"/.test(noticeHtmlNoCmt),
-    '首页活跃引用 ai-notice-patch.js?v=2（非注释，文案变更 bump 破缓存）');
+  check(/<script[^>]*src="\.\/ai-notice-patch\.js\?v=3"/.test(noticeHtmlNoCmt),
+    '首页活跃引用 ai-notice-patch.js?v=3（非注释，文案变更 bump 破缓存）');
 
   // labor-ai.html 必须：双线路 + Star 满 7 天判定 + 两处免责声明
   {
