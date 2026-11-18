@@ -38,7 +38,7 @@ GitHub 上搜「双休购」会出来十几个仓库，但其中**只有一半�
 
 ## 📋 数据核实文档
 
-- [员工实测数据核实修改清单](员工实测数据核实修改清单.md)：53 张内置品牌卡 + 129 张自定义卡（共 182 张）的「真实双休率 / 平均下班」逐卡证据核实记录，含旧值→新值、证据来源与置信度标注
+- [员工实测数据核实修改清单](员工实测数据核实修改清单.md)：53 张内置品牌卡 + 137 张自定义卡（共 190 张）的「真实双休率 / 平均下班」逐卡证据核实记录，含旧值→新值、证据来源与置信度标注
 - [改动记录（CHANGELOG.md）](CHANGELOG.md)：2026-10-13 之后的改动清单，每条附可核验的真实提交哈希
 - [最近更新.md](最近更新.md)：上方「🆕 最近更新」章节的完整版，逐条含改动时间 + 真实提交哈希；**修 bug 时与 README 本节同步更新**（verify §21n 强制）
 - [仓库维护说明（MAINTAINING.md）](MAINTAINING.md)：本仓库 fork 后的改动记录、部署架构要点与已知遗留问题
@@ -367,7 +367,7 @@ node scripts/test-render-page.cjs
 > 📦 **依赖说明（2026-11-13）**：`next` / `react` / `react-dom` / `framer-motion` / `tailwindcss-animate` 与 `dev`/`build`/`start`/`lint`/`check-types` 脚本已整体移除，`npm audit` 从 8 项漏洞（1 critical / 5 high / 2 moderate）归零。`app/` 下的 Next.js 源码保留但**不再可构建**——它本来就是与线上无关的两套数据，删依赖不改变任何线上行为。
 > 该文件是工程改动、不涉及前端产物，故 `?v=N` 未动。
 
-> ⚠️ **架构说明（摘要）**：线上部署的是仓库根目录静态产物（`index.html` + `assets/` 下的 bundle 与 css），GitHub Pages 直接发布、不经过构建；`app/` 下的 Next.js 源码未构建成线上页面。卡片数据分两处——53 张内置卡在 `assets/index-YthXZ9eP.js`，129 张自定义卡在根目录 `index.html` 的 `customCardsConfig`；改 bundle 后须把 `?v=N` 加 1，仅改自定义卡不用。
+> ⚠️ **架构说明（摘要）**：线上部署的是仓库根目录静态产物（`index.html` + `assets/` 下的 bundle 与 css），GitHub Pages 直接发布、不经过构建；`app/` 下的 Next.js 源码未构建成线上页面。卡片数据分两处——53 张内置卡在 `assets/index-YthXZ9eP.js`，137 张自定义卡在根目录 `index.html` 的 `customCardsConfig`；改 bundle 后须把 `?v=N` 加 1，仅改自定义卡不用。
 >
 > 完整表格、172 家的口径说明与「非部署副本」提醒见 **[README-详情.md](README-详情.md#architecture)**。
 

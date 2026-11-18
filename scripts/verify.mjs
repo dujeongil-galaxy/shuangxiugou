@@ -582,9 +582,10 @@ check(virtual2e === 1, '虚拟对比卡恰 1 张（口径排除依据，id 变�
 // 2026-11-02 批量导入 104 张榜单卡（data/imported-brands.json 生成）后，16 → 120；
 // 2026-11-08 新增「陆喜依」（独立公开来源，非榜单导入）→ 121 张导入卡；
 // 2026-11-11 新增「吉利汽车」（站长指令建卡，独立公开来源）→ 122 张导入卡。
+// 2026-11-19 新增 8 家国产新能源车企（小鹏/问界/极氪/埃安/深蓝/岚图/五菱/长安启源）→ 116 张导入卡。
 // 这个数不是「随便写死」：它同时被 §2e 的四格统计、brand/ 页数、公告栏数字三处引用，
 // 任何一处生成器漏跑都会在这里对不上，所以必须保留为硬断言。
-const IMPORTED_CARD_COUNT = 108;
+const IMPORTED_CARD_COUNT = 116;
 check(customPairs2e.length === 21 + IMPORTED_CARD_COUNT,
   `能解析全部自定义卡（${21 + IMPORTED_CARD_COUNT} 张 = 21 张手工卡含联通/小米汽车/广汽丰田 + ${IMPORTED_CARD_COUNT} 张导入卡（104 榜单 + 陆喜依 / 沪上阿姨等独立来源））`,
   '实际 ' + customPairs2e.length);
@@ -654,7 +655,7 @@ check(locked2e.length === 11,
 check(byGrade2e('A级') === 7 + 58,
   '自定义卡 A 级共 65 张（工/建/中/成都/农行 5 家银行 + 2026-11-12 广发银行/四川天府银行 2 家 + 榜单导入 58 张；小米 2026-11-05 B→A、2026-11-13 站长要求下调回 B）',
   '实际 ' + byGrade2e('A级'));
-check(byGrade2e('C级') === 10 + 29 + 2,
+check(byGrade2e('C级') === 10 + 29 + 4,
   '自定义卡 C 级共 41 张（手工 10 张 + 榜单导入 29 张 + 2026-11-12 新增零跑汽车 C 级；小米汽车 2026-11-13 建卡 C 级、同日站长人工介入上调 B 级；农行 2026-11-04 由 C 转 A；BOSS直聘 2026-11-03 转入 D 级；2026-11-11 新增吉利汽车 C 级；2026-11-15 新增沪上阿姨 C 级（门店招聘月休 2 天））',
   '实际 ' + byGrade2e('C级'));
 // 2026-11-12 新增「零跑汽车」自定义卡（站长指令：新增品牌、证据链由联网核实公开报道；
@@ -1456,7 +1457,37 @@ if (cfgBlock) {
 }
 const CUSTOM_COUNT = customCards.length;
 check(CUSTOM_COUNT === 21 + IMPORTED_CARD_COUNT,
-  `自定义卡 ${CUSTOM_COUNT} 张（21 张手工 + ${IMPORTED_CARD_COUNT} 张导入；2026-11-02 批量导入，2026-11-03 增联通 B 级，2026-11-08 增陆喜依 S 级，2026-11-12 增广发银行/四川天府银行 A 级 + 零跑汽车 C 级，2026-11-13 增小米汽车（建卡 C 级、同日站长人工介入上调 B 级）+ 广汽丰田 B 级）`);
+  `自定义卡 ${CUSTOM_COUNT} 张（21 张手工 + ${IMPORTED_CARD_COUNT} 张导入；2026-11-02 批量导入，2026-11-03 增联通 B 级，2026-11-08 增陆喜依 S 级，2026-11-12 增广发银行/四川天府银行 A 级 + 零跑汽车 C 级，2026-11-13 增小米汽车（建卡 C 级、同日站长人工介入上调 B 级）+ 广汽丰田 B 级，2026-11-19 增 8 家国产新能源车企）`);
+
+// 2026-11-19：8 家国产新能源车企卡（紧跟时事建卡，站长定级 + 招聘 JD 标注来源采信）。
+// 锁定 id/档位/详情页，删卡、改档或漏页都判红；评级按公开证据口径，非本站实测。
+{
+  const EV_CARS_3 = {
+    'xiaopeng-card': { name: '小鹏汽车', grade: 'B级' },
+    'wenjie-card': { name: '问界（赛力斯）', grade: 'C级' },
+    'jike-card': { name: '极氪', grade: 'B级' },
+    'aion-card': { name: '广汽埃安', grade: 'B级' },
+    'shenlan-card': { name: '深蓝汽车', grade: 'B级' },
+    'lantu-card': { name: '岚图', grade: 'C级' },
+    'wuling-card': { name: '上汽通用五菱', grade: 'B级' },
+    'changan-qiyuan-card': { name: '长安启源', grade: 'B级' },
+  };
+  const gradeById3 = Object.fromEntries(customPairs2e.map((c) => [c.id, c.grade]));
+  const wrong3 = [];
+  for (const [id, spec] of Object.entries(EV_CARS_3)) {
+    if (gradeById3[id] !== spec.grade) wrong3.push(`${id}=${gradeById3[id] || '缺失'}（应 ${spec.grade}）`);
+    if (!exists('brand/' + id.replace(/-card$/, '') + '.html')) wrong3.push(`${id} 详情页缺失`);
+  }
+  check(wrong3.length === 0,
+    '8 家国产新能源车企卡 id/档位/详情页齐全（小鹏/问界/极氪/埃安/深蓝/岚图/五菱/长安启源）',
+    wrong3.join('；') || '全部到位');
+  // 招聘 JD 来源必须标注（"采信但标注来源"口径）：至少一家页脚/证据带降级采信字样
+  const jdLabel3 = ['xiaopeng', 'wenjie', 'lantu'].every((s) =>
+    /降级采信|劳务派遣|中介发布/.test(read('brand/' + s + '.html')));
+  check(jdLabel3,
+    '新能源车企卡的招聘 JD 来源已标注「劳务派遣/中介发布·降级采信」',
+    '缺来源标注 → 二手 JD 被当成官方口径');
+}
 
 // null 规则：双休率 / 下班时间不得为占位 0，也不得是字符串 '未知'
 customCards.forEach((c) => {
