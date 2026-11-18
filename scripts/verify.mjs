@@ -1339,8 +1339,8 @@ section('2g. 首页证据链完整公示');
       && exists('notes.html'),
       '悬浮导航新增「手气不错」→ notes.html（PC 右下 dock / 手机二级菜单共用同一 ITEMS，双端同名）',
       '入口缺失或写回「站长随笔」→ 弹窗改版丢掉的随笔按钮没补回来，或站长要求的改名没落地');
-    check((html.match(/nav-menu\.js\?v=7/g) || []).length === 2,
-      'index.html 的 nav-menu.js 预加载与脚本两处缓存号同步 bump 到 ?v=7',
+    check((html.match(/nav-menu\.js\?v=8/g) || []).length === 2,
+      'index.html 的 nav-menu.js 预加载与脚本两处缓存号同步 bump 到 ?v=8',
       '只 bump 一处 → 预加载旧脚本，用户拿到没有「手气不错」的旧菜单');
     const dpNav = read('douyin-prompt.js');
     check(!/手气不错/.test(dpNav)
@@ -9048,7 +9048,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   const panelOk = /#sxg-ai-panel\s*\{[^}]*top:\s*calc\(var\(--sxg-ai-top/.test(mf36q)
     && /#sxg-ai-panel\s*\{[^}]*bottom:\s*auto/.test(mf36q)
     && /#sxg-ai-panel\s*\{[^}]*var\(--sxg-ai-vh/.test(mf36q)
-    && /#sxg-nav-panel\s*\{[^}]*right:\s*0\s*!important/.test(mf36q)
+    && /#sxg-nav-panel\s*\{[^}]*position:\s*fixed\s*!important/.test(mf36q)
+    && /#sxg-nav-panel\s*\{[^}]*--sxg-dock-h/.test(mf36q)
     && !/\+\s*(210|272|276|335)px/.test(mf36q)
     && !/body\s*\{[^}]*padding-left/.test(mf36q);
   check(dockCssOk && panelOk,

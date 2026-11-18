@@ -244,6 +244,16 @@
       }
     });
 
+    /* 2026-11-18 站长指令：上下滚动后再点导航，面板落在错位覆盖层上。
+       滚动页面时自动收起手机端展开的面板——面板内部滚动（max-height +
+       overflow-y）不算页面滚动，不收起。capture 才能先于页面滚动手势。 */
+    window.addEventListener('scroll', function (e) {
+      if (!isOpen) return;
+      if (!isMobile()) return;
+      if (e && e.target && e.target.id === PANEL_ID) return;
+      setOpen(false);
+    }, true);
+
     // 跨断点：从手机拖宽到桌面时，面板要常显，条目也得补建
     var mq = window.matchMedia && window.matchMedia('(max-width:640px)');
     var onBp = function () {

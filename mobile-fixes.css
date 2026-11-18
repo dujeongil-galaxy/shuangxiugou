@@ -550,9 +550,18 @@ div[class*="border-t"][class*="bg-slate-50"] > div.flex.items-center.gap-2 {
     border: none !important;
     box-shadow: none !important;
   }
+    /* 2026-11-18 站长指令（滚动后点导航，面板顶到页首压公告栏）：
+     面板不再以 dock 首行为锚向上展开——dock 加到 12 枚后首行已贴近视口顶部，
+     面板会被顶出屏幕。改用 fab-dock 维护的 --sxg-dock-h 锚定在整个 dock 上方、
+     右侧对齐（与 AI 面板的容器变量机制同款）；剩余高度不足时面板内部滚动。 */
   #sxg-fab-dock > #sxg-nav > #sxg-nav-panel {
+    position: fixed !important;
     left: auto !important;
-    right: 0 !important;
+    right: 14px !important;
+    bottom: calc(var(--sxg-dock-h, 0px) + var(--sxg-bar-h, 0px) + 16px + env(safe-area-inset-bottom, 0px)) !important;
+    top: auto !important;
+    max-height: calc(100dvh - var(--sxg-dock-h, 0px) - var(--sxg-bar-h, 0px) - 48px) !important;
+    overflow-y: auto !important;
   }
 
   /* AI 面板不进 dock（它是宽面板，仍 fixed 在 body）。
