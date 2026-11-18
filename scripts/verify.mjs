@@ -6356,6 +6356,50 @@ section('21c. 首页滑到底部按钮');
   const aiLink = exists('ai-link.js') ? read('ai-link.js') : '';
   check(/sxg-ai-fab/.test(aiLink) && /labor-ai\.html/.test(aiLink) && /targetHref/.test(aiLink),
     'ai-link.js 复刻 AI 圆钮并跳转 labor-ai.html');
+
+  /* ---- 2026-11-18 全局化：AI 按钮全站统一新版，旧挂件彻底清零 ----
+     起因：站长进 projects.html / notes.html 仍是老版内嵌 AI（ai-chat.js），
+     要求全局检查 + 左下角 AI 按钮全站都有。口径：
+       · 正常站点页一律挂 ai-link.js（新版跳转）；
+       · 特例页不挂：labor-ai.html（自身即终点）、404、discussion-closed、
+         notes-plaintext-preview、google 站点验证文件；
+       · 全站零 ai-chat.js 引用（老版内嵌挂件彻底下线）；
+       · notes.html 解锁后的「阅读全文」正文不能再有按钮 → 阅读态守卫。 */
+  const AI_SHOULD_HAVE = ['about.html', 'byd-report.html', 'community-rules.html',
+    'contact.html', 'disclaimer.html', 'notes.html', 'privacy.html', 'projects.html',
+    'qq-nainai.html', 'remind-original.html', 'sponsor.html', 'success-stories.html',
+    'usdt-guide.html', 'why-shuangxiugou.html'];
+  const AI_NO_BUTTON = ['labor-ai.html', '404.html', 'discussion-closed.html',
+    'notes-plaintext-preview.html', 'googlea540a6c2cd5f0e6c.html'];
+  const missBtn = AI_SHOULD_HAVE.filter((f) => !exists(f) || !/ai-link\.js\?v=\d+/.test(read(f)));
+  check(missBtn.length === 0,
+    `AI 按钮全站化：14 个应有页全部挂 ai-link.js（缺 ${missBtn.length}${missBtn.length ? '：' + missBtn.join(' / ') : ''}）`,
+    '漏挂页的访客看不到左下角 AI 按钮，与「全站都有」口径不符');
+  const strayBtn = AI_NO_BUTTON.filter((f) => exists(f) && /ai-link\.js\?v=\d+/.test(read(f)));
+  check(strayBtn.length === 0,
+    `5 个特例页不挂 AI 按钮（多挂 ${strayBtn.length}${strayBtn.length ? '：' + strayBtn.join(' / ') : ''}）`,
+    'labor-ai 自身 / 404 / 讨论关闭 / 明文预览 / google 验证不该出现 AI 按钮');
+  // 全站（含 brand/）零 ai-chat.js 引用 —— 老版内嵌挂件彻底下线
+  const staleChat = [];
+  for (const f of readdirSync(ROOT)) {
+    if (!f.endsWith('.html')) continue;
+    if (/ai-chat\.js/.test(read(f))) staleChat.push(f);
+  }
+  for (const f of readdirSync(brandDir)) {
+    if (!f.endsWith('.html')) continue;
+    if (/ai-chat\.js/.test(read('brand/' + f))) staleChat.push('brand/' + f);
+  }
+  check(staleChat.length === 0,
+    `全站零 ai-chat.js 旧挂件引用（残留 ${staleChat.length}${staleChat.length ? '：' + staleChat.slice(0, 5).join(' / ') : ''}）`,
+    '老版内嵌对话挂件回潮会让访客看到两套 AI 入口');
+  // 阅读态守卫：document.write 不会清掉已插按钮，必须在 boot 里检测 #toc 并移除
+  check(/function isReaderMode\(\)/.test(aiLink)
+    && /getElementById\('toc'\)/.test(aiLink)
+    && /if \(isReaderMode\(\)\)/.test(aiLink)
+    && /removeChild\(stale\)/.test(aiLink),
+    '★ 阅读态守卫：正文（#toc）里移除 AI 按钮并跳过构建（解锁后不复活）',
+    '删守卫 → notes.html 解锁进「阅读全文」后左下角 AI 按钮仍在，违反站长要求');
+
   // labor-ai.html 必须：双线路 + Star 满 7 天判定 + 两处免责声明
   {
     const la = read('labor-ai.html');

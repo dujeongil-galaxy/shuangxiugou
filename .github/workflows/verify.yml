@@ -111,6 +111,10 @@ jobs:
       - name: 政策声明条测试
         run: node scripts/test-policy-notice.cjs
 
+      # AI 按钮全局化：全站统一新版跳转、旧挂件清零、阅读态不复活。
+      - name: AI 按钮全局化测试
+        run: node scripts/test-ai-global.cjs
+
       # 广告位 LOGO 必须横排（2026-11-18 起改为站内现成喜茶图，图片等比不折行）。
       # verify.mjs 自身的自检：check() 参数顺序、节号连续性。
       # 今天曾在同一天内两次把 check(cond, msg) 写成 check(msg, cond)，
