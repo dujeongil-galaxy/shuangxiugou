@@ -232,6 +232,13 @@
        引导访客用 Bing 搜本站。完整历史实测记录在仓库 SEO-RANKING.md。
        ---------------------------------------------------------------- */
     var seoCard = makeCard('#fffbeb', '#fcd34d'); // 淡琥珀底 + 琥珀边框
+    // 锚点：浏览器提示条的「这里」链接指向 .../#sxg-bing-guide，要求直达本教程。
+    // 卡片是动态注入的，原生 hash 滚动在元素出现前会落空，故下方 insert() 里
+    // 注入完成后再主动滚一次。
+    seoCard.id = 'sxg-bing-guide';
+    // 顶部有固定提示条时，scrollIntoView 会把卡片顶到 y=0、标题被提示条盖住；
+    // 预留 70px 让标题落在提示条下方（无提示条的白名单浏览器只是多留白，不影响阅读）。
+    seoCard.style.scrollMarginTop = '70px';
 
     var seoHeading = document.createElement('div');
     seoHeading.setAttribute('style', 'font-weight:600;color:#b45309;margin:0 0 6px;font-size:14px');
@@ -284,6 +291,15 @@
 
     // 追加到页面最底部
     host.appendChild(footer);
+
+    // 带 #sxg-bing-guide 进来时（浏览器提示条的「这里」链接），等卡片真正
+    // 挂载后再滚动过去；requestAnimationFrame 让布局稳定一帧，避免滚到旧高度。
+    if (window.location.hash === '#sxg-bing-guide') {
+      requestAnimationFrame(function () {
+        var target = document.getElementById('sxg-bing-guide');
+        if (target && target.scrollIntoView) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
   }
 
   // React 渲染是异步的，第一次可能还没挂载，用 MutationObserver 兜底

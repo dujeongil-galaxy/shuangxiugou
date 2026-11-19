@@ -1,4 +1,4 @@
-/* ua-guard.js — 微信/QQ 内置浏览器拦截层 + QQ 浏览器引导专题页（2026-11-18 建立，11-19 三次调整）
+/* ua-guard.js — 浏览器分流：微信/QQ 内置拦截 · QQ 浏览器引导专题 · 国产浏览器顶部提示（2026-11-18 建立，11-19 四次调整）
  *
  * 背景与口径：
  *   2026-11-18：站内所有页面在微信/QQ 内置浏览器里弹全屏拦截层，要求复制地址
@@ -10,6 +10,11 @@
  *     两份微信文章存档（archive/wechat-liciaotiao-2023/）：腾讯方主张李跳跳
  *     屏蔽 QQ 浏览器广告构成不正当竞争，另一篇为作者回应，本站据此把争议
  *     本身作为说明内容呈现给 QQ 浏览器访客。微信/QQ 内置浏览器维持原硬拦截。
+ *   2026-11-19 第四轮（现行，v6）：微信/QQ 内置与 QQ 浏览器两条口径完全不动；
+ *     其余浏览器按白名单分流——Safari / Chrome / Edge / Firefox 直接放行、
+ *     什么都不显示；其它（以国产浏览器为主）只在顶部弹一条说明，不拦截内容、
+ *     不阻断操作，并用 cookie 记住，全站仅首次访问显示一次。理由是部分平台
+ *     对本站话题曝光不足甚至屏蔽检索结果，但把是否更换浏览器交给访客决定。
  *
  * 识别方式：UA 特征 + 运行时交叉验证，全程不发网络请求。
  *   - 微信 / 企业微信：MicroMessenger（wxwork 也会带它或单独出现）
@@ -40,6 +45,58 @@
     var isWeChat = /MicroMessenger/i.test(ua) || /wxwork/i.test(ua);
     var isQQ = /\bQQ\/[\d.]+/.test(ua) || /\/Tim\//.test(ua);
     var isQQBrowser = /MQQBrowser/i.test(ua) || /QQBrowser/i.test(ua);
+    var doc = document;
+    var root = doc.documentElement;
+
+    // —— 白名单浏览器判定（2026-11-19 新增，v6）——
+    // 口径：只有 Safari / Chrome / Edge / Firefox 四类放行且完全不提示；其余浏览器
+    // （重点是国产浏览器）只弹顶部一次性提示，不拦截内容、不阻断操作。
+    // 难点：UC / 夸克 / 360 等国产浏览器基于 Chromium，UA 里也带 Chrome/ 字样，
+    // 单看 Chrome/ 会把它们误判成白名单。故先查国产特征，命中即视为非白名单。
+    function sxgDomesticSignal(u) {
+      return /(UCBrowser|UCWEB|Quark|360SE|360Chrome|QIHU|360 Aphone|SogouMobileBrowser|MetaSr|SE 2\.X|baidubrowser|BIDUBrowser|LBBROWSER|2345Explorer|Maxthon|HuaweiBrowser|MiuiBrowser|VivoBrowser|HeyTapBrowser|OPPOBrowser|OppoBrowser|AlipayClient|Weibo|DingTalk|aweme|ToutiaoNews|NewsArticle)/i.test(u);
+    }
+    function sxgIsAllowedBrowser(u) {
+      if (sxgDomesticSignal(u)) return false;
+      if (/Edg(?:e|A|iOS)?\/|Edge\//i.test(u)) return true;
+      if (/Firefox\/|FxiOS\//i.test(u)) return true;
+      if (/CriOS\/|Chrome\//i.test(u)) return true;
+      if (/Safari\//i.test(u) && /Version\//i.test(u)) return true;
+      return false;
+    }
+
+    // —— 国产浏览器顶部持续提示：固定于每个页面顶部、不提供关闭按钮、不影响正常浏览 ——
+    function sxgShowBrowserNotice() {
+      var css = [
+        '#sxg-browser-notice{position:fixed;top:0;left:0;right:0;z-index:2147483000;',
+        '  background:#fef3c7;color:#7f1d1d;box-shadow:0 2px 10px rgba(120,53,15,.18);',
+        '  font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;',
+        '  font-size:13px;line-height:1.6;padding:10px 16px;text-align:center;box-sizing:border-box}',
+        '#sxg-browser-notice a{color:#991b1b;text-decoration:underline;font-weight:700}',
+        '#sxg-browser-notice a:focus-visible{outline:2px solid #92400e;outline-offset:2px}',
+        '@media (max-width:640px){#sxg-browser-notice{font-size:12px;padding:8px 14px;line-height:1.5}}'
+      ].join('');
+      function buildNotice() {
+        if (doc.getElementById('sxg-browser-notice')) return;
+        var style = doc.createElement('style');
+        style.id = 'sxg-browser-notice-style';
+        style.setAttribute('data-sxg-browser-notice', 'css');
+        style.textContent = css;
+        (doc.head || root).appendChild(style);
+        var bar = doc.createElement('div');
+        bar.id = 'sxg-browser-notice';
+        bar.setAttribute('role', 'note');
+        bar.appendChild(doc.createTextNode('当前浏览器环境可能无法稳定浏览本站。国内部分平台对双休购相关内容鲜有曝光，个别平台甚至让相关话题的检索结果完全消失。本站不作强制拦截，是否改用 Safari、Chrome、Edge 或 Firefox 由访客自行决定。若继续沿用当前浏览器，可点'));
+        var link = doc.createElement('a');
+        link.href = 'https://dujeongil-galaxy.github.io/shuangxiugou/#sxg-bing-guide';
+        link.textContent = '这里';
+        bar.appendChild(link);
+        bar.appendChild(doc.createTextNode('了解如何把默认搜索引擎设为 Bing 必应。'));
+        (doc.body || root).appendChild(bar);
+      }
+      if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', buildNotice);
+      else buildNotice();
+    }
 
     // —— 反伪装交叉验证：UA 说自己是 iPhone/iPad/PC，但内核痕迹露馅 ——
     // 可疑分制（≥3 命中）。每项都是真浏览器难以伪造、且改 UA 字符串不会变的属性。
@@ -86,10 +143,11 @@
       } catch (e) { return 0; /* 探测失败一律按正常浏览器放行，不误伤 */ }
     }
     if (!isWeChat && !isQQ && !isQQBrowser && sxgSpoofScore() >= 3) isQQBrowser = true;
-    if (!isWeChat && !isQQ && !isQQBrowser) return; // 正常浏览器：什么都不做
-
-    var doc = document;
-    var root = doc.documentElement;
+    if (!isWeChat && !isQQ && !isQQBrowser) {
+      // 微信/QQ 内置、QQ 浏览器之外：白名单放行；其余国产浏览器只弹持续顶部提示（不可关闭）。
+      if (!sxgIsAllowedBrowser(ua)) sxgShowBrowserNotice();
+      return;
+    }
 
     // —— QQ 浏览器：不分页面内容，一律引导到专题报道页看争议存档 ——
     // 专题页自身放行（只点亮顶部说明条），否则会在专题页上再跳一次形成死循环。

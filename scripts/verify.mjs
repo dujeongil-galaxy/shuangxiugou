@@ -8944,8 +8944,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
 
   // ④ 两个脚本在 index.html 的 ?v 随内容变更 bump，否则浏览器缓存旧脚本
   check(/black-card-adslot\.js\?v=22/.test(idx36f)
-    && /friend-links-footer\.js\?v=16/.test(idx36f),
-    '§36f 两个脚本在 index.html 的 ?v 已随内容变更 bump 到 16',
+    && /friend-links-footer\.js\?v=17/.test(idx36f),
+    '§36f 两个脚本在 index.html 的 ?v 已随内容变更 bump 到 17',
     '?v 没 bump → 浏览器缓存旧脚本，新文案 / 新友链不生效');
 }
 
@@ -10064,6 +10064,86 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
       `实得分 ${JSON.stringify(casesK)}`);
   }
 
+  // 38m. 国产浏览器顶部持续提示（v6）：白名单放行、其余只提示不拦截、固定不可关闭、不做 cookie
+  {
+    var flf38m = exists('friend-links-footer.js') ? read('friend-links-footer.js') : '';
+    // ① 白名单与国产识别逻辑在岗
+    var has38m = function (s) { return ug38.indexOf(s) !== -1; };
+    check(has38m('function sxgIsAllowedBrowser(u)')
+        && has38m('function sxgDomesticSignal(u)')
+        && has38m('Edg(?:e|A|iOS)?\\/|Edge\\/')
+        && has38m('Firefox\\/|FxiOS\\/')
+        && has38m('CriOS\\/|Chrome\\/')
+        && has38m('Safari\\/')
+        && has38m('if (sxgDomesticSignal(u)) return false;'),
+      '§38m ua-guard.js 含白名单判定（Safari/Chrome/Edge/Firefox）与国产特征剔除（前置防误判）',
+      '白名单/国产剔除被删 → 国产 Chromium 浏览器带 Chrome/ 被误判白名单，提示落空');
+    // ② 分流分支：非微信/QQ/QQ浏览器时才走白名单判定，qq/内置口径在上游不变
+    check(has38m('if (!isWeChat && !isQQ && !isQQBrowser) {')
+        && has38m('!sxgIsAllowedBrowser(ua)) sxgShowBrowserNotice()')
+        && has38m('if (!isWeChat && !isQQ && !isQQBrowser && sxgSpoofScore() >= 3) isQQBrowser = true;'),
+      '§38m 白名单判定被 !isWeChat/!isQQ/!isQQBrowser 守卫（三类既有口径不被改写）',
+      '判定被提到上游 → 微信/QQ 内置或 QQ 浏览器落到提示分支，硬拦/专题页口径被破坏');
+    // ③ 持续提示：固定不可关闭 + 只挂顶部条不隐藏 body + 无任何 cookie 记忆
+    check(/position:fixed;top:0/.test(ug38)
+        && /id = 'sxg-browser-notice'/.test(ug38)
+        && !/closeBtn|×|✕|close\s*button/i.test(ug38)
+        && !/sxgHasNoticeCookie/.test(ug38)
+        && !/sxgSetNoticeCookie/.test(ug38)
+        && !/doc\.cookie/.test(ug38)
+        && !/html\[data-sxg-ua-block\][\s\S]{0,80}sxg-browser-notice/.test(ug38),
+      '§38m 顶部提示固定不可关闭（无关闭按钮）、只插 DOM 不隐藏正文、且无 cookie 记忆（全站每页常驻）',
+      '关闭按钮/cookie 记忆残留 → 变成一次性或可被关闭，违背持续提示口径；塞进硬拦样式 → 变成拦截');
+    // ④ 提示文案要点（书面转述，不照抄口述）+「这里」链接指向 Bing 锚点
+    check(/Safari、Chrome、Edge 或 Firefox 由访客自行决定/.test(ug38)
+        && /检索结果完全消失/.test(ug38)
+        && /不作强制拦截/.test(ug38)
+        && /#sxg-bing-guide/.test(ug38),
+      '§38m 顶部提示含「曝光不足/检索被屏蔽 + 换浏览器自决 + Bing 必应」要点且附锚点链接',
+      '文案要点或链接缺失 → 访客看不到原因与设置入口，提示形同虚设');
+    // ⑤ 锚点落在首页 Bing 教程卡片 + 动态注入后主动滚动
+    check(/seoCard\.id = 'sxg-bing-guide'/.test(flf38m)
+        && /location\.hash === '#sxg-bing-guide'/.test(flf38m)
+        && /getElementById\('sxg-bing-guide'\)/.test(flf38m)
+        && /scrollIntoView/.test(flf38m),
+      '§38m 首页 Bing 教程卡片有锚点并预留顶部偏移，动态注入后主动滚动到该段（native hash 会落空）',
+      '锚点或主动滚动缺失 → 点「这里」只到首页顶部，无法直达教程');
+    check(/seoCard\.style\.scrollMarginTop = '70px'/.test(flf38m),
+      '§38m Bing 卡片预留 70px 滚动偏移，标题不被固定提示条盖住',
+      '缺滚动偏移 → 卡片顶到 y=0，标题被顶部固定提示条遮挡');
+    // ⑥ 真代码沙箱判定矩阵：从源文件原样抠出 sxgIsAllowedBrowser 函数体执行，不测重写副本
+    var fnWhitelist38m = ug38.match(/function sxgIsAllowedBrowser\(u\) \{[\s\S]*?\n    \}/);
+    var fnDomestic38m = ug38.match(/function sxgDomesticSignal\(u\) \{[\s\S]*?\n    \}/);
+    var allowed38m = function (u) {
+      if (!fnWhitelist38m || !fnDomestic38m) return null;
+      var fn = new Function('u', fnDomestic38m[0] + '\n' + fnWhitelist38m[0] + '\n return sxgIsAllowedBrowser(u);');
+      return fn(u);
+    };
+    var uaSafariM = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15';
+    var uaIphoneS = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
+    var uaChromeM = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+    var uaEdgeM = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0';
+    var uaFfM = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0';
+    var uaUC = 'Mozilla/5.0 (Linux; U; Android 12; zh-CN; PGT-AN00 Build/HUAWEIPGT-AN00) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/100.0.4896.58 UCBrowser/15.0.0.1234 Mobile Safari/537.36';
+    var uaQuark = 'Mozilla/5.0 (Linux; Android 12; SM-G9910) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Mobile Safari/537.36 Quark/6.5.0.280';
+    var ua360 = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36 QIHU 360SE';
+    var uaHuawei = 'Mozilla/5.0 (Linux; Android 11; HarmonyOS; ANA-AN00; HMSCore 6.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.88 HuaweiBrowser/12.0.2.300 Mobile Safari/537.36';
+    var uaAlipay = 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 AlipayClient/10.3.0';
+    var matrix38m = {
+      safariMac: allowed38m(uaSafariM), safariIphone: allowed38m(uaIphoneS),
+      chrome: allowed38m(uaChromeM), edge: allowed38m(uaEdgeM), firefox: allowed38m(uaFfM),
+      uc: allowed38m(uaUC), quark: allowed38m(uaQuark), browser360: allowed38m(ua360),
+      huawei: allowed38m(uaHuawei), alipay: allowed38m(uaAlipay)
+    };
+    var matrixOk38m = matrix38m.safariMac === true && matrix38m.safariIphone === true
+        && matrix38m.chrome === true && matrix38m.edge === true && matrix38m.firefox === true
+        && matrix38m.uc === false && matrix38m.quark === false && matrix38m.browser360 === false
+        && matrix38m.huawei === false && matrix38m.alipay === false;
+    check(matrixOk38m,
+      '§38m 真代码沙箱：Safari/Chrome/Edge/Firefox 放行；UC/夸克/360/华为/支付宝（带 Chrome/ 字样）仍判非白名单',
+      `实判定 ${JSON.stringify(matrix38m)}`);
+  }
+
   // 38c. 全站引用版本号统一升到 v=2，notes.html 也必须挂上（全站无例外）
   {
     const htmlRefs38 = [];
@@ -10079,15 +10159,15 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     const withGuard38 = htmlRefs38.filter((p) => {
       try { return /ua-guard\.js\?v=/.test(readFileSync(join(ROOT, p), 'utf8')); } catch { return false; }
     });
-    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=[1-4]\b/.test(readFileSync(join(ROOT, p), 'utf8')));
-    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=5\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=[1-5]\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=6\b/.test(readFileSync(join(ROOT, p), 'utf8')));
     check(withGuard38.length >= 199 && oldV38.length === 0 && newV38.length === withGuard38.length,
-      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=5、无残留 v=1/2/3/4`,
+      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=6、无残留 v=1/2/3/4/5`,
       `旧版 ${oldV38.length} 页 / 新版 ${newV38.length} 页 → 缓存不刷新，用户拿到旧拦截脚本`);
     const notes38 = exists('notes.html') ? read('notes.html') : '';
     const notesAt38 = notes38.indexOf('ua-guard.js');
     const bodyAt38 = notes38.indexOf('<body');
-    check(notesAt38 > 0 && /ua-guard\.js\?v=5/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
+    check(notesAt38 > 0 && /ua-guard\.js\?v=6/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
       '§38c notes.html 已挂 ua-guard 且引用位于 body 之前（全站无例外、同步生效）',
       'notes 未挂 / 版本不对 / 放到 body 之后 → 加密笔记页在 QQ 浏览器里正文先闪现');
   }
@@ -10170,7 +10250,7 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   const sm38 = exists('sitemap.xml') ? read('sitemap.xml') : '';
   const nav38 = exists('nav-menu.js') ? read('nav-menu.js') : '';
   check(rpt38.length > 0
-      && /ua-guard\.js\?v=5/.test(rpt38)
+      && /ua-guard\.js\?v=6/.test(rpt38)
       && /ai-link\.js\?v=\d+/.test(rpt38)
       && /sxg-legal/.test(rpt38)
       && /<title>[^<]*QQ 浏览器[^<]*<\/title>/.test(rpt38),
