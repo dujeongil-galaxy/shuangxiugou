@@ -9,6 +9,24 @@
 
 ---
 
+### 近期 bug 根因（fix）：QQ 浏览器内置「浏览器标识」可把 UA 改成 iPhone/iPad/PC，单看字符串的拦截被一键绕过（2026-11-19 · 提交 `1879598`）
+
+**现象**：站长指出 QQ 浏览器能伪装浏览器 UA 标识（iPhone / iPad / 电脑），把上一批刚上的 UA 分流轻易绕开；要求改成更精准的拦截，并明确「QQ 浏览器不准进来」的口径要锁死。
+
+**根因**：`ua-guard.js` 的判定完全依赖 `navigator.userAgent` 一个字符串。QQ 浏览器的「浏览器标识」开关恰好只改写这一个值，改完 `MQQBrowser`/`QQBrowser` 正则全部落空，脚本按「正常浏览器」直接 `return`。把身份判断押在访客可一键切换的单一字段上，是设计层面的单点失效。
+
+**修法**：在不发任何网络请求的前提下，把判定从单一 UA 升级为多信号交叉验证，写一个纯函数 `sxgSpoofScore()` 做可疑分制（≥3 命中即并入 QQ 浏览器分支）：
+1. **声称身份判别**：只在 UA 声称「苹果移动设备」（iPhone/iPad/iPod 且非 Android）或「桌面」（Windows NT/Macintosh/X11/Linux x86_64 且非 Android/Mobile）时才启动探测，从源头避免误伤正常的安卓 Chrome。
+2. **引擎注入对象**：`window.mqq` / `MQQBrowser` / `mqqbrowser` 是 X5/QQ 内核挂的全局，普通浏览器没有（+4）。
+3. **Client Hints 品牌**：`navigator.userAgentData` 在真 iOS Safari 根本不存在，Chromium 系才有；伪装 UA 时这里仍暴露真实内核，品牌串含 QQ/X5/Tencent 再加权（+3/+2）。
+4. **桌面内核对象**：`window.chrome.runtime`/`loadTimes` 真 iOS Safari 没有（+3）。
+5. **platform / vendor 矛盾**：UA 说 iPhone 却报 `Linux arm`/`Win32`、UA 说 PC 却报 `Linux arm`/`iPhone`，以及声称苹果却在 `vendor` 里报非 Apple（各 +2/+3）。
+命中后沿用既定口径跳 `qq-browser-report.html`；微信/QQ 内置仍优先走原全屏硬拦截，不受影响。全站 200 处 `ua-guard.js` 缓存号 v4→v5 强制刷新。
+
+**验证**：verify 新增 §38k 四条——静态锁住函数与阈值、身份前提优先级、五项信号加分语句逐行在岗；行为断言从源文件原样抠出 `sxgSpoofScore` 函数体放进沙箱执行（测真代码而非重写副本），跑七组环境：真 iPhone / 普通 Chrome 得 0 分放行，QQ 伪装 iPhone 15 分、伪装 PC 7 分、三路单信号各 3 分均命中。7 组故障注入（删调用 / 函数恒返回 0 / 删 UA-CH / 删 platform / 删 vendor / 身份前提恒真 / 版本回退 v4）全判红，全量校验全绿。CDP 无头 Edge 八组 UA 实测：QQ 手机/桌面 UA 与两种伪装 UA 均跳专题页并出顶部说明条，真 iPhone 与普通 Chrome 放行，微信/QQ 内置仍硬拦截；截图肉眼确认说明条完整无截断、正文无遮挡。
+
+---
+
 ### 近期 bug 根因（fix）：对外文档与脚本注释残留逐字口述引用——规则只写在文档、没有机器强制（2026-11-18 · 提交 `408f02e`）
 
 **现象**：站长指出 README 又照抄了他的原话，暴露表达习惯；追问该规则是否「写死」。核查发现「不抄原话」只写在 `AGENTS.md` / README，没有任何校验断言，加上历史记账（`CHANGELOG.md` 88 行、最近更新 36 行、PITFALLS 17 行、BUG 专文 8 行）与 6 个补丁脚本注释里逐字引用总计数百处，靠人肉节制必然复发。
