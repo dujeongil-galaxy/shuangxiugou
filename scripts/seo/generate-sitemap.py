@@ -69,6 +69,14 @@ parts.append(
     f'    <priority>0.7</priority>\n  </url>'
 )
 
+# QQ 浏览器专题报道（2026-11-19：两篇微信文章的存档备份专题页）
+parts.append(
+    f'  <url>\n    <loc>{BASE}/qq-browser-report.html</loc>\n'
+    f'    <lastmod>2026-11-19</lastmod>\n'
+    f'    <changefreq>monthly</changefreq>\n'
+    f'    <priority>0.7</priority>\n  </url>'
+)
+
 # 法务与信息页（2026-11-17 AdSense 接入准备：隐私政策/免责声明/关于/联系）
 LASTMOD_LEGAL = '2026-11-17'
 for slug, pri in [('privacy.html', '0.3'), ('disclaimer.html', '0.3'),

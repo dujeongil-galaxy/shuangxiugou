@@ -1340,9 +1340,13 @@ section('2g. 首页证据链完整公示');
       && exists('notes.html'),
       '悬浮导航新增「手气不错」→ notes.html（PC 右下 dock / 手机二级菜单共用同一 ITEMS，双端同名）',
       '入口缺失或写回「站长随笔」→ 弹窗改版丢掉的随笔按钮没补回来，或站长要求的改名没落地');
-    check((html.match(/nav-menu\.js\?v=9/g) || []).length === 2,
-      'index.html 的 nav-menu.js 预加载与脚本两处缓存号同步 bump 到 ?v=9',
-      '只 bump 一处 → 预加载旧脚本，用户拿到没有「手气不错」的旧菜单');
+    check((html.match(/nav-menu\.js\?v=10/g) || []).length === 2,
+      'index.html 的 nav-menu.js 预加载与脚本两处缓存号同步 bump 到 ?v=10',
+      '只 bump 一处 → 预加载旧脚本，用户拿到没有 QQ 浏览器专题入口的旧菜单');
+    // QQ 浏览器专题（2026-11-19）：导航入口 + 对应版本 bump，二者须同时到位
+    check(/label: 'QQ 浏览器专题', href: '\.\/qq-browser-report\.html'/.test(navItems),
+      '悬浮导航含「QQ 浏览器专题」→ qq-browser-report.html（专题页访客入口）',
+      '入口缺失 → 两篇微信文章存档专题页只能靠直接输入网址访问');
     const dpNav = read('douyin-prompt.js');
     check(!/手气不错/.test(dpNav)
       && (dpNav.match(/class="dyp__(?:video|share)"/g) || []).length === 2,
@@ -6387,13 +6391,13 @@ section('21c. 首页滑到底部按钮');
        · notes.html 解锁后的「阅读全文」正文不能再有按钮 → 阅读态守卫。 */
   const AI_SHOULD_HAVE = ['about.html', 'byd-report.html', 'community-rules.html',
     'contact.html', 'disclaimer.html', 'notes.html', 'privacy.html', 'projects.html',
-    'qq-nainai.html', 'remind-original.html', 'sponsor.html', 'success-stories.html',
-    'usdt-guide.html', 'why-shuangxiugou.html'];
+    'qq-browser-report.html', 'qq-nainai.html', 'remind-original.html', 'sponsor.html',
+    'success-stories.html', 'usdt-guide.html', 'why-shuangxiugou.html'];
   const AI_NO_BUTTON = ['labor-ai.html', '404.html', 'discussion-closed.html',
     'notes-plaintext-preview.html', 'googlea540a6c2cd5f0e6c.html'];
   const missBtn = AI_SHOULD_HAVE.filter((f) => !exists(f) || !/ai-link\.js\?v=\d+/.test(read(f)));
   check(missBtn.length === 0,
-    `AI 按钮全站化：14 个应有页全部挂 ai-link.js（缺 ${missBtn.length}${missBtn.length ? '：' + missBtn.join(' / ') : ''}）`,
+    `AI 按钮全站化：15 个应有页全部挂 ai-link.js（缺 ${missBtn.length}${missBtn.length ? '：' + missBtn.join(' / ') : ''}）`,
     '漏挂页的访客看不到左下角 AI 按钮，与「全站都有」口径不符');
   const strayBtn = AI_NO_BUTTON.filter((f) => exists(f) && /ai-link\.js\?v=\d+/.test(read(f)));
   check(strayBtn.length === 0,
@@ -10082,6 +10086,30 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   check(pcHit38 && /\/QQBrowser\/i\.test\(ua\)/.test(ug38) && /电脑版/.test(ug38),
     '§38h 电脑版 QQ 浏览器 UA（QQBrowser/10.x）被宽泛识别覆盖',
     '识别回退到版本号限定 / 注释丢电脑版口径 → PC 端 QQ 浏览器放行，与全端锁死口径不符');
+
+  // 38i. QQ 浏览器专题报道页：访客可访问的独立 HTML，两篇文章存档齐全
+  const REPORT38 = 'qq-browser-report.html';
+  const rpt38 = exists(REPORT38) ? read(REPORT38) : '';
+  const sm38 = exists('sitemap.xml') ? read('sitemap.xml') : '';
+  const nav38 = exists('nav-menu.js') ? read('nav-menu.js') : '';
+  check(rpt38.length > 0
+      && /ua-guard\.js\?v=3/.test(rpt38)
+      && /ai-link\.js\?v=\d+/.test(rpt38)
+      && /sxg-legal/.test(rpt38)
+      && /<title>[^<]*QQ 浏览器[^<]*<\/title>/.test(rpt38),
+    '§38i QQ 浏览器专题页存在且结构与全站一致（UA 拦截 v3 / AI 按钮 / 法务页脚 / 标题）',
+    '专题页缺失或不带全站组件 → 访客拿到的存档页无拦截、无 AI 入口、无法务链接');
+  check(/\.\/archive\/wechat-liciaotiao-2023\/01-letter\/body\.jpg/.test(rpt38)
+      && /\.\/archive\/wechat-liciaotiao-2023\/02-my-view\/body\.png/.test(rpt38)
+      && /ha6hHr40umlj-ExHdGFXXw/.test(rpt38)
+      && /gsC9STZlGrPNNEKUV4btkA/.test(rpt38)
+      && /48 小时内/.test(rpt38) && /没有联网/.test(rpt38),
+    '§38i 专题页嵌入两篇原图、原文链接与双方关键内容（律师函 48 小时 / 作者无联网）',
+    '原图或来源缺失 → 微信删文后专题页只剩空壳，存档备份落空');
+  check(sm38.includes('/qq-browser-report.html</loc>')
+      && /label: 'QQ 浏览器专题', href: '\.\/qq-browser-report\.html'/.test(nav38),
+    '§38i 专题页被 sitemap 收录且悬浮导航有入口（访客可发现）',
+    '无 sitemap / 无导航入口 → 专题页只能靠手输网址，失去曝光意义');
 }
 
 // ---------- 汇总 ----------

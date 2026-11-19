@@ -54,7 +54,9 @@
     { label: '成功案例', href: './success-stories.html' },
     // 站长随笔入口（2026-11-14）：弹窗保持两枚按钮，这里补一个导航出口。
     // 按钮文字叫「手气不错」，链接仍指向加密随笔页 notes.html；双端同源。
-    { label: '手气不错', href: './notes.html' }
+    { label: '手气不错', href: './notes.html' },
+    // QQ 浏览器专题（2026-11-19）：两篇微信文章的存档备份专题页。
+    { label: 'QQ 浏览器专题', href: './qq-browser-report.html' }
   ];
 
   function buildStyle() {
