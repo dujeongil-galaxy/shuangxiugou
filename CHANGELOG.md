@@ -4,6 +4,13 @@
 
 ---
 
+### fix：360 与真 Chrome 指纹实测七项全同——自助开关升级 localStorage 永久生效（2026-11-20 · 提交 `ef3bb48b`）
+
+- **背景**：上一版 `12559b4` 给了 `?force-domestic=1` 自助开关（写 sessionStorage）+ `ua-check.html` 诊断页；站长验证开关能用、撤销能用，但把诊断页采集的真实数据发了回来。
+- **决定性实证（七项指纹逐项对比，全同）**：拿站长 360 的诊断数据与本机真 Chromium（Edge）实测比对——`navigator.userAgent`（`Mozilla/5.0 ... Chrome/132.0.0.0 Safari/537.36`）、`navigator.platform`（Win32）、`navigator.vendor`（Google Inc.）、`window.external`（存在、类型 `[object External]`、自有属性空）、`document.documentMode`（不存在）、`window.chrome`（存在）、`navigator.userAgentData.brands`（`Not A(Brand/8, Chromium/132, Google Chrome/132`，标准 GREASE）——**七项全部一致**。结论：新版 360 在所有 JS 可探测维度都与真 Chrome 相同，从原理上无法自动区分；此前三次猜 UA 特征全部落空正是因为这个，继续补第五种特征必然误伤所有真 Chrome 访客，违反「国际浏览器一律放行」口径。
+- **修法（站长选定：一次开启永久生效，不误伤他人）**：`?force-domestic=1` 从仅写 sessionStorage 升级为写 localStorage（永久，关浏览器仍生效）+ sessionStorage（兼容）；`?force-domestic=0` 同时清除两者；旧版只写 sessionStorage 的访客再次访问时自动迁移到 localStorage（免重开）。`ua-check.html` 加「② 永久显示提示条（点一次全站生效）/ ③ 撤销永久显示」双按钮，判定文案改为实话「按指纹无法区分：可能是国际浏览器，也可能是伪装成 Chrome 的新版 360」。全站 200 页 ua-guard v11→v12 破缓存。
+- **验证**：verify §38c-2 从 3 条扩到 6 条（localStorage 写入 + sessionStorage 兼容 / 撤销双清 / 旧标记迁移 + 任一命中即显示 / 诊断页双按钮 + 实话文案 / 判定同源），§38c/§38i 版本升 v12；四组故障注入（删 localStorage 写入、撤销不清 localStorage、抹掉 sessionStorage 兼容读取、诊断页删撤销按钮改文案）全部判红、恢复后 1980 项全绿；`cdp-ua-diag.cjs` 纯 Chrome UA 真渲染六步实证：无参数不弹 → 永久开启弹（ls=1）→ 无参数重访仍弹 → 撤销不弹（ls 清）→ 重访不弹 → 诊断页双按钮与实话文案齐全，截图确认渲染。
+
 ### fix：360 把 UA 伪装成纯 Chrome，识别层从原理上失效——改走自助开关 + 诊断页（2026-11-20 · 提交 `12559b4`）
 
 - **起因**：站长 PC 360 安全浏览器连续两批修复后仍看不到国产提示条，只看到乌克兰公告。前两批分别按 SW 缓存穿透、新版 360 UA 双段尾缀处理，全站缓存号一路 bump 到 v10，仍无效。
