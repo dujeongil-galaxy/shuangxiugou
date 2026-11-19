@@ -4,6 +4,17 @@
 
 ---
 
+### feat：良配广告口令改居中弹窗 + 360 安全浏览器缓存穿透修复（2026-11-19 · 提交 `d06f52d`）
+
+- **弹窗化起因**：站长 2026-11-19 要求把底部推广条点击后的黑色 toast 改为正式居中弹窗——原提示过小、位置拥挤、15 秒自动消失；新弹窗上文给操作步骤、下文常驻小程序口令与复制入口。
+- **`liangpei-ad.js`（v14→v15）**：`showToast` 整体替换为 `showModal(autoCopied)`。弹窗结构：上文两步步骤提示（① 复制下方口令，粘贴到微信任意聊天窗口并发送；② 点自己刚发出的那条消息，微信会把它识别成小程序卡片并唤起），下文口令本体常驻可见（`<code>` 里渲染 `CONFIG.scheme`，点击可再复制），附带「复制口令」按钮（复制成功变「✓ 已复制，去微信粘贴发送」，2.2 秒后复位）。关闭三通道：× 按钮、点遮罩、ESC 键。弹窗显隐用 `display:none↔flex` 硬切换（`.is-show` 类），不用 visibility 过渡（`.lp-ad.is-hidden` 卡帧老坑不复发）。
+- **`liangpei-ad.css`（v15→v16）**：移除 `.lp-ad-toast` 全套样式，新增 `.lp-modal` 弹窗体系（遮罩 55% 黑 + 白卡片居中、z-index 10001、卡片入场动画 `lp-modal-in`、步骤区浅底左对齐、口令框虚线边框全选、复制按钮绿底、≤374px 小屏收紧内边距）。
+- **360 缓存穿透修复（根因）**：站长反馈 PC 360 安全浏览器即使 Ctrl+F5 仍只显示乌克兰公告、看不到国产浏览器提示条。根因有两层：① **Service Worker 缓存**——`sw.js` 的 `STATIC_CACHE` 一直是 `sxg-static-v1`，Ctrl+F5 无法旁路已激活并接管页面请求的 SW，旧 `ua-guard.js` 被 cache-first 永远命中；`STATIC_CACHE` 升为 `sxg-static-v2`（`NAV_CACHE` 同步升 v2），激活事件清旧缓存。② **注册路径带版本**——`index.html` 的 SW 注册从 `./sw.js` 改为 `./sw.js?v=2`，换 SW 文件时 bump 参数强制浏览器取新版。③ **UA 正则补全**——`ua-guard.js` 黑名单补充 `360Safe`、`360browser`、`360Browser`、`360安全` 特征（部分 360 版本 UA 不带显式 `QIHU`）。
+- **联动**：全站 200 页 `ua-guard.js?v=8→v=9` 同步强刷（含 notes.html、qq-browser-report.html）。
+- **校验**：新增 `scripts/test-lp-modal.cjs`（23 项弹窗行为断言：打开/关闭/重开/遮罩/ESC/复制反馈/旧 toast 类名清零）；新增 `scripts/cdp-lp-modal.cjs`（无头 Edge 真渲染验收：CTA 点击弹窗出现、步骤文案、口令、× / 遮罩 / ESC 三通道关闭全链路 + 截图）。`verify.mjs` §20q 新增弹窗断言族（showModal 清零 showToast、旧 toast 类名零残留、弹窗结构齐全、步骤文案、口令渲染、关闭三通道、display 硬切换、无 visibility 过渡）；§21c SW 注册断言放宽为允许 `?v=N` 并新增「必须带 ?v=N」断言；§38c 全站 ua-guard 统一 v=9、无残留 v=1~8；§38i 专题页断言改 v=9；修复 374px 媒体查询正则（弹窗新增同断点块后，单块 match 会抓错块，改为聚合全部 374px 块）。故障注入验证：删复制按钮 → 「复制按钮存在」红；showModal 改回旧名 → 3 项红；全量 verify 1971 项全绿，全部测试脚本通过（3 个 HEAD 既有失败经 git stash 对比确认与本次无关）。
+
+---
+
 ### feat：国产浏览器判定反转黑名单——国际/韩流浏览器全放行，乌克兰公告无条件显示，撤两条友链（2026-11-19 · 提交 `ebf4b52`）
 
 - **变更起因**：站长 2026-11-19 原话「我是说，国外非我提到的 4 个主流浏览器，也不应该拦截，所以别做白名单模式，只是针对国内的这些浏览器做一个公告，就够了」。上一批白名单方案（只认 Safari/Chrome/Edge/Firefox，Naver Whale、三星 Internet 等韩流/国际浏览器也会被弹提示）废弃反转。
