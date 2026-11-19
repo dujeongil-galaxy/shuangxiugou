@@ -3237,3 +3237,13 @@ verify 新增 §23m 扫两个品牌页 + index 自定义卡 + 备注补丁 + 缓
 3. **电脑版 QQ 浏览器不是 `MQQBrowser`，UA 尾部是 `QQBrowser/10.x`**。上一批正则写成 `/MQQBrowser\/[\d.]+/ || /QQBrowser\/[\d.]+/`，看着两套都覆盖了，实则把识别绑死在「数字版本」格式上；一旦产商改 token 形态就会静默漏拦，且手机端测试全绿给不出任何提示。**判据**：UA 特征能不绑版本号就不绑，直接用 token 本身（本批改 `/MQQBrowser/i` + `/QQBrowser/i`）；验收必须分别用真实的手机样本（带 `MQQBrowser/13.x`）和电脑样本（`Chrome/... Safari/... QQBrowser/10.9.4494.400`）跑 CDP，不能只测一端就宣布全端覆盖。
 
 本批 verify §38 改写 3 项、新增 §38h，4/4 故障注入判红（窄正则回退 / notes 摘脚本 / 删电脑版口径 / 缓存号回退），全量 1942 项全绿；CDP 五组 UA 实测通过。详见 CHANGELOG / 最近更新同批条目 `bfca44e`。
+
+## 第八十一章：专题页原图 lazy-load 会让 CDP 首验误判；sitemap 生成器的中间产物被 gitignore；并发故障注入时 grep 会撞上变异态（2026-11-19 127714f）
+
+把两篇微信文章从开发者向的 `archive/` 目录改做成面向访客的独立专题页 `qq-browser-report.html`，踩到三个坑：
+
+1. **`loading="lazy"` 的图片在 CDP 首屏截图时 naturalWidth 恒为 0，不代表图坏了**。第一版实测脚本打开页面 2.2 秒就查两张原图，第一张 1080×3651 正常、第二张 936×5562 报 `naturalWidth=0`，差点以为嵌入路径写错。**判据**：验 lazy 图前先把 `img.loading='eager'`，再滚到页尾等 2 秒触发加载，滚回顶部再断言；不要拿「首屏没进视口」当「图片失效」。本页两张原图实际都正常，是测试方法错了。
+2. **`generate-sitemap.py` 依赖 `_brandindex.json`，而它在 .gitignore 里，clone 后并不存在**。直接跑会 `FileNotFoundError`；想补齐它，`generate-brand-pages.py` 虽能产出，但那个脚本会**重写全部 188 个品牌详情页**，为一个专题页条目冒这个险不值。**判据**：只加一条 sitemap URL 时，直接按原文件顺序文本插入新 `<url>` 块（diff 只有新增 6 行），同时把条目写进 `generate-sitemap.py` 供将来重跑；不要为了跑生成器去重建中间产物。必须用「URL 集合差集」核验新增/删除各几条——本次反解重建索引时曾因某条目是残缺格式（只有 `<loc>` 无 lastmod/priority）漏掉它，靠差集才抓到。
+3. **故障注入后台跑的时候，不要同时 grep 那个被注入的文件**。本批 §38i 第一组用例就是「拆掉 AI 按钮」，我在注入跑到一半时 `grep ai-link qq-browser-report.html` 返回 0，一度以为页面根本没写进 Ai 脚本、断言是假绿；实际是文件正处于变异态，注入 `finally` 会还原。**判据**：后台故障注入运行期间，一律不读被注入的文件；要核对真实内容，等注入任务结束、再用一次全量 verify 复绿之后读。CDP 实测同理——本批首轮 CDP 正好撞上注入变异，才误报 `ai:false`。
+
+本批 verify 新增 §38i 三条、5/5 故障注入判红、全量 1946 项全绿；CDP 正常 UA 真渲染确认两图加载、排版无错位、无 UA 误拦。详见 CHANGELOG / 最近更新同批条目 `127714f`。
