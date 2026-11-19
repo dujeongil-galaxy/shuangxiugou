@@ -1,31 +1,32 @@
-/* ua-guard.js — 微信 / QQ 内置浏览器 / 独立 QQ 浏览器拦截层（2026-11-18 建立，11-19 两次扩围）
+/* ua-guard.js — 微信/QQ 内置浏览器拦截层 + QQ 浏览器引导专题页（2026-11-18 建立，11-19 三次调整）
  *
  * 背景与口径：
- *   2026-11-18：根页面自身不拦，站内所有页面（notes.html 除外）在微信/QQ 内置
- *     浏览器里一律弹全屏拦截层，要求复制地址到系统浏览器打开。
- *   2026-11-19 第一轮：拦截范围扩到独立的「QQ 浏览器」App。依据是当日站长指定的
- *     两份微信文章存档（archive/wechat-liciaotiao-2023/）：一份为腾讯方律师函，
- *     主张「李跳跳」屏蔽 QQ 浏览器广告构成不正当竞争；另一份为作者回应。
- *   2026-11-19 第二轮：notes.html 不再豁免（全站无例外）；QQ 浏览器无论手机端
- *     还是电脑版一律拦截，识别不再依赖版本号形态。
+ *   2026-11-18：站内所有页面在微信/QQ 内置浏览器里弹全屏拦截层，要求复制地址
+ *     到系统浏览器打开。
+ *   2026-11-19 前两轮：拦截扩到独立 QQ 浏览器、notes.html 不再豁免、PC 端也锁死。
+ *   2026-11-19 第三轮（现行）：QQ 浏览器改走「引导看专题」——命中 QQ 浏览器的
+ *     访问直接跳转到 qq-browser-report.html（律师函 + 作者回应两篇存档），
+ *     不再弹通用拦截层；专题页自身放行、顶部亮出说明条。依据是当日指定的
+ *     两份微信文章存档（archive/wechat-liciaotiao-2023/）：腾讯方主张李跳跳
+ *     屏蔽 QQ 浏览器广告构成不正当竞争，另一篇为作者回应，本站据此把争议
+ *     本身作为说明内容呈现给 QQ 浏览器访客。微信/QQ 内置浏览器维持原硬拦截。
  *
  * 识别方式：纯 UA 特征，不做任何网络请求。
  *   - 微信 / 企业微信：MicroMessenger（wxwork 也会带它或单独出现）
- *   - QQ 内置浏览器：  QQ/x.x.x（「QQ/数字」形态）
+ *   - QQ 内置浏览器：  QQ/x.x.x（「QQ/数字」形态）、Tim/x.x
  *   - 独立 QQ 浏览器： MQQBrowser / QQBrowser 任意形态（手机 App 用 MQQBrowser/x.x，
- *     电脑版用 Chrome/... Safari/... QQBrowser/10.x；不绑定数字段，避免版本格式
- *     变化后漏拦）
- *   - TIM：            Tim/x.x
+ *     电脑版用 Chrome/... Safari/... QQBrowser/10.x；不绑定数字段）
  *
  * 实现要点：
- *   1. 本脚本以 <head> 内同步 <script> 引入（无 defer/async），解析到即执行：
- *      命中 UA 立刻给 <html> 打 .sxg-ua-block 类 + 注入 <style> 把 body 下
+ *   1. <head> 内同步 <script> 引入（无 defer/async），解析到即执行。QQ 浏览器
+ *      分支在打 data-sxg-ua-block 之前分流，避免正文/专题页被隐藏。
+ *   2. QQ 浏览器：非专题页 → location.replace 到专题页（不放行原页）；已在专题页
+ *      → 不打拦截标记，只点亮顶部 #sxg-qq-notice 说明条，杜绝自跳死循环。
+ *   3. 微信/QQ 内置：给 <html> 打 data-sxg-ua-block + 注入 <style> 把 body 下
  *      所有直接子元素 display:none —— 页面内容一个字都不会闪现。
- *   2. 拦截层 DOM 在 DOMContentLoaded 时挂到 body（#sxg-ua-guard 是 body 直接
- *      子元素，被上面的选择器豁免），z-index 用满级 2147483647。
- *   3. 复制按钮优先 navigator.clipboard，失败自动降级 textarea + execCommand
- *      （微信 X5 内核对 clipboard API 支持不全，必须留降级）。
- *   4. 不提供「仍要继续访问」入口 —— 站长要求就是硬拦截。
+ *   4. 拦截层 DOM 在 DOMContentLoaded 时挂到 body（#sxg-ua-guard 豁免），z-index 满级。
+ *   5. 复制按钮优先 navigator.clipboard，失败自动降级 textarea + execCommand。
+ *      微信/QQ 内置不提供「仍要继续访问」入口 —— 硬拦截口径不变。
  */
 (function () {
   'use strict';
@@ -38,6 +39,30 @@
 
     var doc = document;
     var root = doc.documentElement;
+
+    // —— QQ 浏览器：不分页面内容，一律引导到专题报道页看争议存档 ——
+    // 专题页自身放行（只点亮顶部说明条），否则会在专题页上再跳一次形成死循环。
+    if (isQQBrowser && !isWeChat && !isQQ) {
+      function sxgOnReport() { return /(?:^|\/)qq-browser-report\.html$/.test(location.pathname); }
+      if (sxgOnReport()) {
+        root.setAttribute('data-sxg-qq-browser', '1'); // 供顶部说明条按 UA 显示
+        return;
+      }
+      // 从当前脚本 src 推导站点根，兼容根目录首页与 brand/ 等子目录页
+      var script = doc.currentScript;
+      if (!script) {
+        var ss = doc.getElementsByTagName('script');
+        for (var si = ss.length - 1; si >= 0; si--) {
+          if (/ua-guard\.js/.test(ss[si].src || '')) { script = ss[si]; break; }
+        }
+      }
+      var src = script && script.src ? script.src : '';
+      var base = src ? src.replace(/(?:^|\/)ua-guard\.js(?:\?.*)?$/, '/') : '/';
+      location.replace(base + 'qq-browser-report.html');
+      return;
+    }
+
+    // —— 微信 / QQ 内置浏览器：维持原全屏硬拦截 ——
     if (root.getAttribute('data-sxg-ua-block')) return;
     root.setAttribute('data-sxg-ua-block', '1');
 

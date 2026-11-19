@@ -9979,13 +9979,29 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
       && /\/QQBrowser\/i\.test\(ua\)/.test(ug38)
       && /isQQBrowser/.test(ug38)
       && /!isWeChat && !isQQ && !isQQBrowser/.test(ug38),
-    '§38a ua-guard.js 识别独立 QQ 浏览器任意 UA 形态并纳入硬拦截条件',
-    '识别回退到版本号限定或未并入拦截条件 → 电脑版 QQ 浏览器漏拦，扩围落空');
+    '§38a ua-guard.js 识别独立 QQ 浏览器任意 UA 形态（引导专题页的前提）',
+    '识别回退到版本号限定或未纳入分流条件 → 电脑版 QQ 浏览器漏判，专题页引导落空');
 
-  // 38b. 提示文案提到 QQ 浏览器（不能只改代码不改文案）
-  check(/QQ 浏览器访问/.test(ug38) && /微信 \/ QQ 的内置浏览器/.test(ug38),
-    '§38b 拦截层提示文案同时覆盖微信/QQ 内置浏览器与独立 QQ 浏览器',
-    '文案仍只写内置浏览器 → 用户看不懂为何被拦');
+  // 38b. 微信/QQ 内置硬拦截文案保留；QQ 浏览器改走专题页顶部说明
+  check(/微信 \/ QQ 的内置浏览器/.test(ug38) && /请在系统浏览器打开/.test(ug38),
+    '§38b 微信/QQ 内置浏览器硬拦截层文案保留（口径未回退）',
+    '内置浏览器文案丢失 → 硬拦截层成了无说明的空壳');
+
+  // 38j. QQ 浏览器分流：非专题页跳专题页、专题页自放行 + 顶部说明条，无自跳死循环
+  {
+    var rpt38src = exists('qq-browser-report.html') ? read('qq-browser-report.html') : '';
+    check(/location\.replace\(base \+ 'qq-browser-report\.html'\)/.test(ug38)
+        && /sxgOnReport\(\)/.test(ug38)
+        && /data-sxg-qq-browser/.test(ug38)
+        && /qq-browser-report\\.html\$/.test(ug38),
+      '§38j QQ 浏览器命中后引导专题页、专题页自身放行（防自跳死循环）',
+      '跳转目标/自放行判断丢失 → QQ 浏览器被锁在原地或专题页反复跳转');
+    check(/data-sxg-qq-browser="1"\] #qq-browser-notice/.test(rpt38src)
+        && /检测到您正在使用 QQ 浏览器访问本站/.test(rpt38src)
+        && /id="qq-browser-notice"/.test(rpt38src),
+      '§38j 专题页顶部有 QQ 浏览器专属说明条，按 UA 属性显示（普通浏览器不可见）',
+      '说明条缺失或无条件常显 → QQ 浏览器访客看不到引导缘由 / 普通访客被误导');
+  }
 
   // 38c. 全站引用版本号统一升到 v=2，notes.html 也必须挂上（全站无例外）
   {
@@ -10003,14 +10019,14 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
       try { return /ua-guard\.js\?v=/.test(readFileSync(join(ROOT, p), 'utf8')); } catch { return false; }
     });
     const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=1\b/.test(readFileSync(join(ROOT, p), 'utf8')));
-    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=3\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=4\b/.test(readFileSync(join(ROOT, p), 'utf8')));
     check(withGuard38.length >= 199 && oldV38.length === 0 && newV38.length === withGuard38.length,
-      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=3、无残留 v=1/2`,
+      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=4、无残留 v=1/2/3`,
       `旧版 ${oldV38.length} 页 / 新版 ${newV38.length} 页 → 缓存不刷新，用户拿到旧拦截脚本`);
     const notes38 = exists('notes.html') ? read('notes.html') : '';
     const notesAt38 = notes38.indexOf('ua-guard.js');
     const bodyAt38 = notes38.indexOf('<body');
-    check(notesAt38 > 0 && /ua-guard\.js\?v=3/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
+    check(notesAt38 > 0 && /ua-guard\.js\?v=4/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
       '§38c notes.html 已挂 ua-guard 且引用位于 body 之前（全站无例外、同步生效）',
       'notes 未挂 / 版本不对 / 放到 body 之后 → 加密笔记页在 QQ 浏览器里正文先闪现');
   }
@@ -10085,7 +10101,7 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   const pcHit38 = /MQQBrowser/i.test(pcUa38) || /QQBrowser/i.test(pcUa38);
   check(pcHit38 && /\/QQBrowser\/i\.test\(ua\)/.test(ug38) && /电脑版/.test(ug38),
     '§38h 电脑版 QQ 浏览器 UA（QQBrowser/10.x）被宽泛识别覆盖',
-    '识别回退到版本号限定 / 注释丢电脑版口径 → PC 端 QQ 浏览器放行，与全端锁死口径不符');
+    '识别回退到版本号限定 / 注释丢电脑版口径 → PC 端 QQ 浏览器漏判，不会引导到专题页');
 
   // 38i. QQ 浏览器专题报道页：访客可访问的独立 HTML，两篇文章存档齐全
   const REPORT38 = 'qq-browser-report.html';
@@ -10093,11 +10109,11 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   const sm38 = exists('sitemap.xml') ? read('sitemap.xml') : '';
   const nav38 = exists('nav-menu.js') ? read('nav-menu.js') : '';
   check(rpt38.length > 0
-      && /ua-guard\.js\?v=3/.test(rpt38)
+      && /ua-guard\.js\?v=4/.test(rpt38)
       && /ai-link\.js\?v=\d+/.test(rpt38)
       && /sxg-legal/.test(rpt38)
       && /<title>[^<]*QQ 浏览器[^<]*<\/title>/.test(rpt38),
-    '§38i QQ 浏览器专题页存在且结构与全站一致（UA 拦截 v3 / AI 按钮 / 法务页脚 / 标题）',
+    '§38i QQ 浏览器专题页存在且结构与全站一致（UA 分流 v4 / AI 按钮 / 法务页脚 / 标题）',
     '专题页缺失或不带全站组件 → 访客拿到的存档页无拦截、无 AI 入口、无法务链接');
   check(/\.\/archive\/wechat-liciaotiao-2023\/01-letter\/body\.jpg/.test(rpt38)
       && /\.\/archive\/wechat-liciaotiao-2023\/02-my-view\/body\.png/.test(rpt38)

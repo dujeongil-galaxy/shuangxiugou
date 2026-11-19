@@ -89,16 +89,39 @@
   footer .wrap p{margin:0 0 8px;font-size:13px;line-height:1.9}
   footer a{color:#9fe3d6}
 
+  /* QQ 浏览器访客专用顶部说明条：仅当 ua-guard.js 命中 QQ 浏览器、
+     给 <html> 打上 data-sxg-qq-browser 后才显示；普通浏览器完全看不到。 */
+  #qq-browser-notice{display:none}
+  html[data-sxg-qq-browser="1"] #qq-browser-notice{
+    display:block;background:#fef3c7;border-bottom:1px solid #f4cf86;color:#7f1d1d}
+  html[data-sxg-qq-browser="1"] #qq-browser-notice .wrap{
+    padding-top:14px;padding-bottom:14px}
+  #qq-browser-notice b{display:block;font-size:14.5px;margin-bottom:4px}
+  #qq-browser-notice p{margin:0;font-size:13px;line-height:1.8;color:#78350f}
+  #qq-browser-notice .qbn-steps{margin:8px 0 0;padding-left:20px;font-size:13px;line-height:1.85;color:#78350f}
+
   @media (max-width:560px){
     .doc{padding:20px 18px}
     .hero{padding-top:38px}
   }
 </style>
-<!-- 微信 / QQ / QQ 浏览器 UA 硬拦截：全站无例外，本专题页同样纳入。 -->
+<!-- UA 分流：微信/QQ 内置 → 全屏硬拦截；QQ 浏览器 → 本页放行并亮出顶部说明条。 -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5270311938787209" crossorigin="anonymous"></script>
-<script src="./ua-guard.js?v=3"></script>
+<script src="./ua-guard.js?v=4"></script>
 </head>
 <body>
+
+<div id="qq-browser-notice" role="status">
+  <div class="wrap">
+    <b>检测到您正在使用 QQ 浏览器访问本站</b>
+    <p>双休购没有在 QQ 浏览器里设障，而是把「为什么限制这个入口」的来龙去脉单独做成这页专题，完整摆出双方原文供您自行判断：</p>
+    <ol class="qbn-steps">
+      <li>下方是一封律师函与一篇作者回应，附两张原文长图与可检索全文；</li>
+      <li>本站记录双方说法，不代表本站立场，也不对任何一方作事实认定；</li>
+      <li>若您要在站内继续浏览品牌索引，请复制本页地址，用系统自带浏览器（Safari / Chrome / Edge）打开。</li>
+    </ol>
+  </div>
+</div>
 
 <header class="topbar">
   <div class="wrap">
