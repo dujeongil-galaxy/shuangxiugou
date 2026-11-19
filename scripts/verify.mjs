@@ -10003,6 +10003,67 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
       '说明条缺失或无条件常显 → QQ 浏览器访客看不到引导缘由 / 普通访客被误导');
   }
 
+  // 38k. 反 UA 伪装交叉验证（v5）：QQ 浏览器改 UA 标识后仍被识别
+  {
+    check(/sxgSpoofScore/.test(ug38)
+        && /navigator\.userAgentData/.test(ug38)
+        && /navigator\.platform/.test(ug38)
+        && /navigator\.vendor/.test(ug38)
+        && /sxgSpoofScore\(\) >= 3/.test(ug38)
+        && /isQQBrowser = true/.test(ug38),
+      '§38k ua-guard.js 含多信号反伪装判定（UA-CH / platform / vendor / chrome 对象，可疑分 ≥3 命中）',
+      '交叉验证被删/阈值消失 → 改 UA 标识的 QQ 浏览器直接绕进正站，专题页引导落空');
+    check(/typeof window\.mqq/.test(ug38) && /typeof window\.MQQBrowser/.test(ug38)
+        && /claimsAppleMobile/.test(ug38) && /claimsDesktop/.test(ug38)
+        && /!isWeChat && !isQQ && !isQQBrowser/.test(ug38),
+      '§38k 反伪装以 UA 声称身份为前提、保留微信/QQ 内置优先（不误伤正常浏览器与内置浏览器）',
+      '去掉身份前提或优先级 → 安卓 Chrome 等被误判，或微信内置落到引导分支');
+    // 逐行锁定五项信号的加分语句——少任何一项，对应故障注入都必须判红
+    var signalsK = [
+      "typeof window.mqq !== 'undefined'",
+      'if (claimsAppleMobile && navigator.userAgentData) {',
+      'if (claimsAppleMobile && window.chrome && (window.chrome.runtime || window.chrome.loadTimes)) score += 3;',
+      'if (claimsAppleMobile && plat && !/iPhone|iPad|iPod/i.test(plat)) score += 3;',
+      'if (claimsDesktop && /iPhone|iPad|iPod|Linux arm|Android/i.test(plat)) score += 3;',
+      'if (claimsAppleMobile && vendor && !/Apple/i.test(vendor)) score += 2;',
+      'var claimsAppleMobile = /iPhone|iPad|iPod/i.test(ua) && !/Android/i.test(ua);'
+    ];
+    var missingK = signalsK.filter(function (s) { return ug38.indexOf(s) === -1; });
+    check(missingK.length === 0,
+      '§38k 五项信号加分语句与身份前提逐行在岗（防单项信号被静默删除）',
+      '缺失信号：' + (missingK.join(' / ') || '无') + ' → 该项伪装特征不再参与判定');
+    // 行为验证：从源文件原样抠出 sxgSpoofScore 函数体放进沙箱执行——测的是真代码，不是重写副本。
+    // 单信号用例保证「删掉任一信号 → 得分跌破 3 → 判红」，避免只测组合时的假阴性。
+    var fnMatchK = ug38.match(/function sxgSpoofScore\(\) \{[\s\S]*?\n    \}/);
+    var uaIphoneK = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
+    var uaPCK = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+    var scoreK = function (u, plat, vendor, uaData, chromeObj, mqq) {
+      if (!fnMatchK) return -1;
+      var navK = { platform: plat, vendor: vendor };
+      var winK = {};
+      if (uaData) navK.userAgentData = { brands: [{ brand: 'Chromium' }] };
+      if (chromeObj) winK.chrome = { runtime: {} };
+      if (mqq) winK.mqq = {};
+      var fnK = new Function('navigator', 'window', 'ua', fnMatchK[0] + '\n return sxgSpoofScore();');
+      return fnK(navK, winK, u);
+    };
+    var casesK = {
+      realIPhone: scoreK(uaIphoneK, 'iPhone', 'Apple Computer, Inc.', null, null, null),
+      qqAsIPhone: scoreK(uaIphoneK, 'Linux armv8l', 'Google Inc.', true, true, true),
+      qqAsPC: scoreK(uaPCK, 'Linux armv8l', 'Google Inc.', null, null, true),
+      normalChrome: scoreK(uaPCK, 'Win32', 'Google Inc.', null, true, null),
+      onlyUaData: scoreK(uaIphoneK, 'iPhone', 'Apple Computer, Inc.', true, null, null),
+      onlyChrome: scoreK(uaIphoneK, 'iPhone', 'Apple Computer, Inc.', null, true, null),
+      onlyPlatform: scoreK(uaIphoneK, 'Win32', 'Apple Computer, Inc.', null, null, null)
+    };
+    var behaviorOkK = casesK.realIPhone < 3 && casesK.normalChrome < 3
+        && casesK.qqAsIPhone >= 3 && casesK.qqAsPC >= 3
+        && casesK.onlyUaData >= 3 && casesK.onlyChrome >= 3 && casesK.onlyPlatform >= 3;
+    check(behaviorOkK,
+      '§38k 真代码沙箱判定矩阵：真 iPhone/普通 Chrome 放行；QQ 伪装 iPhone/PC 与三路单信号均命中',
+      `实得分 ${JSON.stringify(casesK)}`);
+  }
+
   // 38c. 全站引用版本号统一升到 v=2，notes.html 也必须挂上（全站无例外）
   {
     const htmlRefs38 = [];
@@ -10018,15 +10079,15 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     const withGuard38 = htmlRefs38.filter((p) => {
       try { return /ua-guard\.js\?v=/.test(readFileSync(join(ROOT, p), 'utf8')); } catch { return false; }
     });
-    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=1\b/.test(readFileSync(join(ROOT, p), 'utf8')));
-    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=4\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=[1-4]\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=5\b/.test(readFileSync(join(ROOT, p), 'utf8')));
     check(withGuard38.length >= 199 && oldV38.length === 0 && newV38.length === withGuard38.length,
-      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=4、无残留 v=1/2/3`,
+      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=5、无残留 v=1/2/3/4`,
       `旧版 ${oldV38.length} 页 / 新版 ${newV38.length} 页 → 缓存不刷新，用户拿到旧拦截脚本`);
     const notes38 = exists('notes.html') ? read('notes.html') : '';
     const notesAt38 = notes38.indexOf('ua-guard.js');
     const bodyAt38 = notes38.indexOf('<body');
-    check(notesAt38 > 0 && /ua-guard\.js\?v=4/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
+    check(notesAt38 > 0 && /ua-guard\.js\?v=5/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
       '§38c notes.html 已挂 ua-guard 且引用位于 body 之前（全站无例外、同步生效）',
       'notes 未挂 / 版本不对 / 放到 body 之后 → 加密笔记页在 QQ 浏览器里正文先闪现');
   }
@@ -10109,11 +10170,11 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   const sm38 = exists('sitemap.xml') ? read('sitemap.xml') : '';
   const nav38 = exists('nav-menu.js') ? read('nav-menu.js') : '';
   check(rpt38.length > 0
-      && /ua-guard\.js\?v=4/.test(rpt38)
+      && /ua-guard\.js\?v=5/.test(rpt38)
       && /ai-link\.js\?v=\d+/.test(rpt38)
       && /sxg-legal/.test(rpt38)
       && /<title>[^<]*QQ 浏览器[^<]*<\/title>/.test(rpt38),
-    '§38i QQ 浏览器专题页存在且结构与全站一致（UA 分流 v4 / AI 按钮 / 法务页脚 / 标题）',
+    '§38i QQ 浏览器专题页存在且结构与全站一致（UA 分流 v5 / AI 按钮 / 法务页脚 / 标题）',
     '专题页缺失或不带全站组件 → 访客拿到的存档页无拦截、无 AI 入口、无法务链接');
   check(/\.\/archive\/wechat-liciaotiao-2023\/01-letter\/body\.jpg/.test(rpt38)
       && /\.\/archive\/wechat-liciaotiao-2023\/02-my-view\/body\.png/.test(rpt38)

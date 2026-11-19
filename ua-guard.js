@@ -11,11 +11,16 @@
  *     屏蔽 QQ 浏览器广告构成不正当竞争，另一篇为作者回应，本站据此把争议
  *     本身作为说明内容呈现给 QQ 浏览器访客。微信/QQ 内置浏览器维持原硬拦截。
  *
- * 识别方式：纯 UA 特征，不做任何网络请求。
+ * 识别方式：UA 特征 + 运行时交叉验证，全程不发网络请求。
  *   - 微信 / 企业微信：MicroMessenger（wxwork 也会带它或单独出现）
  *   - QQ 内置浏览器：  QQ/x.x.x（「QQ/数字」形态）、Tim/x.x
  *   - 独立 QQ 浏览器： MQQBrowser / QQBrowser 任意形态（手机 App 用 MQQBrowser/x.x，
  *     电脑版用 Chrome/... Safari/... QQBrowser/10.x；不绑定数字段）
+ *   - 反 UA 伪装（v5 加固）：QQ 浏览器内置「浏览器标识」开关可把 UA 改成
+ *     iPhone / iPad / 桌面，单看字符串会被绕过。故追加内核级信号交叉验证：
+ *     JSBridge 全局对象、Client Hints 品牌、UA 声称平台与 navigator.platform /
+ *     vendor / chrome 对象是否自相矛盾。可疑分 ≥3 即并入 QQ 浏览器分支。
+ *     这些属性改 UA 字符串不会同步改变，属于引擎/运行时层面的身份痕迹。
  *
  * 实现要点：
  *   1. <head> 内同步 <script> 引入（无 defer/async），解析到即执行。QQ 浏览器
@@ -35,6 +40,52 @@
     var isWeChat = /MicroMessenger/i.test(ua) || /wxwork/i.test(ua);
     var isQQ = /\bQQ\/[\d.]+/.test(ua) || /\/Tim\//.test(ua);
     var isQQBrowser = /MQQBrowser/i.test(ua) || /QQBrowser/i.test(ua);
+
+    // —— 反伪装交叉验证：UA 说自己是 iPhone/iPad/PC，但内核痕迹露馅 ——
+    // 可疑分制（≥3 命中）。每项都是真浏览器难以伪造、且改 UA 字符串不会变的属性。
+    // 只有 UA 声称「苹果移动设备」或「桌面」时才检查，避免误伤正常的安卓 Chrome。
+    function sxgSpoofScore() {
+      try {
+        var plat = navigator.platform || '';
+        var vendor = navigator.vendor || '';
+        var score = 0;
+        var claimsAppleMobile = /iPhone|iPad|iPod/i.test(ua) && !/Android/i.test(ua);
+        var claimsDesktop = /Windows NT|Macintosh|X11|Linux x86_64/i.test(ua) && !/Android|Mobile/i.test(ua);
+
+        // 1) 引擎注入对象：X5/QQ 浏览器内核会在 window 挂这些全局，普通浏览器没有。
+        //    用键名存在性判断，且加 UA 声称身份的前提，减少第三方 SDK 误伤。
+        if ((claimsAppleMobile || claimsDesktop) && (
+            typeof window.mqq !== 'undefined' || typeof window.MQQBrowser !== 'undefined'
+            || typeof window.mqqbrowser !== 'undefined'
+        )) score += 4;
+
+        // 2) Client Hints 品牌串：Chromium 系 n.userAgentData 带品牌列表，
+        //    iOS Safari 根本没有该对象；伪装 UA 时这里仍暴露真实内核。
+        if (claimsAppleMobile && navigator.userAgentData) {
+          score += 3;
+          try {
+            var brands = navigator.userAgentData.brands || [];
+            for (var bi = 0; bi < brands.length; bi++) {
+              if (/QQ|X5|Tencent|MQQ/i.test(brands[bi].brand || '')) { score += 2; break; }
+            }
+          } catch (e) {}
+        }
+
+        // 3) 桌面 Chromium 独有的 chrome 对象：真 iOS Safari 没有 window.chrome。
+        if (claimsAppleMobile && window.chrome && (window.chrome.runtime || window.chrome.loadTimes)) score += 3;
+
+        // 4) 平台字符串与 UA 声称身份自相矛盾：
+        //    声称 iPhone/iPad 却报 Win32/MacIntel/Linux；声称 PC 却报 iPhone/Linux arm。
+        if (claimsAppleMobile && plat && !/iPhone|iPad|iPod/i.test(plat)) score += 3;
+        if (claimsDesktop && /iPhone|iPad|iPod|Linux arm|Android/i.test(plat)) score += 3;
+
+        // 5) vendor 串：真 iPhone/iPad Safari 的 vendor 恒为 Apple Computer, Inc.
+        if (claimsAppleMobile && vendor && !/Apple/i.test(vendor)) score += 2;
+
+        return score;
+      } catch (e) { return 0; /* 探测失败一律按正常浏览器放行，不误伤 */ }
+    }
+    if (!isWeChat && !isQQ && !isQQBrowser && sxgSpoofScore() >= 3) isQQBrowser = true;
     if (!isWeChat && !isQQ && !isQQBrowser) return; // 正常浏览器：什么都不做
 
     var doc = document;
