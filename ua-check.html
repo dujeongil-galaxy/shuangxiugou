@@ -43,8 +43,9 @@ a{color:#0F766E}
   <div id="verdict" class="verdict">正在检测…</div>
 
   <button id="copyBtn" class="btn" type="button">① 一键复制全部诊断信息</button>
-  <button class="btn ghost" type="button" onclick="location.href='./?force-domestic=1'">② 强制显示提示条（立即生效）</button>
-  <p class="tip">请点第一个按钮，把复制出来的内容<strong>整段发给站长</strong>。这样就能照着你浏览器的真实特征一次改对，不用再来回试。第二个按钮能让你现在立刻看到提示条，但它只对你这次访问有效。</p>
+  <button class="btn ghost" type="button" onclick="location.href='./?force-domestic=1'">② 永久显示提示条（点一次，全站生效）</button>
+  <button class="btn ghost" type="button" onclick="location.href='./?force-domestic=0'">③ 撤销永久显示（恢复自动判定）</button>
+  <p class="tip">新版 360 安全浏览器会把自己的身份伪装成 Chrome，下面的指纹<strong>和真 Chrome 一模一样</strong>——任何网站都无法靠这些值自动认出它，这不是本站漏判，而是这类浏览器的机制使然。想看到提示条，请点<strong>第二个按钮一次</strong>：本站所有页面从此永久显示（只对你这台设备生效，不影响别人，关浏览器也不会失效）。想撤销就点第三个。</p>
 
   <h2>浏览器发出的原始 UA</h2>
   <textarea id="uaBox" class="ua-box" readonly></textarea>
@@ -109,7 +110,7 @@ a{color:#0F766E}
     v.innerHTML = '判定：<span>国产浏览器</span> —— 理论上应该弹黄条。如果首页没弹，问题在脚本没加载或被缓存。';
   } else {
     v.className = 'verdict intl';
-    v.innerHTML = '判定：<span>国际浏览器（或 360 已伪装成 Chrome）</span> —— 所有国产特征都没命中，所以不弹黄条。';
+    v.innerHTML = '判定：<span>按指纹无法区分</span> —— 所有国产特征都没命中：可能是真国际浏览器，也可能是伪装成 Chrome 的新版 360（两者指纹一致，无法自动区分）。若要显示提示条，请点上方「② 永久显示提示条」，一次设置全站生效。';
   }
 
   document.getElementById('copyBtn').addEventListener('click', function () {

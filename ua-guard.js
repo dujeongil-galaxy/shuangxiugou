@@ -145,21 +145,38 @@
     }
     if (!isWeChat && !isQQ && !isQQBrowser && sxgSpoofScore() >= 3) isQQBrowser = true;
     if (!isWeChat && !isQQ && !isQQBrowser) {
-      // —— 强制国产提示开关（自助兜底，2026-11-20 加）——
-      // 新版 360 安全浏览器（v13+，2022Q4 起）默认启用「UA 覆盖策略」，把 UA 伪装成
-      // 纯 Chrome、移除全部 QIHU/360SE/360EE 标识。UA 字符串层面已无法与真 Chrome 区分，
-      // 纯特征匹配的准确率因此跌破 72%。给这类用户一条自助出路：
-      //   ?force-domestic=1  →  写 sessionStorage，同一会话所有页都显示国产提示条，
-      //   直到关闭标签页或访问 ?force-domestic=0 撤销。只影响本人本次会话，不误伤他人。
+      // —— 强制国产提示开关（自助兜底，2026-11-20 加；同日升级为 localStorage 持久化）——
+      // 新版 360 安全浏览器（v13+，2022Q4 起）把 UA 伪装成纯 Chrome。站长真实诊断数据
+      // 与本是真 Chromium 的指纹逐项比对：UA / platform / vendor / window.external
+      // （存在且自有属性为空）/ documentMode（不存在）/ window.chrome / uad.brands
+      // 全部一致——JS 层面已无法区分，再补任何 UA 特征都会误伤真 Chrome 访客。
+      // 故给伪装浏览器一条不靠猜身份的自助出路：
+      //   ?force-domestic=1  →  localStorage 永久写入（关浏览器/换标签页后仍生效），
+      //     本站所有页面显示国产提示条；同时写 sessionStorage 兼容上一版逻辑。
+      //   ?force-domestic=0  →  同时清除 localStorage + sessionStorage，撤销标记。
+      //   上一版只写了 sessionStorage 的访客：再次访问时自动迁移到 localStorage，
+      //     无需重新点一次。全程只影响本人本机，不误伤任何国际浏览器访客。
       var forceDomestic = false;
+      var FD_KEY = 'sxg-force-domestic';
       try {
+        var fdLs = null, fdSs = null;
+        try { fdLs = localStorage.getItem(FD_KEY); } catch (eLs) {}
+        try { fdSs = sessionStorage.getItem(FD_KEY); } catch (eSs) {}
         if (/[?&]force-domestic=1(?:&|$)/.test(location.search)) {
-          sessionStorage.setItem('sxg-force-domestic', '1');
+          try { localStorage.setItem(FD_KEY, '1'); } catch (eSetLs) {}
+          try { sessionStorage.setItem('sxg-force-domestic', '1'); } catch (eSetSs) {}
+          fdLs = '1'; fdSs = '1';
         } else if (/[?&]force-domestic=0(?:&|$)/.test(location.search)) {
-          sessionStorage.removeItem('sxg-force-domestic');
+          try { localStorage.removeItem(FD_KEY); } catch (eDelLs) {}
+          try { sessionStorage.removeItem(FD_KEY); } catch (eDelSs) {}
+          fdLs = null; fdSs = null;
+        } else if (fdSs === '1' && fdLs !== '1') {
+          // 旧版会话标记迁移到永久存储：上次会话点过的访客自动升级，不用再点一次
+          try { localStorage.setItem(FD_KEY, '1'); } catch (eMig) {}
+          fdLs = '1';
         }
-        forceDomestic = sessionStorage.getItem('sxg-force-domestic') === '1';
-      } catch (e) { /* 隐私模式禁用 sessionStorage：仅本页生效，不抛错 */ }
+        forceDomestic = fdLs === '1' || fdSs === '1';
+      } catch (e) { /* 存储全禁用：本页不标记，不抛错拖垮页面 */ }
 
       // 微信/QQ 内置、QQ 浏览器之外：只给命中国产特征的浏览器弹持续顶部提示；
       // 其余（含韩日/欧美一切国际浏览器）一律放行、什么都不显示（站长 2026-11-19 定稿）。

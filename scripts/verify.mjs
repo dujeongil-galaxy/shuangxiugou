@@ -10221,41 +10221,54 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     const withGuard38 = htmlRefs38.filter((p) => {
       try { return /ua-guard\.js\?v=/.test(readFileSync(join(ROOT, p), 'utf8')); } catch { return false; }
     });
-    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=(?:[1-9]|10)\b/.test(readFileSync(join(ROOT, p), 'utf8')));
-    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=11\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=(?:[1-9]|10|11)\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=12\b/.test(readFileSync(join(ROOT, p), 'utf8')));
     check(withGuard38.length >= 199 && oldV38.length === 0 && newV38.length === withGuard38.length,
-      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=11、无残留 v=1~10`,
+      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=12、无残留 v=1~11`,
       `旧版 ${oldV38.length} 页 / 新版 ${newV38.length} 页 → 缓存不刷新，用户拿到旧拦截脚本`);
     const notes38 = exists('notes.html') ? read('notes.html') : '';
     const notesAt38 = notes38.indexOf('ua-guard.js');
     const bodyAt38 = notes38.indexOf('<body');
-    check(notesAt38 > 0 && /ua-guard\.js\?v=11/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
+    check(notesAt38 > 0 && /ua-guard\.js\?v=12/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
       '§38c notes.html 已挂 ua-guard 且引用位于 body 之前（全站无例外、同步生效）',
       'notes 未挂 / 版本不对 / 放到 body 之后 → 加密笔记页在 QQ 浏览器里正文先闪现');
   }
 
   // 38c-2. UA 伪装自助兜底（2026-11-20）：新版 360 v13+ 把 UA 伪装成纯 Chrome，
-  //   QIHU/360SE 全部移除，纯特征匹配分不出来。必须同时具备：
-  //   ① ua-guard.js 有 force-domestic 开关（?force-domestic=1 写 sessionStorage）
-  //   ② 有一份可访问的诊断页，把真实 UA + 运行时指纹摊给访客/站长
-  //   ③ 诊断页的强制按钮确实指向首页 ?force-domestic=1（不是死链）
+  //   QIHU/360SE 全部移除，且 UA/platform/vendor/external/documentMode/chrome/uad.brands
+  //   全部与真 Chrome 一致，纯特征匹配分不出来。必须同时具备：
+  //   ① ua-guard.js 有 force-domestic 开关，?=1 写 localStorage 永久 + sessionStorage 兼容
+  //   ② ?=0 同时清两个存储；旧 sessionStorage 标记自动迁移到 localStorage
+  //   ③ 有一份诊断页，摊出真实 UA + 运行时指纹，且「永久开启 / 撤销」两个按钮都在
   {
     const guardSrc38 = exists('ua-guard.js') ? read('ua-guard.js') : '';
     check(/force-domestic=1/.test(guardSrc38)
+        && /localStorage\.setItem\(FD_KEY,\s*'1'\)/.test(guardSrc38)
         && /sessionStorage\.setItem\('sxg-force-domestic',\s*'1'\)/.test(guardSrc38)
         && /sxgIsDomesticBrowser\(ua\)\s*\|\|\s*forceDomestic/.test(guardSrc38),
-      '§38c-2 ua-guard 有 force-domestic 自助开关：参数写 sessionStorage 且并入国产判定',
-      '删开关 → UA 伪装成 Chrome 的新版 360 永远拿不到国产提示条，且无自助出路');
+      '§38c-2 ua-guard force-domestic=1 写 localStorage 永久 + sessionStorage 兼容，并入国产判定',
+      '删开关/降级回仅 sessionStorage → 关浏览器就失效，伪装 360 每次都要重加参数');
+    check(/force-domestic=0/.test(guardSrc38)
+        && /localStorage\.removeItem\(FD_KEY\)/.test(guardSrc38)
+        && /sessionStorage\.removeItem\(FD_KEY\)/.test(guardSrc38),
+      '§38c-2 force-domestic=0 同时清除 localStorage + sessionStorage（撤销彻底）',
+      '只清一个存储 → 撤销后另一处标记仍在，黄条关不掉');
+    check(/fdSs === '1' && fdLs !== '1'/.test(guardSrc38)
+        && /forceDomestic = fdLs === '1' \|\| fdSs === '1'/.test(guardSrc38),
+      '§38c-2 旧 sessionStorage 标记自动迁移 localStorage，两个存储任一命中即显示',
+      '无迁移 → 上一版点过的访客升级后标记丢失，又要重新点一次');
     const diag38 = exists('ua-check.html') ? read('ua-check.html') : '';
     check(diag38.length > 2000
         && /navigator\.userAgent/.test(diag38)
         && /window\.external/.test(diag38)
         && /documentMode/.test(diag38)
         && /userAgentData/.test(diag38)
-        && /force-domestic=1/.test(diag38)
-        && /\.\/\?force-domestic=1/.test(diag38),
-      '§38c-2 ua-check.html 自检页存在：摊出 UA + 运行时指纹 + 强制开关按钮可用',
-      '自检页缺失/字段不全 → 伪装 UA 的浏览器无从取证，只能继续盲猜');
+        && /\.\/\?force-domestic=1/.test(diag38)
+        && /\.\/\?force-domestic=0/.test(diag38)
+        && /永久显示提示条/.test(diag38)
+        && /按指纹无法区分/.test(diag38),
+      '§38c-2 ua-check.html 自检页：UA + 运行时指纹 + 永久开启/撤销双按钮 + 无法区分实话说明',
+      '自检页缺字段/撤销按钮 → 伪装 UA 访客开了黄条就关不掉，或继续被误导去盲猜');
     // 自检页的判定正则必须与 ua-guard.js 同源（否则诊断结论与真实行为对不上）
     const guardHasQihu38 = /QIHU/.test(guardSrc38);
     const guardHasSeg38 = guardSrc38.indexOf('Safari\\/537\\.36\\/\\d') !== -1;
@@ -10344,7 +10357,7 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   const sm38 = exists('sitemap.xml') ? read('sitemap.xml') : '';
   const nav38 = exists('nav-menu.js') ? read('nav-menu.js') : '';
   check(rpt38.length > 0
-      && /ua-guard\.js\?v=11/.test(rpt38)
+      && /ua-guard\.js\?v=12/.test(rpt38)
       && /ai-link\.js\?v=\d+/.test(rpt38)
       && /sxg-legal/.test(rpt38)
       && /<title>[^<]*QQ 浏览器[^<]*<\/title>/.test(rpt38),

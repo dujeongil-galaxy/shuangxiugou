@@ -1,9 +1,13 @@
 // 【本机专用 · 不挂 CI】UA 伪装自助兜底真渲染实证（2026-11-20）
-// 新版 360 v13+ 把 UA 伪装成纯 Chrome（无任何 360 标识），纯特征匹配分不出来。
-// 本脚本覆盖纯 Chrome UA，验证：
-//   ① 访问首页（无参数）→ 不弹国产提示条（国际浏览器放行口径不变）
-//   ② 访问 /?force-domestic=1 → 弹 #sxg-browser-notice（自助开关生效）
-//   ③ 访问 ua-check.html → 判定「国际/伪装」+ 摊出完整 UA + 运行时指纹
+// 新版 360 v13+ 把 UA 伪装成纯 Chrome（无任何 360 标识），且 UA/platform/vendor/
+// external/documentMode/chrome/uad.brands 全部与真 Chrome 一致，无法自动区分。
+// 方案：?force-domestic=1 写 localStorage 永久自检。本脚本覆盖纯 Chrome UA，验证：
+//   ① 无参数首页 → 不弹（国际浏览器默认放行口径不变）
+//   ② ?force-domestic=1 → 弹 + localStorage 已写入
+//   ③ 再访问无参数首页（关键：持久化）→ 仍弹，撤销前一直生效
+//   ④ ?force-domestic=0 → 不弹 + localStorage 已清除
+//   ⑤ 再访问无参数首页 → 不弹（撤销彻底）
+//   ⑥ ua-check.html → 判定「无法区分」+ 双按钮 + 完整 UA + 运行时指纹
 // 产物落 D:/WorkBuddy-Cache/shots/
 const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
 const { spawn } = require('child_process');
@@ -92,42 +96,71 @@ const evalExpr = (ws, expr) => cdp(ws, 'Runtime.evaluate', { expression: expr, r
     const r = await cdp(ws, 'Page.captureScreenshot', { format: 'png' });
     fs.writeFileSync(path.join(SHOTS, name), Buffer.from(r.result.data, 'base64'));
   };
-  const notice = `(function(){var n=document.getElementById('sxg-browser-notice');return {present:!!n,text:n?n.textContent.slice(0,50):null}})()`;
+  const notice = `(function(){var n=document.getElementById('sxg-browser-notice');return {
+    present:!!n,text:n?n.textContent.slice(0,50):null,
+    ls:(function(){try{return localStorage.getItem('sxg-force-domestic')}catch(e){return 'ERR'}})(),
+    ss:(function(){try{return sessionStorage.getItem('sxg-force-domestic')}catch(e){return 'ERR'}})()
+  }})()`;
 
   // ① 纯 Chrome UA + 无参数首页 → 不弹
   await cdp(ws, 'Page.navigate', { url: BASE + '/index.html' });
   await sleep(2200);
   const r1 = await evalExpr(ws, notice);
-  console.log('① 伪装Chrome无参数:', JSON.stringify(r1));
+  console.log('① 无参数首页:', JSON.stringify(r1));
   await shot('ua-diag-1-no-param.png');
 
-  // ② 纯 Chrome UA + ?force-domestic=1 → 弹（sessionStorage 生效）
+  // ② ?force-domestic=1 → 弹 + localStorage 写入
   await cdp(ws, 'Page.navigate', { url: BASE + '/index.html?force-domestic=1' });
   await sleep(2200);
   const r2 = await evalExpr(ws, notice);
-  console.log('② 伪装Chrome强制开关:', JSON.stringify(r2));
+  console.log('② 永久开启:', JSON.stringify(r2));
   await shot('ua-diag-2-force.png');
 
-  // ③ 自检页 → 判定信息
+  // ③ 关键：再访问无参数首页 → 仍弹（持久化生效，关标签页重开也一样）
+  await cdp(ws, 'Page.navigate', { url: BASE + '/index.html?nocache=' + Date.now() });
+  await sleep(2200);
+  const r3 = await evalExpr(ws, notice);
+  console.log('③ 无参数再访问（持久化）:', JSON.stringify(r3));
+
+  // ④ ?force-domestic=0 → 不弹 + localStorage 清除
+  await cdp(ws, 'Page.navigate', { url: BASE + '/index.html?force-domestic=0' });
+  await sleep(2200);
+  const r4 = await evalExpr(ws, notice);
+  console.log('④ 撤销:', JSON.stringify(r4));
+
+  // ⑤ 再访问无参数首页 → 不弹（撤销彻底）
+  await cdp(ws, 'Page.navigate', { url: BASE + '/index.html?nocache=' + (Date.now()+1) });
+  await sleep(2200);
+  const r5 = await evalExpr(ws, notice);
+  console.log('⑤ 撤销后无参数:', JSON.stringify(r5));
+
+  // ⑥ 自检页 → 判定信息 + 双按钮
   await cdp(ws, 'Page.navigate', { url: BASE + '/ua-check.html' });
   await sleep(1200);
-  const r3 = await evalExpr(ws, `(function(){
+  const r6 = await evalExpr(ws, `(function(){
     var v=document.getElementById('verdict');
     var ua=document.getElementById('uaBox');
     var rows=document.querySelectorAll('#detail tr');
+    var btns=[].map.call(document.querySelectorAll('button'),function(b){return b.textContent.trim()});
     return {
       verdict: v?v.textContent.trim():null,
       ua: ua?ua.value:null,
-      rows: rows.length
+      rows: rows.length,
+      hasOpen: btns.some(function(t){return /永久显示提示条/.test(t)}),
+      hasRevoke: btns.some(function(t){return /撤销永久显示/.test(t)})
     };
   })()`);
-  console.log('③ 自检页:', JSON.stringify(r3));
+  console.log('⑥ 自检页:', JSON.stringify(r6));
   await shot('ua-diag-3-check.png');
 
   const ok = r1 && r1.present === false
-    && r2 && r2.present === true && /当前浏览器环境/.test(r2.text || '')
-    && r3 && /伪装|国际/.test(r3.verdict || '') && r3.ua === PURE_CHROME_UA && r3.rows >= 10;
-  console.log(ok ? 'PASS 全部符合预期' : 'FAIL 存在不符项');
+    && r2 && r2.present === true && r2.ls === '1' && /当前浏览器环境/.test(r2.text || '')
+    && r3 && r3.present === true && r3.ls === '1'
+    && r4 && r4.present === false && r4.ls === null
+    && r5 && r5.present === false && r5.ls === null
+    && r6 && /无法区分/.test(r6.verdict || '') && r6.ua === PURE_CHROME_UA && r6.rows >= 10
+    && r6.hasOpen === true && r6.hasRevoke === true;
+  console.log(ok ? 'PASS 持久化全链路符合预期' : 'FAIL 存在不符项');
   try { ws.close(); } catch (e) {}
   edge.kill('SIGTERM');
   server.close();
