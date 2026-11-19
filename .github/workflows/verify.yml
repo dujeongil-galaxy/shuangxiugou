@@ -296,6 +296,12 @@ jobs:
       - name: 新闻事件登记测试（罗技 / 星宇）
         run: node scripts/test-news-incident.cjs
 
+      # 站长 2026-11-20：踏板支架争议专题页，华为卡登记框 + 原文存档链。
+      # 真 DOM 断言卡面不串卡、只链站内专题页、口径未核实不认定。
+      # 配套 verify §39。
+      - name: 踏板支架专题页测试（华为卡 / 存档链）
+        run: node scripts/test-zunjie-report.cjs
+
       # 站长 2026-11-10 20:44 全站检查：登记框不许串到别的品牌卡。
       # 真 DOM 复现 cloneNode(true) 克隆模板污染 + 验证补丁自愈。
       # 配套 verify §34。

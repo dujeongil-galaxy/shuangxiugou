@@ -8709,10 +8709,10 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   //   ③ 详情页 brand/lixiang.html 同步登记同一条链接（站规：备注栏内容同步证据链）。
   const newsLinks32 = [...news32.matchAll(/https?:\/\/[^'"\s)]+/g)].map((x) => x[0]);
   check(news32.length > 0
-    && /<script defer src="\.\/news-incident-patch\.js\?v=6"><\/script>/.test(idx32)
+    && /<script defer src="\.\/news-incident-patch\.js\?v=7"><\/script>/.test(idx32)
     && /var ITEMS = \[/.test(news32) && /key: 'logitech'/.test(news32) && /key: 'xingyu'/.test(news32)
     && /key: 'geely'/.test(news32) && /key: 'lixiang'/.test(news32) && /key: 'chery'/.test(news32)
-    && /key: 'lixiang-douyin'/.test(news32)
+    && /key: 'lixiang-douyin'/.test(news32) && /key: 'huawei-zunjie'/.test(news32)
     && newsLinks32.length === 1 && newsLinks32[0] === 'https://v.douyin.com/nHGcAwzSXOU/'
     && /setAttribute\('rel', 'nofollow noopener'\)/.test(news32)
     && /setAttribute\('target', '_blank'\)/.test(news32)
@@ -10374,6 +10374,58 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
       && !/label: 'QQ 浏览器专题'/.test(nav38),
     '§38i 专题页被 sitemap 收录、悬浮导航不再有访客入口（只对 QQ 浏览器访客可见）',
     '导航又加回入口 → 违背站长「拦截跳专题、但不主动推给普通访客」的口径');
+}
+
+// ---------- 39. 踏板支架争议专题（2026-11-20：网传视频存档，不作事实认定） ----------
+// 站长提供一段抖音短视频分享文案（称某百万级车型踏板支架损坏、质疑只升级不召回），
+// 要求建卡 + 单独建专题页防链接下架。口径（与全站新闻登记一致）：
+//   ① 标题中性、逐字存档原文与短链；② 只登记线索、不认定事实、不带粗口；
+//   ③ 卡面只链站内专题页，外链白名单不放宽；④ 车型名与公开资料不符要显著提示待核实。
+{
+  const zj = exists('zunjie-report.html') ? read('zunjie-report.html') : '';
+  const newsZj = read('news-incident-patch.js');
+  const smZj = read('sitemap.xml');
+  const idxZj = read('index.html');
+
+  check(zj.length > 3000 && /<html lang="zh-CN">/.test(zj)
+      && /双休购专题报道/.test(zj)
+      && /百万豪车踏板支架争议/.test(zj)
+      && !/狗日的|做过的恶|狗东西/.test(zj),
+    '§39a 专题页独立成页、标题中性（不带辱骂/定罪措辞）、声明双休购旗下',
+    '标题用粗口或定罪表述 → 未核实线索被当成事实定性，公开页面有法律与平台风险');
+  check(/售价超百万豪车尊界V800被一脚踩断刹车踏板支架/.test(zj)
+      && /到底是车子的问题还是测评员的问题/.test(zj)
+      && /https:\/\/v\.douyin\.com\/Vc4SsZp8e1U\//.test(zj)
+      && /逐字存档|逐字保留/.test(zj),
+    '§39b 原文逐字存档 + 抖音短链在案（防链接下架）',
+    '原文或短链缺失 → 视频下架后线索彻底消失，存档页失去意义');
+  check(/未经独立核实|未经核实/.test(zj) && /不作事实认定|不构成事实认定/.test(zj)
+      && /不代表本站立场/.test(zj) && /待核实/.test(zj),
+    '§39c 专题页明确「未核实 / 不作事实认定 / 不代表本站立场」三件套',
+    '免责声明缺失 → 网传说法被读成本站认定的事实');
+  check(/尊界 V800|尊界V800/.test(zj) && /S800/.test(zj)
+      && /原文|照录|待核实/.test(zj),
+    '§39d 车型名与公开资料不符处有显著待核实提示（不擅自更正、照录原文）',
+    '照抄错误车型却不提示 → 把存疑信息当事实传给读者');
+  check(/WorkBuddy/.test(zj) && /协助完成/.test(zj),
+    '§39e 页脚标注 WorkBuddy 协助完成',
+    '站长明确允许的署名缺失');
+  check(smZj.includes('/zunjie-report.html</loc>')
+      && /ai-link\.js\?v=\d+/.test(zj) && /sxg-legal/.test(zj),
+    '§39f 专题页进 sitemap、挂全站 AI 按钮与法务页脚',
+    '缺 sitemap/AI/法务 → 新页游离在全站体系外');
+  check(/key: 'huawei-zunjie'/.test(newsZj)
+      && /title: \/\^华为终端\//.test(newsZj)
+      && /href: '\.\/zunjie-report\.html'/.test(newsZj)
+      && /不据此调整 C 级评级/.test(newsZj)
+      && /<script defer src="\.\/news-incident-patch\.js\?v=7"><\/script>/.test(idxZj),
+    '§39g 华为卡登记框只链站内专题页、声明不改评级，脚本 ?v=7 破缓存',
+    '卡面挂外链或漏 bump 缓存号 → 违反外链白名单口径 / 用户拿旧补丁');
+  // 外链白名单仍只有理想那一条：新增卡片不得扩大卡面外链口径
+  const newsLinks39 = [...newsZj.matchAll(/https?:\/\/[^'"\s)]+/g)].map((x) => x[0]);
+  check(newsLinks39.length === 1 && newsLinks39[0] === 'https://v.douyin.com/nHGcAwzSXOU/',
+    '§39h 新闻登记补丁卡面外链白名单仍只有理想一条（华为线索不放外链）',
+    '外链白名单被扩大 → 卡面变成外链 wagon，违反 §32f 既定口径');
 }
 
 // ---------- 汇总 ----------

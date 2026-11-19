@@ -77,6 +77,14 @@ parts.append(
     f'    <priority>0.7</priority>\n  </url>'
 )
 
+# 踏板支架争议专题（2026-11-20：网传短视频的逐字存档 + 待核实追问，不作事实认定）
+parts.append(
+    f'  <url>\n    <loc>{BASE}/zunjie-report.html</loc>\n'
+    f'    <lastmod>2026-11-20</lastmod>\n'
+    f'    <changefreq>monthly</changefreq>\n'
+    f'    <priority>0.7</priority>\n  </url>'
+)
+
 # 法务与信息页（2026-11-17 AdSense 接入准备：隐私政策/免责声明/关于/联系）
 LASTMOD_LEGAL = '2026-11-17'
 for slug, pri in [('privacy.html', '0.3'), ('disclaimer.html', '0.3'),
