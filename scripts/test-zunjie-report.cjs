@@ -48,8 +48,19 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   const doc = new JSDOM(report, { runScripts: 'dangerously', virtualConsole: vc, url: 'https://dujeongil-galaxy.github.io/shuangxiugou/zunjie-report.html' }).window.document;
 
   const text = doc.body.textContent;
-  check('标题中性，无辱骂/定罪措辞',
-    !/狗日的|做过的恶|狗东西/.test(text) && /百万豪车踏板支架争议/.test(text));
+  const h1 = doc.querySelector('h1');
+  check('标题按站长指令用《狗日的华为做过的恶》且带引用标识与立场说明',
+    !!h1 && /狗日的华为做过的恶/.test(h1.textContent)
+    && !!h1.querySelector('.quoted')
+    && /并非本站的定性|外界批评文章的说法/.test(doc.body.textContent));
+  check('外界批评观点四小节汇编在案',
+    /外界批评观点汇编/.test(text) && /企业文化与员工管理争议/.test(text)
+    && /市场竞争与商业策略/.test(text) && /外界争议与舆论/.test(text)
+    && /争议的主要落点/.test(text));
+  check('两个来源页链接可点且 nofollow',
+    [...doc.querySelectorAll('a[href^="https://evil-huawei.github.io/evil-huawei/"],a[href^="https://zh.wikipedia.org/wiki/"]')].length >= 2
+    && [...doc.querySelectorAll('a[href^="https://evil-huawei.github.io/"],a[href^="https://zh.wikipedia.org/wiki/"]')]
+         .every((a) => /nofollow/.test(a.getAttribute('rel') || '')));
   check('原文逐字存档（含车型原表述与提问）',
     /尊界V800/.test(text) && /被一脚踩断刹车踏板支架/.test(text)
     && /到底是车子的问题还是测评员的问题/.test(text));

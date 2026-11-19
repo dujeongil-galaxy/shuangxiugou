@@ -114,7 +114,10 @@ const evalExpr = (ws, expr) => cdp(ws, 'Runtime.evaluate', { expression: expr, r
         hasShortLink:!!document.querySelector('#douyin-link'),
         hasCopyBtn:!!document.querySelector('#copy-btn'),
         hasWorkBuddy:/WorkBuddy/.test(body.innerText),
-        hasDeadline:/狗日的|做过的恶/.test(body.innerText)
+        titleQuoted:!!(document.querySelector('h1')||{}).querySelector?.('.quoted'),
+        viewCards:document.querySelectorAll('.view').length,
+        sourceLinks:document.querySelectorAll('a[href^="https://evil-huawei.github.io/"],a[href^="https://zh.wikipedia.org/wiki/"]').length,
+        tableOverflow:(function(){var t=document.querySelector('.facts');if(!t)return null;var r=t.getBoundingClientRect();return r.right>b.right+2;})()
       };
     })()`);
     const shot = path.join(shotsDir, name + '.png');
