@@ -7,7 +7,9 @@
       微信会把它识别成小程序卡片并唤起。
       所以按环境分支：
         · 微信内 → 直接跳转 scheme，唤起小程序
-        · 微信外 → 复制口令，并提示上述发送步骤
+        · 微信外 → 复制口令，并弹居中弹窗给出上述发送步骤
+          （2026-11-19 站长指令：原黑色小 toast 改为正经弹窗，
+           上文步骤提示、下文口令链接，常驻不自动消失）
    ========================================================================== */
 (function () {
   'use strict';
@@ -120,54 +122,76 @@
     return navigator.clipboard.writeText(text);
   }
 
-  var toastEl = null;
-  var toastTimer = null;
+  /* ---------- 复制口令后的居中弹窗 ----------
+     2026-11-19 站长指令：原黑色小 toast 又小又挤、压在正文上还 15 秒自动消失，
+     改成正经弹窗，结构按站长口径「上文提示，下文给链接」：
+       上文 = 怎么用口令打开小程序的步骤说明；
+       下文 = 小程序口令本体（可点再复制）+「复制口令」按钮。
+     常驻显示不自动消失；× / 点遮罩 / Esc 三种方式关闭。
+     隐藏方案用 display:none↔flex 硬切换 + card animation 播放入场：
+     不碰 opacity/visibility 过渡（.lp-ad.is-hidden 2026-11-18 卡帧老坑不复发）。 */
+  var modalEl = null;
 
-  function showToast(html, keepOpen) {
-    if (!toastEl) {
-      toastEl = document.createElement('div');
-      toastEl.className = 'lp-ad-toast';
-      toastEl.setAttribute('role', 'status');
-      toastEl.setAttribute('aria-live', 'polite');
-      document.body.appendChild(toastEl);
+  function ensureModal() {
+    if (modalEl) return modalEl;
+    modalEl = document.createElement('div');
+    modalEl.className = 'lp-modal';
+    modalEl.setAttribute('role', 'dialog');
+    modalEl.setAttribute('aria-modal', 'true');
+    modalEl.setAttribute('aria-label', '打开' + CONFIG.brand + '小程序');
+    modalEl.innerHTML =
+      '<div class="lp-modal__mask"></div>' +
+      '<div class="lp-modal__card">' +
+        '<button class="lp-modal__close" type="button" aria-label="关闭弹窗">&times;</button>' +
+        '<div class="lp-modal__title"></div>' +
+        '<div class="lp-modal__steps">' +
+          '<p>① 复制下方口令，粘贴到微信任意聊天窗口并发送</p>' +
+          '<p>② 点自己刚发出的那条消息，微信会把它识别成小程序卡片并唤起</p>' +
+        '</div>' +
+        '<code class="lp-modal__code">' + CONFIG.scheme + '</code>' +
+        '<button class="lp-modal__copy" type="button">复制口令</button>' +
+        '<div class="lp-modal__note">微信小程序 · ' + CONFIG.brand + '（推广合作）</div>' +
+      '</div>';
+    document.body.appendChild(modalEl);
+
+    function closeModal() {
+      modalEl.classList.remove('is-show');
     }
-    toastEl.innerHTML = html;
-    // 强制回流，保证连续调用时 transition 能重新触发
-    void toastEl.offsetWidth;
-    toastEl.classList.add('is-show');
-    clearTimeout(toastTimer);
-    // 展示口令的提示不自动消失：用户可能需要时间切到微信
-    toastTimer = setTimeout(function () {
-      toastEl.classList.remove('is-show');
-    }, keepOpen ? 15000 : 4200);
+    modalEl.querySelector('.lp-modal__close').addEventListener('click', closeModal);
+    modalEl.querySelector('.lp-modal__mask').addEventListener('click', closeModal);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modalEl.classList.contains('is-show')) closeModal();
+    });
 
-    // 口令支持点击再复制一次：自动复制万一没生效，用户点一下能立刻补上
-    var code = toastEl.querySelector('code');
-    if (code) {
-      code.addEventListener('click', function () {
-        copyText(CONFIG.scheme);
-        code.textContent = CONFIG.scheme + ' ✓';
+    // 口令本体支持点击再复制：自动复制万一没生效，点口令也能立刻补上
+    modalEl.querySelector('.lp-modal__code').addEventListener('click', function () {
+      copyText(CONFIG.scheme);
+    });
+    var copyBtn = modalEl.querySelector('.lp-modal__copy');
+    copyBtn.addEventListener('click', function () {
+      copyText(CONFIG.scheme).then(function (ok) {
+        copyBtn.textContent = ok
+          ? '✓ 已复制，去微信粘贴发送'
+          : '复制失败，请长按选中上方口令手动复制';
+        copyBtn.classList.add('is-done');
         setTimeout(function () {
-          if (code.isConnected) code.textContent = CONFIG.scheme;
-        }, 1400);
+          copyBtn.textContent = '复制口令';
+          copyBtn.classList.remove('is-done');
+        }, 2200);
       });
-    }
+    });
+    return modalEl;
   }
 
-  /* 把 toast 里的口令选中。
-     user-select:all 已让用户点击时全选，这里再主动选中一次：
-     部分移动端浏览器不会因为点击而弹出复制气泡，需要先有真实选区。 */
-  function selectManualText() {
-    if (!toastEl) return;
-    var code = toastEl.querySelector('code');
-    if (!code) return;
-    try {
-      var range = document.createRange();
-      range.selectNodeContents(code);
-      var sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-    } catch (e) {}
+  function showModal(autoCopied) {
+    var el = ensureModal();
+    el.querySelector('.lp-modal__title').textContent = autoCopied
+      ? '✓ 已自动复制小程序口令'
+      : '自动复制未生效，请点下方按钮复制';
+    el.classList.add('is-show');
+    // 弹窗打开后把焦点交给关闭按钮：键盘用户可直接 Esc / Enter 关闭
+    var closeBtn = el.querySelector('.lp-modal__close');
+    if (closeBtn && typeof closeBtn.focus === 'function') closeBtn.focus();
   }
 
   function build() {
@@ -200,17 +224,10 @@
       e.preventDefault();
       // copyText 统一 resolve 成布尔值：同步 execCommand 或 clipboard API 任一成功即为 true
       copyText(CONFIG.scheme).then(function (ok) {
-        // 无论自动复制成功与否，都把口令本身显示出来。
-        // 自动复制在各家浏览器的可用性差异很大（iOS WebView、部分国产浏览器、
-        // 非安全上下文都可能静默失败），只提示「已复制」而把口令藏起来，
-        // 一旦实际没复制成功，用户就彻底没有出路了。
-        showToast(
-          (ok ? '已复制，去微信里粘贴发送' : '请复制下方口令') +
-            '<br><code>' + CONFIG.scheme + '</code>' +
-            '<span class="lp-ad-toast__steps">在微信里发给任意聊天窗口 → 点自己刚发的那条链接</span>',
-          true
-        );
-        selectManualText();
+        // 无论自动复制成功与否都弹窗：自动成功 → 标题「已自动复制」；
+        // 失败 → 标题提示点下方按钮复制。弹窗里口令常驻 + 复制按钮兜底，
+        // 用户永远有出路（自动复制在各家浏览器可用性差异很大，不能只信一次）。
+        showModal(ok);
       });
     });
 

@@ -3584,9 +3584,12 @@ if (exists('liangpei-ad.css')) {
      故障会原样回来，且其他断言全绿。判据：块存在 + CTA/LOGO 确比
      吸底条基础值收紧。
      ------------------------------------------------------------------ */
-  const narrowRaw = (lp.match(/@media\s*\(max-width:\s*374px\)\s*\{[\s\S]*?\n\}/) || [''])[0];
+  // 2026-11-19：374px 断点不再只属于广告一段（良配口令弹窗也有小屏收紧块），
+  // 单块 match 会抓到弹窗块导致 .lp-ad__cta 判 null。聚合**所有** 374px 块。
+  const narrowParts = lp.match(/@media\s*\(max-width:\s*374px\)\s*\{[\s\S]*?\n\}/g) || [''];
+  const narrowRaw = narrowParts.join('\n');
   const narrow = stripCssComments(narrowRaw);
-  check(narrowRaw.length > 0,
+  check(narrowParts.some(b => /\.lp-ad__cta/.test(b)) && narrowRaw.length > 0,
     '超窄屏（≤374px）紧凑段存在',
     '删掉它，320px 下吸底条会竖排爆炸回 356px，悬浮按钮群被顶出屏幕');
   if (narrow) {
@@ -5276,10 +5279,10 @@ section('20q. 良配广告恢复上线 + 星巴克推广彻底移除');
     '保留 assets/starbucks.svg（星巴克品牌卡 LOGO，非活动推广资产）');
 
   // 2) 良配广告恢复活跃上线（不再是注释状态），版本号必须 bump 破缓存
-  check(/<link[^>]*liangpei-ad\.css\?v=15[^>]*>/i.test(idxNoCmt),
-    'index.html 活跃引用 liangpei-ad.css?v=15（秒级显示改版 bump 破缓存）');
-  check(/<script[^>]*liangpei-ad\.js\?v=14[^>]*>/i.test(idxNoCmt),
-    'index.html 活跃引用 liangpei-ad.js?v=14（文案 bump 破缓存）');
+  check(/<link[^>]*liangpei-ad\.css\?v=16[^>]*>/i.test(idxNoCmt),
+    'index.html 活跃引用 liangpei-ad.css?v=16（弹窗改版 bump 破缓存）');
+  check(/<script[^>]*liangpei-ad\.js\?v=15[^>]*>/i.test(idxNoCmt),
+    'index.html 活跃引用 liangpei-ad.js?v=15（口令弹窗改版 bump 破缓存）');
   check(exists('liangpei-ad.css') && exists('liangpei-ad.js'),
     '良配推广文件仍在仓库');
 
@@ -5329,6 +5332,26 @@ section('20q. 良配广告恢复上线 + 星巴克推广彻底移除');
     '窄屏弹窗 .dyp__panel 继续避让吸底推广条（--sxg-bar-h，良配同样发布该变量）');
   check(/var h = \(wide \|\| aside\.classList\.contains\('is-hidden'\)\) \? 0 : aside\.offsetHeight;/.test(lpJs),
     '良配脚本 ≥1440px / 隐藏时 --sxg-bar-h 写 0（避让语义延续）');
+
+  // 4b) 2026-11-19 站长指令：口令提示从黑色小 toast 改为居中弹窗——
+  //     「上文提示，下文给链接」。旧 toast 的类名必须清零防双实现漂移。
+  check(/showModal/.test(lpJs) && !/showToast/.test(lpJs),
+    '良配 JS 已从 showToast 切换到 showModal（旧 toast 函数清零）');
+  check(!/lp-ad-toast/.test(lpJs) && !/lp-ad-toast/.test(lpCss),
+    '旧 .lp-ad-toast 类名在 JS/CSS 中零残留（防双实现漂移）');
+  check(/lp-modal__steps/.test(lpJs) && /lp-modal__code/.test(lpJs) && /lp-modal__copy/.test(lpJs),
+    '弹窗结构齐全：上文步骤（steps）+ 下文口令（code）+ 复制按钮（copy）');
+  check(/lp-modal__steps[\s\S]*?① [\s\S]*?粘贴到微信[\s\S]*?② [\s\S]*?点自己刚发出/.test(lpJs),
+    '弹窗步骤含两步玩法：粘贴发送 → 点自己发的消息唤起');
+  check(/#小程序:\/\/良配\//.test(lpJs) && /lp-modal__code">' \+ CONFIG\.scheme/.test(lpJs),
+    '弹窗口令本体渲染 CONFIG.scheme（小程序链接常驻可见）');
+  check(/lp-modal__close|lp-modal__mask/.test(lpJs) && /Escape/.test(lpJs),
+    '弹窗可关闭：× / 点遮罩 / Esc 三通道');
+  check(/\.lp-modal\s*\{/.test(lpCss) && /display:\s*none/.test(lpCss.match(/\.lp-modal\s*\{([\s\S]*?)\}/)?.[1] || ''),
+    '弹窗显隐用 display:none↔flex 硬切换（不用 visibility 过渡，防卡帧坑复发）');
+  check(!/\.lp-modal[^_]*\{[^}]*visibility:\s*hidden/.test(lpCssNoCmt || lpCss)
+    && !/transition:[^;}]*visibility/.test(lpCssNoCmt || lpCss),
+    '弹窗 CSS 无 visibility 过渡（0da3a15 卡帧老坑不复发）');
 
   // 5) 行为测试接入
   check(exists('scripts/test-ad-logo.cjs'), '存在广告位 LOGO 行为测试');
@@ -6939,8 +6962,13 @@ section('21c. 首页滑到底部按钮');
   const idx = read('index.html');
   check(/http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/.test(idx),
     '首页 head 加了 no-cache 兜底（文档级缓存防御）', '首页缺 no-cache 兜底');
-  check(/navigator\.serviceWorker\.register\(['"]\.\/sw\.js['"]/.test(idx),
+  // SW 注册路径允许带 ?v=N（2026-11-19 为修复 360 旧缓存，注册改为 ./sw.js?v=2，
+  // 换 SW 文件时必须同步 bump 该参数，否则浏览器继续用旧 SW 文件）
+  check(/navigator\.serviceWorker\.register\(['"]\.\/sw\.js(\?v=\d+)?['"]/.test(idx),
     '首页注册了 sw.js（network-first 导航接管）', '首页没注册 SW → 旧黑弹窗残留问题没解决');
+  check(/navigator\.serviceWorker\.register\(['"]\.\/sw\.js\?v=\d+['"]/.test(idx),
+    'SW 注册路径带 ?v=N（360 旧缓存修复：换 sw.js 时必须 bump 参数强制浏览器取新版）',
+    'SW 注册没带 ?v=N → 换 sw.js 后浏览器仍用旧 SW 文件，修复不生效');
   check(/params\.has\('no-sw'\)/.test(idx) && /isSecureContext/.test(idx),
     'SW 注册带安全上下文判断 + ?no-sw 一键卸载开关', '缺安全上下文判断或 no-sw 开关 → 调试/异常环境会炸');
   const sw = exists('sw.js') ? read('sw.js') : '';
@@ -10176,15 +10204,15 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     const withGuard38 = htmlRefs38.filter((p) => {
       try { return /ua-guard\.js\?v=/.test(readFileSync(join(ROOT, p), 'utf8')); } catch { return false; }
     });
-    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=[1-7]\b/.test(readFileSync(join(ROOT, p), 'utf8')));
-    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=8\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=[1-8]\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=9\b/.test(readFileSync(join(ROOT, p), 'utf8')));
     check(withGuard38.length >= 199 && oldV38.length === 0 && newV38.length === withGuard38.length,
-      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=8、无残留 v=1~7`,
+      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=9、无残留 v=1~8`,
       `旧版 ${oldV38.length} 页 / 新版 ${newV38.length} 页 → 缓存不刷新，用户拿到旧拦截脚本`);
     const notes38 = exists('notes.html') ? read('notes.html') : '';
     const notesAt38 = notes38.indexOf('ua-guard.js');
     const bodyAt38 = notes38.indexOf('<body');
-    check(notesAt38 > 0 && /ua-guard\.js\?v=8/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
+    check(notesAt38 > 0 && /ua-guard\.js\?v=9/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
       '§38c notes.html 已挂 ua-guard 且引用位于 body 之前（全站无例外、同步生效）',
       'notes 未挂 / 版本不对 / 放到 body 之后 → 加密笔记页在 QQ 浏览器里正文先闪现');
   }
@@ -10267,7 +10295,7 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   const sm38 = exists('sitemap.xml') ? read('sitemap.xml') : '';
   const nav38 = exists('nav-menu.js') ? read('nav-menu.js') : '';
   check(rpt38.length > 0
-      && /ua-guard\.js\?v=8/.test(rpt38)
+      && /ua-guard\.js\?v=9/.test(rpt38)
       && /ai-link\.js\?v=\d+/.test(rpt38)
       && /sxg-legal/.test(rpt38)
       && /<title>[^<]*QQ 浏览器[^<]*<\/title>/.test(rpt38),

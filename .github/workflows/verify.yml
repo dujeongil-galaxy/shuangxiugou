@@ -119,6 +119,9 @@ jobs:
       # verify.mjs 自身的自检：check() 参数顺序、节号连续性。
       # 今天曾在同一天内两次把 check(cond, msg) 写成 check(msg, cond)，
       # 症状是输出出现「✓ true」—— 标签被当成条件，检查照样绿灯。
+      - name: 良配口令弹窗行为测试
+        run: node scripts/test-lp-modal.cjs
+
       - name: 校验脚本自检
         run: node scripts/test-verify-self.cjs
 

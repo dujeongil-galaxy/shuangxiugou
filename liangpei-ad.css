@@ -175,57 +175,173 @@
   color: var(--lp-text);
 }
 
-/* ---------- 复制口令后的提示 toast ---------- */
-.lp-ad-toast {
+/* ---------- 复制口令后的居中弹窗（2026-11-19 替换原黑色小 toast） ----------
+   站长口径：小 toast 又小又挤、压在正文上，改成正经弹窗——
+   上文步骤提示、下文口令链接。遮罩 55% 黑 + 白卡片居中。
+   ⚠️ 显隐用 display:none↔flex 硬切换，不用 opacity/visibility 过渡：
+   .lp-ad.is-hidden 的 visibility 卡帧坑（0da3a15）不许在这里复发。
+   入场动画交给卡片的 transform/opacity animation（display 切换会重播）。 */
+.lp-modal {
+  display: none;
   position: fixed;
-  left: 50%;
-  bottom: calc(var(--sxg-bar-h, 0px) + 96px);
+  inset: 0;
   z-index: 10001;
-  max-width: min(88vw, 340px);
-  padding: 11px 16px;
-  border-radius: 12px;
-  background: rgba(42, 38, 32, 0.93);
-  color: #fff;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
   font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  font-size: 13px;
-  line-height: 1.6;
+}
+
+.lp-modal.is-show {
+  display: flex;
+}
+
+.lp-modal__mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 17, 13, 0.55);
+}
+
+.lp-modal__card {
+  position: relative;
+  width: min(92vw, 380px);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  padding: 26px 22px 18px;
+  border-radius: 16px;
+  background: #fff;
+  color: #2a2620;
   text-align: center;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
-  transform: translate(-50%, 8px);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.22s ease, transform 0.22s ease;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+  animation: lp-modal-in 0.24s ease;
 }
 
-.lp-ad-toast.is-show {
-  opacity: 1;
-  transform: translate(-50%, 0);
+@keyframes lp-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-/* 提示里的操作步骤：与首行「已复制」拉开层次，次要字号 */
-.lp-ad-toast__steps {
+.lp-modal__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #9b8f80;
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.lp-modal__close:hover {
+  background: rgba(42, 38, 32, 0.06);
+  color: #2a2620;
+}
+
+.lp-modal__title {
+  margin-bottom: 12px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #2a2620;
+}
+
+/* 上文：怎么用口令打开小程序的步骤说明，左对齐逐条列 */
+.lp-modal__steps {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f6f4ef;
+  text-align: left;
+}
+
+.lp-modal__steps p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #5c554a;
+}
+
+.lp-modal__steps p + p {
+  margin-top: 6px;
+}
+
+/* 下文：小程序口令本体。
+   自动复制不可靠，这是用户永远的最后一条路 → 常驻可见 + 可点再复制。 */
+.lp-modal__code {
   display: block;
-  margin-top: 5px;
-  font-size: 12px;
-  line-height: 1.6;
-  opacity: 0.82;
-}
-
-/* 口令本体：常驻可见并支持点击复制。
-   自动复制在浏览器里不可靠，这是用户永远的最后一条路。 */
-.lp-ad-toast code {
-  display: inline-block;
-  margin: 6px 0 2px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.16);
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px dashed #c9bfae;
+  border-radius: 10px;
+  background: #fbf9f5;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 12.5px;
-  line-height: 1.4;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #2a2620;
   word-break: break-all;
   cursor: pointer;
   -webkit-user-select: all;
   user-select: all;
+}
+
+.lp-modal__code:active {
+  background: #f0ece4;
+}
+
+.lp-modal__copy {
+  display: block;
+  width: 100%;
+  padding: 12px 15px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #3dad8a, #2e8b6f);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(61, 173, 138, 0.3);
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.lp-modal__copy:hover {
+  filter: brightness(1.06);
+}
+
+.lp-modal__copy:active {
+  transform: scale(0.97);
+}
+
+/* 复制完成的反馈态：按钮文字被 JS 换成「✓ 已复制…」 */
+.lp-modal__copy.is-done {
+  background: linear-gradient(135deg, #2e8b6f, #256e57);
+}
+
+.lp-modal__note {
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: #9b8f80;
+}
+
+/* 小屏收紧行距与内边距，弹窗不出屏 */
+@media (max-width: 374px) {
+  .lp-modal {
+    padding: 12px;
+  }
+
+  .lp-modal__card {
+    padding: 22px 16px 14px;
+  }
 }
 
 /* ---------- 右侧竖排卡片（≥1440px） ---------- */
@@ -470,26 +586,11 @@
 }
 
 
-.lp-ad-toast code:active {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-@media (min-width: 1440px) {
-  .lp-ad-toast {
-    bottom: auto;
-    top: 50%;
-    transform: translate(-50%, calc(-50% + 8px));
-  }
-
-  .lp-ad-toast.is-show {
-    transform: translate(-50%, -50%);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .lp-ad,
   .lp-ad__cta,
-  .lp-ad-toast {
+  .lp-modal__card {
+    animation: none;
     transition: none;
   }
 }

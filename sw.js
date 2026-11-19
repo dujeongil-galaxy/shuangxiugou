@@ -27,8 +27,8 @@
  *     让新 SW 尽快接管；页面侧监听 controllerchange 自动刷新一次以用上新版本。
  */
 
-const NAV_CACHE = 'sxg-nav-v1';
-const STATIC_CACHE = 'sxg-static-v1';
+const NAV_CACHE = 'sxg-nav-v2';
+const STATIC_CACHE = 'sxg-static-v2';
 
 self.addEventListener('install', function () {
   // 不等旧 SW、立即激活，缩短「部署 → 生效」的空窗

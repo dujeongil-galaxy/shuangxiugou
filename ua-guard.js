@@ -59,7 +59,7 @@
     // 反推会把 Naver Whale / 三星 Internet 这类没进白名单的正常国际浏览器误伤。
     // 韩国两大主流浏览器（Naver Whale / Samsung Internet）特征串刻意不进黑名单。
     function sxgIsDomesticBrowser(u) {
-      return /(UCBrowser|UCWEB|Quark|360SE|360Chrome|360EE|QIHU|360 Aphone|SogouMobileBrowser|MetaSr|SE 2\.X|baidubrowser|BIDUBrowser|baidu|LBBROWSER|2345Explorer|2345chrome|Maxthon|HuaweiBrowser|HMSCore|MiuiBrowser|VivoBrowser|HeyTapBrowser|OPPOBrowser|OppoBrowser|AlipayClient|Weibo|DingTalk|aweme|ToutiaoNews|NewsArticle|CoolMarket|Meizu|SogouIE|QQBrowser|MQQBrowser|MicroMessenger|wxwork)/i.test(u);
+      return /(UCBrowser|UCWEB|Quark|360SE|360Chrome|360EE|360browser|360Browser|360Safe|360安全|QIHU|360 Aphone|SogouMobileBrowser|MetaSr|SE 2\.X|baidubrowser|BIDUBrowser|baidu|LBBROWSER|2345Explorer|2345chrome|Maxthon|HuaweiBrowser|HMSCore|MiuiBrowser|VivoBrowser|HeyTapBrowser|OPPOBrowser|OppoBrowser|AlipayClient|Weibo|DingTalk|aweme|ToutiaoNews|NewsArticle|CoolMarket|Meizu|SogouIE|QQBrowser|MQQBrowser|MicroMessenger|wxwork)/i.test(u);
     }
 
     // —— 国产浏览器顶部持续提示：固定于每个页面顶部、不提供关闭按钮、不影响正常浏览 ——
