@@ -4,6 +4,14 @@
 
 ---
 
+### feat：国产浏览器改每页固定顶部持续提示（不可关闭 / 不拦截 / 不写 cookie）+ v6（2026-11-19 · 提交 `cf83023`）
+
+- **变更起因**：上一批国产浏览器走「cookie 记忆、仅首次弹一次顶部提示」。最新口径改为**持续提示**——每页顶部固定一条不可关闭的提示，不隐藏正文、不阻断访问、不写 cookie；是否换浏览器由访客自决。QQ 浏览器（含反 UA 伪装）、微信/QQ 内置三条路径完全不变。
+- **主站 `ua-guard.js`**：新增 `sxgDomesticSignal()`（国产特征 token 黑名单）+ `sxgIsAllowedBrowser()`（白名单判定）。先剔除国产特征（UC/夸克/360/搜狗/百度/2345/傲游/华为/小米/vivo/OPPO/支付宝/微博/钉钉/抖音/头条等），命中即非白名单；余下才认 Safari / Chrome / Edge / Firefox 放行。难点是国产 Chromium 的 UA 也带 `Chrome/`，必须先排国产特征避免误判白名单。新增 `sxgShowBrowserNotice()`：注入 fixed top 的 `#sxg-browser-notice`（浅黄底深红字），只遮顶部约 70px、不遮正文、`role="note"`、无关闭按钮、不写 cookie、每页都弹；文案说明国内平台曝光/检索受限、不强制拦截、附 Bing 默认搜索引擎教程锚点链接。
+- **Bing 锚点联动**：`friend-links-footer.js` 的 Bing 教程卡由 JS 动态注入，native hash 定位落空且 fixed 提示条遮标题；补 `id="sxg-bing-guide"` + `scrollMarginTop='70px'`，注入后检测 `location.hash` 主动滚动。
+- **联动**：全站 200 处 `ua-guard.js` 缓存号 v5→v6。
+- **校验**：verify §38 升 v6；§38m 断言白名单判定 / 国产剔除 / 固定提示不可关闭 / 只插 DOM / 无 cookie / Bing 锚点与 70px 偏移；多组故障注入全判红，全量 1959 项全绿。CDP 四组 UA 实测（白名单 Chrome 无条、360 与 MIUI 有条且正文可见、伪装 iPhone QQ 浏览器仍跳专题页），截图肉眼确认。
+
 ### fix：反 UA 伪装加固——QQ 浏览器改标识伪装 iPhone/iPad/PC 仍跳专题页（2026-11-19 · 提交 `1879598`）
 
 - **变更起因**：站长指出 QQ 浏览器内置「浏览器标识」开关可把 UA 改成 iPhone / iPad / 电脑，上一批刚上的 UA 分流只匹配 `navigator.userAgent` 字符串，被一键绕过；要求改成更精准的拦截，并明确 QQ 浏览器不准进正站内容页。

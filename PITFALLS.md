@@ -3265,3 +3265,9 @@ verify 新增 §23m 扫两个品牌页 + index 自定义卡 + 备注补丁 + 缓
     \}/)）放进 new Function 沙箱执行，测的就是线上那份代码；再辅以「五项信号加分语句逐行在岗」的静态断言兜底。并在设计时安排**单信号用例**（只喂一个信号，得分恰好 =3），保证删掉任一项都能判红，而不是只测组合——组合里少一项仍可能过阈值。
 
 2. **沙箱里用 null 表示「属性不存在」会踩 typeof null === "object" 的坑**。构造假 navigator/window 时把 mqq: null 传进去，真代码 typeof window.mqq !== "undefined" 恒为真（typeof null 是 object），于是「真 iPhone」也被加了 4 分，行为矩阵意外判红。**判据**：模拟「属性不存在」必须**干脆不设置这个键**（if (mqq) winK.mqq = {}），而不是赋值 null；同理 chrome / userAgentData 也只在为真时才挂上。这类坑只在沙箱测试里出现，浏览器真实环境里没这个属性就是 undefined。
+
+## 第八十四章：国产 Chromium 的 UA 也带 Chrome/——白名单判定必须先排国产特征；cookie 故障注入要走真实回归路径（2026-11-19 cf83023）
+
+1. **国产浏览器 UA 里普遍带 `Chrome/` 字样，白名单单看 Chrome/ 会把 UC/夸克/360/搜狗/百度全放进来**。本批给「其余浏览器只做顶部提示」加白名单（Safari/Chrome/Edge/Firefox 放行）时，差点直接 `if (/Chrome\//) return true`；实测 UC/夸克/360 等国产 Chromium UA 全含 `Chrome/`，那样国产浏览器就被误判成白名单、一条提示都不弹。**判据**：白名单判定要先跑**国产特征黑名单**（UCBrowser/Quark/360SE/QIHU/Sogou/baidubrowser/2345Explorer/MiuiBrowser/HuaweiBrowser…命中即非白名单），剔除后再认白名单四类；并且「先排国产、再放行白名单」这条顺序要用行为断言钉死（构造带 `QIHU 360EE` + `Chrome/` 的 UA，必须判成非白名单）。
+
+2. **故障注入想拦「不写 cookie」，断言却去搜 document.cookie，会假绿**。本批把「仅首次提示」改成「持续提示、删 cookie 记忆」，要故障注入验证「cookie helper 真的被删干净了」。第一版注入用例去改 `document.cookie` 再跑——但 ua-guard.js 早已不再读写 cookie，注入点都不在代码里，删不删都不影响判绿。**判据**：验证「某行为已移除」，故障注入必须**走这条行为原本的真实代码路径**（回归用例曾真实调用 `doc.cookie` 记录首次访问）；现在该路径删了，就把注入改成「恢复 cookie helper + 恢复调用点」，断言能抓到这次恢复才算真判红。注入要咬「回归路径」，不是咬「随便一个含该词的字符串」。
