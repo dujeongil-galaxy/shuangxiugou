@@ -144,6 +144,10 @@
       '<div class="lp-modal__card">' +
         '<button class="lp-modal__close" type="button" aria-label="关闭弹窗">&times;</button>' +
         '<div class="lp-modal__title"></div>' +
+        '<div class="lp-modal__caution" role="note">' +
+          '<strong>⚠ 注册须知</strong>' +
+          '<p>小程序由 AI 审核注册资料，资料填写请真实完整。若过于敷衍，可能被判定「与平台价值观不符」而封禁账号，邀请也不算成功。</p>' +
+        '</div>' +
         '<div class="lp-modal__steps">' +
           '<p>① 复制下方口令，粘贴到微信任意聊天窗口并发送</p>' +
           '<p>② 点自己刚发出的那条消息，微信会把它识别成小程序卡片并唤起</p>' +

@@ -59,7 +59,11 @@
     // 反推会把 Naver Whale / 三星 Internet 这类没进白名单的正常国际浏览器误伤。
     // 韩国两大主流浏览器（Naver Whale / Samsung Internet）特征串刻意不进黑名单。
     function sxgIsDomesticBrowser(u) {
-      return /(UCBrowser|UCWEB|Quark|360SE|360Chrome|360EE|360browser|360Browser|360Safe|360安全|QIHU|360 Aphone|SogouMobileBrowser|MetaSr|SE 2\.X|baidubrowser|BIDUBrowser|baidu|LBBROWSER|2345Explorer|2345chrome|Maxthon|HuaweiBrowser|HMSCore|MiuiBrowser|VivoBrowser|HeyTapBrowser|OPPOBrowser|OppoBrowser|AlipayClient|Weibo|DingTalk|aweme|ToutiaoNews|NewsArticle|CoolMarket|Meizu|SogouIE|QQBrowser|MQQBrowser|MicroMessenger|wxwork)/i.test(u);
+      // 新版 360 安全浏览器（13/14）UA 去掉了 QIHU/360SE，改成在 Safari/537.36 后
+      // 直接续一段斜杠版本号（Safari/537.36/13.0.10000.0）。标准 Chrome 以
+      // Safari/537.36 结束、三星/Whale 在 Safari 前带自家 token，都不会命中这条。
+      // 2026-11-19 站长 PC 360 看不到国产提示条的真根因就是这个变体漏判。
+      return /(UCBrowser|UCWEB|Quark|360SE|360Chrome|360EE|360browser|360Browser|360Safe|360安全|QIHU|360 Aphone|SogouMobileBrowser|MetaSr|SE 2\.X|baidubrowser|BIDUBrowser|baidu|LBBROWSER|2345Explorer|2345chrome|Maxthon|HuaweiBrowser|HMSCore|MiuiBrowser|VivoBrowser|HeyTapBrowser|OPPOBrowser|OppoBrowser|AlipayClient|Weibo|DingTalk|aweme|ToutiaoNews|NewsArticle|CoolMarket|Meizu|SogouIE|QQBrowser|MQQBrowser|MicroMessenger|wxwork|Safari\/537\.36\/\d)/i.test(u);
     }
 
     // —— 国产浏览器顶部持续提示：固定于每个页面顶部、不提供关闭按钮、不影响正常浏览 ——

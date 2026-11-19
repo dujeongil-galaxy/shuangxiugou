@@ -87,6 +87,14 @@ if (cta) {
     check('弹窗带 is-show（可见）', modal && modal.classList.contains('is-show'));
     check('上文步骤含「粘贴到微信」', modal && /粘贴到微信/.test(modal.textContent));
     check('上文步骤含「点自己刚发出」', modal && /点自己刚发出/.test(modal.textContent));
+    const caution = modal && modal.querySelector('.lp-modal__caution');
+    check('注册须知警示块存在', !!caution);
+    check('警示块写明 AI 审核与封禁风险', caution && /AI 审核/.test(caution.textContent)
+      && /价值观不符/.test(caution.textContent) && /封禁/.test(caution.textContent),
+      caution && caution.textContent);
+    check('警示块排在步骤区之前', modal && caution
+      && modal.querySelector('.lp-modal__caution').compareDocumentPosition(
+        modal.querySelector('.lp-modal__steps')) & 4);
     const code = modal && modal.querySelector('.lp-modal__code');
     check('下文口令渲染 scheme 本体', code && code.textContent === SCHEME, code && code.textContent);
     check('口令含 #小程序:// 前缀', code && /^#小程序:\/\//.test(code.textContent));

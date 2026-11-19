@@ -5279,10 +5279,10 @@ section('20q. 良配广告恢复上线 + 星巴克推广彻底移除');
     '保留 assets/starbucks.svg（星巴克品牌卡 LOGO，非活动推广资产）');
 
   // 2) 良配广告恢复活跃上线（不再是注释状态），版本号必须 bump 破缓存
-  check(/<link[^>]*liangpei-ad\.css\?v=16[^>]*>/i.test(idxNoCmt),
-    'index.html 活跃引用 liangpei-ad.css?v=16（弹窗改版 bump 破缓存）');
-  check(/<script[^>]*liangpei-ad\.js\?v=15[^>]*>/i.test(idxNoCmt),
-    'index.html 活跃引用 liangpei-ad.js?v=15（口令弹窗改版 bump 破缓存）');
+  check(/<link[^>]*liangpei-ad\.css\?v=17[^>]*>/i.test(idxNoCmt),
+    'index.html 活跃引用 liangpei-ad.css?v=17（注册须知警示块 bump 破缓存）');
+  check(/<script[^>]*liangpei-ad\.js\?v=16[^>]*>/i.test(idxNoCmt),
+    'index.html 活跃引用 liangpei-ad.js?v=16（注册须知警示块 bump 破缓存）');
   check(exists('liangpei-ad.css') && exists('liangpei-ad.js'),
     '良配推广文件仍在仓库');
 
@@ -5343,6 +5343,15 @@ section('20q. 良配广告恢复上线 + 星巴克推广彻底移除');
     '弹窗结构齐全：上文步骤（steps）+ 下文口令（code）+ 复制按钮（copy）');
   check(/lp-modal__steps[\s\S]*?① [\s\S]*?粘贴到微信[\s\S]*?② [\s\S]*?点自己刚发出/.test(lpJs),
     '弹窗步骤含两步玩法：粘贴发送 → 点自己发的消息唤起');
+  // 2026-11-19 站长补：客服截图里的 AI 风控注意事项必须进弹窗——
+  // 只教操作不提示「资料敷衍会被封」，访客被封会反过来怪推广。
+  check(/lp-modal__caution/.test(lpJs) && /lp-modal__caution/.test(lpCss),
+    '弹窗含注册须知警示块（JS 结构 + CSS 样式都在，防只写一半）');
+  check(/AI 审核注册资料/.test(lpJs) && /与平台价值观不符/.test(lpJs)
+    && /封禁账号/.test(lpJs) && /邀请也不算成功/.test(lpJs),
+    '注册须知写明 AI 审核 / 资料敷衍 / 价值观不符封禁 / 邀请无效四个要点');
+  check(/lp-modal__title[\s\S]*?lp-modal__caution[\s\S]*?lp-modal__steps/.test(lpJs),
+    '警示块排在标题与操作步骤之间（先提示风险再教操作）');
   check(/#小程序:\/\/良配\//.test(lpJs) && /lp-modal__code">' \+ CONFIG\.scheme/.test(lpJs),
     '弹窗口令本体渲染 CONFIG.scheme（小程序链接常驻可见）');
   check(/lp-modal__close|lp-modal__mask/.test(lpJs) && /Escape/.test(lpJs),
@@ -10169,6 +10178,9 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     var uaUC = 'Mozilla/5.0 (Linux; U; Android 12; zh-CN; PGT-AN00 Build/HUAWEIPGT-AN00) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/100.0.4896.58 UCBrowser/15.0.0.1234 Mobile Safari/537.36';
     var uaQuark = 'Mozilla/5.0 (Linux; Android 12; SM-G9910) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Mobile Safari/537.36 Quark/6.5.0.280';
     var ua360 = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36 QIHU 360SE';
+    // 新版 360 安全浏览器（13/14）去掉 QIHU，改成 Safari/537.36/<版本号> 双段尾缀——
+    // 2026-11-19 站长 PC 360 仍看不到国产提示条的真根因，必须纳入行为矩阵防回归。
+    var ua360New = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36/13.0.10000.0';
     var uaHuawei = 'Mozilla/5.0 (Linux; Android 11; HarmonyOS; ANA-AN00; HMSCore 6.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.88 HuaweiBrowser/12.0.2.300 Mobile Safari/537.36';
     var uaAlipay = 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 AlipayClient/10.3.0';
     var uaMiui = 'Mozilla/5.0 (Linux; U; Android 13; zh-cn; MI 14 Build/TKQ1.221114.001) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/109.0.5414.86 Mobile Safari/537.36 XiaoMi/MiuiBrowser/18.5.20815';
@@ -10177,16 +10189,21 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
       chrome: domestic38m(uaChromeM), edge: domestic38m(uaEdgeM), firefox: domestic38m(uaFfM),
       naver: domestic38m(uaNaver), samsung: domestic38m(uaSamsung), opera: domestic38m(uaOpera),
       uc: domestic38m(uaUC), quark: domestic38m(uaQuark), browser360: domestic38m(ua360),
+      browser360New: domestic38m(ua360New),
       huawei: domestic38m(uaHuawei), alipay: domestic38m(uaAlipay), miui: domestic38m(uaMiui)
     };
     var matrixOk38m = matrix38m.safariMac === false && matrix38m.safariIphone === false
         && matrix38m.chrome === false && matrix38m.edge === false && matrix38m.firefox === false
         && matrix38m.naver === false && matrix38m.samsung === false && matrix38m.opera === false
         && matrix38m.uc === true && matrix38m.quark === true && matrix38m.browser360 === true
+        && matrix38m.browser360New === true
         && matrix38m.huawei === true && matrix38m.alipay === true && matrix38m.miui === true;
     check(matrixOk38m,
-      '§38m 真代码沙箱：Safari/Chrome/Edge/Firefox/Whale(韩国)/三星Internet/Opera 全放行；UC/夸克/360/华为/支付宝/MIUI 命中黑名单',
+      '§38m 真代码沙箱：Safari/Chrome/Edge/Firefox/Whale(韩国)/三星Internet/Opera 全放行；UC/夸克/360(含新版双段尾缀)/华为/支付宝/MIUI 命中黑名单',
       `实判定 ${JSON.stringify(matrix38m)}`);
+    check(has38m('Safari\\/537\\.36\\/\\d'),
+      '§38m 黑名单含新版 360 双段尾缀特征 Safari/537.36/<版本号>（站长 PC 360 漏判根因）',
+      '缺此特征 → 新版 360 被当成普通 Chrome 放行，国产提示条永远不弹');
   }
 
   // 38c. 全站引用版本号统一升到 v=2，notes.html 也必须挂上（全站无例外）
@@ -10204,15 +10221,15 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     const withGuard38 = htmlRefs38.filter((p) => {
       try { return /ua-guard\.js\?v=/.test(readFileSync(join(ROOT, p), 'utf8')); } catch { return false; }
     });
-    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=[1-8]\b/.test(readFileSync(join(ROOT, p), 'utf8')));
-    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=9\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=[1-9]\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=10\b/.test(readFileSync(join(ROOT, p), 'utf8')));
     check(withGuard38.length >= 199 && oldV38.length === 0 && newV38.length === withGuard38.length,
-      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=9、无残留 v=1~8`,
+      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=10、无残留 v=1~9`,
       `旧版 ${oldV38.length} 页 / 新版 ${newV38.length} 页 → 缓存不刷新，用户拿到旧拦截脚本`);
     const notes38 = exists('notes.html') ? read('notes.html') : '';
     const notesAt38 = notes38.indexOf('ua-guard.js');
     const bodyAt38 = notes38.indexOf('<body');
-    check(notesAt38 > 0 && /ua-guard\.js\?v=9/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
+    check(notesAt38 > 0 && /ua-guard\.js\?v=10/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
       '§38c notes.html 已挂 ua-guard 且引用位于 body 之前（全站无例外、同步生效）',
       'notes 未挂 / 版本不对 / 放到 body 之后 → 加密笔记页在 QQ 浏览器里正文先闪现');
   }
@@ -10295,7 +10312,7 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   const sm38 = exists('sitemap.xml') ? read('sitemap.xml') : '';
   const nav38 = exists('nav-menu.js') ? read('nav-menu.js') : '';
   check(rpt38.length > 0
-      && /ua-guard\.js\?v=9/.test(rpt38)
+      && /ua-guard\.js\?v=10/.test(rpt38)
       && /ai-link\.js\?v=\d+/.test(rpt38)
       && /sxg-legal/.test(rpt38)
       && /<title>[^<]*QQ 浏览器[^<]*<\/title>/.test(rpt38),

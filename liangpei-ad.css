@@ -256,6 +256,32 @@
   color: #2a2620;
 }
 
+/* 注册须知：小程序 AI 风控注意事项（资料敷衍会被判价值观不符而封禁）。
+   站长 2026-11-19 提供客服对话截图后才补上——原弹窗只教操作、不提示风险，
+   访客敷衍填资料被封会反过来怪本站推广。橙黄底红棕字，与米色步骤区区分。 */
+.lp-modal__caution {
+  margin-bottom: 12px;
+  padding: 11px 13px;
+  border: 1px solid #f0d9a8;
+  border-radius: 10px;
+  background: #fff8e8;
+  text-align: left;
+}
+
+.lp-modal__caution strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: #9a5b12;
+}
+
+.lp-modal__caution p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: #7c5320;
+}
+
 /* 上文：怎么用口令打开小程序的步骤说明，左对齐逐条列 */
 .lp-modal__steps {
   margin-bottom: 14px;

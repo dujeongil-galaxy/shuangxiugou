@@ -125,6 +125,8 @@ const evalExpr = (ws, expr) => cdp(ws, 'Runtime.evaluate', { expression: expr, r
       maskVisible: mask?getComputedStyle(mask).display:null,
       modalVisible: modal?getComputedStyle(modal).display:null,
       stepsText: (modal && modal.querySelector('.lp-modal__steps')) ? modal.querySelector('.lp-modal__steps').innerText.replace(/\\s+/g,' ') : null,
+      cautionText: (modal && modal.querySelector('.lp-modal__caution')) ? modal.querySelector('.lp-modal__caution').innerText.replace(/\\s+/g,' ') : null,
+      cautionBg: (modal && modal.querySelector('.lp-modal__caution')) ? getComputedStyle(modal.querySelector('.lp-modal__caution')).backgroundColor : null,
       codeText: (modal && modal.querySelector('.lp-modal__code')) ? modal.querySelector('.lp-modal__code').innerText : null,
       copyBtn: !!(modal && modal.querySelector('.lp-modal__copy')),
       closeBtn: !!(modal && modal.querySelector('.lp-modal__close')),
