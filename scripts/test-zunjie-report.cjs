@@ -49,10 +49,11 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
 
   const text = doc.body.textContent;
   const h1 = doc.querySelector('h1');
-  check('标题按站长指令用《狗日的华为做过的恶》且带引用标识与立场说明',
+  check('标题按站长指令用《狗日的华为做过的恶》',
     !!h1 && /狗日的华为做过的恶/.test(h1.textContent)
-    && !!h1.querySelector('.quoted')
-    && /并非本站的定性|外界批评文章的说法/.test(doc.body.textContent));
+    && !!h1.querySelector('.quoted'));
+  check('全页无免责标注（站长指令撤掉）',
+    !/未经独立核实|未经本站核实|不作事实认定|不构成事实认定|不代表本站立场|本站不下结论|本站不站队|待核实|立场说明|非本站立场/.test(text));
   check('外界批评观点四小节汇编在案',
     /外界批评观点汇编/.test(text) && /企业文化与员工管理争议/.test(text)
     && /市场竞争与商业策略/.test(text) && /外界争议与舆论/.test(text)
@@ -68,10 +69,7 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   check('抖音短链为可点外链且 nofollow',
     !!dyLink && dyLink.getAttribute('href') === 'https://v.douyin.com/Vc4SsZp8e1U/'
     && /nofollow/.test(dyLink.getAttribute('rel')));
-  check('三件套免责声明齐全',
-    /未经独立核实/.test(text) && /不作事实认定|不构成事实认定/.test(text)
-    && /不代表本站立场/.test(text));
-  check('车型名待核实提示在案', /S800/.test(text) && /待核实/.test(text));
+  check('车型原文与 S800 对照在案', /S800/.test(text) && /尊界 V800|尊界V800/.test(text));
   check('页脚含 WorkBuddy 署名', /WorkBuddy/.test(text) && /协助完成/.test(text));
   const copyBtn = doc.querySelector('#copy-btn');
   check('复制口令按钮存在', !!copyBtn);
