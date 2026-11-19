@@ -32,8 +32,8 @@ const htmlNoComments = html.replace(/<!--[\s\S]*?-->/g, '');
 // ---------- 1. 脚本挂载 ----------
 console.log('--- 挂载 ---');
 check('policy-notice.js 存在', fs.existsSync(path.join(ROOT, 'policy-notice.js')));
-check('index.html 活跃引用 policy-notice.js?v=3（非注释）',
-  /<script[^>]*policy-notice\.js\?v=3[^>]*>/i.test(htmlNoComments));
+check('index.html 活跃引用 policy-notice.js?v=4（非注释）',
+  /<script[^>]*policy-notice\.js\?v=4[^>]*>/i.test(htmlNoComments));
 check('脚本排在 header-to-dock.js 之后（同属 header 下游补丁）',
   html.indexOf('policy-notice.js') > html.indexOf('header-to-dock.js'));
 
@@ -88,6 +88,9 @@ check('header 未挂载时定时重试 + MutationObserver 自愈',
   /setTimeout\(sweep,\s*300\)/.test(js)
   && /new MutationObserver/.test(js)
   && /obs\.observe/.test(js));
+// 2026-11-19 站长最终口径：乌克兰公告无条件显示，白名单门槛不得回流
+check('无浏览器门槛函数（乌克兰公告对所有浏览器无条件显示）',
+  !/sxgIsBrowserAllowed|sxgPolicyAllowed|sxgIsDomesticBrowser/.test(js));
 
 // ---------- 5. 样式：浅黄底深红字（站长最终定稿）、移动端可读 ----------
 console.log('\n--- 样式 ---');

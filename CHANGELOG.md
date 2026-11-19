@@ -4,6 +4,18 @@
 
 ---
 
+### feat：国产浏览器判定反转黑名单——国际/韩流浏览器全放行，乌克兰公告无条件显示，撤两条友链（2026-11-19 · 提交 `本批待回填`）
+
+- **变更起因**：站长 2026-11-19 原话「我是说，国外非我提到的 4 个主流浏览器，也不应该拦截，所以别做白名单模式，只是针对国内的这些浏览器做一个公告，就够了」。上一批白名单方案（只认 Safari/Chrome/Edge/Firefox，Naver Whale、三星 Internet 等韩流/国际浏览器也会被弹提示）废弃反转。
+- **主站 `ua-guard.js`**：白名单函数族（`sxgDomesticSignal/sxgAllowedHint/sxgIsAllowedBrowser/sxgBrowserAllowed/sxgIsBrowserAllowed`）整体删除，改为单一黑名单判定 `sxgIsDomesticBrowser(ua)`——UA 命中国产特征 token 正则（UCBrowser/UCWEB/Quark/360SE/360Chrome/360EE/QIHU/360 Aphone/SogouMobileBrowser/MetaSr/SE 2.X/baidubrowser/BIDUBrowser/LBBROWSER/2345Explorer/2345chrome/Maxthon/HuaweiBrowser/HMSCore/MiuiBrowser/VivoBrowser/HeyTapBrowser/OPPOBrowser/OppoBrowser/AlipayClient/Weibo/DingTalk/aweme/ToutiaoNews/NewsArticle/CoolMarket/Meizu/SogouIE/QQBrowser）才调 `sxgShowBrowserNotice()` 弹顶部持续提示条；其余一切浏览器自然放行。分流仍被 `!isWeChat && !isQQ && !isQQBrowser` 守卫，QQ 浏览器跳专题页、微信/QQ 内置硬拦截三条既有口径不变。
+- **`policy-notice.js`（v3→v4）**：撤销 `sxgPolicyAllowed()` 白名单门槛，乌克兰公告恢复**无条件显示**——所有浏览器（含国产）都显示公告，与国产黄条互斥共存（国产两块都显示、国际只显示公告）。
+- **`friend-links-footer.js`（v17→v18）**：LINKS 删掉 JEV 双休购 Chrome 插件与投资理财公式两条（站长指令「现在先不挂」），留档注释记录原 URL 与指令日期，便于日后挂回；URL 写成不带 `https://` 的形式避免成为活链接。
+- **联动**：全站 200 处 `ua-guard.js?v=7→v=8`；`index.html` `policy-notice.js?v=3→v=4`、`friend-links-footer.js?v=17→v=18`。
+- **校验**：verify §38m 断言族整体反转为黑名单口径（函数存在 + 正则不含 Naver Whale/三星 Internet 特征 + 守卫不变 + 真代码沙箱七组国际浏览器全放行/六组国产命中）；§20r 改「无条件显示」；§36f 改「两条友链不得出现（活链接口径）+ 留档注释在位 + v=18」；§38c 期望 v=8。故障注入 6 组全判红（白名单函数回流 / 黑名单误收三星 / 分流改无条件 / 公告加回门槛 / 友链回流 / 基线全绿），全量 1962 项全绿。CDP 五组 UA 实测（360/OPPO 命中黄条，Chrome/三星 Internet/Naver Whale 放行只显示公告），截图肉眼确认提示条与正文无遮挡。
+- **新坑（PITFALLS 第八十六章）**：verify 输出带 ANSI 颜色码，故障注入脚本解析错误明细须先剥离 `\x1b[..m`；全绿基线也含 4 条 `·` 前缀 note 提示行，判红判定要从「错误 N 项」行之后截取，否则 note 行被误计。
+
+---
+
 ### fix：撤掉悬浮导航的「QQ浏览器专题」访客入口 + ua-guard/nav-menu 缓存号强刷（2026-11-19 · 提交 `1e456b2`）
 
 - **撤入口**：`nav-menu.js` 的 `ITEMS` 删掉 `{label:'QQ浏览器专题', href:'./qq-browser-report.html'}`——上一轮 `127714f` 是我擅自加的，站长口径是「拦截跳专题页」就够了，普通访客不应有直达入口；`index.html` 两处 `nav-menu.js?v=10→v=11` 强刷。

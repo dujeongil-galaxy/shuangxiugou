@@ -10,11 +10,14 @@
  *     两份微信文章存档（archive/wechat-liciaotiao-2023/）：腾讯方主张李跳跳
  *     屏蔽 QQ 浏览器广告构成不正当竞争，另一篇为作者回应，本站据此把争议
  *     本身作为说明内容呈现给 QQ 浏览器访客。微信/QQ 内置浏览器维持原硬拦截。
- *   2026-11-19 第四轮（现行，v6）：微信/QQ 内置与 QQ 浏览器两条口径完全不动；
- *     其余浏览器按白名单分流——Safari / Chrome / Edge / Firefox 直接放行、
- *     什么都不显示；其它（以国产浏览器为主）只在顶部弹一条说明，不拦截内容、
- *     不阻断操作，并用 cookie 记住，全站仅首次访问显示一次。理由是部分平台
- *     对本站话题曝光不足甚至屏蔽检索结果，但把是否更换浏览器交给访客决定。
+ *   2026-11-19 第四轮（v6→v8）：微信/QQ 内置与 QQ 浏览器两条口径完全不动。
+ *     提示口径两次反转，最终定稿（站长 2026-11-19 明确）：**不做白名单**——
+ *     只认「国产浏览器黑名单」，UA 命中华为/小米/OPPO/vivo/UC/夸克/360/搜狗/
+ *     百度/2345/傲游/支付宝/微博/钉钉/抖音/头条等国产特征才弹顶部说明（固定、
+ *     不可关闭、不拦内容）；其余一切浏览器——包括 Safari/Chrome/Edge/Firefox
+ *     四大主流，以及韩国 Naver Whale、三星 Internet、Opera 等国际浏览器——
+ *     一律放行、什么都不弹。理由：国内平台对本站曝光/检索受限，而这一现象
+ *     只跟国产浏览器人群相关；海外浏览器访客不受此困扰，无提示必要。
  *
  * 识别方式：UA 特征 + 运行时交叉验证，全程不发网络请求。
  *   - 微信 / 企业微信：MicroMessenger（wxwork 也会带它或单独出现）
@@ -48,21 +51,15 @@
     var doc = document;
     var root = doc.documentElement;
 
-    // —— 白名单浏览器判定（2026-11-19 新增，v6）——
-    // 口径：只有 Safari / Chrome / Edge / Firefox 四类放行且完全不提示；其余浏览器
-    // （重点是国产浏览器）只弹顶部一次性提示，不拦截内容、不阻断操作。
-    // 难点：UC / 夸克 / 360 等国产浏览器基于 Chromium，UA 里也带 Chrome/ 字样，
-    // 单看 Chrome/ 会把它们误判成白名单。故先查国产特征，命中即视为非白名单。
-    function sxgDomesticSignal(u) {
-      return /(UCBrowser|UCWEB|Quark|360SE|360Chrome|QIHU|360 Aphone|SogouMobileBrowser|MetaSr|SE 2\.X|baidubrowser|BIDUBrowser|LBBROWSER|2345Explorer|Maxthon|HuaweiBrowser|MiuiBrowser|VivoBrowser|HeyTapBrowser|OPPOBrowser|OppoBrowser|AlipayClient|Weibo|DingTalk|aweme|ToutiaoNews|NewsArticle)/i.test(u);
-    }
-    function sxgIsAllowedBrowser(u) {
-      if (sxgDomesticSignal(u)) return false;
-      if (/Edg(?:e|A|iOS)?\/|Edge\//i.test(u)) return true;
-      if (/Firefox\/|FxiOS\//i.test(u)) return true;
-      if (/CriOS\/|Chrome\//i.test(u)) return true;
-      if (/Safari\//i.test(u) && /Version\//i.test(u)) return true;
-      return false;
+    // —— 国产浏览器黑名单判定（2026-11-19 定稿，v8；站长口径：不做白名单）——
+    // 只弹给命中国产特征的浏览器；其余（Safari/Chrome/Edge/Firefox、韩国
+    // Naver Whale、三星 Internet、Opera 等一切非国产）一律放行、什么都不显示。
+    // 关键点：UC / 夸克 / 360 等国产浏览器基于 Chromium，UA 里也带 Chrome/ 字样，
+    // 所以「弹公告」的判据必须是国产特征串本身，绝不能用「不在某白名单里」反推——
+    // 反推会把 Naver Whale / 三星 Internet 这类没进白名单的正常国际浏览器误伤。
+    // 韩国两大主流浏览器（Naver Whale / Samsung Internet）特征串刻意不进黑名单。
+    function sxgIsDomesticBrowser(u) {
+      return /(UCBrowser|UCWEB|Quark|360SE|360Chrome|360EE|QIHU|360 Aphone|SogouMobileBrowser|MetaSr|SE 2\.X|baidubrowser|BIDUBrowser|baidu|LBBROWSER|2345Explorer|2345chrome|Maxthon|HuaweiBrowser|HMSCore|MiuiBrowser|VivoBrowser|HeyTapBrowser|OPPOBrowser|OppoBrowser|AlipayClient|Weibo|DingTalk|aweme|ToutiaoNews|NewsArticle|CoolMarket|Meizu|SogouIE|QQBrowser|MQQBrowser|MicroMessenger|wxwork)/i.test(u);
     }
 
     // —— 国产浏览器顶部持续提示：固定于每个页面顶部、不提供关闭按钮、不影响正常浏览 ——
@@ -144,8 +141,9 @@
     }
     if (!isWeChat && !isQQ && !isQQBrowser && sxgSpoofScore() >= 3) isQQBrowser = true;
     if (!isWeChat && !isQQ && !isQQBrowser) {
-      // 微信/QQ 内置、QQ 浏览器之外：白名单放行；其余国产浏览器只弹持续顶部提示（不可关闭）。
-      if (!sxgIsAllowedBrowser(ua)) sxgShowBrowserNotice();
+      // 微信/QQ 内置、QQ 浏览器之外：只给命中国产特征的浏览器弹持续顶部提示；
+      // 其余（含韩日/欧美一切国际浏览器）一律放行、什么都不显示（站长 2026-11-19 定稿）。
+      if (sxgIsDomesticBrowser(ua)) sxgShowBrowserNotice();
       return;
     }
 

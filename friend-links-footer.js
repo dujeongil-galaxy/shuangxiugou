@@ -21,20 +21,10 @@
       text: '各行业双休公司',
       desc: '按行业分类的双休企业名录，可与本站的品牌评级交叉比对',
     },
-    {
-      // 站长 2026-11-11：对方已在 Issue 下回复，给个单向友链（对方未开通 Website，无需对方回链）。
-      // 「筛选摘要」作为该友链的描述挂在本站友链区：边逛边用 AI 猜工作制、疑似非双休盖 PASS。
-      href: 'https://github.com/littlewindy123/jev-weekend-shopping-chrome',
-      text: 'JEV 双休购 · Chrome 插件',
-      desc: '边逛淘宝、京东时实时猜工作制、疑似非双休直接在商品图上盖 PASS 的浏览器插件；与本站人工评级互补，作者已回应本站的数据共建提议。',
-    },
-    {
-      // 站长 2026-11-14：新开 GitHub 仓库，记录投资理财五个公式。
-      // 备注：GitHub 中国大陆无法直连，建议科学上网访问。
-      href: 'https://github.com/dujeongil-galaxy/investment-formulas',
-      text: '投资理财公式',
-      desc: '投资理财笔记，记录五个理财公式（#投资 #理财 #成长 #认知）。GitHub 中国大陆无法直连，建议科学上网访问。',
-    },
+    // 2026-11-19 站长指令：「这两个撤了，现在先不挂」——JEV 双休购 Chrome 插件
+    // 与投资理财公式两条友链整体下架（原本分别挂于 2026-11-11 / 2026-11-14）。
+    // 数据留档：JEV = github.com/littlewindy123/jev-weekend-shopping-chrome，
+    // 投资理财 = github.com/dujeongil-galaxy/investment-formulas，后续要挂回直接恢复。
   ];
 
   var FOOTER_ID = 'related-sites-footer';

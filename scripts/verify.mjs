@@ -5352,8 +5352,8 @@ const POLICY_AFTER = '查看本站政策';
 if (exists(PNS)) {
   const pn = read(PNS);
   const idxActive = read('index.html').replace(/<!--[\s\S]*?-->/g, '');
-  check(/<script[^>]*policy-notice\.js\?v=3[^>]*>/.test(idxActive),
-    'index.html 活跃引用 policy-notice.js?v=3（非注释）');
+  check(/<script[^>]*policy-notice\.js\?v=4[^>]*>/.test(idxActive),
+    'index.html 活跃引用 policy-notice.js?v=4（非注释）');
   check(read('index.html').indexOf(PNS) > read('index.html').indexOf('header-to-dock.js'),
     '排在 header-to-dock.js 之后（同属 header 下游补丁）');
   check(pn.includes(POLICY_BEFORE),
@@ -5395,6 +5395,12 @@ if (exists(PNS)) {
   check(/a\{color:#991b1b;text-decoration:underline/.test(pn)
     && !/a\{color:#fde047/.test(pn),
     '「这里」链接为深红 #991b1b + 下划线（浅底上可辨可点，非亮黄）');
+  // 2026-11-19 站长最终口径：乌克兰公告无条件显示——白名单门槛已整体撤销。
+  // 门槛函数或「仅白名单显示」注释回流会让一半访客看不到治理声明。
+  check(!/sxgIsBrowserAllowed|sxgPolicyAllowed|sxgIsDomesticBrowser/.test(pn)
+    && !/仅白名单浏览器/.test(pn.replace(/[\s\S]*?(?:无条件显示|已撤销)[\s\S]*$/, '')),
+    '§20r 乌克兰公告无条件显示（浏览器白名单门槛已整体撤销，不再按 UA 过滤）',
+    '门槛函数或「仅白名单」口径回流 → 国产/国际部分浏览器访客看不到治理声明');
   check(exists('scripts/test-policy-notice.cjs'), '存在政策声明条行为测试');
   if (exists('.github/workflows/verify.yml')) {
     check(read('.github/workflows/verify.yml').includes('test-policy-notice.cjs'),
@@ -8927,12 +8933,18 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '§36f 公益广告位标题标注「排名不分先后」（文案内单空格，装饰圆点靠 flex gap 分隔）',
     '标题没加「排名不分先后」或空格不对 → 站长要求失守');
 
-  // ② 友链区新增 JEV 仓库链接 + 筛选摘要描述（边逛边猜工作制、疑似非双休盖 PASS）
-  check(flf36f.indexOf('https://github.com/littlewindy123/jev-weekend-shopping-chrome') !== -1
-    && flf36f.indexOf('JEV') !== -1
-    && /边逛|盖章|双休筛选|PASS/.test(flf36f),
-    '§36f 友链区新增 JEV 双休筛选浏览器插件链接 + 筛选摘要描述',
-    '友链没加 JEV 仓库 / 描述不是筛选摘要 → 站长「给他做个友链 + 筛选摘要挂友链区」失守');
+  // ② 友链区两条已撤（站长 2026-11-19：「这两个撤了，现在先不挂」）：
+  //    JEV 双休购 Chrome 插件（2026-11-11 挂）与投资理财公式（2026-11-14 挂）整体下架，
+  //    友链区只留「各行业双休公司」一条。断言从「必须有」反转为「必须无」，
+  //    并钉住撤链留档注释仍在（防后续想挂回时找不到出处）。
+  check(flf36f.indexOf('https://github.com/littlewindy123/jev-weekend-shopping-chrome') === -1
+    && flf36f.indexOf('https://github.com/dujeongil-galaxy/investment-formulas') === -1,
+    '§36f JEV 插件与投资理财公式两条友链已撤下（站长 2026-11-19 指令：先不挂）',
+    '两条友链仍出现在脚本里（活数据或残留 href）→ 撤链未生效');
+  check(/这两个撤了，现在先不挂/.test(flf36f) && /jev-weekend-shopping-chrome/.test(flf36f)
+    && /investment-formulas/.test(flf36f),
+    '§36f 撤链留档注释在位（记录原 URL 与站长指令，便于日后挂回；URL 不带 https:// 不会成为活链接）',
+    '留档注释被删 → 日后挂回无出处可查');
 
   // ③ 该友链为单向（对方无 Website，不要求互挂）；JEV 条目本身不写互惠/互挂口径。
   //    注意：friend-links-footer.js 第 83 行有一段历史注释「互惠链接」（解释源码块为何单放，
@@ -8943,11 +8955,11 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '§36f 友链为单向（对方无 Website，不要求互挂），JEV 条目不写互惠口径',
     'JEV 条目写成互惠/互挂 → 与「不要求互挂」矛盾');
 
-  // ④ 两个脚本在 index.html 的 ?v 随内容变更 bump，否则浏览器缓存旧脚本
+  // ④ 脚本在 index.html 的 ?v 随内容变更 bump，否则浏览器缓存旧脚本（撤链看不到）
   check(/black-card-adslot\.js\?v=22/.test(idx36f)
-    && /friend-links-footer\.js\?v=17/.test(idx36f),
-    '§36f 两个脚本在 index.html 的 ?v 已随内容变更 bump 到 17',
-    '?v 没 bump → 浏览器缓存旧脚本，新文案 / 新友链不生效');
+    && /friend-links-footer\.js\?v=18/.test(idx36f),
+    '§36f friend-links-footer.js 在 index.html 的 ?v 已随撤链 bump 到 18',
+    '?v 没 bump → 浏览器缓存旧脚本，已撤的两条友链仍显示给访客');
 }
 
 // ---------- 36g. 手机端：内容避让右侧悬浮按钮组（穿模规则写死，2026-11-11 站长） ----------
@@ -10065,25 +10077,24 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
       `实得分 ${JSON.stringify(casesK)}`);
   }
 
-  // 38m. 国产浏览器顶部持续提示（v6）：白名单放行、其余只提示不拦截、固定不可关闭、不做 cookie
+  // 38m. 国产浏览器顶部持续提示（v8，站长 2026-11-19 最终口径）：不做白名单、
+  //      只认国产黑名单；韩日/欧美一切国际浏览器（含 Naver Whale/三星 Internet）放行
   {
     var flf38m = exists('friend-links-footer.js') ? read('friend-links-footer.js') : '';
-    // ① 白名单与国产识别逻辑在岗
+    // ① 黑名单判定在岗：必须有国产特征判定函数 + 韩国两大浏览器特征串不得进黑名单
     var has38m = function (s) { return ug38.indexOf(s) !== -1; };
-    check(has38m('function sxgIsAllowedBrowser(u)')
-        && has38m('function sxgDomesticSignal(u)')
-        && has38m('Edg(?:e|A|iOS)?\\/|Edge\\/')
-        && has38m('Firefox\\/|FxiOS\\/')
-        && has38m('CriOS\\/|Chrome\\/')
-        && has38m('Safari\\/')
-        && has38m('if (sxgDomesticSignal(u)) return false;'),
-      '§38m ua-guard.js 含白名单判定（Safari/Chrome/Edge/Firefox）与国产特征剔除（前置防误判）',
-      '白名单/国产剔除被删 → 国产 Chromium 浏览器带 Chrome/ 被误判白名单，提示落空');
-    // ② 分流分支：非微信/QQ/QQ浏览器时才走白名单判定，qq/内置口径在上游不变
+    check(has38m('function sxgIsDomesticBrowser(u)')
+        && has38m('if (sxgIsDomesticBrowser(ua)) sxgShowBrowserNotice();')
+        && !/sxgIsAllowedBrowser|sxgDomesticSignal|sxgBrowserAllowed|sxgIsBrowserAllowed|sxgAllowedHint/.test(ug38),
+      '§38m ua-guard.js 改为国产黑名单判定 sxgIsDomesticBrowser（白名单函数族已整体移除）',
+      '白名单函数残留 / 黑名单判定缺失 → 回到「不在白名单就提示」的旧口径，国际浏览器被误伤');
+    check(!/Naver|Whale|SamsungBrowser|Samsung ?Internet/i.test(ug38.replace(/[\s\S]*?(?:国产浏览器黑名单|sxgIsDomesticBrowser)[\s\S]*$/, '')),
+      '§38m 黑名单正则不含 Naver Whale / 三星 Internet 特征串（韩国主流浏览器不拦）',
+      '韩国浏览器特征进了黑名单正则 → 韩国访客被误提示');
+    // ② 分流分支：非微信/QQ/QQ浏览器时才走黑名单判定，三类既有口径在上游不变
     check(has38m('if (!isWeChat && !isQQ && !isQQBrowser) {')
-        && has38m('!sxgIsAllowedBrowser(ua)) sxgShowBrowserNotice()')
         && has38m('if (!isWeChat && !isQQ && !isQQBrowser && sxgSpoofScore() >= 3) isQQBrowser = true;'),
-      '§38m 白名单判定被 !isWeChat/!isQQ/!isQQBrowser 守卫（三类既有口径不被改写）',
+      '§38m 黑名单判定被 !isWeChat/!isQQ/!isQQBrowser 守卫（三类既有口径不被改写）',
       '判定被提到上游 → 微信/QQ 内置或 QQ 浏览器落到提示分支，硬拦/专题页口径被破坏');
     // ③ 持续提示：固定不可关闭 + 只挂顶部条不隐藏 body + 无任何 cookie 记忆
     check(/position:fixed;top:0/.test(ug38)
@@ -10112,12 +10123,11 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     check(/seoCard\.style\.scrollMarginTop = '70px'/.test(flf38m),
       '§38m Bing 卡片预留 70px 滚动偏移，标题不被固定提示条盖住',
       '缺滚动偏移 → 卡片顶到 y=0，标题被顶部固定提示条遮挡');
-    // ⑥ 真代码沙箱判定矩阵：从源文件原样抠出 sxgIsAllowedBrowser 函数体执行，不测重写副本
-    var fnWhitelist38m = ug38.match(/function sxgIsAllowedBrowser\(u\) \{[\s\S]*?\n    \}/);
-    var fnDomestic38m = ug38.match(/function sxgDomesticSignal\(u\) \{[\s\S]*?\n    \}/);
-    var allowed38m = function (u) {
-      if (!fnWhitelist38m || !fnDomestic38m) return null;
-      var fn = new Function('u', fnDomestic38m[0] + '\n' + fnWhitelist38m[0] + '\n return sxgIsAllowedBrowser(u);');
+    // ⑥ 真代码沙箱判定矩阵：从源文件原样抠出 sxgIsDomesticBrowser 函数体执行，不测重写副本
+    var fnDomestic38m = ug38.match(/function sxgIsDomesticBrowser\(u\) \{[\s\S]*?\n    \}/);
+    var domestic38m = function (u) {
+      if (!fnDomestic38m) return null;
+      var fn = new Function('u', fnDomestic38m[0] + '\n return sxgIsDomesticBrowser(u);');
       return fn(u);
     };
     var uaSafariM = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15';
@@ -10125,23 +10135,29 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     var uaChromeM = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
     var uaEdgeM = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0';
     var uaFfM = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0';
+    var uaNaver = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Whale/3.24.223.18';
+    var uaSamsung = 'Mozilla/5.0 (Linux; Android 14; SM-S918N) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/24.0 Chrome/117.0.0.0 Mobile Safari/537.36';
+    var uaOpera = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 OPR/106.0.0.0';
     var uaUC = 'Mozilla/5.0 (Linux; U; Android 12; zh-CN; PGT-AN00 Build/HUAWEIPGT-AN00) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/100.0.4896.58 UCBrowser/15.0.0.1234 Mobile Safari/537.36';
     var uaQuark = 'Mozilla/5.0 (Linux; Android 12; SM-G9910) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Mobile Safari/537.36 Quark/6.5.0.280';
     var ua360 = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36 QIHU 360SE';
     var uaHuawei = 'Mozilla/5.0 (Linux; Android 11; HarmonyOS; ANA-AN00; HMSCore 6.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.88 HuaweiBrowser/12.0.2.300 Mobile Safari/537.36';
     var uaAlipay = 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 AlipayClient/10.3.0';
+    var uaMiui = 'Mozilla/5.0 (Linux; U; Android 13; zh-cn; MI 14 Build/TKQ1.221114.001) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/109.0.5414.86 Mobile Safari/537.36 XiaoMi/MiuiBrowser/18.5.20815';
     var matrix38m = {
-      safariMac: allowed38m(uaSafariM), safariIphone: allowed38m(uaIphoneS),
-      chrome: allowed38m(uaChromeM), edge: allowed38m(uaEdgeM), firefox: allowed38m(uaFfM),
-      uc: allowed38m(uaUC), quark: allowed38m(uaQuark), browser360: allowed38m(ua360),
-      huawei: allowed38m(uaHuawei), alipay: allowed38m(uaAlipay)
+      safariMac: domestic38m(uaSafariM), safariIphone: domestic38m(uaIphoneS),
+      chrome: domestic38m(uaChromeM), edge: domestic38m(uaEdgeM), firefox: domestic38m(uaFfM),
+      naver: domestic38m(uaNaver), samsung: domestic38m(uaSamsung), opera: domestic38m(uaOpera),
+      uc: domestic38m(uaUC), quark: domestic38m(uaQuark), browser360: domestic38m(ua360),
+      huawei: domestic38m(uaHuawei), alipay: domestic38m(uaAlipay), miui: domestic38m(uaMiui)
     };
-    var matrixOk38m = matrix38m.safariMac === true && matrix38m.safariIphone === true
-        && matrix38m.chrome === true && matrix38m.edge === true && matrix38m.firefox === true
-        && matrix38m.uc === false && matrix38m.quark === false && matrix38m.browser360 === false
-        && matrix38m.huawei === false && matrix38m.alipay === false;
+    var matrixOk38m = matrix38m.safariMac === false && matrix38m.safariIphone === false
+        && matrix38m.chrome === false && matrix38m.edge === false && matrix38m.firefox === false
+        && matrix38m.naver === false && matrix38m.samsung === false && matrix38m.opera === false
+        && matrix38m.uc === true && matrix38m.quark === true && matrix38m.browser360 === true
+        && matrix38m.huawei === true && matrix38m.alipay === true && matrix38m.miui === true;
     check(matrixOk38m,
-      '§38m 真代码沙箱：Safari/Chrome/Edge/Firefox 放行；UC/夸克/360/华为/支付宝（带 Chrome/ 字样）仍判非白名单',
+      '§38m 真代码沙箱：Safari/Chrome/Edge/Firefox/Whale(韩国)/三星Internet/Opera 全放行；UC/夸克/360/华为/支付宝/MIUI 命中黑名单',
       `实判定 ${JSON.stringify(matrix38m)}`);
   }
 
@@ -10160,15 +10176,15 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     const withGuard38 = htmlRefs38.filter((p) => {
       try { return /ua-guard\.js\?v=/.test(readFileSync(join(ROOT, p), 'utf8')); } catch { return false; }
     });
-    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=[1-6]\b/.test(readFileSync(join(ROOT, p), 'utf8')));
-    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=7\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=[1-7]\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=8\b/.test(readFileSync(join(ROOT, p), 'utf8')));
     check(withGuard38.length >= 199 && oldV38.length === 0 && newV38.length === withGuard38.length,
-      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=7、无残留 v=1/2/3/4/5/6`,
+      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=8、无残留 v=1~7`,
       `旧版 ${oldV38.length} 页 / 新版 ${newV38.length} 页 → 缓存不刷新，用户拿到旧拦截脚本`);
     const notes38 = exists('notes.html') ? read('notes.html') : '';
     const notesAt38 = notes38.indexOf('ua-guard.js');
     const bodyAt38 = notes38.indexOf('<body');
-    check(notesAt38 > 0 && /ua-guard\.js\?v=7/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
+    check(notesAt38 > 0 && /ua-guard\.js\?v=8/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
       '§38c notes.html 已挂 ua-guard 且引用位于 body 之前（全站无例外、同步生效）',
       'notes 未挂 / 版本不对 / 放到 body 之后 → 加密笔记页在 QQ 浏览器里正文先闪现');
   }
@@ -10251,7 +10267,7 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   const sm38 = exists('sitemap.xml') ? read('sitemap.xml') : '';
   const nav38 = exists('nav-menu.js') ? read('nav-menu.js') : '';
   check(rpt38.length > 0
-      && /ua-guard\.js\?v=7/.test(rpt38)
+      && /ua-guard\.js\?v=8/.test(rpt38)
       && /ai-link\.js\?v=\d+/.test(rpt38)
       && /sxg-legal/.test(rpt38)
       && /<title>[^<]*QQ 浏览器[^<]*<\/title>/.test(rpt38),
