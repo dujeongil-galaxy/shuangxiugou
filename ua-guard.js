@@ -1,17 +1,20 @@
-/* ua-guard.js — 微信 / QQ 内置浏览器 / 独立 QQ 浏览器拦截层（2026-11-18 建立，11-19 扩围）
+/* ua-guard.js — 微信 / QQ 内置浏览器 / 独立 QQ 浏览器拦截层（2026-11-18 建立，11-19 两次扩围）
  *
  * 背景与口径：
  *   2026-11-18：根页面自身不拦，站内所有页面（notes.html 除外）在微信/QQ 内置
  *     浏览器里一律弹全屏拦截层，要求复制地址到系统浏览器打开。
- *   2026-11-19：拦截范围扩到独立的「QQ 浏览器」App。依据是当日站长指定的两份
- *     微信文章存档（archive/wechat-liciaotiao-2023/）：一份为腾讯方律师函，
+ *   2026-11-19 第一轮：拦截范围扩到独立的「QQ 浏览器」App。依据是当日站长指定的
+ *     两份微信文章存档（archive/wechat-liciaotiao-2023/）：一份为腾讯方律师函，
  *     主张「李跳跳」屏蔽 QQ 浏览器广告构成不正当竞争；另一份为作者回应。
- *     本站据此把 QQ 浏览器与微信/QQ 内置浏览器同等对待，统一要求系统浏览器打开。
+ *   2026-11-19 第二轮：notes.html 不再豁免（全站无例外）；QQ 浏览器无论手机端
+ *     还是电脑版一律拦截，识别不再依赖版本号形态。
  *
  * 识别方式：纯 UA 特征，不做任何网络请求。
  *   - 微信 / 企业微信：MicroMessenger（wxwork 也会带它或单独出现）
  *   - QQ 内置浏览器：  QQ/x.x.x（「QQ/数字」形态）
- *   - 独立 QQ 浏览器： MQQBrowser/x.x（手机 QQ 浏览器 App 的标识）
+ *   - 独立 QQ 浏览器： MQQBrowser / QQBrowser 任意形态（手机 App 用 MQQBrowser/x.x，
+ *     电脑版用 Chrome/... Safari/... QQBrowser/10.x；不绑定数字段，避免版本格式
+ *     变化后漏拦）
  *   - TIM：            Tim/x.x
  *
  * 实现要点：
@@ -30,7 +33,7 @@
     var ua = navigator.userAgent || '';
     var isWeChat = /MicroMessenger/i.test(ua) || /wxwork/i.test(ua);
     var isQQ = /\bQQ\/[\d.]+/.test(ua) || /\/Tim\//.test(ua);
-    var isQQBrowser = /MQQBrowser\/[\d.]+/i.test(ua) || /QQBrowser\/[\d.]+/i.test(ua);
+    var isQQBrowser = /MQQBrowser/i.test(ua) || /QQBrowser/i.test(ua);
     if (!isWeChat && !isQQ && !isQQBrowser) return; // 正常浏览器：什么都不做
 
     var doc = document;

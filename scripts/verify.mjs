@@ -9970,20 +9970,20 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
 {
   const ug38 = exists('ua-guard.js') ? read('ua-guard.js') : '';
 
-  // 38a. 主站拦截脚本识别独立 QQ 浏览器（MQQBrowser / QQBrowser 两种 token）
-  check(/MQQBrowser\\\/\[\\d\.\]\+/i.test(ug38)
-      && /QQBrowser\\\/\[\\d\.\]\+/i.test(ug38)
+  // 38a. 主站拦截脚本识别独立 QQ 浏览器（任意形态，含电脑版 QQBrowser/10.x）
+  check(/\/MQQBrowser\/i\.test\(ua\)/.test(ug38)
+      && /\/QQBrowser\/i\.test\(ua\)/.test(ug38)
       && /isQQBrowser/.test(ug38)
       && /!isWeChat && !isQQ && !isQQBrowser/.test(ug38),
-    '§38a ua-guard.js 识别独立 QQ 浏览器并纳入硬拦截条件',
-    '缺 MQQBrowser/QQBrowser 识别或未并入拦截条件 → QQ 浏览器仍可正常访问，扩围落空');
+    '§38a ua-guard.js 识别独立 QQ 浏览器任意 UA 形态并纳入硬拦截条件',
+    '识别回退到版本号限定或未并入拦截条件 → 电脑版 QQ 浏览器漏拦，扩围落空');
 
   // 38b. 提示文案提到 QQ 浏览器（不能只改代码不改文案）
   check(/QQ 浏览器访问/.test(ug38) && /微信 \/ QQ 的内置浏览器/.test(ug38),
     '§38b 拦截层提示文案同时覆盖微信/QQ 内置浏览器与独立 QQ 浏览器',
     '文案仍只写内置浏览器 → 用户看不懂为何被拦');
 
-  // 38c. 全站引用版本号统一升到 v=2，notes.html 仍排除
+  // 38c. 全站引用版本号统一升到 v=2，notes.html 也必须挂上（全站无例外）
   {
     const htmlRefs38 = [];
     function walk38(d) {
@@ -9999,13 +9999,16 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
       try { return /ua-guard\.js\?v=/.test(readFileSync(join(ROOT, p), 'utf8')); } catch { return false; }
     });
     const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=1\b/.test(readFileSync(join(ROOT, p), 'utf8')));
-    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=2\b/.test(readFileSync(join(ROOT, p), 'utf8')));
-    check(withGuard38.length >= 190 && oldV38.length === 0 && newV38.length === withGuard38.length,
-      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=2、无残留 v=1`,
+    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=3\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    check(withGuard38.length >= 199 && oldV38.length === 0 && newV38.length === withGuard38.length,
+      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=3、无残留 v=1/2`,
       `旧版 ${oldV38.length} 页 / 新版 ${newV38.length} 页 → 缓存不刷新，用户拿到旧拦截脚本`);
-    check(!/ua-guard/.test(exists('notes.html') ? read('notes.html') : ''),
-      '§38c notes.html 仍不挂 ua-guard（沿用 AdSense 跳过先例）',
-      'notes 被误挂拦截层 → 加密笔记页在微信里也打不开');
+    const notes38 = exists('notes.html') ? read('notes.html') : '';
+    const notesAt38 = notes38.indexOf('ua-guard.js');
+    const bodyAt38 = notes38.indexOf('<body');
+    check(notesAt38 > 0 && /ua-guard\.js\?v=3/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
+      '§38c notes.html 已挂 ua-guard 且引用位于 body 之前（全站无例外、同步生效）',
+      'notes 未挂 / 版本不对 / 放到 body 之后 → 加密笔记页在 QQ 浏览器里正文先闪现');
   }
 
   // 38d. 微信文章存档：目录、正文图、完整 HTML、转录、来源清单齐全
@@ -10071,6 +10074,14 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
       '§38g 两张存档原图登记进 §22c 明文素材白名单（第三方证据原件，非站长口述素材）',
       '未登记 → §22c 把证据原图当违规明文素材判红；登记入口丢失');
   }
+
+  // 38h. 电脑版 QQ 浏览器 UA（QQBrowser/10.x，不带 M 前缀）必须落进拦截范围
+  const pcUa38 = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+    + '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 QQBrowser/10.9.4494.400';
+  const pcHit38 = /MQQBrowser/i.test(pcUa38) || /QQBrowser/i.test(pcUa38);
+  check(pcHit38 && /\/QQBrowser\/i\.test\(ua\)/.test(ug38) && /电脑版/.test(ug38),
+    '§38h 电脑版 QQ 浏览器 UA（QQBrowser/10.x）被宽泛识别覆盖',
+    '识别回退到版本号限定 / 注释丢电脑版口径 → PC 端 QQ 浏览器放行，与全端锁死口径不符');
 }
 
 // ---------- 汇总 ----------
