@@ -145,9 +145,26 @@
     }
     if (!isWeChat && !isQQ && !isQQBrowser && sxgSpoofScore() >= 3) isQQBrowser = true;
     if (!isWeChat && !isQQ && !isQQBrowser) {
+      // —— 强制国产提示开关（自助兜底，2026-11-20 加）——
+      // 新版 360 安全浏览器（v13+，2022Q4 起）默认启用「UA 覆盖策略」，把 UA 伪装成
+      // 纯 Chrome、移除全部 QIHU/360SE/360EE 标识。UA 字符串层面已无法与真 Chrome 区分，
+      // 纯特征匹配的准确率因此跌破 72%。给这类用户一条自助出路：
+      //   ?force-domestic=1  →  写 sessionStorage，同一会话所有页都显示国产提示条，
+      //   直到关闭标签页或访问 ?force-domestic=0 撤销。只影响本人本次会话，不误伤他人。
+      var forceDomestic = false;
+      try {
+        if (/[?&]force-domestic=1(?:&|$)/.test(location.search)) {
+          sessionStorage.setItem('sxg-force-domestic', '1');
+        } else if (/[?&]force-domestic=0(?:&|$)/.test(location.search)) {
+          sessionStorage.removeItem('sxg-force-domestic');
+        }
+        forceDomestic = sessionStorage.getItem('sxg-force-domestic') === '1';
+      } catch (e) { /* 隐私模式禁用 sessionStorage：仅本页生效，不抛错 */ }
+
       // 微信/QQ 内置、QQ 浏览器之外：只给命中国产特征的浏览器弹持续顶部提示；
       // 其余（含韩日/欧美一切国际浏览器）一律放行、什么都不显示（站长 2026-11-19 定稿）。
-      if (sxgIsDomesticBrowser(ua)) sxgShowBrowserNotice();
+      // forceDomestic 是访客自助声明「我就是国产浏览器」，优先级等同于命中特征。
+      if (sxgIsDomesticBrowser(ua) || forceDomestic) sxgShowBrowserNotice();
       return;
     }
 

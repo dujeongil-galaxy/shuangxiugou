@@ -10121,7 +10121,7 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     // ① 黑名单判定在岗：必须有国产特征判定函数 + 韩国两大浏览器特征串不得进黑名单
     var has38m = function (s) { return ug38.indexOf(s) !== -1; };
     check(has38m('function sxgIsDomesticBrowser(u)')
-        && has38m('if (sxgIsDomesticBrowser(ua)) sxgShowBrowserNotice();')
+        && /if \(sxgIsDomesticBrowser\(ua\)(?:\s*\|\|\s*forceDomestic)?\) sxgShowBrowserNotice\(\);/.test(ug38)
         && !/sxgIsAllowedBrowser|sxgDomesticSignal|sxgBrowserAllowed|sxgIsBrowserAllowed|sxgAllowedHint/.test(ug38),
       '§38m ua-guard.js 改为国产黑名单判定 sxgIsDomesticBrowser（白名单函数族已整体移除）',
       '白名单函数残留 / 黑名单判定缺失 → 回到「不在白名单就提示」的旧口径，国际浏览器被误伤');
@@ -10221,17 +10221,49 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     const withGuard38 = htmlRefs38.filter((p) => {
       try { return /ua-guard\.js\?v=/.test(readFileSync(join(ROOT, p), 'utf8')); } catch { return false; }
     });
-    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=[1-9]\b/.test(readFileSync(join(ROOT, p), 'utf8')));
-    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=10\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=(?:[1-9]|10)\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=11\b/.test(readFileSync(join(ROOT, p), 'utf8')));
     check(withGuard38.length >= 199 && oldV38.length === 0 && newV38.length === withGuard38.length,
-      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=10、无残留 v=1~9`,
+      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=11、无残留 v=1~10`,
       `旧版 ${oldV38.length} 页 / 新版 ${newV38.length} 页 → 缓存不刷新，用户拿到旧拦截脚本`);
     const notes38 = exists('notes.html') ? read('notes.html') : '';
     const notesAt38 = notes38.indexOf('ua-guard.js');
     const bodyAt38 = notes38.indexOf('<body');
-    check(notesAt38 > 0 && /ua-guard\.js\?v=10/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
+    check(notesAt38 > 0 && /ua-guard\.js\?v=11/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
       '§38c notes.html 已挂 ua-guard 且引用位于 body 之前（全站无例外、同步生效）',
       'notes 未挂 / 版本不对 / 放到 body 之后 → 加密笔记页在 QQ 浏览器里正文先闪现');
+  }
+
+  // 38c-2. UA 伪装自助兜底（2026-11-20）：新版 360 v13+ 把 UA 伪装成纯 Chrome，
+  //   QIHU/360SE 全部移除，纯特征匹配分不出来。必须同时具备：
+  //   ① ua-guard.js 有 force-domestic 开关（?force-domestic=1 写 sessionStorage）
+  //   ② 有一份可访问的诊断页，把真实 UA + 运行时指纹摊给访客/站长
+  //   ③ 诊断页的强制按钮确实指向首页 ?force-domestic=1（不是死链）
+  {
+    const guardSrc38 = exists('ua-guard.js') ? read('ua-guard.js') : '';
+    check(/force-domestic=1/.test(guardSrc38)
+        && /sessionStorage\.setItem\('sxg-force-domestic',\s*'1'\)/.test(guardSrc38)
+        && /sxgIsDomesticBrowser\(ua\)\s*\|\|\s*forceDomestic/.test(guardSrc38),
+      '§38c-2 ua-guard 有 force-domestic 自助开关：参数写 sessionStorage 且并入国产判定',
+      '删开关 → UA 伪装成 Chrome 的新版 360 永远拿不到国产提示条，且无自助出路');
+    const diag38 = exists('ua-check.html') ? read('ua-check.html') : '';
+    check(diag38.length > 2000
+        && /navigator\.userAgent/.test(diag38)
+        && /window\.external/.test(diag38)
+        && /documentMode/.test(diag38)
+        && /userAgentData/.test(diag38)
+        && /force-domestic=1/.test(diag38)
+        && /\.\/\?force-domestic=1/.test(diag38),
+      '§38c-2 ua-check.html 自检页存在：摊出 UA + 运行时指纹 + 强制开关按钮可用',
+      '自检页缺失/字段不全 → 伪装 UA 的浏览器无从取证，只能继续盲猜');
+    // 自检页的判定正则必须与 ua-guard.js 同源（否则诊断结论与真实行为对不上）
+    const guardHasQihu38 = /QIHU/.test(guardSrc38);
+    const guardHasSeg38 = guardSrc38.indexOf('Safari\\/537\\.36\\/\\d') !== -1;
+    const diagHasQihu38 = /QIHU/.test(diag38);
+    const diagHasSeg38 = diag38.indexOf('Safari\\/537\\.36\\/\\d') !== -1;
+    check(guardHasQihu38 && guardHasSeg38 && diagHasQihu38 && diagHasSeg38,
+      '§38c-2 自检页判定特征与 ua-guard 判定同源（QIHU + 360 双段尾缀）',
+      '两处判定漂移 → 自检页说"命中"但线上不弹，排障被带偏');
   }
 
   // 38d. 微信文章存档：目录、正文图、完整 HTML、转录、来源清单齐全
@@ -10312,7 +10344,7 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   const sm38 = exists('sitemap.xml') ? read('sitemap.xml') : '';
   const nav38 = exists('nav-menu.js') ? read('nav-menu.js') : '';
   check(rpt38.length > 0
-      && /ua-guard\.js\?v=10/.test(rpt38)
+      && /ua-guard\.js\?v=11/.test(rpt38)
       && /ai-link\.js\?v=\d+/.test(rpt38)
       && /sxg-legal/.test(rpt38)
       && /<title>[^<]*QQ 浏览器[^<]*<\/title>/.test(rpt38),

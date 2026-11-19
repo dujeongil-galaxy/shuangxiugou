@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>浏览器自检｜双休购 ShuangxiuGo</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+line-height:1.7;color:#1f2937;background:#f3f4f6;padding:24px 14px 60px}
+.wrap{max-width:820px;margin:0 auto;background:#fff;border-radius:16px;padding:24px 22px;box-shadow:0 8px 30px rgba(0,0,0,.06)}
+h1{font-size:24px;font-weight:800;margin:0 0 4px}
+.sub{color:#6b7280;font-size:14px;margin:0 0 20px}
+.verdict{border-radius:12px;padding:18px 20px;margin:0 0 22px;font-size:17px;font-weight:800;line-height:1.6}
+.verdict.dom{background:#fef3c7;color:#7f1d1d;border:2px solid #f59e0b}
+.verdict.intl{background:#ecfdf5;color:#065f46;border:2px solid #10b981}
+.ua-box{width:100%;min-height:96px;font:13px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;
+padding:12px;border:1px solid #d1d5db;border-radius:10px;background:#f9fafb;color:#111827;user-select:all;-webkit-user-select:all}
+h2{font-size:16px;font-weight:800;margin:24px 0 10px;color:#0F766E}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #e5e7eb;vertical-align:top;word-break:break-all}
+th{width:210px;color:#374151;font-weight:700;background:#f9fafb}
+.yes{color:#b91c1c;font-weight:800}
+.no{color:#059669;font-weight:800}
+.btn{display:inline-block;border:none;border-radius:999px;background:#0F766E;color:#fff;
+font-size:15px;font-weight:800;padding:11px 26px;cursor:pointer;margin:6px 8px 6px 0}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:#fff;color:#0F766E;border:2px solid #0F766E}
+.tip{background:#fef3c7;border-left:4px solid #f59e0b;border-radius:0 8px 8px 0;
+padding:12px 16px;margin:18px 0 0;font-size:14px;color:#78350f}
+code{background:#f3f4f6;border-radius:4px;padding:1px 6px;font-size:13px}
+.nav{font-size:13px;margin-top:22px}
+a{color:#0F766E}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>浏览器自检 · 双休购</h1>
+  <p class="sub">这一页只做一件事：把你当前浏览器<strong>真实的身份</strong>显示出来。本站靠它判断要不要弹「国产浏览器提示条」，之前几次没生效就是判错了，需要你把它发我。</p>
+
+  <div id="verdict" class="verdict">正在检测…</div>
+
+  <button id="copyBtn" class="btn" type="button">① 一键复制全部诊断信息</button>
+  <button class="btn ghost" type="button" onclick="location.href='./?force-domestic=1'">② 强制显示提示条（立即生效）</button>
+  <p class="tip">请点第一个按钮，把复制出来的内容<strong>整段发给站长</strong>。这样就能照着你浏览器的真实特征一次改对，不用再来回试。第二个按钮能让你现在立刻看到提示条，但它只对你这次访问有效。</p>
+
+  <h2>浏览器发出的原始 UA</h2>
+  <textarea id="uaBox" class="ua-box" readonly></textarea>
+
+  <h2>判定明细</h2>
+  <table id="detail"></table>
+
+  <p class="nav"><a href="./">← 返回首页</a></p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  // 与 ua-guard.js 完全同源的判定逻辑，便于逐项对照
+  var PATTERNS = [
+    ['UC/夸克/百度等', /UCBrowser|UCWEB|Quark|baidubrowser|BIDUBrowser|baidu|LBBROWSER/i],
+    ['360 系', /360SE|360Chrome|360EE|360browser|360Browser|360Safe|360安全|QIHU|360 Aphone/i],
+    ['360 新版双段尾缀', /Safari\/537\.36\/\d/i],
+    ['搜狗/2345/傲游', /SogouMobileBrowser|MetaSr|SE 2\.X|2345Explorer|2345chrome|Maxthon|SogouIE/i],
+    ['华为/小米/OPPO/vivo', /HuaweiBrowser|HMSCore|MiuiBrowser|VivoBrowser|HeyTapBrowser|OPPOBrowser|OppoBrowser/i],
+    ['支付宝/微博/钉钉/抖音/头条', /AlipayClient|Weibo|DingTalk|aweme|ToutiaoNews|NewsArticle|CoolMarket/i],
+    ['魅族', /Meizu/i],
+    ['微信/QQ', /MicroMessenger|wxwork|MQQBrowser|QQBrowser/i]
+  ];
+  var ua = navigator.userAgent || '';
+  var matched = [];
+  PATTERNS.forEach(function (p) { if (p[1].test(ua)) matched.push(p[0]); });
+  var fullRe = /(UCBrowser|UCWEB|Quark|360SE|360Chrome|360EE|360browser|360Browser|360Safe|360安全|QIHU|360 Aphone|SogouMobileBrowser|MetaSr|SE 2\.X|baidubrowser|BIDUBrowser|baidu|LBBROWSER|2345Explorer|2345chrome|Maxthon|HuaweiBrowser|HMSCore|MiuiBrowser|VivoBrowser|HeyTapBrowser|OPPOBrowser|OppoBrowser|AlipayClient|Weibo|DingTalk|aweme|ToutiaoNews|NewsArticle|CoolMarket|Meizu|SogouIE|QQBrowser|MQQBrowser|MicroMessenger|wxwork|Safari\/537\.36\/\d)/i;
+  var isDomestic = fullRe.test(ua);
+
+  function yesNo(v) { return v ? '<span class="yes">存在 ✓</span>' : '<span class="no">不存在</span>'; }
+
+  var rows = [
+    ['UA 是否被判为国产', isDomestic ? '<span class="yes">是（应弹黄条）</span>' : '<span class="no">否（这就是不弹的原因）</span>'],
+    ['命中的特征', matched.length ? matched.join('、') : '一项都没命中'],
+    ['navigator.userAgent', ua || '（空）'],
+    ['navigator.platform', navigator.platform || '（空）'],
+    ['navigator.vendor', navigator.vendor || '（空）'],
+    ['window.external', yesNo('external' in window && !!window.external)],
+    ['external 自有属性', (function () {
+      try { return Object.keys(window.external || {}).slice(0, 20).join(', ') || '（无）'; }
+      catch (e) { return '（读取失败：' + e.message + '）'; }
+    })()],
+    ['document.documentMode（IE兼容模式标志）', yesNo('documentMode' in document)],
+    ['window.chrome（Chromium 内核标志）', yesNo('chrome' in window && !!window.chrome)],
+    ['navigator.userAgentData', yesNo('userAgentData' in navigator && !!navigator.userAgentData)],
+    ['userAgentData.brands', (function () {
+      try { return (navigator.userAgentData && navigator.userAgentData.brands || []).map(function (b) { return b.brand + '/' + b.version; }).join(', ') || '（无）'; }
+      catch (e) { return '（读取失败）'; }
+    })()],
+    ['是否安全上下文', yesNo(window.isSecureContext)],
+    ['页面地址', location.href]
+  ];
+  document.getElementById('uaBox').value = ua;
+  document.getElementById('detail').innerHTML = rows.map(function (r) {
+    return '<tr><th>' + r[0] + '</th><td>' + r[1] + '</td></tr>';
+  }).join('');
+
+  var v = document.getElementById('verdict');
+  if (isDomestic) {
+    v.className = 'verdict dom';
+    v.innerHTML = '判定：<span>国产浏览器</span> —— 理论上应该弹黄条。如果首页没弹，问题在脚本没加载或被缓存。';
+  } else {
+    v.className = 'verdict intl';
+    v.innerHTML = '判定：<span>国际浏览器（或 360 已伪装成 Chrome）</span> —— 所有国产特征都没命中，所以不弹黄条。';
+  }
+
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    var text = rows.map(function (r) { return r[0] + '：' + r[1].replace(/<[^>]*>/g, ''); }).join('\n');
+    var done = function () { this.textContent = '✓ 已复制，粘贴发给站长'; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done.bind(this), fallback.bind(this));
+    } else { fallback.call(this); }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.cssText = 'position:fixed;top:-9999px';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done.call(this); } catch (e) { this.textContent = '复制失败，请手动选中 UA 框内容'; }
+      document.body.removeChild(ta);
+    }
+  });
+})();
+</script>
+</body>
+</html>
