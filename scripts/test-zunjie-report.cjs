@@ -31,8 +31,8 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   const wf = read('.github/workflows/verify.yml');
 
   check('专题页文件存在且非空', exists('zunjie-report.html') && report.length > 3000);
-  check('新闻登记补丁已 bump 到 ?v=7',
-    /<script defer src="\.\/news-incident-patch\.js\?v=7"><\/script>/.test(idx));
+  check('新闻登记补丁已 bump 到 ?v=8',
+    /<script defer src="\.\/news-incident-patch\.js\?v=8"><\/script>/.test(idx));
   check('补丁含华为卡条目且指向站内专题页',
     /key: 'huawei-zunjie'/.test(src)
     && /title: \/\^华为终端\//.test(src)
@@ -86,6 +86,9 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
         <div>后面</div>
       </div>
     </div>
+    <div id="wenjie-card" class="bg-white rounded-2xl border">
+      <div class="p-5 space-y-3.5"><h3>问界（赛力斯）</h3><div>占位</div><div>后面</div></div>
+    </div>
     <div id="other-card" class="bg-white rounded-2xl border">
       <div class="p-5 space-y-3.5"><h3>别的品牌</h3><div>占位</div></div>
     </div>
@@ -96,8 +99,15 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   const d2 = dom2.window.document;
   check('华为卡恰好插入一个登记框',
     d2.querySelectorAll('#huawei-card [data-sxg-news="huawei-zunjie"]').length === 1);
+  check('问界卡恰好插入一个同款登记框',
+    d2.querySelectorAll('#wenjie-card [data-sxg-news="huawei-wenjie"]').length === 1);
+  check('华为备注写明是华为问界汽车、非手机终端（消歧义）',
+    /华为问界汽车/.test((d2.querySelector('#huawei-card [data-sxg-news="huawei-zunjie"]')||{}).textContent||'')
+    && /不是华为手机/.test((d2.querySelector('#huawei-card [data-sxg-news="huawei-zunjie"]')||{}).textContent||''));
   check('别的卡零串框',
-    d2.querySelectorAll('#other-card [data-sxg-news="huawei-zunjie"]').length === 0);
+    d2.querySelectorAll('#other-card [data-sxg-news]').length === 0
+    && d2.querySelectorAll('#huawei-card [data-sxg-news="huawei-wenjie"]').length === 0
+    && d2.querySelectorAll('#wenjie-card [data-sxg-news="huawei-zunjie"]').length === 0);
   const box = d2.querySelector('#huawei-card [data-sxg-news="huawei-zunjie"]');
   if (box) {
     const link = box.querySelector('a[href="./zunjie-report.html"]');

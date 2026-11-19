@@ -133,7 +133,7 @@
     <link rel="preload" href="./search-clear-order-fix.js?v=3" as="script">
     <link rel="preload" href="./logo-vault.js?v=1" as="script">
     <link rel="preload" href="./stat-filter.js?v=9" as="script">
-    <link rel="preload" href="./pinyin-index.js?v=21" as="script">
+    <link rel="preload" href="./pinyin-index.js?v=22" as="script">
     <link rel="preload" href="./nav-menu.js?v=11" as="script">
     <!-- 良配 · 限时推广广告位（独立文件，改文案/样式不必动主页面；改完请把 ?v=N 的 N +1 防缓存） -->
     <!-- 2026-11-18 恢复上线：星巴克 × WorkBuddy 活动 11/16 已到期，其推广代码已彻底删除。
@@ -8450,7 +8450,7 @@
           recommendText: '⚠️ 单休或严重超时',
           recommendColor: 'red',
           insertAfter: 'xiaopeng-card',
-          keywords: ['问界（赛力斯）', '新能源车'],
+          keywords: ['问界（赛力斯）', '华为汽车', '华为问界', '华为问界汽车', '鸿蒙智行', '新能源车'],
           category: '新能源车',
           grade: 'C级'
         },
@@ -10135,7 +10135,7 @@
        内置卡数据在压缩 bundle 里不能改，用独立 DOM 补丁在渲染后挂红框说明。 -->
   <script defer src="./byd-expose-patch.js?v=7"></script>
   <!-- 2026-11-10 新闻事件登记：罗技授权店铺侮辱消费者广告 / 星宇股份后续进展，内置卡渲染后 DOM 补丁 -->
-  <script defer src="./news-incident-patch.js?v=7"></script>
+  <script defer src="./news-incident-patch.js?v=8"></script>
   <!-- 每张卡详情弹窗底部「跳转到证据公示」：内置 React 弹窗与自定义卡弹窗
        一视同仁，完整定位到 #evidence-board 里该品牌的 <details> 条目。
        真相源是生成器产出的公示区 DOM，补丁不硬编码品牌清单。 -->
@@ -10154,7 +10154,7 @@
        所以这里只做「输入联想 + 回填」：给出候选，用户点了回填中文名，
        后续过滤仍走 React 原生搜索路径，渲染逻辑零改动。
        索引数据在 pinyin-index.js，必须先于本脚本加载。 -->
-  <script defer src="./pinyin-index.js?v=21"></script>
+  <script defer src="./pinyin-index.js?v=22"></script>
   <script defer src="./pinyin-search.js?v=6"></script>
   <!-- 顶部公告栏正文单行无缝滚动（2026-11-15）：运行时克隆一份同源副本做循环，
        脚本没加载时退化为可手动横滑的一行，不会出现半截空白。

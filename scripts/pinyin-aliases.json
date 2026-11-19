@@ -3,6 +3,7 @@
   "xiaomi-card": ["MIUI", "Redmi", "红米", "POCO", "米家", "小米商城", "小米科技", "澎湃OS", "澎湃"],
   "xiaomi-auto-card": ["澎湃OS", "澎湃"],
   "huawei-consumer": ["鸿蒙", "HarmonyOS", "EMUI", "华为云", "海思", "HiSilicon"],
+  "wenjie-card": ["华为汽车", "华为问界", "华为问界汽车", "鸿蒙智行", "问界汽车", "AITO"],
   "apple-consumer": ["iPhone", "iOS", "macOS", "iPad", "Apple"],
   "tencent": ["微信", "WeChat", "QQ", "微信支付", "腾讯视频", "腾讯云"],
   "bytedance": ["抖音", "Douyin", "TikTok", "今日头条", "西瓜视频", "飞书"],

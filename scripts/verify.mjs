@@ -8709,7 +8709,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   //   ③ 详情页 brand/lixiang.html 同步登记同一条链接（站规：备注栏内容同步证据链）。
   const newsLinks32 = [...news32.matchAll(/https?:\/\/[^'"\s)]+/g)].map((x) => x[0]);
   check(news32.length > 0
-    && /<script defer src="\.\/news-incident-patch\.js\?v=7"><\/script>/.test(idx32)
+    && /<script defer src="\.\/news-incident-patch\.js\?v=8"><\/script>/.test(idx32)
     && /var ITEMS = \[/.test(news32) && /key: 'logitech'/.test(news32) && /key: 'xingyu'/.test(news32)
     && /key: 'geely'/.test(news32) && /key: 'lixiang'/.test(news32) && /key: 'chery'/.test(news32)
     && /key: 'lixiang-douyin'/.test(news32) && /key: 'huawei-zunjie'/.test(news32)
@@ -10420,8 +10420,8 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
       && /title: \/\^华为终端\//.test(newsZj)
       && /href: '\.\/zunjie-report\.html'/.test(newsZj)
       && /不据此调整 C 级评级/.test(newsZj)
-      && /<script defer src="\.\/news-incident-patch\.js\?v=7"><\/script>/.test(idxZj),
-    '§39g 华为卡登记框只链站内专题页、声明不改评级，脚本 ?v=7 破缓存',
+      && /<script defer src="\.\/news-incident-patch\.js\?v=8"><\/script>/.test(idxZj),
+    '§39g 华为卡登记框只链站内专题页、声明不改评级，脚本 ?v=8 破缓存',
     '卡面挂外链或漏 bump 缓存号 → 违反外链白名单口径 / 用户拿旧补丁');
   // 外链白名单仍只有理想那一条：新增卡片不得扩大卡面外链口径
   const newsLinks39 = [...newsZj.matchAll(/https?:\/\/[^'"\s)]+/g)].map((x) => x[0]);
@@ -10443,6 +10443,27 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   check(!/立场说明/.test(zj) && !/非本站立场/.test(zj) && !/不是本站的调查结论/.test(zj),
     '§39k 汇编章节无「立场说明 / 非本站立场」免责块（站长指令撤掉）',
     '立场声明回流 → 站长明确「没说的不准写」，汇编章节不得再加免责块');
+  // 2026-11-20 站长追加：消歧义（备注讲的是华为问界汽车，不是手机终端）+ 问界卡同款备注 + 搜「华为汽车」出问界
+  check(/head: '⚑ 站长备注 · 华为问界汽车踏板支架争议线索/.test(newsZj)
+      && /这条备注说的是华为问界汽车/.test(newsZj)
+      && /不是华为手机／终端业务本身/.test(newsZj),
+    '§39l 华为终端卡备注写明「这条备注说的是华为问界汽车、非手机终端」（消歧义）',
+    '备注不写清汽车业务归属 → 读者把踏板支架线索当成华为手机的事');
+  check(/key: 'huawei-wenjie'/.test(newsZj)
+      && /title: \/\^问界（赛力斯）\//.test(newsZj)
+      && /href: '\.\/zunjie-report\.html'/.test(newsZj)
+      && /不据此调整 C 级评级/.test(newsZj),
+    '§39m 问界卡也有同款踏板支架备注、只链站内专题页（搜问界即可见）',
+    '问界卡无备注 → 搜问界看不到这条线索，违背站长「问界也要写」');
+  const idxWj = idxZj;
+  const aliasFile39 = read('scripts/pinyin-aliases.json');
+  const pinyinIdx39 = read('pinyin-index.js');
+  check(/keywords: \['问界（赛力斯）', '华为汽车', '华为问界'/.test(idxWj)
+      && /"wenjie-card": \[[^\]]*"华为汽车"[^\]]*"华为问界"/.test(aliasFile39)
+      && /"id":"wenjie-card"[\s\S]{0,900}"华为汽车"/.test(pinyinIdx39)
+      && /pinyin-index\.js\?v=22/.test(idxWj),
+    '§39n 问界卡关键词与拼音别名含「华为汽车/华为问界」，索引已重建且 ?v=22 破缓存',
+    '别名或重建缺失 → 搜「华为汽车」「华为问界」命中不了问界卡，站长说的「不智能」重现');
 }
 
 // ---------- 汇总 ----------
