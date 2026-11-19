@@ -1340,13 +1340,14 @@ section('2g. 首页证据链完整公示');
       && exists('notes.html'),
       '悬浮导航新增「手气不错」→ notes.html（PC 右下 dock / 手机二级菜单共用同一 ITEMS，双端同名）',
       '入口缺失或写回「站长随笔」→ 弹窗改版丢掉的随笔按钮没补回来，或站长要求的改名没落地');
-    check((html.match(/nav-menu\.js\?v=10/g) || []).length === 2,
-      'index.html 的 nav-menu.js 预加载与脚本两处缓存号同步 bump 到 ?v=10',
-      '只 bump 一处 → 预加载旧脚本，用户拿到没有 QQ 浏览器专题入口的旧菜单');
-    // QQ 浏览器专题（2026-11-19）：导航入口 + 对应版本 bump，二者须同时到位
-    check(/label: 'QQ 浏览器专题', href: '\.\/qq-browser-report\.html'/.test(navItems),
-      '悬浮导航含「QQ 浏览器专题」→ qq-browser-report.html（专题页访客入口）',
-      '入口缺失 → 两篇微信文章存档专题页只能靠直接输入网址访问');
+    check((html.match(/nav-menu\.js\?v=11/g) || []).length === 2,
+      'index.html 的 nav-menu.js 预加载与脚本两处缓存号同步 bump 到 ?v=11',
+      '只 bump 一处 → 预加载旧脚本，用户拿到没有最新菜单的旧脚本');
+    // QQ 浏览器专题「不进」导航（2026-11-19 站长纠正）：拦截跳专题页就够了，
+    // 普通访客不应有直达入口；专题页也不 backlink 站点其它页，只有搜索引擎来路。
+    check(!/label: 'QQ 浏览器专题'/.test(navItems),
+      '悬浮导航不再含「QQ 浏览器专题」入口（专题页只对 QQ 浏览器访客可见）',
+      '擅自给专题页加访客入口 → 违背站长「拦截跳专题、但不主动推给普通访客」的口径');
     const dpNav = read('douyin-prompt.js');
     check(!/手气不错/.test(dpNav)
       && (dpNav.match(/class="dyp__(?:video|share)"/g) || []).length === 2,
@@ -10159,15 +10160,15 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     const withGuard38 = htmlRefs38.filter((p) => {
       try { return /ua-guard\.js\?v=/.test(readFileSync(join(ROOT, p), 'utf8')); } catch { return false; }
     });
-    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=[1-5]\b/.test(readFileSync(join(ROOT, p), 'utf8')));
-    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=6\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=[1-6]\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=7\b/.test(readFileSync(join(ROOT, p), 'utf8')));
     check(withGuard38.length >= 199 && oldV38.length === 0 && newV38.length === withGuard38.length,
-      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=6、无残留 v=1/2/3/4/5`,
+      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=7、无残留 v=1/2/3/4/5/6`,
       `旧版 ${oldV38.length} 页 / 新版 ${newV38.length} 页 → 缓存不刷新，用户拿到旧拦截脚本`);
     const notes38 = exists('notes.html') ? read('notes.html') : '';
     const notesAt38 = notes38.indexOf('ua-guard.js');
     const bodyAt38 = notes38.indexOf('<body');
-    check(notesAt38 > 0 && /ua-guard\.js\?v=6/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
+    check(notesAt38 > 0 && /ua-guard\.js\?v=7/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
       '§38c notes.html 已挂 ua-guard 且引用位于 body 之前（全站无例外、同步生效）',
       'notes 未挂 / 版本不对 / 放到 body 之后 → 加密笔记页在 QQ 浏览器里正文先闪现');
   }
@@ -10250,11 +10251,11 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   const sm38 = exists('sitemap.xml') ? read('sitemap.xml') : '';
   const nav38 = exists('nav-menu.js') ? read('nav-menu.js') : '';
   check(rpt38.length > 0
-      && /ua-guard\.js\?v=6/.test(rpt38)
+      && /ua-guard\.js\?v=7/.test(rpt38)
       && /ai-link\.js\?v=\d+/.test(rpt38)
       && /sxg-legal/.test(rpt38)
       && /<title>[^<]*QQ 浏览器[^<]*<\/title>/.test(rpt38),
-    '§38i QQ 浏览器专题页存在且结构与全站一致（UA 分流 v5 / AI 按钮 / 法务页脚 / 标题）',
+    '§38i QQ 浏览器专题页存在且结构与全站一致（UA 分流 v7 / AI 按钮 / 法务页脚 / 标题）',
     '专题页缺失或不带全站组件 → 访客拿到的存档页无拦截、无 AI 入口、无法务链接');
   check(/\.\/archive\/wechat-liciaotiao-2023\/01-letter\/body\.jpg/.test(rpt38)
       && /\.\/archive\/wechat-liciaotiao-2023\/02-my-view\/body\.png/.test(rpt38)
@@ -10264,9 +10265,9 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     '§38i 专题页嵌入两篇原图、原文链接与双方关键内容（律师函 48 小时 / 作者无联网）',
     '原图或来源缺失 → 微信删文后专题页只剩空壳，存档备份落空');
   check(sm38.includes('/qq-browser-report.html</loc>')
-      && /label: 'QQ 浏览器专题', href: '\.\/qq-browser-report\.html'/.test(nav38),
-    '§38i 专题页被 sitemap 收录且悬浮导航有入口（访客可发现）',
-    '无 sitemap / 无导航入口 → 专题页只能靠手输网址，失去曝光意义');
+      && !/label: 'QQ 浏览器专题'/.test(nav38),
+    '§38i 专题页被 sitemap 收录、悬浮导航不再有访客入口（只对 QQ 浏览器访客可见）',
+    '导航又加回入口 → 违背站长「拦截跳专题、但不主动推给普通访客」的口径');
 }
 
 // ---------- 汇总 ----------
