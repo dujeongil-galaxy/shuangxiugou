@@ -4,7 +4,7 @@
 
 ---
 
-### feat：国产浏览器判定反转黑名单——国际/韩流浏览器全放行，乌克兰公告无条件显示，撤两条友链（2026-11-19 · 提交 `本批待回填`）
+### feat：国产浏览器判定反转黑名单——国际/韩流浏览器全放行，乌克兰公告无条件显示，撤两条友链（2026-11-19 · 提交 `ebf4b52`）
 
 - **变更起因**：站长 2026-11-19 原话「我是说，国外非我提到的 4 个主流浏览器，也不应该拦截，所以别做白名单模式，只是针对国内的这些浏览器做一个公告，就够了」。上一批白名单方案（只认 Safari/Chrome/Edge/Firefox，Naver Whale、三星 Internet 等韩流/国际浏览器也会被弹提示）废弃反转。
 - **主站 `ua-guard.js`**：白名单函数族（`sxgDomesticSignal/sxgAllowedHint/sxgIsAllowedBrowser/sxgBrowserAllowed/sxgIsBrowserAllowed`）整体删除，改为单一黑名单判定 `sxgIsDomesticBrowser(ua)`——UA 命中国产特征 token 正则（UCBrowser/UCWEB/Quark/360SE/360Chrome/360EE/QIHU/360 Aphone/SogouMobileBrowser/MetaSr/SE 2.X/baidubrowser/BIDUBrowser/LBBROWSER/2345Explorer/2345chrome/Maxthon/HuaweiBrowser/HMSCore/MiuiBrowser/VivoBrowser/HeyTapBrowser/OPPOBrowser/OppoBrowser/AlipayClient/Weibo/DingTalk/aweme/ToutiaoNews/NewsArticle/CoolMarket/Meizu/SogouIE/QQBrowser）才调 `sxgShowBrowserNotice()` 弹顶部持续提示条；其余一切浏览器自然放行。分流仍被 `!isWeChat && !isQQ && !isQQBrowser` 守卫，QQ 浏览器跳专题页、微信/QQ 内置硬拦截三条既有口径不变。
