@@ -277,8 +277,8 @@ function click(box) {
     try { await require('./_wait-cards.cjs')(window); } catch (e) { /* 落不到 175 时让下方断言报出真实数字 */ }
     await new Promise((r) => setTimeout(r, 450));
     const s2 = snapshot();
-  check('恢复全部卡片后可见回到 181 张（无卡丢失、无同 id 双卡）',
-    s2.visible.length === 181, { visible: s2.visible.length, total: s2.total });
+  check('恢复全部卡片后可见回到 189 张（无卡丢失、无同 id 双卡）',
+    s2.visible.length === 189, { visible: s2.visible.length, total: s2.total });
     const ids = [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
       .filter((c) => c.id).map((c) => c.id);
     check('自定义卡 id 无重复（自愈重建未造成双卡）',
