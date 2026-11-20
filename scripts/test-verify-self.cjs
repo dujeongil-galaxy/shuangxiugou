@@ -67,11 +67,24 @@ check('节号无重复', dup.length === 0, [...new Set(dup)]);
 
 const tail = mainIds.filter((x) => /^\d+$/.test(x)).map(Number);
 const tailSet = [...new Set(tail)].sort((a, b) => a - b);
+// 已备案的退役节号段：不是漏号，是历史编号留给已下线章节的空位。
+// 26–37 号节在早前重构中整体退役，约定「后面章节不重排」——README / BUG 专文 /
+// 历年提交信息里大量引用「§37b」「§38m」这类原节号，重排会让引用全部指错。
+// 所以这里显式登记空位，仍能抓「新出现的跳号」。
+const RETIRED_SECTIONS = {
+  '25 → 38': '26–37 号节已整体退役，38 起沿用原编号不再重排'
+};
 const gaps = [];
+const retired = [];
 for (let i = 1; i < tailSet.length; i++) {
-  if (tailSet[i] !== tailSet[i - 1] + 1) gaps.push(`${tailSet[i - 1]} → ${tailSet[i]}`);
+  if (tailSet[i] !== tailSet[i - 1] + 1) {
+    const g = `${tailSet[i - 1]} → ${tailSet[i]}`;
+    if (RETIRED_SECTIONS[g]) retired.push(g);
+    else gaps.push(g);
+  }
 }
-check('主节号连续无跳号', gaps.length === 0, gaps);
+if (retired.length) console.log(`  · 已备案空位（不算跳号）：${retired.map((g) => g + "（" + RETIRED_SECTIONS[g] + "）").join("；")}`);
+check('主节号连续无跳号（已备案的退役空位除外）', gaps.length === 0, gaps);
 
 // ---------- 4. 不得有「✓ true」这类症状代码 ----------
 console.log('\n--- 症状代码 ---');
