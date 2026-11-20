@@ -46,6 +46,20 @@
   var SITE_LINK = 'https://dujeongil-galaxy.github.io/dating-data-factcheck/';
   var SITE_LINK_TEXT = '顺便推荐站长的新站「婚恋数据核查台」：给相亲数据做溯源核查 ↗';
 
+  /* ── 搜索引擎确认块（2026-11-20 站长指令）────────────────────────────
+     位置：正文滚动区之下、绿色推荐语之上的那一块空白（站长截图红框处），
+     同样挂在 .dyp__article 外面，随面板固定、不随文章滚动。
+     交互二选一（radiogroup）：
+       · 选「是的」→ 下方小字「好的，欢迎访问」
+       · 选「不是」→ 下方小字「好的，你现在可以关闭此弹窗」
+     另外，点右上角 × 真正关闭后，页面会滚到页脚「如何用 Bing 搜到本站」
+     （#sxg-bing-guide 卡片，由 friend-links-footer.js 注入）。
+     口径：只问一句、只给两条结果，不自动跳转、不替用户改浏览器设置。 */
+  var SE_ASK_TEXT = '你的浏览器默认搜索引擎是 Bing 必应吗';
+  var SE_YES_HINT = '好的，欢迎访问';
+  var SE_NO_HINT = '好的，你现在可以关闭此弹窗';
+  var BING_GUIDE_ID = 'sxg-bing-guide';
+
   // 底部第一枚按钮：轮毂事件相关视频（站长 2026-11-14 提供的抖音短链）。
   // 第二枚「我要分享此文章」保持不动；按钮文字由本站自定，只说功能不堆叠标题。
   var VIDEO_LINK = 'https://v.douyin.com/uBwf2Fbt0d8/';
@@ -273,6 +287,16 @@
         '<button class="dyp__x" type="button" aria-label="关闭">&times;</button>' +
         '<div class="dyp__tag">公益提醒</div>' +
         '<div class="dyp__article" id="dyp-title">' + ARTICLE_HTML + '</div>' +
+        '<div class="dyp__se" role="radiogroup" aria-label="浏览器默认搜索引擎确认">' +
+          '<p class="dyp__se__q">' + SE_ASK_TEXT + '</p>' +
+          '<div class="dyp__se__opts">' +
+            '<button type="button" class="dyp__se__opt" data-se="yes" role="radio" aria-checked="false">' +
+              '<span class="dyp__se__box" aria-hidden="true"></span>是的</button>' +
+            '<button type="button" class="dyp__se__opt" data-se="no" role="radio" aria-checked="false">' +
+              '<span class="dyp__se__box" aria-hidden="true"></span>不是</button>' +
+          '</div>' +
+          '<p class="dyp__se__hint" aria-live="polite"></p>' +
+        '</div>' +
         '<p class="dyp__tip" id="dyp-sitelink"></p>' +
         '<div class="dyp__acts">' +
           '<a class="dyp__video" target="_blank" rel="noopener noreferrer"></a>' +
@@ -309,6 +333,28 @@
     // 版本切换（× 左侧）：切正文、切按钮文字、切分享文案，不动倒计时与关闭锁。
     box.querySelector('.dyp__version-toggle')
       .addEventListener('click', onToggleVersion);
+
+    // 搜索引擎确认块（2026-11-20）：二选一，选中后下方给一句小字回执。
+    // 只做「问一句 + 给回执」，不做任何自动跳转或浏览器设置改动。
+    var seBtns = box.querySelectorAll('.dyp__se__opt');
+    var seHint = box.querySelector('.dyp__se__hint');
+    function onPickSE(ev) {
+      var btn = ev.currentTarget;
+      var which = btn.getAttribute('data-se');
+      for (var i = 0; i < seBtns.length; i++) {
+        var b = seBtns[i];
+        var on = b === btn;
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-checked', on ? 'true' : 'false');
+      }
+      if (seHint) {
+        seHint.textContent = which === 'yes' ? SE_YES_HINT : SE_NO_HINT;
+        seHint.className = 'dyp__se__hint' + (which === 'yes' ? ' is-yes' : ' is-no');
+      }
+    }
+    for (var j = 0; j < seBtns.length; j++) {
+      seBtns[j].addEventListener('click', onPickSE);
+    }
 
     // 关闭方式（2026-11-13 站长指令「先锁死」）：**只能点右上角 × 关闭**。
     // 原先遮罩点击、×、Esc 三条路都能关；现在遮罩与 Esc 一律不绑定 close，
@@ -355,6 +401,23 @@
       return;
     }
     if (box) box.classList.remove('is-open');
+    // 站长 2026-11-20：点 × 关掉之后，把访客直接带到页脚「如何用 Bing 搜到本站」
+    // （#sxg-bing-guide 卡片由 friend-links-footer.js 动态注入，可能比弹窗晚挂载，
+    //   所以拿不到目标节点时按 150ms 轮询重试，最多 3 秒；拿到就平滑滚过去）。
+    jumpToBingGuide();
+  }
+
+  function jumpToBingGuide() {
+    var tries = 0;
+    function seek() {
+      var target = document.getElementById(BING_GUIDE_ID);
+      if (target && target.scrollIntoView) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+      if (tries++ < 20) setTimeout(seek, 150);
+    }
+    setTimeout(seek, 60); // 先让关闭动画/布局落一帧，再算目标位置
   }
 
   // ── 8 秒锁定窗口的资源预热（2026-11-05 站长指令）────────────────────

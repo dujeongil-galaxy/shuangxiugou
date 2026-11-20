@@ -2099,8 +2099,10 @@ if (exists('notes.html')) {
     '绿色推荐语缺失 → 第一个按钮让位给视频后，新站没有入口了');
   // 必须精确盯「正文 </div> 闭合之后才是 .dyp__tip」：只查字符串先后顺序不够，
   // 把 tip 塞进 article 内部时宽松的窗口正则仍会通过（故障注入实测到的漏洞）。
-  check(/ARTICLE_HTML \+ '<\/div>' \+[\s\S]{0,160}dyp__tip[\s\S]{0,240}dyp__acts/.test(dp),
-    '绿色推荐行位于滚动正文之外：文章下方、两枚按钮上方（不随正文滚走）',
+  // 2026-11-20：正文与 tip 之间新增了搜索引擎确认块 .dyp__se（同样在 article 外），
+  // 仍要求「article 闭合 → se → tip → acts」这条固定顺序。
+  check(/ARTICLE_HTML \+ '<\/div>' \+[\s\S]{0,160}dyp__se__q[\s\S]{0,900}dyp__tip[\s\S]{0,240}dyp__acts/.test(dp),
+    '绿色推荐行位于滚动正文之外：文章下方（确认块之后）、两枚按钮上方（不随正文滚走）',
     '又把绿色句子塞回 .dyp__article 里 → 往下读文章时它就消失了');
   check(/dating-data-factcheck/.test(dp) && /sl\.href = SITE_LINK/.test(dp),
     '新站外链由固定绿色推荐行承担（dating-data-factcheck 未丢）',
@@ -8690,7 +8692,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/z-index:9995/.test(ad32) && /padding:7px 0 14px/.test(ad32)
     && /background: rgba\(24, 20, 16, 0\.22\)/.test(dyp32)
     && /backdrop-filter: none/.test(dyp32)
-    && /douyin-prompt\.css\?v=22/.test(idx32),
+    && /douyin-prompt\.css\?v=23/.test(idx32),
     '§32d 广告位层级 9995 / 底部留白 14px；.dyp 遮罩减淡去模糊，弹窗引流功能原样保留');
 
   check(/var SEARCH_DURATION = 6000/.test(ff32)
@@ -9846,9 +9848,26 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/点右上角 × 关闭/.test(dp36x) && !/现在可以关闭了/.test(dp36x),
     '§36x 倒计时到点后提示改为「点右上角 × 关闭」',
     '提示仍写「可以关闭」却没说怎么关 → 用户会去点空白');
-  check(/<script defer src="\.\/douyin-prompt\.js\?v=27"><\/script>/.test(idx36x)
-    && !/douyin-prompt\.js\?v=26/.test(idx36x),
-    '§36x index.html 挂载 douyin-prompt.js?v=27（bump 缓存号）',
+  // 2026-11-20 站长指令：在正文滚动区与绿色推荐语之间的空白（截图红框处）插入
+  // 「你的浏览器默认搜索引擎是 Bing 必应吗」确认块——是 / 不是二选一，选中后
+  // 下方给一句回执；点 × 真正关闭后，页面滚到页脚「如何用 Bing 搜到本站」卡片
+  // （#sxg-bing-guide，由 friend-links-footer.js 注入）。
+  check(/你的浏览器默认搜索引擎是 Bing 必应吗/.test(dpCode36x)
+      && /好的，欢迎访问/.test(dpCode36x)
+      && /好的，你现在可以关闭此弹窗/.test(dpCode36x),
+    '§36x-2 弹窗含搜索引擎确认块（问句 + 两种回执文案）',
+    '缺确认块 → 站长指定的红框区域仍是空白');
+  check(/data-se="yes"/.test(dpCode36x) && /data-se="no"/.test(dpCode36x)
+      && /role="radio"/.test(dpCode36x) && /aria-checked/.test(dpCode36x),
+    '§36x-2 「是的 / 不是」为二选一 radiogroup（aria-checked 同步翻转）',
+    '退化成两个能同时勾上的复选框 → 语义与交互都错');
+  check(/function jumpToBingGuide/.test(dpCode36x) && /sxg-bing-guide/.test(dpCode36x)
+      && /scrollIntoView/.test(dpCode36x),
+    '§36x-2 点 × 关闭后滚到页脚「如何用 Bing 搜到本站」（#sxg-bing-guide，带重试）',
+    '关闭后不跳转 → 问完就断，访客不知道去哪改默认搜索引擎');
+  check(/<script defer src="\.\/douyin-prompt\.js\?v=28"><\/script>/.test(idx36x)
+    && !/douyin-prompt\.js\?v=27/.test(idx36x),
+    '§36x index.html 挂载 douyin-prompt.js?v=28（bump 缓存号）',
     '?v 没 bump → 线上仍跑旧脚本，改动等于没发');
 
   // 2026-11-13 站长追加：「不要 15 分钟冷却，刷新首页必弹」。

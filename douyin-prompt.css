@@ -303,6 +303,96 @@
   text-decoration: underline;
 }
 
+/* 搜索引擎确认块（2026-11-20 站长指令）：
+   位置在滚动正文之下、绿色推荐语之上（站长截图红框那块），随面板固定不随文章滚走。
+   二选一：是的 / 不是，选中后下方给一句小字回执。样式沿用本站「我同意 / 我不同意」
+   那套点击式方框勾选（方框内打勾），只是这里不判对错、不用红绿警示色。 */
+.dyp__se {
+  margin: 0 0 10px;
+  padding: 10px 12px 8px;
+  border-top: 1px dashed #e2ded6;
+  background: #fbfaf7;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.dyp__se__q {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #4a4239;
+  line-height: 1.55;
+}
+
+.dyp__se__opts {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.dyp__se__opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid #ddd3c3;
+  border-radius: 8px;
+  background: #fff;
+  color: #4a4239;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.dyp__se__opt:hover { border-color: #c9bfae; }
+
+.dyp__se__opt:focus-visible {
+  outline: 2px solid #3dad8a;
+  outline-offset: 2px;
+}
+
+/* 方框：未选是空心方块，选中后边框透明、方框里出现勾 */
+.dyp__se__box {
+  width: 1.05em;
+  height: 1.05em;
+  border: 1.5px solid #b9af9e;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9em;
+  line-height: 1;
+}
+
+.dyp__se__opt.is-on {
+  border-color: #3dad8a;
+  background: #f2faf6;
+  color: #2f8f70;
+}
+
+.dyp__se__opt.is-on .dyp__se__box {
+  border-color: transparent;
+  color: #2f8f70;
+}
+
+.dyp__se__opt.is-on .dyp__se__box::after { content: '✓'; font-weight: 800; }
+
+/* 回执小字：默认不占位（空字符串时不显示），选中后按选项给不同文案 */
+.dyp__se__hint {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #9b8f80;
+  min-height: 0;
+}
+
+.dyp__se__hint.is-yes { color: #2f8f70; }
+.dyp__se__hint.is-no { color: #8a7f70; }
+
 /* 关闭倒计时（2026-10-29 站长要求）：弹出后 8 秒内关闭不生效，
    倒计时数字递减 + 进度条收缩，到点后放行关闭。 */
 .dyp__count {
