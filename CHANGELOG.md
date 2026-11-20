@@ -4,6 +4,12 @@
 
 ---
 
+### feat：AI 线路门槛分层——CF 免费 / 国内 Star 即开 / 附件满 3 天 + 取消拉黑 + IP 安全公告（2026-11-21 · 提交 `fe3587c8`）
+
+站长 2026-11-21 改口径：Cloudflare 免费开放（无需登录/Star）；国内文字线路 Star 即开，取消原 7 天门槛；图片/文档上传（含 Word/PDF 等）仍需 Star 满 3 天；取消 Star 自动拉黑、重新 Star 也不恢复；公告显示当前访问 IP 并提示勿发敏感信息、恶意消耗将封禁。改动：`labor-ai.html` 的 `starStatus()` 拆 `cnUnlocked`/`attachUnlocked`/`blacklisted` 三层，文件入口加门禁（未达 3 天禁用），`renderIpNotice()` 从 Worker 能力探测取 CF-Connecting-IP；`header-menu-patch.js` 的 OAuth 回调写 `ever_starred`，failed 且曾 Star → 写 `blacklisted`，两处弹窗文案同步，`?v=11`→`12` 破缓存；`ai-worker/src/worker.js` 改 `meetsRequirement=hasStar`、capabilities 回传 `visitorIp`。校验：`verify.mjs` 新增分层断言 + 全局无旧天数口径残留扫描（历史记账除外），三处 `?v` 硬编码改下限断言；`test-ai-worker.cjs` 加 visitorIp 断言（44/0）、阿里云 46/0。故障注入 ×4（附件门槛改回旧值 / IP 公告删除 / 拉黑写入拆除 / 旧口径残留）全判红；无头 Edge 实测四态（未 Star / Star 0 天 / Star 5 天 / 拉黑）全符合预期。
+
+---
+
 ### feat：劳动法小助手支持图片/PDF/DOCX 上传，双线路升级视觉模型（2026-11-21 · 提交 `330785b4`）
 
 站长要求「支持图片或文件上传」。附件全在浏览器本地解析，不上传任何第三方解析服务；解析结果封装为 OpenAI 兼容的 `parts`（`text` / `image_url` data URL）走双线路。改动：`labor-ai.html` 加文件入口（JPG/PNG/WEBP/PDF/DOCX，最多 3 个，图 5MB / 文档 10MB）、pdf.js 抽 PDF 文本层（扫描页渲染前 2 页）+ mammoth 抽 DOCX 文本（双 CDN 回退）、用户气泡显示缩略图、隐私明示文案；国内线路切 `Qwen/Qwen2.5-VL-7B-Instruct`；CF 带图前先 `GET /api/capabilities` 探测，老 Worker 明确提示切国内线路。`ai-worker/src/worker.js` 加能力探测端点 + 带图切 `@cf/meta/llama-3.2-11b-vision-instruct`（max_tokens 1200，纯文本仍 2000）+ 只收 data:image base64（禁 http 外链防 SSRF，限 8 段 / 7MB）；`ai-worker/README.md` 写明必须 `npx wrangler deploy` 重新部署才生效。验证：verify §21u 七条断言 + 全量 2040 项全绿；故障注入 ×3 判红；test-ai-worker 43/0、test-ai-worker-aliyun 46/0；无头 Edge 实测全链路通过。
