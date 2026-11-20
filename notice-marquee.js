@@ -47,10 +47,11 @@
 
   // 一份文本（含每段 56px 间隔）走完所需时间：按宽度算时长，双端速度一致，
   // 不让宽屏上短短一句话拖成慢动作。CSS 里的 26s 只是没跑到 JS 时的兜底值。
-  // 三段合起来比原先长很多，这里把速度从 55px/s 提到 62px/s，
-  // 免得一整圈要等 70 秒才回到开头。
+  // 2026-11-20 站长反馈「上面滚动太快了」：速度从 62px/s 降到 48px/s，
+  // 一圈更长（6400px 轨道约 130 秒），但每段字能看清；入场前另有 8 秒静止
+  // （CSS 的 animation-delay: 8s，等站长点评弹窗倒计时走完再动）。
   var oneWidth = track.scrollWidth / 2;
-  var seconds = Math.max(14, oneWidth / 62);
+  var seconds = Math.max(14, oneWidth / 48);
   track.style.animationDuration = seconds.toFixed(2) + 's';
 
   notice.classList.add('is-marquee');

@@ -144,7 +144,7 @@
     <!-- 移动端排版修复（须在主 CSS 之后：靠覆盖生效；改完请把 ?v=N 的 N +1） -->
     <link rel="stylesheet" href="./mobile-fixes.css?v=25">
     <!-- 顶部公告栏单行滚动（2026-11-15 取代手机端折叠）：改完请把 ?v=N 的 N +1 -->
-    <link rel="stylesheet" href="./notice-marquee.css?v=3">
+    <link rel="stylesheet" href="./notice-marquee.css?v=4">
   <!-- 黑卡预隐藏（2026-11-10 站长反馈「先加载黑色卡片，然后才出现广告位」）：
        bundle 渲染的黑卡（class 含唯一子串 rounded-2xl p-5 shadow-xl，全 bundle 仅黑卡用）
        在 black-card-adslot.js 下载完成并替换之前会先画一帧 → 慢网下肉眼可见闪现。
@@ -10166,7 +10166,7 @@
   <!-- 顶部公告栏正文单行无缝滚动（2026-11-15）：运行时克隆一份同源副本做循环，
        脚本没加载时退化为可手动横滑的一行，不会出现半截空白。
        尊重 prefers-reduced-motion。绝不改压缩 bundle。 -->
-  <script defer src="./notice-marquee.js?v=3"></script>
+  <script defer src="./notice-marquee.js?v=4"></script>
   <!-- 首页「最新新增的企业」入口（2026-11-15 站长指令）：
        展示**最新 5 条**登记（按日期倒序），因为品牌新增不是每天都有，按天窗口会经常空面板。
        真相源 data/recent-brands.json → scripts/gen-recent-brands.py → recent-brands-data.js；

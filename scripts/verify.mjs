@@ -1309,9 +1309,9 @@ section('2g. 首页证据链完整公示');
         && /prefers-reduced-motion/.test(mqJs)
         && /querySelector\('\.notice-copy'\)/.test(mqJs),
         '补丁具备启播条件、按宽度算时长、reduced-motion 与幂等');
-      check(/<link rel="stylesheet" href="\.\/notice-marquee\.css\?v=3">/.test(html)
-        && /<script defer src="\.\/notice-marquee\.js\?v=3"><\/script>/.test(html),
-        '首页挂载公告栏滚动样式与脚本（各 ?v=3，改后须 bump）',
+      check(/<link rel="stylesheet" href="\.\/notice-marquee\.css\?v=4">/.test(html)
+        && /<script defer src="\.\/notice-marquee\.js\?v=4"><\/script>/.test(html),
+        '首页挂载公告栏滚动样式与脚本（各 ?v=4，改后须 bump）',
         '脚本/样式没挂 → 页面看着还是静态一行，滚动静默失效');
       check(/'id="notice-viewport"'\s+not in cur/.test(gen9b)
         && /'id="notice-more"'\s+in cur/.test(gen9b)

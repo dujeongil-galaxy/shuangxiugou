@@ -25,6 +25,8 @@
 
    2026-11-20 站长：把 360 说明与「用脚投票」机制句并入这条滚动条，段与段
    之间用 4 个全角空格（&nbsp;×4）区分，视觉上认出「这是另一条公告」。
+   2026-11-20 再改：入场先停 8 秒（等站长点评弹窗倒计时结束），滚动速度
+   从 62px/s 降到 48px/s，一圈更长但每段字能看清。
 
    无缝的关键：两份文本各自的 padding-right 相同 → 轨道宽度恰为两倍单份宽度，
    translateX(-50%) 正好把第二份送到第一份的起点，循环处不会出现空档。
@@ -83,9 +85,10 @@
 #site-notice.is-marquee .notice-viewport { overflow: hidden; }
 #site-notice.is-marquee .notice-track {
   animation: sxg-notice-scroll 26s linear infinite;
-  /* 首屏先让完整句首在左边缘停 1.2 秒，再开始左滚，别一上来就把开头切掉。
+  /* 2026-11-20 站长：「上面滚动太快了，等着 8 秒结束了才开始滚动」——
+     首屏先静止 8 秒（正好站长点评弹窗的倒计时走完），再开始左滚；
      时长会由 notice-marquee.js 按实际宽度改写，delay 只管入场。 */
-  animation-delay: 1.2s;
+  animation-delay: 8s;
   will-change: transform;
 }
 @keyframes sxg-notice-scroll {
