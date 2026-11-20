@@ -392,6 +392,16 @@
 
 .dyp__se__hint.is-yes { color: #2f8f70; }
 .dyp__se__hint.is-no { color: #8a7f70; }
+.dyp__se__hint.is-nudge { color: #b45309; font-weight: 600; }
+
+/* 未选择就点 × 时：确认块轻抖一下，提示「先选再关」，不关闭弹窗 */
+.dyp__se--nudge { animation: dypSeNudge 0.28s ease; }
+
+@keyframes dypSeNudge {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
 
 /* 关闭倒计时（2026-10-29 站长要求）：弹出后 8 秒内关闭不生效，
    倒计时数字递减 + 进度条收缩，到点后放行关闭。 */

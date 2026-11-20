@@ -46,19 +46,24 @@
   var SITE_LINK = 'https://dujeongil-galaxy.github.io/dating-data-factcheck/';
   var SITE_LINK_TEXT = '顺便推荐站长的新站「婚恋数据核查台」：给相亲数据做溯源核查 ↗';
 
-  /* ── 搜索引擎确认块（2026-11-20 站长指令）────────────────────────────
+  /* ── 搜索引擎确认块（2026-11-20 站长指令，同日二次修订）───────────────
      位置：正文滚动区之下、绿色推荐语之上的那一块空白（站长截图红框处），
      同样挂在 .dyp__article 外面，随面板固定、不随文章滚动。
-     交互二选一（radiogroup）：
-       · 选「是的」→ 下方小字「好的，欢迎访问」
-       · 选「不是」→ 下方小字「好的，你现在可以关闭此弹窗」
-     另外，点右上角 × 真正关闭后，页面会滚到页脚「如何用 Bing 搜到本站」
-     （#sxg-bing-guide 卡片，由 friend-links-footer.js 注入）。
-     口径：只问一句、只给两条结果，不自动跳转、不替用户改浏览器设置。 */
+     交互二选一（radiogroup），回执按选项给，不照抄口语稿：
+       · 选「是的」→「好，那你在 Bing 里搜「双休购」就能找到我们，慢慢逛。」
+       · 选「不是」→「没关系，关掉后我把设置步骤摆出来，照着点两下就行。」
+       · 什么都没选就点 × → 先提醒「先选一下上面的问题，选完就能关」，
+         不关闭；再点一次 × 才放行（视为「不确定」，关掉后带去教程）。
+     关闭后的落点：只有「不是」和「没选也坚持关」才滚到页脚「如何用 Bing
+     搜到本站」（#sxg-bing-guide）；选「是的」说明已经是 Bing，关掉就停原地，
+     不再把访客往下拽。 */
   var SE_ASK_TEXT = '你的浏览器默认搜索引擎是 Bing 必应吗';
-  var SE_YES_HINT = '好的，欢迎访问';
-  var SE_NO_HINT = '好的，你现在可以关闭此弹窗';
+  var SE_YES_HINT = '好，那你在 Bing 里搜「双休购」就能找到我们，慢慢逛。';
+  var SE_NO_HINT = '没关系，关掉后我把设置步骤摆出来，照着点两下就行。';
+  var SE_NUDGE_HINT = '先选一下上面的问题，选完就能关。';
   var BING_GUIDE_ID = 'sxg-bing-guide';
+  var seChoice = '';      // '' | 'yes' | 'no'
+  var seNudged = false;   // 未选择时点过一次 × 的提醒标记
 
   // 底部第一枚按钮：轮毂事件相关视频（站长 2026-11-14 提供的抖音短链）。
   // 第二枚「我要分享此文章」保持不动；按钮文字由本站自定，只说功能不堆叠标题。
@@ -341,6 +346,8 @@
     function onPickSE(ev) {
       var btn = ev.currentTarget;
       var which = btn.getAttribute('data-se');
+      seChoice = which;
+      seNudged = false;
       for (var i = 0; i < seBtns.length; i++) {
         var b = seBtns[i];
         var on = b === btn;
@@ -351,6 +358,8 @@
         seHint.textContent = which === 'yes' ? SE_YES_HINT : SE_NO_HINT;
         seHint.className = 'dyp__se__hint' + (which === 'yes' ? ' is-yes' : ' is-no');
       }
+      var seBox = box.querySelector('.dyp__se');
+      if (seBox) seBox.classList.remove('dyp__se--nudge');
     }
     for (var j = 0; j < seBtns.length; j++) {
       seBtns[j].addEventListener('click', onPickSE);
@@ -380,8 +389,25 @@
 
   function open() {
     if (!box) build();
+    resetSE();            // 每次弹出都从「未选择」开始（弹窗节点复用，不清会带上次的选择）
     box.classList.add('is-open');
     startCountdown();     // 8 秒倒计时：未到则 × 不生效
+  }
+
+  // 确认块复位：清选择、清回执、清提醒态
+  function resetSE() {
+    seChoice = '';
+    seNudged = false;
+    if (!box) return;
+    var btns = box.querySelectorAll('.dyp__se__opt');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.remove('is-on');
+      btns[i].setAttribute('aria-checked', 'false');
+    }
+    var hint = box.querySelector('.dyp__se__hint');
+    if (hint) { hint.textContent = ''; hint.className = 'dyp__se__hint'; }
+    var seBox = box.querySelector('.dyp__se');
+    if (seBox) seBox.classList.remove('dyp__se--nudge');
   }
 
   // 关闭锁定：弹出后 8 秒内，点 × 不生效（遮罩与 Esc 本来就不关闭）
@@ -400,11 +426,33 @@
       }
       return;
     }
+    // 2026-11-20 站长反馈「没勾选也能关弹窗」：先问一句再放行——
+    // 什么都没选就点 × 时，只把确认块闪一下并给一句提醒，不关闭；
+    // 第二次再点 × 才放行（视为「不确定」，关掉后照样带去 Bing 教程）。
+    if (!seChoice && !seNudged) {
+      seNudged = true;
+      if (box) {
+        var seBox = box.querySelector('.dyp__se');
+        var hint = box.querySelector('.dyp__se__hint');
+        if (hint) {
+          hint.textContent = SE_NUDGE_HINT;
+          hint.className = 'dyp__se__hint is-nudge';
+        }
+        if (seBox) {
+          seBox.classList.remove('dyp__se--nudge');
+          void seBox.offsetWidth;
+          seBox.classList.add('dyp__se--nudge');
+        }
+      }
+      return;
+    }
     if (box) box.classList.remove('is-open');
-    // 站长 2026-11-20：点 × 关掉之后，把访客直接带到页脚「如何用 Bing 搜到本站」
-    // （#sxg-bing-guide 卡片由 friend-links-footer.js 动态注入，可能比弹窗晚挂载，
-    //   所以拿不到目标节点时按 150ms 轮询重试，最多 3 秒；拿到就平滑滚过去）。
-    jumpToBingGuide();
+    // 落点按选择走（2026-11-20 站长第二次反馈）：
+    //   · 选「是的」= 已经是 Bing，关掉就停原地，不再把访客往下拽；
+    //   · 选「不是」/ 没选也坚持关 → 带到页脚「如何用 Bing 搜到本站」。
+    // #sxg-bing-guide 由 friend-links-footer.js 注入，可能比弹窗晚挂载，
+    // 拿不到时 150ms 轮询重试、最多 3 秒。
+    if (seChoice !== 'yes') jumpToBingGuide();
   }
 
   function jumpToBingGuide() {
