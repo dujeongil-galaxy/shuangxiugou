@@ -38,14 +38,14 @@ a{color:#0F766E}
 <body>
 <div class="wrap">
   <h1>浏览器自检 · 双休购</h1>
-  <p class="sub">这一页只做一件事：把你当前浏览器<strong>真实的身份</strong>显示出来。本站靠它判断要不要弹「国产浏览器提示条」，之前几次没生效就是判错了，需要你把它发我。</p>
+  <p class="sub">这一页只做一件事：显示当前浏览器在本站的<strong>真实身份</strong>，以及「国产浏览器提示条」为什么出现、为什么不出现。身份无法自动识别时，访客可在本页自助开启或撤销提示条。</p>
 
   <div id="verdict" class="verdict">正在检测…</div>
 
   <button id="copyBtn" class="btn" type="button">① 一键复制全部诊断信息</button>
   <button class="btn ghost" type="button" onclick="location.href='./?force-domestic=1'">② 永久显示提示条（点一次，全站生效）</button>
   <button class="btn ghost" type="button" onclick="location.href='./?force-domestic=0'">③ 撤销永久显示（恢复自动判定）</button>
-  <p class="tip">新版 360 安全浏览器会把自己的身份伪装成 Chrome，下面的指纹<strong>和真 Chrome 一模一样</strong>——任何网站都无法靠这些值自动认出它，这不是本站漏判，而是这类浏览器的机制使然。想看到提示条，请点<strong>第二个按钮一次</strong>：本站所有页面从此永久显示（只对你这台设备生效，不影响别人，关浏览器也不会失效）。想撤销就点第三个。</p>
+  <p class="tip">新版 360 安全浏览器会把自己的身份伪装成 Chrome，下面的指纹<strong>和真 Chrome 一模一样</strong>——任何网站都无法靠这些值自动认出它，这不是本站漏判，而是这类浏览器的机制使然。需要提示条的访客，请点<strong>第二个按钮一次</strong>：本站所有页面从此永久显示（仅对当前设备生效，不影响其他访客，关闭浏览器也不会失效）。需要撤销时点第三个按钮。</p>
 
   <h2>浏览器发出的原始 UA</h2>
   <textarea id="uaBox" class="ua-box" readonly></textarea>
