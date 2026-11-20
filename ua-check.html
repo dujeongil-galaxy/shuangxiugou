@@ -21,7 +21,7 @@ padding:12px;border:1px solid #d1d5db;border-radius:10px;background:#f9fafb;colo
 h2{font-size:16px;font-weight:800;margin:24px 0 10px;color:#0F766E}
 table{width:100%;border-collapse:collapse;font-size:13.5px}
 th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #e5e7eb;vertical-align:top;word-break:break-all}
-th{width:210px;color:#374151;font-weight:700;background:#f9fafb}
+th{width:230px;color:#374151;font-weight:700;background:#f9fafb}
 .yes{color:#b91c1c;font-weight:800}
 .no{color:#059669;font-weight:800}
 .btn{display:inline-block;border:none;border-radius:999px;background:#0F766E;color:#fff;
@@ -38,14 +38,14 @@ a{color:#0F766E}
 <body>
 <div class="wrap">
   <h1>浏览器自检 · 双休购</h1>
-  <p class="sub">这一页只做一件事：显示当前浏览器在本站的<strong>真实身份</strong>，以及「国产浏览器提示条」为什么出现、为什么不出现。身份无法自动识别时，访客可在本页自助开启或撤销提示条。</p>
+  <p class="sub">这一页只做一件事：把你当前浏览器<strong>真实的身份</strong>显示出来，并按 <strong>ua-guard v17</strong> 的口径告诉你<strong>会看到什么</strong>（硬拦截 / App 内提示 / 页头黄条 / 什么都不弹）。判错就把它发我。</p>
 
   <div id="verdict" class="verdict">正在检测…</div>
 
   <button id="copyBtn" class="btn" type="button">① 一键复制全部诊断信息</button>
-  <button class="btn ghost" type="button" onclick="location.href='./?force-domestic=1'">② 永久显示提示条（点一次，全站生效）</button>
-  <button class="btn ghost" type="button" onclick="location.href='./?force-domestic=0'">③ 撤销永久显示（恢复自动判定）</button>
-  <p class="tip">新版 360 安全浏览器会把自己的身份伪装成 Chrome，下面的指纹<strong>和真 Chrome 一模一样</strong>——任何网站都无法靠这些值自动认出它，这不是本站漏判，而是这类浏览器的机制使然。需要提示条的访客，请点<strong>第二个按钮一次</strong>：本站所有页面从此永久显示（仅对当前设备生效，不影响其他访客，关闭浏览器也不会失效）。需要撤销时点第三个按钮。</p>
+  <button class="btn ghost" type="button" onclick="location.href='./?force-domestic=1'">② 强制显示横幅（点一次，全站生效）</button>
+  <button class="btn ghost" type="button" onclick="location.href='./?force-domestic=0'">③ 撤销强制显示（恢复自动判定）</button>
+  <p class="tip">v17 口径（2026-11-20 定稿）：<strong>微信 / QQ 内置 / QQ 浏览器</strong>一律全屏拦截；<strong>App 内嵌</strong>（安卓 <code>; wv)</code> 壳、iOS 无 Safari 尾巴的 WKWebView）一定弹提示但不拦内容；<strong>能识别出的厂商浏览器</strong>（华为、荣耀、OPPO·一加·realme、vivo·iQOO、小米、联想、魅族、金立、酷派、努比亚·红魔，以及 360、UC、夸克、百度、搜狗、2345、傲游等）在页头下方插一条黄色横幅、正文整体下移，<strong>只提示不拦截</strong>，建议改用 Chrome / Edge / Safari / Firefox；<strong>标准 Chrome、Edge、Safari、Firefox、三星浏览器不弹</strong>。名单只认浏览器标识串、不认机型号——装了真 Chrome 的小米 / OPPO / vivo 手机不会误弹。</p>
 
   <h2>浏览器发出的原始 UA</h2>
   <textarea id="uaBox" class="ua-box" readonly></textarea>
@@ -59,43 +59,116 @@ a{color:#0F766E}
 <script>
 (function () {
   'use strict';
-  // 与 ua-guard.js 完全同源的判定逻辑，便于逐项对照
-  var PATTERNS = [
-    ['UC/夸克/百度等', /UCBrowser|UCWEB|Quark|baidubrowser|BIDUBrowser|baidu|LBBROWSER/i],
-    ['360 系', /360SE|360Chrome|360EE|360browser|360Browser|360Safe|360安全|QIHU|360 Aphone/i],
-    ['360 新版双段尾缀', /Safari\/537\.36\/\d/i],
-    ['搜狗/2345/傲游', /SogouMobileBrowser|MetaSr|SE 2\.X|2345Explorer|2345chrome|Maxthon|SogouIE/i],
-    ['华为/小米/OPPO/vivo', /HuaweiBrowser|HMSCore|MiuiBrowser|VivoBrowser|HeyTapBrowser|OPPOBrowser|OppoBrowser/i],
-    ['支付宝/微博/钉钉/抖音/头条', /AlipayClient|Weibo|DingTalk|aweme|ToutiaoNews|NewsArticle|CoolMarket/i],
-    ['魅族', /Meizu/i],
-    ['微信/QQ', /MicroMessenger|wxwork|MQQBrowser|QQBrowser/i]
-  ];
+  // 与 ua-guard.js v17 同源的判定逻辑，逐项对照用
   var ua = navigator.userAgent || '';
-  var matched = [];
-  PATTERNS.forEach(function (p) { if (p[1].test(ua)) matched.push(p[0]); });
-  var fullRe = /(UCBrowser|UCWEB|Quark|360SE|360Chrome|360EE|360browser|360Browser|360Safe|360安全|QIHU|360 Aphone|SogouMobileBrowser|MetaSr|SE 2\.X|baidubrowser|BIDUBrowser|baidu|LBBROWSER|2345Explorer|2345chrome|Maxthon|HuaweiBrowser|HMSCore|MiuiBrowser|VivoBrowser|HeyTapBrowser|OPPOBrowser|OppoBrowser|AlipayClient|Weibo|DingTalk|aweme|ToutiaoNews|NewsArticle|CoolMarket|Meizu|SogouIE|QQBrowser|MQQBrowser|MicroMessenger|wxwork|Safari\/537\.36\/\d)/i;
-  var isDomestic = fullRe.test(ua);
+
+  // 厂商浏览器特征表（与 ua-guard.js 的 DOMESTIC_TOKENS 一一对应）
+  // 只认「浏览器标识串」，不认机型号：Xiaomi / realme / iQOO 也会出现在装了真 Chrome 的 UA 里
+  var TOKENS = [
+    ['UC 浏览器', /UCBrowser|UCWEB/i],
+    ['夸克', /Quark/i],
+    ['360 浏览器', /360SE|360Chrome|360EE|360browser|360Browser|360Safe|360安全|QIHU|360 Aphone|Safari\/537\.36\/\d/i],
+    ['搜狗浏览器', /SogouMobileBrowser|MetaSr|SE 2\.X|SogouIE/i],
+    ['百度浏览器', /baidubrowser|BIDUBrowser/i],
+    ['2345 浏览器', /LBBROWSER|2345Explorer|2345chrome/i],
+    ['傲游浏览器', /Maxthon/i],
+    ['华为浏览器', /HuaweiBrowser|HMSCore|ArkWeb|OpenHarmony/i],
+    ['荣耀浏览器', /HonorBrowser|HONORBrowser/i],
+    ['OPPO / 一加 / realme 浏览器', /HeyTapBrowser|OPPOBrowser|OppoBrowser/i],
+    ['vivo / iQOO 浏览器', /VivoBrowser/i],
+    ['小米 / Redmi 浏览器', /MiuiBrowser/i],
+    ['联想浏览器', /LenovoBrowser|ZUI/i],
+    ['魅族浏览器', /MeizuBrowser|MZBrowser/i],
+    ['金立浏览器', /GioneeBrowser|GIONEE/i],
+    ['酷派浏览器', /CoolpadBrowser|YulongBrowser/i],
+    ['努比亚 / 红魔浏览器', /NubiaBrowser|RedMagic/i],
+    ['App 内置（支付宝/微博/钉钉/抖音/头条/酷市场）', /AlipayClient|Weibo|DingTalk|aweme|ToutiaoNews|NewsArticle|CoolMarket/i],
+    ['QQ 浏览器', /QQBrowser|MQQBrowser/i],
+    ['微信 / 企业微信', /MicroMessenger|wxwork/i]
+  ];
+  var hits = [];
+  for (var i = 0; i < TOKENS.length; i++) if (TOKENS[i][1].test(ua)) hits.push(TOKENS[i][0]);
+
+  var isWeChat = /MicroMessenger|wxwork/i.test(ua);
+  var isQQInApp = /\bQQ\/[\d.]+/.test(ua) || /\/Tim\//.test(ua);
+  var isQQBrowserUA = /MQQBrowser|QQBrowser/i.test(ua);
+  var is360UA = /360SE|360Chrome|360EE|360browser|360Browser|360Safe|360安全|QIHU|360 Aphone|Safari\/537\.36\/\d/i.test(ua);
+
+  // 反伪装分（同 ua-guard）：UA 自称 iPhone/PC 但内核痕迹露馅 → 并入 QQ 浏览器硬拦截档
+  var spoofScore = 0;
+  (function () {
+    try {
+      var plat = navigator.platform || '';
+      var vendor = navigator.vendor || '';
+      var claimsAppleMobile = /iPhone|iPad|iPod/i.test(ua) && !/Android/i.test(ua);
+      var claimsDesktop = /Windows NT|Macintosh|X11|Linux x86_64/i.test(ua) && !/Android|Mobile/i.test(ua);
+      if ((claimsAppleMobile || claimsDesktop) && (typeof window.mqq !== 'undefined' || typeof window.MQQBrowser !== 'undefined' || typeof window.mqqbrowser !== 'undefined')) spoofScore += 4;
+      if (claimsAppleMobile && navigator.userAgentData) spoofScore += 3;
+      if (claimsAppleMobile && window.chrome && (window.chrome.runtime || window.chrome.loadTimes)) spoofScore += 3;
+      if (claimsAppleMobile && plat && !/iPhone|iPad|iPod/i.test(plat)) spoofScore += 3;
+      if (claimsDesktop && /iPhone|iPad|iPod|Linux arm|Android/i.test(plat)) spoofScore += 3;
+      if (claimsAppleMobile && vendor && !/Apple/i.test(vendor)) spoofScore += 2;
+    } catch (e) { spoofScore = 0; }
+  })();
+  if (!isWeChat && !isQQInApp && !isQQBrowserUA && spoofScore >= 3) isQQBrowserUA = true;
+
+  // 壳指纹：只对 Android + Mobile + 自称 Chrome 计分
+  var shellScore = 0;
+  if (/Android/i.test(ua) && /Mobile/i.test(ua) && /Chrome\/[\d.]+/.test(ua)) {
+    try {
+      if (navigator.userAgentData && (!navigator.userAgentData.brands || navigator.userAgentData.brands.length === 0)) shellScore += 3;
+    } catch (e) {}
+    if (typeof window.chrome === 'undefined') shellScore += 1;
+    if (/;\s*wv\)/i.test(ua) && /Version\/4\.0/i.test(ua)) shellScore += 1;
+  }
+
+  var isAndroidWebView = /Android/i.test(ua) && /Mobile/i.test(ua) && /Chrome\/[\d.]+/.test(ua) &&
+    /;\s*wv\)/i.test(ua) && /Version\/4\.0/i.test(ua);
+  var isIosWebView = /iPhone|iPad|iPod/i.test(ua) && !/Android/i.test(ua) &&
+    /AppleWebKit/i.test(ua) && !/Safari\//i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo/i.test(ua);
+  var isInAppWebView = !isWeChat && !isQQInApp && !isQQBrowserUA && (isAndroidWebView || isIosWebView);
+
+  var forceDomestic = false;
+  try { forceDomestic = (localStorage.getItem('sxg-force-domestic') === '1'); } catch (e) {}
+
+  // 厂商浏览器命中里排掉微信/QQ 内置/QQ 浏览器的那些标签，避免同一档在两处重复记账
+  var vendorHits = hits.filter(function (h) {
+    return h !== '微信 / 企业微信' && h !== 'QQ 浏览器' && h !== 'App 内置（支付宝/微博/钉钉/抖音/头条/酷市场）';
+  });
+
+  var action = 'pass';
+  if (isWeChat || isQQInApp || isQQBrowserUA) action = 'hard-block';
+  else if (isInAppWebView) action = 'app-notice';
+  else if (forceDomestic || shellScore >= 3 || vendorHits.length > 0) action = 'notice';
 
   function yesNo(v) { return v ? '<span class="yes">存在 ✓</span>' : '<span class="no">不存在</span>'; }
 
   var rows = [
-    ['UA 是否被判为国产', isDomestic ? '<span class="yes">是（应弹黄条）</span>' : '<span class="no">否（这就是不弹的原因）</span>'],
-    ['命中的特征', matched.length ? matched.join('、') : '一项都没命中'],
+    ['最终动作（ua-guard v17）', '<span class="' + (action === 'pass' ? 'no' : 'yes') + '">' + action + '</span>'],
+    ['微信 / 企业微信', isWeChat ? '<span class="yes">是 → 全屏拦截</span>' : '<span class="no">否</span>'],
+    ['QQ 内置（QQ/ 或 Tim/）', isQQInApp ? '<span class="yes">是 → 全屏拦截</span>' : '<span class="no">否</span>'],
+    ['QQ 浏览器（或反伪装分 ≥3 并入）', isQQBrowserUA ? '<span class="yes">是 → 全屏拦截</span>' : '<span class="no">否</span>'],
+    ['反伪装分', spoofScore],
+    ['App 内嵌 WebView', isInAppWebView
+      ? '<span class="yes">是 → 只提示，不拦截</span>'
+      : '<span class="no">否</span>（安卓 ' + (isAndroidWebView ? '是' : '否') + ' / iOS ' + (isIosWebView ? '是' : '否') + '）'],
+    ['壳指纹分（≥3 视为非标准 Chromium 运行时）', shellScore + (shellScore >= 3 ? ' <span class="yes">→ 判定为壳，弹页头横幅</span>' : '')],
+    ['厂商浏览器特征命中', vendorHits.length
+      ? '<span class="yes">' + vendorHits.join('、') + ' → 弹页头横幅</span>'
+      : '<span class="no">未命中（伪装成标准 Chrome 时只能靠壳指纹或自助标记）</span>'],
+    ['360 家族 UA 特征', is360UA ? '<span class="yes">是</span>' : '<span class="no">未命中</span>'],
+    ['?force-domestic 自助标记', forceDomestic ? '<span class="yes">已开启 → 弹页头横幅</span>' : '<span class="no">未开启</span>'],
     ['navigator.userAgent', ua || '（空）'],
     ['navigator.platform', navigator.platform || '（空）'],
     ['navigator.vendor', navigator.vendor || '（空）'],
-    ['window.external', yesNo('external' in window && !!window.external)],
-    ['external 自有属性', (function () {
-      try { return Object.keys(window.external || {}).slice(0, 20).join(', ') || '（无）'; }
-      catch (e) { return '（读取失败：' + e.message + '）'; }
-    })()],
-    ['document.documentMode（IE兼容模式标志）', yesNo('documentMode' in document)],
     ['window.chrome（Chromium 内核标志）', yesNo('chrome' in window && !!window.chrome)],
     ['navigator.userAgentData', yesNo('userAgentData' in navigator && !!navigator.userAgentData)],
     ['userAgentData.brands', (function () {
-      try { return (navigator.userAgentData && navigator.userAgentData.brands || []).map(function (b) { return b.brand + '/' + b.version; }).join(', ') || '（无）'; }
+      try { return (navigator.userAgentData && navigator.userAgentData.brands || []).map(function (b) { return b.brand + '/' + b.version; }).join(', ') || '（空数组 —— 真 Chrome 不会为空）'; }
       catch (e) { return '（读取失败）'; }
     })()],
+    ['window.external', yesNo('external' in window && !!window.external)],
+    ['document.documentMode（旧 IE 兼容标志）', yesNo('documentMode' in document)],
     ['是否安全上下文', yesNo(window.isSecureContext)],
     ['页面地址', location.href]
   ];
@@ -105,27 +178,38 @@ a{color:#0F766E}
   }).join('');
 
   var v = document.getElementById('verdict');
-  if (isDomestic) {
-    v.className = 'verdict dom';
-    v.innerHTML = '判定：<span>国产浏览器</span> —— 理论上应该弹黄条。如果首页没弹，问题在脚本没加载或被缓存。';
+  function setVerdict(cls, html) { v.className = 'verdict ' + cls; v.innerHTML = html; }
+  var brand = vendorHits[0] || (is360UA ? '360 浏览器' : '非标准 Chromium 内核浏览器');
+  if (isWeChat || isQQInApp) {
+    setVerdict('dom', '判定：<span>微信 / QQ 内置浏览器</span> —— 全屏拦截层，要求复制地址到系统浏览器打开。');
+  } else if (isQQBrowserUA) {
+    setVerdict('dom', '判定：<span>QQ 浏览器</span> —— <strong>直接硬拦截，不放行</strong>（原来的「跳专题页」已撤销）。');
+  } else if (isInAppWebView) {
+    setVerdict('dom', '判定：<span>App 内嵌 WebView</span> —— 只弹一句「别在 App 内打开」，不拦截内容、无按钮。');
+  } else if (vendorHits.length > 0) {
+    setVerdict('dom', '判定：<span>' + brand + '</span> —— 页头下方弹一条黄色横幅，正文整体下移、不遮挡；只提示不拦截，建议改用 Chrome / Edge / Safari / Firefox。若首页没看到，多半是脚本没加载或被缓存（记得升 <code>?v=</code>）。');
+  } else if (shellScore >= 3) {
+    setVerdict('dom', '判定：<span>非标准 Chromium 运行时</span>（壳指纹 ' + shellScore + ' 分）—— 应弹页头横幅，手机 360 极速版落这一档。');
+  } else if (forceDomestic) {
+    setVerdict('dom', '判定：<span>自助标记环境</span>（force-domestic）—— 应弹页头横幅，可用第三个按钮撤销。');
   } else {
-    v.className = 'verdict intl';
-    v.innerHTML = '判定：<span>按指纹无法区分</span> —— 所有国产特征都没命中：可能是真国际浏览器，也可能是伪装成 Chrome 的新版 360（两者指纹一致，无法自动区分）。若要显示提示条，请点上方「② 永久显示提示条」，一次设置全站生效。';
+    setVerdict('intl', '判定：<span>正常浏览器</span> —— 什么都不弹。若你确实在用厂商自带浏览器却什么都没看到，把本页信息发给站长。');
   }
 
   document.getElementById('copyBtn').addEventListener('click', function () {
+    var btn = this;
     var text = rows.map(function (r) { return r[0] + '：' + r[1].replace(/<[^>]*>/g, ''); }).join('\n');
-    var done = function () { this.textContent = '✓ 已复制，粘贴发给站长'; };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done.bind(this), fallback.bind(this));
-    } else { fallback.call(this); }
+    function done() { btn.textContent = '✓ 已复制，粘贴发给站长'; }
     function fallback() {
       var ta = document.createElement('textarea');
       ta.value = text; ta.style.cssText = 'position:fixed;top:-9999px';
       document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); done.call(this); } catch (e) { this.textContent = '复制失败，请手动选中 UA 框内容'; }
+      try { document.execCommand('copy'); done(); } catch (e) { btn.textContent = '复制失败，请手动选中 UA 框内容'; }
       document.body.removeChild(ta);
     }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else { fallback(); }
   });
 })();
 </script>

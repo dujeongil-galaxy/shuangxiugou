@@ -1309,9 +1309,9 @@ section('2g. 首页证据链完整公示');
         && /prefers-reduced-motion/.test(mqJs)
         && /querySelector\('\.notice-copy'\)/.test(mqJs),
         '补丁具备启播条件、按宽度算时长、reduced-motion 与幂等');
-      check(/<link rel="stylesheet" href="\.\/notice-marquee\.css\?v=1">/.test(html)
-        && /<script defer src="\.\/notice-marquee\.js\?v=1"><\/script>/.test(html),
-        '首页挂载公告栏滚动样式与脚本（各 ?v=1，改后须 bump）',
+      check(/<link rel="stylesheet" href="\.\/notice-marquee\.css\?v=3">/.test(html)
+        && /<script defer src="\.\/notice-marquee\.js\?v=3"><\/script>/.test(html),
+        '首页挂载公告栏滚动样式与脚本（各 ?v=3，改后须 bump）',
         '脚本/样式没挂 → 页面看着还是静态一行，滚动静默失效');
       check(/'id="notice-viewport"'\s+not in cur/.test(gen9b)
         && /'id="notice-more"'\s+in cur/.test(gen9b)
@@ -8467,9 +8467,9 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§30a README 写死比亚迪曝光登记四条口径（卡片真挂载 / 死链不冒充 / 如实登记 / 随笔引用）',
     '规则只挂口头 → 又会出现「详情页写了、卡片没动」的静默失效');
 
-  check(p30.length > 0 && /<script defer src="\.\/byd-expose-patch\.js\?v=7"><\/script>/.test(idx30)
+  check(p30.length > 0 && /<script defer src="\.\/byd-expose-patch\.js\?v=8"><\/script>/.test(idx30)
     && /不能改 bundle|不能改\s*bundle/.test(p30),
-    '§30b 曝光补丁入库并挂进首页（?v=6，2026-11-14 点评框措辞优化：不再逐字直录站长口语），且写明不动压缩 bundle');
+    '§30b 曝光补丁入库并挂进首页（?v=8，2026-11-20 视频时长改为约 1 分 50 秒 + 悬赏口径分档），且写明不动压缩 bundle');
 
   check(/\^BYD\\s\*\\\(比亚迪\\\)/.test(p30) && /data-byd-expose/.test(p30)
     && /new MutationObserver\(schedule\)/.test(p30)
@@ -10047,15 +10047,15 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     '§38b 微信/QQ 内置浏览器硬拦截层文案保留（口径未回退）',
     '内置浏览器文案丢失 → 硬拦截层成了无说明的空壳');
 
-  // 38j. QQ 浏览器分流：非专题页跳专题页、专题页自放行 + 顶部说明条，无自跳死循环
+  // 38j. QQ 浏览器分流：v16 起改为直接全屏拦截（原「跳专题页 + 专题页自放行」已撤销），专题页只作说明存档
   {
     var rpt38src = exists('qq-browser-report.html') ? read('qq-browser-report.html') : '';
-    check(/location\.replace\(base \+ 'qq-browser-report\.html'\)/.test(ug38)
-        && /sxgOnReport\(\)/.test(ug38)
-        && /data-sxg-qq-browser/.test(ug38)
-        && /qq-browser-report\\.html\$/.test(ug38),
-      '§38j QQ 浏览器命中后引导专题页、专题页自身放行（防自跳死循环）',
-      '跳转目标/自放行判断丢失 → QQ 浏览器被锁在原地或专题页反复跳转');
+    check(!/location\.replace\(base \+ 'qq-browser-report\.html'\)/.test(ug38)
+        && /isWeChat \|\| isQQ \|\| isQQBrowser/.test(ug38)
+        && /data-sxg-ua-block/.test(ug38)
+        && /qq-browser-report\.html/.test(rpt38src),
+      '§38j QQ 浏览器命中后直接全屏拦截（2026-11-20 撤销跳专题页，专题页降为说明存档）',
+      '跳转逻辑残留或硬拦截丢失 → QQ 浏览器又能进正站，或被锁在专题页自我跳转');
     check(/data-sxg-qq-browser="1"\] #qq-browser-notice/.test(rpt38src)
         && /检测到您正在使用 QQ 浏览器访问本站/.test(rpt38src)
         && /id="qq-browser-notice"/.test(rpt38src),
@@ -10069,7 +10069,7 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
         && /navigator\.userAgentData/.test(ug38)
         && /navigator\.platform/.test(ug38)
         && /navigator\.vendor/.test(ug38)
-        && /sxgSpoofScore\(\) >= 3/.test(ug38)
+        && /spoofScore >= 3/.test(ug38)
         && /isQQBrowser = true/.test(ug38),
       '§38k ua-guard.js 含多信号反伪装判定（UA-CH / platform / vendor / chrome 对象，可疑分 ≥3 命中）',
       '交叉验证被删/阈值消失 → 改 UA 标识的 QQ 浏览器直接绕进正站，专题页引导落空');
@@ -10130,36 +10130,40 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     var flf38m = exists('friend-links-footer.js') ? read('friend-links-footer.js') : '';
     // ① 黑名单判定在岗：必须有国产特征判定函数 + 韩国两大浏览器特征串不得进黑名单
     var has38m = function (s) { return ug38.indexOf(s) !== -1; };
-    check(has38m('function sxgIsDomesticBrowser(u)')
-        && /if \(sxgIsDomesticBrowser\(ua\)(?:\s*\|\|\s*forceDomestic)?\) sxgShowBrowserNotice\(\);/.test(ug38)
+    check(has38m('var DOMESTIC_TOKENS')
+        && has38m('function sxgMatchDomestic(u)')
+        && /forceDomestic \|\| sxgIsDomesticBrowser\(ua\) \|\| shellScore >= 3 \|\| is360UA\).*sxgShowBrowserNotice/.test(ug38)
         && !/sxgIsAllowedBrowser|sxgDomesticSignal|sxgBrowserAllowed|sxgIsBrowserAllowed|sxgAllowedHint/.test(ug38),
-      '§38m ua-guard.js 改为国产黑名单判定 sxgIsDomesticBrowser（白名单函数族已整体移除）',
-      '白名单函数残留 / 黑名单判定缺失 → 回到「不在白名单就提示」的旧口径，国际浏览器被误伤');
+      '§38m ua-guard.js 用 DOMESTIC_TOKENS 特征表 + sxgMatchDomestic 判定厂商浏览器（白名单函数族整体移除）',
+      '特征表或命中判定缺失 / 白名单函数残留 → 要么全放行、要么回到「不在白名单就提示」的旧口径');
     check(!/Naver|Whale|SamsungBrowser|Samsung ?Internet/i.test(ug38.replace(/[\s\S]*?(?:国产浏览器黑名单|sxgIsDomesticBrowser)[\s\S]*$/, '')),
       '§38m 黑名单正则不含 Naver Whale / 三星 Internet 特征串（韩国主流浏览器不拦）',
       '韩国浏览器特征进了黑名单正则 → 韩国访客被误提示');
     // ② 分流分支：非微信/QQ/QQ浏览器时才走黑名单判定，三类既有口径在上游不变
-    check(has38m('if (!isWeChat && !isQQ && !isQQBrowser) {')
-        && has38m('if (!isWeChat && !isQQ && !isQQBrowser && sxgSpoofScore() >= 3) isQQBrowser = true;'),
-      '§38m 黑名单判定被 !isWeChat/!isQQ/!isQQBrowser 守卫（三类既有口径不被改写）',
-      '判定被提到上游 → 微信/QQ 内置或 QQ 浏览器落到提示分支，硬拦/专题页口径被破坏');
+    check(has38m('if (!isWeChat && !isQQ && !isQQBrowser && spoofScore >= 3) isQQBrowser = true;')
+        && has38m('if (isWeChat || isQQ || isQQBrowser) {'),
+      '§38m 厂商判定被 !isWeChat/!isQQ/!isQQBrowser 守卫（三类既有口径不被改写）',
+      '判定被提到上游 → 微信/QQ 内置或 QQ 浏览器落到提示分支，硬拦口径被破坏');
     // ③ 持续提示：固定不可关闭 + 只挂顶部条不隐藏 body + 无任何 cookie 记忆
-    check(/position:fixed;top:0/.test(ug38)
-        && /id = 'sxg-browser-notice'/.test(ug38)
+    check(/id = 'sxg-browser-notice'/.test(ug38)
+        && /header\.nextSibling|anchor\.nextSibling/.test(ug38)
+        && !/#sxg-browser-notice\{[^}]*position:fixed/.test(ug38)
+        && !/#sxg-browser-notice\{[^}]*position:sticky/.test(ug38)
         && !/closeBtn|×|✕|close\s*button/i.test(ug38)
-        && !/sxgHasNoticeCookie/.test(ug38)
-        && !/sxgSetNoticeCookie/.test(ug38)
-        && !/doc\.cookie/.test(ug38)
+        && !/sxgHasNoticeCookie|sxgSetNoticeCookie|doc\.cookie/.test(ug38)
         && !/html\[data-sxg-ua-block\][\s\S]{0,80}sxg-browser-notice/.test(ug38),
-      '§38m 顶部提示固定不可关闭（无关闭按钮）、只插 DOM 不隐藏正文、且无 cookie 记忆（全站每页常驻）',
-      '关闭按钮/cookie 记忆残留 → 变成一次性或可被关闭，违背持续提示口径；塞进硬拦样式 → 变成拦截');
+      '§38m 页头黄色横幅走文档流（非 fixed/sticky，正文整体下移不被遮挡）、不可关闭、无 cookie 记忆',
+      '改成 fixed/sticky 会盖住公告栏与正文；加关闭按钮/cookie 会退化成一次性提示；塞进硬拦样式会变成拦截');
     // ④ 提示文案要点（书面转述，不照抄口述）+「这里」链接指向 Bing 锚点
-    check(/Safari、Chrome、Edge 或 Firefox 由访客自行决定/.test(ug38)
-        && /检索结果完全消失/.test(ug38)
-        && /不作强制拦截/.test(ug38)
-        && /#sxg-bing-guide/.test(ug38),
-      '§38m 顶部提示含「曝光不足/检索被屏蔽 + 换浏览器自决 + Bing 必应」要点且附锚点链接',
-      '文案要点或链接缺失 → 访客看不到原因与设置入口，提示形同虚设');
+    var noticeCopy38m = (ug38.match(/检测到你正在使用[\s\S]*?继续留在这里也可以。/) || [''])[0];
+    check(/检测到你正在使用/.test(noticeCopy38m)
+        && /建议改用 Chrome、Edge、Safari 或 Firefox/.test(noticeCopy38m)
+        && /本站不强制拦截/.test(noticeCopy38m)
+        && /GitHub 纯静态页/.test(noticeCopy38m)
+        && !/国产|国内/.test(noticeCopy38m)
+        && !/href[^,)]*sxg-bing-guide/i.test(ug38),
+      '§38m 横幅文案：报出具体浏览器 + 建议换 Chrome/Edge/Safari/Firefox + 不强制拦截，且不提「国产/国内」、不挂已删死链',
+      '文案漏要点或提「国产/国内」→ 与站长口径冲突；重现 #sxg-bing-guide 死链 → 点开是空锚点');
     // ⑤ 锚点落在首页 Bing 教程卡片 + 动态注入后主动滚动
     check(/seoCard\.id = 'sxg-bing-guide'/.test(flf38m)
         && /location\.hash === '#sxg-bing-guide'/.test(flf38m)
@@ -10171,10 +10175,11 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
       '§38m Bing 卡片预留 70px 滚动偏移，标题不被固定提示条盖住',
       '缺滚动偏移 → 卡片顶到 y=0，标题被顶部固定提示条遮挡');
     // ⑥ 真代码沙箱判定矩阵：从源文件原样抠出 sxgIsDomesticBrowser 函数体执行，不测重写副本
-    var fnDomestic38m = ug38.match(/function sxgIsDomesticBrowser\(u\) \{[\s\S]*?\n    \}/);
+    var tok38m = ug38.match(/var DOMESTIC_TOKENS = \[[\s\S]*?\n    \];/);
+    var fnDomestic38m = ug38.match(/function sxgMatchDomestic\(u\) \{[\s\S]*?\n    \}/);
     var domestic38m = function (u) {
-      if (!fnDomestic38m) return null;
-      var fn = new Function('u', fnDomestic38m[0] + '\n return sxgIsDomesticBrowser(u);');
+      if (!fnDomestic38m || !tok38m) return null;
+      var fn = new Function('u', tok38m[0] + '\n' + fnDomestic38m[0] + '\n return sxgMatchDomestic(u).length > 0;');
       return fn(u);
     };
     var uaSafariM = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15';
@@ -10231,15 +10236,15 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     const withGuard38 = htmlRefs38.filter((p) => {
       try { return /ua-guard\.js\?v=/.test(readFileSync(join(ROOT, p), 'utf8')); } catch { return false; }
     });
-    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=(?:[1-9]|10|11)\b/.test(readFileSync(join(ROOT, p), 'utf8')));
-    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=12\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=(?:[1-9]|10|11|12|13|14|15|16)\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=17\b/.test(readFileSync(join(ROOT, p), 'utf8')));
     check(withGuard38.length >= 199 && oldV38.length === 0 && newV38.length === withGuard38.length,
-      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=12、无残留 v=1~11`,
+      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=17、无残留 v=1~16`,
       `旧版 ${oldV38.length} 页 / 新版 ${newV38.length} 页 → 缓存不刷新，用户拿到旧拦截脚本`);
     const notes38 = exists('notes.html') ? read('notes.html') : '';
     const notesAt38 = notes38.indexOf('ua-guard.js');
     const bodyAt38 = notes38.indexOf('<body');
-    check(notesAt38 > 0 && /ua-guard\.js\?v=12/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
+    check(notesAt38 > 0 && /ua-guard\.js\?v=17/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
       '§38c notes.html 已挂 ua-guard 且引用位于 body 之前（全站无例外、同步生效）',
       'notes 未挂 / 版本不对 / 放到 body 之后 → 加密笔记页在 QQ 浏览器里正文先闪现');
   }
@@ -10254,9 +10259,9 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     const guardSrc38 = exists('ua-guard.js') ? read('ua-guard.js') : '';
     check(/force-domestic=1/.test(guardSrc38)
         && /localStorage\.setItem\(FD_KEY,\s*'1'\)/.test(guardSrc38)
-        && /sessionStorage\.setItem\('sxg-force-domestic',\s*'1'\)/.test(guardSrc38)
-        && /sxgIsDomesticBrowser\(ua\)\s*\|\|\s*forceDomestic/.test(guardSrc38),
-      '§38c-2 ua-guard force-domestic=1 写 localStorage 永久 + sessionStorage 兼容，并入国产判定',
+        && /sessionStorage\.setItem\(FD_KEY,\s*'1'\)/.test(guardSrc38)
+        && /forceDomestic \|\| sxgIsDomesticBrowser\(ua\)/.test(guardSrc38),
+      '§38c-2 ua-guard force-domestic=1 写 localStorage 永久 + sessionStorage 兼容，并入厂商浏览器判定',
       '删开关/降级回仅 sessionStorage → 关浏览器就失效，伪装 360 每次都要重加参数');
     check(/force-domestic=0/.test(guardSrc38)
         && /localStorage\.removeItem\(FD_KEY\)/.test(guardSrc38)
@@ -10275,9 +10280,9 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
         && /userAgentData/.test(diag38)
         && /\.\/\?force-domestic=1/.test(diag38)
         && /\.\/\?force-domestic=0/.test(diag38)
-        && /永久显示提示条/.test(diag38)
-        && /按指纹无法区分/.test(diag38),
-      '§38c-2 ua-check.html 自检页：UA + 运行时指纹 + 永久开启/撤销双按钮 + 无法区分实话说明',
+        && /强制显示横幅/.test(diag38)
+        && /只能靠壳指纹/.test(diag38),
+      '§38c-2 ua-check.html 自检页：UA + 运行时指纹 + 永久开启/撤销双按钮 + 「伪装成标准 Chrome 时只能靠壳指纹」实话说明',
       '自检页缺字段/撤销按钮 → 伪装 UA 访客开了黄条就关不掉，或继续被误导去盲猜');
     // 自检页的判定正则必须与 ua-guard.js 同源（否则诊断结论与真实行为对不上）
     const guardHasQihu38 = /QIHU/.test(guardSrc38);
@@ -10367,11 +10372,11 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   const sm38 = exists('sitemap.xml') ? read('sitemap.xml') : '';
   const nav38 = exists('nav-menu.js') ? read('nav-menu.js') : '';
   check(rpt38.length > 0
-      && /ua-guard\.js\?v=12/.test(rpt38)
+      && /ua-guard\.js\?v=17/.test(rpt38)
       && /ai-link\.js\?v=\d+/.test(rpt38)
       && /sxg-legal/.test(rpt38)
       && /<title>[^<]*QQ 浏览器[^<]*<\/title>/.test(rpt38),
-    '§38i QQ 浏览器专题页存在且结构与全站一致（UA 分流 v7 / AI 按钮 / 法务页脚 / 标题）',
+    '§38i QQ 浏览器专题页存在且结构与全站一致（UA 分流 v17 / AI 按钮 / 法务页脚 / 标题）',
     '专题页缺失或不带全站组件 → 访客拿到的存档页无拦截、无 AI 入口、无法务链接');
   check(/\.\/archive\/wechat-liciaotiao-2023\/01-letter\/body\.jpg/.test(rpt38)
       && /\.\/archive\/wechat-liciaotiao-2023\/02-my-view\/body\.png/.test(rpt38)

@@ -144,7 +144,7 @@
     <!-- 移动端排版修复（须在主 CSS 之后：靠覆盖生效；改完请把 ?v=N 的 N +1） -->
     <link rel="stylesheet" href="./mobile-fixes.css?v=25">
     <!-- 顶部公告栏单行滚动（2026-11-15 取代手机端折叠）：改完请把 ?v=N 的 N +1 -->
-    <link rel="stylesheet" href="./notice-marquee.css?v=1">
+    <link rel="stylesheet" href="./notice-marquee.css?v=3">
   <!-- 黑卡预隐藏（2026-11-10 站长反馈「先加载黑色卡片，然后才出现广告位」）：
        bundle 渲染的黑卡（class 含唯一子串 rounded-2xl p-5 shadow-xl，全 bundle 仅黑卡用）
        在 black-card-adslot.js 下载完成并替换之前会先画一帧 → 慢网下肉眼可见闪现。
@@ -156,7 +156,7 @@
   <style>.sxg-loading{position:fixed;inset:0;z-index:2147483647;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}.sxg-boot{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:14px;color:#0f766e;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif}.sxg-boot__spinner{width:34px;height:34px;border:3px solid #ccfbf1;border-top-color:#0f766e;border-radius:50%;animation:sxg-spin .8s linear infinite}.sxg-boot__text{margin:0;font-size:14px;font-weight:600;letter-spacing:.04em}@keyframes sxg-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.sxg-boot__spinner{animation-duration:2s}}</style>
   <meta name="google-adsense-account" content="ca-pub-5270311938787209">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5270311938787209" crossorigin="anonymous"></script>
-<script src="./ua-guard.js?v=12"></script>
+<script src="./ua-guard.js?v=17"></script>
 </head>
   <body>
     <!-- 全屏加载遮罩：React 大包解析期间盖住整页（含顶部公告栏与下方证据链区块），
@@ -194,7 +194,7 @@
          → 12px/600 定稿改成 13px/700。中文系统字体大多只有 400/700 两档，
            写 600 常被回落到 400，看着就是又细又小；verify §9b 有下限断言锁着。 -->
     <div id="site-notice" style="background:#ffffff;color:#dc2626;text-align:left;font-size:13px;line-height:1.5;padding:6px 12px;border-bottom:1px solid #fee2e2;font-weight:700;position:relative;z-index:999;display:flex;align-items:center;gap:8px;">
-      <span class="notice-viewport" id="notice-viewport"><span class="notice-track" id="notice-track"><span id="evidence-notice">本站全部数据均附公开证据链：189 家企业 505 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 5 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice --></span></span>
+      <span class="notice-viewport" id="notice-viewport"><span class="notice-track" id="notice-track"><span id="evidence-notice">本站全部数据均附公开证据链：189 家企业 505 条证据已在本页完整公示（招聘口径、员工反馈与官方通报分项标注，来源可查可溯；其中 5 家暂无可点公开链接，已在公示区如实单列），欢迎核实纠错</span><!-- /notice --><span id="sxg-vote-notice">&nbsp;&nbsp;为什么不买比呼吁有用：1. 企业的账本先算成本&nbsp;&nbsp;2. 你的钱就是投票&nbsp;&nbsp;3. 一个人不买没用，一批人有用&nbsp;&nbsp;4. 投票的前提是看得见——本站做的事就是把他们摊在阳光下</span><span id="sxg-360-notice">&nbsp;&nbsp;关于 360 浏览器：它把 UA 伪装成 Chrome，本站是 GitHub 纯静态页、没有服务端，识不破它 —— 只提示、不拦截；建议改用 Chrome、Edge、Safari 或 Firefox。</span></span></span>
       <span id="sxg-recent-slot"></span>
     </div>
     <!-- 版本号唯一真相源（2026-11-02 第五轮，站长：「版本号不要写这里了，加入三横菜单吧」）
@@ -3846,7 +3846,7 @@
             <div class="u"><a href="https://v.douyin.com/On1eQs3gnWE/" rel="nofollow noopener" target="_blank">v.douyin.com/On1eQs3gnWE/</a></div>
           </li>
           <li>
-            <div class="t">比亚迪法务部发文：悬赏 50 万–500 万征集「黑公关」线索（抖音 5 秒短视频，站长提供）</div>
+            <div class="t">比亚迪法务部发文：悬赏最高 500 万征集「黑公关」线索（MCN 线索 50 万–500 万、其他线索 5 万–500 万；抖音视频约 1 分 50 秒，站长提供）</div>
             <div class="m"><span class="k" style="border-color:#94a3b8;color:#475569">旁证/二手汇总</span> <span class="raw">原标注：自媒体转述（二手）</span> <span class="d">2026-11-13</span></div>
             <div class="s">11 月 13 日比亚迪法务部发文：为打击网络黑公关乱象，对通过 MCN 等有组织、有策划抹黑比亚迪的相关线索，一经查实对符合条件的线索提供者给予 50 万元至 500 万元奖励；…</div>
             <div class="u"><a href="https://v.douyin.com/3oI-7tZ12R8/" rel="nofollow noopener" target="_blank">v.douyin.com/3oI-7tZ12R8/</a></div>
@@ -10140,7 +10140,7 @@
   <script defer src="./luckin-note-patch.js?v=1"></script>
   <!-- 比亚迪卡片曝光登记（2026-11-09 站长线索 / 2026-11-10 视频下架补记）：
        内置卡数据在压缩 bundle 里不能改，用独立 DOM 补丁在渲染后挂红框说明。 -->
-  <script defer src="./byd-expose-patch.js?v=7"></script>
+  <script defer src="./byd-expose-patch.js?v=8"></script>
   <!-- 2026-11-10 新闻事件登记：罗技授权店铺侮辱消费者广告 / 星宇股份后续进展，内置卡渲染后 DOM 补丁 -->
   <script defer src="./news-incident-patch.js?v=9"></script>
   <!-- 每张卡详情弹窗底部「跳转到证据公示」：内置 React 弹窗与自定义卡弹窗
@@ -10166,7 +10166,7 @@
   <!-- 顶部公告栏正文单行无缝滚动（2026-11-15）：运行时克隆一份同源副本做循环，
        脚本没加载时退化为可手动横滑的一行，不会出现半截空白。
        尊重 prefers-reduced-motion。绝不改压缩 bundle。 -->
-  <script defer src="./notice-marquee.js?v=1"></script>
+  <script defer src="./notice-marquee.js?v=3"></script>
   <!-- 首页「最新新增的企业」入口（2026-11-15 站长指令）：
        展示**最新 5 条**登记（按日期倒序），因为品牌新增不是每天都有，按天窗口会经常空面板。
        真相源 data/recent-brands.json → scripts/gen-recent-brands.py → recent-brands-data.js；
