@@ -9979,31 +9979,35 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '提示仍写「可以关闭」却没说怎么关 → 用户会去点空白');
   // 2026-11-20 站长指令（同日二次修订）：在正文滚动区与绿色推荐语之间的空白
   // （截图红框处）插入「你的浏览器默认搜索引擎是 Bing 必应吗」确认块——是 / 不是
-  // 二选一，回执按选项给（提示词重写，不照抄口语稿）；什么都没选就点 × 只提醒、
-  // 不关闭；落点按选择走：选「是的」关掉停原地，选「不是」或没选也坚持关才滚到
-  // 页脚「如何用 Bing 搜到本站」卡片（#sxg-bing-guide）。
+  // 二选一，回执按选项给（提示词重写，不照抄口语稿）；2026-11-21 站长实测反馈
+  // 「第二次或者多按继续关闭按钮，就可以直接关闭」→ 收紧为真正锁死：未选择时
+  // 点 × 永远只提醒不放行，选了「是的/不是」才允许关；落点按选择走：选「是的」
+  // 关掉停原地，选「不是」才滚到页脚「如何用 Bing 搜到本站」卡片（#sxg-bing-guide）。
   check(/你的浏览器默认搜索引擎是 Bing 必应吗/.test(dpCode36x)
       && /好，那你在 Bing 里搜「双休购」就能找到我们，慢慢逛。/.test(dpCode36x)
       && /没关系，关掉后我把设置步骤摆出来，照着点两下就行。/.test(dpCode36x)
       && /先选一下上面的问题，选完就能关。/.test(dpCode36x),
-    '§36x-2 弹窗含搜索引擎确认块（问句 + 是/不是/未选三种友好回执）',
+    '§36x-2 弹窗含搜索引擎确认块（问句 + 是/不是两种友好回执 + 未选提醒）',
     '缺确认块或回执退化成「好的，欢迎访问」式直译 → 站长指定红框区域仍是空白或文案生硬');
   check(/data-se="yes"/.test(dpCode36x) && /data-se="no"/.test(dpCode36x)
       && /role="radio"/.test(dpCode36x) && /aria-checked/.test(dpCode36x),
     '§36x-2 「是的 / 不是」为二选一 radiogroup（aria-checked 同步翻转）',
     '退化成两个能同时勾上的复选框 → 语义与交互都错');
-  check(/if \(!seChoice && !seNudged\)[\s\S]{0,260}seNudged = true[\s\S]{0,900}return;/.test(dpCode36x)
+  // 真锁死（2026-11-21）：剥注释后 close() 内必须是「if (!seChoice) { ...提醒... return; }」
+  // 且不再有 seNudged 放行标记；「选了才关」的判定不得出现任何绕过分支。
+  check(/if \(!seChoice\) \{[\s\S]{0,400}SE_NUDGE_HINT[\s\S]{0,600}return;/.test(dpCode36x)
+      && !/seNudged/.test(dpCode36x)
       && /resetSE/.test(dpCode36x),
-    '§36x-2 未选择不许直接关：第一次点 × 只提醒 + 轻抖，第二次才放行；每次弹出复位',
-    '没选就能一次关掉 → 站长反馈的「没勾选也能关弹窗」复现');
+    '§36x-2 未选择永远不许关：每次点 × 只提醒 + 轻抖，选了「是的/不是」才放行；每次弹出复位',
+    '没选也能关（二次或多按放行）→ 站长 2026-11-21 反馈的「锁死形同虚设」复现');
   check(/function jumpToBingGuide/.test(dpCode36x) && /sxg-bing-guide/.test(dpCode36x)
       && /scrollIntoView/.test(dpCode36x)
       && /if \(seChoice !== 'yes'\) jumpToBingGuide\(\)/.test(dpCode36x),
-    '§36x-2 落点按选择走：「是的」关闭后停原地，其余才滚到 Bing 教程（带重试）',
+    '§36x-2 落点按选择走：「是的」关闭后停原地，选「不是」才滚到 Bing 教程（带重试）',
     '无条件跳转 → 明明是 Bing 用户，关掉弹窗还被往下拽');
-  check(/<script defer src="\.\/douyin-prompt\.js\?v=29"><\/script>/.test(idx36x)
-    && !/douyin-prompt\.js\?v=28/.test(idx36x),
-    '§36x index.html 挂载 douyin-prompt.js?v=29（bump 缓存号）',
+  check(/<script defer src="\.\/douyin-prompt\.js\?v=30"><\/script>/.test(idx36x)
+    && !/douyin-prompt\.js\?v=29/.test(idx36x),
+    '§36x index.html 挂载 douyin-prompt.js?v=30（bump 缓存号）',
     '?v 没 bump → 线上仍跑旧脚本，改动等于没发');
 
   // 2026-11-13 站长追加：「不要 15 分钟冷却，刷新首页必弹」。

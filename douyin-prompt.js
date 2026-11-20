@@ -52,18 +52,18 @@
      交互二选一（radiogroup），回执按选项给，不照抄口语稿：
        · 选「是的」→「好，那你在 Bing 里搜「双休购」就能找到我们，慢慢逛。」
        · 选「不是」→「没关系，关掉后我把设置步骤摆出来，照着点两下就行。」
-       · 什么都没选就点 × → 先提醒「先选一下上面的问题，选完就能关」，
-         不关闭；再点一次 × 才放行（视为「不确定」，关掉后带去教程）。
-     关闭后的落点：只有「不是」和「没选也坚持关」才滚到页脚「如何用 Bing
-     搜到本站」（#sxg-bing-guide）；选「是的」说明已经是 Bing，关掉就停原地，
+       · 什么都没选就点 × → 提醒「先选一下上面的问题，选完就能关」，
+         **永远不放行**（2026-11-21 站长实测反馈：第二次或多按几次 × 仍能直接
+         关闭，锁死形同虚设——改为不选就只能一直点，选了才让关）。
+     关闭后的落点：只有选「不是」才滚到页脚「如何用 Bing 搜到本站」
+     （#sxg-bing-guide）；选「是的」说明已经是 Bing，关掉就停原地，
      不再把访客往下拽。 */
   var SE_ASK_TEXT = '你的浏览器默认搜索引擎是 Bing 必应吗';
   var SE_YES_HINT = '好，那你在 Bing 里搜「双休购」就能找到我们，慢慢逛。';
   var SE_NO_HINT = '没关系，关掉后我把设置步骤摆出来，照着点两下就行。';
   var SE_NUDGE_HINT = '先选一下上面的问题，选完就能关。';
   var BING_GUIDE_ID = 'sxg-bing-guide';
-  var seChoice = '';      // '' | 'yes' | 'no'
-  var seNudged = false;   // 未选择时点过一次 × 的提醒标记
+  var seChoice = '';      // '' | 'yes' | 'no'（'' = 未选择，未选择不许关）
 
   // 底部第一枚按钮：轮毂事件相关视频（站长 2026-11-14 提供的抖音短链）。
   // 第二枚「我要分享此文章」保持不动；按钮文字由本站自定，只说功能不堆叠标题。
@@ -347,7 +347,6 @@
       var btn = ev.currentTarget;
       var which = btn.getAttribute('data-se');
       seChoice = which;
-      seNudged = false;
       for (var i = 0; i < seBtns.length; i++) {
         var b = seBtns[i];
         var on = b === btn;
@@ -397,7 +396,6 @@
   // 确认块复位：清选择、清回执、清提醒态
   function resetSE() {
     seChoice = '';
-    seNudged = false;
     if (!box) return;
     var btns = box.querySelectorAll('.dyp__se__opt');
     for (var i = 0; i < btns.length; i++) {
@@ -426,11 +424,11 @@
       }
       return;
     }
-    // 2026-11-20 站长反馈「没勾选也能关弹窗」：先问一句再放行——
-    // 什么都没选就点 × 时，只把确认块闪一下并给一句提醒，不关闭；
-    // 第二次再点 × 才放行（视为「不确定」，关掉后照样带去 Bing 教程）。
-    if (!seChoice && !seNudged) {
-      seNudged = true;
+    // 2026-11-20 站长反馈「没勾选也能关弹窗」→ 2026-11-21 二次反馈「第二次或者
+    // 多按继续关闭按钮，就可以直接关闭」：第一次的「提醒一次后放行」等于没锁死。
+    // 现在改为真正锁死：没选就点 ×，每次都只抖提醒，**永远不放行**；
+    // 选了「是的 / 不是」任一个才允许关。
+    if (!seChoice) {
       if (box) {
         var seBox = box.querySelector('.dyp__se');
         var hint = box.querySelector('.dyp__se__hint');
@@ -447,9 +445,9 @@
       return;
     }
     if (box) box.classList.remove('is-open');
-    // 落点按选择走（2026-11-20 站长第二次反馈）：
+    // 落点按选择走（2026-11-20 站长第二次反馈，2026-11-21 收紧后无「没选放行」分支）：
     //   · 选「是的」= 已经是 Bing，关掉就停原地，不再把访客往下拽；
-    //   · 选「不是」/ 没选也坚持关 → 带到页脚「如何用 Bing 搜到本站」。
+    //   · 选「不是」→ 带到页脚「如何用 Bing 搜到本站」。
     // #sxg-bing-guide 由 friend-links-footer.js 注入，可能比弹窗晚挂载，
     // 拿不到时 150ms 轮询重试、最多 3 秒。
     if (seChoice !== 'yes') jumpToBingGuide();
