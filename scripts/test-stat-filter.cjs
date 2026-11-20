@@ -13,8 +13,8 @@
 //   2026-11-13 小米 A→B（站长要求下调，修改日期 2026-11-13；首页不另加备注亦为站长要求）：红榜 86→85、B 34→35。
 //   2026-11-12 §38 新增广发银行 / 四川天府银行两张 A 级卡：自定义卡 123→125、可见 175→177、红榜 84→86。
 //   2026-11-15 新增「沪上阿姨」C 级卡（门店招聘月休 2 天）：badge 181→182、可见 180→181、C 57→58、避雷 58→59、hidden 96→97。
-//   2026-11-20 口径复核（本次把数字对齐到当前数据）：badge 190、可见 189、红榜 85、B 41、避雷 61（C 60 + D 1）、hidden 105；
-//   85+41+61=187，另有 2 家 U 不在四格，合计 189。数字仍写死，新增/改档卡时须同步更新本段。
+//   2026-11-20 口径复核（本次把数字对齐到当前数据）：badge 191、可见 190、红榜 85、B 42、避雷 61（C 60 + D 1）、hidden 106；
+//   85+42+61=188，另有 2 家 U 不在四格，合计 190（2026-11-20 新增网易游戏 B 级）。数字仍写死，新增/改档卡时须同步更新本段。
 //   2026-11-12 长城汽车 C→B 后按 rating-stats-patch.js 的 CORRECTIONS 对齐：B +1 / C -1。
 //   D 级 = 站长人工降级（现仅 BOSS直聘，2026-11-03 平台类目例外），计入避雷格；U 级不计入四格。
 //   2026-11-03：新增中国联通 B 级（站长线下核实一个城市，月休 8 天以上），B 级 +1。
@@ -118,8 +118,8 @@ function click(box) {
       .every((c) => (c.textContent || '').indexOf('待核实 · 无证据不作评级') === -1));
 
   const base = snapshot();
-  check('初始可见 189 张（badge 卡 190 张，虚拟卡被 class 隐藏）',
-    base.visible.length === 189 && base.total === 190,
+  check('初始可见 190 张（badge 卡 191 张，虚拟卡被 class 隐藏）',
+    base.visible.length === 190 && base.total === 191,
     { total: base.total, visible: base.visible.length });
 
   // ── U 级（2026-11-02 三星/宏碁证据不足改判）──
@@ -161,14 +161,14 @@ function click(box) {
   // —— 大小周观察：只显示 B ——
   click(zhou);
   s = snapshot();
-  check('点「大小周观察」→ 仅 B 级可见（41 张，与四格修正后「大小周观察 41」一致：Apple 2026-11-04 S→B，小米 2026-11-05 B→A，长城 2026-11-12 C→B，小米汽车 2026-11-13 C→B 站长人工介入，11-13 新增广汽丰田 B 级，11-13 小米 A→B 站长要求下调）',
-    s.visible.length === 41 && s.visible.every((c) => tierOf(c) === 'B'),
+  check('点「大小周观察」→ 仅 B 级可见（42 张，与四格修正后「大小周观察 42」一致：Apple 2026-11-04 S→B，小米 2026-11-05 B→A，长城 2026-11-12 C→B，小米汽车 2026-11-13 C→B 站长人工介入，11-13 新增广汽丰田 B 级，11-13 小米 A→B 站长要求下调）',
+    s.visible.length === 42 && s.visible.every((c) => tierOf(c) === 'B'),
     { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
 
   // —— 避雷预警：显示 C + D（D 是 C 的加重版，站长人工降级，同属避雷）——
   click(lei);
   s = snapshot();
-  check('点「避雷预警」→ C/D 级可见（61 张 = C 60 + D 1；85+41+61=187，另有 2 家 U 不在四格；农行 11-04 C→A 后 -1，11-11 新增吉利 +1，11-12 长城 C→B 后 -1，11-13 新增小米汽车 +1 后同日人工介入 C→B -1）',
+  check('点「避雷预警」→ C/D 级可见（61 张 = C 60 + D 1；85+42+61=188，另有 2 家 U 不在四格；农行 11-04 C→A 后 -1，11-11 新增吉利 +1，11-12 长城 C→B 后 -1，11-13 新增小米汽车 +1 后同日人工介入 C→B -1）',
     s.visible.length === 61 && s.visible.every((c) => ['C', 'D'].includes(tierOf(c))),
     { visible: s.visible.length, tiers: [...new Set(s.visible.map((c) => tierOf(c)))] });
   const dInLei = s.visible.filter((c) => tierOf(c) === 'D');
@@ -212,7 +212,7 @@ function click(box) {
   // —— 收录品牌：清除筛选 ——
   click(all);
   s = snapshot();
-  check('点「收录品牌」→ 清除筛选恢复可见 189 张（虚拟卡仍隐藏）', s.visible.length === 189,
+  check('点「收录品牌」→ 清除筛选恢复可见 190 张（虚拟卡仍隐藏）', s.visible.length === 190,
     { visible: s.visible.length, total: s.total });
   check('清除后无激活态', ['双休红榜', '大小周观察', '避雷预警'].every((lbl) => {
     const b = boxOf(lbl);
@@ -223,7 +223,7 @@ function click(box) {
   click(red);
   click(red);
   s = snapshot();
-  check('再点一次「双休红榜」= 取消筛选（可见 189 张）', s.visible.length === 189,
+  check('再点一次「双休红榜」= 取消筛选（可见 190 张）', s.visible.length === 190,
     { visible: s.visible.length, total: s.total });
 
   // —— 评级过滤行（U 级废除后不再注入按钮）——
@@ -235,7 +235,7 @@ function click(box) {
   click(red);
   s = snapshot();
   check('互斥前置：点红榜后隐藏 ' + (s.total - s.visible.length) + ' 张（含 class 隐藏的虚拟卡）',
-    s.hidden === 105, s.hidden); // total 190（含虚拟卡）- 可见 85 = 105
+    s.hidden === 106, s.hidden); // total 191（含虚拟卡）- 可见 85 = 106
   const allBtn = rowBtn('全部评级');
   if (allBtn) click(allBtn);
   s = snapshot();
@@ -277,8 +277,8 @@ function click(box) {
     try { await require('./_wait-cards.cjs')(window); } catch (e) { /* 落不到 175 时让下方断言报出真实数字 */ }
     await new Promise((r) => setTimeout(r, 450));
     const s2 = snapshot();
-  check('恢复全部卡片后可见回到 189 张（无卡丢失、无同 id 双卡）',
-    s2.visible.length === 189, { visible: s2.visible.length, total: s2.total });
+  check('恢复全部卡片后可见回到 190 张（无卡丢失、无同 id 双卡）',
+    s2.visible.length === 190, { visible: s2.visible.length, total: s2.total });
     const ids = [...window.document.querySelectorAll('div.bg-white.rounded-2xl.border')]
       .filter((c) => c.id).map((c) => c.id);
     check('自定义卡 id 无重复（自愈重建未造成双卡）',

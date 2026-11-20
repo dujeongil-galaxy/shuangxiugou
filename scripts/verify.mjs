@@ -586,8 +586,8 @@ check(virtual2e === 1, '虚拟对比卡恰 1 张（口径排除依据，id 变�
 // 这个数不是「随便写死」：它同时被 §2e 的四格统计、brand/ 页数、公告栏数字三处引用，
 // 任何一处生成器漏跑都会在这里对不上，所以必须保留为硬断言。
 const IMPORTED_CARD_COUNT = 116;
-check(customPairs2e.length === 21 + IMPORTED_CARD_COUNT,
-  `能解析全部自定义卡（${21 + IMPORTED_CARD_COUNT} 张 = 21 张手工卡含联通/小米汽车/广汽丰田 + ${IMPORTED_CARD_COUNT} 张导入卡（104 榜单 + 陆喜依 / 沪上阿姨等独立来源））`,
+check(customPairs2e.length === 22 + IMPORTED_CARD_COUNT,
+  `能解析全部自定义卡（${22 + IMPORTED_CARD_COUNT} 张 = 22 张手工卡含联通/小米汽车/广汽丰田/网易游戏 + ${IMPORTED_CARD_COUNT} 张导入卡（104 榜单 + 陆喜依 / 沪上阿姨等独立来源））`,
   '实际 ' + customPairs2e.length);
 check(headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') === statTotal,
   '顶部「收录品牌」= 实名企业卡总数', '页面 ' + headerStat('收录品牌', 'text-slate-400 text-\\[11px\\]') + ' / 计算 ' + statTotal + '（改 bundle 顶部统计常数）');
@@ -1461,8 +1461,8 @@ if (cfgBlock) {
   }
 }
 const CUSTOM_COUNT = customCards.length;
-check(CUSTOM_COUNT === 21 + IMPORTED_CARD_COUNT,
-  `自定义卡 ${CUSTOM_COUNT} 张（21 张手工 + ${IMPORTED_CARD_COUNT} 张导入；2026-11-02 批量导入，2026-11-03 增联通 B 级，2026-11-08 增陆喜依 S 级，2026-11-12 增广发银行/四川天府银行 A 级 + 零跑汽车 C 级，2026-11-13 增小米汽车（建卡 C 级、同日站长人工介入上调 B 级）+ 广汽丰田 B 级，2026-11-19 增 8 家国产新能源车企）`);
+check(CUSTOM_COUNT === 22 + IMPORTED_CARD_COUNT,
+  `自定义卡 ${CUSTOM_COUNT} 张（22 张手工 + ${IMPORTED_CARD_COUNT} 张导入；2026-11-02 批量导入，2026-11-03 增联通 B 级，2026-11-08 增陆喜依 S 级，2026-11-12 增广发银行/四川天府银行 A 级 + 零跑汽车 C 级，2026-11-13 增小米汽车（建卡 C 级、同日站长人工介入上调 B 级）+ 广汽丰田 B 级，2026-11-19 增 8 家国产新能源车企，2026-11-20 增网易游戏 B 级）`);
 
 // 2026-11-19：8 家国产新能源车企卡（紧跟时事建卡，站长定级 + 招聘 JD 标注来源采信）。
 // 锁定 id/档位/详情页，删卡、改档或漏页都判红；评级按公开证据口径，非本站实测。
@@ -10476,8 +10476,8 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   check(/keywords: \['问界（赛力斯）', '华为汽车', '华为问界'/.test(idxWj)
       && /"wenjie-card": \[[^\]]*"华为汽车"[^\]]*"华为问界"/.test(aliasFile39)
       && /"id":"wenjie-card"[\s\S]{0,900}"华为汽车"/.test(pinyinIdx39)
-      && /pinyin-index\.js\?v=22/.test(idxWj),
-    '§39n 问界卡关键词与拼音别名含「华为汽车/华为问界」，索引已重建且 ?v=22 破缓存',
+      && /pinyin-index\.js\?v=23/.test(idxWj),
+    '§39n 问界卡关键词与拼音别名含「华为汽车/华为问界」，索引已重建且 ?v=23 破缓存',
     '别名或重建缺失 → 搜「华为汽车」「华为问界」命中不了问界卡，站长说的「不智能」重现');
 
   // 2026-11-20 站长提供 @界面新闻 长城落实双休抖音视频，去核实后登记进长城汽车卡。
