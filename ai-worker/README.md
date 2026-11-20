@@ -24,6 +24,20 @@ neurons。**注意：GLM-4.7-flash 是推理模型（Reasoning），实际消耗
 单次问答约 20~30 neurons（含 reasoning 思考过程），每日约可支撑 300~500 次问答。
 超出当日限额接口会明确返回 `daily-quota-exhausted`（UTC 00:00 重置），前端有对应文案。
 
+### 图片/文档上传（2026-11-21 新增，需重新部署才生效）
+
+Worker 现在支持 `parts` 数组（OpenAI 兼容的 `text` / `image_url` data URL）：
+
+- `POST` 带 `parts` 且含 `image_url` → 自动切 `@cf/meta/llama-3.2-11b-vision-instruct`
+  （视觉模型），`max_tokens` 压到 1200 省 neuron；纯文本仍走 glm-4.7-flash / 2000。
+- `GET /api/capabilities` → `{ vision: true, ... }`。前端 `labor-ai.html` 带图提问前会先探测：
+  **未部署新版的线上实例没有这个端点，前端会明确提示「请切国内直连重试」**，不会静默吞图。
+- 安全：只收 `data:image/(jpeg|png|webp);base64,`，禁 http(s) 外链（防 SSRF），
+  最多 8 段、单图 base64 ≤ 7MB。
+
+⚠️ **改了 Worker 源码必须 `npx wrangler deploy` 重新部署**，否则线上跑的还是旧版，
+图片功能不会生效。部署后打开 `/api/capabilities` 看到 `vision:true` 即为成功。
+
 ## 部署后接通前端（一步）
 
 部署拿到 Worker URL 后，改仓库根目录 `ai-config.js`：
@@ -40,9 +54,9 @@ window.SXG_AI_CONFIG = { endpoint: 'https://shuangxiugou-ai-worker.xxx.workers.d
 | 层 | 措施 |
 |---|---|
 | CORS | 白名单只放行本站 GitHub Pages 域名 + 本地验收端口 |
-| 输入 | question 1~500 字；history 最多 8 条、每条截 200 字、role 白名单 |
+| 输入 | question 1~500 字；history 最多 8 条、每条截 200 字、role 白名单；parts 最多 8 段、禁 http 外链、单图 base64 ≤ 7MB |
 | 限流 | 每 IP 滑窗 20 次/小时（内存级，防脚本刷；精确配额需 KV，免费层够用） |
-| 输出 | max_tokens 2000（GLM-4.7-flash 是推理模型，reasoning 会吃掉大量 tokens，必须留够空间输出正式回答） |
+| 输出 | 纯文本 max_tokens 2000（GLM-4.7-flash 推理需留余量）；带图 1200（视觉模型单价约 1.7 倍） |
 | 角色 | 系统提示词锁定劳动法/双休口径，拒绝无关话题，声明非法律意见 |
 
 ## 本地试跑

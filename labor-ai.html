@@ -41,7 +41,7 @@ main{
   padding:6px 13px;border-radius:20px;font-size:13px;cursor:pointer;
   transition:.15s;box-shadow:0 1px 2px rgba(20,30,60,.04)
 }
-.chip:hover{border-color:var(--brand);background:#f7f9fd;transform:translateY(-1px)}
+.chip:hover{border-color:var(--brand);background:#f7f9fd;transform:translateY(1px)}
 .chip:active{transform:translateY(0)}
 #chat{flex:1 1 auto;overflow-y:auto;padding:2px 2px 14px;display:flex;flex-direction:column;gap:14px}
 .msg{max-width:86%;display:flex;flex-direction:column}
@@ -55,6 +55,7 @@ main{
 .msg.user .bubble{background:var(--user);color:#fff;border-bottom-right-radius:4px}
 .msg.ai .bubble{background:var(--ai);color:var(--ink);border-bottom-left-radius:4px;border:1px solid var(--line)}
 .bubble b,.bubble strong{color:var(--brand2)}
+.bubble img{max-width:100%;border-radius:8px;margin:6px 0;display:block}
 .cursor{display:inline-block;width:7px;height:15px;background:var(--accent);vertical-align:-2px;animation:bl .8s infinite}
 @keyframes bl{0%,49%{opacity:1}50%,100%{opacity:0}}
 .empty{color:var(--sub);text-align:center;margin:auto 0;font-size:14px;padding:30px 10px}
@@ -91,12 +92,35 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
 .route-btn.locked{opacity:.55;cursor:not-allowed}
 .route-tip{font-size:11px;color:var(--warn-ink);text-align:center;padding:0 16px 6px;flex:0 0 auto}
 .route-tip a{color:var(--brand);text-decoration:underline}
+/* 2026-11-21 图片/文档上传：附件条 + 预览 + 解析进度 */
+.attach-note{font-size:11.5px;color:var(--sub);text-align:center;padding:6px 14px 0;flex:0 0 auto}
+.attach-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.attach-list:empty{display:none}
+.attach-item{
+  display:inline-flex;align-items:center;gap:6px;max-width:100%;
+  background:#f4f7fc;border:1px solid var(--line);border-radius:10px;
+  padding:4px 8px;font-size:11.5px;color:var(--brand2)
+}
+.attach-item .a-thumb{width:26px;height:26px;object-fit:cover;border-radius:5px;background:#e2e7f0}
+.attach-item .a-name{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.attach-item .a-busy{color:var(--warn-ink)}
+.attach-item .a-del{border:0;background:none;color:var(--sub);cursor:pointer;font-size:15px;line-height:1;padding:0 2px}
+.attach-item .a-del:hover{color:var(--err)}
+.file-btn{
+  border:1px dashed #b9c5d8;background:#f8fafd;color:var(--brand);
+  padding:7px 11px;border-radius:9px;font-size:12.5px;cursor:pointer;user-select:none
+}
+.file-btn:hover{border-color:var(--brand);background:#f0f5fc}
+.file-btn.busy{opacity:.55;cursor:wait}
+.row .left{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.msg.user .bubble .a-shot{display:block;max-width:100%;border-radius:8px;margin-top:6px}
 @media(max-width:520px){
   header{padding:14px 14px 12px}h1{font-size:18px}
   main{padding:12px 10px 6px}
   .msg{max-width:92%}
   .chip{font-size:12.5px;padding:5px 11px}
   .bubble{font-size:14px}
+  .attach-item .a-name{max-width:100px}
 }
 </style>
 <meta name="google-adsense-account" content="ca-pub-5270311938787209">
@@ -137,18 +161,25 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
   <div id="chat">
     <div class="empty" id="empty">
       <span class="big">⚖️</span>
-      说说你遇到的情况，我帮你梳理思路、找法律依据
+      说说你遇到的情况，可以附上工资条、合同或聊天截图
     </div>
   </div>
 
   <div class="composer">
+    <div class="attach-list" id="attachList"></div>
     <textarea id="inp" rows="2" placeholder="描述你的情况，比如：干了 8 个月被辞退，没签合同，工资还压着…"></textarea>
     <div class="row">
-      <span class="hint">Enter 发送 · Shift+Enter 换行</span>
+      <span class="left">
+        <label class="file-btn" id="fileBtn" for="fileInput">＋ 附件</label>
+        <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,application/pdf,.docx" multiple style="display:none">
+        <span class="hint" id="fileHint">JPG/PNG/WEBP/PDF/DOCX · 最多 3 个</span>
+      </span>
       <button id="send">发送</button>
     </div>
   </div>
 </main>
+
+<div class="attach-note">附件只在你的浏览器里解析，不上传到任何第三方解析服务；解析出的文字/图片会随提问一起发给所选 AI 线路，请勿包含身份证号等敏感信息。</div>
 
 <footer>回答仅供参考，不替代专业法律意见</footer>
 
@@ -156,9 +187,10 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
 /* ===== 双线路配置：换模型 / 换地址只改这里 ===== */
 var CFG = {
   // 国内直连（前端直连硅基流动，明文 Key 字符干扰，防君子）
+  // 2026-11-21 升级：视觉模型 Qwen2.5-VL-7B-Instruct，支持图片/文档 parts
   cn: {
     endpoint: "https://api.siliconflow.cn/v1/chat/completions",
-    model: "Qwen/Qwen2.5-7B-Instruct",   // 免费模型；想换更强的改这行
+    model: "Qwen/Qwen2.5-VL-7B-Instruct",
     max_tokens: 1600,
     temperature: 0.6
   },
@@ -173,15 +205,19 @@ var CFG = {
 var STAR_MIN_DAYS = 7;
 var REPO_URL = "https://github.com/dujeongil-galaxy/shuangxiugou";
 
+/* 附件上限：单图 5MB / 单文档 10MB / 最多 3 个；base64 膨胀约 1.33 倍，防止请求体失控 */
+var ATTACH_LIMIT = { max: 3, imageBytes: 5 * 1024 * 1024, docBytes: 10 * 1024 * 1024 };
+
 var SYSTEM_PROMPT = [
-  "你是「劳动法小助手」，熟悉中国大陆劳动法律的顾问。用户会描述劳动纠纷。",
+  "你是「劳动法小助手」，熟悉中国大陆劳动法律的顾问。用户会描述劳动纠纷，可能附上工资条、劳动合同、聊天记录截图或文档。",
   "请用中文回答，并做到：",
   "1. 先判断属于哪类争议（欠薪/违法解除/未签合同/工伤/社保等）。",
   "2. 说明可能适用的法律（《劳动合同法》《劳动法》《工伤保险条例》等），讲清条款要点，别编造条号。",
   "3. 给出具体可操作的步骤：协商→投诉（劳动监察）→劳动仲裁→诉讼的顺序、去哪里、准备哪些材料。",
   "4. 提醒关键时效，例如劳动仲裁申请一般是一年。",
   "5. 立场站在劳动者一侧，语气温和，但不承诺结果。",
-  "6. 结尾提醒：以上仅供参考，不替代专业法律意见，复杂情况咨询律师或拨打12333。",
+  "6. 若用户附了附件，先说明你从附件中读到了哪些关键信息（金额、日期、岗位等），再据此分析；看不清的内容如实说明，不要臆测。",
+  "7. 结尾提醒：以上仅供参考，不替代专业法律意见，复杂情况咨询律师或拨打12333。",
   "与劳动法无关的问题，礼貌拒绝并拉回主题。"
 ].join("\n");
 
@@ -204,6 +240,9 @@ var inp  = document.getElementById("inp");
 var send = document.getElementById("send");
 var chatLog = [];
 var busy = false;
+var attachments = [];   // {id,name,kind,dataUrl,text,thumb,status}
+var attachSeq = 0;
+var capsCache = null;   // CF Worker 能力探测结果（是否支持 vision）
 
 /* ===== Star 满 7 天判定（读首页 OAuth 回调写入的 localStorage）===== */
 function starStatus(){
@@ -274,6 +313,179 @@ function addMsg(role, text, isError){
   return bub;
 }
 
+/* ===== 附件：本地解析（2026-11-21 站长要求支持图片/文档） ===== */
+var attachList = document.getElementById('attachList');
+var fileInput  = document.getElementById('fileInput');
+var fileBtn    = document.getElementById('fileBtn');
+var fileHint   = document.getElementById('fileHint');
+
+function setAttachHint(msg, isErr){
+  fileHint.textContent = msg;
+  fileHint.style.color = isErr ? '#c0392b' : '';
+}
+
+function renderAttachments(){
+  attachList.innerHTML = '';
+  attachments.forEach(function(a){
+    var item = document.createElement('span');
+    item.className = 'attach-item';
+    var thumb = '';
+    if (a.thumb) thumb = '<img class="a-thumb" src="' + a.thumb + '" alt="">';
+    else thumb = '<span class="a-thumb" style="display:inline-flex;align-items:center;justify-content:center;font-size:13px">' + (a.kind === 'pdf' ? '📄' : '📝') + '</span>';
+    var status = a.status === 'parsing' ? '<span class="a-busy">解析中…</span>' : '';
+    item.innerHTML = thumb + '<span class="a-name" title="' + esc(a.name) + '">' + esc(a.name) + '</span>' + status +
+      '<button class="a-del" type="button" title="移除" data-id="' + a.id + '">×</button>';
+    attachList.appendChild(item);
+  });
+  fileBtn.classList.toggle('busy', attachments.some(function(a){ return a.status === 'parsing'; }));
+}
+
+attachList.addEventListener('click', function(e){
+  var b = e.target.closest('.a-del');
+  if (!b) return;
+  attachments = attachments.filter(function(a){ return a.id !== Number(b.dataset.id); });
+  renderAttachments(); setAttachHint('JPG/PNG/WEBP/PDF/DOCX · 最多 3 个');
+});
+
+function loadScript(urls, globalName){
+  return new Promise(function(resolve, reject){
+    var i = 0;
+    function next(){
+      if (i >= urls.length) { reject(new Error('解析库加载失败')); return; }
+      var s = document.createElement('script');
+      s.src = urls[i++]; s.crossOrigin = 'anonymous';
+      s.onload = function(){
+        if (window[globalName]) resolve(window[globalName]);
+        else next();
+      };
+      s.onerror = next;
+      document.head.appendChild(s);
+    }
+    next();
+  });
+}
+var pdfjsPromise = null, mammothPromise = null;
+function ensurePdfjs(){
+  if (!pdfjsPromise) pdfjsPromise = loadScript([
+    'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.js',
+    'https://unpkg.com/pdfjs-dist@4.10.38/build/pdf.min.js'
+  ], 'pdfjsLib').then(function(lib){
+    if (lib.GlobalWorkerOptions) lib.GlobalWorkerOptions.workerSrc =
+      'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.js';
+    return lib;
+  });
+  return pdfjsPromise;
+}
+function ensureMammoth(){
+  if (!mammothPromise) mammothPromise = loadScript([
+    'https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js',
+    'https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js'
+  ], 'mammoth');
+  return mammothPromise;
+}
+function readAsDataURL(file){
+  return new Promise(function(resolve, reject){
+    var fr = new FileReader();
+    fr.onload = function(){ resolve(fr.result); };
+    fr.onerror = function(){ reject(new Error('读取文件失败')); };
+    fr.readAsDataURL(file);
+  });
+}
+
+/* PDF：优先抽文本层（最省 token）；扫描件无文本层时渲染前 2 页为 JPEG 交给视觉模型 */
+async function parsePdf(file){
+  var lib = await ensurePdfjs();
+  var buf = await file.arrayBuffer();
+  var doc = await lib.getDocument({ data: new Uint8Array(buf) }).promise;
+  var text = '', pages = Math.min(doc.numPages, 8);
+  for (var n = 1; n <= pages; n++){
+    var page = await doc.getPage(n);
+    var tc = await page.getTextContent();
+    text += tc.items.map(function(it){ return it.str || ''; }).join(' ') + '\n';
+  }
+  if (text.replace(/\s/g,'').length >= 20) return { text: text.slice(0, 12000) };
+  // 扫描件：前 2 页渲染成 JPEG，宽度不超过 1200px
+  var shots = [];
+  for (var p = 1; p <= Math.min(doc.numPages, 2); p++){
+    var pg = await doc.getPage(p);
+    var vp = pg.getViewport({ scale: 1 });
+    var scale = Math.min(1, 1200 / vp.width);
+    var c = document.createElement('canvas');
+    c.width = Math.floor(vp.width * scale); c.height = Math.floor(vp.height * scale);
+    await pg.render({ canvasContext: c.getContext('2d'), viewport: pg.getViewport({ scale: scale }) }).promise;
+    shots.push(c.toDataURL('image/jpeg', 0.75));
+  }
+  return { dataUrls: shots, text: '[扫描件 PDF，已渲染前 ' + shots.length + ' 页]' };
+}
+
+async function handleFiles(fileList){
+  var accepted = 0;
+  for (var i = 0; i < fileList.length && attachments.length < ATTACH_LIMIT.max; i++){
+    var f = fileList[i];
+    var isImg = /^image\/(jpeg|png|webp)$/.test(f.type);
+    var isPdf = f.type === 'application/pdf' || /\.pdf$/i.test(f.name);
+    var isDocx = /\.docx$/i.test(f.name) || f.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    if (!isImg && !isPdf && !isDocx){
+      setAttachHint('不支持 ' + f.name + '：请用 JPG/PNG/WEBP/PDF/DOCX', true);
+      continue;
+    }
+    var limit = isImg ? ATTACH_LIMIT.imageBytes : ATTACH_LIMIT.docBytes;
+    if (f.size > limit){
+      setAttachHint(f.name + ' 超过 ' + Math.round(limit / 1024 / 1024) + 'MB 上限', true);
+      continue;
+    }
+    var a = { id: ++attachSeq, name: f.name, kind: isImg ? 'image' : (isPdf ? 'pdf' : 'docx'), status: 'parsing' };
+    attachments.push(a); accepted++; renderAttachments();
+    try{
+      if (isImg){
+        a.dataUrl = await readAsDataURL(f); a.thumb = a.dataUrl;
+      } else if (isPdf){
+        var r = await parsePdf(f); a.text = r.text || ''; a.dataUrls = r.dataUrls || [];
+      } else {
+        var mm = await ensureMammoth();
+        var out = await mm.extractRawText({ arrayBuffer: await f.arrayBuffer() });
+        a.text = (out.value || '').slice(0, 12000);
+      }
+      a.status = 'done';
+    }catch(err){
+      a.status = 'error'; a.text = '[附件解析失败：' + (err && err.message ? err.message : '未知错误') + ']';
+    }
+    renderAttachments();
+  }
+  if (accepted) setAttachHint('已添加 ' + attachments.length + '/' + ATTACH_LIMIT.max + ' 个附件');
+  fileInput.value = '';
+}
+fileInput.addEventListener('change', function(e){ handleFiles(e.target.files); });
+
+/* 把附件统一封装成 OpenAI 兼容的 parts：文本用 text，图片用 image_url(data URL) */
+function buildParts(question){
+  var parts = [{ type: 'text', text: question }];
+  attachments.forEach(function(a){
+    if (a.status !== 'done') return;
+    if (a.kind === 'image' && a.dataUrl){
+      parts.push({ type: 'image_url', image_url: { url: a.dataUrl } });
+    } else {
+      if (a.text) parts.push({ type: 'text', text: '【附件 ' + a.name + '】\n' + a.text });
+      (a.dataUrls || []).forEach(function(u){ parts.push({ type: 'image_url', image_url: { url: u } }); });
+    }
+  });
+  return parts;
+}
+function partsHasImage(parts){ return parts.some(function(p){ return p.type === 'image_url'; }); }
+
+/* CF Worker 能力探测：未部署支持 vision 的新版时，图片附件诚实降级，不静默吞掉 */
+async function cfSupportsVision(){
+  if (capsCache) return capsCache;
+  try{
+    var r = await fetch(CFG.cf.endpoint.replace(/\/$/, '') + '/api/capabilities');
+    capsCache = r.ok ? await r.json() : { vision: false };
+  }catch(e){ capsCache = { vision: false }; }
+  return capsCache;
+}
+function userTextForDisplay(parts){
+  return parts.map(function(p){ return p.type === 'text' ? p.text : '[图片附件]'; }).join('\n');
+}
+
 document.getElementById("chips").addEventListener("click", function(e){
   var b = e.target.closest(".chip");
   if (!b) return;
@@ -289,11 +501,31 @@ send.addEventListener("click", doSend);
 async function doSend(){
   if (busy) return;
   var q = inp.value.trim();
-  if (!q) return;
+  if (!q && !attachments.length) return;
+  if (attachments.some(function(a){ return a.status === 'parsing'; })){
+    setAttachHint('附件还在解析，请稍候…', true); return;
+  }
   inp.value = "";
   busy = true; send.disabled = true; send.textContent = "回复中…";
-  addMsg("user", q);
-  chatLog.push({role:"user", content:q});
+  var parts = buildParts(q || '请分析我上传的附件');
+  var hasImage = partsHasImage(parts);
+  var display = userTextForDisplay(parts);
+  addMsg("user", display);
+  // 把图片缩略图挂到刚发出的用户气泡上（不参与 AI 请求，纯展示）
+  var lastBub = chat.lastElementChild.querySelector('.bubble');
+  if (hasImage){
+    attachments.forEach(function(a){
+      if (a.kind === 'image' && a.dataUrl){
+        var im = document.createElement('img'); im.className = 'a-shot'; im.src = a.dataUrl;
+        lastBub.appendChild(im);
+      }
+    });
+    (attachments[0] && attachments[0].dataUrls || []).forEach(function(u){
+      var im = document.createElement('img'); im.className = 'a-shot'; im.src = u; lastBub.appendChild(im);
+    });
+  }
+  var userContent = parts;
+  chatLog.push({role:"user", content: userContent});
   var bub = addMsg("ai", "");
   var full = "";
 
@@ -305,38 +537,54 @@ async function doSend(){
       chatLog.pop(); busy=false; send.disabled=false; send.textContent="发送"; return;
     }
   }
+  /* CF 线路带图：先问 Worker 是否升级；没升级就明确提示，不假装已识别 */
+  if (currentRoute === 'cf' && hasImage){
+    var caps = await cfSupportsVision();
+    if (!caps.vision){
+      bub.className = 'bubble err-card';
+      bub.textContent = 'Cloudflare 线路当前版本不支持图片/文档识别（站长尚未部署新版 Worker）。请切到「国内直连」重试，或只用文字提问。';
+      chatLog.pop(); busy=false; send.disabled=false; send.textContent="发送"; return;
+    }
+  }
 
   try{
     if (currentRoute === 'cn'){
       await askCN(chatLog, bub, function(piece){ full += piece; bub.innerHTML = md(full); scrollBottom(); });
     } else {
       /* CF：只发问题 + 历史（最近 4 轮），Worker 自己锁角色、自己限流 */
-      var hist = chatLog.slice(0, -1).slice(-8).map(function(m){ return {role:m.role, content:m.content.slice(0,200)}; });
-      var ans = await askCF(q, hist);
+      var hist = chatLog.slice(0, -1).slice(-8).map(function(m){ return { role: m.role, content: textOf(m.content).slice(0,200) }; });
+      var ans = await askCF(q || '请分析我上传的附件', hist, parts);
       full = ans;
       bub.innerHTML = md(full); scrollBottom();
     }
     if (!full) bub.innerHTML = "（没有收到内容，请稍后重试）";
-    chatLog.push({role:"assistant", content:full});
+    chatLog.push({role:"assistant", content: full});
   }catch(err){
     bub.className = "bubble err-card";
     bub.textContent = "出错了：" + (err && err.message ? err.message : err);
     chatLog.pop();
   }finally{
     busy = false; send.disabled = false; send.textContent = "发送";
+    attachments = []; renderAttachments(); setAttachHint('JPG/PNG/WEBP/PDF/DOCX · 最多 3 个');
     inp.focus();
   }
 }
+function textOf(content){
+  if (typeof content === 'string') return content;
+  if (Array.isArray(content)) return content.map(function(p){ return p.type === 'text' ? p.text : '[图片]'; }).join(' ');
+  return String(content || '');
+}
 
-/* 国内线路：硅基流动 OpenAI 兼容，SSE 流式 */
+/* 国内线路：硅基流动 OpenAI 兼容，SSE 流式；content 为 parts 数组（多模态） */
 async function askCN(log, bub, onPiece){
   var key = _restoreKey();
+  var msgs = [{role:"system",content:SYSTEM_PROMPT}].concat(log);
   var res = await fetch(CFG.cn.endpoint, {
     method:"POST",
     headers:{ "Content-Type":"application/json", "Authorization":"Bearer " + key },
     body: JSON.stringify({
       model: CFG.cn.model,
-      messages: [{role:"system",content:SYSTEM_PROMPT}].concat(log),
+      messages: msgs,
       stream: true, max_tokens: CFG.cn.max_tokens, temperature: CFG.cn.temperature
     })
   });
@@ -365,12 +613,12 @@ async function askCN(log, bub, onPiece){
   }
 }
 
-/* Cloudflare 线路：Worker 代理，非流式 JSON {answer, route} */
-async function askCF(question, history){
+/* Cloudflare 线路：Worker 代理，非流式 JSON {answer, route}；带 parts 供视觉模型使用 */
+async function askCF(question, history, parts){
   var res = await fetch(CFG.cf.endpoint, {
     method:"POST",
     headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ question: question, history: history, route: CFG.cf.route })
+    body: JSON.stringify({ question: question, history: history, route: CFG.cf.route, parts: parts })
   });
   if (!res.ok){
     var t = await res.text();

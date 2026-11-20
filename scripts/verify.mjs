@@ -6523,6 +6523,43 @@ section('21c. 首页滑到底部按钮');
         '国内线路 API Key 已配置（_SEG 还原为合法 sk- 串，非占位）');
     }
   }
+  // ---- 21u. 劳动法小助手图片/文档上传（2026-11-21 站长：「支持图片或文件上传」）----
+  // 前端在浏览器本地解析附件（不上传第三方解析服务），统一封装 parts 走双线路；
+  // CF Worker 加 vision 模型与能力探测，未部署新版时诚实降级，不静默吞图。
+  {
+    const la = read('labor-ai.html');
+    const w = read('ai-worker/src/worker.js');
+    check(/type="file"[^>]*accept="image\/jpeg,image\/png,image\/webp,application\/pdf,\.docx"[^>]*multiple/.test(la)
+      && /ATTACH_LIMIT\s*=\s*\{\s*max:\s*3/.test(la),
+      '§21u 前端文件入口接受 JPG/PNG/WEBP/PDF/DOCX、最多 3 个（含大小上限常量）',
+      '退回纯文本框 → 站长要的「支持图片或文件上传」直接丢失');
+    check(/function ensurePdfjs/.test(la) && /function ensureMammoth/.test(la)
+      && /cdn\.jsdelivr\.net/.test(la) && /unpkg\.com/.test(la)
+      && /getTextContent\(\)/.test(la) && /extractRawText/.test(la),
+      '§21u PDF 用 pdf.js 抽文本层、扫描页渲染成图；DOCX 用 mammoth 抽文本；双 CDN 回退',
+      '只靠单一 CDN → 挂了就没法解析；不抽文本层 → 每张 PDF 都走图，额度烧得快');
+    check(/function buildParts/.test(la) && /type: 'image_url'/.test(la)
+      && /image_url: \{ url: a\.dataUrl \}/.test(la) && /partsHasImage/.test(la),
+      '§21u 附件封装为 OpenAI 兼容 parts（text / image_url data URL），含图片判定',
+      '附件退化成只发文件名 → AI 根本看不到内容');
+    check(/Qwen\/Qwen2\.5-VL-7B-Instruct/.test(la)
+      && /cfSupportsVision/.test(la) && /\/api\/capabilities/.test(la)
+      && /不支持图片\/文档识别/.test(la),
+      '§21u 国内线路切视觉模型；CF 线路先探测能力，老 Worker 明确提示换线路（不静默失败）',
+      '国内仍是纯文本模型 → 传了图也读不了；CF 不探测 → 图片被吞且无提示');
+    check(/只在你的浏览器里解析/.test(la) && /不上传到任何第三方解析服务/.test(la),
+      '§21u 隐私文案明示本地解析、附件随提问发给所选线路',
+      '上传件知情权缺失 → 隐私合规风险');
+    check(/request\.method === 'GET' && path === '\/api\/capabilities'/.test(w)
+      && /vision: true/.test(w) && /@cf\/meta\/llama-3\.2-11b-vision-instruct/.test(w)
+      && /const hasImage = parts\.some/.test(w),
+      '§21u Worker 提供能力探测端点 + 带图切视觉模型（纯文本仍走原模型）',
+      '端点缺失 → 前端一律降级；无视觉模型 → 带图请求仍走文本模型');
+    check(/\^data:image\\\/\(jpeg\|png\|webp\);base64,/.test(w)
+      && /url\.length > 7 \* 1024 \* 1024/.test(w) && /\.slice\(0, 8\)/.test(w),
+      '§21u Worker 只收 data:image base64（禁 http 外链防 SSRF），限 8 段 / 7MB',
+      '放行 http 链接 → Worker 被当图片代理 SSRF；不限体积 → 单请求打爆内存');
+  }
   // ---- 旧版挂件彻底删除（2026-11-18 站长：「彻底删干净，不是注释」）----
   // 这些文件/测试/头像曾服务旧版内嵌挂件，新版独立页 + 跳转按钮完全不依赖，
   // 必须物理删除而非注释保留，否则站长再次误入旧版、或被人当死代码复活。
@@ -6550,9 +6587,9 @@ section('21c. 首页滑到底部按钮');
   // 限流
   check(/recent\.length >= 20/.test(worker),
     '每 IP 每小时 20 次限流（429）');
-  // 输出上限
-  check(/max_tokens: 2000/.test(worker),
-    'max_tokens 2000（GLM-4.7-flash 推理模型，reasoning 吃掉大量 token，输出是 neuron 大头，需留足空间）');
+  // 输出上限：纯文本 2000（推理模型留空间）；带图压到 1200（视觉模型输出单价 1.7 倍，省额度）
+  check(/hasImage \? 1200 : 2000/.test(worker),
+    'max_tokens 分流：纯文本 2000（GLM-4.7-flash reasoning 留空间）/ 带图 1200（视觉模型省 neuron）');
   // 模型
   check(/@cf\/zai-org\/glm-4\.7-flash/.test(worker),
     '模型 ID = @cf/zai-org/glm-4.7-flash（Workers AI 免费层）');

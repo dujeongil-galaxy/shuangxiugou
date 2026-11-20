@@ -125,7 +125,10 @@ async function main() {
     check('history 截到 8 条', histMsgs.length === 8);
     check('role 白名单生效（system 注入被滤）', histMsgs.every(m => m.role === 'user' || m.role === 'assistant'));
     check('每条截 200 字', histMsgs.every(m => m.content.length <= 200));
-    check('用户问题在末位', msgs[msgs.length - 1].content === '加班费怎么算');
+    // 2026-11-21 起用户内容统一为 parts 数组（text 段），纯文本请求也走数组形态
+    const tail = msgs[msgs.length - 1].content;
+    check('用户问题在末位（parts 数组形态）',
+      Array.isArray(tail) && tail.length === 1 && tail[0].type === 'text' && tail[0].text === '加班费怎么算');
   }
 
   console.log('== ⑧ 上游配额耗尽 ==');
@@ -191,6 +194,32 @@ async function main() {
       last = await worker.fetch(mkReq(), env);
     }
     check('第 21 次 → 429 rate-limited', last.status === 429 && (await last.json()).error === 'rate-limited');
+  }
+
+  console.log('== ⑪ 多模态 parts 与能力探测（2026-11-21）==');
+  {
+    env.calls.length = 0;
+    const caps = await worker.fetch(new Request('https://ai.example.workers.dev/api/capabilities', {
+      headers: { Origin: SITE_ORIGIN },
+    }), env);
+    check('GET /api/capabilities → vision:true', caps.status === 200 && (await caps.json()).vision === true);
+    check('能力探测不触发 AI 调用', env.calls.length === 0);
+
+    const dataUrl = 'data:image/jpeg;base64,' + Buffer.from('fake-jpeg').toString('base64');
+    const r = await worker.fetch(makeRequest('POST', {
+      question: '帮我看工资条',
+      parts: [
+        { type: 'text', text: '帮我看工资条' },
+        { type: 'image_url', image_url: { url: dataUrl } },
+        { type: 'image_url', image_url: { url: 'https://evil.example/ssr.png' } }, // 外链必须被丢
+      ],
+    }, SITE_ORIGIN), env);
+    check('带图请求 200', r.status === 200);
+    const call = env.calls[0];
+    check('带图切视觉模型', call.modelId === '@cf/meta/llama-3.2-11b-vision-instruct');
+    check('带图 max_tokens 压到 1200', call.params.max_tokens === 1200);
+    const content = call.params.messages[call.params.messages.length - 1].content;
+    check('外链被过滤，只留 data URL', Array.isArray(content) && content.length === 2 && content[1].image_url.url === dataUrl);
   }
 
   console.log('\n========== 结果：' + passed + ' 项通过，' + failed + ' 项失败 ==========');

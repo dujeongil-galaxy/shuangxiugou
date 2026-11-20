@@ -68,6 +68,19 @@ export default {
       return json({ error: 'origin-not-allowed', origin: origin }, 403, corsHeaders);
     }
 
+    // ---------- 能力探测（2026-11-21 图片上传）----------
+    // 前端带图提问前先 GET 这个端点：新版 Worker 部署后返回 vision:true，
+    // 未部署新版的线上实例返回 404/旧逻辑 → 前端诚实降级，不静默吞图。
+    if (request.method === 'GET' && path === '/api/capabilities') {
+      return json({
+        vision: true,
+        textModel: '@cf/zai-org/glm-4.7-flash',
+        visionModel: '@cf/meta/llama-3.2-11b-vision-instruct',
+        maxParts: 8,
+        maxImageBase64: 7 * 1024 * 1024,
+      }, 200, corsHeaders);
+    }
+
     if (request.method !== 'POST') {
       return json({ error: 'method-not-allowed' }, 405, corsHeaders);
     }
@@ -133,13 +146,49 @@ export default {
       '6. 你提供的是参考信息不是法律意见；个案涉及争议，建议咨询当地劳动监察部门（12333）或律师。',
     ].join('\n') + routeNotice(route);
 
+    // ---------- 多模态 parts（2026-11-21 站长要求支持图片/文档）----------
+    // 前端在浏览器本地把 JPG/PNG/WEBP 与 PDF 扫描页解析成 data URL，DOCX/PDF
+    // 文本层抽成 text；这里只收 OpenAI 兼容的 {type:'text'|'image_url'} 数组。
+    // 安全：禁止 http(s) 外链（会被当成 SSRF 通道）、限制条数与 base64 体积。
+    let parts = [];
+    if (Array.isArray(body.parts)) {
+      parts = body.parts
+        .filter((p) => p && (p.type === 'text' || p.type === 'image_url'))
+        .slice(0, 8)
+        .map((p) => {
+          if (p.type === 'text') {
+            return { type: 'text', text: String(p.text || '').slice(0, 4000) };
+          }
+          const url = p.image_url && typeof p.image_url.url === 'string' ? p.image_url.url : '';
+          // 只接受 data:image/(jpeg|png|webp);base64,...；其它一律丢弃（含 http 外链）
+          if (!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(url) || url.length > 7 * 1024 * 1024) {
+            return null;
+          }
+          return { type: 'image_url', image_url: { url } };
+        })
+        .filter(Boolean);
+    }
+    const hasImage = parts.some((p) => p.type === 'image_url');
+
     // ---------- 调 Workers AI（env.AI binding，零 key）----------
-    const messages = [{ role: 'system', content: systemPrompt }, ...history, { role: 'user', content: question }];
+    // 纯文本仍走 glm-4.7-flash（免费层够用）；带图切 llama-3.2-11b-vision-instruct。
+    const MODEL_TEXT = '@cf/zai-org/glm-4.7-flash';
+    const MODEL_VISION = '@cf/meta/llama-3.2-11b-vision-instruct';
+    const model = hasImage ? MODEL_VISION : MODEL_TEXT;
+    const userContent = parts.length
+      ? parts
+      : [{ type: 'text', text: question }];
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...history,
+      { role: 'user', content: userContent },
+    ];
 
     try {
-      const result = await env.AI.run('@cf/zai-org/glm-4.7-flash', {
+      const result = await env.AI.run(model, {
         messages,
-        max_tokens: 2000, // GLM-4.7-flash 是推理模型，reasoning 会吃掉大量 tokens，留够空间输出正式回答
+        // 视觉模型输出单价约 6.1 万 neurons/M，是文本模型的 1.7 倍，带图时压低输出省额度
+        max_tokens: hasImage ? 1200 : 2000,
       });
 
       // GLM-4.7-flash 是 OpenAI 兼容格式，返回 choices[0].message.content

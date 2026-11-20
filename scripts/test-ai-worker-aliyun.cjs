@@ -182,7 +182,10 @@ async function main() {
     const aliyunSrc = fs.readFileSync(path.join(ROOT, 'ai-worker-aliyun/index.mjs'), 'utf8');
     keys.forEach(k => check('CF 版用到的 error 串「' + k + '」本实现也有', aliyunSrc.includes("'" + k + "'")));
     check('CF 版本身仍含 daily-quota-exhausted 口径', CF_WORKER_SRC.includes('daily-quota-exhausted'));
-    check('两端 max_tokens 同为 2000', /max_tokens: 2000/.test(aliyunSrc) && /max_tokens: 2000/.test(CF_WORKER_SRC));
+    // 2026-11-21 CF 版加了视觉分支：纯文本 2000 / 带图 1200；阿里云线路仍为纯文本 2000，
+    // 所以用「保留 2000 这个值」对齐，而不是要求两端写法逐字相同。
+    check('两端纯文本 max_tokens 同为 2000（CF 带图另压到 1200）',
+      /max_tokens: 2000/.test(aliyunSrc) && /1200 : 2000/.test(CF_WORKER_SRC));
   }
 
   console.log('\n========== 结果：' + passed + ' 项通过，' + failed + ' 项失败 ==========');
