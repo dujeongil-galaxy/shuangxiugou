@@ -6490,15 +6490,32 @@ section('21c. 首页滑到底部按钮');
   check(/<script[^>]*src="\.\/ai-notice-patch\.js\?v=3"/.test(noticeHtmlNoCmt),
     '首页活跃引用 ai-notice-patch.js?v=3（非注释，文案变更 bump 破缓存）');
 
-  // labor-ai.html 必须：双线路 + Star 满 7 天判定 + 两处免责声明
+  // labor-ai.html 必须：双线路 + Star 分层门槛（国内即开/附件 3 天/取消拉黑）+ 两处免责声明
   {
     const la = read('labor-ai.html');
-    check(/sxg_github_logged_in/.test(la) && /sxg_star_days/.test(la) && /STAR_MIN_DAYS = 7/.test(la),
-      '新页面读取 Star 解锁状态（logged/star/days + 7 天门槛）');
+    check(/sxg_github_logged_in/.test(la) && /sxg_star_days/.test(la) && /STAR_ATTACH_DAYS = 3/.test(la),
+      '新页面读取 Star 状态；附件门槛 3 天（国内文字线路改为 Star 即开，不再按天数）');
     check(/askCN/.test(la) && /askCF/.test(la) && /api\.siliconflow\.cn/.test(la) && /workers\.dev/.test(la),
       '新页面双线路齐备（国内硅基流动 + Cloudflare Worker）');
-    check(/currentRoute = 'cf'/.test(la) && /unlocked/.test(la),
-      '未解锁国内线路时默认走 Cloudflare');
+    check(/currentRoute = 'cf'/.test(la) && /cnUnlocked/.test(la) && /attachUnlocked/.test(la),
+      '默认走 Cloudflare；国内线路 Star 即开（cnUnlocked）、附件另判 3 天（attachUnlocked）');
+    check(/sxg_ai_blacklisted/.test(la) && /sxg_ai_ever_starred/.test(read('header-menu-patch.js'))
+      && /localStorage\.setItem\('sxg_ai_blacklisted', '1'\)/.test(read('header-menu-patch.js'))
+      && /取消将被自动拉黑/.test(read('header-menu-patch.js'))
+      && /重新 Star 也不(再)?(恢复|开放)/.test(la),
+      '取消 Star 拉黑：首页 OAuth 回调写 ever_starred→blacklisted，AI 页明确「重新 Star 不再恢复」');
+    check(/ipNotice/.test(la) && /visitorIp/.test(la) && /恶意消耗/.test(la) && /个人敏感信息/.test(la),
+      '安全公告：显示访问 IP + 勿发敏感信息 + 恶意消耗封禁（文案优化，非逐字照抄）');
+    // 全局一致：生效代码里不许残留旧的「按天数才能开国内线路」口径（历史 CHANGELOG / 最近更新是留痕，不改）
+    {
+      const liveFiles = ['labor-ai.html', 'header-menu-patch.js', 'ai-worker/src/worker.js',
+        'ai-worker/README.md', 'ai-worker/DEPLOY-教程.md', 'scripts/verify.mjs']
+        .filter((f) => exists(f));
+      const stale = liveFiles.filter((f) => /Star\s*满?\s*7\s*天|满\s*7\s*天|攒满\s*7\s*天/.test(read(f)));
+      check(stale.length === 0,
+        '全局一致性：生效代码/文档无旧版天数门槛残留（历史记账除外）',
+        '仍含旧口径：' + stale.join(' / '));
+    }
     check((la.match(/不构成法律意见/g) || []).length >= 1,
       '新页面含免责声明「不构成法律意见」');
     // 国内线路 Key 必须已配置（2026-11-17）：运行时解码 _SEG 还原出的 Key 需为合法 sk- 串。
@@ -9462,9 +9479,9 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   const mountOk = /<script defer src="\.\/fab-dock\.js\?v=3"><\/script>/.test(idx36q)
     && idx36q.indexOf('fab-dock.js?v=3') > idx36q.indexOf('nav-menu.js?v=7')
     && Number((idx36q.match(/mobile-fixes\.css\?v=(\d+)/) || [])[1] || 0) >= 23
-    && /header-menu-patch\.js\?v=11/.test(idx36q);
+    && /header-menu-patch\.js\?v=(1[1-9]|[2-9]\d)/.test(idx36q);
   check(mountOk,
-    '§36q index.html 已挂载 fab-dock.js?v=3 且排在所有悬浮脚本之后，mobile-fixes.css 带 ?v 缓存号 / header-menu-patch.js?v=11 同步 bump',
+    '§36q index.html 已挂载 fab-dock.js?v=3 且排在所有悬浮脚本之后，mobile-fixes.css 带 ?v 缓存号 / header-menu-patch.js 缓存号随内容同步 bump',
     '挂载顺序错了 → dock 执行时按钮还没建好，收编为空；?v 没 bump → 浏览器缓存旧 CSS');
 }
 
@@ -9605,7 +9622,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     && idx36s.indexOf('anon-mail.js?v=5') > idx36s.indexOf('fab-dock.js?v=3')
     && /fab-dock\.js\?v=3/.test(idx36s)
     && Number((idx36s.match(/mobile-fixes\.css\?v=(\d+)/) || [])[1] || 0) >= 23
-    && /header-menu-patch\.js\?v=11/.test(idx36s)
+    && /header-menu-patch\.js\?v=(1[1-9]|[2-9]\d)/.test(idx36s)
     && exists('scripts/test-anon-mail.cjs')
     && wf36s.indexOf('node scripts/test-anon-mail.cjs') !== -1,
     '§36s index.html 挂载 anon-mail.js?v=5（排在 fab-dock 之后；v=5 为匿名邮箱地址变更那次 bump），三个改动资源 ?v 同步 bump，配套 jsdom 测试挂进 CI',
@@ -9771,7 +9788,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
 
   // ⑦ ?v 钉子（§21h）+ 新 jsdom 测试挂进 CI（§21o）。
   check(Number((idx36t.match(/mobile-fixes\.css\?v=(\d+)/) || [])[1] || 0) >= 23
-    && /header-menu-patch\.js\?v=11/.test(idx36t)
+    && /header-menu-patch\.js\?v=(1[1-9]|[2-9]\d)/.test(idx36t)
     && /github-access-help\.js\?v=3/.test(idx36t)
     && /appeal-policy\.js\?v=4/.test(idx36t)
     && exists('scripts/test-header-expand.cjs')

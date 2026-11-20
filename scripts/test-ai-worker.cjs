@@ -202,7 +202,9 @@ async function main() {
     const caps = await worker.fetch(new Request('https://ai.example.workers.dev/api/capabilities', {
       headers: { Origin: SITE_ORIGIN },
     }), env);
-    check('GET /api/capabilities → vision:true', caps.status === 200 && (await caps.json()).vision === true);
+    const capsData = await caps.json();
+    check('GET /api/capabilities → vision:true', caps.status === 200 && capsData.vision === true);
+    check('能力探测回传 visitorIp（IP 公告用）', typeof capsData.visitorIp === 'string' && capsData.visitorIp.length > 0);
     check('能力探测不触发 AI 调用', env.calls.length === 0);
 
     const dataUrl = 'data:image/jpeg;base64,' + Buffer.from('fake-jpeg').toString('base64');

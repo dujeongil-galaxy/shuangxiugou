@@ -74,6 +74,8 @@ export default {
     if (request.method === 'GET' && path === '/api/capabilities') {
       return json({
         vision: true,
+        visitorIp: request.headers.get('CF-Connecting-IP')
+          || request.headers.get('x-forwarded-for') || '未知',
         textModel: '@cf/zai-org/glm-4.7-flash',
         visionModel: '@cf/meta/llama-3.2-11b-vision-instruct',
         maxParts: 8,
@@ -239,7 +241,9 @@ function routeNotice(route) {
 // ---------- GitHub OAuth 相关 ----------
 const GITHUB_OWNER = 'dujeongil-galaxy';
 const GITHUB_REPO = 'shuangxiugou';
-const STAR_MIN_DAYS = 7; // Star 满 7 天才放行
+// 2026-11-21 站长改：国内线路 Star 即开（不再攒天数）；只有附件功能需要满 3 天，
+// 该门槛由前端按 star_days 判定，Worker 只负责如实回传 Star 状态与天数。
+const ATTACH_MIN_DAYS = 3;
 
 // 跳转到 GitHub 授权页
 async function handleGitHubLogin(env) {
@@ -335,13 +339,15 @@ async function handleGitHubCallback(request, env, url) {
       }
     } catch (e) {
       console.log('获取 star 时间失败:', e.message);
-      // 出错了就默认按已满 7 天算，别让用户报错
-      starDays = 7;
+      // 拿不到 Star 日期时不让用户卡住：按已满足附件 3 天门槛算
+      starDays = ATTACH_MIN_DAYS;
       starredAtDate = '未知';
     }
   }
 
-  const meetsRequirement = hasStar && starDays >= STAR_MIN_DAYS;
+  // Star 即开国内线路（不再攒 7 天）；附件 3 天门槛前端按 star_days 自己判。
+  // 拉黑判定也在前端：localStorage 有 sxg_ai_ever_starred 但本次未 Star → 取消过 → 拉黑。
+  const meetsRequirement = hasStar;
 
   // 重定向回首页，带上结果
   const redirectUrl = `https://dujeongil-galaxy.github.io/shuangxiugou/?star_check=${meetsRequirement ? 'success' : 'failed'}&star_days=${starDays}&star_date=${encodeURIComponent(starredAtDate)}`;

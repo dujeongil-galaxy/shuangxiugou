@@ -197,21 +197,28 @@
     if (starCheck) {
       let title = '';
       let message = '';
-      const remainingDays = Math.max(0, 7 - starDays);
-      
+      const ATTACH_DAYS = 3; // 2026-11-21：国内文字线路 Star 即开；仅附件需满 3 天
+
       if (starCheck === 'success') {
+        // 现在是"点了 Star 即开"。记录 everStarred：将来若取消 Star 再回来，据此判拉黑。
+        localStorage.setItem('sxg_ai_ever_starred', '1');
+        const attDays = starDays;
         title = '✅ GitHub 登录成功';
-        message = `你给本仓库点的 Star 已经满 ${starDays} 天啦，解锁条件达成 ✅\nStar 日期：${starDate}\n\n国内的高速 AI 服务已经为你开通，直接去用就好。`;
+        message = `已确认你给本仓库点了 Star ✅\nStar 日期：${starDate}\n\n国内文字线路即刻开放；图片/文档上传需 Star 满 ${ATTACH_DAYS} 天${attDays >= ATTACH_DAYS ? '（你已满足）' : '（你还差 ' + (ATTACH_DAYS - attDays) + ' 天）'}。\n⚠️ 请保持 Star：取消将被自动拉黑，重新 Star 也不再恢复授权。`;
         localStorage.setItem('sxg_github_logged_in', '1');
         localStorage.setItem('sxg_github_has_star', '1');
         localStorage.setItem('sxg_star_days', starDays.toString());
         localStorage.setItem('sxg_star_date', starDate);
       } else {
-        title = '⏳ 等待解锁';
-        if (starDays > 0) {
-          message = `你给本仓库点的 Star 到第 ${starDays} 天了，还差 ${remainingDays} 天满 7 天就能解锁国内高速 AI 服务。\nStar 日期：${starDate}`;
+        // star_check=failed = 当前没 Star。若曾经 Star 过（everStarred=1）→ 取消过 → 永久拉黑。
+        const everStarred = localStorage.getItem('sxg_ai_ever_starred') === '1';
+        if (everStarred) {
+          localStorage.setItem('sxg_ai_blacklisted', '1');
+          title = '⛔ 已被拉黑';
+          message = '检测到你曾给本仓库点过 Star，现已取消。按本站规则，取消 Star 会被自动拉黑，即使重新 Star 也不再恢复 AI 授权。\nCloudflare 线路仍可免费使用。';
         } else {
-          message = '你 GitHub 已经登录了，但还没给本仓库点 Star。\n点完 Star、攒满 7 天，就能解锁国内的高速 AI 服务。';
+          title = '⏳ 尚未 Star';
+          message = `你 GitHub 已登录，但还没给本仓库点 Star。点一下 Star，国内文字线路即刻开放（图片/文档上传需满 ${ATTACH_DAYS} 天）。\n⚠️ 点了之后请保持：取消会被拉黑且不可恢复。`;
         }
         localStorage.setItem('sxg_github_logged_in', '1');
         localStorage.setItem('sxg_github_has_star', '0');
@@ -239,16 +246,16 @@
           const hasStar = localStorage.getItem('sxg_github_has_star') === '1';
           const starDays = parseInt(localStorage.getItem('sxg_star_days') || '0');
           const starDate = localStorage.getItem('sxg_star_date') || '未知';
-          const remainingDays = Math.max(0, 7 - starDays);
-          
-          if (hasStar) {
-            if (starDays >= 7) {
-              showModal('✅ 已解锁', `你给本仓库点的 Star 已经满 ${starDays} 天啦，解锁条件达成 ✅\nStar 日期：${starDate}\n\n国内的高速 AI 服务已经为你开通，直接去用就好。`, '知道了');
-            } else {
-              showModal('⏳ 等待中', `你给本仓库点的 Star 到第 ${starDays} 天了，还差 ${remainingDays} 天满 7 天就能解锁国内高速 AI 服务。\nStar 日期：${starDate}`, '知道了');
-            }
+          const blacklisted = localStorage.getItem('sxg_ai_blacklisted') === '1';
+          const ATTACH_DAYS = 3;
+
+          if (blacklisted) {
+            showModal('⛔ 已被拉黑', '你此前取消过本仓库的 Star，按规则已被永久拉黑，重新 Star 也不再恢复 AI 授权。Cloudflare 线路仍可免费使用。', '知道了');
+          } else if (hasStar) {
+            const att = starDays >= ATTACH_DAYS ? '图片/文档上传也已开放。' : '图片/文档上传需 Star 满 ' + ATTACH_DAYS + ' 天（还差 ' + (ATTACH_DAYS - starDays) + ' 天）。';
+            showModal('✅ 已解锁', `国内文字线路已开放（Star ${starDays} 天 · ${starDate}）。${att}\n⚠️ 请保持 Star，取消会被拉黑且不可恢复。`, '知道了');
           } else {
-            showModal('⚠️ 未 Starred 仓库', '你 GitHub 已经登录了，但还没给本仓库点 Star。\n点完 Star、攒满 7 天，就能解锁国内的高速 AI 服务。', '去 Starred');
+            showModal('⚠️ 未 Starred 仓库', `你 GitHub 已登录，但还没给本仓库点 Star。点一下 Star，国内文字线路即刻开放（图片/文档上传需满 ${ATTACH_DAYS} 天）。\n⚠️ 点了请保持，取消会被拉黑且不可恢复。`, '去 Starred');
           }
         } else {
           // 没登录的话，先弹 VPN 提示
