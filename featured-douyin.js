@@ -40,8 +40,17 @@
   var STYLE_ID = 'sxg-video-btn-style';
   var MODAL_ID = 'sxg-video-modal';
 
-  // 视频列表：在数组里追加即可，弹窗自动渲染对应条目。
+  // 视频列表：数组顺序即弹窗展示顺序，第一条置顶。
+  // 2026-11-20 站长提供、要求置顶：@蓬勃新闻 2026-03-07「不守双休，公司就降信用！
+  // 全国人大代表余淼杰建议将双休落实与企业信用融资挂钩」。核心是 aweme_id，保留站长
+  // 给的原始 so.douyin.com 搜索详情链接（固化防下架）。#双休 是内容标签，保留；
+  // 不夹带平台活动标签（#抖音精选App 之类）。与站点主题（双休）直接相关，故置顶。
   var VIDEOS = [
+    {
+      share: 'https://so.douyin.com/video/detail?aweme_id=7614341978976701723&awemeType=0&search_entrance=360os&traffic_source=BM1122&original_source=1&in_tfs=SL&in_ogs=1&group_id=7614341978976701723&author_id=98678035580&enter_from=general_search',
+      title: '不守双休，公司就降信用！全国人大代表余淼杰：建议将双休落实与企业信用融资挂钩',
+      sub: '双休不是福利，是权利！@蓬勃新闻 · 3月7日 #双休 #双休日对打工人来说有多重要'
+    },
     {
       share: 'https://v.douyin.com/AY0dA2mhhAw/',
       title: '专科双非怎么混进钱多事少的红利公司！',

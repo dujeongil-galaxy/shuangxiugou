@@ -8709,7 +8709,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   //   ③ 详情页 brand/lixiang.html 同步登记同一条链接（站规：备注栏内容同步证据链）。
   const newsLinks32 = [...news32.matchAll(/https?:\/\/[^'"\s)]+/g)].map((x) => x[0]);
   check(news32.length > 0
-    && /<script defer src="\.\/news-incident-patch\.js\?v=8"><\/script>/.test(idx32)
+    && /<script defer src="\.\/news-incident-patch\.js\?v=9"><\/script>/.test(idx32)
     && /var ITEMS = \[/.test(news32) && /key: 'logitech'/.test(news32) && /key: 'xingyu'/.test(news32)
     && /key: 'geely'/.test(news32) && /key: 'lixiang'/.test(news32) && /key: 'chery'/.test(news32)
     && /key: 'lixiang-douyin'/.test(news32) && /key: 'huawei-zunjie'/.test(news32)
@@ -9100,8 +9100,18 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     && !/抖音精选App/.test(ikwStrings),
     '§36m 视频区新增「卧底快递王国」（短链 + 标题就位，且不夹带平台活动标签）',
     '站长 11-17 给的产业揭秘视频没进 VIDEOS 数组，或把 #抖音精选App 这类活动标签挂进了题目/副标题');
-  check(/featured-douyin\.js\?v=7/.test(idx36m),
-    '§36m featured-douyin.js 的 ?v 已 bump 到 7（浏览器缓存旧脚本会吃掉本次改动）',
+  // 2026-11-20 站长：余淼杰「不守双休就降信用」视频挂视频区并**置顶**（数组第一条）。
+  // 判据：aweme_id=7614341978976701723 必须出现在 VIDEOS 数组第一条对象里，
+  // 且排在原第一条（AY0dA2mhhAw）之前——只「加进数组」不算置顶。
+  const vidsBlock = (fd.match(/var VIDEOS = \[([\s\S]*?)\n  \];/) || ['', ''])[1];
+  const firstVid = (vidsBlock.match(/\{\s*share:\s*'([^']+)'/) || ['', ''])[1];
+  check(!!firstVid && firstVid.indexOf('aweme_id=7614341978976701723') !== -1
+      && /aweme_id=7614341978976701723/.test(fd)
+      && /不守双休，公司就降信用/.test(fd) && /余淼杰/.test(fd),
+    '§36m 视频区第一条（置顶）为余淼杰「不守双休就降信用」视频（原始 so.douyin.com 链接 + 标题在案）',
+    '视频没置顶到第一条、或标题/链接缺失 → 站长要的置顶没生效');
+  check(/featured-douyin\.js\?v=8/.test(idx36m),
+    '§36m featured-douyin.js 的 ?v 已 bump 到 8（浏览器缓存旧脚本会吃掉本次改动）',
     '?v 没 bump → 旧脚本仍按旧 VIDEOS 渲染，新视频与 dead 标记都不生效');
 }
 
@@ -10420,7 +10430,7 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
       && /title: \/\^华为终端\//.test(newsZj)
       && /href: '\.\/zunjie-report\.html'/.test(newsZj)
       && /不据此调整 C 级评级/.test(newsZj)
-      && /<script defer src="\.\/news-incident-patch\.js\?v=8"><\/script>/.test(idxZj),
+      && /<script defer src="\.\/news-incident-patch\.js\?v=9"><\/script>/.test(idxZj),
     '§39g 华为卡登记框只链站内专题页、声明不改评级，脚本 ?v=8 破缓存',
     '卡面挂外链或漏 bump 缓存号 → 违反外链白名单口径 / 用户拿旧补丁');
   // 外链白名单仍只有理想那一条：新增卡片不得扩大卡面外链口径
@@ -10464,6 +10474,26 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
       && /pinyin-index\.js\?v=22/.test(idxWj),
     '§39n 问界卡关键词与拼音别名含「华为汽车/华为问界」，索引已重建且 ?v=22 破缓存',
     '别名或重建缺失 → 搜「华为汽车」「华为问界」命中不了问界卡，站长说的「不智能」重现');
+
+  // 2026-11-20 站长提供 @界面新闻 长城落实双休抖音视频，去核实后登记进长城汽车卡。
+  // 核实结论：与卡内官宣/员工证言/界面新闻采访同源一致，属总部落实双休面的视频佐证；
+  // 产线单双休矛盾未解，维持 B 级不变。卡面外链白名单不放宽——只链站内详情页，
+  // 原始 so.douyin.com 链接按站规登记进 brand/gwm.html 证据链，公示区由生成器同步。
+  check(/key: 'gwm-douyin'/.test(newsZj)
+      && /title: \/\^长城汽车\//.test(newsZj)
+      && /界面新闻抖音视频：长城汽车落实双休（2026-01-06）/.test(newsZj)
+      && /href: '\.\/brand\/gwm\.html'/.test(newsZj)
+      && /维持 B 级/.test(newsZj),
+    '§39o 长城卡有界面新闻视频登记框（书面化、只链站内详情页、维持 B 级不改评级）',
+    '长城卡无登记框或挂了外链 → 站长给的核实线索没落地 / 违反外链白名单');
+  check(/aweme_id=7592181887922195738/.test(read('brand/gwm.html'))
+      && /界面新闻（抖音视频）：长城汽车 2026 落实双休/.test(read('brand/gwm.html'))
+      && /<details id="ev-gwm" data-b="gwm" data-g="B" data-n="10" data-l="9"/.test(idxZj),
+    '§39p 原始抖音链接登记进 brand/gwm.html 证据链，首页公示区 ev-gwm 计数同步 10/9',
+    '证据链或公示区计数没同步 → verify §5 对账判红、读者看不到这条来源');
+  check(/<script defer src="\.\/news-incident-patch\.js\?v=9"><\/script>/.test(idxZj),
+    '§39q 新闻补丁脚本 ?v bump 到 9（长城卡新登记框破缓存）',
+    '?v 没 bump → 浏览器吃旧补丁，长城卡看不到新登记框');
 }
 
 // ---------- 汇总 ----------

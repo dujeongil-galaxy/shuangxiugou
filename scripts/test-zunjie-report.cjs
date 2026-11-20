@@ -32,7 +32,7 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
 
   check('专题页文件存在且非空', exists('zunjie-report.html') && report.length > 3000);
   check('新闻登记补丁已 bump 到 ?v=8',
-    /<script defer src="\.\/news-incident-patch\.js\?v=8"><\/script>/.test(idx));
+    /<script defer src="\.\/news-incident-patch\.js\?v=9"><\/script>/.test(idx));
   check('补丁含华为卡条目且指向站内专题页',
     /key: 'huawei-zunjie'/.test(src)
     && /title: \/\^华为终端\//.test(src)
