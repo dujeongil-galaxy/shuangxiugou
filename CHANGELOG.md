@@ -4,6 +4,16 @@
 
 ---
 
+### feat：劳动法小助手支持图片/PDF/DOCX 上传，双线路升级视觉模型（2026-11-21 · 提交 `330785b4`）
+
+站长要求「支持图片或文件上传」。附件全在浏览器本地解析，不上传任何第三方解析服务；解析结果封装为 OpenAI 兼容的 `parts`（`text` / `image_url` data URL）走双线路。改动：`labor-ai.html` 加文件入口（JPG/PNG/WEBP/PDF/DOCX，最多 3 个，图 5MB / 文档 10MB）、pdf.js 抽 PDF 文本层（扫描页渲染前 2 页）+ mammoth 抽 DOCX 文本（双 CDN 回退）、用户气泡显示缩略图、隐私明示文案；国内线路切 `Qwen/Qwen2.5-VL-7B-Instruct`；CF 带图前先 `GET /api/capabilities` 探测，老 Worker 明确提示切国内线路。`ai-worker/src/worker.js` 加能力探测端点 + 带图切 `@cf/meta/llama-3.2-11b-vision-instruct`（max_tokens 1200，纯文本仍 2000）+ 只收 data:image base64（禁 http 外链防 SSRF，限 8 段 / 7MB）；`ai-worker/README.md` 写明必须 `npx wrangler deploy` 重新部署才生效。验证：verify §21u 七条断言 + 全量 2040 项全绿；故障注入 ×3 判红；test-ai-worker 43/0、test-ai-worker-aliyun 46/0；无头 Edge 实测全链路通过。
+
+### fix：弹窗关闭真正锁死——未选搜索引擎确认时点 × 永远不放行（2026-11-21 · 提交 `eec576a8`）
+
+站长实测发现弹窗关闭未真正锁死——连按几次继续关闭即可绕过搜索引擎确认；上一版「提醒一次后放行」形同虚设。`douyin-prompt.js` 的 `close()` 判据从 `!seChoice && !seNudged` 收紧为 `!seChoice`，删除 `seNudged` 变量及全部残留；`index.html` 的 `douyin-prompt.js?v=29`→`30` 破缓存；`verify.mjs` §36x-2 断言收紧（剥注释后必须命中 `if (!seChoice) {…return;}` 且全源码禁现 seNudged）。验证：故障注入 ×2 判红；无头 Edge 实测未选连点 × 5 次不关、选「不是」1.5s 滚到 Bing 教程、选「是的」停原地、重弹复位。三处留痕见 README / BUG-ROOT-CAUSES.md / 最近更新.md。
+
+---
+
 ### feat：蜜雪冰城华北口径升级为员工自述聊天记录（脱敏登记）（2026-11-21 · 提交 `9d452b56`）
 
 站长提供华北地区蜜雪冰城门店员工 2024-06 聊天记录（经员工同意代为登记）：两天公休（月休 2 天）、白班 10 点到 19 点 / 晚班 14 点到 24 点、底薪 2200 元＋提成千分之四。**脱敏处理**：截图、昵称、账号、城市与门店一律不上库，页面只转述文字要点并写明「脱敏说明」与「经员工同意」。华北口径从「用户反映」升级为「员工自述、待核实」，不替换西南已核实口径；两地均不足双休，维持 C 级与真实双休率 0%（口径换算）不变。改动：brand/mixue.html（meta/评级说明/休息制度/工时情况/评级理由/证据链第 5 条）、mixue-region-note.js 红框文案（?v bump 2）、首页证据公示区生成器同步、verify.mjs §21t 断言更新 + 新增 3 条隐私红线断言（不引用截图图片 / 不出现 QQ 等泄露字样 / 写明脱敏与同意声明）。验证：verify 2036 项全绿、CI 回归 51/0、7 组故障注入全判红（含昵称引用、截图引用两组泄密场景）、无头浏览器确认详情页与首页红框渲染正常且隐私检查全过。
