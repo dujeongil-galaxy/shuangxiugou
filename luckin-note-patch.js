@@ -24,8 +24,8 @@
  * MutationObserver 兜底 React 重渲染（搜索/筛选会重建卡片）。
  */
 (function () {
-  var POLICY = '站长线下核实：上六休一（月休 4 天）';
-  var NOTE = '⚠️ 多家门店排班口径一致；成都地区门店答复略宽松，但没给出明确排班口径，本站不据此改判。';
+  var POLICY = '站长西南地区门店线下核实：上六休一（月休 4 天）';
+  var NOTE = '⚠️ 西南地区多家门店排班口径一致；成都地区门店答复略宽松，但没给出明确排班口径，本站不据此改判。';
 
   function findLuckinCard() {
     var cards = document.querySelectorAll('div.bg-white.rounded-2xl.border');

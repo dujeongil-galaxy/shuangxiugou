@@ -7461,13 +7461,13 @@ section('21c. 首页滑到底部按钮');
 {
   const idxS = read('index.html');
   const patchS = read('luckin-note-patch.js');
-  check(/<script defer src="\.\/luckin-note-patch\.js\?v=1"><\/script>/.test(idxS)
+  check(/<script defer src="\.\/luckin-note-patch\.js\?v=2"><\/script>/.test(idxS)
     && patchS.length > 800,
     '§21s 首页引入瑞幸提示语补丁且脚本真的存在（双重空集防护）',
     `scriptLen=${patchS.length}`);
-  check(/var POLICY = '站长线下核实：上六休一（月休 4 天）'/.test(patchS)
-    && /var NOTE = [^\n]*多家门店排班口径一致/.test(patchS),
-    '§21s 工时政策栏写明线下核实上六休一（月休 4 天），红框写明多家门店口径一致');
+  check(/var POLICY = '站长西南地区门店线下核实：上六休一（月休 4 天）'/.test(patchS)
+    && /var NOTE = [^\n]*西南地区多家门店排班口径一致/.test(patchS),
+    '§21s 工时政策栏写明西南地区门店线下核实上六休一（月休 4 天），红框写明西南多家门店口径一致');
   check(/var NOTE = [^\n]*成都地区/.test(patchS)
     && /未给出明确排班口径/.test(patchS) && /不据此改判/.test(patchS),
     '§21s 红框提示保留成都地区差异，并写明不据此单独改判');
@@ -7525,6 +7525,72 @@ section('21c. 首页滑到底部按钮');
     && !/var NOTE = [^\n]*月休 2 天[^\n]*已核实/.test(patchT)
     && !/华北地区门店月休 2 天（已核实）/.test(detailT),
     '§21t 华北口径必须标为待核实，不得写成已核实事实');
+}
+
+// ---------- 21u. 奶茶品牌一线核实统一加「西南地区」限定（2026-11-20 站长明确） ----------
+// 站长 2026-11-20 明确：本人线下一手走访只覆盖西南地区门店。此前茶百道/兵立王/
+// 一点点/茉莉奶白（自定义卡）与喜茶/库迪/肯悦/瑞幸（内置卡）的「线下一手核实」
+// 未限定地区，易被读成全国核实结论。本次统一加「西南地区」限定，只加地区，
+// 不动已确证的月休 4 天 / 淡季 8 天数值，也不改 C 级与双休率换算值。
+// 内置卡数据在压缩 bundle 不能改 → 独立 DOM 补丁 tea-region-note.js + 复用
+// luckin-note-patch.js；详情页是真相源，证据公示区由生成器同步（512 条不变）。
+{
+  const idxU = read('index.html');
+  const bundleU = read('assets/index-YthXZ9eP.js');
+
+  // ① 自定义卡：desc + recommendText 全部带地区限定，且月休数值不丢失
+  check(/西南地区门店店员匿名反馈：月休4天（单休形态）/.test(idxU)
+    && /西南地区门店员工匿名反馈：月休4天/.test(idxU),
+    '§21u 茶百道/兵立王自定义卡 desc 写明西南地区门店；月休 4 天保留');
+  check(/西南地区线下核实（大学城附近门店员工实录）：淡季月休 8 天/.test(idxU)
+    && /西南地区线下核实到门店「月休 4 天」/.test(idxU),
+    '§21u 一点点/茉莉奶白自定义卡 desc 写明西南地区；原有月休数值保留');
+  check((idxU.match(/西南地区门店月休4天（线下一手调查）/g) || []).length === 2
+    && /西南地区门店旺季月休4天（单休）/.test(idxU)
+    && /C 级 · 西南地区线下核实月休 4 天/.test(idxU),
+    '§21u 四张自定义卡红框均带西南地区限定（茶百道/兵立王/一点点/茉莉奶白）');
+
+  // ② 详情页（真相源）：七张奶茶/咖啡详情页的全部一线核实措辞带地区
+  for (const [f, sample] of [
+    ['chabaidao', '西南地区门店线下一手核实：月休 4 天'],
+    ['bingliw', '西南地区门店线下一手核实：月休 4 天'],
+    ['yidiandian', '站长西南地区门店线下一手核实：淡季月休 8 天'],
+    ['molina', '西南地区线下核实到门店为「月休 4 天」'],
+    ['heytea', '站长线下核实：西南地区门店月休 4 天'],
+    ['cotti', '站长西南地区门店线下一手核实：月休 4 天'],
+    ['kenyue', '站长西南地区门店线下一手核实：月休 4 天']
+  ]) {
+    check(read('brand/' + f + '.html').indexOf(sample) >= 0,
+      '§21u 详情页 brand/' + f + '.html 写明西南地区限定');
+  }
+  // ③ 内置卡 DOM 补丁：喜茶/库迪/肯悦；瑞幸复用既有补丁
+  const patchU = read('tea-region-note.js');
+  check(/<script defer src="\.\/tea-region-note\.js\?v=1"><\/script>/.test(idxU)
+    && patchU.length > 1200,
+    '§21u 首页引入内置卡地区限定补丁且脚本存在（双重空集防护）',
+    `scriptLen=${patchU.length}`);
+  check(/\^喜茶/.test(patchU) && /\^库迪/.test(patchU) && /\^肯悦/.test(patchU)
+    && /西南地区门店/.test(patchU),
+    '§21u 补丁按标题精确定位喜茶/库迪/肯悦三卡且新文案带地区');
+  check(/data-tea-region/.test(patchU)
+    && /new MutationObserver\(schedule\)/.test(patchU)
+    && !/writeFileSync|innerHTML\s*=/.test(patchU),
+    '§21u 补丁幂等、有 React 重渲染兜底，只改 DOM 不写文件不动 bundle');
+  check(/站长西南地区门店线下核实：上六休一（月休 4 天）/.test(read('luckin-note-patch.js')),
+    '§21u 瑞幸补丁工时政策栏同步加西南地区限定');
+
+  // ④ 公示区由生成器同步：证据总数不变，喜茶证据标题带地区
+  check(/data-ev-total="512"/.test(idxU)
+    && /站长线下核实：西南地区门店月休 4 天/.test(idxU),
+    '§21u 证据公示区已同步：512 条不变且喜茶证据标题带地区');
+  // ⑤ 铁律：压缩 bundle 里旧文案一字未动（新口径全在渲染层/详情页）
+  check(/站长线下核实六休一（月休 4 天）/.test(bundleU)
+    && !/西南地区门店线下一手核实：月休 4 天/.test(bundleU),
+    '§21u 压缩 bundle 保持原样（地区限定只在补丁与详情页，不改 bundle）');
+  // ⑥ 只加地区、不新增「待核实」软化：月休 4 天仍是确证口径
+  check(!/西南地区[^。；\n]{0,30}月休 4 天[^。；\n]{0,20}待核实/.test(patchU)
+    && !/西南地区门店月休4天[^。；\n]{0,20}待核实/.test(idxU),
+    '§21u 只加地区限定，不把已确证的月休 4 天改写成待核实');
 }
 
 // ---------- 22. 素材链接规则（站长 2026-11-07 写死，同日纠正为 blob） ----------

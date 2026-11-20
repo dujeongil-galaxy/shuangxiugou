@@ -60,7 +60,7 @@ const remindSrc = read('remind-button.js');
   // 定级依据：站长线下核实「月休 4 天」（单休形态）
   check('★ desc 写明线下核实「月休 4 天」（单休形态）', /月休 4 天/.test(cfgChunk) && /单休形态/.test(cfgChunk));
   check('★ desc 写明「单休归为 C 级」定级口径', /单休归为 C 级/.test(cfgChunk));
-  check('recommendText 写明 C 级警示（红框）', /C 级 · 线下核实月休 4 天/.test(cfgChunk));
+  check('recommendText 写明 C 级警示（红框，西南地区限定 2026-11-20）', /C 级 · 西南地区线下核实月休 4 天/.test(cfgChunk));
   check('recommendColor 为 red（升 C 后警示色）', /recommendColor:\s*'red'/.test(cfgChunk));
 
   // ── 说明框 ──
