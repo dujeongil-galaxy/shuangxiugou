@@ -33,8 +33,8 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   const rd = read('README.md');
 
   check('曝光补丁文件存在', exists('byd-expose-patch.js'));
-  check('首页挂了曝光补丁（?v=7 防缓存）',
-    /<script defer src="\.\/byd-expose-patch\.js\?v=7"><\/script>/.test(html));
+  check('首页挂了曝光补丁（?v=8 防缓存）',
+    /<script defer src="\.\/byd-expose-patch\.js\?v=8"><\/script>/.test(html));
   check('真 DOM 测试挂进 CI 的 pinyin job', /test-byd-expose\.cjs/.test(wf));
   check('README 写死曝光登记口径',
     /比亚迪卡片曝光登记/.test(rd) && /失效链接不得冒充可点来源/.test(rd));
@@ -163,8 +163,8 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
     && !legalBox.querySelector('img'));
   check('点评框不再链回站内 byd.html（原链接按站长指令不用了）',
     !!legalBox && !legalBox.querySelector('a[href="./brand/byd.html"]'));
-  check('点评框写明 5 秒短视频 + 只挂线索不推广 + 未核实',
-    !!legalBox && legalBox.textContent.indexOf('5 秒短视频') !== -1
+  check('点评框写明约 1 分 50 秒短视频 + 只挂线索不推广 + 未核实（2026-11-20 站长实测纠正原「5 秒」）',
+    !!legalBox && legalBox.textContent.indexOf('1 分 50 秒') !== -1
     && legalBox.textContent.indexOf('不作推广') !== -1
     && legalBox.textContent.indexOf('未核实') !== -1);
   // 2026-11-13 站长第四条指令：卡面标签区把比亚迪旗下子品牌全部写完

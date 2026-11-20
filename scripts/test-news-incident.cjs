@@ -34,11 +34,11 @@ const tick = (ms) => new Promise((r) => setTimeout(r, ms));
   const rd = read('README.md');
 
   check('新闻登记补丁文件存在', exists('news-incident-patch.js'));
-  check('首页挂了新闻登记补丁（?v=5 防缓存）',
-    /<script defer src="\.\/news-incident-patch\.js\?v=5"><\/script>/.test(html));
+  check('首页挂了新闻登记补丁（?v=9 防缓存）',
+    /<script defer src="\.\/news-incident-patch\.js\?v=9"><\/script>/.test(html));
   check('真 DOM 测试挂进 CI 的 pinyin job', /test-news-incident\.cjs/.test(wf));
-  check('README 写死新闻登记口径',
-    /新闻事件登记/.test(rd) && /不作因果认定|不写「报应」/.test(rd));
+  check('README 写死新闻登记口径（README 摘要里的措辞是「新闻登记」，不再强求「事件」二字）',
+    /新闻登记/.test(rd) && /不作因果认定|不写「报应」/.test(rd));
 
   // ─────────── 1. 罗技：详情页证据（权威媒体可点链接） ───────────
   console.log('\n--- 1. 罗技事件证据链 ---');
