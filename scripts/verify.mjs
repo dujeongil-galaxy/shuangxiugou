@@ -7483,25 +7483,27 @@ section('21c. 首页滑到底部按钮');
     '§21s 压缩 bundle 里的旧数据保持原样（新口径由补丁在渲染层覆盖）');
 }
 
-// ---------- 21t. 蜜雪冰城地区差异：西南月休 4 天 / 华北用户反映月休 2 天（2026-11-20 站长补充） ----------
-// 站长 2026-11-20 补充一条地区差异：西南大部分门店月休 4 天；华北有用户反映月休 2 天。
-// 华北口径只有访客反馈、无一手证据，按「用户反映、待核实」单列登记，不替换西南已核实
-// 口径，也不据此单独改判 C 级。蜜雪是内置卡（bundle 不可改），故独立补丁
+// ---------- 21t. 蜜雪冰城地区差异：西南月休 4 天 / 华北员工自述月休 2 天（2026-11-20 站长补充） ----------
+// 站长 2026-11-20 补充一条地区差异：西南大部分门店月休 4 天；华北门店员工自述
+// （2024-06 聊天记录）月休 2 天，经员工同意脱敏代为登记。华北口径只有员工自述、
+// 无一手可核验证据，按「员工自述、待核实」单列登记，不替换西南已核实口径，
+// 也不据此单独改判 C 级。蜜雪是内置卡（bundle 不可改），故独立补丁
 // mixue-region-note.js 在渲染层挂红框；详情页是真相源，证据公示区由生成器同步
-// （ev-mixue 4→5 条、全站 511→512 条）。
-// 三层强制：静态断言 + 故障注入（4 组全判红）+ CHANGELOG / 最近更新 / README 三处记账。
+// （ev-mixue 5 条、全站 512 条）。
+// 隐私红线：不展示聊天截图，不记录昵称/账号/城市/门店等可识别信息。
+// 三层强制：静态断言 + 故障注入（全判红）+ CHANGELOG / 最近更新 / README 三处记账。
 {
   const idxT = read('index.html');
   const patchT = read('mixue-region-note.js');
   const detailT = read('brand/mixue.html');
-  check(/<script defer src="\.\/mixue-region-note\.js\?v=1"><\/script>/.test(idxT)
+  check(/<script defer src="\.\/mixue-region-note\.js\?v=2"><\/script>/.test(idxT)
     && patchT.length > 800,
     '§21t 首页引入蜜雪地区差异补丁且脚本真的存在（双重空集防护）',
     `scriptLen=${patchT.length}`);
   check(/var NOTE = [^\n]*西南地区大部分门店月休 4 天/.test(patchT)
-    && /var NOTE = [^\n]*华北地区有用户反映月休 2 天/.test(patchT)
+    && /var NOTE = [^\n]*华北地区门店员工自述（2024-06 聊天记录，脱敏登记）月休 2 天/.test(patchT)
     && /待核实/.test(patchT),
-    '§21t 红框写明西南月休 4 天与华北用户反映月休 2 天（待核实）');
+    '§21t 红框写明西南月休 4 天与华北员工自述月休 2 天（待核实）');
   check(/C 级与双休率 0%/.test(patchT) && /不变/.test(patchT)
     && /两地均不足双休/.test(patchT),
     '§21t 红框声明地区差异不改评级与换算值');
@@ -7512,19 +7514,36 @@ section('21c. 首页滑到底部按钮');
   check(/\^蜜雪冰城\//.test(patchT),
     '§21t 按标题定位蜜雪冰城卡（不串卡）');
   check(/西南地区大部分门店月休 4 天/.test(detailT)
-    && /华北地区有用户反映月休 2 天/.test(detailT)
-    && /用户反映、待核实/.test(detailT),
-    '§21t 详情页写明西南 4 天 / 华北 2 天且华北标为待核实');
+    && /华北地区员工自述（2024-06 聊天记录）月休 2 天，待核实/.test(detailT)
+    && /员工自述、待核实/.test(detailT),
+    '§21t 详情页写明西南 4 天 / 华北员工自述 2 天且华北标为待核实');
   const evMixueT = idxT.slice(idxT.indexOf('id="ev-mixue"'), idxT.indexOf('id="ev-mixue"') + 240);
   check(/data-n="5" data-l="3"/.test(evMixueT) && /data-ev-total="512"/.test(idxT),
     '§21t 公示区由生成器同步：ev-mixue 5 条证据 / 全站 512 条');
-  check(/华北地区门店月休 2 天（待核实）/.test(detailT)
+  check(/华北地区门店员工自述：两天公休（月休 2 天）（待核实）/.test(detailT)
+    && /华北地区门店员工自述：两天公休（月休 2 天）（待核实）/.test(idxT)
     && /华北月休 2 天口径更紧/.test(detailT),
-    '§21t 详情页证据链与数值补充均登记华北口径，且说明换算值不变');
-  check(/var NOTE = [^\n]*华北地区有用户反映月休 2 天[^\n]*待核实/.test(patchT)
+    '§21t 详情页证据链与公示区均登记华北自述口径，数值补充说明换算值不变');
+  check(/var NOTE = [^\n]*华北地区门店员工自述[^\n]*待核实/.test(patchT)
     && !/var NOTE = [^\n]*月休 2 天[^\n]*已核实/.test(patchT)
     && !/华北地区门店月休 2 天（已核实）/.test(detailT),
     '§21t 华北口径必须标为待核实，不得写成已核实事实');
+  // 隐私红线（2026-11-20 员工同意脱敏登记）：不展示截图，不出现任何可识别个人/门店的信息
+  // 「不展示聊天截图」这类脱敏声明文字本身合法，故排除声明短语后再查敏感词
+  const noDeclare = detailT.replace(/页面不展示聊天截图、昵称与任何可识别门店或个人的信息/g, '')
+    .replace(/本站不展示聊天截图/g, '').replace(/og-cover\.png/g, '');
+  const mixueEvT = detailT.slice(detailT.indexOf('<h2>证据来源</h2>'), detailT.indexOf('<h2>参考：其他 C 级品牌</h2>'));
+  check(!/<img[\s>]/.test(mixueEvT) && !/\.(jpe?g|png|gif|webp)/i.test(mixueEvT),
+    '§21t 隐私红线：蜜雪详情页证据链不引用任何截图图片（聊天截图不上库）');
+  check(!/QQ|微信截图|聊天截图|(?:^|[^不据])qq/i.test(noDeclare),
+    '§21t 隐私红线：蜜雪详情页（脱敏声明除外）不出现 QQ/截图引用等泄露字样');
+  check(/脱敏说明/.test(detailT) && /不展示聊天截图/.test(detailT)
+    && !/昵称[：:][^<]{2,}/.test(detailT)
+    && !/账号[：:][^<]{2,}/.test(detailT)
+    && !/(员工|当事人|店员)[（(]@(?:[\w-]{3,})[）)]/.test(detailT),
+    '§21t 隐私红线：详情页写明脱敏说明，且不含昵称/账号等可识别信息');
+  check(/经员工同意/.test(detailT) && /经员工同意，站长于 2026-11-20 代为登记/.test(detailT),
+    '§21t 华北自述条目写明经员工同意代为登记');
 }
 
 // ---------- 21u. 奶茶品牌一线核实统一加「西南地区」限定（2026-11-20 站长明确） ----------
