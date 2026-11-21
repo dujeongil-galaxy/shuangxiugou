@@ -10334,6 +10334,15 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
       && /先选一下上面的问题，选完就能关。/.test(dpCode36x),
     '§36x-2 弹窗含搜索引擎确认块（问句 + 是/不是两种友好回执 + 未选提醒）',
     '缺确认块或回执退化成「好的，欢迎访问」式直译 → 站长指定红框区域仍是空白或文案生硬');
+  // §36x-3（2026-11-21 站长补）：Google 需搜「双休购GitHub」才收录本站，选「不是」的回执补这句引导；
+  // 关闭后的跳转判定一个字不许动——弹窗文案优化不能顺手改掉「不是 → 跳页脚教程」的行为。
+  check(/也可以在 Google 搜「双休购GitHub」找到本站/.test(dpCode36x),
+    '§36x-3 选「不是」回执补 Google 搜「双休购GitHub」引导（词要连写）',
+    '漏掉 Google 引导 → 习惯 Google 的访客仍找不到本站');
+  check(/if \(seChoice !== 'yes'\) jumpToBingGuide\(\)/.test(dpCode36x)
+      && /seHint\.textContent = which === 'yes' \? SE_YES_HINT : SE_NO_HINT/.test(dpCode36x),
+    '§36x-3 跳转判定不变：「不是」关掉仍跳页脚教程，Google 提示只落在回执文案',
+    '改动关闭落点 → 文案优化越界，破坏既有「是的停原地/不是跳教程」判定');
   check(/data-se="yes"/.test(dpCode36x) && /data-se="no"/.test(dpCode36x)
       && /role="radio"/.test(dpCode36x) && /aria-checked/.test(dpCode36x),
     '§36x-2 「是的 / 不是」为二选一 radiogroup（aria-checked 同步翻转）',
@@ -10350,9 +10359,9 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
       && /if \(seChoice !== 'yes'\) jumpToBingGuide\(\)/.test(dpCode36x),
     '§36x-2 落点按选择走：「是的」关闭后停原地，选「不是」才滚到 Bing 教程（带重试）',
     '无条件跳转 → 明明是 Bing 用户，关掉弹窗还被往下拽');
-  check(/<script defer src="\.\/douyin-prompt\.js\?v=31"><\/script>/.test(idx36x)
-    && !/douyin-prompt\.js\?v=30/.test(idx36x),
-    '§36x index.html 挂载 douyin-prompt.js?v=31（bump 缓存号）',
+  check(/<script defer src="\.\/douyin-prompt\.js\?v=32"><\/script>/.test(idx36x)
+    && !/douyin-prompt\.js\?v=31/.test(idx36x),
+    '§36x index.html 挂载 douyin-prompt.js?v=32（bump 缓存号）',
     '?v 没 bump → 线上仍跑旧脚本，改动等于没发');
 
   // 2026-11-21 手机端「右上角 × 溢出屏幕、无法关闭」兜底：
