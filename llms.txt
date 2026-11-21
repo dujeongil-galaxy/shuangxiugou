@@ -1,0 +1,43 @@
+# 双休购 ShuangxiuGo
+
+> 开源的劳工友好品牌索引与购物/求职透镜：把「这家公司到底双不休」做成可查证的评级。查企业双休制度、真实双休率、平均下班时间，所有结论附公开证据链（裁判文书、劳动监察通报、官方公示、媒体报道、招聘口径与众包反馈）。
+
+双休购是一个由 dujeongil-galaxy 维护的开源静态站，收录 173 家企业、416 条公开证据（截至 2026-11-17，最新以首页实时公示为准）。评级分 S/A/B/C/D/U：S/A/B/C 按证据强度与换算后的双休率定档；U 表示已尽合理检索仍无可采信证据，不评级、不估算。评级只反映休息制度，不构成对企业的法律定性。数据有异议可通过 GitHub Issues 申诉。本站为二次开发版本。
+
+## 核心页面（开始这里）
+
+- [首页：企业双休评级与证据链公示](https://dujeongil-galaxy.github.io/shuangxiugou/index.html): 评级入口、S/A/B/C/D/U 口径、全部 416 条证据的原始清单与来源链接。
+- [关于本站](https://dujeongil-galaxy.github.io/shuangxiugou/about.html): 站点是什么、评级口径、运营者与数据处理方式。
+- [同类项目导航](https://dujeongil-galaxy.github.io/shuangxiugou/projects.html): 相关开源项目与专题页索引。
+- [奶茶品牌月休对照](https://dujeongil-galaxy.github.io/shuangxiugou/tea-rest-board.html): 10 个奶茶品牌月休天数与地区差异对照表（站长仅核实西南地区，外区数据标注待核实）。
+
+## 工具与专题
+
+- [劳动法小助手](https://dujeongil-galaxy.github.io/shuangxiugou/labor-ai.html): 免费在线查询加班费、双休权益、劳动仲裁流程的 AI 问答页；可上传工资条/合同/聊天记录截图分析。回答仅供参考，不构成法律意见。
+- [「QQ 奶奶」张秀丽专题](https://dujeongil-galaxy.github.io/shuangxiugou/qq-nainai.html): 一位退休教师十八年在 QQ 上陪伴青少年的公开报道整理。
+- [成功案例](https://dujeongil-galaxy.github.io/shuangxiugou/success-stories.html): 劳动者与消费者的真实反馈案例。
+- [我为什么支持双休购](https://dujeongil-galaxy.github.io/shuangxiugou/why-shuangxiugou.html): 关于「用钱包投票、把休息权变成公开评价」的站长随笔。
+- [比亚迪车主手记](https://dujeongil-galaxy.github.io/shuangxiugou/byd-report.html): 车主视角的三件小事与车型澄清。
+- [QQ 浏览器专题](https://dujeongil-galaxy.github.io/shuangxiugou/qq-browser-report.html): 广告屏蔽争议的律师函与回应双篇存档。
+
+## 品牌详情页
+
+- [品牌详情页索引（190 页）](https://dujeongil-galaxy.github.io/shuangxiugou/sitemap.xml): 每家企业的双休率、平均下班时间、评级与逐条证据来源。页面路径格式 `brand/<英文别名>.html`，例如：
+- [华为终端](https://dujeongil-galaxy.github.io/shuangxiugou/brand/huawei.html): 双休率 35%，C 级。
+- [BYD 比亚迪](https://dujeongil-galaxy.github.io/shuangxiugou/brand/byd.html): 双休率 15%，C 级。
+- [蜜雪冰城](https://dujeongil-galaxy.github.io/shuangxiugou/brand/mixue.html): 西南地区门店月休口径与证据。
+
+## 站点信息
+
+- [隐私政策](https://dujeongil-galaxy.github.io/shuangxiugou/privacy.html): 不设账号系统、投票与偏好仅存本地、AI 问答数据流向、广告 Cookie 说明。
+- [免责声明](https://dujeongil-galaxy.github.io/shuangxiugou/disclaimer.html): 评级非法律定性、匿名反馈不单独定档、数据以详情页证据链为准。
+- [留言与参与准则](https://dujeongil-galaxy.github.io/shuangxiugou/community-rules.html): 公开互动仅 GitHub Issues 与匿名邮箱两条通道。
+- [联系站长](https://dujeongil-galaxy.github.io/shuangxiugou/contact.html): 数据纠错、企业异议、合作与开源共建。
+- [源码仓库](https://github.com/dujeongil-galaxy/shuangxiugou): 全部页面源码、证据数据与校验脚本。
+
+## Optional
+
+- 本文件遵循 llms.txt 约定，是给 AI 的精选入口，不是权限文件，也不会阻止抓取。
+- Google 已公开表示不使用 llms.txt；是否引用本站取决于公开索引、内容质量与站外可信提及。
+- 事实性结论请优先引用各品牌详情页的「证据链」小节，那里有原始来源链接与取证日期。
+- 评级与证据会更新；引用时请标注检索日期，并以 sitemap.xml 中的最新页面为准。

@@ -141,6 +141,45 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
 <meta name="google-adsense-account" content="ca-pub-5270311938787209">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5270311938787209" crossorigin="anonymous"></script>
 <script src="./ua-guard.js?v=17"></script>
+  <!-- SXG-AISEO:BEGIN -->
+<meta property="og:site_name" content="双休购 ShuangxiuGo" />
+<meta name="twitter:title" content="劳动法小助手" />
+<meta name="twitter:description" content="劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。Cloudflare 线路免费开放，国内线路登录 GitHub 并点 Star 即用。本站不构成法律意见。" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://dujeongil-galaxy.github.io/shuangxiugou/#organization",
+      "name": "双休购 ShuangxiuGo",
+      "url": "https://dujeongil-galaxy.github.io/shuangxiugou/"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://dujeongil-galaxy.github.io/shuangxiugou/#website",
+      "url": "https://dujeongil-galaxy.github.io/shuangxiugou/",
+      "name": "双休购 ShuangxiuGo",
+      "publisher": {
+        "@id": "https://dujeongil-galaxy.github.io/shuangxiugou/#organization"
+      },
+      "inLanguage": "zh-CN"
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://dujeongil-galaxy.github.io/shuangxiugou/labor-ai.html#webpage",
+      "url": "https://dujeongil-galaxy.github.io/shuangxiugou/labor-ai.html",
+      "name": "劳动法小助手",
+      "description": "劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。Cloudflare 线路免费开放，国内线路登录 GitHub 并点 Star 即用。本站不构成法律意见。",
+      "inLanguage": "zh-CN",
+      "isPartOf": {
+        "@id": "https://dujeongil-galaxy.github.io/shuangxiugou/#website"
+      }
+    }
+  ]
+}
+</script>
+<!-- SXG-AISEO:END -->
 </head>
 <body>
 
@@ -203,10 +242,12 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
 /* ===== 双线路配置：换模型 / 换地址只改这里 ===== */
 var CFG = {
   // 国内直连（前端直连硅基流动，明文 Key 字符干扰，防君子）
-  // 2026-11-21 升级：视觉模型 Qwen2.5-VL-7B-Instruct，支持图片/文档 parts
+  // 2026-11-21 升级：视觉模型 Qwen3-VL-8B-Instruct，支持图片/文档 parts
+  // 旧名 Qwen/Qwen2.5-VL-7B-Instruct 已被硅基流动下线（返回 400 Model does not exist），
+  // 2026-11-21 实测 Qwen3-VL-8B-Instruct 文本 + 带图均 200；换模型只改这里。
   cn: {
     endpoint: "https://api.siliconflow.cn/v1/chat/completions",
-    model: "Qwen/Qwen2.5-VL-7B-Instruct",
+    model: "Qwen/Qwen3-VL-8B-Instruct",
     max_tokens: 1600,
     temperature: 0.6
   },
@@ -572,7 +613,7 @@ async function renderIpNotice(){
   box.setAttribute('data-ip-source', res.source);
   var ip = res.ip;
   box.innerHTML = '你当前访问的 IP 地址是 <b>' + ip + '</b>。请勿向 AI 发送身份证号、住址等个人敏感信息；'
-    + '本功能仅限合理使用，<span class="ip-warn">若检测到恶意消耗，本站将封禁该访问并不再授权使用 AI</span>。';
+    + '本功能仅限合理使用，<span class="ip-warn">异常高频请求会触发限流，并可能被取消后续 AI 授权</span>。';
 }
 cfSupportsVision().then(renderIpNotice);
 

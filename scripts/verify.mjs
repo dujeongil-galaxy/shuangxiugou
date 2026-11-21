@@ -3168,6 +3168,70 @@ const SEO_INDEXABLE = [
     '奶茶聚合页已提交到 sitemap.xml');
 }
 
+// ---------- 13b-4. 全站 SEO 写成生成器 + AI 爬虫可见性（2026-11-21 站长指令） ----------
+// 站长明确：不是只给华为/比亚迪/奶茶品牌做 SEO，而是**已收录与未来收录的每个页面**
+// 都要专属 SEO，并让 Copilot/Gemini/ChatGPT 能推荐本站。
+// 三层强制：① gen-ai-seo.mjs 扫描全部页面补齐缺项；② 本段断言写死；③ CI 跑 verify。
+// 事实边界：Google 已公开不读 llms.txt；本段只保证「机器可读、爬虫可进」，不承诺排名。
+section('13b-4. 全站 SEO 生成器 + AI 爬虫可见性');
+{
+  // ① 生成器存在且 --check 全绿 —— 新页面忘了 SEO 会在这里判红
+  check(exists('scripts/gen-ai-seo.mjs'),
+    'SEO 生成器 scripts/gen-ai-seo.mjs 存在（新页面可一键补齐专属 SEO）',
+    '没有生成器 → 新增页面必然漏 SEO，回到「只顾几个品牌页」的老路');
+  let seoGenCheck = null;
+  try {
+    const r = spawnSync(process.execPath, [join(ROOT, 'scripts/gen-ai-seo.mjs'), '--check'],
+      { cwd: ROOT, encoding: 'utf8', timeout: 30000 });
+    seoGenCheck = { status: r.status, out: (r.stdout || '') + (r.stderr || '') };
+  } catch (e) { seoGenCheck = { status: -1, out: String(e) }; }
+  check(seoGenCheck && seoGenCheck.status === 0,
+    '全站可索引页核心 SEO 齐全（gen-ai-seo --check，含未来新增页）',
+    '缺项：' + (seoGenCheck ? seoGenCheck.out.slice(0, 400) : '无法执行生成器'));
+
+  // ② llms.txt 存在、结构合规、链接都是站内真实 URL（防止写死失效链接）
+  if (exists('llms.txt')) {
+    const ll = read('llms.txt');
+    const urls = [...ll.matchAll(/\((https:\/\/dujeongil-galaxy\.github\.io\/shuangxiugou\/[^)]+)\)/g)]
+      .map((m) => m[1]);
+    const badUrls = urls.filter((u) => {
+      const rel = u.replace('https://dujeongil-galaxy.github.io/shuangxiugou/', '').replace(/\/$/, '');
+      return rel && !exists(rel) && !rel.includes('<');
+    });
+    check(/^# 双休购 ShuangxiuGo/m.test(ll) && /^> /m.test(ll)
+      && /^## 核心页面/m.test(ll) && /^## Optional/m.test(ll)
+      && urls.length >= 10,
+      'llms.txt 结构合规（H1 + 摘要 + 核心页面 + Optional + ≥10 条链接）',
+      'llms.txt 缺结构或链接太少 → AI 拿不到站点精选入口');
+    check(badUrls.length === 0,
+      'llms.txt 站内链接全部指向真实存在的文件',
+      '失效链接：' + badUrls.slice(0, 5).join(', '));
+    check(/Google 已公开表示不使用 llms\.txt/.test(ll)
+      && /不承诺|取决于公开索引/.test(ll),
+      'llms.txt 诚实标注作用边界（不谎称「保证被 AI 推荐」）',
+      '夸大 llms.txt 效果 → 误导站长，且与实际抓取行为不符');
+  } else {
+    err('llms.txt 不存在', 'AI 爬虫缺少站点精选入口，Copilot/Gemini/ChatGPT 更难找到本站');
+  }
+
+  // ③ robots.txt 显式放行主流 AI 爬虫，同时继续屏蔽 notes.html
+  if (exists('robots.txt')) {
+    const rb = read('robots.txt');
+    const bots = ['GPTBot', 'OAI-SearchBot', 'ChatGPT-User', 'Bingbot', 'Googlebot',
+      'Google-Extended', 'ClaudeBot', 'PerplexityBot', 'Applebot-Extended',
+      'Amazonbot', 'CCBot', 'meta-externalagent'];
+    const notAllowed = bots.filter((b) => !new RegExp('User-agent:\\s*' + b + '\\s*\\nAllow:\\s*/').test(rb));
+    check(notAllowed.length === 0,
+      'robots.txt 显式放行 ' + bots.length + ' 个 AI/搜索爬虫',
+      '未放行：' + notAllowed.join(', ') + ' → 对应 AI 无法抓取本站');
+    check(/^User-agent: \*\s*\nAllow: \/\s*\nDisallow: \/notes\.html/m.test(rb),
+      'robots.txt 默认放行仍保留 notes.html 屏蔽',
+      'notes.html 被放行 → 加密笔记页暴露给爬虫');
+  } else {
+    err('robots.txt 不存在', '爬虫无抓取规则');
+  }
+}
+
 // 品牌页 title 必须含中文品牌关键词（纯英文名不利于中文搜索「华为/比亚迪/奶茶品牌」）
 {
   const huawei = read('brand/huawei.html');
@@ -6598,8 +6662,8 @@ section('21c. 首页滑到底部按钮');
       && /取消将被自动拉黑/.test(read('header-menu-patch.js'))
       && /重新 Star 也不(再)?(恢复|开放)/.test(la),
       '取消 Star 拉黑：首页 OAuth 回调写 ever_starred→blacklisted，AI 页明确「重新 Star 不再恢复」');
-    check(/ipNotice/.test(la) && /visitorIp/.test(la) && /恶意消耗/.test(la) && /个人敏感信息/.test(la),
-      '安全公告：显示访问 IP + 勿发敏感信息 + 恶意消耗封禁（文案优化，非逐字照抄）');
+    check(/ipNotice/.test(la) && /visitorIp/.test(la) && /恶意消耗|异常高频/.test(la) && /个人敏感信息/.test(la),
+      '安全公告：显示访问 IP + 勿发敏感信息 + 高频限流/取消授权提示（措辞与真实能力一致，不谎称封禁）');
     check(/IPIFY_ENDPOINT = 'https:\/\/api\.ipify\.org\?format=json'/.test(la)
       && /async function resolveVisitorIp/.test(la)
       && /capsCache && capsCache\.visitorIp/.test(la)
@@ -6664,11 +6728,14 @@ section('21c. 首页滑到底部按钮');
       && /image_url: \{ url: a\.dataUrl \}/.test(la) && /partsHasImage/.test(la),
       '§21u 附件封装为 OpenAI 兼容 parts（text / image_url data URL），含图片判定',
       '附件退化成只发文件名 → AI 根本看不到内容');
-    check(/Qwen\/Qwen2\.5-VL-7B-Instruct/.test(la)
+    // 2026-11-21：硅基流动下线 Qwen2.5-VL-7B-Instruct（400 Model does not exist），
+    // 换 Qwen3-VL-8B-Instruct（实测文本/带图均 200）。写死新名，防止回退到失效模型。
+    check(/Qwen\/Qwen3-VL-8B-Instruct/.test(la)
+      && !/model:\s*"Qwen\/Qwen2\.5-VL/.test(la)
       && /cfSupportsVision/.test(la) && /\/api\/capabilities/.test(la)
       && /不支持图片\/文档识别/.test(la),
-      '§21u 国内线路切视觉模型；CF 线路先探测能力，老 Worker 明确提示换线路（不静默失败）',
-      '国内仍是纯文本模型 → 传了图也读不了；CF 不探测 → 图片被吞且无提示');
+      '§21u 国内线路切在册视觉模型 Qwen3-VL-8B；CF 线路先探测能力，老 Worker 明确提示换线路（不静默失败）',
+      '模型名被硅基流动下线 → 国内线路 400；CF 不探测 → 图片被吞且无提示');
     check(/只在你的浏览器里解析/.test(la) && /不上传到任何第三方解析服务/.test(la),
       '§21u 隐私文案明示本地解析、附件随提问发给所选线路',
       '上传件知情权缺失 → 隐私合规风险');
@@ -8980,7 +9047,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/z-index:9995/.test(ad32) && /padding:7px 0 14px/.test(ad32)
     && /background: rgba\(24, 20, 16, 0\.22\)/.test(dyp32)
     && /backdrop-filter: none/.test(dyp32)
-    && /douyin-prompt\.css\?v=24/.test(idx32),
+    && /douyin-prompt\.css\?v=25/.test(idx32),
     '§32d 广告位层级 9995 / 底部留白 14px；.dyp 遮罩减淡去模糊，弹窗引流功能原样保留');
 
   check(/var SEARCH_DURATION = 6000/.test(ff32)
@@ -10164,10 +10231,32 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
       && /if \(seChoice !== 'yes'\) jumpToBingGuide\(\)/.test(dpCode36x),
     '§36x-2 落点按选择走：「是的」关闭后停原地，选「不是」才滚到 Bing 教程（带重试）',
     '无条件跳转 → 明明是 Bing 用户，关掉弹窗还被往下拽');
-  check(/<script defer src="\.\/douyin-prompt\.js\?v=30"><\/script>/.test(idx36x)
-    && !/douyin-prompt\.js\?v=29/.test(idx36x),
-    '§36x index.html 挂载 douyin-prompt.js?v=30（bump 缓存号）',
+  check(/<script defer src="\.\/douyin-prompt\.js\?v=31"><\/script>/.test(idx36x)
+    && !/douyin-prompt\.js\?v=30/.test(idx36x),
+    '§36x index.html 挂载 douyin-prompt.js?v=31（bump 缓存号）',
     '?v 没 bump → 线上仍跑旧脚本，改动等于没发');
+
+  // 2026-11-21 手机端「右上角 × 溢出屏幕、无法关闭」兜底：
+  // CSS 面板 max-width:100vw + × right:max(10px,safe-area) 双保险；
+  // JS open() 后调 keepCloseVisible()，用 getBoundingClientRect 实测越界则钉回视口，
+  // resize / 横竖屏切换重测。缺任一环 → 真机溢出复现。
+  const dpCss36x = read('douyin-prompt.css');
+  check(/max-width:\s*100vw/.test(dpCss36x)
+      && /right:\s*max\(10px,\s*env\(safe-area-inset-right/.test(dpCss36x),
+    '§36x-3 弹窗 CSS 双保险：面板 max-width:100vw + × right:max(10px, 安全区)',
+    '面板被横向内容撑宽到 layout viewport → × 顶出可视区，真机点不到');
+  check(/keepCloseVisible\(\)/.test(dpCode36x)
+      && /function keepCloseVisible/.test(dpCode36x)
+      && /getBoundingClientRect\(\)/.test(dpCode36x)
+      && /r\.right\s*>\s*vw/.test(dpCode36x)
+      && /x\.style\.position\s*=\s*'fixed'/.test(dpCode36x)
+      && /addEventListener\('resize',\s*keepCloseVisible\)/.test(dpCode36x),
+    '§36x-3 × 越界自愈：弹出后/resize 实测越界则 position:fixed 钉回视口右上角',
+    '无自愈 → 手机横竖屏切换或 layout viewport 撑宽后 × 溢出且无法关闭');
+  check(/<link rel="stylesheet" href="\.\/douyin-prompt\.css\?v=25">/.test(idx36x)
+    && !/douyin-prompt\.css\?v=24/.test(idx36x),
+    '§36x-3 douyin-prompt.css?v=25（CSS 也改了，必须 bump）',
+    'CSS 改了不 bump → 线上仍用旧样式，× 溢出照旧');
 
   // 2026-11-13 站长追加：「不要 15 分钟冷却，刷新首页必弹」。
   // 静态断言：源码里不得再出现任何冷却/记时间戳逻辑。

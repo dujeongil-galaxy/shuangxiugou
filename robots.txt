@@ -2,4 +2,64 @@ User-agent: *
 Allow: /
 Disallow: /notes.html
 
+# 2026-11-21：显式放行 AI / 搜索爬虫（AI 搜索可见性的最高杠杆动作）。
+# 默认 Allow: / 已覆盖，但显式列出便于审计、也防止将来误加全局 Disallow。
+# 各爬虫用途：ChatGPT 训练/搜索、Copilot 与 Bing、Gemini(Google AI)、
+# Claude、Perplexity、Apple 与 Meta 的 AI 摘取。
+User-agent: GPTBot
+Allow: /
+Disallow: /notes.html
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /notes.html
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /notes.html
+
+User-agent: Bingbot
+Allow: /
+Disallow: /notes.html
+
+User-agent: Googlebot
+Allow: /
+Disallow: /notes.html
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /notes.html
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /notes.html
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /notes.html
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /notes.html
+
+User-agent: Applebot
+Allow: /
+Disallow: /notes.html
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /notes.html
+
+User-agent: Amazonbot
+Allow: /
+Disallow: /notes.html
+
+User-agent: CCBot
+Allow: /
+Disallow: /notes.html
+
+User-agent: meta-externalagent
+Allow: /
+Disallow: /notes.html
+
 Sitemap: https://dujeongil-galaxy.github.io/shuangxiugou/sitemap.xml

@@ -390,7 +390,37 @@
     if (!box) build();
     resetSE();            // 每次弹出都从「未选择」开始（弹窗节点复用，不清会带上次的选择）
     box.classList.add('is-open');
+    keepCloseVisible();   // 2026-11-21 窄屏兜底：把 × 拉回可视区，防溢出无法关闭
     startCountdown();     // 8 秒倒计时：未到则 × 不生效
+  }
+
+  /* 2026-11-21 窄屏关闭按钮越界的运行时兜底说明：
+     真机上 layout viewport 可能被横向内容撑宽（documentElement.clientWidth > innerWidth），
+     position:absolute 的 × 顶在 panel 右侧会落到可视区外。这里在弹出后 /
+     resize / 横竖屏切换时用 getBoundingClientRect 实测，若 × 超出可视区，
+     改为 position:fixed 钉在视口右上角内侧（仍保留 8 秒锁与必选逻辑）。
+     只在真的溢出时才改，正常机型完全不干预。 */
+  function keepCloseVisible() {
+    if (!box || !box.classList.contains('is-open')) return;
+    var x = box.querySelector('.dyp__x');
+    if (!x) return;
+    // 先撤掉上一次的内联兜底，再按当前布局实测
+    x.style.position = ''; x.style.top = ''; x.style.right = ''; x.style.left = '';
+    var r = x.getBoundingClientRect();
+    var vw = window.innerWidth || document.documentElement.clientWidth;
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    // 顶/右越界（含触摸目标一半）才兜底；left 越界说明面板整体错位，交给 CSS max-width
+    if (r.right > vw - 4 || r.top < 4 || r.bottom > vh - 4) {
+      x.style.position = 'fixed';
+      x.style.top = 'max(10px, env(safe-area-inset-top, 0px))';
+      x.style.right = 'max(10px, env(safe-area-inset-right, 0px))';
+      x.style.zIndex = '100001';
+    }
+  }
+  // 旋转 / 窗口缩放后重新测量，防止转屏后 × 被顶出去
+  window.addEventListener('resize', keepCloseVisible);
+  if (window.screen && window.screen.orientation) {
+    if (window.screen.orientation.addEventListener) window.screen.orientation.addEventListener('change', keepCloseVisible);
   }
 
   // 确认块复位：清选择、清回执、清提醒态

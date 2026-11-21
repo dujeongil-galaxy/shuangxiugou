@@ -51,6 +51,10 @@
   top: 50%;
   transform: translate(-50%, -50%);
   width: min(92vw, 420px);
+  /* 2026-11-21 窄屏 × 溢出兜底：面板宽度永不超过可视视口。
+     真机上若父容器被横向内容撑宽到 980px，100% 会把 × 顶出屏幕；
+     max-width 钳到 100vw 保证按钮始终在可视区。 */
+  max-width: 100vw;
   max-height: 86vh;
   overflow-y: auto;
   padding: 26px 24px 20px;
@@ -66,11 +70,17 @@
   to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
-/* 关闭按钮：避开面板右上角，44px 触摸目标 */
+/* 关闭按钮：避开面板右上角，44px 触摸目标
+   2026-11-21 手机实测「右上角 × 溢出屏幕、无法关闭」兜底：
+   ① right 取 max(10px, 安全区) —— 刘海/圆角屏也不被切掉；
+   ② 面板加 overflow:clip 时 × 用 position:sticky 思路不现实，改在 JS 里
+      弹出后强制把 × 拉回可视区（见 douyin-prompt.js 的 keepCloseVisible）。 */
 .dyp__x {
   position: absolute;
   top: 10px;
-  right: 10px;
+  /* 安全区：env(safe-area-inset-right) 在有刘海/圆角的机型上 >0，
+     取 max 保证按钮离右边缘至少 10px 且不进安全区。 */
+  right: max(10px, env(safe-area-inset-right, 0px));
   width: 32px;
   height: 32px;
   padding: 0;
