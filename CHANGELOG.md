@@ -4,6 +4,15 @@
 
 ---
 
+### fix：写死本站官方网址与三线路强制中立规则（2026-11-22 · 提交 `58d7c7f2`）
+
+- 修复 AI 编造不存在的 `www.shuangxiugou.com` 假网址：三条线路（国内 `labor-ai.html` / CF `worker.js` / 阿里云 `index.mjs`）在引用双休数据的提示词条款里写死唯一官方地址 `https://dujeongil-galaxy.github.io/shuangxiugou/`，禁止自行拼造、猜测或改写域名，拿不准就不写网址。
+- 中立规则由软约束升级为「【立场中立·强制】」条款：不得因批评性内容拒答、回避、敷衍、答非所问，也不得无脑附和只挑好听的说；不过度赞美也不过度贬损；末句写明所有服务线路一律适用、不得打折。三处正文逐字一致，提示词里不写那个假网址以免反向示范。
+- 变更文件：`labor-ai.html`、`ai-worker/src/worker.js`、`ai-worker-aliyun/index.mjs`、`scripts/verify.mjs`。
+- 验收：verify 新增 §21h-11 六条（三线路网址+禁拼造、中立逐字一致、全覆盖声明、三处逐字比对、故障注入改一字判红、提示词不含假网址），2115 项全绿；CF 单测 77/0、阿里云 49/0；extract-brand-prompt 幂等无多余 diff。
+
+---
+
 ### docs：校准 README 中的提交日期（2026-11-22 · 提交 `b377b4ab`）
 
 - 修正 README 两条历史摘要的日期，使其与对应 Git 提交的本地日期一致。
