@@ -633,7 +633,7 @@ async function renderIpNotice(){
   box.setAttribute('data-ip-source', res.source);
   var ip = res.ip;
   box.innerHTML = '你当前访问的 IP 地址是 <b>' + ip + '</b>。请勿向 AI 发送身份证号、住址等个人敏感信息；'
-    + '本功能仅限合理使用，<span class="ip-warn">请求过于频繁时请稍等片刻再试，稍后即可恢复</span>。';
+    + '本功能仅限合理使用，<span class="ip-warn">请求过于频繁将触发短时限流，请间隔片刻再试</span>。';
 }
 /* 无论 CF 能力探测成功/失败/超时，都必须渲染公告——不能让安全提示卡在「正在获取」。 */
 cfSupportsVision().then(renderIpNotice, renderIpNotice);
@@ -779,9 +779,9 @@ async function askCF(question, history, parts){
   if (!res.ok){
     var t = await res.text();
     var msg = t.slice(0,200);
-    // 限流/临时不可用时统一给温和提示：不回显内部错误码，只说等待——
-    // 超限是等一会儿就恢复，不是永久惩罚。其余状态码保留原文便于排查。
-    if (res.status === 429) msg = "请求较频繁，请稍等片刻再试，马上就能恢复。";
+    // 限流/临时不可用时统一给温和提示：不回显内部错误码，说明是短时限流——
+    // 超限只是短暂等待，不是永久惩罚。其余状态码保留原文便于排查。
+    if (res.status === 429) msg = "请求较频繁，已触发短时限流，请间隔片刻再试。";
     if (res.status === 403) msg = "本次请求暂时无法完成，请稍等片刻再试或切换线路。";
     throw new Error("Cloudflare 线路返回 " + res.status + "：" + msg);
   }
