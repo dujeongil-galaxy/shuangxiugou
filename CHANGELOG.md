@@ -4,6 +4,17 @@
 
 ---
 
+### fix：国内模型换 Qwen3-VL + 手机弹窗 X 溢出兜底 + 全站 SEO 生成器/AI 爬虫放行（2026-11-21 · 提交 `9c722d49`）
+
+- 起因：站长反馈三个报错/新 bug——① CF 线路提示「当前版本不支持图片/文档识别」；② 国内线路 400；③ 手机端弹窗右上角 × 溢出屏幕无法关闭。同时问「后台能否看见消耗 IP / Star 取消能否检测」，并要求把 SEO 从「只顾华为/比亚迪/奶茶品牌」扩到全站已收录与未来收录页面，让 Copilot/Gemini/ChatGPT 能推荐。
+- 实测根因：② 硅基流动已下线 `Qwen/Qwen2.5-VL-7B-Instruct`（返回 `400 Model does not exist`），改用 `Qwen/Qwen3-VL-8B-Instruct`——真 key 实测文本 200、40×40 带图返回「红色」200；① 线上 Worker 的 `/api/capabilities` 返回 **405**（部署仍是旧版，没有该端点），本地新版 `worker.js` 已写好且 test-ai-worker 44/0 通过，**需站长本人 `npx wrangler deploy` 才会生效**（本机无 CF 凭据，不能代部署）。
+- 手机弹窗 × 兜底：真机 layout viewport 被横向内容撑宽时 `position:absolute` 的 × 会落到可视区外。CSS 面板 `max-width:100vw` + × `right:max(10px, env(safe-area-inset-right))`；JS `keepCloseVisible()` 在 open / resize / 横竖屏切换时用 `getBoundingClientRect` 实测，越界则临时 `position:fixed` 钉回视口右上角（不改 8 秒锁与必选逻辑）。`douyin-prompt.js?v=30→31`、`.css?v=24→25`。
+- 诚实措辞：安全公告原写「封禁该访问」，真实能力只有每 IP 20 次/小时内存滑窗限流，改为「异常高频触发限流，并可能被取消后续 AI 授权」；verify 断言同步，避免文案超过实现。
+- 全站 SEO（不再是几个品牌页）：新增 `scripts/gen-ai-seo.mjs` 扫根目录 + brand/ 共 205 页，只处理核心五要素缺项页（品牌页 190 个已齐、不改动），本次补齐 13 个根页的 og/twitter/canonical/JSON-LD；`<!-- SXG-AISEO:BEGIN/END -->` 包裹保证幂等，`--check` 模式给 CI 用，将来新增页面一跑即获专属 SEO。新建 `llms.txt`（H1 + 摘要 + 核心页 + Optional 边界声明，明确 Google 不读它、不承诺排名）；`robots.txt` 显式放行 12 个 AI/搜索爬虫（GPTBot/OAI-SearchBot/Bingbot/Google-Extended/ClaudeBot/PerplexityBot 等），继续屏蔽 notes.html。
+- 验证：verify §13b-4 + §21u + §36x-3 等新断言全绿；故障注入 ×4（旧模型名 / llms 结构 / robots 放行 / 缓存号）全判红并恢复；`test-*.cjs` **57 组全过**；无头 Edge 多视口实测 × 在 390/980 宽均在屏内可点。
+
+---
+
 ### feat：SEO 规则写死 + 奶茶品牌月休聚合页（2026-11-21 · 提交 `148c0e63`）
 
 - 起因：站长确认 Bing 已收录本站（截图显示搜「双休购」能看到官网与知识面板摘要），要求把 SEO 规则写死、并让搜「华为/比亚迪/奶茶品牌」能找到本站。实测泛词搜索本站完全不出现，全是第三方新闻。
