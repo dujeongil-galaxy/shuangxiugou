@@ -4,6 +4,15 @@
 
 ---
 
+### feat：Worker 加 IP 黑名单，可在 Cloudflare 边缘拦指定 IP（2026-11-21 · 提交 `2ddad306`）
+
+- **需求**：站点维护者要能对已确认滥用的 IP 真正拦截，而不是只有警告 + 粗限流。
+- **实现**：`src/worker.js` 的 `fetch` 最前置加 `isBlockedIp()` 检查——命中返回 `403 {"error":"ip-blocked"}`，早于 OAuth / CORS / 能力探测 / AI 调用，不消耗 neurons、不产生 `ai_call` 计数；写 `event=ip_blocked` 日志。
+- **两种来源取并集**：① 源码静态数组 `BLOCKED_IPS`（改后需 deploy）；② Worker secret `BLOCKED_IPS`（逗号分隔，`wrangler secret put/delete` 即时生效免部署）。只认连接层 `CF-Connecting-IP`，精确匹配，不支持 CIDR；VPN/NAT 共用出口会连坐，封前需确认。
+- **为何不靠控制台 WAF**：Worker 在 `workers.dev` 无自有域名（zone），WAF IP 拦截规则配不上。
+- **验证**：Worker 单测新增 7 项（命中 403 / 不烧 neurons / 未命中 200 / 空名单不误拦 / 能力探测也拦），共 51/0；线上受控实测——临时封本机出口 IP → 真实请求 403 → 删 secret 后恢复 200，确认 secret 已清、`vision:true` 正常。dry-run 打包通过；verify §21g 新增 3 条断言并做故障注入判红。
+- **文档**：`ai-worker/README.md` 补「拦指定 IP」章节（两种维护方式 + 边界）。
+
 ### feat：Worker 加结构化日志，可按 IP 溯源滥用（2026-11-21 · 提交 `99ce0051`）
 
 - **背景**：站长追问「后台真能查到哪个 IP 在滥用吗」。核实线上代码后诚实结论：原限流只是内存滑窗（每 IP 20 次/小时、实例间不共享、重启清零），超限仅回 429、不记 IP、不落库——**事后查不到**。
