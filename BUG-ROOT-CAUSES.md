@@ -9,6 +9,15 @@
 
 ---
 
+### 近期 bug 根因（fix）：国内线路 400 / 手机弹窗 × 溢出 / CF 图片报错——三个独立根因一次修（2026-11-21 · 提交 `9c722d4`）
+
+- **现象**：站长同一轮反馈三处问题——① Cloudflare 线路带图提问提示「当前版本不支持图片/文档识别（站长尚未部署新版 Worker）」；② 国内线路返回错误 400；③ 手机端首页弹窗右上角 × 溢出屏幕、实测无法关闭。并追问「后台真能看见哪个 IP 在疯狂消耗吗 / Star 之后取消能否检测出来」。
+- **根因**：① **不是代码 bug 而是部署滞后**——线上 Worker 的 `GET /api/capabilities` 返回 **405 method-not-allowed**，说明跑的是旧版（没有该端点）；本地 `ai-worker/src/worker.js` 已有新版（能力探测 + 带图切 llama-vision），但没部署。② 硅基流动已下线模型 `Qwen/Qwen2.5-VL-7B-Instruct`，真 key 调 `/v1/chat/completions` 返回 `400 {"code":20012,"message":"Model does not exist"}`；列模型发现视觉档已换成 `Qwen/Qwen3-VL-*`。③ 真机上横向内容可能把 layout viewport 撑宽（`documentElement.clientWidth > innerWidth`），`.dyp__x` 是 `position:absolute` 钉在 `.dyp__panel` 右侧，于是落到可视区外；headless 390 宽无横向溢出，所以本地没复现。
+- **关于两个追问（诚实结论）**：IP——服务端从连接层拿 `CF-Connecting-IP`（前端不可伪造），但**只能看见、且只是内存滑窗每 IP 20 次/小时的粗限流**（Worker 实例间不共享、重启清零），没有持久化封禁库，防不住换 IP / 分布的纯恶意，公告文案已从「封禁」收紧为「限流 + 可能取消授权」。Star 取消——**只有用户再次走 OAuth 授权回调时才会被检测到**（回调查当前 Star 状态 + 本地 `ever_starred` 判拉黑），平时不重新授权就检测不到；且标记在浏览器 localStorage，清缓存/换设备即失效，不是服务端强制。
+- **修法**：② 换 `Qwen/Qwen3-VL-8B-Instruct`（真 key 实测纯文本 200、40×40 图返回「红色」200）并把 verify §21u 写死新名、禁旧名；③ CSS 加 `.dyp__panel{max-width:100vw}` + `× right:max(10px,env(safe-area-inset-right))`，JS 加 `keepCloseVisible()` 在 open/resize/转屏时用 `getBoundingClientRect` 实测、越界则临时 `position:fixed` 钉回视口（8 秒锁与必选逻辑不变），js `?v=30→31` / css `?v=24→25`；① 无法代部署（本机无 CF 凭据），本地新版 worker 已 test-ai-worker 44/0 通过，留给站长一条命令 `npx wrangler deploy`。同批把安全公告措辞改到与真实能力一致。
+- **验证**：verify 全绿；故障注入 ×4（旧模型名 / llms 结构 / robots 放行 / 缓存号）全判红并恢复；`test-*.cjs` 57 组全过；无头 Edge 在 390/980 宽实测 × 均在屏内可点。同时上全站 SEO 生成器（205 页扫描、13 页补齐）与 AI 爬虫放行。
+- **教训**：① 依赖服务端能力的降级提示必须区分「代码没写」与「写了没部署」——后者只能靠真线上端点探测才能发现，本地测试永远绿。② 前端模型名不是永久资产，供应商会下线，CI 里写死「禁用旧名」比文档提醒有效。③ 移动端点不准的控件别只测 headless 标准宽度——真机的横向溢出会改变绝对定位的参考系，必须加运行时自愈。
+
 ### 近期 bug 根因（fix）：弹窗未选搜索引擎时点 × 仍能关——「提醒一次后放行」不是真的锁死（2026-11-21 · 提交 `eec576a8`）
 
 - **现象**：站长 2026-11-21 实测反馈「这个没锁死，第二次或者多按继续关闭按钮，就可以直接关闭」。上一版（提交 `4edfab2d`）的逻辑是没勾选时第一次点 × 只提醒、第二次就放行——访客连点两下就能绕过搜索引擎确认块，问句形同虚设。

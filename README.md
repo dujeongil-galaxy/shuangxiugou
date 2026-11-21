@@ -220,10 +220,11 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 ### 近期 bug 根因（摘要）
 
-**38 条完整根因（现象 / 根因 / 修法 / 验证 / 真实提交哈希）见 [BUG-ROOT-CAUSES.md](./BUG-ROOT-CAUSES.md)**，按时间倒序；README 只留最近三条。
+**39 条完整根因（现象 / 根因 / 修法 / 验证 / 真实提交哈希）见 [BUG-ROOT-CAUSES.md](./BUG-ROOT-CAUSES.md)**，按时间倒序；README 只留最近三条。
 
 **修 bug 三处留痕（§21n 机器反查）**：`README.md` 本节摘要、`BUG-ROOT-CAUSES.md` 新增章节、`最近更新.md` 顶部条目，都要带真实提交哈希与 commit 时间；verify 按 `git log` 最近一次 `fix:` 提交反查，缺一处判红。最近三条：
 
+- **2026-11-21 · 提交 `9c722d4`**（fix）：站长反馈国内线路 400 + 手机弹窗 × 溢出 + CF 图片报错。根因三条：① 硅基流动下线 `Qwen2.5-VL-7B-Instruct`（400 `Model does not exist`），换 `Qwen3-VL-8B-Instruct`（真 key 实测文本/带图均 200）；② CF 线上 Worker 未重新部署（`/api/capabilities` 405），本地新版已就绪、待站长 `wrangler deploy`；③ 真机 layout viewport 被撑宽时绝对定位的 × 落到屏外。修法：模型名换版、面板 `max-width:100vw` + × `right:max(10px,安全区)` + JS `keepCloseVisible()` 越界改 fixed 钉回（js v31/css v25）、安全公告改为不超实现的措辞；同批上全站 SEO 生成器与 AI 爬虫放行。verify 全绿、故障注入 ×4 判红、57 组测试全过、多视口实测 × 可点。
 - **2026-11-21 · 提交 `eec576a8`**（fix）：站长实测「没锁死，第二次或多按继续关闭按钮就能关」——上一版 `!seChoice && !seNudged` 的判据里，`seNudged` 第一次点 × 就被置 true，第二次直接放行，等于提醒一次就能绕过。改为 `if (!seChoice)` 永远不放行，删净 `seNudged`；`douyin-prompt.js?v=30` 破缓存。verify §36x-2 收紧 + 故障注入 ×2 判红；无头 Edge 实测连点 5 次不关、选「不是」滚到 Bing 教程、选「是的」停原地。
 - **2026-11-20 · 提交 `4edfab2d`**（fix）：首页弹窗新加的「默认搜索引擎是 Bing 必应吗」确认块被站长当场挑出三处毛病——没勾任何一项也能关弹窗、回执是口语稿直译、勾「是的」关闭后页面还往下跑。改法：未选择时第一次点 × 只轻抖确认块并提示先选、不关闭，第二次才放行（视为不确定，仍带去教程）；回执重写为「好，那你在 Bing 里搜「双休购」就能找到我们，慢慢逛。」与「没关系，关掉后我把设置步骤摆出来，照着点两下就行。」；关闭落点按选择分流，`seChoice !== 'yes'` 才滚到页脚 Bing 教程，选「是的」停原地。附 `resetSE()` 每次弹出复位、`.dyp__se--nudge` 抖动；js `?v=29` / css `?v=24`，verify §36x-2 四条断言 + 全量 2005 项全绿，jsdom 三场景实测 PASS。
 - **2026-11-20 · 提交 `ef3bb48b`**（fix）：拿站长 360 的真实诊断数据与本机真 Chromium 逐项比对，UA / platform / vendor / window.external / documentMode / window.chrome / userAgentData.brands **七项全部一致**——彻底证明新版 360 在 JS 层面无法与真 Chrome 区分，再补特征就误伤国际访客，这是浏览器机制的天花板。按站长选定方案改成「一次开启永久生效」：`?force-domestic=1` 写 localStorage（永久）+ sessionStorage（兼容），`=0` 双清，旧会话标记自动迁移；诊断页加「永久显示 / 撤销」双按钮与「按指纹无法区分」实话说明。全站 ua-guard v11→v12；verify §38c-2 扩到 6 条、四组故障注入判红，CDP 六步实证持久化全链路（开启→重访仍弹→撤销→重访不弹），全量 1980 项全绿。
