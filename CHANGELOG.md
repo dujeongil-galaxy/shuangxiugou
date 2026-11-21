@@ -4,6 +4,17 @@
 
 ---
 
+### feat：Star 状态实时验签——取消 Star 后附件自动失效（2026-11-21 · 提交 `b8a7b850`）
+
+- 背景：原先 Star 状态是首页 OAuth 那一刻的 localStorage 快照，取消 Star 不自动失效、且可手改伪造；Worker 里的 `/api/check-star` 还是空壳。
+- 方案①（加密令牌自包含，不需要 KV）：OAuth 回调把 access_token 用 `env.STAR_SESSION_SECRET` 派生 AES-GCM 密钥加密成令牌（30 天有效），随重定向带回存 `localStorage.sxg_star_session`；`labor-ai.html` 打开时调 `POST /api/check-star`，服务端解密令牌实时查 GitHub `user/starred`（204=Star/404=取消）。
+- 只有明确 `starred`/`not-starred` 才更新快照并重渲染（取消 Star → 附件立刻锁死）；未配密钥/无效或过期令牌/上游故障全部安全降级保留快照，不误锁用户。首页补丁脚本 v16。
+- 踩坑：SHA-256 派生密钥那步最初漏写，原始字符串当 AES key 报 `Invalid key length`，单测抓到；OPTIONS 预检在 check-star 路由前命中，补了显式 204 短路。
+- 验证：verify +7 断言全绿 2095；CF Worker 单测 66/0（含取消 Star 后同令牌立刻变 false）、阿里云 49/0；故障注入 ×4 判红；无头浏览器三态实测（取消后附件锁死/仍 Star 开放/降级保留快照）。
+- **部署待办（用户操作）**：设置 `npx wrangler secret put STAR_SESSION_SECRET` + `npx wrangler deploy`，之后用户重新登录一次才拿到令牌。
+
+---
+
 ### fix：Google 搜索引导句改为红色加粗突出显示（2026-11-21 · 提交 `02265a6c`）
 
 - 站长截图指出弹窗选「不是」回执里的 Google 引导句不够醒目；整段回执原本是 `textContent` 纯文本，无法局部加样式。
