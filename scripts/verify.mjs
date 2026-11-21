@@ -3089,6 +3089,100 @@ if (exists(wfDir)) {
   }
 }
 
+// ---------- 13b-3. SEO 规则写死（2026-11-21 站长指令） ----------
+//
+// 背景：站长确认 Bing 已收录本站（搜索「双休购」能看到品牌评级摘要），
+// 要求把「每个可索引页必须有完整 SEO 三要素 + 品牌页 100% 进 sitemap」
+// 写死成机器校验，防止以后有人改页面时漏掉导致收录退化。
+// 这类规则不能只写文档 —— 必须脚本 + 断言 + CI 三层强制。
+section('13b-3. SEO 规则写死（三要素 + 品牌页全覆盖）');
+
+// 对外可索引页：这些页是给搜索引擎看的，必须四要素齐全。
+// 排除：noindex 的存档/工具页（sponsor/usdt-guide/ua-check/remind-original/
+// discussion-closed/404）、内部测试页（_sheet/_logo-fetch/archive）、Google 验证文件。
+const SEO_INDEXABLE = [
+  'index.html', 'labor-ai.html', 'qq-nainai.html', 'success-stories.html',
+  'why-shuangxiugou.html', 'projects.html', 'brand/mixue.html', 'brand/huawei.html', 'brand/byd.html',
+];
+{
+  const missing = [];
+  for (const pg of SEO_INDEXABLE) {
+    if (!exists(pg)) { missing.push(pg + '(缺文件)'); continue; }
+    const h = read(pg);
+    const bad = [];
+    if (!/<title>[^<]{5,}<\/title>/.test(h)) bad.push('title');
+    if (!/name="description"\s+content="[^"]{20,}"/.test(h)
+      && !/content="[^"]{20,}"\s+name="description"/.test(h)) bad.push('description');
+    if (!/property="og:title"/.test(h)) bad.push('og:title');
+    if (!/rel="canonical"[^>]*href="https:\/\/dujeongil-galaxy\.github\.io/.test(h)) bad.push('canonical');
+    if (bad.length) missing.push(pg + '(' + bad.join(',') + ')');
+  }
+  check(missing.length === 0,
+    `SEO 写死：${SEO_INDEXABLE.length} 个对外页 title/description/og/canonical 齐全`,
+    missing.length ? '缺项：' + missing.join(' / ') : '');
+}
+
+// 190 个品牌页必须 100% 有 SEO 三要素（抽查过的历史结论固化为断言）
+{
+  const brandPages = exists('brand') ? readdirSync(join(ROOT, 'brand')).filter((f) => f.endsWith('.html')) : [];
+  check(brandPages.length >= 180, `品牌页数量 ${brandPages.length}（≥180）`);
+  const bad = [];
+  for (const pg of brandPages) {
+    const h = read(join('brand', pg));
+    if (!/<title>[^<]{5,}<\/title>/.test(h) || !/name="description"/.test(h)
+      || !/property="og:title"/.test(h) || !/application\/ld\+json/.test(h)) bad.push(pg);
+  }
+  check(bad.length === 0,
+    `SEO 写死：全部 ${brandPages.length} 个品牌页含 title/description/og/结构化数据`,
+    bad.length ? '缺项页：' + bad.slice(0, 8).join(', ') : '');
+}
+
+// sitemap 必须收录全部品牌页（否则爬虫发现不了品牌详情页）
+{
+  const sm = exists('sitemap.xml') ? read('sitemap.xml') : '';
+  const brandPages = readdirSync(join(ROOT, 'brand')).filter((f) => f.endsWith('.html'));
+  const notIn = brandPages.filter((pg) => !sm.includes('brand/' + pg));
+  check(notIn.length === 0,
+    `SEO 写死：全部 ${brandPages.length} 个品牌页都在 sitemap.xml`,
+    notIn.length ? '未收录：' + notIn.slice(0, 8).join(', ') : '');
+}
+
+// 奶茶聚合页：承载「奶茶品牌月休」泛关键词，内链到各品牌页（SEO 长尾入口）
+{
+  check(/href="\.\/tea-rest-board\.html"/.test(read('projects.html')),
+    'SEO 写死：同类项目导航页有奶茶聚合专题的内链入口');
+  check(exists('tea-rest-board.html'), '奶茶品牌月休对照聚合页存在');
+  const tb = read('tea-rest-board.html');
+  check(/<title>[^<]*奶茶[^<]*月休[^<]*<\/title>/.test(tb)
+    && /name="description"[^>]*奶茶/.test(tb)
+    && /property="og:title"/.test(tb)
+    && /rel="canonical"/.test(tb)
+    && /application\/ld\+json/.test(tb),
+    'SEO 写死：奶茶聚合页有完整三要素 + 结构化数据');
+  const teaBrands = ['mixue', 'chabaidao', 'chagee', 'hushangayi', 'heytea', 'luckin', 'cotti', 'yidiandian', 'molina', 'bingliw'];
+  const noLink = teaBrands.filter((b) => !tb.includes('brand/' + b + '.html'));
+  check(noLink.length === 0 && (tb.match(/<tr>/g) || []).length >= 10,
+    '奶茶聚合页内链 10 个品牌页 + 表格 ≥10 行',
+    noLink.length ? '缺内链：' + noLink.join(', ') : '');
+  check(/site|data|sitemap/.test(read('sitemap.xml')) && read('sitemap.xml').includes('tea-rest-board.html'),
+    '奶茶聚合页已提交到 sitemap.xml');
+}
+
+// 品牌页 title 必须含中文品牌关键词（纯英文名不利于中文搜索「华为/比亚迪/奶茶品牌」）
+{
+  const huawei = read('brand/huawei.html');
+  const byd = read('brand/byd.html');
+  const teaPages = ['brand/mixue.html', 'brand/chabaidao.html', 'brand/heytea.html'];
+  check(/<title>[^<]*华为[^<]*<\/title>/.test(huawei)
+    && /<title>[^<]*比亚迪|BEYOND|BYD[^<]*<\/title>/.test(byd)
+    && teaPages.every((p) => {
+      const t = read(p).match(/<title>([^<]+)<\/title>/)?.[1] ?? '';
+      return t.length > 8 && /几点下班|双休|月休/.test(t);
+    }),
+    'SEO 写死：华为/比亚迪/奶茶品牌页 title 含中文关键词 + 双休/月休搜索词',
+    'title 缺中文品牌名或搜索词 → 中文搜索命中率下降');
+}
+
 // ---------- 13b-2. 事实核查页的来源必须可点击 ----------
 //
 // 背景：这个页面的价值全在「可溯源」。来源写成纯文字时，
