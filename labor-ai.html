@@ -7,12 +7,12 @@
   <!-- SEO：OG + canonical（2026-11-21 补齐）-->
   <meta property="og:type" content="article" />
   <meta property="og:title" content="劳动法小助手 · 加班费与双休权益在线查询｜双休购" />
-  <meta property="og:description" content="劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。两条线路均可直接提问；登录GitHub并Star可获取更多额度。本站不构成法律意见。" />
+  <meta property="og:description" content="劳动法小助手：在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析，也可协助撰写和优化简历。两条线路均可直接提问；登录GitHub并Star可获取更多额度。本站不构成法律意见。" />
   <meta property="og:url" content="https://dujeongil-galaxy.github.io/shuangxiugou/labor-ai.html" />
   <meta property="og:image" content="https://dujeongil-galaxy.github.io/shuangxiugou/assets/og-cover.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="canonical" href="https://dujeongil-galaxy.github.io/shuangxiugou/labor-ai.html" />
-<meta name="description" content="劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。两条线路均可直接提问；登录GitHub并Star可获取更多额度。本站不构成法律意见。" />
+<meta name="description" content="劳动法小助手：在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析，也可协助撰写和优化简历。两条线路均可直接提问；登录GitHub并Star可获取更多额度。本站不构成法律意见。" />
 <style>
 :root{
   --bg:#eef1f6; --card:#ffffff; --ink:#1d2433; --sub:#5b6478;
@@ -144,7 +144,7 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
   <!-- SXG-AISEO:BEGIN -->
 <meta property="og:site_name" content="双休购 ShuangxiuGo" />
 <meta name="twitter:title" content="劳动法小助手" />
-<meta name="twitter:description" content="劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。两条线路均可直接提问；登录GitHub并Star可获取更多额度。本站不构成法律意见。" />
+<meta name="twitter:description" content="劳动法小助手：在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析，也可协助撰写和优化简历。两条线路均可直接提问；登录GitHub并Star可获取更多额度。本站不构成法律意见。" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -170,7 +170,7 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
       "@id": "https://dujeongil-galaxy.github.io/shuangxiugou/labor-ai.html#webpage",
       "url": "https://dujeongil-galaxy.github.io/shuangxiugou/labor-ai.html",
       "name": "劳动法小助手",
-      "description": "劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。两条线路均可直接提问；登录GitHub并Star可获取更多额度。本站不构成法律意见。",
+      "description": "劳动法小助手：在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析，也可协助撰写和优化简历。两条线路均可直接提问；登录GitHub并Star可获取更多额度。本站不构成法律意见。",
       "inLanguage": "zh-CN",
       "isPartOf": {
         "@id": "https://dujeongil-galaxy.github.io/shuangxiugou/#website"
@@ -190,7 +190,7 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
       <path d="M24 13 V34 M15 19 H33 M15 19 L11 28 H19 Z M33 19 L29 28 H37 Z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <h1>劳动法小助手</h1>
-    <p class="sub">欠薪 · 辞退赔偿 · 未签合同 · 工伤 · 社保</p>
+    <p class="sub">欠薪 · 辞退赔偿 · 未签合同 · 工伤 · 社保 · 简历优化</p>
   </div>
 </header>
 
@@ -211,6 +211,7 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
     <button class="chip" data-q="入职半年一直没签劳动合同，怎么办？">未签合同</button>
     <button class="chip" data-q="上班时受伤了，算工伤吗？怎么申请？">工伤</button>
     <button class="chip" data-q="公司没给我交社保，可以要求补缴吗？">社保补缴</button>
+    <button class="chip" data-q="帮我按这个岗位写一份简历，我发你我的经历">写简历</button>
   </div>
 
   <div id="chat">
@@ -272,16 +273,22 @@ var REPO_URL = "https://github.com/dujeongil-galaxy/shuangxiugou";
 var ATTACH_LIMIT = { max: 3, imageBytes: 5 * 1024 * 1024, docBytes: 10 * 1024 * 1024 };
 
 var SYSTEM_PROMPT = [
-  "你是「劳动法小助手」，熟悉中国大陆劳动法律的顾问。用户会描述劳动纠纷，可能附上工资条、劳动合同、聊天记录截图或文档。",
+  "你是「劳动法小助手」，熟悉中国大陆劳动法律的顾问，也擅长帮人写简历。用户会描述劳动纠纷（可能附上工资条、劳动合同、聊天记录截图或文档），也可能请你帮忙写或改简历。",
   "请用中文回答，并做到：",
+  "【劳动法问题】",
   "1. 先判断属于哪类争议（欠薪/违法解除/未签合同/工伤/社保等）。",
   "2. 说明可能适用的法律（《劳动合同法》《劳动法》《工伤保险条例》等），讲清条款要点，别编造条号。",
   "3. 给出具体可操作的步骤：协商→投诉（劳动监察）→劳动仲裁→诉讼的顺序、去哪里、准备哪些材料。",
   "4. 提醒关键时效，例如劳动仲裁申请一般是一年。",
   "5. 立场站在劳动者一侧，语气温和，但不承诺结果。",
   "6. 若用户附了附件，先说明你从附件中读到了哪些关键信息（金额、日期、岗位等），再据此分析；看不清的内容如实说明，不要臆测。",
-  "7. 结尾提醒：以上仅供参考，不替代专业法律意见，复杂情况咨询律师或拨打12333。",
-  "与劳动法无关的问题，礼貌拒绝并拉回主题。"
+  "【简历问题】",
+  "7. 用户要写或改简历时正常帮忙：先问清目标岗位、工作年限、教育与证书；信息不全时先给可用的初稿并列出待补项，不要反复追问才肯动笔。",
+  "8. 只使用用户明确提供的信息，绝不编造公司、职位、时间、学历或业绩数字；不确定处标注「待确认」让用户自己核对。",
+  "9. 可按目标岗位调整重点、润色表述、给中英文版本与排版建议；涉及劳动权益的表述（工作年限、离职原因、竞业限制）结合劳动法口径给提醒。",
+  "【收尾】",
+  "10. 劳动法类问题结尾提醒：以上仅供参考，不替代专业法律意见，复杂情况咨询律师或拨打12333。",
+  "与劳动法、职场权益、简历都无关的问题，礼貌说明服务范围并拉回主题。"
 ].join("\n");
 
 /* ===== Key 字符干扰：分段 + 位移 + 乱序，运行时还原（防君子，不防高手） ===== */
@@ -555,8 +562,8 @@ renderRoute(); // 附件变量就位后再渲染（renderRoute 内部会调 rend
 
 /* Star 状态实时复核（2026-11-21）：首页 OAuth 回调把服务端签发的加密令牌
    （localStorage.sxg_star_session）带过来，这里打开页面时用它问 Worker「现在还 Star 吗」。
-   - 服务端明确 starred / not-starred → 更新本地快照并重渲染：取消 Star 后附件立刻锁死，
-     重新 Star 后（需重新登录）也能恢复；这是 localStorage 快照做不到的。
+   - 服务端明确 starred / not-starred → 更新本地快照并重渲染：取消 Star 后附件立刻锁死；
+     若服务端 KV 留有撤销记录，即使重新 Star 也会继续返回 not-starred（权益永久失效）。
    - 无令牌 / 未配密钥 / 网络失败 / 过期 → 一律静默保留原快照，不打断使用、不弹提示。
    令牌是加密的，前端解不开也改不了（改了验签失败，按无效处理）。 */
 async function verifyStarSession(){

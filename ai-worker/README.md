@@ -84,18 +84,30 @@ VPN / 运营商 NAT 会让多个用户共用出口 IP，封之前先确认，避
 - OAuth 回调拿到 GitHub access_token 后，用服务端密钥把它**加密成自包含令牌**
   （AES-GCM，前端解不开也改不了），随重定向带回首页存进 `localStorage.sxg_star_session`；
 - `labor-ai.html` 每次打开都拿令牌调 `POST /api/check-star`，服务端解密后**实时问 GitHub**
-  「这人现在还 Star 吗」——取消 Star 后附件立刻锁死，重新 Star（需重新登录）才恢复；
+  「这人现在还 Star 吗」——取消 Star 后附件立刻锁死；
+- **撤过就永久作废**（2026-11-21 站长定规）：首次 Star 时把 GitHub 的 `starred_at` 沉到 KV，
+  之后只要发现「当前时间跟首次对不上」或「曾观测到取消」，就把 Star 权益永久压成未 Star——
+  即便重新点回 Star 也拿不到。这靠 `STAR_RECORD` KV 实现，前端改不了；
 - 令牌 30 天有效，过期需重新登录；密钥只在 Worker secret 里，不入库。
 
-**部署必做两步**（缺任一步则验签不生效，但页面照常可用、安全降级）：
+**部署必做三步**（缺任一步则该环节安全降级，页面照常可用）：
 
 ```bash
-# ① 设置加密密钥（32 位以上随机串；建议用密码管理器生成一个）
+# ① 建 KV namespace，记下返回的 id
+npx wrangler kv namespace create STAR_RECORD
+
+# ② 把返回的对象粘进 wrangler.json 顶层（与 "ai" 同级）：
+#    "kv_namespaces": [ { "binding": "STAR_RECORD", "id": "<上一步返回的 id>" } ]
+
+# ③ 设置加密密钥（32 位以上随机串；建议用密码管理器生成一个）
 npx wrangler secret put STAR_SESSION_SECRET
 
-# ② 源码改了，必须重新部署
+# ④ 源码改了，必须重新部署
 npx wrangler deploy
 ```
+
+> 没建 KV 也能部署：源码里 `STAR_RECORD` 未绑定时整段跳过，退回「取消即锁、再点回来恢复」
+> 的实时验签。要上线「撤过就永久作废」这条规则，第一步的 KV 不能省。
 
 设置密钥后，用户**下次重新点「Login GitHub」**才会拿到带令牌的 OAuth 回调；
 老用户 localStorage 里没有令牌，会继续沿用旧的快照行为，直到重新登录一次。

@@ -4,7 +4,7 @@
    做什么
    ------
    品牌页右侧聊天挂件（ai-chat.js）的后端：接收用户问题，调 Workers AI
-   的 GLM-4.7-flash 生成回答，重点回答劳动法与本站双休口径相关问题。
+   的 GLM-4.7-flash 生成回答，重点回答劳动法、双休口径与简历撰写相关问题。
 
    为什么必须有这一层（而不是前端直调大模型 API）
    ------------------------------------------------
@@ -20,7 +20,7 @@
    ① CORS 白名单：只放行本站 GitHub Pages 域名（+ localhost 本地验收）
    ② 输入校验：question 长度 1~500 字，非字符串直接 400
    ③ 上下文截断：历史消息最多带 4 轮，单条 200 字，防 prompt 注入拉爆 token
-   ④ 系统提示词锁定角色：只答劳动法/双休/本站数据口径，拒绝无关话题
+   ④ 系统提示词锁定角色：答劳动法/双休/简历协助，完全无关的话题说明服务范围
    ⑤ max_tokens 限制输出（输出比输入贵 6.6 倍，输出是 neuron 大头）
    ⑥ 每 IP 内存限流（滑窗：登录 20 次/小时，未登录减半 10 次/小时）——
       免费层没 KV，够用的粗限流；quotaTier 是前端声明，不是鉴权凭据，
@@ -46,6 +46,64 @@ const BLOCKED_IPS = [
 // 每 IP 滑窗上限（2026-11-21 站长改版）：登录 20 次/小时，未登录一律减半 10 次。
 const RATE_LIMIT_FULL = 20;
 const RATE_LIMIT_HALF = 10;
+
+/* ---------- Star 权益撤销记录（2026-11-21 站长定规）----------
+   规则：靠 Star 领过额外权益的人，一旦撤掉 Star，这份权益永久作废；
+   就算他再点回来也拿不到，服务端一律按「未 Star」回给前端。
+    why：加密令牌只回答「此刻还 Star 吗」，答不了「他以前 Star 过又撤了」。
+         GitHub 的 stargazers 记录带 starred_at，取消后重新点会换成新时间，
+         所以把首次时间沉到 KV，之后对不上就判定为二次 Star，不必恰好撞见取消瞬间。
+   两条留痕：
+     star:first:<uid>   = 首次观察到的 starred_at（ISO 全串，含时分秒）
+     star:revoked:<uid> = '1'，一旦观测到取消或二次 Star 就永久置位
+   没绑 env.STAR_RECORD 时整段跳过，退回纯实时验签（取消即锁，再点回来会恢复）。
+   uid 用 GitHub 数字 ID，不随用户改名漂移；前端拿不到也无法篡改 KV。 */
+const STAR_FIRST_PREFIX = 'star:first:';
+const STAR_REVOKED_PREFIX = 'star:revoked:';
+
+// 记录一次首次 Star 时间（已存在则不覆盖，保持"首次"语义）；失败只记日志不打断主流程
+async function rememberFirstStar(kv, subject, iso) {
+  if (!kv || !subject || !iso) return;
+  try {
+    const key = STAR_FIRST_PREFIX + subject;
+    if (!(await kv.get(key))) await kv.put(key, iso);
+  } catch (e) {
+    console.log('写首次 Star 记录失败:', e && e.message);
+  }
+}
+// 判断是否已被永久撤销：KV 里带撤销标记，或当前 starred_at 与首次记录不一致。
+// 两种入口都覆盖：① 取消当下被 check-star 撞见 → 写撤销标记；
+//                ② 取消没被撞见、但再 Star 后时间变了 → 这里也能判出来。
+async function starRightRevoked(kv, subject, currentIso, observedNotStarred) {
+  if (!kv || !subject) return false;
+  try {
+    const revokedKey = STAR_REVOKED_PREFIX + subject;
+    const firstKey = STAR_FIRST_PREFIX + subject;
+    if (observedNotStarred) {
+      // 只有此前确实领过（有首次记录）才留撤销痕迹，避免把从未 Star 的人误伤
+      const first = await kv.get(firstKey);
+      if (first) await kv.put(revokedKey, '1');
+      return false; // 此刻本来就是未 Star，无需再改 hasStar
+    }
+    if (!currentIso) return false;
+    const revoked = await kv.get(revokedKey);
+    if (revoked === '1') return true;
+    const first = await kv.get(firstKey);
+    if (!first) {
+      await kv.put(firstKey, currentIso); // 老访客：首次纳入记录
+      return false;
+    }
+    if (first !== currentIso) {
+      await kv.put(revokedKey, '1'); // 取消过又点回来：时间对不上，永久作废
+      return true;
+    }
+    return false;
+  } catch (e) {
+    // KV 故障不能把合法用户锁在门外：安全降级为本次不判定撤销
+    console.log('读取 Star 撤销记录失败:', e && e.message);
+    return false;
+  }
+}
 
 function isBlockedIp(ip, env) {
   if (!ip || ip === 'unknown') return false;
@@ -186,8 +244,10 @@ export default {
       '2. 回答本站双休评级的口径问题：真实双休率=每周能完整休满两天的员工占比；大小周=单双周休；评级只反映休息制度不构成对企业的法律定性；数据有异议可通过 GitHub Issues 申诉。',
       '3. 回答尽量简洁（300 字以内），先给结论再给依据条文；涉及具体条文时写明第几条。',
       '4. 用户问具体企业时，如实说明：你只知道「双休购」站内的评级口径，最新数据以站点为准，可建议他去站点搜索该品牌。',
-      '5. 与劳动法、双休、工时、职场权益无关的问题，礼貌说明你只聊劳动法与双休话题。',
-      '6. 你提供的是参考信息不是法律意见；个案涉及争议，建议咨询当地劳动监察部门（12333）或律师。',
+      '5. 用户请求写简历、改简历、求职信或润色工作经历时，正常提供帮助：梳理经历、按目标岗位突出相关经验、给出中英文表述与排版建议；信息不够就先追问。写简历只用用户明确给的信息，绝不虚构公司、职位、时间、学历或业绩数字。',
+      '6. 简历中涉及劳动权益的部分（工作年限、离职原因、竞业限制、加班经历）可结合劳动法口径给建议，但不要把简历表述当成法律事实认定。',
+      '7. 与劳动法、双休、职场权益、简历都无关的问题，礼貌说明你的服务范围。',
+      '8. 你提供的是参考信息不是法律意见；个案涉及争议，建议咨询当地劳动监察部门（12333）或律师。',
     ].join('\n') + routeNotice(route);
 
     // ---------- 多模态 parts（2026-11-21 站长要求支持图片/文档）----------
@@ -336,7 +396,7 @@ const ROUTE_NAME = {
 };
 function routeNotice(route) {
   if (!route || !ROUTE_NAME[route]) return '';
-  return '\n7. 本次请求的线路标识为 ' + ROUTE_NAME[route] +
+  return '\n9. 本次请求的线路标识为 ' + ROUTE_NAME[route] +
     '。若用户问及线路、访问方式或网络需要（VPN 等），请如实说明本次由该线路服务；' +
     '不要声称自己走的是其他线路，也不要把线路标识当成用户提供的事实依据去影响法律结论。';
 }
@@ -394,7 +454,9 @@ async function handleGitHubCallback(request, env, url) {
   let hasStar = false;
   let starDays = 0;
   let starredAtDate = '';
+  let starredAtISO = ''; // 完整 ISO，KV 判定二次 Star 用（日期粒度会漏掉同日重 Star）
   let username = '';
+  let uid = ''; // GitHub 数字 ID，不受改名影响，做 KV 主键
 
   // 先拿当前用户用户名（2026-11-21 实时验签需要：无 Star 用户也要签发令牌，
   // 这样他后来点了 Star，labor-ai 页复核时也能查出新状态）。失败不致命，降级为空。
@@ -408,6 +470,7 @@ async function handleGitHubCallback(request, env, url) {
     if (userResp.ok) {
       const userData = await userResp.json();
       username = userData.login || '';
+      uid = userData.id ? String(userData.id) : '';
     }
   } catch (e) {
     console.log('获取用户名失败:', e.message);
@@ -441,6 +504,7 @@ async function handleGitHubCallback(request, env, url) {
       // 在 stargazers 列表里找当前用户
       const me = stargazers.find(s => s.user && s.user.login === username);
       if (me && me.starred_at) {
+        starredAtISO = me.starred_at; // 保留完整 ISO：同一天撤了再点，日期相同但时间不同
         const starredAt = new Date(me.starred_at);
         starredAtDate = starredAt.toISOString().split('T')[0]; // YYYY-MM-DD 格式
         const now = new Date();
@@ -460,13 +524,17 @@ async function handleGitHubCallback(request, env, url) {
   // 前端首页回调按 star_check 写登录/Star 状态，AI 页再据此判附件门禁。
   const meetsRequirement = hasStar;
 
+  // 首次确认 Star 就把 starred_at 沉到 KV（仅首次，后续不覆盖）：
+  // 这样「撤了再点回来」靠时间对不上就能识别，不必撞见他取消的那一刻。
+  if (hasStar) await rememberFirstStar(env.STAR_RECORD, uid || username, starredAtISO);
+
   // 签发实时验签令牌：把 access_token 加密后随重定向带回前端保存。
   // 只有配了 STAR_SESSION_SECRET 且拿到 username 才签发；否则前端走降级路径。
   let satParam = '';
   if (env.STAR_SESSION_SECRET && username) {
     try {
       const sat = await sealSession(
-        { u: username, t: accessToken, exp: Date.now() + SESSION_TTL_MS },
+        { u: username, uid: uid, t: accessToken, exp: Date.now() + SESSION_TTL_MS },
         env.STAR_SESSION_SECRET
       );
       satParam = '&sat=' + encodeURIComponent(sat);
@@ -525,6 +593,7 @@ async function handleCheckStar(request, env, url) {
   // 天数只用于展示；拿不到就沿用前端已有值（前端自行处理 0 的情况）
   let starDays = 0;
   let starredAtDate = '';
+  let currentStarIso = ''; // 本次实际查到的 starred_at，跟首次记录比对用
   if (hasStar) {
     try {
       const userResp = await fetch('https://api.github.com/user', {
@@ -542,6 +611,7 @@ async function handleCheckStar(request, env, url) {
       const login = userData.login || session.u;
       const me = Array.isArray(stargazers) && stargazers.find(s => s.user && s.user.login === login);
       if (me && me.starred_at) {
+        currentStarIso = me.starred_at;
         starredAtDate = me.starred_at.split('T')[0];
         starDays = Math.floor((Date.now() - new Date(me.starred_at)) / 86400000);
       }
@@ -550,11 +620,21 @@ async function handleCheckStar(request, env, url) {
     }
   }
 
+  // 2026-11-21 站长定规：撤过 Star 的人即使再点回来，Star 权益也永久作废。
+  // KV 未绑时 starRightRevoked 直接返回 false，行为退回纯实时验签，不阻塞现有部署。
+  const subject = session.uid || session.u;
+  let permanentRevoked = false;
+  if (env.STAR_RECORD) {
+    permanentRevoked = await starRightRevoked(env.STAR_RECORD, subject, currentStarIso, !hasStar);
+    if (permanentRevoked) hasStar = false; // 强制压成未 Star：前端据此锁死附件
+  }
+
   return json({
     hasStar,
     starDays,
     starredAtDate,
     username: session.u,
     status: hasStar ? 'starred' : 'not-starred',
+    starRevoked: permanentRevoked, // 供前端/单测区分「没 Star」和「曾 Star 后撤销」
   }, 200, cors);
 }

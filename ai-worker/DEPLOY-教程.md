@@ -165,16 +165,20 @@ neurons 的自然消耗，且超出就停）。
 
 **Q：用户取消 Star 后，附件还能用吗？**
 本轮加了实时验签：登录时服务端会把一个加密令牌带回浏览器，劳动法小助手每次打开都拿它
-去问 GitHub「现在还 Star 吗」，**取消后附件立刻锁死**，重新 Star 并重新登录才恢复。
-要让这个功能生效，部署时要多做一个密钥（只需一次）：
+去问 GitHub「现在还 Star 吗」，**取消后附件立刻锁死**。更进一步，首撤过一次就永久作废——
+服务端用 KV 记住首次 Star 的时间，撤后再点回来时间对不上，会继续按未 Star 处理，
+**再次 Star 也拿不回附件权益**。要让这套机制生效，部署时多做两样（只需一次）：
 
 ```bash
 cd ai-worker
+npx wrangler kv namespace create STAR_RECORD  # 记下返回的 id
+# 然后把下面这段粘进 wrangler.json 顶层（与 "ai" 同级），把 id 换成上一步的返回值：
+#   "kv_namespaces": [ { "binding": "STAR_RECORD", "id": "<返回的 id>" } ]
 npx wrangler secret put STAR_SESSION_SECRET   # 粘贴一个 32 位以上随机串，保存好
 npx wrangler deploy                            # 源码改了必须重新部署
 ```
 
-没设这个密钥也不影响正常问答，只是验签会安全降级（沿用旧的登录快照）。
+没建 KV / 没设密钥也不影响正常问答，只是安全降级（沿用旧登录快照，撤后再 Star 会恢复）。
 设好之后，用户**下次重新点「Login GitHub」**才会拿到带令牌的回调。
 
 **Q：想换 AI 的回答风格 / 卡通形象？**

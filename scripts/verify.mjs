@@ -6747,6 +6747,49 @@ section('21c. 首页滑到底部按钮');
         && /catch\(e\)/.test(la),
         '§21h-6 降级不打扰：无效/过期令牌清掉、网络异常静默保留快照',
         '复核失败就弹提示或强制未登录 → 影响正常访客使用');
+      // §21h-7（2026-11-21 站长定规）：撤过 Star 就永久作废——再点回来也按未 Star 处理。
+      // 服务端用 KV 记首次 starred_at，对不上就压成 not-starred；没绑 KV 则安全降级。
+      const workerKv = read('ai-worker/src/worker.js');
+      const wranglerCfg = read('ai-worker/wrangler.json');
+      check(/const STAR_FIRST_PREFIX = 'star:first:'/.test(workerKv)
+        && /const STAR_REVOKED_PREFIX = 'star:revoked:'/.test(workerKv)
+        && /async function rememberFirstStar/.test(workerKv)
+        && /async function starRightRevoked/.test(workerKv)
+        && /if \(first !== currentIso\)/.test(workerKv)
+        && /if \(permanentRevoked\) hasStar = false/.test(workerKv)
+        && /starRevoked: permanentRevoked/.test(workerKv),
+        '§21h-7 服务端按首次 starred_at 判定「撤后再 Star」，强制压成未 Star 并回传 starRevoked',
+        '只做实时验签不记首次时间 → 用户撤了再点回来就恢复，永久作废规则落空');
+      const readmeKv = read('ai-worker/README.md');
+      const deployKv = read('ai-worker/DEPLOY-教程.md');
+      check(/if \(env\.STAR_RECORD\)/.test(workerKv)
+        && !/"kv_namespaces"/.test(wranglerCfg) // 不放假 id，避免部署直接失败
+        && /kv namespace create STAR_RECORD/.test(readmeKv)
+        && /kv namespace create STAR_RECORD/.test(deployKv)
+        && /"binding": "STAR_RECORD"/.test(readmeKv)
+        && /"binding": "STAR_RECORD"/.test(deployKv),
+        '§21h-7 KV 配置留在部署文档（不放假 id 卡部署），未绑时整段跳过退回实时验签',
+        '配置里塞占位 id → 站长 deploy 直接失败；只写代码不给建 KV 步骤 → 规则不生效还以为上线');
+      check(/starRevoked/.test(read('scripts/test-ai-worker.cjs'))
+        && /永久作废/.test(read('scripts/test-ai-worker.cjs')),
+        '§21h-7 单测覆盖「取消→再 Star 仍失效」全链路',
+        '没测二次 Star → 永久撤销逻辑回归无人发现');
+      check(/权益永久失效/.test(la) && !/重新 Star 后（需重新登录）也能恢复/.test(la),
+        '§21h-7 前端注释口径与新规则一致（不再写「重新 Star 能恢复」）',
+        '注释还写「重新 Star 恢复」→ 与永久作废规则自相矛盾，误导后来维护者');
+      // §21h-8（2026-11-21 站长定规）：AI 开放简历能力，三条线路提示词 + 页面描述口径一致。
+      const aliPrompt = read('ai-worker-aliyun/index.mjs');
+      check(/用户要写或改简历时正常帮忙|用户请求写简历/.test(la)
+        && /绝不编造|绝不.*虚构/.test(la)
+        && /用户请求写简历/.test(workerKv)
+        && /用户请求写简历/.test(aliPrompt),
+        '§21h-8 三条线路（国内 / CF / 阿里云）提示词都开放简历且禁止编造信息',
+        '某条线路还写「与劳动法无关就拒绝」→ 同样的简历请求换个线路就被拒，体验不一致');
+      check(/也可协助撰写和优化简历/.test(la)
+        && /简历优化/.test(la)
+        && /data-q="[^"]*写一份简历/.test(la),
+        '§21h-8 页面描述、副标题、示例 chip 都体现简历能力（SEO 与可见区一致）',
+        '提示词开了简历但页面看不出来 → 用户根本不知道这 AI 能写简历');
       const publicMetas = [...la.matchAll(/<meta[^>]*>/g)].map(m => m[0])
         .filter(m => /description/i.test(m));
       check(publicMetas.length >= 3 && publicMetas.every(m => m.includes(PUBLIC_QUOTA_LINE))

@@ -120,6 +120,8 @@ async function main() {
     check('提示词含加班费倍率口径', /150%/.test(msgs[0].content) && /300%/.test(msgs[0].content));
     check('提示词声明非法律意见', /不构成|不是法律意见|参考信息/.test(msgs[0].content));
     check('提示词锁定双休购站点角色', /双休购/.test(msgs[0].content));
+    check('提示词开放简历能力（2026-11-21）', /简历/.test(msgs[0].content) && /求职信|润色/.test(msgs[0].content));
+    check('提示词禁止编造简历信息', /绝不.*虚构|不编造/.test(msgs[0].content));
 
     const histMsgs = msgs.slice(1, -1);
     check('history 截到 8 条', histMsgs.length === 8);
@@ -286,22 +288,32 @@ async function main() {
     const SECRET = 'unit-test-star-secret';
     const REAL_FETCH = globalThis.fetch;
     let starred = true; // 模拟「当前是否仍 Star」，可翻转验证实时性
+    let currentStarAt = '2026-11-01T00:00:00Z'; // 模拟 GitHub stargazers 返回的 starred_at
     globalThis.fetch = async function (url) {
       const u = String(url && url.url || url);
       if (u.includes('github.com/login/oauth/access_token')) {
         return new Response(JSON.stringify({ access_token: 'gho_unittest_token' }), { status: 200 });
       }
       if (u === 'https://api.github.com/user') {
-        return new Response(JSON.stringify({ login: 'unit-tester' }), { status: 200 });
+        return new Response(JSON.stringify({ login: 'unit-tester', id: 123456 }), { status: 200 });
       }
       if (u.includes('/user/starred/')) {
         return new Response(null, { status: starred ? 204 : 404 });
       }
       if (u.includes('/stargazers')) {
-        return new Response(JSON.stringify([{ user: { login: 'unit-tester' }, starred_at: '2026-11-01T00:00:00Z' }]), { status: 200 });
+        return new Response(JSON.stringify([{ user: { login: 'unit-tester' }, starred_at: currentStarAt }]), { status: 200 });
       }
       return new Response('{}', { status: 200 });
     };
+    // 简易 KV mock：get/put 走内存，用来验证「撤后再 Star 永久作废」
+    function makeKV() {
+      const store = {};
+      return {
+        store,
+        get: async (k) => (k in store ? store[k] : null),
+        put: async (k, v) => { store[k] = String(v); },
+      };
+    }
     try {
       const oauthEnv = { GITHUB_CLIENT_SECRET: 'fake-client-secret', STAR_SESSION_SECRET: SECRET };
       const cb = await worker.fetch(new Request('https://ai.example.workers.dev/auth/github/callback?code=abc', {}), oauthEnv);
@@ -354,6 +366,71 @@ async function main() {
       }), { STAR_SESSION_SECRET: SECRET });
       check('check-star OPTIONS 预检 → 204', opt.status === 204
         && opt.headers.get('Access-Control-Allow-Methods').includes('POST'));
+    } finally {
+      globalThis.fetch = REAL_FETCH;
+    }
+  }
+
+  console.log('== ⑫ 撤过 Star 就永久作废（KV 记录，2026-11-21 站长定规）==');
+  {
+    const SECRET = 'unit-test-star-secret';
+    const REAL_FETCH = globalThis.fetch;
+    let starred = true;
+    let currentStarAt = '2026-10-01T00:00:00Z'; // 首次 Star 时间
+    globalThis.fetch = async function (url) {
+      const u = String(url && url.url || url);
+      if (u.includes('github.com/login/oauth/access_token')) {
+        return new Response(JSON.stringify({ access_token: 'gho_kv_token' }), { status: 200 });
+      }
+      if (u === 'https://api.github.com/user') {
+        return new Response(JSON.stringify({ login: 'kv-tester', id: 987654 }), { status: 200 });
+      }
+      if (u.includes('/user/starred/')) return new Response(null, { status: starred ? 204 : 404 });
+      if (u.includes('/stargazers')) {
+        return new Response(JSON.stringify([{ user: { login: 'kv-tester' }, starred_at: currentStarAt }]), { status: 200 });
+      }
+      return new Response('{}', { status: 200 });
+    };
+    function makeKV() {
+      const store = {};
+      return { store, get: async k => (k in store ? store[k] : null), put: async (k, v) => { store[k] = String(v); } };
+    }
+    const checkReq = (token) => new Request('https://ai.example.workers.dev/api/check-star', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Origin: SITE_ORIGIN },
+      body: JSON.stringify({ sat: token }),
+    });
+    try {
+      const kv = makeKV();
+      const env = { GITHUB_CLIENT_SECRET: 'fake', STAR_SESSION_SECRET: SECRET, STAR_RECORD: kv };
+
+      // 首次 OAuth（已 Star）→ KV 记下首次 starred_at
+      const cb = await worker.fetch(new Request('https://ai.example.workers.dev/auth/github/callback?code=abc', {}), env);
+      const sat = new URL(cb.headers.get('Location') || '').searchParams.get('sat') || '';
+      check('OAuth 首次 Star 写入 star:first:<uid>', kv.store['star:first:987654'] === '2026-10-01T00:00:00Z', kv.store);
+      check('sat 载荷带 uid（数字 ID，改名不漂移）', !!sat);
+
+      // ① 仍 Star → starred
+      const d1 = await (await worker.fetch(checkReq(sat), env)).json();
+      check('仍 Star → starred，未误判撤销', d1.status === 'starred' && d1.starRevoked === false, d1);
+
+      // ② 取消 Star → 立刻 not-starred，并写入撤销标记
+      starred = false;
+      const d2 = await (await worker.fetch(checkReq(sat), env)).json();
+      check('取消 Star → 立刻 not-starred', d2.status === 'not-starred', d2);
+      check('观测到取消 → KV 写入 star:revoked:<uid>', kv.store['star:revoked:987654'] === '1', kv.store);
+
+      // ③ 重新 Star（时间换了）→ 尽管 GitHub 显示已 Star，仍强制 not-starred
+      starred = true;
+      currentStarAt = '2026-11-20T12:34:56Z'; // 撤后再点，GitHub 给了新时间
+      const d3 = await (await worker.fetch(checkReq(sat), env)).json();
+      check('撤后再 Star → 强制 hasStar:false（权益永久作废）', d3.hasStar === false && d3.status === 'not-starred', d3);
+      check('撤后再 Star → starRevoked:true', d3.starRevoked === true, d3);
+
+      // ④ 没绑 KV 时走老逻辑：取消后再 Star 会恢复（不阻塞现有部署）
+      const noKvEnv = { STAR_SESSION_SECRET: SECRET };
+      currentStarAt = '2026-11-21T00:00:00Z';
+      const d4 = await (await worker.fetch(checkReq(sat), noKvEnv)).json();
+      check('未绑 KV → 降级为实时验签，再 Star 会恢复', d4.status === 'starred' && !d4.starRevoked, d4);
     } finally {
       globalThis.fetch = REAL_FETCH;
     }
