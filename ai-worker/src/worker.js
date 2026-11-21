@@ -123,6 +123,9 @@ export default {
     const bucket = globalThis.__sxgRate.get(ip) || [];
     const recent = bucket.filter((t) => now - t < 3600 * 1000);
     if (recent.length >= 20) {
+      // 滥用溯源（2026-11-21）：限流命中写结构化日志，Cloudflare 控制台 Workers Logs 可按 IP 查。
+      // 只记 IP/时间/计数，不记提问正文（避免把用户隐私写进日志）。
+      console.log(JSON.stringify({ event: 'rate_limited', ip, hits: recent.length, ts: new Date().toISOString() }));
       return json({ error: 'rate-limited', retryAfter: 3600 }, 429, corsHeaders);
     }
     recent.push(now);
@@ -204,6 +207,10 @@ export default {
       if (!answer) {
         return json({ error: 'empty-answer', raw: result }, 502, corsHeaders);
       }
+      // 访问日志（2026-11-21）：成功调用记 IP / 线路 / 是否带图 / 提问字数，
+      // 不记正文。控制台 Workers Logs 可按 event=ai_call 聚合，看出哪些 IP 高频调用。
+      console.log(JSON.stringify({ event: 'ai_call', ip, route: route || 'cf',
+        image: hasImage, qlen: question.length, neurons: (result && result.usage && result.usage.neurons) || null }));
       // route 原样回声给前端（面板可用于二次核对；前端不依赖它做任何事）
       return json({ answer, route: route || 'cf' }, 200, corsHeaders);
     } catch (e) {

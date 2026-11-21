@@ -38,6 +38,24 @@ Worker 现在支持 `parts` 数组（OpenAI 兼容的 `text` / `image_url` data 
 ⚠️ **改了 Worker 源码必须 `npx wrangler deploy` 重新部署**，否则线上跑的还是旧版，
 图片功能不会生效。部署后打开 `/api/capabilities` 看到 `vision:true` 即为成功。
 
+### 滥用溯源：Workers Logs（2026-11-21 新增）
+
+`wrangler.json` 已开 `observability`（100% 采样），Worker 对每次成功调用写一条
+结构化日志 `event=ai_call`（含 `ip`/`route`/`image`/`qlen`/`neurons`，**不记提问正文**），
+限流命中写 `event=rate_limited`（含 `ip`/`hits`）。Cloudflare 免费层每天 20 万条、
+保留 3 天，可在控制台按 IP / 事件聚合查询——**这是查「哪个 IP 在滥用」的正解**。
+
+注意区分两者能力：
+- **WAF 速率限制规则走不通**：Worker 跑在 `workers.dev`、没接入自定义域名（无 zone），
+  且免费版 WAF 规则连 Source IP 计数都不支持。别去控制台找 WAF。
+- **限流本身仍是粗粒度**：每 IP 20 次/小时的内存滑窗，边缘实例间不共享、重启清零，
+  防单 IP 脚本刷、防不住分布式；但日志能事后追溯，两者互补。
+
+**查日志步骤**：Cloudflare Dashboard → Workers & Pages → `shuangxiugou-ai-worker`
+→ **Observability / Logs** → 搜 `ai_call` 或 `rate_limited`，按 `ip` 聚合。
+命令行实时看：`npx wrangler tail shuangxiugou-ai-worker`（开着的窗口里实时打印）。
+日志里还有 Cloudflare 自动附带的 `cf-connecting-ip`、国家/城市/ASN/CF-Ray 等元数据。
+
 ### 坑：视觉模型首次使用必须先同意 Meta 协议（2026-11-21 实测）
 
 视觉模型 `@cf/meta/llama-3.2-11b-vision-instruct` 受 Meta License 约束，
@@ -93,7 +111,8 @@ curl -X POST http://localhost:8787 -H "Origin: http://localhost:18970" \
 
 ## 已知边界（诚实口径）
 
-- 内存限流在边缘节点间不共享：是「防单 IP 脚本刷」的粗限流，不是精确配额。
+- 内存限流在边缘节点间不共享：是「防单 IP 脚本刷」的粗限流，不是精确配额；
+  但每次调用和限流命中都会写 Workers Logs（见上「滥用溯源」），可事后按 IP 追溯。
 - Worker 是无状态的：对话历史存在浏览器端（前端 localStorage 不存，仅当前会话内存），Worker 不记任何用户数据。
 - AI 回答是参考信息不是法律意见——系统提示词里已声明，前端挂件里也有同款文案。
 
