@@ -205,14 +205,14 @@
         localStorage.setItem('sxg_star_days', starDays.toString());
         localStorage.setItem('sxg_star_date', starDate);
         title = '✅ GitHub 登录成功';
-        message = `已确认你给本仓库点了 Star ✅（${starDate}）。\n\n登录GitHub并Star可获取更多免费额度。`;
+        message = `已确认你给本仓库点了 Star ✅（${starDate}）。\n\n登录GitHub并Star可获取更多额度。`;
       } else {
         localStorage.setItem('sxg_github_logged_in', '1');
         localStorage.setItem('sxg_github_has_star', '0');
         localStorage.setItem('sxg_star_days', starDays.toString());
         localStorage.setItem('sxg_star_date', starDate);
         title = '⏳ 尚未 Star';
-        message = `你 GitHub 已登录，但还没给本仓库点 Star。\n\n登录GitHub并Star可获取更多免费额度。`;
+        message = `你 GitHub 已登录，但还没给本仓库点 Star。\n\n登录GitHub并Star可获取更多额度。`;
       }
       showModal(title, message, '知道了');
       // 清除 URL 参数，避免刷新重复提示
@@ -235,9 +235,9 @@
           const hasStar = localStorage.getItem('sxg_github_has_star') === '1';
           const starDate = localStorage.getItem('sxg_star_date') || '未知';
           if (hasStar) {
-            showModal('✅ 已解锁', `你已登录并 Star 本仓库（${starDate}）。\n登录GitHub并Star可获取更多免费额度。`, '知道了');
+            showModal('✅ 已解锁', `你已登录并 Star 本仓库（${starDate}）。\n登录GitHub并Star可获取更多额度。`, '知道了');
           } else {
-            showModal('⏳ 尚未 Star', `登录GitHub并Star可获取更多免费额度。`, '去 Starred');
+            showModal('⏳ 尚未 Star', `登录GitHub并Star可获取更多额度。`, '去 Starred');
           }
         } else {
           // 没登录的话，先弹 VPN 提示

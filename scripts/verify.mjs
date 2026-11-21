@@ -6672,8 +6672,8 @@ section('21c. 首页滑到底部按钮');
       && !/sxg_ai_blacklisted|sxg_ai_ever_starred|拉黑/.test(hmp)
       && !/localStorage\.setItem\('sxg_ai_blacklisted'/.test(hmp),
       '旧「取消 Star 永久拉黑」规则已彻底移除，AI 页与首页回调都不再写/说拉黑');
-    check(/header-menu-patch\.js\?v=14/.test(read('index.html')),
-      '首页脚本内容已变，缓存号 bump 到 v14');
+    check(/header-menu-patch\.js\?v=15/.test(read('index.html')),
+      '首页脚本内容已变，缓存号 bump 到 v15');
     check(/ipNotice/.test(la) && /visitorIp/.test(la) && /个人敏感信息/.test(la)
       && /请求过于频繁将触发短时限流/.test(la) && /请间隔片刻再试/.test(la),
       '安全公告：显示访问 IP + 勿发敏感信息 + 高频只说「触发短时限流、间隔再试」（不谎称封禁）');
@@ -6694,8 +6694,19 @@ section('21c. 首页滑到底部按钮');
     // §21h-4（2026-11-21 站长定规）：具体额度档位不对外公开，访客可见处只保留统一的一句话。
     // 判据只扫用户可见文案（meta / 线路提示 / 附件提示 / 登录弹窗 / 隐私页），不碰代码常量。
     {
-      const PUBLIC_QUOTA_LINE = '登录GitHub并Star可获取更多免费额度';
+      const PUBLIC_QUOTA_LINE = '登录GitHub并Star可获取更多额度';
       const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+      // §21h-5（2026-11-21 站长定规）：对外不写「免费」，线路按钮去掉括号副文案。
+      check(/<button class="route-btn" id="btnCF">Cloudflare<\/button>/.test(la)
+        && !/免费额度|免费开放/.test(stripComments(la))
+        && !/免费额度/.test(stripComments(hmp))
+        && !/免费额度/.test(read('privacy.html')),
+        '§21h-5 对外文案不写「免费」：按钮只留 Cloudflare，无「免费额度/免费开放」',
+        '把「免费开放」括号或「免费额度」写回 → 截图里那两处又出现「免费」字样');
+      check(/header-menu-patch\.js\?v=15/.test(read('index.html'))
+        && !/header-menu-patch\.js\?v=14/.test(read('index.html')),
+        '§21h-5 首页补丁脚本内容已变，缓存号 bump 到 v15',
+        '文案改了但缓存号没 bump → 老访客浏览器仍读旧弹窗文案');
       const publicMetas = [...la.matchAll(/<meta[^>]*>/g)].map(m => m[0])
         .filter(m => /description/i.test(m));
       check(publicMetas.length >= 3 && publicMetas.every(m => m.includes(PUBLIC_QUOTA_LINE))
@@ -6708,7 +6719,7 @@ section('21c. 首页滑到底部按钮');
         '§21h-4 线路提示条只展示统一一句话，不再显示登录态额度数字',
         '把「当前额度 10/20 次」写回 → 具体档位对每位访客可见');
       const hmpPublic = stripComments(hmp);
-      check((hmpPublic.match(/登录GitHub并Star可获取更多免费额度/g) || []).length >= 4
+      check((hmpPublic.match(/登录GitHub并Star可获取更多额度/g) || []).length >= 4
         && !/每小时 20 次|每小时 10 次|不限天数/.test(hmpPublic),
         '§21h-4 登录弹窗不报具体额度，统一使用同一句话',
         '弹窗里露出「每小时 20 次」→ 登录前后档位差被直接公开');
