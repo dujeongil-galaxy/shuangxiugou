@@ -6672,8 +6672,8 @@ section('21c. 首页滑到底部按钮');
       && !/sxg_ai_blacklisted|sxg_ai_ever_starred|拉黑/.test(hmp)
       && !/localStorage\.setItem\('sxg_ai_blacklisted'/.test(hmp),
       '旧「取消 Star 永久拉黑」规则已彻底移除，AI 页与首页回调都不再写/说拉黑');
-    check(/header-menu-patch\.js\?v=13/.test(read('index.html')),
-      '首页脚本内容已变，缓存号 bump 到 v13');
+    check(/header-menu-patch\.js\?v=14/.test(read('index.html')),
+      '首页脚本内容已变，缓存号 bump 到 v14');
     check(/ipNotice/.test(la) && /visitorIp/.test(la) && /个人敏感信息/.test(la)
       && /请求过于频繁将触发短时限流/.test(la) && /请间隔片刻再试/.test(la),
       '安全公告：显示访问 IP + 勿发敏感信息 + 高频只说「触发短时限流、间隔再试」（不谎称封禁）');
@@ -6690,6 +6690,33 @@ section('21c. 首页滑到底部按钮');
         && /请间隔片刻再试/.test(askBody) && !/ip-blocked|封禁|被封|稍后即可恢复/.test(askBody),
         '§21h-2 askCF 对 403/429 统一温和提示，不向用户透出内部错误码或封禁字眼',
         '403 原样回显 {"error":"ip-blocked"} → 等于告诉用户被封，与「不提示封禁」口径冲突');
+    }
+    // §21h-4（2026-11-21 站长定规）：具体额度档位不对外公开，访客可见处只保留统一的一句话。
+    // 判据只扫用户可见文案（meta / 线路提示 / 附件提示 / 登录弹窗 / 隐私页），不碰代码常量。
+    {
+      const PUBLIC_QUOTA_LINE = '登录GitHub并Star可获取更多免费额度';
+      const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+      const publicMetas = [...la.matchAll(/<meta[^>]*>/g)].map(m => m[0])
+        .filter(m => /description/i.test(m));
+      check(publicMetas.length >= 3 && publicMetas.every(m => m.includes(PUBLIC_QUOTA_LINE))
+        && !publicMetas.some(m => /10 次|20 次|减半/.test(m)),
+        '§21h-4 搜索摘要只写统一一句话，不公开 10/20 档位',
+        '把具体额度写回 description → 搜索引擎与分享卡片直接暴露内部档位');
+      const routeBody = (stripComments(la).match(/function renderRoute\(\)\{[\s\S]*?\n\}/) || [''])[0];
+      check(routeBody.includes(PUBLIC_QUOTA_LINE)
+        && !/未登录减半|当前额度/.test(routeBody),
+        '§21h-4 线路提示条只展示统一一句话，不再显示登录态额度数字',
+        '把「当前额度 10/20 次」写回 → 具体档位对每位访客可见');
+      const hmpPublic = stripComments(hmp);
+      check((hmpPublic.match(/登录GitHub并Star可获取更多免费额度/g) || []).length >= 4
+        && !/每小时 20 次|每小时 10 次|不限天数/.test(hmpPublic),
+        '§21h-4 登录弹窗不报具体额度，统一使用同一句话',
+        '弹窗里露出「每小时 20 次」→ 登录前后档位差被直接公开');
+      const privacy24 = read('privacy.html');
+      check(privacy24.includes(PUBLIC_QUOTA_LINE)
+        && !/已登录每小时 20|未登录减半为 10|20 次\/小时/.test(privacy24),
+        '§21h-4 隐私页也只给统一一句话，不列具体额度档位',
+        '隐私页写回档位 → 对外文档仍公开内部规则');
     }
     // §21h-3（2026-11-21 站长改版）：登录 20 次/小时、未登录一律减半 10 次/小时；
     // Star 只管附件，不再决定文字问答。两个后端 + 前端必须同一套口径。

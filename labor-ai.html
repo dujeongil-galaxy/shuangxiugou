@@ -7,12 +7,12 @@
   <!-- SEO：OG + canonical（2026-11-21 补齐）-->
   <meta property="og:type" content="article" />
   <meta property="og:title" content="劳动法小助手 · 加班费与双休权益在线查询｜双休购" />
-  <meta property="og:description" content="劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。两条线路均可直接提问；未登录每小时 10 次，登录后 20 次；上传附件需登录并 Star。本站不构成法律意见。" />
+  <meta property="og:description" content="劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。两条线路均可直接提问；登录GitHub并Star可获取更多免费额度。本站不构成法律意见。" />
   <meta property="og:url" content="https://dujeongil-galaxy.github.io/shuangxiugou/labor-ai.html" />
   <meta property="og:image" content="https://dujeongil-galaxy.github.io/shuangxiugou/assets/og-cover.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="canonical" href="https://dujeongil-galaxy.github.io/shuangxiugou/labor-ai.html" />
-<meta name="description" content="劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。两条线路均可直接提问；未登录每小时 10 次，登录后 20 次；上传附件需登录并 Star。本站不构成法律意见。" />
+<meta name="description" content="劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。两条线路均可直接提问；登录GitHub并Star可获取更多免费额度。本站不构成法律意见。" />
 <style>
 :root{
   --bg:#eef1f6; --card:#ffffff; --ink:#1d2433; --sub:#5b6478;
@@ -144,7 +144,7 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
   <!-- SXG-AISEO:BEGIN -->
 <meta property="og:site_name" content="双休购 ShuangxiuGo" />
 <meta name="twitter:title" content="劳动法小助手" />
-<meta name="twitter:description" content="劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。两条线路均可直接提问；未登录每小时 10 次，登录后 20 次；上传附件需登录并 Star。本站不构成法律意见。" />
+<meta name="twitter:description" content="劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。两条线路均可直接提问；登录GitHub并Star可获取更多免费额度。本站不构成法律意见。" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -170,7 +170,7 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
       "@id": "https://dujeongil-galaxy.github.io/shuangxiugou/labor-ai.html#webpage",
       "url": "https://dujeongil-galaxy.github.io/shuangxiugou/labor-ai.html",
       "name": "劳动法小助手",
-      "description": "劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。两条线路均可直接提问；未登录每小时 10 次，登录后 20 次；上传附件需登录并 Star。本站不构成法律意见。",
+      "description": "劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。两条线路均可直接提问；登录GitHub并Star可获取更多免费额度。本站不构成法律意见。",
       "inLanguage": "zh-CN",
       "isPartOf": {
         "@id": "https://dujeongil-galaxy.github.io/shuangxiugou/#website"
@@ -352,16 +352,9 @@ function renderRoute(){
   btnCN.classList.toggle('active', currentRoute === 'cn');
   btnCN.classList.remove('locked');
   btnCN.textContent = '国内直连';
-  var quota = st.logged
-    ? '每小时 ' + st.quotaLimit + ' 次'
-    : '每小时 ' + st.quotaLimit + ' 次（未登录减半）';
-  var att = st.attachUnlocked
-    ? '图片/文档上传已开放。'
-    : '上传图片/文档需登录 GitHub 并给本仓库点 Star（两条线路通用）。';
-  var starLink = (st.logged && !st.star)
-    ? ' <a href="' + REPO_URL + '" target="_blank" rel="noopener noreferrer">去点 Star 解锁附件</a>。'
-    : '';
-  routeTip.innerHTML = '两条线路均可直接提问，当前额度 ' + quota + '。' + att + starLink;
+  /* 对外只展示统一的一句话，不公开具体额度档位（站长定规）。 */
+  routeTip.innerHTML = '两条线路均可直接提问；<a href="' + REPO_URL
+    + '" target="_blank" rel="noopener noreferrer">登录GitHub并Star可获取更多免费额度</a>。';
   btnCF.classList.toggle('active', currentRoute === 'cf');
   btnCN.classList.toggle('active', currentRoute === 'cn');
   renderAttachGate();
@@ -408,11 +401,11 @@ function renderAttachGate(){
   var st = starStatus();
   var ok = st.attachUnlocked;
   fileBtn.classList.toggle('busy', !ok);
-  fileBtn.textContent = ok ? '＋ 附件' : '＋ 附件 · 需 Star';
+  fileBtn.textContent = ok ? '＋ 附件' : '＋ 附件 · 未解锁';
   fileInput.disabled = !ok;
   if (!ok){
     if (attachments.length){ attachments = []; renderAttachments(); }
-    setAttachHint('上传图片/文档需登录 GitHub 并给本仓库点 Star（两条线路通用）。', true);
+    setAttachHint('附件暂未开放，解锁后即可使用。', true);
   }
 }
 
@@ -518,7 +511,7 @@ async function parsePdf(file){
 async function handleFiles(fileList){
   var st = starStatus();
   if (!st.attachUnlocked){
-    setAttachHint('上传图片/文档需登录 GitHub 并给本仓库点 Star（两条线路通用）。', true);
+    setAttachHint('附件暂未开放，解锁后即可使用。', true);
     return;
   }
   var accepted = 0;
@@ -665,7 +658,7 @@ async function doSend(){
   /* 附件锁死：发送前再判一次，绕过禁用的文件入口也发不出去 */
   if (attachments.length && !starStatus().attachUnlocked){
     attachments = []; renderAttachments();
-    setAttachHint('上传图片/文档需登录 GitHub 并给本仓库点 Star（两条线路通用）。', true);
+    setAttachHint('附件暂未开放，解锁后即可使用。', true);
     return;
   }
   /* 国内直连本地限流：未登录 10 次/小时、登录 20 次/小时，与 CF 同口径 */
