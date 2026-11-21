@@ -6786,6 +6786,22 @@ section('21c. 首页滑到底部按钮');
   // 限流
   check(/recent\.length >= 20/.test(worker),
     '每 IP 每小时 20 次限流（429）');
+  // IP 黑名单（2026-11-21）：静态数组 + secret 双来源，最前置拦截，命中不调 AI
+  check(/const BLOCKED_IPS = \[/.test(worker)
+    && /function isBlockedIp\(ip, env\)/.test(worker)
+    && /env\.BLOCKED_IPS/.test(worker)
+    && /event: 'ip_blocked'/.test(worker)
+    && /error: 'ip-blocked'/.test(worker),
+    '§21g Worker IP 黑名单：静态数组 + secret 双来源，命中在边缘 403 且写 ip_blocked 日志',
+    '黑名单被删 → 指定 IP 无法在 Cloudflare 边缘拦掉，只能靠 20 次/小时的粗限流');
+  check(/isBlockedIp\(clientIp, env\)/.test(worker)
+    && /async fetch\(request, env\)/.test(worker)
+    && worker.indexOf('isBlockedIp(clientIp, env)') < worker.indexOf('handleGitHubLogin'),
+    '§21g 黑名单检查位于 fetch 最前置（早于 OAuth/CORS/AI，命中连日志计数都不产生）',
+    '拦截位置后移 → 被封 IP 仍能触发限流计数/OAuth，等于没真拦');
+  check(/黑名单 IP → 403/.test(read('scripts/test-ai-worker.cjs'))
+    && /黑名单命中不调 AI/.test(read('scripts/test-ai-worker.cjs')),
+    '§21g Worker 单测覆盖黑名单命中 403 + 不烧 neurons');
   // 输出上限：纯文本 2000（推理模型留空间）；带图压到 1200（视觉模型输出单价 1.7 倍，省额度）
   check(/hasImage \? 1200 : 2000/.test(worker),
     'max_tokens 分流：纯文本 2000（GLM-4.7-flash reasoning 留空间）/ 带图 1200（视觉模型省 neuron）');

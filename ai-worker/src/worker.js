@@ -23,16 +23,43 @@
    ④ 系统提示词锁定角色：只答劳动法/双休/本站数据口径，拒绝无关话题
    ⑤ max_tokens 限制输出（输出比输入贵 6.6 倍，输出是 neuron 大头）
    ⑥ 每 IP 内存限流（滑窗 20 次/小时）——免费层没 KV，够用的粗限流
+   ⑦ IP 黑名单（连接层 IP 精确匹配）——命中即在边缘挡掉，不调 AI、不烧额度
 
    跑法
    ----
    见 ai-worker/README.md（wrangler login → deploy，两分钟）。
    ========================================================================== */
 
+/* ---------- IP 黑名单（2026-11-21 站长要求：真要动手可拦指定 IP）----------
+   两种维护方式，改完都即时生效：
+     ① 源码静态名单：把 IP 字符串加进下面的数组 → 需重新 deploy。
+     ② 运行时名单：Worker secret BLOCKED_IPS（多个用英文逗号分隔）→ 免重新部署，
+        用 `wrangler secret put BLOCKED_IPS` 改（见 README）。两者并集生效。
+   只认连接层 IP（CF-Connecting-IP，前端伪造不了），精确匹配；命中返回 403，
+   不消耗 neurons、不记 ai_call。边界：VPN/代理共用出口 IP 会连坐，用前先确认。 */
+const BLOCKED_IPS = [
+  // '1.2.3.4', // 示例：取消注释并换成要拦的 IP
+];
+
+function isBlockedIp(ip, env) {
+  if (!ip || ip === 'unknown') return false;
+  if (BLOCKED_IPS.indexOf(ip) !== -1) return true;
+  const secretList = env && env.BLOCKED_IPS ? String(env.BLOCKED_IPS).split(',') : [];
+  return secretList.some((s) => s.trim() === ip);
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const path = url.pathname;
+
+    // ---------- IP 黑名单：最前置拦截，早于 OAuth / CORS / 能力探测 / AI ----------
+    // 放最前面是为了「真拦住」：命中后连 429 计数、ai_call 日志都不产生。
+    const clientIp = request.headers.get('CF-Connecting-IP') || request.headers.get('x-forwarded-for') || '';
+    if (isBlockedIp(clientIp, env)) {
+      console.log(JSON.stringify({ event: 'ip_blocked', ip: clientIp, ts: new Date().toISOString() }));
+      return json({ error: 'ip-blocked' }, 403, { 'Access-Control-Allow-Origin': request.headers.get('Origin') || '' });
+    }
 
     // ---------- GitHub OAuth 路由（页面跳转，不走 CORS） ----------
     if (path === '/auth/github') {

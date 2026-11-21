@@ -56,6 +56,24 @@ Worker 现在支持 `parts` 数组（OpenAI 兼容的 `text` / `image_url` data 
 命令行实时看：`npx wrangler tail shuangxiugou-ai-worker`（开着的窗口里实时打印）。
 日志里还有 Cloudflare 自动附带的 `cf-connecting-ip`、国家/城市/ASN/CF-Ray 等元数据。
 
+### 拦指定 IP（2026-11-21 新增）
+
+查到滥用 IP 后要真拦，在 Cloudflare 边缘直接 403，不消耗 neurons。两种维护方式：
+
+**方式 A — secret（推荐，免重新部署）**：多个 IP 用英文逗号分隔。
+```bash
+npx wrangler secret put BLOCKED_IPS      # 粘贴 IP，如 1.2.3.4,5.6.7.8
+npx wrangler secret delete BLOCKED_IPS   # 撤销全部
+```
+改 secret 即时生效，不用 `deploy`。
+
+**方式 B — 源码静态数组**：改 `src/worker.js` 顶部 `BLOCKED_IPS`，再 `npx wrangler deploy`。
+两种来源取并集。命中返回 `403 {"error":"ip-blocked"}`，并写 `event=ip_blocked` 日志。
+
+边界：只认连接层 `CF-Connecting-IP`（前端伪造不了），**精确匹配 IP 字符串，不支持网段/CIDR**；
+VPN / 运营商 NAT 会让多个用户共用出口 IP，封之前先确认，避免连坐。WAF 的 IP 拦截规则
+需要自有域名（zone），本站 `workers.dev` 无 zone，所以走 Worker 内这道黑名单。
+
 ### 坑：视觉模型首次使用必须先同意 Meta 协议（2026-11-21 实测）
 
 视觉模型 `@cf/meta/llama-3.2-11b-vision-instruct` 受 Meta License 约束，

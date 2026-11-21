@@ -224,6 +224,48 @@ async function main() {
     check('外链被过滤，只留 data URL', Array.isArray(content) && content.length === 2 && content[1].image_url.url === dataUrl);
   }
 
+  console.log('== ⑫ IP 黑名单（2026-11-21）==');
+  {
+    // 用 secret 路径注入黑名单 IP，避免改源码数组。CF-Connecting-IP 由环境桩注入。
+    const blockedIp = '198.51.100.66'; // 文档保留地址 TEST-NET-2
+    const mkIpReq = (ip) => {
+      const req = new Request('https://ai.example.workers.dev/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Origin': SITE_ORIGIN },
+        body: JSON.stringify({ question: '加班费' }),
+      });
+      Object.defineProperty(req, 'headers', {
+        value: new Headers({ 'Content-Type': 'application/json', 'Origin': SITE_ORIGIN, 'CF-Connecting-IP': ip }),
+      });
+      return req;
+    };
+    // ① 命中名单：403 ip-blocked，且不调 AI
+    env.calls.length = 0;
+    env.BLOCKED_IPS = '198.51.100.55, ' + blockedIp + ', 203.0.113.1'; // 逗号+空格分隔也要能解析
+    const hit = await worker.fetch(mkIpReq(blockedIp), env);
+    check('黑名单 IP → 403', hit.status === 403);
+    check('错误码 ip-blocked', (await hit.json()).error === 'ip-blocked');
+    check('黑名单命中不调 AI（不烧 neurons）', env.calls.length === 0);
+    // ② 未命中：正常 200（名单里别的 IP 不受影响）
+    env.calls.length = 0;
+    const miss = await worker.fetch(mkIpReq('192.0.2.44'), env);
+    check('非黑名单 IP 正常 200', miss.status === 200);
+    check('非黑名单 IP 调了 AI', env.calls.length === 1);
+    // ③ 无 CF-Connecting-IP（本地桩）不受影响
+    env.calls.length = 0;
+    env.BLOCKED_IPS = '';
+    const noIp = await worker.fetch(makeRequest('POST', { question: '加班费' }, SITE_ORIGIN), env);
+    check('名单为空时不误拦', noIp.status === 200 && env.calls.length === 1);
+    delete env.BLOCKED_IPS;
+    // ④ 黑名单对能力探测同样生效（防止绕过探测继续调用）
+    env.BLOCKED_IPS = blockedIp;
+    const capsHit = await worker.fetch(new Request('https://ai.example.workers.dev/api/capabilities', {
+      headers: { Origin: SITE_ORIGIN, 'CF-Connecting-IP': blockedIp },
+    }), env);
+    check('黑名单 IP 连能力探测也被 403', capsHit.status === 403);
+    delete env.BLOCKED_IPS;
+  }
+
   console.log('\n========== 结果：' + passed + ' 项通过，' + failed + ' 项失败 ==========');
   process.exit(failed ? 1 : 0);
 }
