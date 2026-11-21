@@ -4,6 +4,16 @@
 
 ---
 
+### feat：Worker 加结构化日志，可按 IP 溯源滥用（2026-11-21 · 提交 `99ce0051`）
+
+- **背景**：站长追问「后台真能查到哪个 IP 在滥用吗」。核实线上代码后诚实结论：原限流只是内存滑窗（每 IP 20 次/小时、实例间不共享、重启清零），超限仅回 429、不记 IP、不落库——**事后查不到**。
+- **纠正上一轮建议**：WAF 速率限制规则走不通（Worker 在 `workers.dev` 无 zone 可配；免费版 WAF 连 Source IP 计数都不支持）。改用正解 **Workers Logs**（免费层每天 20 万条、保留 3 天）。
+- **实现**：`wrangler.json` 开 `observability`（100% 采样）；`worker.js` 成功调用写 `event=ai_call`（ip/route/image/qlen/neurons）、限流命中写 `event=rate_limited`（ip/hits），**均不记提问正文**。已部署（Version `cd9f0950`），`wrangler tail` 实测抓到 `ai_call` 日志含真实 IP，Cloudflare 还自动附带 cf-connecting-ip/国家/城市/ASN/CF-Ray。
+- **查法**：Dashboard → Workers & Pages → 该 Worker → Observability/Logs，搜 `ai_call`/`rate_limited` 按 ip 聚合；或 `npx wrangler tail shuangxiugou-ai-worker` 实时看。
+- 边界写进 README：日志能事后追溯，限流仍粗（防单 IP 不防分布式），两者互补。test-ai-worker 44/0、verify 全绿。
+
+---
+
 ### docs：记录 CF Worker 部署成功 + Windows 三坑 + Meta 视觉模型协议坑（2026-11-21 · 提交 `39a49aec`）
 
 - **AI 全线闭环**：站长完成 `npx wrangler deploy`，线上 `/api/capabilities` 返回 200 + `vision:true` + visitorIp；纯文本与带图请求实测均 200（带图答「红色」），CF 线路图片/文档识别正式可用。Version ID `534d4464`。
