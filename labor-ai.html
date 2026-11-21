@@ -7,12 +7,12 @@
   <!-- SEO：OG + canonical（2026-11-21 补齐）-->
   <meta property="og:type" content="article" />
   <meta property="og:title" content="劳动法小助手 · 加班费与双休权益在线查询｜双休购" />
-  <meta property="og:description" content="劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。Cloudflare 线路免费开放，国内线路登录 GitHub 并点 Star 即用。本站不构成法律意见。" />
+  <meta property="og:description" content="劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。两条线路均可直接提问；未登录每小时 10 次，登录后 20 次；上传附件需登录并 Star。本站不构成法律意见。" />
   <meta property="og:url" content="https://dujeongil-galaxy.github.io/shuangxiugou/labor-ai.html" />
   <meta property="og:image" content="https://dujeongil-galaxy.github.io/shuangxiugou/assets/og-cover.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="canonical" href="https://dujeongil-galaxy.github.io/shuangxiugou/labor-ai.html" />
-<meta name="description" content="劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。Cloudflare 线路免费开放，国内线路登录 GitHub 并点 Star 即用。本站不构成法律意见。" />
+<meta name="description" content="劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。两条线路均可直接提问；未登录每小时 10 次，登录后 20 次；上传附件需登录并 Star。本站不构成法律意见。" />
 <style>
 :root{
   --bg:#eef1f6; --card:#ffffff; --ink:#1d2433; --sub:#5b6478;
@@ -144,7 +144,7 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
   <!-- SXG-AISEO:BEGIN -->
 <meta property="og:site_name" content="双休购 ShuangxiuGo" />
 <meta name="twitter:title" content="劳动法小助手" />
-<meta name="twitter:description" content="劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。Cloudflare 线路免费开放，国内线路登录 GitHub 并点 Star 即用。本站不构成法律意见。" />
+<meta name="twitter:description" content="劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。两条线路均可直接提问；未登录每小时 10 次，登录后 20 次；上传附件需登录并 Star。本站不构成法律意见。" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -170,7 +170,7 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
       "@id": "https://dujeongil-galaxy.github.io/shuangxiugou/labor-ai.html#webpage",
       "url": "https://dujeongil-galaxy.github.io/shuangxiugou/labor-ai.html",
       "name": "劳动法小助手",
-      "description": "劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。Cloudflare 线路免费开放，国内线路登录 GitHub 并点 Star 即用。本站不构成法律意见。",
+      "description": "劳动法小助手：免费在线查询加班费、双休权益、劳动仲裁流程，支持上传工资条、合同、聊天记录截图由 AI 分析。两条线路均可直接提问；未登录每小时 10 次，登录后 20 次；上传附件需登录并 Star。本站不构成法律意见。",
       "inLanguage": "zh-CN",
       "isPartOf": {
         "@id": "https://dujeongil-galaxy.github.io/shuangxiugou/#website"
@@ -199,7 +199,7 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
 <div class="route-bar" id="routeBar">
   <span class="rb-label">线路</span>
   <button class="route-btn" id="btnCF">Cloudflare（免费开放）</button>
-  <button class="route-btn" id="btnCN">国内直连 · Star 即开</button>
+  <button class="route-btn" id="btnCN">国内直连</button>
 </div>
 <div class="route-tip" id="routeTip"></div>
 <div class="ip-notice" id="ipNotice">正在获取你的访问 IP…</div>
@@ -258,12 +258,15 @@ var CFG = {
   }
 };
 
-/* 门槛（2026-11-21 站长改）：Cloudflare 免费开放；国内文字线路 Star 即开；
-   图片/文档上传需 Star 满 3 天；取消 Star 会被拉黑，重新 Star 也不恢复。
+/* 门槛（2026-11-21 站长改版）：文字问答不设 Star 门槛，两条线路都能直接用。
+   额度只看登录状态：未登录 = 无 Star，按 10 次/小时；登录按 20 次/小时。
+   附件上传例外：必须登录且已 Star，两条线路一律锁死，不看 Star 天数。
    localStorage 键与 header-menu-patch.js（首页 OAuth 回调）对齐。 */
-var STAR_ATTACH_DAYS = 3;          // 仅附件功能需要，文字线路不看天数
+var RATE_FULL = 20;               // 已登录：每小时次数（沿用 Cloudflare 现行规则）
+var RATE_HALF = 10;               // 未登录：一律减半，国内外同口径
+var RATE_WINDOW_MS = 3600 * 1000; // 滑窗 1 小时（国内直连本地计数用）
+var CN_RATE_KEY = 'sxg_ai_cn_rate'; // 国内直连的本地滑窗计数
 var REPO_URL = "https://github.com/dujeongil-galaxy/shuangxiugou";
-var BLACKLIST_KEY = 'sxg_ai_blacklisted'; // 取消 Star → 拉黑标记（永久，重新 Star 不解除）
 
 /* 附件上限：单图 5MB / 单文档 10MB / 最多 3 个；base64 膨胀约 1.33 倍，防止请求体失控 */
 var ATTACH_LIMIT = { max: 3, imageBytes: 5 * 1024 * 1024, docBytes: 10 * 1024 * 1024 };
@@ -304,21 +307,36 @@ var attachments = [];   // {id,name,kind,dataUrl,text,thumb,status}
 var attachSeq = 0;
 var capsCache = null;   // CF Worker 能力探测结果（是否支持 vision）
 
-/* ===== Star 状态判定（读首页 OAuth 回调写入的 localStorage）=====
-   cnUnlocked：登录 + Star 即开（不看天数）；attachUnlocked：再满 3 天；
-   blacklisted：取消过 Star → 永久拉黑，两条线路都不放行。 */
+/* ===== 登录 / Star 状态判定（读首页 OAuth 回调写入的 localStorage）=====
+   未登录一律视作无 Star；quotaLimit 只看登录状态（10 / 20 次每小时）；
+   attachUnlocked 要求登录 + Star，且按顺序执行（锁死，不看天数、无历史豁免）。 */
 function starStatus(){
   var logged = localStorage.getItem('sxg_github_logged_in') === '1';
   var hasStar = localStorage.getItem('sxg_github_has_star') === '1';
   var days = parseInt(localStorage.getItem('sxg_star_days') || '0', 10) || 0;
   var date = localStorage.getItem('sxg_star_date') || '';
-  var blacklisted = localStorage.getItem(BLACKLIST_KEY) === '1';
-  var cnUnlocked = logged && hasStar && !blacklisted;
   return {
-    logged: logged, star: hasStar, days: days, date: date, blacklisted: blacklisted,
-    cnUnlocked: cnUnlocked,
-    attachUnlocked: cnUnlocked && days >= STAR_ATTACH_DAYS,
+    logged: logged, star: hasStar, days: days, date: date,
+    quotaLimit: logged ? RATE_FULL : RATE_HALF,
+    attachUnlocked: logged && hasStar,
   };
+}
+
+/* 国内直连是浏览器直连硅基流动、没有服务端限流，这里用本地滑窗补一份
+   与 Cloudflare 同口径的粗限流（防君子；真要挡恶意 IP 走 Worker 黑名单）。 */
+function cnRateOk(){
+  var limit = starStatus().quotaLimit;
+  var now = Date.now();
+  var hits = [];
+  try{
+    var raw = JSON.parse(localStorage.getItem(CN_RATE_KEY) || '[]');
+    if (Array.isArray(raw)) hits = raw;
+  }catch(e){ hits = []; }
+  hits = hits.filter(function(t){ return typeof t === 'number' && now - t < RATE_WINDOW_MS; });
+  var ok = hits.length < limit;
+  if (ok) hits.push(now);
+  try{ localStorage.setItem(CN_RATE_KEY, JSON.stringify(hits)); }catch(e){}
+  return ok;
 }
 
 /* 当前线路：默认 cf；未解锁国内线路时强制 cf */
@@ -332,38 +350,24 @@ function renderRoute(){
   var st = starStatus();
   btnCF.classList.toggle('active', currentRoute === 'cf');
   btnCN.classList.toggle('active', currentRoute === 'cn');
-  btnCN.classList.toggle('locked', !st.cnUnlocked);
-  btnCN.textContent = st.blacklisted ? '国内直连 · 已拉黑'
-    : st.cnUnlocked ? '国内直连 ✓已解锁' : '国内直连 · Star 即开';
-  if (st.blacklisted){
-    routeTip.innerHTML = '<b>你的访问已被拉黑</b>：此前取消过本仓库的 Star，按规则不予恢复——即使重新 Star 也不再开放国内线路。Cloudflare 线路仍可免费使用。';
-    if (currentRoute === 'cn') currentRoute = 'cf';
-  } else if (st.cnUnlocked){
-    var att = st.attachUnlocked
-      ? '图片/文档上传已开放（Star ' + st.days + ' 天 ≥ ' + STAR_ATTACH_DAYS + ' 天）。'
-      : '文字问答已开放；图片/文档上传需 Star 满 ' + STAR_ATTACH_DAYS + ' 天（当前 ' + st.days + ' 天，还差 ' + (STAR_ATTACH_DAYS - st.days) + ' 天）。';
-    routeTip.innerHTML = '国内线路已解锁（Star ' + st.days + ' 天' + (st.date ? ' · ' + esc(st.date) : '') + '）。' + att
-      + ' <b>请保持 Star，取消将被拉黑且重新 Star 也不恢复。</b>';
-  } else {
-    routeTip.innerHTML = 'Cloudflare 线路免费开放，无需登录。<a href="' + REPO_URL + '" target="_blank" rel="noopener noreferrer">登录 GitHub 并给本仓库点 Star</a>，国内线路即刻开放（图片/文档上传需满 ' + STAR_ATTACH_DAYS + ' 天）。';
-  }
+  btnCN.classList.remove('locked');
+  btnCN.textContent = '国内直连';
+  var quota = st.logged
+    ? '每小时 ' + st.quotaLimit + ' 次'
+    : '每小时 ' + st.quotaLimit + ' 次（未登录减半）';
+  var att = st.attachUnlocked
+    ? '图片/文档上传已开放。'
+    : '上传图片/文档需登录 GitHub 并给本仓库点 Star（两条线路通用）。';
+  var starLink = (st.logged && !st.star)
+    ? ' <a href="' + REPO_URL + '" target="_blank" rel="noopener noreferrer">去点 Star 解锁附件</a>。'
+    : '';
+  routeTip.innerHTML = '两条线路均可直接提问，当前额度 ' + quota + '。' + att + starLink;
   btnCF.classList.toggle('active', currentRoute === 'cf');
   btnCN.classList.toggle('active', currentRoute === 'cn');
   renderAttachGate();
 }
 btnCF.addEventListener('click', function(){ currentRoute = 'cf'; renderRoute(); });
-btnCN.addEventListener('click', function(){
-  var st = starStatus();
-  if (st.blacklisted){
-    routeTip.innerHTML = '<b>你的访问已被拉黑</b>：取消过 Star 后不予恢复，重新 Star 也不开放。请继续使用免费的 Cloudflare 线路。';
-    return;
-  }
-  if (!st.cnUnlocked){
-    routeTip.innerHTML = '国内线路需<b>登录 GitHub 并点 Star</b>（点了即刻开放）。<a href="' + REPO_URL + '" target="_blank" rel="noopener noreferrer">去点 Star</a>。';
-    return;
-  }
-  currentRoute = 'cn'; renderRoute();
-});
+btnCN.addEventListener('click', function(){ currentRoute = 'cn'; renderRoute(); });
 
 function esc(s){
   return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
@@ -398,19 +402,17 @@ var fileInput  = document.getElementById('fileInput');
 var fileBtn    = document.getElementById('fileBtn');
 var fileHint   = document.getElementById('fileHint');
 
-/* 附件门禁（2026-11-21）：不论哪条线路，图片/文档上传都要登录 + Star 满 3 天；
-   拉黑用户不可用；未达门槛时文件入口禁用并说明原因。文字问答不受此限。 */
+/* 附件门禁（2026-11-21 站长改版）：登录 + Star 才给传，两条线路一律锁死。
+   不再看 Star 天数，也没有「取消过就永久关闭」的历史豁免规则。 */
 function renderAttachGate(){
   var st = starStatus();
   var ok = st.attachUnlocked;
   fileBtn.classList.toggle('busy', !ok);
-  fileBtn.textContent = ok ? '＋ 附件' : (st.blacklisted ? '附件 · 已拉黑' : '＋ 附件 · 需 Star ' + STAR_ATTACH_DAYS + ' 天');
+  fileBtn.textContent = ok ? '＋ 附件' : '＋ 附件 · 需 Star';
   fileInput.disabled = !ok;
-  if (!ok && !attachments.length){
-    var why = st.blacklisted ? '你的访问已被拉黑，附件功能不可用。'
-      : st.cnUnlocked ? '图片/文档上传需 Star 满 ' + STAR_ATTACH_DAYS + ' 天（当前 ' + st.days + ' 天）。'
-      : '图片/文档上传需登录 GitHub 并 Star 满 ' + STAR_ATTACH_DAYS + ' 天。';
-    setAttachHint(why, true);
+  if (!ok){
+    if (attachments.length){ attachments = []; renderAttachments(); }
+    setAttachHint('上传图片/文档需登录 GitHub 并给本仓库点 Star（两条线路通用）。', true);
   }
 }
 
@@ -516,8 +518,7 @@ async function parsePdf(file){
 async function handleFiles(fileList){
   var st = starStatus();
   if (!st.attachUnlocked){
-    setAttachHint(st.blacklisted ? '你的访问已被拉黑，附件功能不可用。'
-      : '上传图片/文档需登录 GitHub 并 Star 满 ' + STAR_ATTACH_DAYS + ' 天（当前 ' + st.days + ' 天）。', true);
+    setAttachHint('上传图片/文档需登录 GitHub 并给本仓库点 Star（两条线路通用）。', true);
     return;
   }
   var accepted = 0;
@@ -661,6 +662,17 @@ async function doSend(){
   if (attachments.some(function(a){ return a.status === 'parsing'; })){
     setAttachHint('附件还在解析，请稍候…', true); return;
   }
+  /* 附件锁死：发送前再判一次，绕过禁用的文件入口也发不出去 */
+  if (attachments.length && !starStatus().attachUnlocked){
+    attachments = []; renderAttachments();
+    setAttachHint('上传图片/文档需登录 GitHub 并给本仓库点 Star（两条线路通用）。', true);
+    return;
+  }
+  /* 国内直连本地限流：未登录 10 次/小时、登录 20 次/小时，与 CF 同口径 */
+  if (currentRoute === 'cn' && !cnRateOk()){
+    addMsg("ai", '请求过于频繁将触发短时限流，请间隔片刻再试。', true);
+    return;
+  }
   inp.value = "";
   busy = true; send.disabled = true; send.textContent = "回复中…";
   var parts = buildParts(q || '请分析我上传的附件');
@@ -685,7 +697,7 @@ async function doSend(){
   var bub = addMsg("ai", "");
   var full = "";
 
-  /* 国内线路需要 Key；未解锁时 currentRoute 恒为 cf，这里只是双保险 */
+  /* 国内线路需要 Key；缺 Key 时给明确提示 */
   if (currentRoute === 'cn'){
     var key = _restoreKey();
     if (!key || key.indexOf("PLACEHOLDER") >= 0){
@@ -774,7 +786,10 @@ async function askCF(question, history, parts){
   var res = await fetch(CFG.cf.endpoint, {
     method:"POST",
     headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ question: question, history: history, route: CFG.cf.route, parts: parts })
+    body: JSON.stringify({
+      question: question, history: history, route: CFG.cf.route, parts: parts,
+      quotaTier: starStatus().logged ? 'full' : 'half'
+    })
   });
   if (!res.ok){
     var t = await res.text();

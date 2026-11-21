@@ -6648,20 +6648,32 @@ section('21c. 首页滑到底部按钮');
   check(/<script[^>]*src="\.\/ai-notice-patch\.js\?v=3"/.test(noticeHtmlNoCmt),
     '首页活跃引用 ai-notice-patch.js?v=3（非注释，文案变更 bump 破缓存）');
 
-  // labor-ai.html 必须：双线路 + Star 分层门槛（国内即开/附件 3 天/取消拉黑）+ 两处免责声明
+  // labor-ai.html 必须：双线路 + 新权限矩阵（登录 20 / 未登录 10；附件登录+Star 才开）+ 两处免责声明
   {
     const la = read('labor-ai.html');
-    check(/sxg_github_logged_in/.test(la) && /sxg_star_days/.test(la) && /STAR_ATTACH_DAYS = 3/.test(la),
-      '新页面读取 Star 状态；附件门槛 3 天（国内文字线路改为 Star 即开，不再按天数）');
+    const hmp = read('header-menu-patch.js');
+    check(/sxg_github_logged_in/.test(la) && /sxg_github_has_star/.test(la)
+      && /RATE_FULL = 20/.test(la) && /RATE_HALF = 10/.test(la)
+      && /CN_RATE_KEY = 'sxg_ai_cn_rate'/.test(la),
+      '新页面读取登录/Star 状态；登录 20 次/小时、未登录减半 10 次/小时（国内外同口径）');
     check(/askCN/.test(la) && /askCF/.test(la) && /api\.siliconflow\.cn/.test(la) && /workers\.dev/.test(la),
       '新页面双线路齐备（国内硅基流动 + Cloudflare Worker）');
-    check(/currentRoute = 'cf'/.test(la) && /cnUnlocked/.test(la) && /attachUnlocked/.test(la),
-      '默认走 Cloudflare；国内线路 Star 即开（cnUnlocked）、附件另判 3 天（attachUnlocked）');
-    check(/sxg_ai_blacklisted/.test(la) && /sxg_ai_ever_starred/.test(read('header-menu-patch.js'))
-      && /localStorage\.setItem\('sxg_ai_blacklisted', '1'\)/.test(read('header-menu-patch.js'))
-      && /取消将被自动拉黑/.test(read('header-menu-patch.js'))
-      && /重新 Star 也不(再)?(恢复|开放)/.test(la),
-      '取消 Star 拉黑：首页 OAuth 回调写 ever_starred→blacklisted，AI 页明确「重新 Star 不再恢复」');
+    check(/currentRoute = 'cf'/.test(la) && /quotaLimit: logged \? RATE_FULL : RATE_HALF/.test(la)
+      && /function cnRateOk\(\)/.test(la) && /hits\.length < limit/.test(la)
+      && /quotaTier: starStatus\(\)\.logged \? 'full' : 'half'/.test(la) && !/cnUnlocked/.test(la),
+      '默认走 Cloudflare；文字问答两条线路都开放，额度只看登录态（CF 声明档位 + CN 本地滑窗）');
+    check(/attachUnlocked: logged && hasStar,/.test(la) && !/STAR_ATTACH_DAYS/.test(la)
+      && !/attachUnlocked[^\n]*days\s*>=\s*3/.test(la)
+      && /fileInput\.disabled = !ok/.test(la)
+      && /if \(attachments\.length && !starStatus\(\)\.attachUnlocked\)/.test(la)
+      && /if \(!st\.attachUnlocked\)/.test(la),
+      '附件锁死：登录 + Star 才放行，不看天数；入口禁用、选文件、发送前共三道门');
+    check(!/sxg_ai_blacklisted|sxg_ai_ever_starred|拉黑/.test(la)
+      && !/sxg_ai_blacklisted|sxg_ai_ever_starred|拉黑/.test(hmp)
+      && !/localStorage\.setItem\('sxg_ai_blacklisted'/.test(hmp),
+      '旧「取消 Star 永久拉黑」规则已彻底移除，AI 页与首页回调都不再写/说拉黑');
+    check(/header-menu-patch\.js\?v=13/.test(read('index.html')),
+      '首页脚本内容已变，缓存号 bump 到 v13');
     check(/ipNotice/.test(la) && /visitorIp/.test(la) && /个人敏感信息/.test(la)
       && /请求过于频繁将触发短时限流/.test(la) && /请间隔片刻再试/.test(la),
       '安全公告：显示访问 IP + 勿发敏感信息 + 高频只说「触发短时限流、间隔再试」（不谎称封禁）');
@@ -6678,6 +6690,28 @@ section('21c. 首页滑到底部按钮');
         && /请间隔片刻再试/.test(askBody) && !/ip-blocked|封禁|被封|稍后即可恢复/.test(askBody),
         '§21h-2 askCF 对 403/429 统一温和提示，不向用户透出内部错误码或封禁字眼',
         '403 原样回显 {"error":"ip-blocked"} → 等于告诉用户被封，与「不提示封禁」口径冲突');
+    }
+    // §21h-3（2026-11-21 站长改版）：登录 20 次/小时、未登录一律减半 10 次/小时；
+    // Star 只管附件，不再决定文字问答。两个后端 + 前端必须同一套口径。
+    {
+      const workerSrc = read('ai-worker/src/worker.js');
+      const aliSrc = read('ai-worker-aliyun/index.mjs');
+      check(/const RATE_LIMIT_FULL = 20/.test(workerSrc) && /const RATE_LIMIT_HALF = 10/.test(workerSrc)
+        && /quotaTier === 'full' \? RATE_LIMIT_FULL : RATE_LIMIT_HALF/.test(workerSrc)
+        && /recent\.length >= rateLimit/.test(workerSrc) && /tier: quotaTier/.test(workerSrc),
+        '§21h-3 CF Worker 按 quotaTier 选上限：登录 20 / 未登录 10，日志带档位',
+        '删掉 half 档 → 未登录仍按 20 次跑，减半口径落空');
+      check(/const RATE_LIMIT_FULL = 20/.test(aliSrc) && /const RATE_LIMIT_HALF = 10/.test(aliSrc)
+        && /quotaTier === 'full' \? RATE_LIMIT_FULL : RATE_LIMIT_HALF/.test(aliSrc)
+        && /function checkRate\(ip, limit\)/.test(aliSrc) && /checkRate\(clientIp\(ev\), rateLimit\)/.test(aliSrc)
+        && /recent\.length >= limit/.test(aliSrc),
+        '§21h-3 阿里云线路同口径：登录 20 / 未登录 10（checkRate 接收档位上限）',
+        '国内后端仍写死 20 → 国内外限流不一致，与站长「一律减半」冲突');
+      check(/quotaTier/.test(read('scripts/test-ai-worker.cjs'))
+        && /'half'/.test(read('scripts/test-ai-worker.cjs'))
+        && /quotaTier: 'half'/.test(read('scripts/test-ai-worker-aliyun.cjs')),
+        '§21h-3 两端单测都覆盖未登录 10 次上限（第 11 次判红）',
+        '只测 20 次老口径 → 减半逻辑回归无人发现');
     }
     check(/IPIP_ENDPOINT = 'https:\/\/myip\.ipip\.net\/json'/.test(la)
       && /IPIFY_ENDPOINT = 'https:\/\/api\.ipify\.org\?format=json'/.test(la)
@@ -6799,8 +6833,9 @@ section('21c. 首页滑到底部按钮');
   check(/question\.length > 500/.test(worker),
     'question 超 500 字拒绝（400）');
   // 限流
-  check(/recent\.length >= 20/.test(worker),
-    '每 IP 每小时 20 次限流（429）');
+  check(/recent\.length >= rateLimit/.test(worker)
+    && /RATE_LIMIT_FULL = 20/.test(worker) && /RATE_LIMIT_HALF = 10/.test(worker),
+  '每 IP 滑窗限流（登录 20 / 未登录 10 次每小时，429）');
   // IP 黑名单（2026-11-21）：静态数组 + secret 双来源，最前置拦截，命中不调 AI
   check(/const BLOCKED_IPS = \[/.test(worker)
     && /function isBlockedIp\(ip, env\)/.test(worker)
@@ -6908,8 +6943,8 @@ section('21c. 首页滑到底部按钮');
     '阿里云函数实现 OpenAI 兼容（百炼 DashScope）调用');
   check(/process\.env\.DASHSCOPE_API_KEY/.test(aliyun) && !/sk-[A-Za-z0-9]{16,}/.test(aliyun),
     '密钥只从环境变量读，源码不落明文 Key');
-  check(/ALLOWED_ORIGINS\.includes\(origin\)/.test(aliyun) && /recent\.length >= RATE_LIMIT/.test(aliyun),
-    '阿里云侧 CORS 白名单与每 IP 限流口径与 Worker 对齐');
+  check(/ALLOWED_ORIGINS\.includes\(origin\)/.test(aliyun) && /recent\.length >= limit/.test(aliyun),
+    '阿里云侧 CORS 白名单与每 IP 分档限流口径与 Worker 对齐');
   {
     const rd = read('ai-worker-aliyun/README.md');
     check(/API-KEY|API Key/.test(rd) && /百炼/.test(rd),

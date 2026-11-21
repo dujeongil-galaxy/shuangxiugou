@@ -22,7 +22,9 @@
    ③ 上下文截断：历史消息最多带 4 轮，单条 200 字，防 prompt 注入拉爆 token
    ④ 系统提示词锁定角色：只答劳动法/双休/本站数据口径，拒绝无关话题
    ⑤ max_tokens 限制输出（输出比输入贵 6.6 倍，输出是 neuron 大头）
-   ⑥ 每 IP 内存限流（滑窗 20 次/小时）——免费层没 KV，够用的粗限流
+   ⑥ 每 IP 内存限流（滑窗：登录 20 次/小时，未登录减半 10 次/小时）——
+      免费层没 KV，够用的粗限流；quotaTier 是前端声明，不是鉴权凭据，
+      伪造最多把额度从 10 抬到 20，恶意刷量仍由⑦的黑名单在边缘挡。
    ⑦ IP 黑名单（连接层 IP 精确匹配）——命中即在边缘挡掉，不调 AI、不烧额度
 
    跑法
@@ -40,6 +42,10 @@
 const BLOCKED_IPS = [
   // '1.2.3.4', // 示例：取消注释并换成要拦的 IP
 ];
+
+// 每 IP 滑窗上限（2026-11-21 站长改版）：登录 20 次/小时，未登录一律减半 10 次。
+const RATE_LIMIT_FULL = 20;
+const RATE_LIMIT_HALF = 10;
 
 function isBlockedIp(ip, env) {
   if (!ip || ip === 'unknown') return false;
@@ -137,11 +143,17 @@ export default {
     // ---------- 线路标识（2026-11-13 分流改造，仅作说明用途） ----------
     // 前端按形象分流：A/B/C 走本 Worker（route='cf'），D/E/F 走阿里云（route='cn'），
     // 阿里云未配置时前端回落本 Worker 但仍带 route='cf'（记实际线路）。
-    // 纪律：此字段**不可信**，只影响提示词里的一句「如实说明」，绝不参与鉴权、
-    // 配额、限流、模型选择的任何决策——伪造它顶多让 AI 说错自己是哪条线路。
+    // 纪律：route 字段**不可信**，只影响提示词里的一句「如实说明」，绝不参与鉴权、
+    // 配额、模型选择——伪造它顶多让 AI 说错自己是哪条线路。
     const route = (body.route === 'cf' || body.route === 'cn') ? body.route : '';
 
-    // ---------- 每 IP 限流（内存滑窗，20 次/小时） ----------
+    // 额度档位（2026-11-21）：前端按登录状态声明 full / half，服务端据此选上限。
+    // 这是粗口径的额度提示，不是身份凭据：静态站没有服务端会话，无法验签登录态；
+    // 伪造只能把 10 抬到 20，真正恶意刷量由 IP 黑名单与上游 neurons 日额度兜底。
+    const quotaTier = body.quotaTier === 'full' ? 'full' : 'half';
+    const rateLimit = quotaTier === 'full' ? RATE_LIMIT_FULL : RATE_LIMIT_HALF;
+
+    // ---------- 每 IP 限流（内存滑窗：登录 20 / 未登录 10 次每小时） ----------
     // 注意：Worker 实例在边缘节点间不共享内存，这是「够用的粗限流」——
     // 防的是单 IP 脚本刷，不是精确配额。真要精确配额上 KV/Durable Object。
     const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
@@ -149,10 +161,10 @@ export default {
     if (!globalThis.__sxgRate) globalThis.__sxgRate = new Map();
     const bucket = globalThis.__sxgRate.get(ip) || [];
     const recent = bucket.filter((t) => now - t < 3600 * 1000);
-    if (recent.length >= 20) {
+    if (recent.length >= rateLimit) {
       // 滥用溯源（2026-11-21）：限流命中写结构化日志，Cloudflare 控制台 Workers Logs 可按 IP 查。
-      // 只记 IP/时间/计数，不记提问正文（避免把用户隐私写进日志）。
-      console.log(JSON.stringify({ event: 'rate_limited', ip, hits: recent.length, ts: new Date().toISOString() }));
+      // 只记 IP/档位/时间/计数，不记提问正文（避免把用户隐私写进日志）。
+      console.log(JSON.stringify({ event: 'rate_limited', ip, tier: quotaTier, limit: rateLimit, hits: recent.length, ts: new Date().toISOString() }));
       return json({ error: 'rate-limited', retryAfter: 3600 }, 429, corsHeaders);
     }
     recent.push(now);
@@ -379,8 +391,8 @@ async function handleGitHubCallback(request, env, url) {
     }
   }
 
-  // Star 即开国内线路（不再攒 7 天）；附件 3 天门槛前端按 star_days 自己判。
-  // 拉黑判定也在前端：localStorage 有 sxg_ai_ever_starred 但本次未 Star → 取消过 → 拉黑。
+  // 2026-11-21 新口径：Star 不再决定文字问答（登录即按 20 次/小时），只决定附件上传；
+  // 前端首页回调按 star_check 写登录/Star 状态，AI 页再据此判附件门禁。
   const meetsRequirement = hasStar;
 
   // 重定向回首页，带上结果

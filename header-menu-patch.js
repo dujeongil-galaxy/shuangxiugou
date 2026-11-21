@@ -193,37 +193,26 @@
     const starCheck = urlParams.get('star_check');
     const starDays = parseInt(urlParams.get('star_days') || '0');
     const starDate = urlParams.get('star_date') || '未知';
-    
+
     if (starCheck) {
       let title = '';
       let message = '';
-      const ATTACH_DAYS = 3; // 2026-11-21：国内文字线路 Star 即开；仅附件需满 3 天
 
       if (starCheck === 'success') {
-        // 现在是"点了 Star 即开"。记录 everStarred：将来若取消 Star 再回来，据此判拉黑。
-        localStorage.setItem('sxg_ai_ever_starred', '1');
-        const attDays = starDays;
-        title = '✅ GitHub 登录成功';
-        message = `已确认你给本仓库点了 Star ✅\nStar 日期：${starDate}\n\n国内文字线路即刻开放；图片/文档上传需 Star 满 ${ATTACH_DAYS} 天${attDays >= ATTACH_DAYS ? '（你已满足）' : '（你还差 ' + (ATTACH_DAYS - attDays) + ' 天）'}。\n⚠️ 请保持 Star：取消将被自动拉黑，重新 Star 也不再恢复授权。`;
+        // 2026-11-21 新口径：文字问答不再看 Star，Star 只管附件；不再写历史封禁标记。
         localStorage.setItem('sxg_github_logged_in', '1');
         localStorage.setItem('sxg_github_has_star', '1');
         localStorage.setItem('sxg_star_days', starDays.toString());
         localStorage.setItem('sxg_star_date', starDate);
+        title = '✅ GitHub 登录成功';
+        message = `已确认你给本仓库点了 Star ✅（${starDate}）。\n\n文字问答：已登录，每小时 20 次，Cloudflare 与国内直连均可直接使用。\n图片/文档上传：已开放。`;
       } else {
-        // star_check=failed = 当前没 Star。若曾经 Star 过（everStarred=1）→ 取消过 → 永久拉黑。
-        const everStarred = localStorage.getItem('sxg_ai_ever_starred') === '1';
-        if (everStarred) {
-          localStorage.setItem('sxg_ai_blacklisted', '1');
-          title = '⛔ 已被拉黑';
-          message = '检测到你曾给本仓库点过 Star，现已取消。按本站规则，取消 Star 会被自动拉黑，即使重新 Star 也不再恢复 AI 授权。\nCloudflare 线路仍可免费使用。';
-        } else {
-          title = '⏳ 尚未 Star';
-          message = `你 GitHub 已登录，但还没给本仓库点 Star。点一下 Star，国内文字线路即刻开放（图片/文档上传需满 ${ATTACH_DAYS} 天）。\n⚠️ 点了之后请保持：取消会被拉黑且不可恢复。`;
-        }
         localStorage.setItem('sxg_github_logged_in', '1');
         localStorage.setItem('sxg_github_has_star', '0');
         localStorage.setItem('sxg_star_days', starDays.toString());
         localStorage.setItem('sxg_star_date', starDate);
+        title = '⏳ 尚未 Star';
+        message = `你 GitHub 已登录，但还没给本仓库点 Star。\n\n文字问答：已登录，每小时 20 次，两条线路均可直接使用。\n图片/文档上传：需先给本仓库点 Star（不限天数），取消 Star 后附件会重新关闭。`;
       }
       showModal(title, message, '知道了');
       // 清除 URL 参数，避免刷新重复提示
@@ -238,24 +227,17 @@
       // 先移除之前的监听，避免重复
       const newBtn = loginBtn.cloneNode(true);
       loginBtn.parentNode.replaceChild(newBtn, loginBtn);
-      
+
       newBtn.addEventListener('click', function(e) {
         const isLoggedIn = localStorage.getItem('sxg_github_logged_in');
         if (isLoggedIn === '1') {
           e.preventDefault();
           const hasStar = localStorage.getItem('sxg_github_has_star') === '1';
-          const starDays = parseInt(localStorage.getItem('sxg_star_days') || '0');
           const starDate = localStorage.getItem('sxg_star_date') || '未知';
-          const blacklisted = localStorage.getItem('sxg_ai_blacklisted') === '1';
-          const ATTACH_DAYS = 3;
-
-          if (blacklisted) {
-            showModal('⛔ 已被拉黑', '你此前取消过本仓库的 Star，按规则已被永久拉黑，重新 Star 也不再恢复 AI 授权。Cloudflare 线路仍可免费使用。', '知道了');
-          } else if (hasStar) {
-            const att = starDays >= ATTACH_DAYS ? '图片/文档上传也已开放。' : '图片/文档上传需 Star 满 ' + ATTACH_DAYS + ' 天（还差 ' + (ATTACH_DAYS - starDays) + ' 天）。';
-            showModal('✅ 已解锁', `国内文字线路已开放（Star ${starDays} 天 · ${starDate}）。${att}\n⚠️ 请保持 Star，取消会被拉黑且不可恢复。`, '知道了');
+          if (hasStar) {
+            showModal('✅ 已解锁', `你已登录并 Star 本仓库（${starDate}）。\n文字问答每小时 20 次，Cloudflare / 国内直连均可直接用；图片/文档上传已开放。`, '知道了');
           } else {
-            showModal('⚠️ 未 Starred 仓库', `你 GitHub 已登录，但还没给本仓库点 Star。点一下 Star，国内文字线路即刻开放（图片/文档上传需满 ${ATTACH_DAYS} 天）。\n⚠️ 点了请保持，取消会被拉黑且不可恢复。`, '去 Starred');
+            showModal('⏳ 尚未 Star', `你 GitHub 已登录，文字问答每小时 20 次，两条线路均可直接用。\n点一下 Star 即可开放图片/文档上传（不限天数）。`, '去 Starred');
           }
         } else {
           // 没登录的话，先弹 VPN 提示

@@ -40,7 +40,8 @@
 | 502 | `{ "error": "ai-upstream-error" }` / `{ "error": "empty-answer" }` | 上游异常 |
 
 安全口径与 Worker 版一致：CORS 白名单只放 github.io 子域 + `localhost:18970`；`question` 1~500 字；
-`history` 只收 user/assistant、最多 8 条、单条截 200 字；每 IP 滑窗 20 次/小时；`max_tokens: 2000`。
+`history` 只收 user/assistant、最多 8 条、单条截 200 字；每 IP 滑窗按档位限（登录 20 次/小时、
+未登录减半 10 次/小时，前端传 `quotaTier: full|half`）；`max_tokens: 2000`。
 
 > 已知限制（说实话）：FC 实例会被回收、多实例内存不共享，内存限流只是「够用的粗限流」，
 > 与 Worker 版同级，防单 IP 脚本刷而非精确配额。要精确配额把 `checkRate()` 换成 Redis / Tablestore 计数即可。

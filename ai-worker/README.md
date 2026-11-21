@@ -48,8 +48,10 @@ Worker 现在支持 `parts` 数组（OpenAI 兼容的 `text` / `image_url` data 
 注意区分两者能力：
 - **WAF 速率限制规则走不通**：Worker 跑在 `workers.dev`、没接入自定义域名（无 zone），
   且免费版 WAF 规则连 Source IP 计数都不支持。别去控制台找 WAF。
-- **限流本身仍是粗粒度**：每 IP 20 次/小时的内存滑窗，边缘实例间不共享、重启清零，
-  防单 IP 脚本刷、防不住分布式；但日志能事后追溯，两者互补。
+- **限流本身仍是粗粒度**：每 IP 滑窗按档位限（登录 20 次/小时、未登录减半 10 次/小时），
+  边缘实例间不共享、重启清零，防单 IP 脚本刷、防不住分布式；但日志能事后追溯，两者互补。
+  前端只传 `quotaTier: full|half` 声明档位（静态站没有服务端会话，无法验签登录态），
+  伪造最多抬到 20 次，真正恶意刷量靠 IP 黑名单与上游日额度兜底。
 
 **查日志步骤**：Cloudflare Dashboard → Workers & Pages → `shuangxiugou-ai-worker`
 → **Observability / Logs** → 搜 `ai_call` 或 `rate_limited`，按 `ip` 聚合。
@@ -111,7 +113,7 @@ window.SXG_AI_CONFIG = { endpoint: 'https://shuangxiugou-ai-worker.xxx.workers.d
 |---|---|
 | CORS | 白名单只放行本站 GitHub Pages 域名 + 本地验收端口 |
 | 输入 | question 1~500 字；history 最多 8 条、每条截 200 字、role 白名单；parts 最多 8 段、禁 http 外链、单图 base64 ≤ 7MB |
-| 限流 | 每 IP 滑窗 20 次/小时（内存级，防脚本刷；精确配额需 KV，免费层够用） |
+| 限流 | 每 IP 滑窗：登录 20 次/小时、未登录减半 10 次/小时（内存级，防脚本刷；精确配额需 KV，免费层够用） |
 | 输出 | 纯文本 max_tokens 2000（GLM-4.7-flash 推理需留余量）；带图 1200（视觉模型单价约 1.7 倍） |
 | 角色 | 系统提示词锁定劳动法/双休口径，拒绝无关话题，声明非法律意见 |
 

@@ -12,7 +12,7 @@
      ⑥ env.AI.run 收到正确 model ID 与 max_tokens
      ⑦ 回答透传：answer 字段返回
      ⑧ neurons 配额耗尽 → 429 daily-quota-exhausted
-     ⑨ 每 IP 限流：第 21 次 429 rate-limited
+     ⑨ 每 IP 分档限流：登录第 21 次 429、未登录第 11 次 429（缺省按未登录）
      ⑩ 线路标识 route：cf/cn 各自追加提示词，非法值忽略，响应回声实际线路
    ========================================================================== */
 'use strict';
@@ -173,27 +173,42 @@ async function main() {
     check('非法 route 不改变默认线路', (await rbad.json()).route === 'cf');
   }
 
-  console.log('== ⑨ 每 IP 限流（20 次/小时）==');
+  console.log('== ⑨ 每 IP 分档限流（登录 20 / 未登录 10 次/小时）==');
   {
     // 换个干净 IP 段测（全局 Map 是共享的，用独立 IP 避开上面已消耗的计数）
-    const freshIp = '203.0.113.77';
-    const mkReq = () => {
+    const mkReq = (ip, tier) => {
+      const body = { question: '问' };
+      if (tier) body.quotaTier = tier;
       const req = new Request('https://ai.example.workers.dev/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Origin': SITE_ORIGIN },
-        body: JSON.stringify({ question: '问' }),
+        body: JSON.stringify(body),
       });
       // 桩 CF-Connecting-IP（真环境由 Cloudflare 注入）
       Object.defineProperty(req, 'headers', {
-        value: new Headers({ 'Content-Type': 'application/json', 'Origin': SITE_ORIGIN, 'CF-Connecting-IP': freshIp }),
+        value: new Headers({ 'Content-Type': 'application/json', 'Origin': SITE_ORIGIN, 'CF-Connecting-IP': ip }),
       });
       return req;
     };
+
+    // 登录档：20 次放行，第 21 次 429
     let last = null;
-    for (let i = 0; i < 21; i++) {
-      last = await worker.fetch(mkReq(), env);
+    for (let i = 0; i < 21; i++) last = await worker.fetch(mkReq('203.0.113.77', 'full'), env);
+    check('登录档第 21 次 → 429 rate-limited', last.status === 429 && (await last.json()).error === 'rate-limited');
+
+    // 未登录档：10 次放行，第 11 次 429
+    let ok = 0;
+    for (let i = 0; i < 10; i++) {
+      const r = await worker.fetch(mkReq('203.0.113.78', 'half'), env);
+      if (r.status === 200) ok++;
     }
-    check('第 21 次 → 429 rate-limited', last.status === 429 && (await last.json()).error === 'rate-limited');
+    check('未登录档前 10 次全部放行', ok === 10, ok);
+    last = await worker.fetch(mkReq('203.0.113.78', 'half'), env);
+    check('未登录档第 11 次 → 429 rate-limited', last.status === 429 && (await last.json()).error === 'rate-limited');
+
+    // 老前端不带档位：按未登录档处理（安全默认，不放宽）
+    for (let i = 0; i < 11; i++) last = await worker.fetch(mkReq('203.0.113.79'), env);
+    check('不带档位默认按未登录 10 次限流', last.status === 429 && (await last.json()).error === 'rate-limited');
   }
 
   console.log('== ⑪ 多模态 parts 与能力探测（2026-11-21）==');

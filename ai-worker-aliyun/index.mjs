@@ -16,7 +16,7 @@
    接口（与 Cloudflare 版完全一致）
    --------------------------------
    请求 POST application/json：
-     { "question": "1~500 字", "history": [{"role":"user|assistant","content":"≤200字"}], "route": "cn" }
+     { "question": "1~500 字", "history": [{"role":"user|assistant","content":"≤200字"}], "route": "cn", "quotaTier": "full|half" }
    响应：
      200 { "answer": "…", "route": "cn" }
      400 { "error": "question-required-1-to-500-chars" | "invalid-json" }
@@ -33,7 +33,7 @@
    ③ history 清洗：role 白名单、最多 8 条（4 轮）、单条截 200 字
    ④ 系统提示词锁定角色（与 Worker 同一套文案，含 route 如实说明条款）
    ⑤ max_tokens 限制输出
-   ⑥ 每 IP 滑窗限流 20 次/小时（内存版，见下方「已知限制」）
+   ⑥ 每 IP 滑窗限流：登录 20 次/小时、未登录减半 10 次/小时（内存版，见下方「已知限制」）
    ⑦ API Key 只从环境变量读：DASHSCOPE_API_KEY，代码与仓库里绝不落明文
 
    已知限制（诚实说明，别当它能扛量）
@@ -52,7 +52,8 @@ const SITE_ORIGIN = 'https://dujeongil-galaxy.github.io';
 
 const DASHSCOPE_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
 const DEFAULT_MODEL = 'qwen-plus'; // 可在环境变量 DASHSCOPE_MODEL 覆盖
-const RATE_LIMIT = 20; // 次
+const RATE_LIMIT_FULL = 20; // 已登录：次/小时（与 Cloudflare 现行规则一致）
+const RATE_LIMIT_HALF = 10; // 未登录：一律减半
 const RATE_WINDOW_MS = 3600 * 1000; // 每小时
 
 // 线路说明（与 ai-worker/src/worker.js 的 routeNotice 保持同一套措辞）
@@ -111,10 +112,10 @@ function clientIp(event) {
 
 // 限流：内存滑窗（单函数隔离，方便日后换 Redis）
 const rateBuckets = new Map();
-function checkRate(ip) {
+function checkRate(ip, limit) {
   const now = Date.now();
   const recent = (rateBuckets.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS);
-  if (recent.length >= RATE_LIMIT) return false;
+  if (recent.length >= limit) return false;
   recent.push(now);
   rateBuckets.set(ip, recent);
   // 防 Map 无限膨胀
@@ -170,8 +171,12 @@ export async function handler(event, context) {
   // 线路标识：本函数天然是 cn；若前端误传 cf 也如实保留，只做说明用途
   const route = (body.route === 'cf' || body.route === 'cn') ? body.route : 'cn';
 
+  // 额度档位：前端按登录状态声明，服务端据此选上限（粗口径，不是身份凭据）
+  const quotaTier = body.quotaTier === 'full' ? 'full' : 'half';
+  const rateLimit = quotaTier === 'full' ? RATE_LIMIT_FULL : RATE_LIMIT_HALF;
+
   // ---------- 限流 ----------
-  if (!checkRate(clientIp(ev))) {
+  if (!checkRate(clientIp(ev), rateLimit)) {
     return jsonResponse({ error: 'rate-limited', retryAfter: 3600 }, 429, echoOrigin);
   }
 
