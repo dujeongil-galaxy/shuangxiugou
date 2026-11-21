@@ -4,6 +4,15 @@
 
 ---
 
+### feat：SEO 规则写死 + 奶茶品牌月休聚合页（2026-11-21 · 提交 `148c0e63`）
+
+- 起因：站长确认 Bing 已收录本站（截图显示搜「双休购」能看到官网与知识面板摘要），要求把 SEO 规则写死、并让搜「华为/比亚迪/奶茶品牌」能找到本站。实测泛词搜索本站完全不出现，全是第三方新闻。
+- 核实发现 190 个品牌页三要素已 100% 覆盖、sitemap 全覆盖；真正缺口是 4 个可索引对外页（labor-ai / qq-nainai / success-stories / why-shuangxiugou）缺 OG 与 canonical，以及缺一个承载「奶茶品牌月休」泛词的聚合页。
+- 4 页补 OG/canonical/twitter:card（labor-ai 另补 description）；6 个 noindex 的存档/工具页保持原样。新建 `tea-rest-board.html`（10 品牌月休对照表 + ItemList 结构化数据 + 内链各品牌页 + 地区限定与待核实口径），进 sitemap（priority 0.8）并在 projects.html 挂内链入口。
+- `verify.mjs` §13b-3 写死 6 组断言（对外页四要素 / 190 品牌页三要素 / sitemap 全覆盖 / 中文品牌关键词 / 聚合页三要素与内链 / 内链入口）；节号避开已用的 13c。故障注入 ×4 全判红；全量 2058 项、自检 6/6、关键回归组全过；无头 Edge 实测聚合页通过。
+
+---
+
 ### feat：IP 安全公告加三级降级——CF → ipify → 未知（2026-11-21 · 提交 `a52616fc`）
 
 - 起因：站长问 IP 公告能否改用 GitHub 检测的 IP 或 ip138 API。核实结论：GitHub OAuth 不回传访客 IP（API 无该字段，回调里看到的仍是本站 Worker 的 `CF-Connecting-IP`）；ip138 需 token 且官方禁止前端放 token、免费仅 1000 次、还会把访客 IP 发给第三方，与本站隐私承诺冲突。实测 `api.ipify.org?format=json` 免 token、免费、支持 CORS，选作降级。
