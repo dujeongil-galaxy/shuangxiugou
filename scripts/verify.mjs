@@ -6506,6 +6506,17 @@ section('21c. 首页滑到底部按钮');
       '取消 Star 拉黑：首页 OAuth 回调写 ever_starred→blacklisted，AI 页明确「重新 Star 不再恢复」');
     check(/ipNotice/.test(la) && /visitorIp/.test(la) && /恶意消耗/.test(la) && /个人敏感信息/.test(la),
       '安全公告：显示访问 IP + 勿发敏感信息 + 恶意消耗封禁（文案优化，非逐字照抄）');
+    check(/IPIFY_ENDPOINT = 'https:\/\/api\.ipify\.org\?format=json'/.test(la)
+      && /async function resolveVisitorIp/.test(la)
+      && /capsCache && capsCache\.visitorIp/.test(la)
+      && /source: 'cf'/.test(la) && /source: 'ipify'/.test(la) && /source: 'none'/.test(la)
+      && /data-ip-source/.test(la),
+      'IP 公告三级降级：CF-Connecting-IP → api.ipify.org → 未知，且标记来源供审计',
+      '国内线路连不上 CF 时公告卡在「正在获取」或显示「未知」→ 降级失效');
+    check(/setTimeout\(function\(\)\{ ctl\.abort\(\); \}, 4000\)/.test(la)
+      && /escIp\(j && j\.ip\)/.test(la),
+      'ipify 降级有 4 秒超时 + IP 格式白名单校验（防注入/防挂起）',
+      '无超时 → 公告永久卡住；无格式校验 → 第三方响应可注入 HTML');
     // 全局一致：生效代码里不许残留旧的「按天数才能开国内线路」口径（历史 CHANGELOG / 最近更新是留痕，不改）
     {
       const liveFiles = ['labor-ai.html', 'header-menu-patch.js', 'ai-worker/src/worker.js',
