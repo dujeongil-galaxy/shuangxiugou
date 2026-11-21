@@ -4,6 +4,17 @@
 
 ---
 
+### feat：撤过 Star 永久作废 + AI 开放简历能力（2026-11-21 · 提交 `dc44772e`）
+
+- 背景：站长指出上一轮实时验签只回答「此刻还 Star 吗」，没做到「撤过就永久拉黑、再点回来也拿不到」；另有用户反馈想让 AI 帮写简历，AI 当时虽答应但措辞像越界。
+- Star 永久撤销：首次 Star 时把 GitHub `starred_at`（完整 ISO）沉到 `STAR_RECORD` KV（按数字 uid 存，改名不漂移）；`/api/check-star` 复核时先查撤销标记，再比对当前 `starred_at` 与首次记录，对不上或曾观测到取消 → 写 `star:revoked:*` 并强制回 `not-starred` + `starRevoked:true`，前端据此锁死附件。没绑 KV 时整段跳过，退回纯实时验签（不卡现有部署）。
+- 简历能力：三条线路提示词（国内 `labor-ai.html` / CF Worker / 阿里云函数）统一开放写改简历、求职信、润色经历，明确只用用户给的信息、不编造公司职位时间学历业绩；页面描述、副标题、示例 chip 同步体现。routeNotice 编号顺延到 9。
+- 部署要点：要上线「永久作废」必须先 `wrangler kv namespace create STAR_RECORD` 并把 binding 粘进 `wrangler.json`（与 ai 同级），再设 `STAR_SESSION_SECRET`、`wrangler deploy`；用户重新登录一次拿到带 uid 的令牌。
+- 验证：CF Worker 单测 76/0（新增 KV 全链路 8 项）、阿里云 49/0；verify §21h-7/8 共 6 条断言全绿；故障注入 ×3 判红（禁用撤销逻辑 → 3 项失败；提示词改回拒绝 → 简历断言判红；假 ID 塞配置 → KV 文档断言判红）。
+- 边界：GitHub stargazers 只取第一页 100 条，但列表按时间倒序，刚 Star / 刚重新 Star 的用户都在首页，不影响撤销判定；KV 未绑或故障时安全降级不误锁用户。
+
+---
+
 ### feat：Star 状态实时验签——取消 Star 后附件自动失效（2026-11-21 · 提交 `b8a7b850`）
 
 - 背景：原先 Star 状态是首页 OAuth 那一刻的 localStorage 快照，取消 Star 不自动失效、且可手改伪造；Worker 里的 `/api/check-star` 还是空壳。
