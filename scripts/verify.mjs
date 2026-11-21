@@ -6664,17 +6664,27 @@ section('21c. 首页滑到底部按钮');
       '取消 Star 拉黑：首页 OAuth 回调写 ever_starred→blacklisted，AI 页明确「重新 Star 不再恢复」');
     check(/ipNotice/.test(la) && /visitorIp/.test(la) && /恶意消耗|异常高频/.test(la) && /个人敏感信息/.test(la),
       '安全公告：显示访问 IP + 勿发敏感信息 + 高频限流/取消授权提示（措辞与真实能力一致，不谎称封禁）');
-    check(/IPIFY_ENDPOINT = 'https:\/\/api\.ipify\.org\?format=json'/.test(la)
+    check(/IPIP_ENDPOINT = 'https:\/\/myip\.ipip\.net\/json'/.test(la)
+      && /IPIFY_ENDPOINT = 'https:\/\/api\.ipify\.org\?format=json'/.test(la)
       && /async function resolveVisitorIp/.test(la)
       && /capsCache && capsCache\.visitorIp/.test(la)
-      && /source: 'cf'/.test(la) && /source: 'ipify'/.test(la) && /source: 'none'/.test(la)
-      && /data-ip-source/.test(la),
-      'IP 公告三级降级：CF-Connecting-IP → api.ipify.org → 未知，且标记来源供审计',
-      '国内线路连不上 CF 时公告卡在「正在获取」或显示「未知」→ 降级失效');
-    check(/setTimeout\(function\(\)\{ ctl\.abort\(\); \}, 4000\)/.test(la)
-      && /escIp\(j && j\.ip\)/.test(la),
-      'ipify 降级有 4 秒超时 + IP 格式白名单校验（防注入/防挂起）',
-      '无超时 → 公告永久卡住；无格式校验 → 第三方响应可注入 HTML');
+      && /source: 'cf'/.test(la) && /source: 'ipip'/.test(la) && /source: 'ipify'/.test(la) && /source: 'none'/.test(la)
+      && /data-ip-source/.test(la)
+      && /fetchJsonWithTimeout\(IPIP_ENDPOINT, 8000\)/.test(la)
+      && /fetchJsonWithTimeout\(IPIFY_ENDPOINT, 8000\)/.test(la)
+      && /succeed\(\{ ip: ip, source: 'ipip' \}\)/.test(la),
+      'IP 公告四级降级：CF → 国内 ipip 源 → 国际 ipify 并行竞速 → 未知，标记来源供审计',
+      '国内直连时 ipify 超时被 abort 或 CF 探测挂起 → 公告卡「正在获取」/显示「未知」→ 降级失效');
+    check(/setTimeout\(function\(\)\{ ctl\.abort\(\); \}, 3000\)/.test(la)
+      && /cfSupportsVision\(\)\.then\(renderIpNotice, renderIpNotice\)/.test(la),
+      'CF 能力探测有 3 秒超时 + 失败/超时仍渲染公告（防卡「正在获取」）',
+      'workers.dev 国内挂起 → renderIpNotice 不执行 → 公告永久卡住');
+    check(/escIp\(j && j\.data && j\.data\.ip\)/.test(la)
+      && /escIp\(j && j\.ip\)/.test(la)
+      && /ip !== '未知' \? succeed\(\{ ip: ip, source: 'ipip' \}\) : fail\(\)/.test(la)
+      && /ip !== '未知' \? succeed\(\{ ip: ip, source: 'ipify' \}\) : fail\(\)/.test(la),
+      'IP 降级有格式白名单校验 + 两个源都「失败才让位」（防注入/防假成功覆盖真 IP）',
+      '无格式校验 → 第三方响应可注入 HTML；失败源误判成功 → 覆盖可用 IP');
     // 全局一致：生效代码里不许残留旧的「按天数才能开国内线路」口径（历史 CHANGELOG / 最近更新是留痕，不改）
     {
       const liveFiles = ['labor-ai.html', 'header-menu-patch.js', 'ai-worker/src/worker.js',

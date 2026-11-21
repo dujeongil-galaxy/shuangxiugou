@@ -576,11 +576,17 @@ function buildParts(question){
 function partsHasImage(parts){ return parts.some(function(p){ return p.type === 'image_url'; }); }
 
 /* CF Worker 能力探测：未部署支持 vision 的新版时，图片附件诚实降级，不静默吞掉；
-   顺带从响应里拿 visitorIp（CF-Connecting-IP）用于安全公告。 */
+   顺带从响应里拿 visitorIp（CF-Connecting-IP）用于安全公告。
+   2026-11-21 修订：国内直连 workers.dev 常挂起，原版 fetch 无超时会阻塞 renderIpNotice，
+   导致公告永久停在「正在获取」；这里加 3 秒超时，超时按 CF 不可用处理，IP 改走下方降级源。 */
 async function cfSupportsVision(){
   if (capsCache) return capsCache;
   try{
-    var r = await fetch(CFG.cf.endpoint.replace(/\/$/, '') + '/api/capabilities');
+    var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = ctl ? setTimeout(function(){ ctl.abort(); }, 3000) : null;
+    var r = await fetch(CFG.cf.endpoint.replace(/\/$/, '') + '/api/capabilities',
+      ctl ? { signal: ctl.signal, cache: 'no-store' } : { cache: 'no-store' });
+    if (timer) clearTimeout(timer);
     capsCache = r.ok ? await r.json() : { vision: false };
   }catch(e){ capsCache = { vision: false }; }
   return capsCache;
@@ -588,24 +594,38 @@ async function cfSupportsVision(){
 function escIp(s){
   return typeof s === 'string' && /^[0-9a-fA-F.:, ]{1,80}$/.test(s.trim()) ? s.trim() : '未知';
 }
-/* IP 来源优先级（2026-11-21 站长确认加降级）：
+/* IP 来源优先级（2026-11-21 修订，加入国内直连优先源）：
    ① CF Worker 的 CF-Connecting-IP —— 服务端从连接层拿的真实 IP，前端无法伪造；
-   ② api.ipify.org —— 免 token、免费、支持 CORS；国内线路连不上 workers.dev 时降级；
-   ③ 都失败才显示「未知」。IP 仅用于页面安全警示，不落库、不发给第三方解析服务。
-   4 秒超时，避免公告卡在「正在获取」。 */
+   ② myip.ipip.net —— 国内直连可达（实测约 3.4s、CORS 开放、免 token），国内用户优先；
+   ③ api.ipify.org —— 国际兜底（实测国内约 4.4s，旧的 4s 超时会被 abort）；
+   ④ 全失败才显示「未知」。IP 只回显给用户自己作安全警示，不落库、不发给第三方解析。
+   ②③ 并行竞速，谁先拿到合法 IP 用谁；8 秒超时覆盖国内高延迟，避免公告卡住。 */
+var IPIP_ENDPOINT = 'https://myip.ipip.net/json';
 var IPIFY_ENDPOINT = 'https://api.ipify.org?format=json';
+function fetchJsonWithTimeout(url, ms){
+  return new Promise(function(resolve, reject){
+    var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = ctl ? setTimeout(function(){ ctl.abort(); }, ms) : null;
+    fetch(url, ctl ? { signal: ctl.signal, cache: 'no-store' } : { cache: 'no-store' })
+      .then(function(r){ if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+      .then(function(j){ if (timer) clearTimeout(timer); resolve(j); })
+      .catch(function(e){ if (timer) clearTimeout(timer); reject(e); });
+  });
+}
 async function resolveVisitorIp(){
   var fromCF = capsCache && capsCache.visitorIp;
   if (escIp(fromCF) !== '未知') return { ip: escIp(fromCF), source: 'cf' };
-  try{
-    var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    var timer = ctl ? setTimeout(function(){ ctl.abort(); }, 4000) : null;
-    var r = await fetch(IPIFY_ENDPOINT, ctl ? { signal: ctl.signal, cache: 'no-store' } : { cache: 'no-store' });
-    if (timer) clearTimeout(timer);
-    if (!r.ok) return { ip: '未知', source: 'none' };
-    var j = await r.json();
-    return { ip: escIp(j && j.ip), source: 'ipify' };
-  }catch(e){ return { ip: '未知', source: 'none' }; }
+  return new Promise(function(resolve){
+    var pending = 2, settled = false;
+    function succeed(r){ if (!settled){ settled = true; resolve(r); } }
+    function fail(){ if (--pending === 0 && !settled){ settled = true; resolve({ ip: '未知', source: 'none' }); } }
+    fetchJsonWithTimeout(IPIP_ENDPOINT, 8000)
+      .then(function(j){ var ip = escIp(j && j.data && j.data.ip); ip !== '未知' ? succeed({ ip: ip, source: 'ipip' }) : fail(); })
+      .catch(fail);
+    fetchJsonWithTimeout(IPIFY_ENDPOINT, 8000)
+      .then(function(j){ var ip = escIp(j && j.ip); ip !== '未知' ? succeed({ ip: ip, source: 'ipify' }) : fail(); })
+      .catch(fail);
+  });
 }
 async function renderIpNotice(){
   var box = document.getElementById('ipNotice');
@@ -615,7 +635,8 @@ async function renderIpNotice(){
   box.innerHTML = '你当前访问的 IP 地址是 <b>' + ip + '</b>。请勿向 AI 发送身份证号、住址等个人敏感信息；'
     + '本功能仅限合理使用，<span class="ip-warn">异常高频请求会触发限流，并可能被取消后续 AI 授权</span>。';
 }
-cfSupportsVision().then(renderIpNotice);
+/* 无论 CF 能力探测成功/失败/超时，都必须渲染公告——不能让安全提示卡在「正在获取」。 */
+cfSupportsVision().then(renderIpNotice, renderIpNotice);
 
 function userTextForDisplay(parts){
   return parts.map(function(p){ return p.type === 'text' ? p.text : '[图片附件]'; }).join('\n');
