@@ -6790,6 +6790,21 @@ section('21c. 首页滑到底部按钮');
         && /data-q="[^"]*写一份简历/.test(la),
         '§21h-8 页面描述、副标题、示例 chip 都体现简历能力（SEO 与可见区一致）',
         '提示词开了简历但页面看不出来 → 用户根本不知道这 AI 能写简历');
+      // §21h-9（2026-11-21 站长定规）：取消 Star 后权益永久作废，这条必须写进 AI 提示词，
+      // 否则用户问「取消 Star 会怎样」时 AI 答不出来（代码里判对了也没用）。
+      const starRuleRe = /权益只认第一次/;
+      const starLoseRe = /取消 Star[，,].*永久失效/;
+      const starNoRestoreRe = /重新 Star.*不会恢复/;
+      check(starRuleRe.test(la) && starLoseRe.test(la) && starNoRestoreRe.test(la)
+        && starRuleRe.test(workerKv) && starLoseRe.test(workerKv) && starNoRestoreRe.test(workerKv)
+        && starRuleRe.test(aliPrompt) && starLoseRe.test(aliPrompt) && starNoRestoreRe.test(aliPrompt),
+        '§21h-9 三条线路提示词都写明「取消 Star 权益永久失效、重新 Star 不恢复」（代码判对但 AI 不说=白做）',
+        '提示词没写这条 → 用户问「取消 Star 还能用吗」AI 答不上来，规则存在但没人知道');
+      check(!/取消 Star[^。\n]{0,40}(10 次|20 次|减半|免费)/.test(la)
+        && !/取消 Star[^。\n]{0,40}(10 次|20 次|减半|免费)/.test(workerKv)
+        && !/取消 Star[^。\n]{0,40}(10 次|20 次|减半|免费)/.test(aliPrompt),
+        '§21h-9 提示词讲取消 Star 规则时不写「免费」、不暴露 10/20 档位',
+        '提示词把「免费额度」或具体次数说出去 → 违反对外统一口径');
       const publicMetas = [...la.matchAll(/<meta[^>]*>/g)].map(m => m[0])
         .filter(m => /description/i.test(m));
       check(publicMetas.length >= 3 && publicMetas.every(m => m.includes(PUBLIC_QUOTA_LINE))

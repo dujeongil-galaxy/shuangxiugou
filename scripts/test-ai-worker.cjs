@@ -122,6 +122,10 @@ async function main() {
     check('提示词锁定双休购站点角色', /双休购/.test(msgs[0].content));
     check('提示词开放简历能力（2026-11-21）', /简历/.test(msgs[0].content) && /求职信|润色/.test(msgs[0].content));
     check('提示词禁止编造简历信息', /绝不.*虚构|不编造/.test(msgs[0].content));
+    check('提示词写明取消 Star 权益永久失效且不再恢复（2026-11-21）',
+      /权益只认第一次/.test(msgs[0].content)
+      && /取消 Star.*永久失效/.test(msgs[0].content)
+      && /重新 Star.*不会恢复/.test(msgs[0].content));
 
     const histMsgs = msgs.slice(1, -1);
     check('history 截到 8 条', histMsgs.length === 8);
