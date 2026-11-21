@@ -6672,8 +6672,8 @@ section('21c. 首页滑到底部按钮');
       && !/sxg_ai_blacklisted|sxg_ai_ever_starred|拉黑/.test(hmp)
       && !/localStorage\.setItem\('sxg_ai_blacklisted'/.test(hmp),
       '旧「取消 Star 永久拉黑」规则已彻底移除，AI 页与首页回调都不再写/说拉黑');
-    check(/header-menu-patch\.js\?v=15/.test(read('index.html')),
-      '首页脚本内容已变，缓存号 bump 到 v15');
+    check(/header-menu-patch\.js\?v=16/.test(read('index.html')),
+      '首页脚本内容已变，缓存号 bump 到 v16');
     check(/ipNotice/.test(la) && /visitorIp/.test(la) && /个人敏感信息/.test(la)
       && /请求过于频繁将触发短时限流/.test(la) && /请间隔片刻再试/.test(la),
       '安全公告：显示访问 IP + 勿发敏感信息 + 高频只说「触发短时限流、间隔再试」（不谎称封禁）');
@@ -6703,10 +6703,50 @@ section('21c. 首页滑到底部按钮');
         && !/免费额度/.test(read('privacy.html')),
         '§21h-5 对外文案不写「免费」：按钮只留 Cloudflare，无「免费额度/免费开放」',
         '把「免费开放」括号或「免费额度」写回 → 截图里那两处又出现「免费」字样');
-      check(/header-menu-patch\.js\?v=15/.test(read('index.html'))
-        && !/header-menu-patch\.js\?v=14/.test(read('index.html')),
-        '§21h-5 首页补丁脚本内容已变，缓存号 bump 到 v15',
+      check(/header-menu-patch\.js\?v=16/.test(read('index.html'))
+        && !/header-menu-patch\.js\?v=15/.test(read('index.html')),
+        '§21h-5 首页补丁脚本内容已变，缓存号 bump 到 v16',
         '文案改了但缓存号没 bump → 老访客浏览器仍读旧弹窗文案');
+      // §21h-6（2026-11-21）：Star 状态实时验签——取消 Star 后自动失效、防手改 localStorage。
+      const workerLive = read('ai-worker/src/worker.js');
+      check(/const SESSION_TTL_MS = 30 \* 24 \* 60 \* 60 \* 1000/.test(workerLive)
+        && /async function sealSession\(payload, secret\)/.test(workerLive)
+        && /async function openSession\(token, secret\)/.test(workerLive)
+        && /crypto\.subtle\.digest\('SHA-256', raw\)/.test(workerLive)
+        && /name: 'AES-GCM'/.test(workerLive),
+        '§21h-6 Worker 用 AES-GCM + SHA-256 派生密钥做会话令牌加解密（前端解不开/改不了）',
+        '令牌用可逆明文或弱摘要 → 访客可伪造 Star 状态绕过附件门禁');
+      check(/path === '\/api\/check-star'/.test(workerLive)
+        && /hasStar = r\.status === 204/.test(workerLive)
+        && /user\/starred\/\$\{GITHUB_OWNER\}/.test(workerLive)
+        && /status: hasStar \? 'starred' : 'not-starred'/.test(workerLive),
+        '§21h-6 check-star 用令牌里的 token 实时问 GitHub（204=仍Star/404=已取消）',
+        '只读登录快照 → 取消 Star 后不失效，方案形同虚设');
+      check(/session-unavailable/.test(workerLive) && /invalid-session/.test(workerLive)
+        && /upstream-error/.test(workerLive),
+        '§21h-6 降级三态齐备（未配密钥 / 无效令牌 / 上游故障），不把已 Star 用户误判',
+        '降级直接返回未 Star → 网络抖动就把合法用户锁在门外');
+      check(/satParam = '&sat=' \+ encodeURIComponent\(sat\)/.test(workerLive)
+        && /env\.STAR_SESSION_SECRET && username/.test(workerLive),
+        '§21h-6 OAuth 回调签发加密令牌并随重定向带回（无密钥时不签发，安全降级）',
+        'token 明文进 URL → 泄露到浏览器历史/日志，且前端可改');
+      check(/localStorage\.setItem\('sxg_star_session', sat\)/.test(hmp)
+        && /urlParams\.get\('sat'\)/.test(hmp),
+        '§21h-6 首页回调把 sat 存入 localStorage',
+        '令牌没落地 → labor-ai 页无从复核');
+      check(/async function verifyStarSession\(\)/.test(la)
+        && /\/api\/check-star/.test(la)
+        && /d\.status === 'not-starred'/.test(la)
+        && /localStorage\.setItem\('sxg_github_has_star', nowStar\)/.test(la)
+        && /if \(changed\) renderRoute\(\)/.test(la)
+        && /verifyStarSession\(\);/.test(la),
+        '§21h-6 labor-ai 启动复核：明确状态才更新快照并重渲染，取消 Star 后附件立刻锁死',
+        '复核结果不落地/不重渲染 → 界面仍显示旧的已解锁状态');
+      check(/d\.status === 'invalid-session' \|\| d\.status === 'session-unavailable'/.test(la)
+        && /localStorage\.removeItem\('sxg_star_session'\)/.test(la)
+        && /catch\(e\)/.test(la),
+        '§21h-6 降级不打扰：无效/过期令牌清掉、网络异常静默保留快照',
+        '复核失败就弹提示或强制未登录 → 影响正常访客使用');
       const publicMetas = [...la.matchAll(/<meta[^>]*>/g)].map(m => m[0])
         .filter(m => /description/i.test(m));
       check(publicMetas.length >= 3 && publicMetas.every(m => m.includes(PUBLIC_QUOTA_LINE))

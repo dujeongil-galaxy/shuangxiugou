@@ -281,6 +281,84 @@ async function main() {
     delete env.BLOCKED_IPS;
   }
 
+  console.log('== ⑪ Star 会话令牌与实时验签（2026-11-21）==');
+  {
+    const SECRET = 'unit-test-star-secret';
+    const REAL_FETCH = globalThis.fetch;
+    let starred = true; // 模拟「当前是否仍 Star」，可翻转验证实时性
+    globalThis.fetch = async function (url) {
+      const u = String(url && url.url || url);
+      if (u.includes('github.com/login/oauth/access_token')) {
+        return new Response(JSON.stringify({ access_token: 'gho_unittest_token' }), { status: 200 });
+      }
+      if (u === 'https://api.github.com/user') {
+        return new Response(JSON.stringify({ login: 'unit-tester' }), { status: 200 });
+      }
+      if (u.includes('/user/starred/')) {
+        return new Response(null, { status: starred ? 204 : 404 });
+      }
+      if (u.includes('/stargazers')) {
+        return new Response(JSON.stringify([{ user: { login: 'unit-tester' }, starred_at: '2026-11-01T00:00:00Z' }]), { status: 200 });
+      }
+      return new Response('{}', { status: 200 });
+    };
+    try {
+      const oauthEnv = { GITHUB_CLIENT_SECRET: 'fake-client-secret', STAR_SESSION_SECRET: SECRET };
+      const cb = await worker.fetch(new Request('https://ai.example.workers.dev/auth/github/callback?code=abc', {}), oauthEnv);
+      const loc = cb.headers.get('Location') || '';
+      const sat = new URL(loc).searchParams.get('sat') || '';
+      check('OAuth 回调 302 带加密 sat', cb.status === 302 && !!sat);
+      check('sat 不含明文 token（gho_）', !!sat && !sat.includes('gho_') && sat.length > 40);
+      check('sat 为 base64url（无 +/= 字符）', !/[+/=]/.test(sat));
+
+      const checkReq = (token) => new Request('https://ai.example.workers.dev/api/check-star', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Origin: SITE_ORIGIN },
+        body: JSON.stringify({ sat: token }),
+      });
+
+      // 仍 Star → hasStar true
+      const r1 = await worker.fetch(checkReq(sat), { STAR_SESSION_SECRET: SECRET });
+      const d1 = await r1.json();
+      check('仍 Star → hasStar:true / status:starred', d1.hasStar === true && d1.status === 'starred', d1);
+      check('实时验签回传 username', d1.username === 'unit-tester', d1);
+      check('实时验签回传 starDays≥0', typeof d1.starDays === 'number' && d1.starDays >= 0, d1);
+
+      // 翻转：取消 Star → 同一个令牌再查应立刻变 false（这是方案①的核心价值）
+      starred = false;
+      const r2 = await worker.fetch(checkReq(sat), { STAR_SESSION_SECRET: SECRET });
+      const d2 = await r2.json();
+      check('取消 Star 后同令牌立刻 hasStar:false', d2.hasStar === false && d2.status === 'not-starred', d2);
+      starred = true;
+
+      // 篡改令牌 → 验签失败，不误判为已 Star
+      const tampered = sat.slice(0, -4) + (sat.slice(-4) === 'AAAA' ? 'BBBB' : 'AAAA');
+      const r3 = await worker.fetch(checkReq(tampered), { STAR_SESSION_SECRET: SECRET });
+      const d3 = await r3.json();
+      check('篡改令牌 → invalid-session 且 hasStar:false', d3.status === 'invalid-session' && d3.hasStar === false, d3);
+
+      // 无令牌 / 空令牌
+      const r4 = await worker.fetch(checkReq(''), { STAR_SESSION_SECRET: SECRET });
+      const d4 = await r4.json();
+      check('空令牌 → invalid-session', d4.status === 'invalid-session', d4);
+
+      // 服务端未配 secret → 安全降级
+      const r5 = await worker.fetch(checkReq(sat), {});
+      const d5 = await r5.json();
+      check('未配 STAR_SESSION_SECRET → session-unavailable 降级', d5.status === 'session-unavailable' && d5.hasStar === false, d5);
+
+      // check-star 带 CORS 头（前端跨域 fetch 必需）
+      check('check-star 回显 Origin', r1.headers.get('Access-Control-Allow-Origin') === SITE_ORIGIN);
+      const opt = await worker.fetch(new Request('https://ai.example.workers.dev/api/check-star', {
+        method: 'OPTIONS', headers: { Origin: SITE_ORIGIN },
+      }), { STAR_SESSION_SECRET: SECRET });
+      check('check-star OPTIONS 预检 → 204', opt.status === 204
+        && opt.headers.get('Access-Control-Allow-Methods').includes('POST'));
+    } finally {
+      globalThis.fetch = REAL_FETCH;
+    }
+  }
+
   console.log('\n========== 结果：' + passed + ' 项通过，' + failed + ' 项失败 ==========');
   process.exit(failed ? 1 : 0);
 }

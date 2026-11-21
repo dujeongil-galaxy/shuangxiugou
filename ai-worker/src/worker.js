@@ -270,6 +270,63 @@ function json(obj, status, cors) {
   });
 }
 
+/* ---------- Star 会话令牌（2026-11-21：实现实时验签，替代空壳 /api/check-star）----------
+   为什么需要：本站是静态站，localStorage 里的 Star 状态是 OAuth 登录那一刻的快照，
+   用户取消 Star 后不会自动失效，且懂技术的人可直接改 localStorage 伪造。
+   做法：OAuth 回调拿到 access_token 后，用服务端 secret 把它加密成自包含令牌（AES-GCM，
+   前端解不开、改不了），随重定向带回前端保存；之后 labor-ai 页打开时把令牌发给
+   /api/check-star，服务端解密并用 token 实时问 GitHub「这人现在还 Star 吗」。
+   令牌自带过期时间（30 天），到期后需重新登录；密钥只在 Worker secret 里，不入库。
+   没有 env.STAR_SESSION_SECRET 时全部安全降级：OAuth 照常、只是不签发令牌，
+   check-star 返回 session-unavailable，前端保留原有快照行为不受影响。 */
+const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 天
+
+function b64urlEncode(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function b64urlDecode(str) {
+  let s = String(str).replace(/-/g, '+').replace(/_/g, '/');
+  while (s.length % 4) s += '=';
+  const bin = atob(s);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+// 用 secret 派生 256-bit AES key（先 SHA-256 摘要，再 importKey），
+// 这样任意长度的 secret 都能用；直接把原始字符串当 key 会因长度不对报 Invalid key length。
+async function sessionKey(secret) {
+  const raw = new TextEncoder().encode(String(secret));
+  const digest = await crypto.subtle.digest('SHA-256', raw);
+  return await crypto.subtle.importKey('raw', digest, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+}
+// 加密载荷 → base64url(iv + ciphertext)，前端无法读取/篡改
+async function sealSession(payload, secret) {
+  const key = await sessionKey(secret);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const data = new TextEncoder().encode(JSON.stringify(payload));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data));
+  const merged = new Uint8Array(iv.length + ct.length);
+  merged.set(iv, 0); merged.set(ct, iv.length);
+  return b64urlEncode(merged);
+}
+// 解密 → 校验过期 → 返回载荷；任何异常返回 null（当作无效令牌）
+async function openSession(token, secret) {
+  try {
+    const key = await sessionKey(secret);
+    const merged = b64urlDecode(token);
+    const iv = merged.slice(0, 12);
+    const ct = merged.slice(12);
+    const data = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
+    const payload = JSON.parse(new TextDecoder().decode(data));
+    if (!payload.t || !payload.u || !payload.exp || Date.now() > payload.exp) return null;
+    return payload;
+  } catch (e) {
+    return null;
+  }
+}
+
 // ---------- 线路说明（2026-11-13 分流改造） ----------
 // 前端按形象分流后会在请求体带 route；带了就补一条提示词，让答复在**被问到时**
 // 如实说明本次由哪条线路服务。不带（老前端 / 直接刷接口）则完全不追加，向后兼容。
@@ -337,6 +394,24 @@ async function handleGitHubCallback(request, env, url) {
   let hasStar = false;
   let starDays = 0;
   let starredAtDate = '';
+  let username = '';
+
+  // 先拿当前用户用户名（2026-11-21 实时验签需要：无 Star 用户也要签发令牌，
+  // 这样他后来点了 Star，labor-ai 页复核时也能查出新状态）。失败不致命，降级为空。
+  try {
+    const userResp = await fetch('https://api.github.com/user', {
+      headers: {
+        'Authorization': `token ${accessToken}`,
+        'User-Agent': 'shuangxiugou-ai-worker',
+      },
+    });
+    if (userResp.ok) {
+      const userData = await userResp.json();
+      username = userData.login || '';
+    }
+  } catch (e) {
+    console.log('获取用户名失败:', e.message);
+  }
   
   // 第一步：先快速检测是否 Star
   const starCheckResp = await fetch(`https://api.github.com/user/starred/${GITHUB_OWNER}/${GITHUB_REPO}`, {
@@ -349,19 +424,9 @@ async function handleGitHubCallback(request, env, url) {
 
   if (starCheckResp.status === 204) {
     hasStar = true;
-    
+
     // 第二步：获取 Star 时间（调用 stargazers 接口）
     try {
-      // 先拿当前用户的用户名
-      const userResp = await fetch('https://api.github.com/user', {
-        headers: {
-          'Authorization': `token ${accessToken}`,
-          'User-Agent': 'shuangxiugou-ai-worker',
-        },
-      });
-      const userData = await userResp.json();
-      const username = userData.login;
-      
       // 获取 stargazers 列表（带 starred_at 字段）
       const stargazersResp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/stargazers?per_page=100`, {
         method: 'GET',
@@ -391,19 +456,105 @@ async function handleGitHubCallback(request, env, url) {
     }
   }
 
-  // 2026-11-21 新口径：Star 不再决定文字问答（登录即按 20 次/小时），只决定附件上传；
+  // 2026-11-21 新口径：Star 不再决定文字问答，只决定附件上传；
   // 前端首页回调按 star_check 写登录/Star 状态，AI 页再据此判附件门禁。
   const meetsRequirement = hasStar;
 
-  // 重定向回首页，带上结果
-  const redirectUrl = `https://dujeongil-galaxy.github.io/shuangxiugou/?star_check=${meetsRequirement ? 'success' : 'failed'}&star_days=${starDays}&star_date=${encodeURIComponent(starredAtDate)}`;
+  // 签发实时验签令牌：把 access_token 加密后随重定向带回前端保存。
+  // 只有配了 STAR_SESSION_SECRET 且拿到 username 才签发；否则前端走降级路径。
+  let satParam = '';
+  if (env.STAR_SESSION_SECRET && username) {
+    try {
+      const sat = await sealSession(
+        { u: username, t: accessToken, exp: Date.now() + SESSION_TTL_MS },
+        env.STAR_SESSION_SECRET
+      );
+      satParam = '&sat=' + encodeURIComponent(sat);
+    } catch (e) {
+      console.log('签发 Star 会话令牌失败:', e.message);
+    }
+  }
+
+  // 重定向回首页，带上结果（sat 为加密令牌，不含明文 token）
+  const redirectUrl = `https://dujeongil-galaxy.github.io/shuangxiugou/?star_check=${meetsRequirement ? 'success' : 'failed'}&star_days=${starDays}&star_date=${encodeURIComponent(starredAtDate)}${satParam}`;
   return Response.redirect(redirectUrl, 302);
 }
 
-// 前端检测当前用户 Star 状态
+// 实时验签：解密前端带来的会话令牌，用它实时问 GitHub 当前是否仍 Star。
+// 返回 {hasStar, starDays, username}；令牌缺失/无效/过期/未配密钥 → 明确状态让前端安全降级。
 async function handleCheckStar(request, env, url) {
+  const cors = {
+    'Access-Control-Allow-Origin': request.headers.get('Origin') || '',
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
+  // 预检单独短路：本路由在全局 CORS/OPTIONS 处理之前，必须自己回 204，
+  // 否则 OPTIONS 会被当成带空 body 的查询返回 invalid-session（虽也能过预检，但语义错）。
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+  if (!env.STAR_SESSION_SECRET) {
+    return json({ hasStar: false, status: 'session-unavailable' }, 200, cors);
+  }
+  // 令牌从 POST JSON body 或 GET query 取（GET 便于手工排查，POST 为前端常规路径）
+  let token = '';
+  if (request.method === 'POST') {
+    try { token = (await request.json()).sat || ''; } catch (e) { token = ''; }
+  } else {
+    token = url.searchParams.get('sat') || '';
+  }
+  const session = token ? await openSession(token, env.STAR_SESSION_SECRET) : null;
+  if (!session) {
+    return json({ hasStar: false, status: 'invalid-session' }, 200, cors);
+  }
+
+  // 拿令牌里的 token 实时查 GitHub：204 = 仍 Star，404 = 已取消，其它按未 Star 处理
+  let hasStar = false;
+  try {
+    const r = await fetch(`https://api.github.com/user/starred/${GITHUB_OWNER}/${GITHUB_REPO}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `token ${session.t}`,
+        'User-Agent': 'shuangxiugou-ai-worker',
+      },
+    });
+    hasStar = r.status === 204;
+  } catch (e) {
+    // 网络抖动时不能把已 Star 用户判成未 Star：返回 error 让前端保留旧快照
+    return json({ hasStar: false, status: 'upstream-error', username: session.u }, 200, cors);
+  }
+
+  // 天数只用于展示；拿不到就沿用前端已有值（前端自行处理 0 的情况）
+  let starDays = 0;
+  let starredAtDate = '';
+  if (hasStar) {
+    try {
+      const userResp = await fetch('https://api.github.com/user', {
+        headers: { 'Authorization': `token ${session.t}`, 'User-Agent': 'shuangxiugou-ai-worker' },
+      });
+      const userData = await userResp.json();
+      const stargazersResp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/stargazers?per_page=100`, {
+        headers: {
+          'Authorization': `token ${session.t}`,
+          'User-Agent': 'shuangxiugou-ai-worker',
+          'Accept': 'application/vnd.github.star+json',
+        },
+      });
+      const stargazers = await stargazersResp.json();
+      const login = userData.login || session.u;
+      const me = Array.isArray(stargazers) && stargazers.find(s => s.user && s.user.login === login);
+      if (me && me.starred_at) {
+        starredAtDate = me.starred_at.split('T')[0];
+        starDays = Math.floor((Date.now() - new Date(me.starred_at)) / 86400000);
+      }
+    } catch (e) {
+      console.log('实时验签取 Star 日期失败:', e.message);
+    }
+  }
+
   return json({
-    hasStar: false,
-    message: '功能开发中',
-  }, 200);
+    hasStar,
+    starDays,
+    starredAtDate,
+    username: session.u,
+    status: hasStar ? 'starred' : 'not-starred',
+  }, 200, cors);
 }

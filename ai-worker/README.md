@@ -76,6 +76,35 @@ npx wrangler secret delete BLOCKED_IPS   # 撤销全部
 VPN / 运营商 NAT 会让多个用户共用出口 IP，封之前先确认，避免连坐。WAF 的 IP 拦截规则
 需要自有域名（zone），本站 `workers.dev` 无 zone，所以走 Worker 内这道黑名单。
 
+### Star 状态实时验签（2026-11-21 新增，需设置一个 secret + 重新部署）
+
+**解决什么问题**：以前 Star 状态是首页 OAuth 登录那一刻写进 localStorage 的快照——
+取消 Star 后不会自动失效，懂技术的人也能直接改 localStorage 伪造。现在改成：
+
+- OAuth 回调拿到 GitHub access_token 后，用服务端密钥把它**加密成自包含令牌**
+  （AES-GCM，前端解不开也改不了），随重定向带回首页存进 `localStorage.sxg_star_session`；
+- `labor-ai.html` 每次打开都拿令牌调 `POST /api/check-star`，服务端解密后**实时问 GitHub**
+  「这人现在还 Star 吗」——取消 Star 后附件立刻锁死，重新 Star（需重新登录）才恢复；
+- 令牌 30 天有效，过期需重新登录；密钥只在 Worker secret 里，不入库。
+
+**部署必做两步**（缺任一步则验签不生效，但页面照常可用、安全降级）：
+
+```bash
+# ① 设置加密密钥（32 位以上随机串；建议用密码管理器生成一个）
+npx wrangler secret put STAR_SESSION_SECRET
+
+# ② 源码改了，必须重新部署
+npx wrangler deploy
+```
+
+设置密钥后，用户**下次重新点「Login GitHub」**才会拿到带令牌的 OAuth 回调；
+老用户 localStorage 里没有令牌，会继续沿用旧的快照行为，直到重新登录一次。
+
+**降级行为**（不会把合法用户误锁门外）：未配密钥 / 令牌无效或过期 / GitHub 上游故障
+→ `check-star` 返回明确 status，前端**保留原有 localStorage 快照**不改动；只有服务端
+明确回 `starred` / `not-starred` 才更新界面。手动验证：`POST /api/check-star` 带 `{sat}`,
+看返回的 `status` 字段。
+
 ### 坑：视觉模型首次使用必须先同意 Meta 协议（2026-11-21 实测）
 
 视觉模型 `@cf/meta/llama-3.2-11b-vision-instruct` 受 Meta License 约束，

@@ -553,6 +553,49 @@ async function handleFiles(fileList){
 fileInput.addEventListener('change', function(e){ handleFiles(e.target.files); });
 renderRoute(); // 附件变量就位后再渲染（renderRoute 内部会调 renderAttachGate）
 
+/* Star 状态实时复核（2026-11-21）：首页 OAuth 回调把服务端签发的加密令牌
+   （localStorage.sxg_star_session）带过来，这里打开页面时用它问 Worker「现在还 Star 吗」。
+   - 服务端明确 starred / not-starred → 更新本地快照并重渲染：取消 Star 后附件立刻锁死，
+     重新 Star 后（需重新登录）也能恢复；这是 localStorage 快照做不到的。
+   - 无令牌 / 未配密钥 / 网络失败 / 过期 → 一律静默保留原快照，不打断使用、不弹提示。
+   令牌是加密的，前端解不开也改不了（改了验签失败，按无效处理）。 */
+async function verifyStarSession(){
+  var sat = '';
+  try { sat = localStorage.getItem('sxg_star_session') || ''; } catch(e){ return; }
+  if (!sat) return; // 老访客/未登录：没有令牌，维持原行为
+  var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  var timer = ctl ? setTimeout(function(){ ctl.abort(); }, 8000) : null;
+  try {
+    var res = await fetch(CFG.cf.endpoint.replace(/\/$/, '') + '/api/check-star', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sat: sat }),
+      signal: ctl ? ctl.signal : undefined
+    });
+    if (!res.ok) return;
+    var d = await res.json();
+    // 只有这两种明确状态才更新；降级状态（session-unavailable / invalid-session / upstream-error）
+    // 一律不动本地快照，避免把已登录用户误判成未登录。
+    if (d.status === 'starred' || d.status === 'not-starred'){
+      var nowStar = d.status === 'starred' ? '1' : '0';
+      var changed = (localStorage.getItem('sxg_github_has_star') || '0') !== nowStar;
+      localStorage.setItem('sxg_github_logged_in', '1');
+      localStorage.setItem('sxg_github_has_star', nowStar);
+      if (typeof d.starDays === 'number') localStorage.setItem('sxg_star_days', String(d.starDays));
+      if (d.starredAtDate) localStorage.setItem('sxg_star_date', d.starredAtDate);
+      if (changed) renderRoute(); // 状态变了才重渲染（附件门禁随之开/关）
+    } else if (d.status === 'invalid-session' || d.status === 'session-unavailable'){
+      // 令牌过期或服务端没配密钥：清掉失效令牌，避免每次打开都白查一次
+      try { localStorage.removeItem('sxg_star_session'); } catch(e){}
+    }
+  } catch(e){
+    /* 超时/断网：静默降级，保持首屏快照 */
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+verifyStarSession();
+
 /* 把附件统一封装成 OpenAI 兼容的 parts：文本用 text，图片用 image_url(data URL) */
 function buildParts(question){
   var parts = [{ type: 'text', text: question }];

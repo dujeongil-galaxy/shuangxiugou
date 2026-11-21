@@ -193,8 +193,12 @@
     const starCheck = urlParams.get('star_check');
     const starDays = parseInt(urlParams.get('star_days') || '0');
     const starDate = urlParams.get('star_date') || '未知';
+    // 服务端签发的加密会话令牌（含用户 token，前端解不开/改不了）：
+    // labor-ai 页打开时用它实时复核 Star 状态，取消 Star 后自动失效。
+    const sat = urlParams.get('sat') || '';
 
     if (starCheck) {
+      if (sat) localStorage.setItem('sxg_star_session', sat);
       let title = '';
       let message = '';
 

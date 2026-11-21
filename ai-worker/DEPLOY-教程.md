@@ -163,6 +163,20 @@ Worker 网址是公开的没关系——它自带防刷（CORS 白名单只放�
 撞的是 Worker 的限流墙，刷不爆你的额度上限（每天最多也就 1 万
 neurons 的自然消耗，且超出就停）。
 
+**Q：用户取消 Star 后，附件还能用吗？**
+本轮加了实时验签：登录时服务端会把一个加密令牌带回浏览器，劳动法小助手每次打开都拿它
+去问 GitHub「现在还 Star 吗」，**取消后附件立刻锁死**，重新 Star 并重新登录才恢复。
+要让这个功能生效，部署时要多做一个密钥（只需一次）：
+
+```bash
+cd ai-worker
+npx wrangler secret put STAR_SESSION_SECRET   # 粘贴一个 32 位以上随机串，保存好
+npx wrangler deploy                            # 源码改了必须重新部署
+```
+
+没设这个密钥也不影响正常问答，只是验签会安全降级（沿用旧的登录快照）。
+设好之后，用户**下次重新点「Login GitHub」**才会拿到带令牌的回调。
+
 **Q：想换 AI 的回答风格 / 卡通形象？**
 - 回答风格 → 改 `ai-worker/src/worker.js` 里的 `systemPrompt`（第
   「系统提示词」段），改完重新 `npx wrangler deploy`
