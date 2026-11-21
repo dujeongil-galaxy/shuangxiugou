@@ -38,6 +38,26 @@ Worker 现在支持 `parts` 数组（OpenAI 兼容的 `text` / `image_url` data 
 ⚠️ **改了 Worker 源码必须 `npx wrangler deploy` 重新部署**，否则线上跑的还是旧版，
 图片功能不会生效。部署后打开 `/api/capabilities` 看到 `vision:true` 即为成功。
 
+### 坑：视觉模型首次使用必须先同意 Meta 协议（2026-11-21 实测）
+
+视觉模型 `@cf/meta/llama-3.2-11b-vision-instruct` 受 Meta License 约束，
+**新账号第一次调用前必须同意一次协议**，否则带图请求一律返回 `ai-upstream-error`
+（纯文本走 GLM 不受影响，所以症状很容易被误判成"图片代码没部署好"）。
+
+同意方式——用已登录的 Wrangler 凭据发一次 `prompt=agree` 请求（账号级一次性，之后永久可用）：
+
+```bash
+# 在 ai-worker 目录，拿本机 wrangler 的 OAuth token（需先 wrangler login）
+# 或用 Cloudflare 控制台 Workers AI → 该模型页的 "Agree" 按钮，二选一
+curl https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/ai/run/@cf/meta/llama-3.2-11b-vision-instruct \
+  -H "Authorization: Bearer $TOKEN" -d '{"prompt":"agree"}'
+```
+
+**注意**：同意请求本身会返回 HTTP 403，但错误内容是
+`Model Agreement: Thank you for agreeing to this model's terms. You may now use the model.`
+——这是 Cloudflare 的正常行为，**代表已同意成功**，不是失败。
+之后带图请求应立即返回 200。若换账号部署，这一步要重做。
+
 ## 部署后接通前端（一步）
 
 部署拿到 Worker URL 后，改仓库根目录 `ai-config.js`：
@@ -144,5 +164,7 @@ curl -X POST https://your-worker.workers.dev \
 - `origin-not-allowed` → CORS 白名单没加你的站点域名
 - `empty-answer` + raw 里有 `reasoning` → max_tokens 太小，调大
 - `daily-quota-exhausted` → 当日 neurons 用完了，等 UTC 0 点重置
-- `ai-upstream-error` → Cloudflare Workers AI 临时故障，等几分钟重试
+- `ai-upstream-error` → 两种可能：① 纯文本也失败时多为 Workers AI 临时故障，等几分钟重试；
+  ② **仅带图失败时，多半是 Meta 视觉模型协议未同意**——见上一节「坑：视觉模型首次使用必须先同意 Meta 协议」，
+  发一次 `prompt=agree` 即可（这是 2026-11-21 实测到的真实根因，不是"临时故障"）
 - 前端报「连不上」但 curl 正常 → 手机运营商网络访问不到 workers.dev，见坑 3

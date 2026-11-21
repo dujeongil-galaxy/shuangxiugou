@@ -84,6 +84,21 @@ Published shuangxiugou-ai-worker (x.xx sec)
 
 > 第一次跑 npx 可能问 "Need to install the following packages, proceed? (y)"——输入 `y` 回车。
 > 如果报错说 `wrangler.json` 里的 ai binding 有问题，先确认你用的是仓库最新版（ai-worker/wrangler.json 里应有 `"ai": { "binding": "AI" }`）。
+>
+> **两个 Windows 专属坑**（2026-11-21 实测）：
+> ① 一定先 `cd` 进 `ai-worker` 再跑 deploy——在 `C:\Windows\System32` 下直接跑会报
+> `Could not detect a directory containing static files`；最稳的是加绝对路径参数：
+> `npx wrangler deploy --config "C:\Users\dujeo\WorkBuddy\2026-10-13-03-23-38\shuangxiugou\ai-worker\wrangler.json"`。
+> ② 如果用 API Token 登录（token 里有 `#`），赋值时必须加英文双引号
+> `$env:CLOUDFLARE_API_TOKEN = "token整串"`，否则 `#` 被 PowerShell 当注释符截断。
+> ③ 浏览器 `wrangler login` 授权要在 **2 分钟内**点完 Allow，超时会报
+> `Timed out waiting for authorization code`，浏览器那页变成 `localhost 拒绝连接`——重跑 login 并快点 Allow 即可。
+
+**图片识别首次使用要做一次「同意协议」**（新账号必做，账号级一次就好）：
+视觉模型受 Meta License 约束，第一次带图提问前要在 Cloudflare 控制台 →
+**Workers AI → 模型 `@cf/meta/llama-3.2-11b-vision-instruct` → Agree** 点一次同意；
+不做的话纯文本正常、但带图会报 `ai-upstream-error`。
+（技术细节见 `README.md` 的「坑：视觉模型首次使用必须先同意 Meta 协议」。）
 
 ### 想先本地试试效果（可选，跳过也行）
 
@@ -168,6 +183,10 @@ Cloudflare 控制台左侧 → **Workers AI** → Overview，有每日用量图�
 |---|---|---|
 | `wrangler: command not found` | 没用 npx 前缀 | 用 `npx wrangler ...` |
 | `Authentication required` | 没登录或登录过期 | 重跑 `npx wrangler login` |
+| `Could not detect a directory containing static files` | 没 cd 进 ai-worker，wrangler 在 System32 找不到配置 | 先 `cd` 进 ai-worker，或 deploy 时加 `--config 绝对路径` |
+| `Timed out waiting for authorization code` + 浏览器拒绝连接 | wrangler login 超过 2 分钟没点 Allow | 重跑 login，2 分钟内点完 Allow；或改用 API Token 登录 |
+| token 被截断 / 报 `ObjectNotFound` | token 含 `#`，PowerShell 当注释符吃掉 | 赋值必须加双引号：`$env:CLOUDFLARE_API_TOKEN = "整串"` |
+| 纯文本正常但带图报 `ai-upstream-error` | 新账号没同意 Meta 视觉模型协议 | 控制台 Workers AI → 该模型 → Agree 点一次（见第③步） |
 | 部署成功但挂件提示「连不上 AI 服务」 | endpoint 填错 / 没推上线 | 核对 ai-config.js 网址与推送状态 |
 | 挂件提示「origin-not-allowed」 | 从非本站域名访问（本地文件等） | 正常，线上域名才放行 |
 | 回答很慢 | 免费层排队 | 正常现象，高峰期等几秒 |
