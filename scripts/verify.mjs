@@ -9177,7 +9177,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/z-index:9995/.test(ad32) && /padding:7px 0 14px/.test(ad32)
     && /background: rgba\(24, 20, 16, 0\.22\)/.test(dyp32)
     && /backdrop-filter: none/.test(dyp32)
-    && /douyin-prompt\.css\?v=25/.test(idx32),
+    && /douyin-prompt\.css\?v=26/.test(idx32),
     '§32d 广告位层级 9995 / 底部留白 14px；.dyp 遮罩减淡去模糊，弹窗引流功能原样保留');
 
   check(/var SEARCH_DURATION = 6000/.test(ff32)
@@ -10347,11 +10347,13 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '缺确认块或回执退化成「好的，欢迎访问」式直译 → 站长指定红框区域仍是空白或文案生硬');
   // §36x-3（2026-11-21 站长补）：Google 需搜「双休购GitHub」才收录本站，选「不是」的回执补这句引导；
   // 关闭后的跳转判定一个字不许动——弹窗文案优化不能顺手改掉「不是 → 跳页脚教程」的行为。
-  check(/也可以在 Google 搜「双休购GitHub」找到本站/.test(dpCode36x),
-    '§36x-3 选「不是」回执补 Google 搜「双休购GitHub」引导（词要连写）',
-    '漏掉 Google 引导 → 习惯 Google 的访客仍找不到本站');
+  check(/var SE_GOOGLE_HINT = '也可以在 Google 搜「双休购GitHub」找到本站。'/.test(dpCode36x)
+      && /<strong class="dyp__se__google">' \+ SE_GOOGLE_HINT \+ '<\/strong>/.test(dpCode36x)
+      && /\.dyp__se__google \{ color: #[0-9a-f]{6}; font-weight: 700; \}/.test(read('douyin-prompt.css')),
+    '§36x-4 Google 引导句单独红色加粗（<strong> + CSS color/font-weight:700）',
+    '漏掉加粗或样式 → 站长截图里那句不醒目，与要求不符');
   check(/if \(seChoice !== 'yes'\) jumpToBingGuide\(\)/.test(dpCode36x)
-      && /seHint\.textContent = which === 'yes' \? SE_YES_HINT : SE_NO_HINT/.test(dpCode36x),
+      && /seHint\.innerHTML = SE_NO_HINT \+ '<strong class="dyp__se__google">'/.test(dpCode36x),
     '§36x-3 跳转判定不变：「不是」关掉仍跳页脚教程，Google 提示只落在回执文案',
     '改动关闭落点 → 文案优化越界，破坏既有「是的停原地/不是跳教程」判定');
   check(/data-se="yes"/.test(dpCode36x) && /data-se="no"/.test(dpCode36x)
@@ -10370,10 +10372,12 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
       && /if \(seChoice !== 'yes'\) jumpToBingGuide\(\)/.test(dpCode36x),
     '§36x-2 落点按选择走：「是的」关闭后停原地，选「不是」才滚到 Bing 教程（带重试）',
     '无条件跳转 → 明明是 Bing 用户，关掉弹窗还被往下拽');
-  check(/<script defer src="\.\/douyin-prompt\.js\?v=32"><\/script>/.test(idx36x)
-    && !/douyin-prompt\.js\?v=31/.test(idx36x),
-    '§36x index.html 挂载 douyin-prompt.js?v=32（bump 缓存号）',
-    '?v 没 bump → 线上仍跑旧脚本，改动等于没发');
+  check(/<script defer src="\.\/douyin-prompt\.js\?v=33"><\/script>/.test(idx36x)
+    && !/douyin-prompt\.js\?v=32/.test(idx36x)
+    && /douyin-prompt\.css\?v=26/.test(idx36x)
+    && !/douyin-prompt\.css\?v=25/.test(idx36x),
+    '§36x index.html 挂载 douyin-prompt.js?v=33 与 css?v=26（JS/CSS 都改了，缓存号都 bump）',
+    '?v 没 bump → 线上仍跑旧脚本/旧样式，改动等于没发');
 
   // 2026-11-21 手机端「右上角 × 溢出屏幕、无法关闭」兜底：
   // CSS 面板 max-width:100vw + × right:max(10px,safe-area) 双保险；
@@ -10392,9 +10396,9 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
       && /addEventListener\('resize',\s*keepCloseVisible\)/.test(dpCode36x),
     '§36x-3 × 越界自愈：弹出后/resize 实测越界则 position:fixed 钉回视口右上角',
     '无自愈 → 手机横竖屏切换或 layout viewport 撑宽后 × 溢出且无法关闭');
-  check(/<link rel="stylesheet" href="\.\/douyin-prompt\.css\?v=25">/.test(idx36x)
-    && !/douyin-prompt\.css\?v=24/.test(idx36x),
-    '§36x-3 douyin-prompt.css?v=25（CSS 也改了，必须 bump）',
+  check(/<link rel="stylesheet" href="\.\/douyin-prompt\.css\?v=26">/.test(idx36x)
+    && !/douyin-prompt\.css\?v=25/.test(idx36x),
+    '§36x-4 douyin-prompt.css?v=26（CSS 也改了，必须 bump）',
     'CSS 改了不 bump → 线上仍用旧样式，× 溢出照旧');
 
   // 2026-11-13 站长追加：「不要 15 分钟冷却，刷新首页必弹」。

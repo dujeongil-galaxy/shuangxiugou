@@ -61,7 +61,9 @@
      不再把访客往下拽。 */
   var SE_ASK_TEXT = '你的浏览器默认搜索引擎是 Bing 必应吗';
   var SE_YES_HINT = '好，那你在 Bing 里搜「双休购」就能找到我们，慢慢逛。';
-  var SE_NO_HINT = '没关系，关掉后我把设置步骤摆出来，照着点两下就行。也可以在 Google 搜「双休购GitHub」找到本站。';
+  var SE_NO_HINT = '没关系，关掉后我把设置步骤摆出来，照着点两下就行。';
+  // Google 引导单独成句，回执里用 <strong> 红色加粗突出（站长 2026-11-21 截图反馈）。
+  var SE_GOOGLE_HINT = '也可以在 Google 搜「双休购GitHub」找到本站。';
   var SE_NUDGE_HINT = '先选一下上面的问题，选完就能关。';
   var BING_GUIDE_ID = 'sxg-bing-guide';
   var seChoice = '';      // '' | 'yes' | 'no'（'' = 未选择，未选择不许关）
@@ -355,7 +357,13 @@
         b.setAttribute('aria-checked', on ? 'true' : 'false');
       }
       if (seHint) {
-        seHint.textContent = which === 'yes' ? SE_YES_HINT : SE_NO_HINT;
+        if (which === 'yes') {
+          seHint.textContent = SE_YES_HINT;
+        } else {
+          // 只把 Google 引导这句做红色加粗，其余回执保持普通小字；
+          // 两个常量都是本站写死的字符串（不含用户输入），innerHTML 无 XSS 风险。
+          seHint.innerHTML = SE_NO_HINT + '<strong class="dyp__se__google">' + SE_GOOGLE_HINT + '</strong>';
+        }
         seHint.className = 'dyp__se__hint' + (which === 'yes' ? ' is-yes' : ' is-no');
       }
       var seBox = box.querySelector('.dyp__se');

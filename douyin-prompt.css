@@ -403,6 +403,8 @@
 .dyp__se__hint.is-yes { color: #2f8f70; }
 .dyp__se__hint.is-no { color: #8a7f70; }
 .dyp__se__hint.is-nudge { color: #b45309; font-weight: 600; }
+/* Google 搜「双休购GitHub」引导：站长要求红色加粗突出（2026-11-21） */
+.dyp__se__google { color: #d11a1a; font-weight: 700; }
 
 /* 未选择就点 × 时：确认块轻抖一下，提示「先选再关」，不关闭弹窗 */
 .dyp__se--nudge { animation: dypSeNudge 0.28s ease; }
