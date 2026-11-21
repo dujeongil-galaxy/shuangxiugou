@@ -6826,6 +6826,61 @@ section('21c. 首页滑到底部按钮');
         && !/已登录每小时 20|未登录减半为 10|20 次\/小时/.test(privacy24),
         '§21h-4 隐私页也只给统一一句话，不列具体额度档位',
         '隐私页写回档位 → 对外文档仍公开内部规则');
+      // §21h-10（2026-11-22 站长扩容）：AI 支持双休查询（引用本站 190 家数据快照）与找工作；
+      // 三处快照（labor-ai / CF worker / 阿里云 worker）必须完全一致，防止某条线路答出的评级和站点不一致。
+      check(/【双休数据查询】/.test(la) && /收录 190 家企业/.test(la)
+        && /BRAND_DATA_SNIPPET/.test(workerKv) && /BRAND_DATA_SNIPPET/.test(aliPrompt),
+        '§21h-10 三条线路都带「双休数据查询」能力（页面 190 家 + 两端 BRAND_DATA_SNIPPET）',
+        '某条线路没带快照 → 同一个问题换个线路 AI 就答不出评级，体验不一致');
+      check(/【求职与找工作】/.test(la)
+        && /找工作相关的问题/.test(workerKv) && /找工作相关的问题/.test(aliPrompt),
+        '§21h-10 三条线路提示词都开放找工作支持（选 offer/谈薪/背调/试用期等）',
+        '提示词只写简历不写找工作 → 用户问选 offer 被拒，能力名不副实');
+      // 三处快照逐字一致：从 brand/*.html 提取的 190 行数据，一处过期就判红。
+      function brandSnippetOf(src) {
+        const i = src.indexOf('const BRAND_DATA_SNIPPET = [');
+        if (i < 0) return null;
+        const s = src.indexOf('[', i);
+        const e = src.indexOf("].join('\\n');", i);
+        if (s < 0 || e < 0) return null;
+        try { return eval(src.slice(s, e + 1)).join('\n'); } catch { return null; }
+      }
+      function laborBrandBlockOf(src) {
+        // labor-ai 里的快照 = 各 chunk 行拼起来的 190 行品牌数据
+        const s = src.indexOf('【双休数据查询】');
+        if (s < 0) return null;
+        const e = src.indexOf('数据有异议可走 GitHub Issues 申诉', s);
+        if (e < 0) return null;
+        const seg = src.slice(s, e);
+        const lines = [];
+        for (const m of seg.matchAll(/"(- [^"]*)"/g)) {
+          for (const ln of m[1].split('\\n')) lines.push(ln);
+        }
+        return lines.join('\n');
+      }
+      const cfSnap = brandSnippetOf(workerKv);
+      const aliSnap = brandSnippetOf(aliPrompt);
+      const laSnap = laborBrandBlockOf(stripComments(la));
+      check(cfSnap && aliSnap && laSnap
+        && cfSnap === aliSnap && cfSnap === laSnap
+        && cfSnap.split('\n').length === 190
+        && cfSnap.includes('蜜雪冰城 (MIXUE)：C级')
+        && cfSnap.includes('苹果 (Apple)：S级'),
+        '§21h-10 三处双休快照逐字一致且为 190 家（含蜜雪冰城 C 级、苹果 S 级样本）',
+        '快照三处不一致或缺样本 → 用户在不同线路得到不同评级答案，或站点改档后 AI 仍旧口径');
+      check(/双休率[0-9]+%/.test(cfSnap) && /下班[0-9]{1,2}:[0-9]{2}/.test(cfSnap),
+        '§21h-10 快照含双休率与下班时间字段（AI 可答「XX 几点下班」）',
+        '快照只有档位没有数字 → AI 答不了下班时间，能力残缺');
+      // 故障注入：把 CF 快照改一个字，断言必须判红（验证比较逻辑真的在工作）
+      {
+        const tampered = cfSnap.replace('蜜雪冰城 (MIXUE)：C级', '蜜雪冰城 (MIXUE)：A级');
+        check(tampered !== cfSnap && tampered !== aliSnap,
+          '§21h-10 故障注入：篡改快照一个字符后比较逻辑判不一致',
+          '比较逻辑失效 → 三处漂移也全绿，等价于没校验');
+      }
+      check(/extract-brand-prompt/.test(read('CHANGELOG.md')) || existsSync('scripts/extract-brand-prompt.mjs'),
+        '§21h-10 快照有再生成脚本（extract-brand-prompt.mjs），站点改档后可一键同步',
+        '没有脚本 → 下次改档只能手抄 190 行，必然漂移');
     }
     // §21h-3（2026-11-21 站长改版）：登录 20 次/小时、未登录一律减半 10 次/小时；
     // Star 只管附件，不再决定文字问答。两个后端 + 前端必须同一套口径。
