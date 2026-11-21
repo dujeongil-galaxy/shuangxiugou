@@ -4,6 +4,14 @@
 
 ---
 
+### feat：IP 安全公告加三级降级——CF → ipify → 未知（2026-11-21 · 提交 `a52616fc`）
+
+- 起因：站长问 IP 公告能否改用 GitHub 检测的 IP 或 ip138 API。核实结论：GitHub OAuth 不回传访客 IP（API 无该字段，回调里看到的仍是本站 Worker 的 `CF-Connecting-IP`）；ip138 需 token 且官方禁止前端放 token、免费仅 1000 次、还会把访客 IP 发给第三方，与本站隐私承诺冲突。实测 `api.ipify.org?format=json` 免 token、免费、支持 CORS，选作降级。
+- `labor-ai.html` 新增 `resolveVisitorIp()` 三级来源：① CF Worker 的 `CF-Connecting-IP`（不可伪造）→ ② `api.ipify.org`（国内线路连不上 Worker 时降级）→ ③ 都失败显示「未知」；4 秒超时防挂起、`escIp` 白名单防注入、`data-ip-source` 标记来源供审计。
+- `verify.mjs` 加 2 条断言；故障注入 ×2（抹掉 ipify 端点 / 超时改长）全判红；无头 Edge 实测三场景（cf/ipify/none）全符合预期；全量 2048 项通过。
+
+---
+
 ### feat：AI 线路门槛分层——CF 免费 / 国内 Star 即开 / 附件满 3 天 + 取消拉黑 + IP 安全公告（2026-11-21 · 提交 `fe3587c8`）
 
 站长 2026-11-21 改口径：Cloudflare 免费开放（无需登录/Star）；国内文字线路 Star 即开，取消原 7 天门槛；图片/文档上传（含 Word/PDF 等）仍需 Star 满 3 天；取消 Star 自动拉黑、重新 Star 也不恢复；公告显示当前访问 IP 并提示勿发敏感信息、恶意消耗将封禁。改动：`labor-ai.html` 的 `starStatus()` 拆 `cnUnlocked`/`attachUnlocked`/`blacklisted` 三层，文件入口加门禁（未达 3 天禁用），`renderIpNotice()` 从 Worker 能力探测取 CF-Connecting-IP；`header-menu-patch.js` 的 OAuth 回调写 `ever_starred`，failed 且曾 Star → 写 `blacklisted`，两处弹窗文案同步，`?v=11`→`12` 破缓存；`ai-worker/src/worker.js` 改 `meetsRequirement=hasStar`、capabilities 回传 `visitorIp`。校验：`verify.mjs` 新增分层断言 + 全局无旧天数口径残留扫描（历史记账除外），三处 `?v` 硬编码改下限断言；`test-ai-worker.cjs` 加 visitorIp 断言（44/0）、阿里云 46/0。故障注入 ×4（附件门槛改回旧值 / IP 公告删除 / 拉黑写入拆除 / 旧口径残留）全判红；无头 Edge 实测四态（未 Star / Star 0 天 / Star 5 天 / 拉黑）全符合预期。
