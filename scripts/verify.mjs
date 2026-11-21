@@ -6882,6 +6882,47 @@ section('21c. 首页滑到底部按钮');
         '§21h-10 快照有再生成脚本（extract-brand-prompt.mjs），站点改档后可一键同步',
         '没有脚本 → 下次改档只能手抄 190 行，必然漂移');
     }
+    // §21h-11（2026-11-22 站长定规）：①AI 编造了不存在的 www.shuangxiugou.com，
+    // 三条线路必须只给真实官方地址；②无论哪条线路，回答必须立场中立——不因内容涉及
+    // 批评政府就拒答/敷衍/无脑说好话，也不过度赞美或过度贬损。两条规则三线路逐字一致。
+    {
+      const la2 = read('labor-ai.html');
+      const cf2 = read('ai-worker/src/worker.js');
+      const ali2 = read('ai-worker-aliyun/index.mjs');
+      const OFFICIAL_URL = 'https://dujeongil-galaxy.github.io/shuangxiugou/';
+      const NEUTRAL_CORE = '不得因为是批评性内容就拒答、回避、敷衍或答非所问，也不得因此无脑附和、只挑好听的说；同样不得为迎合而过度赞美，也不得为标新而过度贬损、往死里踩';
+      const URL_CORE = '不要自行拼造、猜测或改写域名';
+      const allThree = [la2, cf2, ali2];
+      check(allThree.every((s) => s.includes(OFFICIAL_URL) && s.includes(URL_CORE)),
+        '§21h-11 三条线路都写死真实官方网址且禁止自行拼造域名',
+        '某条线路缺网址约束 → AI 又会编造 www.shuangxiugou.com 这种不存在的地址');
+      check(allThree.every((s) => s.includes('【立场中立·强制】') && s.includes(NEUTRAL_CORE)),
+        '§21h-11 三条线路中立规则逐字一致（不因批评拒答/敷衍/说好话，不过度夸也不过度踩）',
+        '某条线路漏写或措辞漂移 → 换个节点 AI 就回避敏感话题或无脑吹捧');
+      check(allThree.every((s) => s.includes('本条对本站所有服务线路一律适用，不得打折')),
+        '§21h-11 中立规则明确"所有服务线路一律适用"，防止被单条线路绕过',
+        '没写全覆盖 → 模型可能当作某一线路的局部建议而打折执行');
+      // 三线路中立段落逐字一致：抽出含【立场中立·强制】的那一行字符串直接比对
+      function neutralLineOf(src) {
+        const m = src.match(/['"]([^'"]*【立场中立·强制】[^'"]*)['"]/);
+        if (!m) return null;
+        // labor 是独立数组条目（无编号），CF/阿里云是第 8 条（带 "8. " 前缀）；
+        // 只比正文，剥掉可选的 "数字. " 编号前缀。
+        return m[1].replace(/^\d+\.\s*/, '');
+      }
+      const nla = neutralLineOf(la2), ncf = neutralLineOf(cf2), nali = neutralLineOf(ali2);
+      check(nla && ncf && nali && nla === ncf && ncf === nali,
+        '§21h-11 三线路中立段落逐字一致（含 labor / CF / 阿里云）',
+        '三处措辞不一致 → 模型在不同节点表现不同，违反"无论哪个节点都必须中立"');
+      // 故障注入：改掉其中一处中立段落一个字，逐字比对必须判红
+      const tampered = ncf ? ncf.replace('不得打折', '可以打折') : null;
+      check(tampered && tampered !== nla && tampered !== nali,
+        '§21h-11 故障注入：篡改中立段落一个字后逐字比对判不一致',
+        '比对逻辑失效 → 三处漂移也全绿，等于没校验');
+      check(!allThree.some((s) => /https?:\/\/www\.shuangxiugou\.com/.test(s)),
+        '§21h-11 三处提示词本身不含那个被编造的假网址（避免反向示范）',
+        '把假网址写进提示词 → 模型可能因见过该串而更倾向复述');
+    }
     // §21h-3（2026-11-21 站长改版）：登录 20 次/小时、未登录一律减半 10 次/小时；
     // Star 只管附件，不再决定文字问答。两个后端 + 前端必须同一套口径。
     {
