@@ -4,6 +4,15 @@
 
 ---
 
+### fix：国内直连 IP 公告卡「正在获取」/显示「未知」——CF 探测超时 + 国内源并行竞速（2026-11-21 · 提交 `b078e0ff`）
+
+- 起因：国内直连（不开代理）访问劳动法小助手页，安全公告长期停在初始文案或显示「未知」，拿不到访客 IP；走代理时正常。
+- 根因两层叠加：① `cfSupportsVision()` 内 `fetch(workers.dev/api/capabilities)` 无超时，国内连接挂起时 Promise 长期 pending，`renderIpNotice` 因挂在 `.then` 上根本不执行，公告永久卡住；② 即使 CF 探测快速失败、走到兜底 ipify，实测该源国内直连约 4.37 秒，超过前端硬编码的 4 秒 AbortController 阈值被 abort，落到「未知」。此前只验过服务本身可用（200/CORS），没在目标网络实测耗时。
+- 修法：① CF 探测加 3 秒超时，并改 `cfSupportsVision().then(renderIpNotice, renderIpNotice)` 保证成功/失败/超时都渲染公告；② IP 解析改四级——CF-Connecting-IP → 国内 `myip.ipip.net/json`（实测约 3.4 秒、CORS 开放、免 token）与国际 `api.ipify.org` 并行竞速 → 全失败「未知」，统一 8 秒超时、两源过 `escIp()` 白名单、先拿到合法 IP 者胜出。
+- 验证：verify 三条新断言（四级链与来源标记 / CF 3 秒超时且必渲染 / 两源都「失败才让位」）；故障注入 ×3 全判红（第 3 组首次暴露断言过松，收紧逐源匹配后复测判红）；无头 Edge + CDP 拦截三场景实测——国内直连拿 ipip 真 IP、CF 可用走 visitorIp 不请求第三方、全失败显示「未知」，页面异常均为空；`test-*.cjs` 57 组全过、Worker 单测 44/0、SEO 生成器 205 页全齐。
+
+---
+
 ### fix：国内模型换 Qwen3-VL + 手机弹窗 X 溢出兜底 + 全站 SEO 生成器/AI 爬虫放行（2026-11-21 · 提交 `9c722d49`）
 
 - 起因：站长反馈三个报错/新 bug——① CF 线路提示「当前版本不支持图片/文档识别」；② 国内线路 400；③ 手机端弹窗右上角 × 溢出屏幕无法关闭。同时问「后台能否看见消耗 IP / Star 取消能否检测」，并要求把 SEO 从「只顾华为/比亚迪/奶茶品牌」扩到全站已收录与未来收录页面，让 Copilot/Gemini/ChatGPT 能推荐。

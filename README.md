@@ -220,10 +220,11 @@ Star 能让更多打工人搜到这个项目——收录的企业越多、数据
 
 ### 近期 bug 根因（摘要）
 
-**39 条完整根因（现象 / 根因 / 修法 / 验证 / 真实提交哈希）见 [BUG-ROOT-CAUSES.md](./BUG-ROOT-CAUSES.md)**，按时间倒序；README 只留最近三条。
+**40 条完整根因（现象 / 根因 / 修法 / 验证 / 真实提交哈希）见 [BUG-ROOT-CAUSES.md](./BUG-ROOT-CAUSES.md)**，按时间倒序；README 只留最近三条。
 
 **修 bug 三处留痕（§21n 机器反查）**：`README.md` 本节摘要、`BUG-ROOT-CAUSES.md` 新增章节、`最近更新.md` 顶部条目，都要带真实提交哈希与 commit 时间；verify 按 `git log` 最近一次 `fix:` 提交反查，缺一处判红。最近三条：
 
+- **2026-11-21 · 提交 `b078e0ff`**（fix）：国内直连访问劳动法小助手时 IP 公告卡在「正在获取」或显示「未知」。两个独立根因叠加——① `cfSupportsVision()` 的 `fetch(workers.dev)` 无超时，连接挂起时公告渲染 Promise 长期 pending，根本不执行；② 兜底 ipify 国内实测 4.37 秒超过前端 4 秒超时被 abort。修法：CF 探测加 3 秒超时且用 `.then(渲染, 渲染)` 保证公告必渲染；IP 改四级降级——CF → 国内 `myip.ipip.net` 与国际 ipify 并行竞速 → 未知，8 秒超时、两源白名单校验、失败才让位。verify 三条新断言 + 故障注入 ×3 判红 + CDP 三场景实测（国内直连拿真 IP / CF 可用不请求第三方 / 全失败显示未知），57 组测试全过。
 - **2026-11-21 · 提交 `9c722d4`**（fix）：站长反馈国内线路 400 + 手机弹窗 × 溢出 + CF 图片报错。根因三条：① 硅基流动下线 `Qwen2.5-VL-7B-Instruct`（400 `Model does not exist`），换 `Qwen3-VL-8B-Instruct`（真 key 实测文本/带图均 200）；② CF 线上 Worker 未重新部署（`/api/capabilities` 405），本地新版已就绪、待站长 `wrangler deploy`；③ 真机 layout viewport 被撑宽时绝对定位的 × 落到屏外。修法：模型名换版、面板 `max-width:100vw` + × `right:max(10px,安全区)` + JS `keepCloseVisible()` 越界改 fixed 钉回（js v31/css v25）、安全公告改为不超实现的措辞；同批上全站 SEO 生成器与 AI 爬虫放行。verify 全绿、故障注入 ×4 判红、57 组测试全过、多视口实测 × 可点。
 - **2026-11-21 · 提交 `eec576a8`**（fix）：站长实测「没锁死，第二次或多按继续关闭按钮就能关」——上一版 `!seChoice && !seNudged` 的判据里，`seNudged` 第一次点 × 就被置 true，第二次直接放行，等于提醒一次就能绕过。改为 `if (!seChoice)` 永远不放行，删净 `seNudged`；`douyin-prompt.js?v=30` 破缓存。verify §36x-2 收紧 + 故障注入 ×2 判红；无头 Edge 实测连点 5 次不关、选「不是」滚到 Bing 教程、选「是的」停原地。
 - **2026-11-20 · 提交 `4edfab2d`**（fix）：首页弹窗新加的「默认搜索引擎是 Bing 必应吗」确认块被站长当场挑出三处毛病——没勾任何一项也能关弹窗、回执是口语稿直译、勾「是的」关闭后页面还往下跑。改法：未选择时第一次点 × 只轻抖确认块并提示先选、不关闭，第二次才放行（视为不确定，仍带去教程）；回执重写为「好，那你在 Bing 里搜「双休购」就能找到我们，慢慢逛。」与「没关系，关掉后我把设置步骤摆出来，照着点两下就行。」；关闭落点按选择分流，`seChoice !== 'yes'` 才滚到页脚 Bing 教程，选「是的」停原地。附 `resetSE()` 每次弹出复位、`.dyp__se--nudge` 抖动；js `?v=29` / css `?v=24`，verify §36x-2 四条断言 + 全量 2005 项全绿，jsdom 三场景实测 PASS。
