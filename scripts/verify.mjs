@@ -7543,6 +7543,22 @@ section('21c. 首页滑到底部按钮');
   check(/近期 bug 根因（摘要）/.test(rd) && /BUG-ROOT-CAUSES\.md/.test(rd),
     '§21n README 保留「近期 bug 根因（摘要）」章节并链接 BUG 专文（明细外移后访客仍有入口）',
     '摘要章节或链接被删 → GitHub 首页看不到 bug 记录，等于把 §21n 的原始要求弄丢了');
+  // §21n-2（2026-11-21）：README 摘要「只留最近三条」此前只写在文档里、没有机器强制，
+  // 实际累积到 19 条 / 4454 字符仍全绿（§23b 的 1500 字卡被列表结构绕过）。
+  // 这里限定在摘要章节内数条目并卡单条长度，明细一律留 BUG 专文。
+  {
+    const secStart = rd.indexOf('### 近期 bug 根因（摘要）');
+    let sec = secStart >= 0 ? rd.slice(secStart) : '';
+    const nextHead = sec.indexOf('\n### ', 5);
+    const nextRule = sec.indexOf('\n---', 5);
+    const cut = [nextHead, nextRule].filter((x) => x > 0).sort((a, b) => a - b)[0];
+    if (cut) sec = sec.slice(0, cut);
+    const items = (sec.match(/^- \*\*20\d\d-\d\d-\d\d[^\n]*/gm) || []);
+    const tooLong = items.filter((it) => it.length > 250);
+    check(items.length > 0 && items.length <= 3 && tooLong.length === 0,
+      `§21n-2 README bug 摘要只留最近三条且每条 ≤250 字（当前 ${items.length} 条 / 最长 ${items.reduce((m, x) => Math.max(m, x.length), 0)} 字）`,
+      '摘要累积或单条变长 → 首页又要翻几百行；完整明细应外移 BUG-ROOT-CAUSES.md');
+  }
 }
 
 // ---------- 21o. 未挂 CI 的 test-*.cjs 必须显式标「本机专用」 ----------
