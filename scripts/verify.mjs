@@ -6662,8 +6662,23 @@ section('21c. 首页滑到底部按钮');
       && /取消将被自动拉黑/.test(read('header-menu-patch.js'))
       && /重新 Star 也不(再)?(恢复|开放)/.test(la),
       '取消 Star 拉黑：首页 OAuth 回调写 ever_starred→blacklisted，AI 页明确「重新 Star 不再恢复」');
-    check(/ipNotice/.test(la) && /visitorIp/.test(la) && /恶意消耗|异常高频/.test(la) && /个人敏感信息/.test(la),
-      '安全公告：显示访问 IP + 勿发敏感信息 + 高频限流/取消授权提示（措辞与真实能力一致，不谎称封禁）');
+    check(/ipNotice/.test(la) && /visitorIp/.test(la) && /个人敏感信息/.test(la)
+      && /请求过于频繁时请稍等片刻再试/.test(la) && /稍后即可恢复/.test(la),
+      '安全公告：显示访问 IP + 勿发敏感信息 + 高频只说「稍后再试、稍后恢复」（不谎称封禁）');
+    // §21h-2（2026-11-21 站长定规）：限流口径是每 IP 20 次/小时、超出等一会儿自动恢复，
+    // 对用户一律不提「封禁」——限流文案与接口异常提示都不许出现惩罚性字眼或内部错误码。
+    {
+      const ipBody = (la.match(/async function renderIpNotice\(\)\{[\s\S]*?\n\}/) || [''])[0];
+      const askBody = (la.match(/async function askCF\([\s\S]*?\n\}/) || [''])[0];
+      check(/请求过于频繁时请稍等片刻再试/.test(ipBody) && /稍后即可恢复/.test(ipBody)
+        && !/封禁|被封|取消授权|取消后续|停用|拉黑/.test(ipBody),
+        '§21h-2 IP 公告只说「等一会儿就恢复」，不含封禁/取消授权等惩罚字眼',
+        '写回封禁措辞 → 用户把 20 次/小时的临时限流误读成永久惩罚');
+      check(/res\.status === 429/.test(askBody) && /res\.status === 403/.test(askBody)
+        && /请稍等/.test(askBody) && !/ip-blocked|封禁|被封/.test(askBody),
+        '§21h-2 askCF 对 403/429 统一温和提示，不向用户透出内部错误码或封禁字眼',
+        '403 原样回显 {"error":"ip-blocked"} → 等于告诉用户被封，与「不提示封禁」口径冲突');
+    }
     check(/IPIP_ENDPOINT = 'https:\/\/myip\.ipip\.net\/json'/.test(la)
       && /IPIFY_ENDPOINT = 'https:\/\/api\.ipify\.org\?format=json'/.test(la)
       && /async function resolveVisitorIp/.test(la)
