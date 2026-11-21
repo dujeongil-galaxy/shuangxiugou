@@ -4,6 +4,15 @@
 
 ---
 
+### docs：记录 CF Worker 部署成功 + Windows 三坑 + Meta 视觉模型协议坑（2026-11-21 · 提交 `39a49aec`）
+
+- **AI 全线闭环**：站长完成 `npx wrangler deploy`，线上 `/api/capabilities` 返回 200 + `vision:true` + visitorIp；纯文本与带图请求实测均 200（带图答「红色」），CF 线路图片/文档识别正式可用。Version ID `534d4464`。
+- **新发现真坑**：带图返回 `ai-upstream-error` 而纯文本正常，根因**不是"Workers AI 临时故障"**（原排障文档说法误导），是新账号首次用视觉模型 `@cf/meta/llama-3.2-11b-vision-instruct` 必须先同意 Meta License。发一次 `{"prompt":"agree"}`（返回 403 但错误含 `Thank you for agreeing` 即成功，账号级一次性）后带图恢复 200。已修正 README 排障说明并补部署步骤。
+- **Windows 部署三坑**写进 DEPLOY-教程：① 未 cd 进 ai-worker 会报 `Could not detect a directory containing static files`（用 `--config 绝对路径` 绕过）；② API token 含 `#` 赋值必须加双引号否则被 PowerShell 截断；③ `wrangler login` 超 2 分钟没点 Allow 会超时 + 浏览器 `localhost 拒绝连接`。
+- 改动仅文档（`ai-worker/README.md`、`ai-worker/DEPLOY-教程.md`），未改 Worker 源码，无需重新部署；verify 全绿。
+
+---
+
 ### docs：README bug 摘要 19 条精简为 3 条 + 新增机器断言防再次膨胀（2026-11-21 · 提交 `d13077fe`）
 
 - 起因：按老规矩检查本次 bug 记载是否会让 README 过长——发现「README 只留最近三条」只写在文档里、无机器强制，实际已累积 19 条 / 4454 字符，仍全绿（`§23b` 的 1500 字卡被列表结构绕过、`§23f/§23k` 行数卡尚有空间）。属于「规则没配套断言等于没写」。
