@@ -109,6 +109,8 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
 .route-btn.locked{opacity:.55;cursor:not-allowed}
 .route-tip{font-size:11px;color:var(--warn-ink);text-align:center;padding:0 16px 6px;flex:0 0 auto}
 .route-tip a{color:var(--brand);text-decoration:underline}
+.model-line{font-size:11px;color:var(--sub);text-align:center;padding:0 16px 5px;flex:0 0 auto}
+.model-line b{color:var(--brand);font-weight:600}
 .ip-notice{
   background:#f4f7fc;border-bottom:1px solid var(--line);color:var(--sub);
   font-size:11.5px;line-height:1.6;text-align:center;padding:7px 14px;flex:0 0 auto
@@ -210,6 +212,7 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
   <button class="route-btn" id="btnCN">国内直连</button>
 </div>
 <div class="route-tip" id="routeTip"></div>
+<div class="model-line" id="modelLine"></div>
 <div class="ip-notice" id="ipNotice">正在获取你的访问 IP…</div>
 
 <main>
@@ -265,6 +268,13 @@ var CFG = {
     endpoint: "https://shuangxiugou-ai-worker.ovpj01-hk.workers.dev",
     route: "cf"
   }
+};
+/* 模型公开（2026-11-22 站长要求）：让用户看得见自己走的是哪个模型，不藏。
+   国内为前端直连固定模型；CF 用 Worker capabilities 实际回报的模型名（避免写死漂移），
+   带图时 CF 会切到视觉模型，页面另行标注。 */
+var MODEL_LABEL = {
+  cn: "Qwen3-VL-8B-Instruct（硅基流动）",
+  cf: "GLM-4.7-Flash（Cloudflare Workers AI）"
 };
 
 /* 门槛（2026-11-21 站长改版）：文字问答不设 Star 门槛，两条线路都能直接用。
@@ -383,6 +393,7 @@ var routeEl   = document.getElementById('routeBar');
 var btnCF     = document.getElementById('btnCF');
 var btnCN     = document.getElementById('btnCN');
 var routeTip  = document.getElementById('routeTip');
+var modelLine = document.getElementById('modelLine');
 
 function renderRoute(){
   var st = starStatus();
@@ -393,6 +404,11 @@ function renderRoute(){
   /* 对外只展示统一的一句话，不公开具体额度档位（站长定规）。 */
   routeTip.innerHTML = '两条线路均可直接提问；<a href="' + REPO_URL
     + '" target="_blank" rel="noopener noreferrer">登录GitHub并Star可获取更多额度</a>。';
+  /* 模型公开 + Star 红线告知（2026-11-22 站长要求）：
+     ① 明示当前线路用的模型；② 取消 Star 后额外额度即永久作废、再次 Star 也不再提供。
+     措辞避开具体次数、不写「免费」、不写旧规则的惩罚性字眼，只讲规则本身。 */
+  modelLine.innerHTML = '当前模型：<b>' + (MODEL_LABEL[currentRoute] || '未知')
+    + '</b> · Star 权益只认第一次，取消后额外额度即永久失效，再次 Star 也不再提供。';
   btnCF.classList.toggle('active', currentRoute === 'cf');
   btnCN.classList.toggle('active', currentRoute === 'cn');
   renderAttachGate();

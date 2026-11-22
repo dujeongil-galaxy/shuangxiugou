@@ -6830,6 +6830,26 @@ section('21c. 首页滑到底部按钮');
         && !/未登录减半|当前额度/.test(routeBody),
         '§21h-4 线路提示条只展示统一一句话，不再显示登录态额度数字',
         '把「当前额度 10/20 次」写回 → 具体档位对每位访客可见');
+      // §21h-16（2026-11-22 站长要求）：公开当前线路用的模型，让用户看得见自己走哪条模型；
+      // 同时在页面常驻告知「取消 Star 后额外额度永久失效、再次 Star 不再提供」这条红线。
+      // 模型名三处对齐：国内前端 CFG.cn.model、CF worker capabilities 回报、页面 MODEL_LABEL。
+      check(/id="modelLine"/.test(la)
+        && /var modelLine\s*=\s*document\.getElementById\('modelLine'\)/.test(la)
+        && /modelLine\.innerHTML\s*=/.test(la)
+        && /MODEL_LABEL\[currentRoute\]/.test(la),
+        '§21h-16 页面有独立模型行，随当前线路渲染模型名（不藏、用户可见）');
+      check(/var MODEL_LABEL\s*=\s*\{/.test(la)
+        && /model:\s*"Qwen\/Qwen3-VL-8B-Instruct"/.test(la)
+        && /Qwen3-VL-8B-Instruct/.test(la)
+        && /GLM-4\.7-Flash/.test(la)
+        && /@cf\/zai-org\/glm-4\.7-flash/.test(workerKv),
+        '§21h-16 模型显示名与真实模型一致：国内 Qwen3-VL-8B、CF GLM-4.7-Flash（worker 回报同名）',
+        '页面写的模型名与实际调用的不符 → 用户被误导，公开反而变成欺骗');
+      check(/当前模型：/.test(la)
+        && /取消后额外额度即永久失效，再次 Star 也不再提供/.test(la)
+        && !/拉黑|10 次|20 次|减半|免费额度/.test(stripComments(la)),
+        '§21h-16 常驻告知取消 Star 即永久失效、再次 Star 不再提供，不写惩罚字眼/具体档位/免费',
+        '告知里写回次数或惩罚性字眼 → 撞 §21h-6/§21h-9 对外口径红线');
       const hmpPublic = stripComments(hmp);
       check((hmpPublic.match(/登录GitHub并Star可获取更多额度/g) || []).length >= 4
         && !/每小时 20 次|每小时 10 次|不限天数/.test(hmpPublic),
