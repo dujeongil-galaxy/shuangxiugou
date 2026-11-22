@@ -6847,7 +6847,7 @@ section('21c. 首页滑到底部按钮');
         '§21h-4 线路提示条只展示统一一句话，不再显示登录态额度数字',
         '把「当前额度 10/20 次」写回 → 具体档位对每位访客可见');
       // §21h-16（2026-11-22 站长要求）：公开当前线路用的模型，让用户看得见自己走哪条模型；
-      // 同时在页面常驻告知「取消 Star 后额外额度永久失效、再次 Star 不再提供」这条红线。
+      // 同时常驻告知「取消 Star 后 EAC 协付渠道即永久失效、再次 Star 不再赠送额度」这条红线。
       // 模型名三处对齐：国内前端 CFG.cn.model、CF worker capabilities 回报、页面 MODEL_LABEL。
       check(/id="modelLine"/.test(la)
         && /var modelLine\s*=\s*document\.getElementById\('modelLine'\)/.test(la)
@@ -6867,6 +6867,14 @@ section('21c. 首页滑到底部按钮');
         && !/10 次|20 次|减半|免费额度/.test(routeBody),
         '§21h-16 常驻告知用站长原话「一经取消即拉黑、再次 Star 不赠送额度」，不写具体档位/免费',
         '正文告知改回措辞或写回次数/免费 → 站长原话丢失或撞 §21h-9 对外口径红线（注释里写不算，必须查 renderRoute 正文）');
+      // §21h-16a：失效主体必须是「EAC 协付渠道」，页面可见行与三条线路提示词同一口径。
+      check(/取消后 EAC 协付渠道即永久失效/.test(routeBody)
+        && !/取消后额外额度即永久失效|额外权益即永久失效/.test(routeBody)
+        && /EAC 协付渠道即永久失效/.test(la)
+        && /EAC 协付渠道即永久失效/.test(workerKv)
+        && /EAC 协付渠道即永久失效/.test(aliPrompt),
+        '§21h-16a 取消 Star 失效口径在页面可见行与三条线路统一为 EAC 协付渠道',
+        '前端可见行还说「额外额度/额外权益永久失效」→ 同一规则两处口径不一致，用户看到旧说法');
       const hmpPublic = stripComments(hmp);
       check((hmpPublic.match(/登录GitHub并Star可获取更多额度/g) || []).length >= 4
         && !/每小时 20 次|每小时 10 次|不限天数/.test(hmpPublic),
