@@ -215,11 +215,6 @@ jobs:
       - name: AI Worker 逻辑测试
         run: node scripts/test-ai-worker.cjs
 
-      # CF 前端 askCF() 的 SSE 逐字解析（2026-11-22）：老式 response 帧 / OpenAI choices 帧
-      # / 思考链不外泄 / 半行拼接 / 老 Worker 降级 / 限流文案，全部纯 jsdom 桩、不联网。
-      - name: CF 前端流式解析测试
-        run: node scripts/test-ai-cf-stream.cjs
-
       # 阿里云函数计算线路（2026-11-13）：桩 fetch 验 CORS/校验/限流/契约对齐。
       - name: 阿里云线路逻辑测试
         run: node scripts/test-ai-worker-aliyun.cjs

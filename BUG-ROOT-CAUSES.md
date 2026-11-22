@@ -17,7 +17,7 @@
 
 **修法（2026-11-22 · 提交 `1b278726`）**：Worker 新增独立 `POST /api/stream` 端点，`env.AI.run(..., stream:true)` 把 SSE 流透传返回（`text/event-stream` + `X-Accel-Buffering:no` 禁反代缓冲）；**原 `/` 端点一字不动**，兼容缓存旧页面与单测。前端 `askCF()` 优先请求流端点、用 `getReader()` 逐帧解析 `data:` 行、每帧调 `onPiece` 逐字渲染；首字前显示「AI 正在深度思考中」+ 跳动点。三道保险：①20 秒"无数据"超时，每收到一帧就重置（长回答持续出字不会被误杀）；②按 `content-type` 判定，老 Worker 回 JSON 自动降级；③SSE 帧双格式兼容（Workers AI 老式 `{response}` 与 OpenAI 兼容模型 `{choices:[{delta:{content}}]}`），且只取 `content` 不取 `reasoning_content`（思考链不外泄）。**systemPrompt、模型、190 家数据一字未改**，用户认可的中立性原样保留。
 
-**怎么验证**：verify 新增 §21h-13 十三条（含双格式兼容、思考链不外泄、每帧重置、故障注入删 armTimer 判红），2132 全绿；CF 单测 86/0（新增 SSE 端点 9 条）；新建 `test-ai-cf-stream.cjs` 用 jsdom 桩 fetch 覆盖老式帧/OpenAI 帧/思考链/半行拼接/降级/限流文案 10/0，已挂 CI；阿里云 49/0。Worker 已 `wrangler deploy`（Version `9701ded2`），capabilities 实测返回 `stream:true`。
+**怎么验证**：verify 新增 §21h-13 十三条（含双格式兼容、思考链不外泄、每帧重置、故障注入删 armTimer 判红），2132 全绿；CF 单测 86/0（新增 SSE 端点 9 条）；新建 `test-ai-cf-stream.cjs` 用 jsdom 桩 fetch 覆盖老式帧/OpenAI 帧/思考链/半行拼接/降级/限流文案 10/0（PAT 无 workflow scope，标本机专用不挂 CI）；阿里云 49/0。Worker 已 `wrangler deploy`（Version `9701ded2`），capabilities 实测返回 `stream:true`。
 
 **遗留说明**：部署当时上游 Workers AI 正好拥塞——流端点与非流端点均实测 0 字节超时（连续多次），无法在真实上游上抓到首帧格式。故以双格式兼容 + 桩单测覆盖两种可能格式；待上游恢复后线上即为逐字输出。这是外部上游故障，非代码缺陷。
 

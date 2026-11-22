@@ -8,7 +8,7 @@
 
 - 背景：用户反馈「Cloudflare 是真的慢」，截图显示 AI 回答要等整段文字生成完才一次性出现，中间只有闪烁光标、像卡死。
 - 根因：`@cf/zai-org/glm-4.7-flash` 是 reasoning 推理模型，原实现非流式——`env.AI.run()` 等整段答完才返回，前端一次性渲染；叠加 190 家数据 prefill，感知延迟十几秒。
-- 改了哪些文件：`ai-worker/src/worker.js`（新增 `POST /api/stream`，`stream:true` 透传 SSE + 禁缓冲头；原 `/` 端点不动）、`labor-ai.html`（`askCF()` 读 SSE 逐字回调、首字前「深度思考中」动画、20 秒无数据超时每帧重置、content-type 降级、双格式兼容、只取 content 不外泄思考链）、`scripts/verify.mjs`（§21h-13 十三条）、`scripts/test-ai-worker.cjs`（SSE 端点 9 条）、`scripts/test-ai-cf-stream.cjs`（新建，jsdom 桩前端解析 10 条）、`.github/workflows/verify.yml`（挂 CI）。
+- 改了哪些文件：`ai-worker/src/worker.js`（新增 `POST /api/stream`，`stream:true` 透传 SSE + 禁缓冲头；原 `/` 端点不动）、`labor-ai.html`（`askCF()` 读 SSE 逐字回调、首字前「深度思考中」动画、20 秒无数据超时每帧重置、content-type 降级、双格式兼容、只取 content 不外泄思考链）、`scripts/verify.mjs`（§21h-13 十三条）、`scripts/test-ai-worker.cjs`（SSE 端点 9 条）、`scripts/test-ai-cf-stream.cjs`（新建，jsdom 桩前端解析 10 条，PAT 无 workflow scope 标本机专用不挂 CI）。
 - **中立性保护**：systemPrompt、模型 ID、190 家数据快照一字未改；§21h-13 专门断言三者未被流式改动破坏。
 - 验收：verify 2132 全绿（含故障注入判红）、CF 86/0、前端流式 10/0、阿里云 49/0、`git diff --check` 通过；Worker 已 `wrangler deploy`（Version `9701ded2`），capabilities 实测 `stream:true`。
 - 遗留：部署当时上游 Workers AI 拥塞（流/非流端点均 0 字节超时），真实首帧未能抓到；以双格式兼容 + 桩单测覆盖两种可能帧格式，待上游恢复即逐字输出。外部上游故障，非代码缺陷。

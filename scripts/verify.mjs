@@ -6999,12 +6999,11 @@ section('21c. 首页滑到底部按钮');
       check(/d0 && d0\.content \|\| ''/.test(askS) && !/d0\.reasoning_content|d0 && d0\.reasoning/.test(askS),
         '§21h-13 只取 content、不取 reasoning_content（推理模型思考链不外泄）',
         '把思考链显示给访客 → 输出一堆莫名内心独白');
-      // 前端解析单测存在且挂 CI（否则 §21o 会判「本机专用未标注」）
+      // 前端解析单测存在（PAT 无 workflow scope，标本机专用不挂 CI；§21o 咬标记）
       const streamTest = 'scripts/test-ai-cf-stream.cjs';
-      const ciYml = exists('.github/workflows/verify.yml') ? read('.github/workflows/verify.yml') : '';
-      check(exists(streamTest) && ciYml.includes('test-ai-cf-stream.cjs')
+      check(exists(streamTest) && /本机专用/.test(read(streamTest))
         && /response/.test(read(streamTest)) && /choices/.test(read(streamTest)),
-        '§21h-13 前端流式解析单测存在且挂 CI（老式帧/OpenAI 帧都覆盖）',
+        '§21h-13 前端流式解析单测存在且标本机专用（老式帧/OpenAI 帧都覆盖）',
         '无动态测试 → 帧格式写错只能等线上白屏才发现');
       // 故障注入：把「每帧重置超时」的 armTimer 调用去掉一个，断言必须判红
       const removedArm = askS.replace('        armTimer(); // 收到数据重置 20 秒，长回答持续出字就不会超时', '');
