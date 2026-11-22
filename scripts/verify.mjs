@@ -6623,30 +6623,31 @@ section('21c. 首页滑到底部按钮');
     '★ 阅读态守卫：正文（#toc）里移除 AI 按钮并跳过构建（解锁后不复活）',
     '删守卫 → notes.html 解锁进「阅读全文」后左下角 AI 按钮仍在，违反站长要求');
 
-  // ---- AI 开通公告文案（2026-11-18 站长优化）----
-  // 保留开通日期 2026-11-07 不删；补上当日全面升级 + 旧版历史遗留代码彻底清除。
-  // 措辞由站长给定含义、脚本自组织，不许照抄指令、也不许把两件事实删掉。
-  section('21g-3. AI 开通公告文案');
+  // ---- AI 公告文案（2026-11-22 站长要求彻底重写）----
+  // 第一行动态运行时长（建仓时刻 2026-09-29T16:54:35Z 起算，时分秒齐全）；
+  // 第二行从「2026」开始写 11-21 升级 + 附件上传 + 欢迎 Star，两行显示。
+  section('21g-3. AI 公告文案');
   const noticeJs = exists('ai-notice-patch.js') ? read('ai-notice-patch.js') : '';
-  const noticeM = noticeJs.match(/var NOTICE_TEXT = '([^']*)'/);
-  check(!!noticeM, '公告脚本存在且定义 NOTICE_TEXT');
-  if (noticeM) {
-    const nt = noticeM[1];
-    check(/2026-11-07/.test(nt), '公告保留开通日期 2026-11-07（站长：日期不删）');
-    check(/11-18/.test(nt) && /全面升级/.test(nt),
-      '公告写明 11-18 完成全面升级');
-    check(/旧版/.test(nt) && /(彻底清除|彻底移除|彻底删除)/.test(nt) && /代码/.test(nt),
-      '公告写明旧版历史遗留代码已彻底清除（不是「优化/更新」软话）');
-    check(/Ai 对话图标/.test(nt) && /咨询劳动法/.test(nt),
-      '公告用统一叫法「Ai 对话图标」给出咨询劳动法指引（不写位置）');
-    check(!/(右下角|左下角|左下|右下|🤖)/.test(nt),
-      '公告不含任何方位词或 🤖（PC 常显右侧 dock / 手机收在别处，写死位置会误导）');
-    check(nt.length <= 120,
-      `公告长度可控，不撑破首页 hero 徽章（当前 ${nt.length} 字）`);
-  }
+  check(/var SITE_START = new Date\('2026-09-29T16:54:35Z'\)/.test(noticeJs),
+    '公告用 GitHub API 建仓时刻 2026-09-29T16:54:35Z 起算（时分秒齐全，非 0 点兜底）',
+    '把建仓时刻写成 2026-09-29T00:00:00Z → 运行时长多算约一天，与真实建仓时刻不符');
+  check(/var NOTICE_HEAD = '📢 本站已运行 '/.test(noticeJs)
+    && /var NOTICE_TAIL = '2026-11-21[^']*附件上传[^']*Star on GitHub[^']*'/.test(noticeJs),
+    '公告第一行动态运行时长、第二行从 2026-11-21 起写升级与附件上传',
+    '第二行不从 2026 起写，或丢了附件上传/欢迎 Star → 站长重写口径丢失');
+  check(/days \+ '天' \+ hours \+ '时' \+ minutes \+ '分' \+ seconds \+ '秒'/.test(noticeJs)
+    && /setInterval\(/.test(noticeJs) && /\}, 1000\)/.test(noticeJs),
+    '运行时长按天/时/分/秒逐秒刷新',
+    '只写死时长或没有每秒定时器 → 用户看到的天数是陈旧的');
+  check(/appendChild\(document\.createElement\('br'\)\)/.test(noticeJs)
+    && /timeLine/.test(noticeJs) && /upgradeLine/.test(noticeJs),
+    '公告强制两行，第二行从「2026」开始换行',
+    '没有强制换行 → 长文案在窄屏挤成一大坨');
+  check(!/(右下角|左下角|左下|右下|🤖)/.test(noticeJs),
+    '公告不含方位词或 🤖（PC 右侧 dock / 手机位置不统一）');
   const noticeHtmlNoCmt = html.replace(/<!--[\s\S]*?-->/g, '');
-  check(/<script[^>]*src="\.\/ai-notice-patch\.js\?v=3"/.test(noticeHtmlNoCmt),
-    '首页活跃引用 ai-notice-patch.js?v=3（非注释，文案变更 bump 破缓存）');
+  check(/<script[^>]*src="\.\/ai-notice-patch\.js\?v=4"/.test(noticeHtmlNoCmt),
+    '首页活跃引用 ai-notice-patch.js?v=4（非注释，文案变更 bump 破缓存）');
 
   // labor-ai.html 必须：双线路 + 新权限矩阵（登录 20 / 未登录 10；附件登录+Star 才开）+ 两处免责声明
   {
