@@ -4,6 +4,17 @@
 
 ---
 
+### fix：问具体品牌时 AI 给该品牌专属页链接（2026-11-22 · 提交 `876169c2`）
+
+- 背景：用户问「华为加班吗」，AI 回答末尾只给首页网址，没给 `.../brand/huawei.html` 专属详情页；站长要求问相关品牌/企业时给具体 html 页面（且不是首页底部的证据链公示入口）。
+- 根因：190 行数据快照只有品牌名+评级、无品牌页文件名；提示词网址规则只写死首页，AI 无专属页可指。
+- 改动：
+  - `scripts/extract-brand-prompt.mjs` 的 `buildLines()` 每行末尾追加 `｜页:slug`（slug 即 `brand/<slug>.html` 文件名），`footer1` 规则补写品牌专属页链接要求；三处 `--write` 幂等重生成（190 行、slug 不漂移）。
+  - 三线路提示词逐字一致：labor 数据块 footer1、CF `worker.js` 第4条、阿里云 `index.mjs` 第4条，都写明「问具体品牌给 `官方域名/brand/页.html`、slug 照抄数据行不按中文名自拼、只给首页不算、是品牌专属详情页非首页证据链公示入口」。
+  - `scripts/verify.mjs` 新增 §21h-10a 四条（190 行都带 slug、抽样 slug 对真实文件、三线路规则一致、故障注入篡改 slug 判红）。
+- 验证：verify 2142 全绿；CF 86/0、阿里云 49/0、md 14/0；CF Worker 已部署（Version 4c419b7d）。
+- 备注：部署日志显示仅 `env.AI` binding，`STAR_RECORD` KV 仍未绑定，撤 Star 永久失效未真正生效——非本次改动范围，待站长按部署文档整段替换 `wrangler.json` 后绑定。
+
 ### fix：AI 返回的 URL 渲染为可点超链接，危险协议拦截（2026-11-22 · 提交 `29a5b3af`）
 
 - 背景：用户截图反馈 AI 回答末尾的官方网址以 Markdown 链接源码原文显示、无法点击。

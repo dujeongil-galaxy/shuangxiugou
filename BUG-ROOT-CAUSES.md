@@ -9,6 +9,14 @@
 
 ---
 
+### 近期 bug 根因（fix）：用户问具体品牌时 AI 只给首页网址、不给品牌专属页（2026-11-22 · 提交 `876169c2`）
+
+- **现象**：用户问「华为加班吗」，AI 回答末尾给的是首页 `https://dujeongil-galaxy.github.io/shuangxiugou/`，而不是华为的专属详情页 `.../brand/huawei.html`。
+- **根因**：190 行数据快照里只有品牌名+评级，没有品牌页文件名；提示词的网址规则只写死首页地址，AI 没有专属页可指，也不敢自己拼（此前刚因拼造假网址修过一次）。
+- **修法**：`extract-brand-prompt.mjs` 的 `buildLines()` 给每行末尾追加 `｜页:slug`（slug 就是 `brand/<slug>.html` 的文件名，脚本本就用它提取）；`footer1` 网址规则补一条：问到具体品牌时给专属页链接、格式 `官方域名/brand/页.html`、「页」严格照抄数据行 slug、不按中文名自拼、只给首页不算、明确这不是首页底部的证据链公示入口。三线路（labor footer1 / CF 第4条 / 阿里云第4条）逐字一致，`--write` 幂等重生成（实测 190 行、slug 不漂移）。
+- **验证**：verify §21h-10a 四条（190 行都带 slug、抽查华为/苹果/蜜雪冰城 slug 对真实文件、三线路规则一致、故障注入篡改 slug 判红），2142 全绿；CF 86/0、阿里云 49/0、md 14/0；Worker 已部署（4c419b7d）。
+- **坑**：`stripComments()` 的 `/\/\//` 规则会把 `https://` 后的链接整段删掉，含网址的规则文本不能用它剥注释后再比对——直接用原文。
+
 ### 近期 bug 根因（fix）：AI 返回的官方网址以 Markdown 链接源码原文显示、点不开（2026-11-22 · 提交 `29a5b3af`）
 
 - **现象**：用户问「华为加班吗」，AI 末尾给出 `请进站核实数据：[https://dujeongil-galaxy.github.io/shuangxiugou/](https://dujeongil-galaxy.github.io/shuangxiugou/)`——网址连同方括号原样显示成文本，无法点击跳转。
