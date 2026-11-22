@@ -120,7 +120,9 @@ async function main() {
     check('提示词含加班费倍率口径', /150%/.test(msgs[0].content) && /300%/.test(msgs[0].content));
     check('提示词声明非法律意见', /不构成|不是法律意见|参考信息/.test(msgs[0].content));
     check('提示词锁定双休购站点角色', /双休购/.test(msgs[0].content));
-    check('提示词开放简历能力（2026-11-21）', /简历/.test(msgs[0].content) && /求职信|润色/.test(msgs[0].content));
+    check('提示词开放简历优化能力且只提意见不代写（2026-11-22）',
+      /简历/.test(msgs[0].content) && /只提修改意见/.test(msgs[0].content)
+      && /不要代写整份简历/.test(msgs[0].content) && /不要输出 PDF 版简历/.test(msgs[0].content));
     check('提示词禁止编造简历信息', /绝不.*虚构|不编造/.test(msgs[0].content));
     check('提示词写明取消 Star 权益永久失效且不再恢复（2026-11-21）',
       /权益只认第一次/.test(msgs[0].content)
