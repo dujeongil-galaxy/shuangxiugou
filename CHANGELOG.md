@@ -4,6 +4,18 @@
 
 ---
 
+### fix：Boss直聘 关键词写死固定链接，前端直接拦截不走 AI（2026-11-22 · 提交 `9342619d`）
+
+- 背景：用户问「我在 Boss直聘上找工作靠谱吗」，AI 中立分析了长篇；站长要求不管怎么问，只要出现 Boss直聘 关键词就直接返回本站那个带站长人工备注锚点的固定链接，不让 AI 自由发挥。
+- 根因：此前 Boss直聘 与普通品牌一视同仁，提示词只写「问品牌给 brand/页.html」，AI 自行组织回答、给普通链接，既不带 `#note-manual-override` 锚点也不是"只给这一个链接"；软约束可能被模型忽略。
+- 改动：
+  - `labor-ai.html`：新增 `BOSS_FIXED_ANSWER` 常量（文案含裸网址，经 `md()` 渲染成可点 `<a>`）与 `isBossHit(text)` 纯函数（大小写/空格/间隔变体）；`doSend()` 在最前面命中即渲染固定文案并 `return`，早于限流、附件锁、Key 检查、线路选择，**完全不调用 AI**。
+  - 三线路提示词（`scripts/extract-brand-prompt.mjs` 的 footer1 → labor、CF `worker.js` 第4条、阿里云 `index.mjs` 第4条）逐字写入同一条"最高优先级"规则兜底；`--write` 幂等重生成三处快照。
+  - `scripts/verify.mjs` §21h-15 七条：三线路逐字一致（含锚点+最高优先级）、前端常量+命中 return、拦截早于限流、变体覆盖、裸网址可点、故障注入去锚点判红、动态单测存在。
+  - `scripts/test-ai-boss.cjs`（新建，本机专用）：抽 `isBossHit()` 真跑，8 个命中变体 + 7 个不误伤 + 固定文案 md 渲染可点 + 三线路文案一致，23/0。
+- 验证：verify 2150 全绿；CF 86/0、阿里云 49/0、md 14/0、boss 23/0。Worker 已部署（Version `092a35f2`），部署日志确认 `env.STAR_RECORD` KV 绑定仍在。
+- 注意：固定文案的 `\n` 是 JS 转义序列，测试取值须在 `new Function` 里求值，拿源码文本会得到字面两字符、linkify 不触发。
+
 ### fix：绑定真实 STAR_RECORD KV，撤 Star 永久失效真正锁死（2026-11-22 · 提交 `b935d929`）
 
 - 背景：站长按教程操作，`npx wrangler deploy` 在 `C:\Windows\system32>` 报 `Could not detect a directory containing static files`；且此前多次部署日志只有 `env.AI`，`STAR_RECORD` KV 从没绑上——"取消 Star 永久失效"线上一直降级为实时验签（撤了再点回来会恢复）。
