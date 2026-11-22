@@ -6762,14 +6762,28 @@ section('21c. 首页滑到底部按钮');
         '只做实时验签不记首次时间 → 用户撤了再点回来就恢复，永久作废规则落空');
       const readmeKv = read('ai-worker/README.md');
       const deployKv = read('ai-worker/DEPLOY-教程.md');
+      // 2026-11-22：站长已建好真实 KV 并绑定（部署日志确认 env.STAR_RECORD）。
+      // 红线本意是「别塞占位 id 卡住 deploy」，不是「永远不许写配置」。改为：
+      // 要么不配 kv_namespaces（走文档自配、降级实时验签），要么填真实 32 位 hex id；
+      // 占位符/假 id 仍判红。
+      const kvAt = wranglerCfg.indexOf('"kv_namespaces"');
+      const kvSeg = kvAt < 0 ? '' : wranglerCfg.slice(kvAt, wranglerCfg.indexOf(']', kvAt) + 1);
+      const kvIdOk = !kvSeg || /[0-9a-f]{32}/.test(kvSeg);
       check(/if \(env\.STAR_RECORD\)/.test(workerKv)
-        && !/"kv_namespaces"/.test(wranglerCfg) // 不放假 id，避免部署直接失败
+        && kvIdOk
         && /kv namespace create STAR_RECORD/.test(readmeKv)
         && /kv namespace create STAR_RECORD/.test(deployKv)
         && /"binding": "STAR_RECORD"/.test(readmeKv)
         && /"binding": "STAR_RECORD"/.test(deployKv),
-        '§21h-7 KV 配置留在部署文档（不放假 id 卡部署），未绑时整段跳过退回实时验签',
+        '§21h-7 KV 要么不配、要么填真实 32 位 id（占位/假 id 判红），未绑时退回实时验签',
         '配置里塞占位 id → 站长 deploy 直接失败；只写代码不给建 KV 步骤 → 规则不生效还以为上线');
+      // 故障注入：把真 KV id 换成占位符后，「真实 id」断言必须判红
+      const fakeCfg = kvSeg ? wranglerCfg.replace(/[0-9a-f]{32}/, 'PLACEHOLDER_NOT_REAL') : wranglerCfg;
+      const fakeAt = fakeCfg.indexOf('"kv_namespaces"');
+      const fakeSeg = fakeAt < 0 ? '' : fakeCfg.slice(fakeAt, fakeCfg.indexOf(']', fakeAt) + 1);
+      check(fakeCfg !== wranglerCfg && kvSeg && !/[0-9a-f]{32}/.test(fakeSeg),
+        '§21h-7 故障注入：真 KV id 换成占位符后判红',
+        '假 id 还全绿 → 防「占位 id 卡 deploy」的防线失效');
       check(/starRevoked/.test(read('scripts/test-ai-worker.cjs'))
         && /永久作废/.test(read('scripts/test-ai-worker.cjs')),
         '§21h-7 单测覆盖「取消→再 Star 仍失效」全链路',
