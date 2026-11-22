@@ -6668,10 +6668,11 @@ section('21c. 首页滑到底部按钮');
       && /if \(attachments\.length && !starStatus\(\)\.attachUnlocked\)/.test(la)
       && /if \(!st\.attachUnlocked\)/.test(la),
       '附件锁死：登录 + Star 才放行，不看天数；入口禁用、选文件、发送前共三道门');
-    check(!/sxg_ai_blacklisted|sxg_ai_ever_starred|拉黑/.test(la)
+    check(!/sxg_ai_blacklisted|sxg_ai_ever_starred/.test(la)
       && !/sxg_ai_blacklisted|sxg_ai_ever_starred|拉黑/.test(hmp)
       && !/localStorage\.setItem\('sxg_ai_blacklisted'/.test(hmp),
-      '旧「取消 Star 永久拉黑」规则已彻底移除，AI 页与首页回调都不再写/说拉黑');
+      '旧前端硬拉黑机制（那两个 localStorage key）已彻底移除；AI 页告知按站长授权可直说「拉黑」，首页回调仍禁',
+      '把 sxg_ai_blacklisted 等旧 key 写回 → 旧前端硬拉黑复活；首页回调说拉黑 → 撞对外口径');
     check(/header-menu-patch\.js\?v=16/.test(read('index.html')),
       '首页脚本内容已变，缓存号 bump 到 v16');
     check(/ipNotice/.test(la) && /visitorIp/.test(la) && /个人敏感信息/.test(la)
@@ -6845,11 +6846,12 @@ section('21c. 首页滑到底部按钮');
         && /@cf\/zai-org\/glm-4\.7-flash/.test(workerKv),
         '§21h-16 模型显示名与真实模型一致：国内 Qwen3-VL-8B、CF GLM-4.7-Flash（worker 回报同名）',
         '页面写的模型名与实际调用的不符 → 用户被误导，公开反而变成欺骗');
-      check(/当前模型：/.test(la)
-        && /取消后额外额度即永久失效，再次 Star 也不再提供/.test(la)
-        && !/拉黑|10 次|20 次|减半|免费额度/.test(stripComments(la)),
-        '§21h-16 常驻告知取消 Star 即永久失效、再次 Star 不再提供，不写惩罚字眼/具体档位/免费',
-        '告知里写回次数或惩罚性字眼 → 撞 §21h-6/§21h-9 对外口径红线');
+      check(/当前模型：/.test(routeBody)
+        && /一经取消即拉黑/.test(routeBody)
+        && /再次 Star 也不赠送额外的 Token 使用额度/.test(routeBody)
+        && !/10 次|20 次|减半|免费额度/.test(routeBody),
+        '§21h-16 常驻告知用站长原话「一经取消即拉黑、再次 Star 不赠送额度」，不写具体档位/免费',
+        '正文告知改回措辞或写回次数/免费 → 站长原话丢失或撞 §21h-9 对外口径红线（注释里写不算，必须查 renderRoute 正文）');
       const hmpPublic = stripComments(hmp);
       check((hmpPublic.match(/登录GitHub并Star可获取更多额度/g) || []).length >= 4
         && !/每小时 20 次|每小时 10 次|不限天数/.test(hmpPublic),

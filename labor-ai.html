@@ -405,10 +405,10 @@ function renderRoute(){
   routeTip.innerHTML = '两条线路均可直接提问；<a href="' + REPO_URL
     + '" target="_blank" rel="noopener noreferrer">登录GitHub并Star可获取更多额度</a>。';
   /* 模型公开 + Star 红线告知（2026-11-22 站长要求）：
-     ① 明示当前线路用的模型；② 取消 Star 后额外额度即永久作废、再次 Star 也不再提供。
-     措辞避开具体次数、不写「免费」、不写旧规则的惩罚性字眼，只讲规则本身。 */
+     ① 明示当前线路用的模型；② Star 一经取消即拉黑，再次 Star 也不赠送额外的 Token 使用额度。
+     站长授权这里直说「拉黑」；仍避开具体次数、不写「免费」，只讲规则本身。 */
   modelLine.innerHTML = '当前模型：<b>' + (MODEL_LABEL[currentRoute] || '未知')
-    + '</b> · Star 权益只认第一次，取消后额外额度即永久失效，再次 Star 也不再提供。';
+    + '</b> · Star 权益只认第一次，一经取消即拉黑，再次 Star 也不赠送额外的 Token 使用额度。';
   btnCF.classList.toggle('active', currentRoute === 'cf');
   btnCN.classList.toggle('active', currentRoute === 'cn');
   renderAttachGate();
