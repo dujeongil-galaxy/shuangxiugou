@@ -9,6 +9,14 @@
 
 ---
 
+### 近期 bug 根因（fix）：撤 Star 永久失效只在代码里、线上一直没绑 KV（2026-11-22 · 提交 `b935d929`）
+
+- **现象**：站长按部署教程操作，`npx wrangler deploy` 在 `C:\Windows\system32>` 目录直接报 `Could not detect a directory containing static files`。此前多次部署日志只有 `env.AI` binding——`STAR_RECORD` KV 从没真正绑上，意味着"取消 Star 后永久失去权益、再 Star 也不恢复"的判定线上一直在降级（退回实时验签，撤了再点回来会恢复）。
+- **根因**：两层。① 命令没 cd 到项目目录，wrangler 在 system32 找不到 `wrangler.json`，误判成 Pages 项目去找静态目录；② 之前为避免假 id 卡部署，verify §21h-7 硬性禁止 `wrangler.json` 出现 `kv_namespaces`，站长照文档往里填时又把示例粘错位置、id 留在占位符，反复失败后 KV 一直没绑成。
+- **修法**：查 `wrangler kv namespace list` 拿到站长已建好的真实 KV（`STAR_RECORD`，id `771c044b5672443b96261cbb3c968ba4`），直接填进 `wrangler.json` 并部署，日志确认 `env.STAR_RECORD` binding 生效。verify §21h-7 的红线从「一律禁止写 kv_namespaces」放宽为「要么不配、要么填真实 32 位 hex id；占位/假 id 仍判红」，并加故障注入把真 id 换占位符必须判红——保住"别塞假 id 卡 deploy"的原意，又不挡真实绑定。
+- **验证**：verify 2143 全绿（§21h-7 五条 + 故障注入）；CF 单测 86/0，其中 ⑫「撤过 Star 就永久作废」已覆盖 KV 全链路——首次 Star 写入 `star:first:<uid>`、仍 Star 不误判、撤后再 Star 强制 `hasStar:false` 且 `starRevoked:true`、未绑 KV 时降级为实时验签。线上部署日志确认 KV 绑定，Worker capabilities 正常（`stream:true`）。
+- **注意**：Star 权益判定依赖用户 OAuth 令牌（登录态），线上端到端核验需站长本人登录后实测；单测已在服务端完整验证该逻辑。
+
 ### 近期 bug 根因（fix）：用户问具体品牌时 AI 只给首页网址、不给品牌专属页（2026-11-22 · 提交 `876169c2`）
 
 - **现象**：用户问「华为加班吗」，AI 回答末尾给的是首页 `https://dujeongil-galaxy.github.io/shuangxiugou/`，而不是华为的专属详情页 `.../brand/huawei.html`。

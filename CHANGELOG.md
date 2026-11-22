@@ -4,6 +4,17 @@
 
 ---
 
+### fix：绑定真实 STAR_RECORD KV，撤 Star 永久失效真正锁死（2026-11-22 · 提交 `b935d929`）
+
+- 背景：站长按教程操作，`npx wrangler deploy` 在 `C:\Windows\system32>` 报 `Could not detect a directory containing static files`；且此前多次部署日志只有 `env.AI`，`STAR_RECORD` KV 从没绑上——"取消 Star 永久失效"线上一直降级为实时验签（撤了再点回来会恢复）。
+- 根因：① 命令未在 `ai-worker` 目录执行，wrangler 找不到 `wrangler.json` 误判成 Pages 项目；② verify §21h-7 为防假 id 卡部署，硬性禁止配置出现 `kv_namespaces`，站长填 id 时又粘错位置、id 留占位符，KV 反复没绑成。
+- 改动：
+  - `ai-worker/wrangler.json`：`kv_namespaces` 填入真实 id `771c044b5672443b96261cbb3c968ba4`（经 `wrangler kv namespace list` 查得，站长此前已建好）；`STAR_SESSION_SECRET` 已存在，无需重设。
+  - `npx wrangler deploy`：日志确认 `env.STAR_RECORD (771c044b…) KV Namespace` 绑定生效，Version `b8f46cae`。
+  - `scripts/verify.mjs` §21h-7：红线从「一律禁止 kv_namespaces」放宽为「要么不配、要么填真实 32 位 hex id；占位/假 id 判红」，新增故障注入（真 id 换占位符必须判红），保住防假 id 卡 deploy 的原意。
+- 验证：verify 2143 全绿（§21h-7 五条 + 故障注入）；CF 单测 86/0，⑫ 覆盖 KV 全链路——首次 Star 写 `star:first:<uid>`、仍 Star 不误判、撤后再 Star 强制 `hasStar:false` + `starRevoked:true`、未绑 KV 时降级。线上 Worker capabilities 正常（`stream:true`）。
+- 核验边界：Star 权益判定依赖用户 OAuth 令牌，线上端到端核验需站长本人登录后实测；服务端逻辑已由单测完整覆盖。
+
 ### fix：问具体品牌时 AI 给该品牌专属页链接（2026-11-22 · 提交 `876169c2`）
 
 - 背景：用户问「华为加班吗」，AI 回答末尾只给首页网址，没给 `.../brand/huawei.html` 专属详情页；站长要求问相关品牌/企业时给具体 html 页面（且不是首页底部的证据链公示入口）。
