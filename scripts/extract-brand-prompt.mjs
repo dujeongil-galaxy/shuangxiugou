@@ -77,7 +77,10 @@ function buildLines(rows) {
     let suffix = '';
     if (/按本站月休口径换算/.test(td)) suffix = '（口径换算）';
     if (/站长人工介入/.test(td)) suffix = '（站长人工介入）';
-    lines.push('- ' + r.name + '：' + parts.join('，') + suffix);
+    // 品牌专属页 slug（2026-11-22 站长要求）：用户问具体品牌时 AI 要给该品牌的
+    // 专属页面链接，不能只给首页。这里把文件名带进快照，让 AI 照抄 slug 拼链接，
+    // 而不是自己按中文名猜（此前有过 AI 拼造假网址的教训）。
+    lines.push('- ' + r.name + '：' + parts.join('，') + suffix + '｜页:' + r.slug);
   }
   let text = lines.join('\n');
   for (const [a, b] of Object.entries(NAME_FIX)) text = text.replace(a, b);
@@ -111,7 +114,7 @@ function makeLaborChunk(text) {
   const chunks = chunkLines(text).map(l => '  "' + l + '",').join('\n');
   // 网址约束（2026-11-22 fix 55143c65）：AI 曾编造 www.shuangxiugou.com 假网址；
   // footer1 必须带真实官方地址与禁拼造声明，--write 重生成时才不会把这条冲掉。
-  const footer1 = '  "这份数据可能滞后，回答时注明「数据以双休购站点实时页面为准」；用户问到站点未收录的企业时，如实说明未收录，不要编造评级，可建议他用站内搜索或等站长补录。本站唯一官方地址是 https://dujeongil-galaxy.github.io/shuangxiugou/ ，提到本站或引导查询时只能用这个完整地址，不要自行拼造、猜测或改写域名（包括把站名拼成看似合理的 .com 网址），拿不准就不写网址。",';
+  const footer1 = '  "这份数据可能滞后，回答时注明「数据以双休购站点实时页面为准」；用户问到站点未收录的企业时，如实说明未收录，不要编造评级，可建议他用站内搜索或等站长补录。本站唯一官方地址是 https://dujeongil-galaxy.github.io/shuangxiugou/ ，提到本站或引导查询时只能用这个完整地址，不要自行拼造、猜测或改写域名（包括把站名拼成看似合理的 .com 网址），拿不准就不写网址。用户问到上面收录的某个具体品牌/企业时，回答末尾附上该品牌的专属页面链接，格式为 https://dujeongil-galaxy.github.io/shuangxiugou/brand/页.html ——其中「页」严格照抄该品牌数据行末尾「｜页:」后面的英文 slug（如华为是 huawei、苹果是 apple），不得按中文名自行拼写或改写；只给首页不算，这个链接是品牌专属详情页、不是首页底部的证据链公示入口。",';
   const footer2 = '  "引用数据时说明出处是双休购的证据链评级（司法文书、劳动监察通报、ESG 报告、招聘口径、员工反馈等），评级只反映休息制度、不构成对企业的法律定性；数据有异议可走 GitHub Issues 申诉。",';
   return header + '\n' + chunks + '\n' + footer1 + '\n' + footer2;
 }

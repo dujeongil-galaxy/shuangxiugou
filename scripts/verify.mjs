@@ -6881,6 +6881,46 @@ section('21c. 首页滑到底部按钮');
       check(/extract-brand-prompt/.test(read('CHANGELOG.md')) || existsSync('scripts/extract-brand-prompt.mjs'),
         '§21h-10 快照有再生成脚本（extract-brand-prompt.mjs），站点改档后可一键同步',
         '没有脚本 → 下次改档只能手抄 190 行，必然漂移');
+      // §21h-10a（2026-11-22 站长要求）：用户问具体品牌要给该品牌专属页链接，不是首页。
+      // 快照每行带 ｜页:slug（让 AI 照抄、不按中文名自拼），三线路各有一条一致的规则。
+      {
+        const slugLines = cfSnap.split('\n').filter(l => /｜页:[a-z0-9-]+$/.test(l));
+        check(slugLines.length === 190,
+          '§21h-10a 190 行快照每行都带品牌页 slug（｜页:xxx）',
+          `只有 ${slugLines.length}/190 行带 slug → AI 无从给出品牌专属页链接`);
+        // 抽查 slug 与真实品牌页文件一一对应（避免 slug 写错导致链接 404）
+        const brandDir = 'brand';
+        const slugOf = (nameFrag) => {
+          const line = cfSnap.split('\n').find(l => l.includes(nameFrag));
+          const m = line && line.match(/｜页:([a-z0-9-]+)$/);
+          return m ? m[1] : null;
+        };
+        const huawei = slugOf('华为终端'), apple = slugOf('苹果 (Apple)'), mixue = slugOf('蜜雪冰城 (MIXUE)');
+        check(huawei === 'huawei' && apple === 'apple' && mixue === 'mixue'
+          && existsSync(brandDir + '/huawei.html') && existsSync(brandDir + '/apple.html')
+          && existsSync(brandDir + '/mixue.html'),
+          '§21h-10a 抽查 slug 与真实品牌页对应（华为/苹果/蜜雪冰城）',
+          'slug 写错 → AI 给出的专属页链接 404');
+        // 三线路品牌页规则逐字一致（取那句开头的共同片段）
+        const ruleFrag = '用户问到上面收录的某个具体品牌/企业时，回答末尾附上该品牌的专属页面链接';
+        // 注意：不能用 stripComments(la)——它有 /\/\// 规则会把 https:// 后的网址整段删掉，
+        // 本规则文本含两个 https:// 链接，剥注释后片段就不全了。规则在正文字符串里，直接用原文。
+        const laSrc = la;
+        check([workerKv, aliPrompt, laSrc].every(s => s.includes(ruleFrag))
+          && [workerKv, aliPrompt, laSrc].every(s => s.includes('/brand/页.html'))
+          && [workerKv, aliPrompt, laSrc].every(s => s.includes('不是首页底部的证据链公示入口')),
+          '§21h-10a 三线路都写明品牌专属页规则（照抄 slug/只给首页不算/非证据链公示）',
+          '某条线路没写 → 用户在该线路问品牌只得到首页链接');
+        // 故障注入：把快照里一个 slug 篡改，断言必须判红
+        const tamperedSlug = cfSnap.replace('｜页:huawei', '｜页:huawi');
+        check(tamperedSlug !== cfSnap
+          && !tamperedSlug.split('\n').filter(l => /｜页:[a-z0-9-]+$/.test(l)).every(l => {
+            const m = l.match(/｜页:([a-z0-9-]+)$/);
+            return m && existsSync(brandDir + '/' + m[1] + '.html');
+          }),
+          '§21h-10a 故障注入：篡改一个 slug 后「slug 对真实文件」断言判红',
+          '篡改还全绿 → slug 校验是摆设');
+      }
     }
     // §21h-11（2026-11-22 站长定规）：①AI 编造了不存在的 www.shuangxiugou.com，
     // 三条线路必须只给真实官方地址；②无论哪条线路，回答必须立场中立——不因内容涉及
