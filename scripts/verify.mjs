@@ -7011,6 +7011,45 @@ section('21c. 首页滑到底部按钮');
         '§21h-13 故障注入：删掉流式帧的 armTimer 后「每帧重置」断言判红',
         '删了还全绿 → 断言没咬住超时逻辑');
     }
+    // §21h-14（2026-11-22 站长定规）：AI 返回的 [文字](网址) 原样显示成文本、点不开。
+    // md() 渲染器补链接语法；硬约束：①只认 http/https（危险协议不成链）；
+    // ②外链 target=_blank + rel=noopener noreferrer；③占位符隔离防裸网址二次包裹；
+    // ④长网址换行样式；⑤动态单测标本机专用（PAT 无 workflow scope）。
+    {
+      const laM = read('labor-ai.html');
+      const mdFn = (laM.match(/function md\(s\)\{[\s\S]*?\n\}/) || [''])[0];
+
+      // 用最朴素的 includes 断言，避开正则转义；mdFn 是从 HTML 读出的源码文本
+      // 协议白名单：源码里是 /^https?:\/\/[^\s"'<>]+$/i
+      const protoSrc = '/^https?:\\/\\/[^\\s"\'<>]+$/i';
+      const mdLinkSrc = '\\[([^\\]\\n]*)\\]\\((https?:\\/\\/';
+      check(mdFn.includes(protoSrc) && mdFn.includes('function safeUrl')
+        && mdFn.includes('return null'),
+        '§21h-14 md() 含 http(s) 协议白名单校验（危险协议不成链）',
+        '没有白名单 → javascript:/data: 被渲染成可点链接，XSS 风险');
+      check(mdFn.includes(mdLinkSrc) && mdFn.includes('held.push')
+        && mdFn.includes('return held[+i]'),
+        '§21h-14 md() 解析 [文字](网址) 且用占位符(held)隔离 <a>（防裸网址二次包裹）',
+        '无解析/无占位符 → 链接显示成文本或被拆成两个 <a>');
+      check(mdFn.includes('target="_blank" rel="noopener noreferrer"'),
+        '§21h-14 md() 外链带 target=_blank + rel=noopener noreferrer',
+        '缺 noopener → 新标签页可反向操纵 opener（tabnabbing）');
+      check(laM.includes('.bubble a{') && /\.bubble a\{[^}]*word-break:break-all/.test(laM),
+        '§21h-14 长网址可换行（.bubble a 有 word-break:break-all）',
+        '不换行 → 长网址撑破气泡、手机端横向溢出');
+      // 动态单测存在 + 标本机专用 + 覆盖危险协议
+      const mdTest = 'scripts/test-ai-md.cjs';
+      const mdT = exists(mdTest) ? read(mdTest) : '';
+      check(/本机专用/.test(mdT) && mdT.includes('javascript:') && mdT.includes('data:')
+        && mdT.includes('裸网址') && mdT.includes('new Function'),
+        '§21h-14 md 渲染动态单测存在且标本机专用（危险协议/裸网址/注入都覆盖）',
+        '无动态测试 → 渲染逻辑写错只能等用户截图才发现');
+      // 故障注入：删掉协议白名单那一行后，静态断言必须判红
+      const brokenMd = mdFn.replace('if(!' + protoSrc + '.test(u)) return null;', '');
+      check(brokenMd !== mdFn && !brokenMd.includes(protoSrc),
+        '§21h-14 故障注入：去掉协议白名单后断言判红',
+        '去掉还全绿 → 断言没咬住安全红线');
+    }
     // §21h-3（2026-11-21 站长改版）：登录 20 次/小时、未登录一律减半 10 次/小时；
     // Star 只管附件，不再决定文字问答。两个后端 + 前端必须同一套口径。
     {

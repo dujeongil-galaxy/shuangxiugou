@@ -64,6 +64,8 @@ main{
 .msg.user .bubble{background:var(--user);color:#fff;border-bottom-right-radius:4px}
 .msg.ai .bubble{background:var(--ai);color:var(--ink);border-bottom-left-radius:4px;border:1px solid var(--line)}
 .bubble b,.bubble strong{color:var(--brand2)}
+.bubble a{color:var(--brand);text-decoration:underline;word-break:break-all;cursor:pointer}
+.bubble a:hover{color:var(--brand2)}
 .bubble img{max-width:100%;border-radius:8px;margin:6px 0;display:block}
 .cursor{display:inline-block;width:7px;height:15px;background:var(--accent);vertical-align:-2px;animation:bl .8s infinite}
 @keyframes bl{0%,49%{opacity:1}50%,100%{opacity:0}}
@@ -401,10 +403,34 @@ btnCN.addEventListener('click', function(){ currentRoute = 'cn'; renderRoute(); 
 function esc(s){
   return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
+/* 轻量 Markdown 渲染（2026-11-22 站长要求）：AI 返回的 [文字](网址) 要变成可点超链接。
+   安全红线：①只认 http/https，javascript:/data: 等危险协议原样留文本、绝不成链；
+   ②外链一律 target=_blank + rel=noopener noreferrer（防 tabnabbing）；
+   ③href 属性做实体转义，防引号注入；④占位符隔离已生成的 <a>，避免裸网址二次包裹。 */
 function md(s){
-  return esc(s)
-    .replace(/\*\*(.+?)\*\*/g,"<b>$1</b>")
-    .replace(/^(\d+)\./gm,"<b>$1.</b>");
+  var held = [];
+  function hold(html){ held.push(html); return "\u0000" + (held.length - 1) + "\u0000"; }
+  function safeUrl(u){
+    u = u.replace(/&amp;/g,"&"); // esc() 把 & 转成了 &amp;，URL 里还原后再校验
+    if(!/^https?:\/\/[^\s"'<>]+$/i.test(u)) return null;
+    return u.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+  var out = esc(s);
+  // ① Markdown 链接 [文字](http(s)网址)
+  out = out.replace(/\[([^\]\n]*)\]\((https?:\/\/[^)\s]+)\)/gi, function(m, label, url){
+    var u = safeUrl(url);
+    return u ? hold('<a href="'+u+'" target="_blank" rel="noopener noreferrer">'+label+'</a>') : label;
+  });
+  // ② 裸网址 http(s)://...（去掉结尾中文/英文标点）
+  out = out.replace(/(^|[\s(（])(https?:\/\/[^\s<>()（）"'“”，。；：！？、]+)/gi, function(m, pre, url){
+    var clean = url.replace(/[.,;:!?）)]+$/,"");
+    var u = safeUrl(clean);
+    return u ? (pre + hold('<a href="'+u+'" target="_blank" rel="noopener noreferrer">'+clean+'</a>')) : m;
+  });
+  // ③ 原有加粗与数字列表（占位符内不含 ** ，不会被误伤）
+  out = out.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/^(\d+)\./gm,"<b>$1.</b>");
+  // ④ 还原链接
+  return out.replace(/\u0000(\d+)\u0000/g, function(m,i){ return held[+i]; });
 }
 function scrollBottom(){ chat.scrollTop = chat.scrollHeight; }
 
