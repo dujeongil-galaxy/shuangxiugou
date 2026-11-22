@@ -6880,19 +6880,25 @@ section('21c. 首页滑到底部按钮');
       // 新规则要明确拒绝 + 禁止编造 + 保留社交寒暄口子，三条线路逐字一致。
       check(/【话题边界】/.test(la)
         && /不要装不知道/.test(la)
+        && /说完立刻结束/.test(la)
+        && /不要追加任何对问题本身的分析/.test(la)
         && /编一个出处比不回答更糟/.test(la)
         && /正常社交要接/.test(la)
         && !/礼貌说明服务范围/.test(la)
         && /【话题边界】/.test(workerKv)
         && /不要装不知道/.test(workerKv)
+        && /说完立刻结束/.test(workerKv)
+        && /不要追加任何对问题本身的分析/.test(workerKv)
         && /编一个出处比不回答更糟/.test(workerKv)
         && /正常社交要接/.test(workerKv)
         && /【话题边界】/.test(aliPrompt)
         && /不要装不知道/.test(aliPrompt)
+        && /说完立刻结束/.test(aliPrompt)
+        && /不要追加任何对问题本身的分析/.test(aliPrompt)
         && /编一个出处比不回答更糟/.test(aliPrompt)
         && /正常社交要接/.test(aliPrompt),
-        '§21h-17 三条线路话题边界一致：只接劳动法/双休/找工作/简历，超出明拒、不装懂、不编造，且留社交寒暄口子',
-        '改回「礼貌说明服务范围」软拒 → 用户问句网络梗就像 AI 不知道，显得又笨又硬；删掉「不编造」→ 小模型会硬编一个出处');
+        '§21h-17 三条线路话题边界一致：只接劳动法/双休/找工作/简历，超出明拒、不装懂、不编造、拒后不追加分析，且留社交寒暄口子',
+        '改回「礼貌说明服务范围」软拒 → 用户问句网络梗就像 AI 不知道；删掉「拒后不追加分析」→ 国内 Qwen 实测会补一段「没有官方出处但可能是…」的来源猜测');
       const hmpPublic = stripComments(hmp);
       check((hmpPublic.match(/登录GitHub并Star可获取更多额度/g) || []).length >= 4
         && !/每小时 20 次|每小时 10 次|不限天数/.test(hmpPublic),
