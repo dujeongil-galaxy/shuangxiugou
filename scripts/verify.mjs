@@ -7104,6 +7104,52 @@ section('21c. 首页滑到底部按钮');
         '§21h-14 故障注入：去掉协议白名单后断言判红',
         '去掉还全绿 → 断言没咬住安全红线');
     }
+    // §21h-15（2026-11-22 站长定规）：只要提问含「Boss直聘」，前端直接返回固定链接、不走 AI；
+    // 三线路提示词同步写死同一条规则作兜底。这是对特定品牌的强制覆盖，压过普通 slug 规则。
+    {
+      const bossUrl = 'https://dujeongil-galaxy.github.io/shuangxiugou/brand/bosszhipin.html#note-manual-override';
+      const bossRuleFrag = '特别写死：只要用户提问中出现「Boss直聘」';
+      // 从 labor 源码里抽出固定文案字符串（前端常量）
+      const BOSS_FIXED_ANSWER_TEXT = (la.match(/var BOSS_FIXED_ANSWER = "([^"]+)"/) || [,''])[1];
+      // 三线路提示词逐字一致（含锚点、优先级最高声明）
+      const bossThree = [la, read('ai-worker/src/worker.js'), read('ai-worker-aliyun/index.mjs')];
+      check(bossThree.every(function(s){ return s.includes(bossRuleFrag) && s.includes(bossUrl); })
+        && bossThree.every(function(s){ return s.includes('这条优先级最高，压过上面所有关于品牌链接和回答方式的说明'); }),
+        '§21h-15 三线路提示词逐字写死 Boss直聘 固定链接（含 #note-manual-override 锚点 + 最高优先级）',
+        '漏一路 → 用户切换线路后 AI 又给普通链接或自行组织回答');
+      // 前端常量指向同一 URL（带锚点），且命中即 return、早于一切检查
+      check(typeof BOSS_FIXED_ANSWER_TEXT === 'string' && BOSS_FIXED_ANSWER_TEXT.includes(bossUrl)
+        && /function isBossHit\(/.test(la)
+        && /if \(isBossHit\(q\)\)\{[\s\S]{0,400}?return;/.test(la),
+        '§21h-15 前端写死 Boss直聘 固定链接常量 + isBossHit 命中即 return',
+        '前端没拦截或常量漏锚点 → 仍走 AI，可能被模型忽略规则');
+      // 拦截点早于限流/附件锁/线路：doSend 内 isBossHit(q) 出现在 !cnRateOk() 调用之前
+      const qIdx = la.indexOf('if (isBossHit(q)){');
+      const rateIdx = la.indexOf('!cnRateOk()');
+      check(qIdx >= 0 && rateIdx >= 0 && qIdx < rateIdx,
+        '§21h-15 Boss直聘 拦截早于限流/附件/线路检查（优先于一切逻辑）',
+        '拦截放太晚 → 触发限流时用户拿不到固定链接');
+      // 检测函数覆盖大小写与空格变体：正则带 i 标志 + 空格变体分支 + 大写分支
+      const bossFn = (la.match(/function isBossHit\(text\)\{[\s\S]*?\n\}/) || [''])[0];
+      check(/i\.test/.test(bossFn) && /boss\s*直\s*聘/.test(bossFn) && /BOSS直聘/.test(bossFn),
+        '§21h-15 isBossHit 覆盖大小写/空格/间隔变体（大小写不敏感）',
+        '只认精确「Boss直聘」→ 用户写 BOSS 直聘 时漏拦截');
+      // 固定文案经 md() 渲染成可点链接：常量里是裸网址，md 会 linkify
+      check(/关于 Boss直聘/.test(la) && BOSS_FIXED_ANSWER_TEXT.indexOf(bossUrl) >= 0,
+        '§21h-15 Boss直聘 固定文案含裸网址（md 渲染成可点超链接）',
+        '文案里没网址或写成 markdown 源码残留 → 用户看到的是死文本');
+      // 故障注入：把前端固定 URL 的锚点删掉后，常量断言必须判红
+      const brokenBoss = BOSS_FIXED_ANSWER_TEXT.replace('#note-manual-override', '');
+      check(brokenBoss !== BOSS_FIXED_ANSWER_TEXT && !brokenBoss.includes(bossUrl),
+        '§21h-15 故障注入：去掉锚点后固定链接断言判红',
+        '去掉锚点还全绿 → 没咬住「必须带站长备注锚点」这条');
+      // 动态单测存在且标本机专用（大小写/空格变体、不误伤、md 可点链接都覆盖）
+      const bossTest = exists('scripts/test-ai-boss.cjs') ? read('scripts/test-ai-boss.cjs') : '';
+      check(/本机专用/.test(bossTest) && /BOSS直聘 加班|BOSS 直聘 的双休/.test(bossTest)
+        && /不误伤/.test(bossTest) && /noopener noreferrer/.test(bossTest) && /new Function/.test(bossTest),
+        '§21h-15 Boss直聘 动态单测存在且标本机专用（命中变体/不误伤/可点链接）',
+        '无动态测试 → isBossHit 正则写错只能等用户发现漏拦截');
+    }
     // §21h-3（2026-11-21 站长改版）：登录 20 次/小时、未登录一律减半 10 次/小时；
     // Star 只管附件，不再决定文字问答。两个后端 + 前端必须同一套口径。
     {
