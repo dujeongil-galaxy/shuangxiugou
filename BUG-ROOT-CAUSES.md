@@ -9,6 +9,16 @@
 
 ---
 
+### 近期 bug 根因（fix）：Cloudflare 线路上游挂起时页面干转、零提示（2026-11-22 · 提交 `665b8957`）
+
+**现象**：用户反馈「CF 连不上，而且一个提示都看不见」——点发送后按钮转圈，长时间没有任何返回，既不出答案也不报错，看起来像站点坏了。
+
+**为什么会出现此 bug**：不是限流（限流会秒回 429 + `rate-limited`，前端当即有文案），也不是配置错。`wrangler tail` 显示 `outcome: canceled`、`wallTime≈19.5s`、logs/exceptions 空，卡在 `await env.AI.run()`；直打 Workers AI 多次采样约一半超时、一半慢回，根因是上游 `@cf/zai-org/glm-4.7-flash` 不稳定。而前端 `askCF()` 的 `fetch()` **没有超时也没有 signal**，上游不回包就一直挂着，`send()` 的 `catch` 永远不触发，于是零提示。
+
+**修法（2026-11-22 · 提交 `665b8957`）**：`labor-ai.html` 的 `askCF()` 用 `AbortController` 加 **20 秒硬超时**，超时 `abort` 后把 `AbortError` 转成中文友好提示「Cloudflare 线路暂时连不上（响应超时），请切换「国内直连」或稍后再试。」，绝不静默卡死；`finally` 里 `clearTimeout` 避免早返回请求的定时器误伤后续 fetch。按站长口径只改前端，不动 Worker、不需重新部署。
+
+**怎么验证**：verify 新增 §21h-12 四条（20 秒超时存在 / 超时中文提示且不暴露 AbortError / 清定时器 / 故障注入篡改毫秒数判红），2118 项全绿；57 组 `test-*.cjs` 57/0；`git diff --check` 通过。
+
 ### 近期 bug 根因（fix）：AI 编造假网址、遇批评政府话题就回避或无脑说好话（2026-11-22 · 提交 `58d7c7f2`）
 
 - **现象**：用户截图显示 AI 在引导查企业双休时给出 `www.shuangxiugou.com` 这个不存在的网址（真实站点是 GitHub Pages 地址）；同时反馈无论哪个节点，AI 一遇到涉及批评政府的话题就故意不答、乱答或无脑说好话，既不该过度吹捧也不该往死里踩，要中立。

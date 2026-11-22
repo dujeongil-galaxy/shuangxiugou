@@ -4,6 +4,16 @@
 
 ---
 
+### fix：CF 线路加 20 秒超时与友好提示，上游挂起不再干转（2026-11-22 · 提交 `665b8957`）
+
+- 背景：用户反馈「CF 连不上、一个提示都看不见」。排查确认非限流（限流会秒回 429 + 前端文案），`wrangler tail` 见 `outcome:canceled` / `wallTime≈19.5s`，卡在 `env.AI.run()`；直打 Workers AI 采样约一半超时，根因是上游模型不稳定。
+- 根因：前端 `askCF()` 的 `fetch()` 无超时也无 signal，上游不回包就一直挂，`send()` 的 `catch` 永不触发，页面零提示。
+- 改了哪些文件：`labor-ai.html`（`askCF()` 用 AbortController 加 20 秒硬超时，超时把 AbortError 转成中文提示「切国内直连或稍后再试」，`finally` 清定时器）、`scripts/verify.mjs`（§21h-12 四条 + 故障注入）。
+- 验收：verify 2118 项全绿（含故障注入判红）、57 组 `test-*.cjs` 57/0、`git diff --check` 通过；未动 Worker，无需重新部署。
+- 记账：README 摘要 / BUG 专文 / 最近更新三处均引用本次真实哈希 `665b8957`。
+
+---
+
 ### fix：写死本站官方网址与三线路强制中立规则（2026-11-22 · 提交 `58d7c7f2`）
 
 - 修复 AI 编造不存在的 `www.shuangxiugou.com` 假网址：三条线路（国内 `labor-ai.html` / CF `worker.js` / 阿里云 `index.mjs`）在引用双休数据的提示词条款里写死唯一官方地址 `https://dujeongil-galaxy.github.io/shuangxiugou/`，禁止自行拼造、猜测或改写域名，拿不准就不写网址。
