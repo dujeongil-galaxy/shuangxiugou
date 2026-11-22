@@ -9,6 +9,14 @@
 
 ---
 
+### 近期 bug 根因（fix）：AI 返回的官方网址以 Markdown 链接源码原文显示、点不开（2026-11-22 · 提交 `29a5b3af`）
+
+- **现象**：用户问「华为加班吗」，AI 末尾给出 `请进站核实数据：[https://dujeongil-galaxy.github.io/shuangxiugou/](https://dujeongil-galaxy.github.io/shuangxiugou/)`——网址连同方括号原样显示成文本，无法点击跳转。
+- **根因**：AI 输出的是标准 Markdown 链接语法，但 `labor-ai.html` 的 `md()` 渲染器只处理 `**加粗**` 和数字列表，压根没有链接解析分支，`[文字](网址)` 就原样进了 `innerHTML`。
+- **修法**：`md()` 加两步——① `[文字](http(s)网址)` 解析成 `<a>`；② 裸网址 `http(s)://...` 同样可点。安全硬约束：只认 http/https（`javascript:`/`data:`/`vbscript:` 一律留文本不成链，防 XSS）、href 做实体转义防引号注入、外链带 `target="_blank" rel="noopener noreferrer"`（防 tabnabbing）、用 `\u0000N\u0000` 占位符隔离已生成的 `<a>` 避免裸网址二次包裹、结尾中英文标点剔除；`.bubble a` 加 `word-break:break-all` 让长网址换行、手机端不溢出。模型/提示词一字未改。
+- **验证**：新建 `scripts/test-ai-md.cjs`（本机专用，PAT 无 workflow scope 不挂 CI），抽 `esc()`/`md()` 源码 `new Function` 真跑，14 项覆盖截图格式/裸网址/危险协议/注入/加粗共存/流式片段，14/0。verify §21h-14 六条（含故障注入：删协议白名单必须判红），2138 全绿；CF 86/0、CF 流式 10/0、阿里云 49/0。
+- **顺带修复**：本次发现 `ai-worker/wrangler.json` 被误粘成两段重复配置（KV 示例插进 `"ai": {` 里、id 还是占位符），会导致 `wrangler deploy` 直接失败；已恢复成干净的原始配置。KV 配置仍按部署文档操作，不在仓库里放假 id。
+
 ### 近期 bug 根因（fix）：CF 推理模型整段憋完才回、干等十几秒像卡死（2026-11-22 · 提交 `1b278726`）
 
 **现象**：用户反馈「Cloudflare 是真的慢」，截图里 AI 回答要干等一大段文字全部生成完才一次性出现，中间只有一个闪烁光标，看起来像卡死。

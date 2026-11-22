@@ -4,6 +4,18 @@
 
 ---
 
+### fix：AI 返回的 URL 渲染为可点超链接，危险协议拦截（2026-11-22 · 提交 `29a5b3af`）
+
+- 背景：用户截图反馈 AI 回答末尾的官方网址以 Markdown 链接源码原文显示、无法点击。
+- 根因：`labor-ai.html` 的 `md()` 只处理 `**加粗**` 与数字列表，没有 Markdown 链接解析分支。
+- 改动：
+  - `labor-ai.html` 的 `md()` 加 Markdown 链接语法与裸网址两步解析，生成 `<a target="_blank" rel="noopener noreferrer">`；协议白名单只放行 http/https、href 实体转义防注入、`\u0000N\u0000` 占位符隔离防裸网址二次包裹、结尾中英文标点剔除；原加粗/列表/流式逐字渲染不受影响。
+  - `.bubble a` 加蓝色下划线 + `word-break:break-all` 样式，长网址换行不撑破气泡。
+  - 新建 `scripts/test-ai-md.cjs`（本机专用、不挂 CI——PAT 无 workflow scope），抽源码真跑 14 项：截图格式、裸网址、危险协议不成链、引号注入、加粗共存、流式片段。
+  - `scripts/verify.mjs` 新增 §21h-14 六条断言（含故障注入：去掉协议白名单必须判红）。
+  - 顺带把被误粘成两段重复配置的 `ai-worker/wrangler.json` 恢复成干净原样（KV 示例插在 `"ai": {` 里 + 占位符 id 会导致 `wrangler deploy` 失败）；KV 配置仍留在部署文档，不在仓库放假 id。
+- 验证：verify 2138 全绿；md 单测 14/0、CF Worker 86/0、CF 流式 10/0、阿里云 49/0；`git diff --check` 通过。
+
 ### fix：CF 改 SSE 流式逐字输出 + 深度思考提示（2026-11-22 · 提交 `1b278726`）
 
 - 背景：用户反馈「Cloudflare 是真的慢」，截图显示 AI 回答要等整段文字生成完才一次性出现，中间只有闪烁光标、像卡死。
