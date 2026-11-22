@@ -169,6 +169,7 @@ export default {
           || request.headers.get('x-forwarded-for') || '未知',
         textModel: '@cf/zai-org/glm-4.7-flash',
         visionModel: '@cf/meta/llama-3.2-11b-vision-instruct',
+        stream: true, // 2026-11-22：新版支持 /api/stream 逐字输出；老 Worker 无此字段 → 前端降级回非流式
         maxParts: 8,
         maxImageBase64: 7 * 1024 * 1024,
       }, 200, corsHeaders);
@@ -293,6 +294,40 @@ export default {
       ...history,
       { role: 'user', content: userContent },
     ];
+
+    // ---------- 流式逐字输出（2026-11-22 站长定规）----------
+    // 为什么单独一个端点：GLM-4.7-flash 是推理模型，整段答完才返回 → 用户干等十几秒、
+    // 看起来像卡死。流式让首字几秒内就到、边生成边显示，感知延迟大幅下降。
+    // 契约：与原 `/` 端点共用**完全相同**的校验 / 限流 / systemPrompt / 模型，一个字不改——
+    // 中立规则、官方网址、190 家数据快照在两条路径上逐字一致，回答口径不会出现分歧。
+    // 只服务纯文本；带图仍走原 `/`（视觉模型流式行为不稳，不动它）。
+    // 返回标准 SSE： data: {"response":"逐字片段"}\n\n ... data: [DONE]\n\n
+    if (path === '/api/stream' && !hasImage) {
+      try {
+        const upstream = await env.AI.run(model, {
+          messages,
+          max_tokens: 2000,
+          stream: true,
+        });
+        console.log(JSON.stringify({ event: 'ai_call', ip, route: route || 'cf',
+          image: false, qlen: question.length, neurons: null, stream: true }));
+        return new Response(upstream, {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/event-stream; charset=utf-8',
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no', // 禁止反代缓冲，确保逐字到达
+            ...corsHeaders,
+          },
+        });
+      } catch (e) {
+        const msg = String(e && e.message || e);
+        if (/neuron|quota|limit|exceed/i.test(msg)) {
+          return json({ error: 'daily-quota-exhausted', resetAtUTC: '00:00 UTC' }, 429, corsHeaders);
+        }
+        return json({ error: 'ai-upstream-error' }, 502, corsHeaders);
+      }
+    }
 
     try {
       const result = await env.AI.run(model, {

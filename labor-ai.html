@@ -67,6 +67,12 @@ main{
 .bubble img{max-width:100%;border-radius:8px;margin:6px 0;display:block}
 .cursor{display:inline-block;width:7px;height:15px;background:var(--accent);vertical-align:-2px;animation:bl .8s infinite}
 @keyframes bl{0%,49%{opacity:1}50%,100%{opacity:0}}
+/* 等待 AI 首字时的「深度思考中」提示（2026-11-22）：明确告诉用户在工作，不像卡死 */
+.thinking{display:inline-flex;align-items:center;gap:7px;color:var(--sub);font-size:14px}
+.thinking .tdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);animation:td .9s infinite ease-in-out}
+.thinking .tdot:nth-child(2){animation-delay:.15s}
+.thinking .tdot:nth-child(3){animation-delay:.3s}
+@keyframes td{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
 .empty{color:var(--sub);text-align:center;margin:auto 0;font-size:14px;padding:30px 10px}
 .empty .big{font-size:34px;display:block;margin-bottom:8px;opacity:.5}
 .composer{
@@ -762,6 +768,13 @@ async function doSend(){
   chatLog.push({role:"user", content: userContent});
   var bub = addMsg("ai", "");
   var full = "";
+  // 等待首字的反馈（2026-11-22）：推理模型首字要几秒，先显示「深度思考中」，
+  // 而不是一个空光标干转；收到第一个字时由 onPiece 清掉它。
+  var thinkingOn = true;
+  function showThinking(){
+    bub.innerHTML = '<span class="thinking"><span class="tdot"></span><span class="tdot"></span><span class="tdot"></span>AI 正在深度思考中…</span>';
+  }
+  if (currentRoute === 'cf') showThinking();
 
   /* 国内线路需要 Key；缺 Key 时给明确提示 */
   if (currentRoute === 'cn'){
@@ -785,9 +798,16 @@ async function doSend(){
     if (currentRoute === 'cn'){
       await askCN(chatLog, bub, function(piece){ full += piece; bub.innerHTML = md(full); scrollBottom(); });
     } else {
-      /* CF：只发问题 + 历史（最近 4 轮），Worker 自己锁角色、自己限流 */
+      /* CF：只发问题 + 历史（最近 4 轮），Worker 自己锁角色、自己限流
+         流式：首字到达后逐字追加渲染；老 Worker 降级为非流式一次性返回。 */
       var hist = chatLog.slice(0, -1).slice(-8).map(function(m){ return { role: m.role, content: textOf(m.content).slice(0,200) }; });
-      var ans = await askCF(q || '请分析我上传的附件', hist, parts);
+      var ans = await askCF(q || '请分析我上传的附件', hist, parts, function(piece, first){
+        if (first && thinkingOn){ thinkingOn = false; bub.innerHTML = ''; }
+        full += piece;
+        bub.innerHTML = md(full) + '<span class="cursor"></span>';
+        scrollBottom();
+      });
+      if (thinkingOn) thinkingOn = false; // 非流式降级：下面一次性渲染
       full = ans;
       bub.innerHTML = md(full); scrollBottom();
     }
@@ -847,46 +867,108 @@ async function askCN(log, bub, onPiece){
   }
 }
 
-/* Cloudflare 线路：Worker 代理，非流式 JSON {answer, route}；带 parts 供视觉模型使用
-   2026-11-22 站长定规：上游 AI 偶发挂起（见 wrangler tail 的 outcome:canceled），
-   旧版 fetch 无超时 → 页面一直转、零提示，用户以为站点坏了。这里加 20 秒硬超时：
-   超时即提示切国内线路或稍后重试，绝不静默卡死；成功后立刻清定时器。 */
-async function askCF(question, history, parts){
+/* Cloudflare 线路：Worker 代理；纯文本走 SSE 流式逐字返回，带图走旧版非流式 JSON。
+   2026-11-22 站长定规：
+   ① 上游推理模型整段憋完才返回 → 干等十几秒像卡死，改流式让首字几秒就到（send 里逐字渲染）。
+   ② 20 秒「无数据」超时——发起即计时，每收到一个数据帧就重置、结束清除。
+      这样首字 20 秒不来会提示切线路，但正常长回答持续出字不会被误杀。
+   ③ 老 Worker 没有 /api/stream，POST 到它会被当普通提问回 JSON（content-type 非 event-stream）
+      → 自动走下面的非流式分支，前端无需预先探测，缓存旧页面也能用。 */
+async function askCF(question, history, parts, onPiece){
+  var base = CFG.cf.endpoint.replace(/\/$/, '');
+  var payload = {
+    question: question, history: history, route: CFG.cf.route, parts: parts,
+    quotaTier: starStatus().logged ? 'full' : 'half'
+  };
+  var hasImage = parts && parts.some(function(p){ return p && p.type === 'image_url'; });
+  var wantStream = !hasImage && typeof onPiece === 'function';
+
   var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-  var timer = ctl ? setTimeout(function(){ ctl.abort(); }, 20000) : null;
+  var timer = null;
+  function armTimer(){
+    if (!ctl) return;
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(function(){ ctl.abort(); }, 20000);
+  }
+  function clearTimer(){ if (timer) { clearTimeout(timer); timer = null; } }
+  armTimer();
+
   var res;
   try {
-    res = await fetch(CFG.cf.endpoint, {
+    res = await fetch(wantStream ? base + '/api/stream' : base, {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       signal: ctl ? ctl.signal : undefined,
-      body: JSON.stringify({
-        question: question, history: history, route: CFG.cf.route, parts: parts,
-        quotaTier: starStatus().logged ? 'full' : 'half'
-      })
+      body: JSON.stringify(payload)
     });
   } catch (e) {
+    clearTimer();
     // 超时/断网必须给明确提示，不能让 send() 的 catch 只显示一串英文 AbortError。
     if (e && e.name === 'AbortError') {
       throw new Error("Cloudflare 线路暂时连不上（响应超时），请切换「国内直连」或稍后再试。");
     }
     throw e;
-  } finally {
-    if (timer) clearTimeout(timer);
   }
+
+  var ctype = res.headers.get('content-type') || '';
+
+  // ---------- 流式 SSE：data: {"response":"片断"}\n\n ... data: [DONE] ----------
+  if (wantStream && res.ok && /text\/event-stream/i.test(ctype)) {
+    var full = '', buf = '', first = true;
+    try {
+      var reader = res.body.getReader();
+      var dec = new TextDecoder('utf-8');
+      while (true) {
+        var r = await reader.read();
+        if (r.done) break;
+        armTimer(); // 收到数据重置 20 秒，长回答持续出字就不会超时
+        buf += dec.decode(r.value, { stream: true });
+        var lines = buf.split('\n');
+        buf = lines.pop(); // 末行可能不完整，留到下一帧拼
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i].trim();
+          if (line.indexOf('data:') !== 0) continue;
+          var data = line.slice(5).trim();
+          if (data === '[DONE]') continue;
+          var obj;
+          try { obj = JSON.parse(data); } catch (e2) { continue; }
+          // 双格式兼容：Workers AI 老式帧是 {response:"..."}；
+          // GLM-4.7-flash 是 OpenAI 兼容模型，流式帧可能是 {choices:[{delta:{content:"..."}}]}。
+          // 两种都认，任一种都能逐字渲染——上游换格式也不会丢字。
+          var piece = obj && obj.response;
+          if (!piece && obj && obj.choices && obj.choices[0]) {
+            // 只取 content，不取 reasoning_content——推理模型的思考链不该展示给访客。
+            var d0 = obj.choices[0].delta || obj.choices[0].message;
+            piece = d0 && d0.content || '';
+          }
+          if (piece) { onPiece(piece, first); first = false; full += piece; }
+        }
+      }
+    } catch (e) {
+      clearTimer();
+      if (e && e.name === 'AbortError') {
+        throw new Error("Cloudflare 线路暂时连不上（响应超时），请切换「国内直连」或稍后再试。");
+      }
+      throw e;
+    }
+    clearTimer();
+    if (!full) throw new Error("Cloudflare 线路未返回内容，请稍后再试。");
+    return full;
+  }
+
+  // ---------- 非流式 JSON（老 Worker 降级 / 带图）----------
+  clearTimer();
   if (!res.ok){
     var t = await res.text();
     var msg = t.slice(0,200);
-    // 限流/临时不可用时统一给温和提示：不回显内部错误码，说明是短时限流——
-    // 超限只是短暂等待，不是永久惩罚。其余状态码保留原文便于排查。
     if (res.status === 429) msg = "请求较频繁，已触发短时限流，请间隔片刻再试。";
     if (res.status === 403) msg = "本次请求暂时无法完成，请稍等片刻再试或切换线路。";
     throw new Error("Cloudflare 线路返回 " + res.status + "：" + msg);
   }
-  var obj = await res.json();
-  if (obj.error === 'daily-quota-exhausted') throw new Error("Cloudflare 线路今日额度已用完（UTC 00:00 重置），请稍后再试。");
-  if (!obj.answer) throw new Error("Cloudflare 线路未返回内容：" + JSON.stringify(obj).slice(0,120));
-  return obj.answer;
+  var obj2 = await res.json();
+  if (obj2.error === 'daily-quota-exhausted') throw new Error("Cloudflare 线路今日额度已用完（UTC 00:00 重置），请稍后再试。");
+  if (!obj2.answer) throw new Error("Cloudflare 线路未返回内容：" + JSON.stringify(obj2).slice(0,120));
+  return obj2.answer;
 }
 </script>
 

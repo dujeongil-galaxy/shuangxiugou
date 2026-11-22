@@ -440,6 +440,75 @@ async function main() {
     }
   }
 
+  console.log('\n== ⑪ SSE 流式端点 /api/stream（2026-11-22 逐字输出）==');
+  {
+    // 桩：AI.run 收到 stream:true 时回一个 SSE ReadableStream，逐帧 {"response":...} + [DONE]
+    function streamEnv() {
+      const sEnv = {
+        calls: [],
+        STAR_SESSION_SECRET: null,
+        AI: {
+          run: async function (modelId, params) {
+            sEnv.calls.push({ modelId, params });
+            if (!params.stream) return { response: '非流式' };
+            const chunks = ['依据', '《劳动', '合同法》', '第四十四条', '\n数据以站点为准'];
+            return new ReadableStream({
+              start(controller) {
+                const enc = new TextEncoder();
+                for (const c of chunks) controller.enqueue(enc.encode('data: ' + JSON.stringify({ response: c }) + '\n\n'));
+                controller.enqueue(enc.encode('data: [DONE]\n\n'));
+                controller.close();
+              },
+            });
+          },
+        },
+      };
+      return sEnv;
+    }
+    function pathReq(pathName, body) {
+      return new Request('https://ai.example.workers.dev' + pathName, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Origin': SITE_ORIGIN },
+        body: JSON.stringify(body),
+      });
+    }
+    const senv = streamEnv();
+    const sr = await worker.fetch(pathReq('/api/stream', { question: '加班费怎么算' }), senv);
+    check('流式端点返回 200', sr.status === 200, sr.status);
+    check('响应 content-type 是 text/event-stream',
+      /text\/event-stream/.test(sr.headers.get('content-type') || ''), sr.headers.get('content-type'));
+    check('禁反向代理缓冲（X-Accel-Buffering:no）',
+      sr.headers.get('X-Accel-Buffering') === 'no', sr.headers.get('X-Accel-Buffering'));
+    const sbody = await sr.text();
+    check('SSE 逐帧含 response 字段', (sbody.match(/"response"/g) || []).length === 5, sbody);
+    check('SSE 以 [DONE] 收尾', /data: \[DONE\]/.test(sbody), sbody.slice(-40));
+    check('AI.run 收到 stream:true 且模型与文本线路一致',
+      senv.calls.length === 1 && senv.calls[0].params.stream === true
+      && senv.calls[0].modelId === '@cf/zai-org/glm-4.7-flash', senv.calls);
+    check('流式提示词与非流式同源（含中立强制条款 + 190 家数据 + 官方网址）',
+      /【立场中立·强制】/.test(senv.calls[0].params.messages[0].content)
+      && /BRAND|评级|双休/.test(senv.calls[0].params.messages[0].content)
+      && /dujeongil-galaxy\.github\.io\/shuangxiugou/.test(senv.calls[0].params.messages[0].content),
+      '提示词不同源 → 两条路径回答风格分歧');
+
+    // 带图不走流式：仍落回原 / 非流式 JSON
+    const imgEnv = streamEnv();
+    const tinyPng = 'data:image/png;base64,iVBORw0KGgo=';
+    const ir = await worker.fetch(pathReq('/api/stream', {
+      question: '看图', parts: [{ type: 'image_url', image_url: { url: tinyPng } }],
+    }), imgEnv);
+    check('带图请求 /api/stream 不走流式（回退原 JSON 逻辑）',
+      /application\/json/.test(ir.headers.get('content-type') || ''), ir.headers.get('content-type'));
+
+    // 能力探测暴露 stream 标志
+    const capsEnv = streamEnv();
+    const capRes = await worker.fetch(new Request('https://ai.example.workers.dev/api/capabilities', {
+      method: 'GET', headers: { Origin: SITE_ORIGIN },
+    }), capsEnv);
+    const capData = await capRes.json();
+    check('capabilities 暴露 stream:true（前端可据此识别新版）', capData.stream === true, capData);
+  }
+
   console.log('\n========== 结果：' + passed + ' 项通过，' + failed + ' 项失败 ==========');
   process.exit(failed ? 1 : 0);
 }

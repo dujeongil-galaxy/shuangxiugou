@@ -6945,6 +6945,73 @@ section('21c. 首页滑到底部按钮');
         '§21h-12 故障注入：篡改超时毫秒数后 20 秒断言判红',
         '篡改后仍全绿 → 断言失效，等于没校验');
     }
+    // §21h-13（2026-11-22 站长定规）：CF 改 SSE 流式逐字输出，解决推理模型整段憋完才回、干等像卡死。
+    // 硬约束：①两端提示词/模型一字不改（中立性保住）；②老 Worker 自动降级；③20 秒无数据超时仍在。
+    {
+      const laS = read('labor-ai.html');
+      const workerS = read('ai-worker/src/worker.js');
+      const askS = (laS.match(/async function askCF\([\s\S]*?\n\}/) || [''])[0];
+
+      // Worker：独立 /api/stream 端点 + stream:true + SSE 响应头，且原 / 端点仍在（兼容缓存旧页面）
+      check(/path === '\/api\/stream'/.test(workerS) && /stream:\s*true/.test(workerS)
+        && /text\/event-stream/.test(workerS) && /'X-Accel-Buffering':\s*'no'/.test(workerS),
+        '§21h-13 Worker 新增 /api/stream SSE 端点（stream:true + 禁缓冲响应头）',
+        '没有流式端点 → 前端请求落回非流式，逐字输出失效');
+      check(/event: 'ai_call'/.test(workerS) && /stream:\s*true/.test(workerS),
+        '§21h-13 流式调用写 ai_call 日志（可按 stream 字段聚合用量）',
+        '流式不记日志 → 控制台看不到这类调用，滥用无从溯源');
+      check(/stream:\s*true, \/\/ 2026-11-22/.test(workerS) || /stream: true, \/\/ 2026-11-22/.test(workerS),
+        '§21h-13 capabilities 暴露 stream 标志（新 Worker 可被前端识别）',
+        '不暴露能力 → 前端无从判断线路支持，只能盲试');
+
+      // 前端：请求 /api/stream、按 content-type 判定、SSE 解析 response 帧、逐字回调、[DONE] 收尾
+      check(/\/api\/stream/.test(askS) && /text\\\/event-stream/.test(askS)
+        && /getReader\(\)/.test(askS) && /obj && obj\.response/.test(askS) && /'\[DONE\]'/.test(askS),
+        '§21h-13 前端读 SSE 流并按 response 帧逐字渲染、[DONE] 收尾',
+        '解析错 SSE 格式 → 收不到字或整段乱序，流式白做');
+      check(/onPiece\(piece, first\)/.test(askS) && /first = false/.test(askS),
+        '§21h-13 首字回调带 first 标记（send 据此清掉「深度思考中」提示）',
+        '无 first 标记 → 思考提示与正文叠加显示');
+      check(/content-type/.test(askS) && /res\.ok/.test(askS),
+        '§21h-13 按 content-type 判定流式，非 event-stream 自动降级非流式',
+        '老 Worker 没有流端点 → 必须能缓存页面不更新也照常用');
+      // 20 秒无数据超时在流式分支内也生效（每帧 armTimer 重置）
+      check(/armTimer\(\)/.test(askS) && (askS.match(/armTimer\(\)/g) || []).length >= 3,
+        '§21h-13 每收到数据帧重置 20 秒超时（长回答持续出字不被误杀）',
+        '只计一次总超时 → 长回答写到一半被 abort');
+
+      // 「AI 正在深度思考中」等待提示
+      check(/AI 正在深度思考中/.test(laS) && /class="thinking"/.test(laS)
+        && /\.thinking \.tdot/.test(laS) && /@keyframes td/.test(laS),
+        '§21h-13 首字前显示「AI 正在深度思考中」+ 跳动点动画（不像卡死）',
+        '等待期空光标干转 → 用户以为站点坏了');
+
+      // 中立/网址/双休快照：流式改动不得碰这些（逐字比对三线路体系仍生效）
+      check(/【立场中立·强制】/.test(workerS) && /dujeongil-galaxy\.github\.io\/shuangxiugou/.test(workerS)
+        && /BRAND_DATA_SNIPPET/.test(workerS),
+        '§21h-13 Worker 中立规则/官方网址/190 家快照未被流式改动破坏',
+        '改流式顺手动了提示词 → 刚调好的中立性回退');
+
+      // 双格式兼容：Workers AI 老式 response 帧 + OpenAI choices[].delta.content 帧都要认
+      check(/obj && obj\.response/.test(askS) && /choices/.test(askS) && /\.delta \|\| obj\.choices\[0\]\.message/.test(askS),
+        '§21h-13 SSE 帧双格式兼容（response + OpenAI choices），上游换格式不丢字',
+        '只认一种格式 → GLM 换成 OpenAI 帧时逐字输出全空');
+      check(/d0 && d0\.content \|\| ''/.test(askS) && !/d0\.reasoning_content|d0 && d0\.reasoning/.test(askS),
+        '§21h-13 只取 content、不取 reasoning_content（推理模型思考链不外泄）',
+        '把思考链显示给访客 → 输出一堆莫名内心独白');
+      // 前端解析单测存在且挂 CI（否则 §21o 会判「本机专用未标注」）
+      const streamTest = 'scripts/test-ai-cf-stream.cjs';
+      const ciYml = exists('.github/workflows/verify.yml') ? read('.github/workflows/verify.yml') : '';
+      check(exists(streamTest) && ciYml.includes('test-ai-cf-stream.cjs')
+        && /response/.test(read(streamTest)) && /choices/.test(read(streamTest)),
+        '§21h-13 前端流式解析单测存在且挂 CI（老式帧/OpenAI 帧都覆盖）',
+        '无动态测试 → 帧格式写错只能等线上白屏才发现');
+      // 故障注入：把「每帧重置超时」的 armTimer 调用去掉一个，断言必须判红
+      const removedArm = askS.replace('        armTimer(); // 收到数据重置 20 秒，长回答持续出字就不会超时', '');
+      check(removedArm !== askS && (removedArm.match(/armTimer\(\)/g) || []).length < 3,
+        '§21h-13 故障注入：删掉流式帧的 armTimer 后「每帧重置」断言判红',
+        '删了还全绿 → 断言没咬住超时逻辑');
+    }
     // §21h-3（2026-11-21 站长改版）：登录 20 次/小时、未登录一律减半 10 次/小时；
     // Star 只管附件，不再决定文字问答。两个后端 + 前端必须同一套口径。
     {
