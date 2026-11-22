@@ -11073,12 +11073,13 @@ section('37b. 随笔强制置顶与目录日期、打赏二维码假生成、邀
     && /if \(qrSeen\(addr\)\) \{ show\(\); return; \}/.test(sp37b),
     '§37b 生成过的地址存 cookie（365 天），同址再次出现直接出图不重播',
     '无 cookie 记忆 → 每次切回来都重播动画，或地址变了也不重新生成');
-  // 图6：邀请码框点击复制（复用 copyText，读框内文本单一真相源）
-  check(/id="ferryCode"/.test(sp37b)
-    && /ferryCode\.addEventListener\('click', doCopyCode\)/.test(sp37b)
-    && /copyText\(ferryCode\.textContent\.trim\(\), null\)/.test(sp37b),
-    '§37b 邀请码框点一下自动复制（读框内文本为单一真相源）',
-    '复制未绑定 → 站长要求「点了就自动复制」落空');
+  // 图6（2026-11-23 撤推广）：打赏页一处第三方 AI 聊天站推广整段撤下。
+  // 原「邀请码点击复制」正向断言按新口径改成负向断言：推广 DOM/CSS/复制逻辑/邀请码/域名全清零。
+  check(!/ferry-promo/.test(sp37b) && !/ferryCode/.test(sp37b)
+    && !/ferrychatai\.cn/.test(sp37b) && !/Q84H38/.test(sp37b)
+    && !/顺手推荐/.test(sp37b) && !/doCopyCode/.test(sp37b),
+    '§37b 打赏页第三方推广整段撤下（DOM/CSS/复制逻辑/邀请码/域名均清零）',
+    '推广残留或回流 → 站长已明确「撤了，不推广了」');
 }
 
 // ---------- 38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档（2026-11-19） ----------
