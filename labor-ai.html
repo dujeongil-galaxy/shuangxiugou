@@ -847,16 +847,33 @@ async function askCN(log, bub, onPiece){
   }
 }
 
-/* Cloudflare 线路：Worker 代理，非流式 JSON {answer, route}；带 parts 供视觉模型使用 */
+/* Cloudflare 线路：Worker 代理，非流式 JSON {answer, route}；带 parts 供视觉模型使用
+   2026-11-22 站长定规：上游 AI 偶发挂起（见 wrangler tail 的 outcome:canceled），
+   旧版 fetch 无超时 → 页面一直转、零提示，用户以为站点坏了。这里加 20 秒硬超时：
+   超时即提示切国内线路或稍后重试，绝不静默卡死；成功后立刻清定时器。 */
 async function askCF(question, history, parts){
-  var res = await fetch(CFG.cf.endpoint, {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({
-      question: question, history: history, route: CFG.cf.route, parts: parts,
-      quotaTier: starStatus().logged ? 'full' : 'half'
-    })
-  });
+  var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  var timer = ctl ? setTimeout(function(){ ctl.abort(); }, 20000) : null;
+  var res;
+  try {
+    res = await fetch(CFG.cf.endpoint, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      signal: ctl ? ctl.signal : undefined,
+      body: JSON.stringify({
+        question: question, history: history, route: CFG.cf.route, parts: parts,
+        quotaTier: starStatus().logged ? 'full' : 'half'
+      })
+    });
+  } catch (e) {
+    // 超时/断网必须给明确提示，不能让 send() 的 catch 只显示一串英文 AbortError。
+    if (e && e.name === 'AbortError') {
+      throw new Error("Cloudflare 线路暂时连不上（响应超时），请切换「国内直连」或稍后再试。");
+    }
+    throw e;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
   if (!res.ok){
     var t = await res.text();
     var msg = t.slice(0,200);

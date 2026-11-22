@@ -6923,6 +6923,28 @@ section('21c. 首页滑到底部按钮');
         '§21h-11 三处提示词本身不含那个被编造的假网址（避免反向示范）',
         '把假网址写进提示词 → 模型可能因见过该串而更倾向复述');
     }
+    // §21h-12（2026-11-22 站长定规）：CF 上游偶发挂起（wrangler tail 见 outcome:canceled），
+    // askCF 必须带 20 秒硬超时 + 中文友好提示，不能让页面无限转圈、零提示。
+    {
+      const la3 = read('labor-ai.html');
+      const askFn = (la3.match(/async function askCF\([\s\S]*?\n\}/) || [''])[0];
+      // 同一个断言函数既用于正常值，也用于故障注入后的篡改值——保证注入真能判红。
+      const has20sTimeout = (s) => /AbortController/.test(s)
+        && /setTimeout\(/.test(s) && /,\s*20000\s*\)/.test(s);
+      check(has20sTimeout(askFn),
+        '§21h-12 askCF 用 AbortController 设 20 秒硬超时（上游挂起不再无限转圈）',
+        '无 20 秒超时 → CF 上游 canceled 时页面一直转、零提示，用户以为站点坏了');
+      check(/AbortError/.test(askFn) && /国内直连/.test(askFn) && /稍后再试/.test(askFn),
+        '§21h-12 超时转中文友好提示（切国内直连/稍后再试），不暴露 AbortError',
+        '直接抛 AbortError → 用户看到一串英文，无从判断该怎么办');
+      check(/clearTimeout\(timer\)/.test(askFn),
+        '§21h-12 请求结束后清定时器，避免超时误伤后续请求',
+        '不清 timer → 早返回的请求其 timer 仍可能 abort 掉别的 fetch');
+      const tamperedAskFn = askFn.replace(/,\s*20000\s*\)/, ', 999)');
+      check(tamperedAskFn !== askFn && !has20sTimeout(tamperedAskFn),
+        '§21h-12 故障注入：篡改超时毫秒数后 20 秒断言判红',
+        '篡改后仍全绿 → 断言失效，等于没校验');
+    }
     // §21h-3（2026-11-21 站长改版）：登录 20 次/小时、未登录一律减半 10 次/小时；
     // Star 只管附件，不再决定文字问答。两个后端 + 前端必须同一套口径。
     {
