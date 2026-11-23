@@ -1,20 +1,15 @@
-/* ua-guard.js — 浏览器分流：微信/QQ 内置硬拦截 · 独立 QQ 浏览器跳专题页 · App 内嵌只提示 · 厂商浏览器页头横幅
+/* ua-guard.js — 浏览器分流：拦截页只针对微信 · 独立 QQ 浏览器跳专题页 · QQ 客户端放行 · App 内嵌只提示 · 厂商浏览器页头横幅
  *
- * v19（2026-11-23，现行口径：只让「QQ 浏览器」跳专题页，QQ / 微信一律拦截）：
- *   v18 用「UA 里有没有 QQBrowser/MQQBrowser 字样」判 QQ 浏览器，漏了一个事实——
- *   手机 QQ 的内置 WebView 是 QQ 浏览器 X5 内核，UA 里照样带 MQQBrowser/6.2 + TBS，
- *   于是 QQ 被误当 QQ 浏览器、跳到了专题页。v19 调整判定顺序：
- *   → ① 先认 IM 客户端标记（V1_AND_SQ_ / V1_IPH_SQ_ / 「QQ/x.x」 / Tim/ / TBS/），
- *        命中即微信/QQ 内置 → 全屏硬拦截，绝不跳专题页；
- *     ② 电脑 QQ 与电脑版 QQ 浏览器同源（同为 QBCore），UA 只差内核年代：客户端停在
- *        Core/1.53~1.86（Chromium 53~86），独立 QQ 浏览器 12/13 已是 Core/1.94 以上，
- *        故电脑端按 Core 内核版本兜底，旧内核的 QQBrowser 归为 QQ 内置；
- *     ③ 余下的 MQQBrowser / QQBrowser 才是独立 QQ 浏览器 → 自动跳 qq-browser-report.html；
- *     ④ 专题页自身不跳，只给 <html> 打 data-sxg-qq-browser="1" 亮出顶部说明条。
+ * v20（2026-11-23，现行口径：拦截页只留给微信）：
+ *   → ① 微信 / 企业微信 → 全屏硬拦截（复制地址到系统浏览器打开）；
+ *     ② 独立 QQ 浏览器（手机 MQQBrowser / 电脑 QQBrowser 新内核）→ 自动跳 qq-browser-report.html；
+ *     ③ QQ 客户端（手机 QQ、电脑 QQ、TIM）→ 正常放行，不拦、不提示、不跳专题页；
+ *     ④ App 内嵌 WebView / 厂商浏览器横幅沿用 v17 口径。
  *
- * v18（2026-11-23，QQ 浏览器跳专题页的初版；判定粒度过粗，已被 v19 取代）：
- *   微信 / 企业微信 / QQ 内置沿用全屏硬拦截，独立 QQ 浏览器跳专题页，
- *   跳转目标由脚本 src 反推仓库根，目录页、index.html、brand 子目录页都落到同一个专题页。
+ * v19（2026-11-23，历史口径：QQ 客户端仍硬拦截；已被 v20 取代）：
+ *   先认 IM 客户端标记（V1_AND_SQ_ / V1_IPH_SQ_ / 「QQ/x.x」 / Tim/ / TBS/）再判 QQ 浏览器，
+ *   修掉「手机 QQ 的内置 WebView 带 MQQBrowser/6.2 + TBS，被误当 QQ 浏览器」的问题；
+ *   电脑 QQ 与电脑版 QQ 浏览器同源（QBCore），按 Core/1.xx 内核年代兜底区分。
  *
  *
  * v17（2026-11-20 历史口径，其中「QQ 浏览器硬拦截」一条已被 v18 取代）：
@@ -91,12 +86,13 @@
  *
  * 实现要点：
  *   1. <head> 内同步 <script> 引入（无 defer/async），解析到即执行。
- *   2. 微信/QQ 内置 → <html> 打 data-sxg-ua-block + 注入 <style>，正文一个字不闪现。
+ *   2. 微信 / 企业微信 → <html> 打 data-sxg-ua-block + 注入 <style>，正文一个字不闪现。
  *   3. 独立 QQ 浏览器 → 立即 location.replace 到专题页（专题页自身不跳，只亮顶部说明条）。
- *   4. App 内嵌 → 文档流顶部一条黄色提示（sticky，无按钮、不拦内容）。
- *   5. 拦截层 DOM 在 DOMContentLoaded 挂到 body（#sxg-ua-guard 豁免），z-index 满级。
- *   6. 复制按钮优先 navigator.clipboard，失败降级 textarea + execCommand。
- *   7. 任何异常都静默退出，不拖垮正常浏览器。
+ *   4. QQ 客户端（手机 QQ / 电脑 QQ / TIM）→ 直接放行，不拦不提示。
+ *   5. App 内嵌 → 文档流顶部一条黄色提示（sticky，无按钮、不拦内容）。
+ *   6. 拦截层 DOM 在 DOMContentLoaded 挂到 body（#sxg-ua-guard 豁免），z-index 满级。
+ *   7. 复制按钮优先 navigator.clipboard，失败降级 textarea + execCommand。
+ *   8. 任何异常都静默退出，不拖垮正常浏览器。
  */
 (function () {
   'use strict';
@@ -104,19 +100,21 @@
     var ua = navigator.userAgent || '';
     var doc = document;
     var root = doc.documentElement;
-    var VERSION = 'v19';
+    var VERSION = 'v20';
 
-    // —— 微信 / QQ 客户端「内置浏览器」标记（最高优先级，先判它们）——
+    // —— 微信 / QQ 客户端标记（先判，避免把 QQ 误当成 QQ 浏览器）——
     // 手机 QQ 的内置 WebView 用的是 QQ 浏览器 X5 内核，UA 里同样带 MQQBrowser，
     // 只认「QQBrowser」字样会把 QQ 误当成 QQ 浏览器。所以先认 IM 客户端自己的标记：
     //   · 安卓 QQ：V1_AND_SQ_… / 「QQ/x.x.x」 / X5 内核的 MQQBrowser/6.2 + TBS/
     //   · 苹果 QQ：V1_IPH_SQ_… / 「QQ/x.x.x」
-    //   · TIM：    /Tim/
+    //   · TIM：    Tim/
     // 这些标记只出现在客户端内嵌环境，独立 QQ 浏览器客户端不会带（手机版是
     // MQQBrowser/<新版本> + COVC，电脑版是 Core/1.xx + QQBrowser/1x）。
     // 电脑 QQ 与电脑版 QQ 浏览器同源（同为 QBCore），UA 只差内核年代：客户端长期停在
     // Core/1.53~1.86（Chromium 53~86），独立 QQ 浏览器 12/13 已是 Core/1.94 以上，
-    // 故电脑端按 Core 内核版本兜底，旧内核的 QQBrowser 归到 QQ 内置。
+    // 故电脑端按 Core 内核版本兜底，旧内核的 QQBrowser 归到 QQ 客户端。
+    // v20 口径：拦截页只针对微信；QQ（含 TIM）与电脑 QQ 一律正常放行，
+    // 只有独立 QQ 浏览器跳专题页。
     // 纯函数，便于自检脚本原样抠出来做判定矩阵。
     function sxgQQClassify(ua) {
       var wechat = /MicroMessenger/i.test(ua) || /wxwork/i.test(ua);
@@ -125,16 +123,19 @@
       var core = 0;
       var coreM = ua.match(/Core\/1\.(\d{2,3})/);
       if (coreM) core = parseInt(coreM[1], 10);
-      var desktopClient = /Windows NT|Macintosh/i.test(ua) && /QQBrowser/i.test(ua)
+      var desktopApp = /Windows NT|Macintosh/i.test(ua) && /QQBrowser/i.test(ua)
         && core > 0 && core <= 90;
+      var qqClient = inApp || desktopApp;
       // 独立 QQ 浏览器：手机版 MQQBrowser + 电脑版 QQBrowser/10.x（电脑版不带 M 前缀，须一并覆盖）
       var browser = (/MQQBrowser/i.test(ua) || /QQBrowser/i.test(ua))
-        && !wechat && !inApp && !desktopClient;
-      return { wechat: wechat, inApp: inApp || desktopClient, browser: browser, core: core };
+        && !wechat && !qqClient;
+      return { wechat: wechat, inApp: inApp, desktopApp: desktopApp, qqClient: qqClient,
+        browser: browser, core: core };
     }
     var qqClass = sxgQQClassify(ua);
     var isWeChat = qqClass.wechat;
-    var isQQ = qqClass.inApp;
+    var isQQ = qqClass.qqClient;
+    var isDesktopQQApp = qqClass.desktopApp;
     var isQQBrowser = qqClass.browser;
     var coreChromium = qqClass.core;
     // 命中来源：UA 明确标识为真，反伪装可疑分兜底也算（两者都按 QQ 浏览器处理，仅诊断面板区分）
@@ -338,18 +339,21 @@
     var debugOn = /[?&]ua-debug(?:=1)?(?:&|$)/.test(location.search);
 
     // 最终动作（诊断面板要用）
-    // v18 口径（2026-11-23，QQ 浏览器部分回到 2026-11-19 的引导口径，其余沿用 v17）：
-    //   ① 微信 / 企业微信 / QQ 内置 → hard-block（复制地址到系统浏览器打开的全屏拦截层）；
+    // v20 口径（2026-11-23 站长定稿）：拦截页**只针对微信**；QQ（手机 QQ、电脑 QQ、TIM）
+    // 一律正常放行，不拦不提示；只有独立 QQ 浏览器跳专题页。
+    //   ① 微信 / 企业微信 → hard-block（复制地址到系统浏览器打开的全屏拦截层）；
     //   ② 独立 QQ 浏览器 → qq-report-redirect：立即跳 qq-browser-report.html；
     //      已经在专题页上 → qq-report-page：不跳，只亮顶部说明条；
-    //   ③ App 内嵌 WebView → app-notice（一定弹提示，但不拦内容）；
-    //   ④ **能检测到的其它浏览器**（UC/夸克/360/搜狗/百度/2345/傲游 + 硬核联盟各家自带浏览器
+    //   ③ QQ 客户端（含电脑 QQ）→ pass：不拦、不弹提示、不跳专题页；
+    //   ④ App 内嵌 WebView → app-notice（一定弹提示，但不拦内容）；
+    //   ⑤ **能检测到的其它浏览器**（UC/夸克/360/搜狗/百度/2345/傲游 + 硬核联盟各家自带浏览器
     //      + 华为·荣耀·OPPO·vivo·小米·联想·魅族·金立·酷派·努比亚）→ notice：
     //      在页头 <header> 下方加一条黄色横幅，正文整体下移，不遮挡；
-    //   ⑤ 识别不出（如新版 360 把 UA 洗成标准 Chrome）→ 什么都弹不出来，靠公告栏兜底。
+    //   ⑥ 识别不出（如新版 360 把 UA 洗成标准 Chrome）→ 什么都弹不出来，靠公告栏兜底。
     var action = 'pass';
-    if (isWeChat || isQQ) action = 'hard-block';
+    if (isWeChat) action = 'hard-block';
     else if (isQQBrowser) action = onReportPage ? 'qq-report-page' : 'qq-report-redirect';
+    else if (isQQ) action = 'pass';
     else if (isInAppWebView) action = 'app-notice';
     else if (forceDomestic || shellScore >= 3 || is360UA || domesticHits.length > 0) action = 'notice';
 
@@ -370,6 +374,7 @@
       forceDomestic: forceDomestic,
       wechat: isWeChat,
       qqInApp: isQQ,
+      qqDesktopApp: isDesktopQQApp,
       qqBrowser: isQQBrowser,
       qqBrowserByUA: qqBrowserByUA,
       qqBrowserToken: qqBrowserToken,
@@ -628,9 +633,8 @@
     }
 
     // —— 分流执行 ——
-    // 1) 独立 QQ 浏览器：立即跳专题页（v18 恢复「检测到就引导看专题」的口径）。
-    //    专题页自身不再跳（否则自我循环），只给 <html> 打 data-sxg-qq-browser="1"，
-    //    由专题页自己的 CSS 亮出顶部那条 QQ 浏览器专属说明；debug 模式暂停跳转，只亮面板。
+    // 1) 独立 QQ 浏览器：立即跳专题页（专题页自身不再跳，只给 <html> 打
+    //    data-sxg-qq-browser="1"，由专题页自己的 CSS 亮出顶部说明；debug 模式暂停跳转）。
     if (isQQBrowser && !isWeChat && !isQQ) {
       if (debugOn) {
         sxgDrawDebug();
@@ -643,15 +647,22 @@
       return;
     }
 
-    // 2) 其余浏览器：App 壳只提示「别在 App 内打开」；自助声明 / 非标准壳才弹提示条。
-    if (!isWeChat && !isQQ) {
+    // 2) QQ 客户端（手机 QQ / 电脑 QQ / TIM）：v20 起一律正常放行——不拦、不弹提示、
+    //    不跳专题页，站点内容原样展示；debug 模式仍可看判定依据。
+    if (isQQ) {
+      if (debugOn) sxgDrawDebug();
+      return;
+    }
+
+    // 3) 其余浏览器：App 壳只提示「别在 App 内打开」；自助声明 / 非标准壳才弹提示条。
+    if (!isWeChat) {
       if (isInAppWebView) sxgShowAppNotice();
       else if (forceDomestic || sxgIsDomesticBrowser(ua) || shellScore >= 3 || is360UA) sxgShowBrowserNotice();
       if (debugOn) sxgDrawDebug();
       return;
     }
 
-    // 3) 微信 / 企业微信 / QQ 内置：全屏硬拦截（QQ 浏览器已在上游跳走，不进本档）
+    // 4) 微信 / 企业微信：全屏硬拦截（v20 起拦截页只留给微信，QQ 浏览器与 QQ 已在上游分流）
     if (root.getAttribute('data-sxg-ua-block')) return;
     root.setAttribute('data-sxg-ua-block', '1');
 

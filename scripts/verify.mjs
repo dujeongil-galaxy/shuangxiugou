@@ -11232,7 +11232,7 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     '§38b 微信/QQ 内置浏览器硬拦截层文案保留（口径未回退）',
     '内置浏览器文案丢失 → 硬拦截层成了无说明的空壳');
 
-  // 38j. QQ 浏览器分流：v18（2026-11-23）恢复「命中即跳专题页」，微信/QQ 内置仍全屏拦截，
+  // 38j. QQ 浏览器分流：v20（2026-11-23）命中即跳专题页；拦截页只留给微信，QQ 客户端放行。
   //      专题页自身不再跳（防自我循环），只按 UA 属性亮顶部说明条。
   {
     var rpt38src = exists('qq-browser-report.html') ? read('qq-browser-report.html') : '';
@@ -11240,9 +11240,9 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
         && /if \(isQQBrowser && !isWeChat && !isQQ\)/.test(ug38)
         && /if \(!onReportPage\)/.test(ug38)
         && /var REPORT_NAME = 'qq-browser-report\.html';/.test(ug38)
-        && /if \(isWeChat \|\| isQQ\) action = 'hard-block';/.test(ug38),
-      '§38j 独立 QQ 浏览器命中后自动跳专题页，微信/QQ 内置仍硬拦截（2026-11-23 恢复引导口径）',
-      '跳转丢失 → QQ 浏览器又落到「复制地址到系统浏览器」拦截页；跳转未排除专题页 → 自我循环');
+        && /if \(isWeChat\) action = 'hard-block';/.test(ug38),
+      '§38j 独立 QQ 浏览器命中后自动跳专题页，拦截页只针对微信（2026-11-23 v20 口径）',
+      '跳转丢失 → QQ 浏览器又落到拦截页；硬拦截误挂到 QQ → QQ 访客被挡在站外');
     check(!/location\.replace\(base \+ 'qq-browser-report\.html'\)/.test(ug38)
         && /data-sxg-ua-block/.test(ug38)
         && /qq-browser-report\.html/.test(rpt38src),
@@ -11255,7 +11255,7 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
       '说明条缺失或无条件常显 → QQ 浏览器访客看不到引导缘由 / 普通访客被误导');
   }
 
-  // 38n. QQ / 微信 内置 与 独立 QQ 浏览器 的区分（2026-11-23 v19）：
+  // 38n. QQ / 微信 与 独立 QQ 浏览器 的区分（2026-11-23 v20）：
   // 手机 QQ 的内置 WebView 用的就是 QQ 浏览器 X5 内核，UA 里同样带 MQQBrowser，
   // 按「QQBrowser 字样」判会把 QQ 也跳去专题页。必须先把 IM 客户端标记判掉。
   {
@@ -11300,23 +11300,26 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
       pcQQBrowser: qqClassify(uaPcQQBrowser),
       pcQQClient: qqClassify(uaPcQQClient)
     };
-    var ok38n = m38n.androidQQ && m38n.androidQQ.inApp === true && m38n.androidQQ.browser === false
-      && m38n.androidQQNoToken.inApp === true && m38n.androidQQNoToken.browser === false
-      && m38n.iosQQ.inApp === true && m38n.iosQQ.browser === false
-      && m38n.tim.inApp === true && m38n.tim.browser === false
+    var ok38n = m38n.androidQQ && m38n.androidQQ.qqClient === true && m38n.androidQQ.browser === false
+      && m38n.androidQQNoToken.qqClient === true && m38n.androidQQNoToken.browser === false
+      && m38n.iosQQ.qqClient === true && m38n.iosQQ.browser === false
+      && m38n.tim.qqClient === true && m38n.tim.browser === false
       && m38n.wechatAndroid.wechat === true && m38n.wechatAndroid.browser === false
       && m38n.wechatPC.wechat === true && m38n.wechatPC.browser === false
-      && m38n.mobileQQBrowser.inApp === false && m38n.mobileQQBrowser.browser === true
-      && m38n.pcQQBrowser.inApp === false && m38n.pcQQBrowser.browser === true
-      && m38n.pcQQClient.inApp === true && m38n.pcQQClient.browser === false;
+      && m38n.mobileQQBrowser.qqClient === false && m38n.mobileQQBrowser.browser === true
+      && m38n.pcQQBrowser.qqClient === false && m38n.pcQQBrowser.browser === true
+      && m38n.pcQQClient.desktopApp === true && m38n.pcQQClient.qqClient === true
+      && m38n.pcQQClient.browser === false;
     check(ok38n,
-      '§38n 真代码沙箱：QQ（安卓/苹果/无 QQ 版本号/TIM）与微信（安卓/电脑）一律判为内置不跳；手机版与电脑版独立 QQ 浏览器判为浏览器跳专题页；电脑 QQ 旧内核归内置',
+      '§38n 真代码沙箱：QQ（安卓/苹果/无 QQ 版本号/TIM/电脑旧内核）归客户端不跳；微信（安卓/电脑）判微信；手机版与电脑版独立 QQ 浏览器判为浏览器跳专题页',
       `实判定 ${JSON.stringify(m38n)}`);
-    check(/if \(isQQBrowser && !isWeChat && !isQQ\) \{/.test(ug38)
-        && /if \(isWeChat \|\| isQQ\) action = 'hard-block';/.test(ug38)
+    check(/if \(isWeChat\) action = 'hard-block';/.test(ug38)
+        && /else if \(isQQ\) action = 'pass';/.test(ug38)
+        && /if \(isQQBrowser && !isWeChat && !isQQ\) \{/.test(ug38)
+        && /if \(isQQ\) \{/.test(ug38)
         && /qqBrowserToken: qqBrowserToken/.test(ug38),
-      '§38n 分流顺序：QQ 浏览器分支再排除微信/QQ，微信/QQ 落硬拦截（诊断面板摊出判定依据）',
-      '顺序颠倒或排除条件被删 → QQ 又跳专题页，v19 的口径回退');
+      '§38n 分流顺序：拦截页只针对微信；QQ 浏览器先跳专题页；QQ 客户端直接放行',
+      '顺序颠倒或排除条件被删 → QQ 又被拦/被跳，v20 的口径回退');
   }
 
   // 38k. 反 UA 伪装交叉验证（v5）：QQ 浏览器改 UA 标识后仍被识别
@@ -11492,15 +11495,15 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     const withGuard38 = htmlRefs38.filter((p) => {
       try { return /ua-guard\.js\?v=/.test(readFileSync(join(ROOT, p), 'utf8')); } catch { return false; }
     });
-    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=(?:[1-9]|1[0-8])\b/.test(readFileSync(join(ROOT, p), 'utf8')));
-    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=19\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=(?:[1-9]|1[0-9])\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=20\b/.test(readFileSync(join(ROOT, p), 'utf8')));
     check(withGuard38.length >= 199 && oldV38.length === 0 && newV38.length === withGuard38.length,
       `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=19、无残留 v=1~18`,
       `旧版 ${oldV38.length} 页 / 新版 ${newV38.length} 页 → 缓存不刷新，用户拿到旧拦截脚本`);
     const notes38 = exists('notes.html') ? read('notes.html') : '';
     const notesAt38 = notes38.indexOf('ua-guard.js');
     const bodyAt38 = notes38.indexOf('<body');
-    check(notesAt38 > 0 && /ua-guard\.js\?v=19/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
+    check(notesAt38 > 0 && /ua-guard\.js\?v=20/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
       '§38c notes.html 已挂 ua-guard 且引用位于 body 之前（全站无例外、同步生效）',
       'notes 未挂 / 版本不对 / 放到 body 之后 → 加密笔记页在 QQ 浏览器里正文先闪现');
   }
@@ -11628,7 +11631,7 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   const sm38 = exists('sitemap.xml') ? read('sitemap.xml') : '';
   const nav38 = exists('nav-menu.js') ? read('nav-menu.js') : '';
   check(rpt38.length > 0
-      && /ua-guard\.js\?v=19/.test(rpt38)
+      && /ua-guard\.js\?v=20/.test(rpt38)
       && /ai-link\.js\?v=\d+/.test(rpt38)
       && /sxg-legal/.test(rpt38)
       && /<title>[^<]*QQ 浏览器[^<]*<\/title>/.test(rpt38),
