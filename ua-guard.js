@@ -1,6 +1,11 @@
 /* ua-guard.js — 浏览器分流：拦截页只针对微信 · 独立 QQ 浏览器跳专题页 · QQ 客户端放行 · App 内嵌只提示 · 厂商浏览器页头横幅
  *
- * v20（2026-11-23，现行口径：拦截页只留给微信）：
+ * v21（2026-11-23，现行口径，只加一条白名单）：
+ *   悟空浏览器（字节系）自身也是 WebView 内核，UA 带 `; wv)` 与壳指纹，被误判成「App 内嵌」
+ *   而弹了「别在 App 内打开」。v21 新增已知独立浏览器白名单（UA 尾部 `wkbrowser <版本号>`）：
+ *   命中后按普通浏览器放行——不弹 App 提示、不算非标准壳（壳指纹分归零），也不进厂商横幅。
+ *
+ * v20（2026-11-23，拦截页只留给微信）：
  *   → ① 微信 / 企业微信 → 全屏硬拦截（复制地址到系统浏览器打开）；
  *     ② 独立 QQ 浏览器（手机 MQQBrowser / 电脑 QQBrowser 新内核）→ 自动跳 qq-browser-report.html；
  *     ③ QQ 客户端（手机 QQ、电脑 QQ、TIM）→ 正常放行，不拦、不提示、不跳专题页；
@@ -100,7 +105,7 @@
     var ua = navigator.userAgent || '';
     var doc = document;
     var root = doc.documentElement;
-    var VERSION = 'v20';
+    var VERSION = 'v21';
 
     // —— 微信 / QQ 客户端标记（先判，避免把 QQ 误当成 QQ 浏览器）——
     // 手机 QQ 的内置 WebView 用的是 QQ 浏览器 X5 内核，UA 里同样带 MQQBrowser，
@@ -289,7 +294,12 @@
         return score;
       } catch (e) { return 0; }
     }
-    var shellScore = (isWeChat || isQQ) ? 0 : sxgShellScore();
+    // —— 明确已知的「独立浏览器客户端」白名单（v21，2026-11-23）——
+    // 这些客户端本身也是 WebView 内核，UA 里带 `; wv)` / 壳指纹，会被误判成「App 内嵌」。
+    // 悟空浏览器（字节系，字节自有品牌）UA 尾部带 `wkbrowser <版本号>`；
+    // 它不是 App 壳，是用户自己在用的浏览器，必须当普通浏览器放行，不弹「别在 App 内打开」。
+    var isKnownBrowserApp = /wkbrowser|wukong\s?browser|wukong\//i.test(ua);
+    var shellScore = (isWeChat || isQQ || isKnownBrowserApp) ? 0 : sxgShellScore();
 
     // 「被装进某个 App 里打开」——标准 Android WebView 标记：`; wv)` + `Version/4.0`。
     // 微信 / QQ 内置已被前面两档接管（硬拦截），这里只覆盖剩下的 App 壳
@@ -307,7 +317,7 @@
     var isIosWebView = /iPhone|iPad|iPod/i.test(ua) && !/Android/i.test(ua) &&
       /AppleWebKit/i.test(ua) && !/Safari\//i.test(ua) &&
       !/CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo/i.test(ua);
-    var isInAppWebView = !isWeChat && !isQQ && !isQQBrowser &&
+    var isInAppWebView = !isWeChat && !isQQ && !isQQBrowser && !isKnownBrowserApp &&
       (isAndroidWebView || isIosWebView);
 
     // —— 强制国产提示开关（自助兜底，2026-11-20 加，v13 起可撤销）——
@@ -368,6 +378,7 @@
       shellScore: shellScore,
       inAppWebView: isInAppWebView,
       androidWebView: isAndroidWebView,
+      knownBrowserApp: isKnownBrowserApp,
       iosWebView: isIosWebView,
       domesticHits: domesticHits,      // v16 起仅作诊断展示，不再触发提示
       is360: is360UA,                  // 360 家族仍保留提示

@@ -11320,6 +11320,13 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
         && /qqBrowserToken: qqBrowserToken/.test(ug38),
       '§38n 分流顺序：拦截页只针对微信；QQ 浏览器先跳专题页；QQ 客户端直接放行',
       '顺序颠倒或排除条件被删 → QQ 又被拦/被跳，v20 的口径回退');
+    // 悟空浏览器（字节系）自带 WebView 内核，UA 带 `; wv)`，必须按独立浏览器放行
+    check(/isKnownBrowserApp/.test(ug38)
+        && /wkbrowser\|wukong/.test(ug38)
+        && /!isWeChat && !isQQ && !isQQBrowser && !isKnownBrowserApp/.test(ug38)
+        && /isWeChat \|\| isQQ \|\| isKnownBrowserApp\) \? 0/.test(ug38),
+      '§38n 悟空浏览器（UA 含 wkbrowser）列入独立浏览器白名单：不弹 App 内嵌提示、壳指纹分归零',
+      '白名单被删 → 悟空浏览器又被当 App 壳弹「别在 App 内打开」');
   }
 
   // 38k. 反 UA 伪装交叉验证（v5）：QQ 浏览器改 UA 标识后仍被识别
@@ -11495,15 +11502,15 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     const withGuard38 = htmlRefs38.filter((p) => {
       try { return /ua-guard\.js\?v=/.test(readFileSync(join(ROOT, p), 'utf8')); } catch { return false; }
     });
-    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=(?:[1-9]|1[0-9])\b/.test(readFileSync(join(ROOT, p), 'utf8')));
-    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=20\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=(?:[1-9]|1[0-9]|20)\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=21\b/.test(readFileSync(join(ROOT, p), 'utf8')));
     check(withGuard38.length >= 199 && oldV38.length === 0 && newV38.length === withGuard38.length,
       `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=19、无残留 v=1~18`,
       `旧版 ${oldV38.length} 页 / 新版 ${newV38.length} 页 → 缓存不刷新，用户拿到旧拦截脚本`);
     const notes38 = exists('notes.html') ? read('notes.html') : '';
     const notesAt38 = notes38.indexOf('ua-guard.js');
     const bodyAt38 = notes38.indexOf('<body');
-    check(notesAt38 > 0 && /ua-guard\.js\?v=20/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
+    check(notesAt38 > 0 && /ua-guard\.js\?v=21/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
       '§38c notes.html 已挂 ua-guard 且引用位于 body 之前（全站无例外、同步生效）',
       'notes 未挂 / 版本不对 / 放到 body 之后 → 加密笔记页在 QQ 浏览器里正文先闪现');
   }
@@ -11631,7 +11638,7 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   const sm38 = exists('sitemap.xml') ? read('sitemap.xml') : '';
   const nav38 = exists('nav-menu.js') ? read('nav-menu.js') : '';
   check(rpt38.length > 0
-      && /ua-guard\.js\?v=20/.test(rpt38)
+      && /ua-guard\.js\?v=21/.test(rpt38)
       && /ai-link\.js\?v=\d+/.test(rpt38)
       && /sxg-legal/.test(rpt38)
       && /<title>[^<]*QQ 浏览器[^<]*<\/title>/.test(rpt38),
