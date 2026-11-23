@@ -6901,6 +6901,33 @@ section('21c. 首页滑到底部按钮');
         && /who\.textContent = role === "user" \? "我" : "休休查"/.test(la),
         '§21h-18 三条线路提示词自称 + 聊天气泡署名统一为休休查',
         '某线路还自称劳动法小助手 → 用户问「你叫什么」三个答案三个样');
+      // §21h-19（2026-11-23 实测回归）：只写「你是休休查」不够——旧名若还留在同一句提示词里，
+      // 国内 Qwen3-VL-8B 这种小模型会把旧名当名字抓走，实测仍自称旧名。故身份段内旧名必须归零，
+      // 并写死「名字只有休休查/不问旧称/不顺确认认」的铁律。页面可见文案（SEO/公告）的旧名不受此限。
+      function identitySegment(text){
+        var lines = text.split('\n');
+        var start = -1, end = -1;
+        for (var i = 0; i < lines.length; i++) {
+          if (start < 0 && lines[i].indexOf('你是「休休查」') >= 0) start = i;
+          if (start >= 0 && lines[i].indexOf('【身份铁律】') >= 0) { end = i; break; }
+        }
+        return (start >= 0 && end >= 0) ? lines.slice(start, end + 1).join('\n') : '';
+      }
+      var idSegCN = identitySegment(la);
+      var idSegCF = identitySegment(workerKv);
+      var idSegAli = identitySegment(aliPrompt);
+      check(!!idSegCN && !!idSegCF && !!idSegAli
+        && !/劳动法小助手/.test(idSegCN)
+        && !/劳动法小助手/.test(idSegCF)
+        && !/劳动法小助手/.test(idSegAli)
+        && /名字只有「休休查」/.test(idSegCN)
+        && /名字只有「休休查」/.test(idSegCF)
+        && /名字只有「休休查」/.test(idSegAli)
+        && /不要顺着确认或否认/.test(idSegCN)
+        && /不要顺着确认或否认/.test(idSegCF)
+        && /不要顺着确认或否认/.test(idSegAli),
+        '§21h-19 三线路提示词身份段旧名归零 + 身份铁律唯一（防小模型抓错旧名）',
+        '提示词里还提旧名 → 国内小模型实测会自称旧名，页面改了也白改');
       check(/a\.setAttribute\('aria-label', '休休查'\)/.test(read('ai-link.js')),
         '§21h-18 全站跳转按钮 aria-label 改为休休查',
         '按钮辅助文案还是旧名 → 读屏用户与 hover 提示仍是劳动法小助手');
