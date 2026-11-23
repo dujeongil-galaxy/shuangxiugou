@@ -11255,6 +11255,70 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
       '说明条缺失或无条件常显 → QQ 浏览器访客看不到引导缘由 / 普通访客被误导');
   }
 
+  // 38n. QQ / 微信 内置 与 独立 QQ 浏览器 的区分（2026-11-23 v19）：
+  // 手机 QQ 的内置 WebView 用的就是 QQ 浏览器 X5 内核，UA 里同样带 MQQBrowser，
+  // 按「QQBrowser 字样」判会把 QQ 也跳去专题页。必须先把 IM 客户端标记判掉。
+  {
+    var fnQQ38 = ug38.match(/function sxgQQClassify\(ua\) \{[\s\S]*?\n    \}/);
+    var qqClassify = function (u) {
+      if (!fnQQ38) return null;
+      var fn = new Function('ua', fnQQ38[0] + '\n return sxgQQClassify(ua);');
+      return fn(u);
+    };
+    var uaAndroidQQ = 'Mozilla/5.0 (Linux; Android 12; M2102J2SC Build/SKQ1.211006.001; wv) AppleWebKit/537.36 '
+      + '(KHTML, like Gecko) Version/4.0 Chrome/89.0.4389.72 MQQBrowser/6.2 TBS/046011 Mobile Safari/537.36 '
+      + 'V1_AND_SQ_8.8.98_3002_YYB_D A_8089800 PA QQ/8.8.98.8410 NetType/4G WebP/0.3.0 Pixel/1080';
+    var uaAndroidQQNoToken = 'Mozilla/5.0 (Linux; Android 14; PJA110 Build/UKQ1.231108.001; wv) AppleWebKit/537.36 '
+      + '(KHTML, like Gecko) Version/4.0 Chrome/121.0.6167.71 MQQBrowser/6.2 TBS/047205 Mobile Safari/537.36 '
+      + 'V1_AND_SQ_9.1.16_8032_YYB_D PA NetType/WIFI Pixel/1240';
+    var uaIosQQ = 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) '
+      + 'Mobile/15E148 QQ/8.8.38.705 V1_IPH_SQ_8.8.38_1_APP_A Pixel/1125 Core/UIWebView NetType/WIFI QBWebViewType/1';
+    var uaTim = 'Mozilla/5.0 (Linux; Android 12; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 '
+      + 'Chrome/89.0.4389.72 Mobile Safari/537.36 Tim/3.4.5 NetType/WIFI';
+    var uaWeChatAndroid = 'Mozilla/5.0 (Linux; Android 13; DCO-AL00 Build/HUAWEIDCO-AL00; wv) AppleWebKit/537.36 '
+      + '(KHTML, like Gecko) Version/4.0 Chrome/86.0.4240.99 XWEB/4435 MMWEBSDK/20230202 Mobile Safari/537.36 '
+      + 'MMWEBID/7331 MicroMessenger/8.0.33.2320(0x2800213D) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN';
+    var uaWeChatPC = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
+      + 'Chrome/39.0.2171.95 Safari/537.36 MicroMessenger/6.5.2.501 NetType/WIFI WindowsWechat '
+      + 'QBCore/3.43.691.400 QQBrowser/9.0.2524.400';
+    var uaMobileQQBrowser = 'Mozilla/5.0 (Linux; U; Android 12; zh-cn; VOG-AL00 Build/HUAWEIBRA-AL00) '
+      + 'AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/148.0.0.0 MQQBrowser/14.6 '
+      + 'Mobile Safari/537.36 COVC/046801';
+    var uaPcQQBrowser = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
+      + 'Chrome/94.0.4606.71 Safari/537.36 Core/1.94.225.400 QQBrowser/12.2.5544.400';
+    // 电脑 QQ 内置：与 QQ 浏览器同源，内核停在旧版（Core/1.63 → Chromium 63）
+    var uaPcQQClient = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
+      + 'Chrome/63.0.3239.132 Safari/537.36 Core/1.63.6776.400 QQBrowser/10.3.2703.400';
+    var m38n = {
+      androidQQ: qqClassify(uaAndroidQQ),
+      androidQQNoToken: qqClassify(uaAndroidQQNoToken),
+      iosQQ: qqClassify(uaIosQQ),
+      tim: qqClassify(uaTim),
+      wechatAndroid: qqClassify(uaWeChatAndroid),
+      wechatPC: qqClassify(uaWeChatPC),
+      mobileQQBrowser: qqClassify(uaMobileQQBrowser),
+      pcQQBrowser: qqClassify(uaPcQQBrowser),
+      pcQQClient: qqClassify(uaPcQQClient)
+    };
+    var ok38n = m38n.androidQQ && m38n.androidQQ.inApp === true && m38n.androidQQ.browser === false
+      && m38n.androidQQNoToken.inApp === true && m38n.androidQQNoToken.browser === false
+      && m38n.iosQQ.inApp === true && m38n.iosQQ.browser === false
+      && m38n.tim.inApp === true && m38n.tim.browser === false
+      && m38n.wechatAndroid.wechat === true && m38n.wechatAndroid.browser === false
+      && m38n.wechatPC.wechat === true && m38n.wechatPC.browser === false
+      && m38n.mobileQQBrowser.inApp === false && m38n.mobileQQBrowser.browser === true
+      && m38n.pcQQBrowser.inApp === false && m38n.pcQQBrowser.browser === true
+      && m38n.pcQQClient.inApp === true && m38n.pcQQClient.browser === false;
+    check(ok38n,
+      '§38n 真代码沙箱：QQ（安卓/苹果/无 QQ 版本号/TIM）与微信（安卓/电脑）一律判为内置不跳；手机版与电脑版独立 QQ 浏览器判为浏览器跳专题页；电脑 QQ 旧内核归内置',
+      `实判定 ${JSON.stringify(m38n)}`);
+    check(/if \(isQQBrowser && !isWeChat && !isQQ\) \{/.test(ug38)
+        && /if \(isWeChat \|\| isQQ\) action = 'hard-block';/.test(ug38)
+        && /qqBrowserToken: qqBrowserToken/.test(ug38),
+      '§38n 分流顺序：QQ 浏览器分支再排除微信/QQ，微信/QQ 落硬拦截（诊断面板摊出判定依据）',
+      '顺序颠倒或排除条件被删 → QQ 又跳专题页，v19 的口径回退');
+  }
+
   // 38k. 反 UA 伪装交叉验证（v5）：QQ 浏览器改 UA 标识后仍被识别
   {
     check(/sxgSpoofScore/.test(ug38)
@@ -11428,15 +11492,15 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     const withGuard38 = htmlRefs38.filter((p) => {
       try { return /ua-guard\.js\?v=/.test(readFileSync(join(ROOT, p), 'utf8')); } catch { return false; }
     });
-    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=(?:[1-9]|1[0-7])\b/.test(readFileSync(join(ROOT, p), 'utf8')));
-    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=18\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=(?:[1-9]|1[0-8])\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=19\b/.test(readFileSync(join(ROOT, p), 'utf8')));
     check(withGuard38.length >= 199 && oldV38.length === 0 && newV38.length === withGuard38.length,
-      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=18、无残留 v=1~17`,
+      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=19、无残留 v=1~18`,
       `旧版 ${oldV38.length} 页 / 新版 ${newV38.length} 页 → 缓存不刷新，用户拿到旧拦截脚本`);
     const notes38 = exists('notes.html') ? read('notes.html') : '';
     const notesAt38 = notes38.indexOf('ua-guard.js');
     const bodyAt38 = notes38.indexOf('<body');
-    check(notesAt38 > 0 && /ua-guard\.js\?v=18/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
+    check(notesAt38 > 0 && /ua-guard\.js\?v=19/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
       '§38c notes.html 已挂 ua-guard 且引用位于 body 之前（全站无例外、同步生效）',
       'notes 未挂 / 版本不对 / 放到 body 之后 → 加密笔记页在 QQ 浏览器里正文先闪现');
   }
@@ -11564,7 +11628,7 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   const sm38 = exists('sitemap.xml') ? read('sitemap.xml') : '';
   const nav38 = exists('nav-menu.js') ? read('nav-menu.js') : '';
   check(rpt38.length > 0
-      && /ua-guard\.js\?v=18/.test(rpt38)
+      && /ua-guard\.js\?v=19/.test(rpt38)
       && /ai-link\.js\?v=\d+/.test(rpt38)
       && /sxg-legal/.test(rpt38)
       && /<title>[^<]*QQ 浏览器[^<]*<\/title>/.test(rpt38),

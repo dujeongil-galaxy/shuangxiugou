@@ -1,16 +1,21 @@
 /* ua-guard.js — 浏览器分流：微信/QQ 内置硬拦截 · 独立 QQ 浏览器跳专题页 · App 内嵌只提示 · 厂商浏览器页头横幅
  *
- * v18（2026-11-23，现行口径：独立 QQ 浏览器恢复「检测到即自动跳专题页」）：
- *   口径：独立 QQ 浏览器（手机 MQQBrowser / 电脑 QQBrowser 两种形态，以及反伪装可疑分
- *   命中的那些）一律 location.replace 到 qq-browser-report.html 专题页，不再套用微信/QQ
- *   内置那套「复制地址到系统浏览器打开」的全屏拦截层；微信 / 企业微信 / QQ 内置浏览器的
- *   硬拦截原样保留。
- *   → ① 跳转目标由脚本自身 src 反推仓库根，目录页、index.html、brand 子目录页都落到
- *        同一个仓库根专题页，不手写 ../ 前缀；
- *     ② 专题页自身不再跳（防自我循环），只给 <html> 打 data-sxg-qq-browser="1"，
- *        亮出页面顶部那条 QQ 浏览器专属说明条；
- *     ③ ?ua-debug=1 暂停跳转，只亮诊断面板，便于取样；
- *     ④ 识别认 UA 标识串为主，反伪装可疑分 ≥3 的仍按 QQ 浏览器处理。
+ * v19（2026-11-23，现行口径：只让「QQ 浏览器」跳专题页，QQ / 微信一律拦截）：
+ *   v18 用「UA 里有没有 QQBrowser/MQQBrowser 字样」判 QQ 浏览器，漏了一个事实——
+ *   手机 QQ 的内置 WebView 是 QQ 浏览器 X5 内核，UA 里照样带 MQQBrowser/6.2 + TBS，
+ *   于是 QQ 被误当 QQ 浏览器、跳到了专题页。v19 调整判定顺序：
+ *   → ① 先认 IM 客户端标记（V1_AND_SQ_ / V1_IPH_SQ_ / 「QQ/x.x」 / Tim/ / TBS/），
+ *        命中即微信/QQ 内置 → 全屏硬拦截，绝不跳专题页；
+ *     ② 电脑 QQ 与电脑版 QQ 浏览器同源（同为 QBCore），UA 只差内核年代：客户端停在
+ *        Core/1.53~1.86（Chromium 53~86），独立 QQ 浏览器 12/13 已是 Core/1.94 以上，
+ *        故电脑端按 Core 内核版本兜底，旧内核的 QQBrowser 归为 QQ 内置；
+ *     ③ 余下的 MQQBrowser / QQBrowser 才是独立 QQ 浏览器 → 自动跳 qq-browser-report.html；
+ *     ④ 专题页自身不跳，只给 <html> 打 data-sxg-qq-browser="1" 亮出顶部说明条。
+ *
+ * v18（2026-11-23，QQ 浏览器跳专题页的初版；判定粒度过粗，已被 v19 取代）：
+ *   微信 / 企业微信 / QQ 内置沿用全屏硬拦截，独立 QQ 浏览器跳专题页，
+ *   跳转目标由脚本 src 反推仓库根，目录页、index.html、brand 子目录页都落到同一个专题页。
+ *
  *
  * v17（2026-11-20 历史口径，其中「QQ 浏览器硬拦截」一条已被 v18 取代）：
  *   站长原话：不要再「不管」厂商浏览器——「能检测到的话，就在原本乌克兰那个位置，
@@ -99,14 +104,43 @@
     var ua = navigator.userAgent || '';
     var doc = document;
     var root = doc.documentElement;
-    var VERSION = 'v18';
+    var VERSION = 'v19';
 
-    var isWeChat = /MicroMessenger/i.test(ua) || /wxwork/i.test(ua);
-    var isQQ = /\bQQ\/[\d.]+/.test(ua) || /\/Tim\//.test(ua);
-    // QQ 浏览器：手机版 MQQBrowser + 电脑版 QQBrowser/10.x（电脑版不带 M 前缀，须一并覆盖）
-    var isQQBrowser = /MQQBrowser/i.test(ua) || /QQBrowser/i.test(ua);
-    // 命中来源：UA 明确标识为真，反伪装可疑分兜底也算（两者都跳专题页，仅诊断面板区分）
+    // —— 微信 / QQ 客户端「内置浏览器」标记（最高优先级，先判它们）——
+    // 手机 QQ 的内置 WebView 用的是 QQ 浏览器 X5 内核，UA 里同样带 MQQBrowser，
+    // 只认「QQBrowser」字样会把 QQ 误当成 QQ 浏览器。所以先认 IM 客户端自己的标记：
+    //   · 安卓 QQ：V1_AND_SQ_… / 「QQ/x.x.x」 / X5 内核的 MQQBrowser/6.2 + TBS/
+    //   · 苹果 QQ：V1_IPH_SQ_… / 「QQ/x.x.x」
+    //   · TIM：    /Tim/
+    // 这些标记只出现在客户端内嵌环境，独立 QQ 浏览器客户端不会带（手机版是
+    // MQQBrowser/<新版本> + COVC，电脑版是 Core/1.xx + QQBrowser/1x）。
+    // 电脑 QQ 与电脑版 QQ 浏览器同源（同为 QBCore），UA 只差内核年代：客户端长期停在
+    // Core/1.53~1.86（Chromium 53~86），独立 QQ 浏览器 12/13 已是 Core/1.94 以上，
+    // 故电脑端按 Core 内核版本兜底，旧内核的 QQBrowser 归到 QQ 内置。
+    // 纯函数，便于自检脚本原样抠出来做判定矩阵。
+    function sxgQQClassify(ua) {
+      var wechat = /MicroMessenger/i.test(ua) || /wxwork/i.test(ua);
+      var inApp = /\bV1_[A-Z]+_SQ_/i.test(ua) || /\bQQ\/[\d.]+/.test(ua) || /\bTim\//.test(ua)
+        || /MQQBrowser\/6\.2/i.test(ua) || /\bTBS\/[\d.]+/i.test(ua);
+      var core = 0;
+      var coreM = ua.match(/Core\/1\.(\d{2,3})/);
+      if (coreM) core = parseInt(coreM[1], 10);
+      var desktopClient = /Windows NT|Macintosh/i.test(ua) && /QQBrowser/i.test(ua)
+        && core > 0 && core <= 90;
+      // 独立 QQ 浏览器：手机版 MQQBrowser + 电脑版 QQBrowser/10.x（电脑版不带 M 前缀，须一并覆盖）
+      var browser = (/MQQBrowser/i.test(ua) || /QQBrowser/i.test(ua))
+        && !wechat && !inApp && !desktopClient;
+      return { wechat: wechat, inApp: inApp || desktopClient, browser: browser, core: core };
+    }
+    var qqClass = sxgQQClassify(ua);
+    var isWeChat = qqClass.wechat;
+    var isQQ = qqClass.inApp;
+    var isQQBrowser = qqClass.browser;
+    var coreChromium = qqClass.core;
+    // 命中来源：UA 明确标识为真，反伪装可疑分兜底也算（两者都按 QQ 浏览器处理，仅诊断面板区分）
     var qqBrowserByUA = isQQBrowser;
+    // 独立 QQ 浏览器判定的 UA 依据（诊断面板用）
+    var qqBrowserToken = /MQQBrowser/i.test(ua) || /QQBrowser/i.test(ua);
 
     // —— 专题页地址推导（v18）——
     // 用本脚本自己的 src 反推仓库根，而不是拼相对路径：目录页 / index.html / brand 子目录
@@ -338,6 +372,8 @@
       qqInApp: isQQ,
       qqBrowser: isQQBrowser,
       qqBrowserByUA: qqBrowserByUA,
+      qqBrowserToken: qqBrowserToken,
+      coreChromium: coreChromium,
       onReportPage: onReportPage,
       reportTarget: reportBase + REPORT_NAME
     };
