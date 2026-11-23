@@ -89,8 +89,9 @@
   footer .wrap p{margin:0 0 8px;font-size:13px;line-height:1.9}
   footer a{color:#9fe3d6}
 
-  /* QQ 浏览器访客专用顶部说明条：仅当 ua-guard.js 命中 QQ 浏览器、
-     给 <html> 打上 data-sxg-qq-browser 后才显示；普通浏览器完全看不到。 */
+  /* QQ 浏览器访客专用顶部说明条：ua-guard.js 命中 QQ 浏览器时先给 <html> 打上
+     data-sxg-qq-browser，再把访客替换到本页；本页自身不再跳转，只负责亮出这条说明。
+     普通浏览器完全看不到。 */
   #qq-browser-notice{display:none}
   html[data-sxg-qq-browser="1"] #qq-browser-notice{
     display:block;background:#fef3c7;border-bottom:1px solid #f4cf86;color:#7f1d1d}
@@ -105,9 +106,10 @@
     .hero{padding-top:38px}
   }
 </style>
-<!-- UA 分流：微信/QQ 内置 → 全屏硬拦截；QQ 浏览器 → 本页放行并亮出顶部说明条。 -->
+<!-- UA 分流 v18：微信/QQ 内置 → 全屏硬拦截；独立 QQ 浏览器 → 自动跳转到本页，
+     并在本页顶部亮出 QQ 浏览器专属说明条（本页自身不再跳，避免自我循环）。 -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5270311938787209" crossorigin="anonymous"></script>
-<script src="./ua-guard.js?v=17"></script>
+<script src="./ua-guard.js?v=18"></script>
   <!-- SXG-AISEO:BEGIN -->
 <meta property="og:site_name" content="双休购 ShuangxiuGo" />
 <meta name="twitter:card" content="summary" />

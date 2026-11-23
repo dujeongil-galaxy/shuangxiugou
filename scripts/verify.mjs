@@ -11232,15 +11232,22 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     '§38b 微信/QQ 内置浏览器硬拦截层文案保留（口径未回退）',
     '内置浏览器文案丢失 → 硬拦截层成了无说明的空壳');
 
-  // 38j. QQ 浏览器分流：v16 起改为直接全屏拦截（原「跳专题页 + 专题页自放行」已撤销），专题页只作说明存档
+  // 38j. QQ 浏览器分流：v18（2026-11-23）恢复「命中即跳专题页」，微信/QQ 内置仍全屏拦截，
+  //      专题页自身不再跳（防自我循环），只按 UA 属性亮顶部说明条。
   {
     var rpt38src = exists('qq-browser-report.html') ? read('qq-browser-report.html') : '';
+    check(/location\.replace\(reportBase \+ REPORT_NAME\)/.test(ug38)
+        && /if \(isQQBrowser && !isWeChat && !isQQ\)/.test(ug38)
+        && /if \(!onReportPage\)/.test(ug38)
+        && /var REPORT_NAME = 'qq-browser-report\.html';/.test(ug38)
+        && /if \(isWeChat \|\| isQQ\) action = 'hard-block';/.test(ug38),
+      '§38j 独立 QQ 浏览器命中后自动跳专题页，微信/QQ 内置仍硬拦截（2026-11-23 恢复引导口径）',
+      '跳转丢失 → QQ 浏览器又落到「复制地址到系统浏览器」拦截页；跳转未排除专题页 → 自我循环');
     check(!/location\.replace\(base \+ 'qq-browser-report\.html'\)/.test(ug38)
-        && /isWeChat \|\| isQQ \|\| isQQBrowser/.test(ug38)
         && /data-sxg-ua-block/.test(ug38)
         && /qq-browser-report\.html/.test(rpt38src),
-      '§38j QQ 浏览器命中后直接全屏拦截（2026-11-20 撤销跳专题页，专题页降为说明存档）',
-      '跳转逻辑残留或硬拦截丢失 → QQ 浏览器又能进正站，或被锁在专题页自我跳转');
+      '§38j 旧版拼 base 的跳转写法已清掉，硬拦截层仍在岗，专题页仍引用 UA 分流',
+      '旧写法残留 → 目录页跳转目标可能拼错；硬拦截被删 → 微信/QQ 内置访客能直接进正站');
     check(/data-sxg-qq-browser="1"\] #qq-browser-notice/.test(rpt38src)
         && /检测到您正在使用 QQ 浏览器访问本站/.test(rpt38src)
         && /id="qq-browser-notice"/.test(rpt38src),
@@ -11326,9 +11333,9 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
       '韩国浏览器特征进了黑名单正则 → 韩国访客被误提示');
     // ② 分流分支：非微信/QQ/QQ浏览器时才走黑名单判定，三类既有口径在上游不变
     check(has38m('if (!isWeChat && !isQQ && !isQQBrowser && spoofScore >= 3) isQQBrowser = true;')
-        && has38m('if (isWeChat || isQQ || isQQBrowser) {'),
-      '§38m 厂商判定被 !isWeChat/!isQQ/!isQQBrowser 守卫（三类既有口径不被改写）',
-      '判定被提到上游 → 微信/QQ 内置或 QQ 浏览器落到提示分支，硬拦口径被破坏');
+        && has38m('if (isQQBrowser && !isWeChat && !isQQ) {'),
+      '§38m 厂商判定被 !isWeChat/!isQQ/!isQQBrowser 守卫，QQ 浏览器分支再排除内置浏览器（三类口径不被改写）',
+      '判定被提到上游 → 微信/QQ 内置落到提示分支，硬拦口径被破坏');
     // ③ 持续提示：固定不可关闭 + 只挂顶部条不隐藏 body + 无任何 cookie 记忆
     check(/id = 'sxg-browser-notice'/.test(ug38)
         && /header\.nextSibling|anchor\.nextSibling/.test(ug38)
@@ -11421,15 +11428,15 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
     const withGuard38 = htmlRefs38.filter((p) => {
       try { return /ua-guard\.js\?v=/.test(readFileSync(join(ROOT, p), 'utf8')); } catch { return false; }
     });
-    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=(?:[1-9]|10|11|12|13|14|15|16)\b/.test(readFileSync(join(ROOT, p), 'utf8')));
-    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=17\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const oldV38 = withGuard38.filter((p) => /ua-guard\.js\?v=(?:[1-9]|1[0-7])\b/.test(readFileSync(join(ROOT, p), 'utf8')));
+    const newV38 = withGuard38.filter((p) => /ua-guard\.js\?v=18\b/.test(readFileSync(join(ROOT, p), 'utf8')));
     check(withGuard38.length >= 199 && oldV38.length === 0 && newV38.length === withGuard38.length,
-      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=17、无残留 v=1~16`,
+      `§38c 全站 ${withGuard38.length} 页 ua-guard 引用统一 v=18、无残留 v=1~17`,
       `旧版 ${oldV38.length} 页 / 新版 ${newV38.length} 页 → 缓存不刷新，用户拿到旧拦截脚本`);
     const notes38 = exists('notes.html') ? read('notes.html') : '';
     const notesAt38 = notes38.indexOf('ua-guard.js');
     const bodyAt38 = notes38.indexOf('<body');
-    check(notesAt38 > 0 && /ua-guard\.js\?v=17/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
+    check(notesAt38 > 0 && /ua-guard\.js\?v=18/.test(notes38) && bodyAt38 > 0 && notesAt38 < bodyAt38,
       '§38c notes.html 已挂 ua-guard 且引用位于 body 之前（全站无例外、同步生效）',
       'notes 未挂 / 版本不对 / 放到 body 之后 → 加密笔记页在 QQ 浏览器里正文先闪现');
   }
@@ -11557,7 +11564,7 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   const sm38 = exists('sitemap.xml') ? read('sitemap.xml') : '';
   const nav38 = exists('nav-menu.js') ? read('nav-menu.js') : '';
   check(rpt38.length > 0
-      && /ua-guard\.js\?v=17/.test(rpt38)
+      && /ua-guard\.js\?v=18/.test(rpt38)
       && /ai-link\.js\?v=\d+/.test(rpt38)
       && /sxg-legal/.test(rpt38)
       && /<title>[^<]*QQ 浏览器[^<]*<\/title>/.test(rpt38),
