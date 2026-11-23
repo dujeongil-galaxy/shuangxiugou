@@ -4,7 +4,7 @@
    做什么
    ------
    品牌页右侧聊天挂件（ai-chat.js）的后端：接收用户问题，调 Workers AI
-   的 GLM-4.7-flash 生成回答，重点回答劳动法、双休口径与简历撰写相关问题。
+   的 gpt-oss-120b 生成回答，重点回答劳动法、双休口径与简历撰写相关问题。
 
    为什么必须有这一层（而不是前端直调大模型 API）
    ------------------------------------------------
@@ -12,7 +12,7 @@
    = 写进公开仓库 = 任何人 Network 面板一抄就能刷爆额度。
    Cloudflare Worker 的 env.AI binding 不经过任何 key——模型调用
    绑定在 Worker 环境里，前端只 fetch 本 Worker 的 URL，key 永不
-   出现在仓库、页面、请求头。免费层每日 1 万 neurons（GLM-4.7-flash
+   出现在仓库、页面、请求头。免费层每日 1 万 neurons（gpt-oss-120b
    约 340 次标准对话）够本站用量。
 
    安全设计（全部在此层做，前端不可信）
@@ -167,7 +167,7 @@ export default {
         vision: true,
         visitorIp: request.headers.get('CF-Connecting-IP')
           || request.headers.get('x-forwarded-for') || '未知',
-        textModel: '@cf/zai-org/glm-4.7-flash',
+        textModel: '@cf/openai/gpt-oss-120b',
         visionModel: '@cf/meta/llama-3.2-11b-vision-instruct',
         stream: true, // 2026-11-22：新版支持 /api/stream 逐字输出；老 Worker 无此字段 → 前端降级回非流式
         maxParts: 8,
@@ -283,8 +283,8 @@ export default {
     const hasImage = parts.some((p) => p.type === 'image_url');
 
     // ---------- 调 Workers AI（env.AI binding，零 key）----------
-    // 纯文本仍走 glm-4.7-flash（免费层够用）；带图切 llama-3.2-11b-vision-instruct。
-    const MODEL_TEXT = '@cf/zai-org/glm-4.7-flash';
+    // 纯文本走 gpt-oss-120b（非过度推理、政治话题中立作答、中文可用）；带图切 llama-3.2-11b-vision-instruct。
+    const MODEL_TEXT = '@cf/openai/gpt-oss-120b';
     const MODEL_VISION = '@cf/meta/llama-3.2-11b-vision-instruct';
     const model = hasImage ? MODEL_VISION : MODEL_TEXT;
     const userContent = parts.length
@@ -297,7 +297,7 @@ export default {
     ];
 
     // ---------- 流式逐字输出（2026-11-22 站长定规）----------
-    // 为什么单独一个端点：GLM-4.7-flash 是推理模型，整段答完才返回 → 用户干等十几秒、
+    // 为什么单独一个端点：gpt-oss-120b 带推理，整段答完才返回 → 用户干等十几秒、
     // 看起来像卡死。流式让首字几秒内就到、边生成边显示，感知延迟大幅下降。
     // 契约：与原 `/` 端点共用**完全相同**的校验 / 限流 / systemPrompt / 模型，一个字不改——
     // 中立规则、官方网址、190 家数据快照在两条路径上逐字一致，回答口径不会出现分歧。
@@ -337,7 +337,7 @@ export default {
         max_tokens: hasImage ? 1200 : 3000,
       });
 
-      // GLM-4.7-flash 是 OpenAI 兼容格式，返回 choices[0].message.content
+      // gpt-oss-120b 是 OpenAI 兼容格式，返回 choices[0].message.content
       // 兼容旧格式 result.response（部分老模型用）
       let answer = '';
       if (result && result.response) {

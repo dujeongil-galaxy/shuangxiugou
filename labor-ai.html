@@ -306,7 +306,7 @@ var CFG = {
    带图时 CF 会切到视觉模型，页面另行标注。 */
 var MODEL_LABEL = {
   cn: "Qwen3-VL-8B-Instruct（硅基流动）",
-  cf: "GLM-4.7-Flash（Cloudflare Workers AI）"
+  cf: "GPT-OSS-120B（Cloudflare Workers AI）"
 };
 
 /* 门槛（2026-11-21 站长改版）：文字问答不设 Star 门槛，两条线路都能直接用。
@@ -1084,7 +1084,7 @@ async function askCF(question, history, parts, onPiece){
           var obj;
           try { obj = JSON.parse(data); } catch (e2) { continue; }
           // 双格式兼容：Workers AI 老式帧是 {response:"..."}；
-          // GLM-4.7-flash 是 OpenAI 兼容模型，流式帧可能是 {choices:[{delta:{content:"..."}}]}。
+          // gpt-oss-120b 是 OpenAI 兼容模型，流式帧可能是 {choices:[{delta:{content:"..."}}]}。
           // 两种都认，任一种都能逐字渲染——上游换格式也不会丢字。
           var piece = obj && obj.response;
           if (!piece && obj && obj.choices && obj.choices[0]) {

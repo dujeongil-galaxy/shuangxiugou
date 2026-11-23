@@ -111,8 +111,8 @@ async function main() {
 
     check('AI 恰好调用一次', env.calls.length === 1);
     const call = env.calls[0];
-    check('model ID = @cf/zai-org/glm-4.7-flash', call.modelId === '@cf/zai-org/glm-4.7-flash');
-    check('max_tokens = 3000（GLM-4.7-flash 推理模型需留余量）', call.params.max_tokens === 3000);
+    check('model ID = @cf/openai/gpt-oss-120b', call.modelId === '@cf/openai/gpt-oss-120b');
+    check('max_tokens = 3000（纯文本留足正文余量）', call.params.max_tokens === 3000);
 
     const msgs = call.params.messages;
     check('system 提示词在 messages[0]', msgs[0].role === 'system');
@@ -486,7 +486,7 @@ async function main() {
     check('SSE 以 [DONE] 收尾', /data: \[DONE\]/.test(sbody), sbody.slice(-40));
     check('AI.run 收到 stream:true 且模型与文本线路一致',
       senv.calls.length === 1 && senv.calls[0].params.stream === true
-      && senv.calls[0].modelId === '@cf/zai-org/glm-4.7-flash', senv.calls);
+      && senv.calls[0].modelId === '@cf/openai/gpt-oss-120b', senv.calls);
     check('流式提示词与非流式同源（含敏感话题锁死条款 + 190 家数据 + 官方网址）',
       /【争议与公共话题·中立不站队/.test(senv.calls[0].params.messages[0].content)
       && /BRAND|评级|双休/.test(senv.calls[0].params.messages[0].content)

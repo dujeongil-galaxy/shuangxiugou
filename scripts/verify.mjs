@@ -6858,9 +6858,9 @@ section('21c. 首页滑到底部按钮');
       check(/var MODEL_LABEL\s*=\s*\{/.test(la)
         && /model:\s*"Qwen\/Qwen3-VL-8B-Instruct"/.test(la)
         && /Qwen3-VL-8B-Instruct/.test(la)
-        && /GLM-4\.7-Flash/.test(la)
-        && /@cf\/zai-org\/glm-4\.7-flash/.test(workerKv),
-        '§21h-16 模型显示名与真实模型一致：国内 Qwen3-VL-8B、CF GLM-4.7-Flash（worker 回报同名）',
+        && /GPT-OSS-120B/.test(la)
+        && /@cf\/openai\/gpt-oss-120b/.test(workerKv),
+        '§21h-16 模型显示名与真实模型一致：国内 Qwen3-VL-8B、CF GPT-OSS-120B（worker 回报同名）',
         '页面写的模型名与实际调用的不符 → 用户被误导，公开反而变成欺骗');
       check(/当前模型：/.test(routeBody)
         && /一经取消即拉黑/.test(routeBody)
@@ -7514,12 +7514,12 @@ section('21c. 首页滑到底部按钮');
   check(/黑名单 IP → 403/.test(read('scripts/test-ai-worker.cjs'))
     && /黑名单命中不调 AI/.test(read('scripts/test-ai-worker.cjs')),
     '§21g Worker 单测覆盖黑名单命中 403 + 不烧 neurons');
-  // 输出上限：纯文本 3000（GLM-4.7-flash reasoning 在争议话题上易把预算吃光，留足空间给正文）；带图压到 1200（视觉模型输出单价 1.7 倍，省额度）
+  // 输出上限：纯文本 3000（留足空间给正文与推理）；带图压到 1200（视觉模型输出单价 1.7 倍，省额度）
   check(/hasImage \? 1200 : 3000/.test(worker),
-    'max_tokens 分流：纯文本 3000（GLM-4.7-flash reasoning 留空间）/ 带图 1200（视觉模型省 neuron）');
+    'max_tokens 分流：纯文本 3000 / 带图 1200（视觉模型省 neuron）');
   // 模型
-  check(/@cf\/zai-org\/glm-4\.7-flash/.test(worker),
-    '模型 ID = @cf/zai-org/glm-4.7-flash（Workers AI 免费层）');
+  check(/@cf\/openai\/gpt-oss-120b/.test(worker),
+    '模型 ID = @cf/openai/gpt-oss-120b（Workers AI 免费层）');
   // 系统提示词的合规口径
   check(/不构成对企业的法律定性/.test(worker) && /12333/.test(worker),
     '系统提示词含站点口径与 12333 转介（合规两件套）');

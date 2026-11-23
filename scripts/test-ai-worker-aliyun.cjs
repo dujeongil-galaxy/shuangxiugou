@@ -124,7 +124,7 @@ async function main() {
     check('打到百炼兼容模式端点', /dashscope\.aliyuncs\.com\/compatible-mode\/v1\/chat\/completions/.test(call.url), call.url);
     check('Authorization 用 Bearer Key', /^Bearer sk-test-key$/.test(call.opts.headers.Authorization), call.opts.headers.Authorization);
     const sent = JSON.parse(call.opts.body);
-    check('max_tokens = 2000（对齐 CF 版）', sent.max_tokens === 2000, sent.max_tokens);
+    check('max_tokens = 3000（对齐 CF 版）', sent.max_tokens === 3000, sent.max_tokens);
     check('请求体不含 Key（Key 只在头里）', !/sk-test-key/.test(call.opts.body));
 
     const msgs = sent.messages;
@@ -206,10 +206,10 @@ async function main() {
     const aliyunSrc = fs.readFileSync(path.join(ROOT, 'ai-worker-aliyun/index.mjs'), 'utf8');
     keys.forEach(k => check('CF 版用到的 error 串「' + k + '」本实现也有', aliyunSrc.includes("'" + k + "'")));
     check('CF 版本身仍含 daily-quota-exhausted 口径', CF_WORKER_SRC.includes('daily-quota-exhausted'));
-    // 2026-11-21 CF 版加了视觉分支：纯文本 2000 / 带图 1200；阿里云线路仍为纯文本 2000，
-    // 所以用「保留 2000 这个值」对齐，而不是要求两端写法逐字相同。
-    check('两端纯文本 max_tokens 同为 2000（CF 带图另压到 1200）',
-      /max_tokens: 2000/.test(aliyunSrc) && /1200 : 2000/.test(CF_WORKER_SRC));
+    // 2026-11-23：纯文本抬到 3000（争议话题留足正文空间）/ 带图 1200；
+    // 阿里云线路仍为纯文本 3000，所以用「保留 3000 这个值」对齐，而不是要求两端写法逐字相同。
+    check('两端纯文本 max_tokens 同为 3000（CF 带图另压到 1200）',
+      /max_tokens: 3000/.test(aliyunSrc) && /1200 : 3000/.test(CF_WORKER_SRC));
   }
 
   console.log('\n========== 结果：' + passed + ' 项通过，' + failed + ' 项失败 ==========');
