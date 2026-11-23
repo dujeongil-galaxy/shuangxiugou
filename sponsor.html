@@ -575,7 +575,6 @@
         { id: 'wemix',   name: 'WEMIX PLAY（娱美德）', uid: null, noUid: true },
         // 个人钱包收款，无需交易所 UID
         { id: 'marblex', name: 'Marblex Wallet（网石）', uid: null, noUid: true },
-        { id: 'conx',    name: 'Conx Games（com2us）', uid: null, noUid: true },
         { id: 'mixin',   name: 'MIXIN（Private Crypto Wallet）', uid: null, noUid: true }
       ];
 
@@ -584,7 +583,7 @@
       // chains[].ex 指定该链归属的交易所；未标注则所有已开通的交易所均显示
       //   · Gate 未配置 uid，暂置灰，故通用链当前在页面上无可用交易所
       //   · BEP20 的 BTC 地址仅币安使用（地址与 Gate 的 BRC20 不同）
-      // exCoin 表示该币种只属于某个交易所（如 MBX / XIN / XPLA / WEMIX）
+      // exCoin 表示该币种只属于某个交易所（如 MBX / XIN / WEMIX）
       // notice 表示公告型币种：不提供收款地址，只显示说明
       // addrs 表示多地址：一个币种下多条收款记录，各带网络名与二维码
       var COINS = [
@@ -811,21 +810,6 @@
           note: '请<b>不要</b>向我的地址传送除 <b>MBX、MBXL</b> 之外的其他代币。'
         },
         {
-          id: 'xpla',
-          name: 'XPLA',
-          exCoin: 'conx',
-          chains: [
-            {
-              id: 'xpla-native',
-              name: 'XPLA',
-              addr: 'xpla19jqg85mpzahxf4zwenumq3esmcwsltkduqch0r',
-              hlSpec: [6, 6],
-              qr: './crypto-qr/xpla.png',
-              note: '请选择 <b>XPLA</b> 网络发送，否则无法到账。'
-            }
-          ]
-        },
-        {
           id: 'xin',
           name: 'XIN',
           exCoin: 'mixin',
@@ -885,8 +869,9 @@
       var selCoin = null;
       var selChain = null;
 
-      /* 二维码生成缓存：地址在用户设备上生成过就记住（cookie，跟随设备）。
-         同一地址再次出现直接显示；地址变了才重新播 2-3 秒「生成中」动画。 */
+      /* 二维码地址缓存：地址在用户设备上生成过就记入 cookie（跟随设备，保留 24 小时）。
+         2026-11-23 站长指令：缓存只作记录，不再用来跳过动画——下次进来仍要
+         「假装正在生成」播一次 2-3 秒随机动画再显形。 */
       var QR_COOKIE = 'sxg_qr_addr=';
       function qrSeen(addr) {
         try {
@@ -911,12 +896,13 @@
             }
           }
           if (seen.indexOf(addr) === -1) seen.push(addr);
-          // 365 天，path=/ 全站；地址多为 base58/hex，逗号不会出现在地址里
-          document.cookie = QR_COOKIE + seen.join(',') + ';path=/;max-age=31536000;SameSite=Lax';
+          // 24 小时（1440 分钟 = 86400 秒），path=/ 全站；地址多为 base58/hex，逗号不会出现在地址里
+          document.cookie = QR_COOKIE + seen.join(',') + ';path=/;max-age=86400;SameSite=Lax';
         } catch (e) {}
       }
       var qrTimers = {};   // addr -> timer，切走时取消未完成的动画
-      /* 显示二维码：若该地址已缓存过就直接出图，否则先播动画再出图。 */
+      /* 显示二维码（2026-11-23 新口径）：无论该地址是否缓存过，每次都先播一次
+         2-3 秒随机「生成中」动画再显形——下次进来仍假装正在生成。缓存只记录不跳过。 */
       function revealQr(el, addr, src, alt) {
         var gen = document.getElementById('qrGen');
         if (qrTimers[addr]) { clearTimeout(qrTimers[addr]); delete qrTimers[addr]; }
@@ -934,7 +920,7 @@
           qrRemember(addr);
           delete qrTimers[addr];
         };
-        if (qrSeen(addr)) { show(); return; }
+        // 不再因缓存命中而跳过动画：每次都走下面这段随机延迟再出图。
         el.style.visibility = 'hidden';
         if (overlay) overlay.hidden = false;
         var delay = 2000 + Math.floor(Math.random() * 1001); // 2-3 秒
@@ -1019,6 +1005,9 @@
               Object.keys(qrTimers).forEach(function (k) { clearTimeout(qrTimers[k]); });
               qrTimers = {};
               selEx = ex.id;
+              // 切换交易所：币种与网络都退回未选，等用户主动点（不再默认带出 Ethereum/ERC20）
+              selCoin = null;
+              selChain = null;
               renderEx(); renderCoin(); renderChain(); renderCoinInfo(); renderInvite();
             };
           }
@@ -1031,7 +1020,7 @@
       // 其余显示含至少一条可用链的通用币种。
       function availableCoins() {
         var ex = findEx(selEx);
-        // 个人钱包收款（noUid，如 WEMIX PLAY / Marblex / Conx / MIXIN）只认自己的
+        // 个人钱包收款（noUid，如 WEMIX PLAY / Marblex / MIXIN）只认自己的
         // 专属币种。交易所通用币种（ETH/USDT/USDC/SOL 等）与它们无关，
         // 混进来会让用户以为这些钱包能收那些币。
         var walletOnly = !!(ex && ex.noUid);
@@ -1050,8 +1039,11 @@
 
       function renderCoin() {
         var list = availableCoins();
-        if (!list.some(function (c) { return c.id === selCoin; })) {
-          selCoin = list.length ? list[0].id : null;
+        // 2026-11-23 站长指令：币种不再默认选中（原来自动选第一条 Ethereum）。
+        // 若当前选中的币种已不在可用列表（切换交易所所致），退回未选而非自动选第一条。
+        if (selCoin && !list.some(function (c) { return c.id === selCoin; })) {
+          selCoin = null;
+          selChain = null;
         }
         var box = document.getElementById('coinOpts');
         box.innerHTML = '';
@@ -1065,6 +1057,8 @@
           b.onclick = function () {
             Object.keys(qrTimers).forEach(function (k) { clearTimeout(qrTimers[k]); });
             qrTimers = {};
+            // 换币种：网络退回未选，等用户主动点（不再默认带出 ERC20）
+            selChain = null;
             selCoin = c.id; renderCoin(); renderChain(); renderCoinInfo();
           };
           box.appendChild(b);
@@ -1090,11 +1084,10 @@
           return;
         }
         // 链名已下沉到本菜单，故即使只有一条链也要显示（让用户明确看到走哪个网络）
-        if (!list.some(function (ch) { return ch.id === selChain; })) {
-          // 默认选第一条「地址已配置」的链；
-          // 全都还没配地址时（pending 占位）才退而选第一条
-          var ready = list.filter(function (ch) { return ch.addr; });
-          selChain = (ready[0] || list[0]).id;
+        // 2026-11-23 站长指令：网络不再默认选中（原来自动选 ERC20）。
+        // 若当前选中的链已不在列表（换币种所致），退回未选，等用户主动点。
+        if (selChain && !list.some(function (ch) { return ch.id === selChain; })) {
+          selChain = null;
         }
         field.style.display = '';
         box.innerHTML = '';
@@ -1148,8 +1141,9 @@
 
       function renderCoinInfo() {
         var c = findCoin(selCoin);
-        // 用户尚未主动选交易所：二维码/地址/网络都不显示
-        if (!selEx || !c) {
+        // 用户尚未主动选交易所/币种/网络：二维码/地址都不显示。
+        // 2026-11-23：币种与网络不再默认选中，chains 型币种没点网络前也隐藏，避免露出空白二维码框。
+        if (!selEx || !c || (c.chains && !currentChain())) {
           var wrap0 = document.getElementById('qrWrap');
           if (wrap0) wrap0.style.display = 'none';
           document.getElementById('addr').parentNode.style.display = 'none';

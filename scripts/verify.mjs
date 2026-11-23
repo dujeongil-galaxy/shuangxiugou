@@ -11144,9 +11144,9 @@ section('37b. 随笔强制置顶与目录日期、打赏二维码假生成、邀
     && !/var selEx = 'gate';/.test(sp37b),
     '§37b 打赏页不再默认勾选 Gate（selEx 初值 null）',
     '默认 gate → 一进来就高亮交易所并出二维码，违反「不主动点击不显示」');
-  check(/if \(!selEx \|\| !c\)/.test(sp37b)
+  check(/if \(!selEx \|\| !c \|\| \(c\.chains && !currentChain\(\)\)\)/.test(sp37b)
     && /wrap0\.style\.display = 'none'/.test(sp37b),
-    '§37b 未选交易所时隐藏二维码（qrWrap display:none）',
+    '§37b 未选交易所/币种/网络时隐藏二维码（qrWrap display:none）',
     '未选仍出二维码 → 站长明确要求「不主动点击下面就不显示」');
   check(/function revealQr/.test(sp37b)
     && /二维码生成中/.test(sp37b)
@@ -11154,11 +11154,26 @@ section('37b. 随笔强制置顶与目录日期、打赏二维码假生成、邀
     '§37b 二维码先播 2-3 秒「生成中」再显形（随机 2000~3000ms）',
     '动画/时长缺失 → 点击后瞬间出图或卡死，假生成效果没有');
   check(/var QR_COOKIE = 'sxg_qr_addr=';/.test(sp37b)
-    && /function qrSeen/.test(sp37b) && /function qrRemember/.test(sp37b)
-    && /max-age=31536000/.test(sp37b)
-    && /if \(qrSeen\(addr\)\) \{ show\(\); return; \}/.test(sp37b),
-    '§37b 生成过的地址存 cookie（365 天），同址再次出现直接出图不重播',
-    '无 cookie 记忆 → 每次切回来都重播动画，或地址变了也不重新生成');
+    && /function qrRemember/.test(sp37b)
+    && /max-age=86400/.test(sp37b)
+    && !/max-age=31536000/.test(sp37b),
+    '§37b 地址缓存 cookie 只保留 24 小时（86400 秒，非 365 天）',
+    '缓存超 24 小时 → 站长明确「缓存只保留 1440 分钟」落空');
+  check(!/if \(qrSeen\(addr\)\) \{ show\(\); return; \}/.test(sp37b)
+    && /不再因缓存命中而跳过动画/.test(sp37b),
+    '§37b 二维码不再因缓存命中跳过动画，每次进来都重播生成动画',
+    '缓存命中直接出图 → 违反「下次进来还是假装正在生成」');
+  // 图5b（2026-11-23 站长指令）：币种/网络都不再默认选中；com2us 整条撤下。
+  check(/var selCoin = null;/.test(sp37b)
+    && /var selChain = null;/.test(sp37b)
+    && !/selCoin = list\.length \? list\[0\]\.id : null/.test(sp37b)
+    && !/selChain = \(ready\[0\] \|\| list\[0\]\)\.id/.test(sp37b)
+    && /selCoin = null;[\s\S]{0,80}selChain = null;/.test(sp37b),
+    '§37b 币种与网络均不默认选中（原自动选 Ethereum/ERC20 的逻辑删除）',
+    '自动选第一条 → 一进来看看就高亮币种+网络，违反「不要默认就去选」');
+  check(!/conx/.test(sp37b) && !/com2us/.test(sp37b) && !/exCoin: 'conx'/.test(sp37b),
+    '§37b com2us / Conx Games 交易所与其 XPLA 专属币种整条撤下',
+    'com2us 残留或回流 → 站长明确「com2us 那个撤了」');
   // 图6（2026-11-23 撤推广）：打赏页一处第三方 AI 聊天站推广整段撤下。
   // 原「邀请码点击复制」正向断言按新口径改成负向断言：推广 DOM/CSS/复制逻辑/邀请码/域名全清零。
   check(!/ferry-promo/.test(sp37b) && !/ferryCode/.test(sp37b)
