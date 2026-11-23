@@ -150,7 +150,23 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
 .file-btn:hover{border-color:var(--brand);background:#f0f5fc}
 .file-btn.busy{opacity:.55;cursor:wait}
 .row .left{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
-.msg.user .bubble .a-shot{display:block;max-width:100%;border-radius:8px;margin-top:6px}
+/* 2026-11-23 站长改版：附件在气泡里只显示卡片 / 缩略图。
+   解析出的正文是给 AI 读的，不再倒进对话框刷屏；图片固定缩略尺寸，点开去新标签页看大图。 */
+/* 附件行单独成行并在气泡内换行，避免 pre-wrap 下多个 inline 节点没有断点而撑出气泡 */
+.msg.user .bubble .a-attach-row{display:flex;flex-wrap:wrap;max-width:100%;margin-top:2px}
+.msg.user .bubble .a-file{
+  display:inline-flex;align-items:center;gap:5px;max-width:100%;
+  margin:6px 6px 0 0;padding:5px 9px;border:1px solid rgba(255,255,255,.28);
+  border-radius:9px;background:rgba(255,255,255,.13);color:#fff;
+  font-size:11.5px;line-height:1.3;vertical-align:middle;cursor:default
+}
+.msg.user .bubble .a-file .a-fname{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msg.user .bubble .a-shot{
+  display:inline-block;width:84px;height:64px;object-fit:cover;
+  border-radius:7px;margin:6px 6px 0 0;vertical-align:middle;
+  border:1px solid rgba(255,255,255,.24);cursor:zoom-in
+}
+.msg.user .bubble .a-shot:hover{opacity:.82}
 @media(max-width:520px){
   header{padding:14px 14px 12px}h1{font-size:18px}
   main{padding:12px 10px 6px}
@@ -158,6 +174,8 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
   .chip{font-size:12.5px;padding:5px 11px}
   .bubble{font-size:14px}
   .attach-item .a-name{max-width:100px}
+  .msg.user .bubble .a-shot{width:68px;height:52px}
+  .msg.user .bubble .a-file .a-fname{max-width:104px}
 }
 </style>
 <meta name="google-adsense-account" content="ca-pub-5270311938787209">
@@ -260,7 +278,7 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
   </div>
 </main>
 
-<div class="attach-note">附件只在你的浏览器里解析，不上传到任何第三方解析服务；解析出的文字/图片会随提问一起发给所选 AI 线路，请勿包含身份证号等敏感信息。</div>
+<div class="attach-note">附件只在你的浏览器里解析，不上传到任何第三方解析服务；解析出的文字/图片会随提问一起发给所选 AI 线路，请勿包含身份证号等敏感信息。正文不在对话框展开，图片以缩略图显示、点开在新标签页查看（关闭页面即清除临时缓存）。</div>
 
 <footer>回答仅供参考，不替代专业法律意见</footer>
 
@@ -774,8 +792,74 @@ async function renderIpNotice(){
 /* 无论 CF 能力探测成功/失败/超时，都必须渲染公告——不能让安全提示卡在「正在获取」。 */
 cfSupportsVision().then(renderIpNotice, renderIpNotice);
 
+/* 2026-11-23 站长改版：用户气泡只回显本人输入的问题 + 附件卡片 / 缩略图。
+   解析出的正文是给 AI 读的，不再倒进对话框刷屏（也不让访客误以为在往上游堆文字）。 */
 function userTextForDisplay(parts){
-  return parts.map(function(p){ return p.type === 'text' ? p.text : '[图片附件]'; }).join('\n');
+  var first = parts && parts[0] && parts[0].type === 'text' ? parts[0].text : '';
+  return first || '请分析我上传的附件';
+}
+
+/* 点缩略图 → 新标签页看大图。临时图只放 sessionStorage：
+   新标签页从 opener 继承一份会话副本，关掉标签页 / 浏览器即随会话清除；
+   不写 localStorage、不落服务端。配额不足或弹窗被拦则直接开 data URL 兜底。 */
+var ZOOM_CACHE_KEY = 'sxg_zoom_tmp';
+window.addEventListener('pagehide', function(){
+  try{ sessionStorage.removeItem(ZOOM_CACHE_KEY); }catch(e){}
+});
+function openImageZoom(dataUrl, name){
+  if (!dataUrl || dataUrl.indexOf('data:image/') !== 0) return;
+  var opened = false;
+  try{
+    sessionStorage.setItem(ZOOM_CACHE_KEY, JSON.stringify({ img: dataUrl, name: name || '图片', ts: Date.now() }));
+    var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>图片预览</title>'
+      + '<style>html,body{margin:0;height:100%;background:#0f172a;display:flex;align-items:center;justify-content:center}'
+      + 'img{max-width:100%;max-height:100vh;object-fit:contain}'
+      + 'p{color:#cbd5e1;font:14px system-ui;text-align:center;padding:24px}</style></head><body>'
+      + '<p id="zoomMsg">临时缓存已清除，请回到聊天页重新点击缩略图。</p>'
+      + '<img id="zoomImg" style="display:none" alt="">'
+      + '<script>(function(){var d={};try{d=JSON.parse(sessionStorage.getItem("' + ZOOM_CACHE_KEY + '")||"{}")}catch(e){}'
+      + 'var i=document.getElementById("zoomImg");if(d.img&&d.img.indexOf("data:image/")===0){i.src=d.img;i.style.display="block";'
+      + 'document.title=(d.name||"图片")+" · 预览";document.getElementById("zoomMsg").style.display="none"}})();<\/script>'
+      + '</body></html>';
+    var url = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+    var w = window.open(url, '_blank');
+    opened = !!w;
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 15000);
+  }catch(e){}
+  if (!opened) window.open(dataUrl, '_blank');
+}
+
+/* 附件只以卡片 / 缩略图挂在用户气泡上，纯展示，不参与 AI 请求 */
+function renderBubbleAttachments(bub){
+  if (!bub) return;
+  var row = document.createElement('span');
+  row.className = 'a-attach-row';
+  attachments.forEach(function(a){
+    if (a.status !== 'done') return;
+    if (a.kind === 'image' && a.dataUrl){
+      var im = document.createElement('img');
+      im.className = 'a-shot'; im.src = a.dataUrl; im.alt = a.name;
+      im.title = '点击查看大图（新标签页）';
+      im.addEventListener('click', function(){ openImageZoom(a.dataUrl, a.name); });
+      row.appendChild(im);
+    } else {
+      var chip = document.createElement('span');
+      chip.className = 'a-file';
+      chip.title = '附件正文已随提问发送给 AI，不在对话框展开';
+      var ico = document.createElement('span'); ico.textContent = a.kind === 'pdf' ? '📄' : '📝';
+      var nm = document.createElement('span'); nm.className = 'a-fname'; nm.textContent = a.name;
+      chip.appendChild(ico); chip.appendChild(nm);
+      row.appendChild(chip);
+    }
+    (a.dataUrls || []).forEach(function(u, idx){
+      var im2 = document.createElement('img');
+      im2.className = 'a-shot'; im2.src = u; im2.alt = a.name + ' 第' + (idx + 1) + '页';
+      im2.title = '点击查看大图（新标签页）';
+      im2.addEventListener('click', function(){ openImageZoom(u, a.name + ' 第' + (idx + 1) + '页'); });
+      row.appendChild(im2);
+    });
+  });
+  if (row.children.length) bub.appendChild(row);
 }
 
 document.getElementById("chips").addEventListener("click", function(e){
@@ -828,19 +912,8 @@ async function doSend(){
   var hasImage = partsHasImage(parts);
   var display = userTextForDisplay(parts);
   addMsg("user", display);
-  // 把图片缩略图挂到刚发出的用户气泡上（不参与 AI 请求，纯展示）
-  var lastBub = chat.lastElementChild.querySelector('.bubble');
-  if (hasImage){
-    attachments.forEach(function(a){
-      if (a.kind === 'image' && a.dataUrl){
-        var im = document.createElement('img'); im.className = 'a-shot'; im.src = a.dataUrl;
-        lastBub.appendChild(im);
-      }
-    });
-    (attachments[0] && attachments[0].dataUrls || []).forEach(function(u){
-      var im = document.createElement('img'); im.className = 'a-shot'; im.src = u; lastBub.appendChild(im);
-    });
-  }
+  // 附件卡片 / 图片缩略图挂到刚发出的用户气泡上（不参与 AI 请求，纯展示）
+  renderBubbleAttachments(chat.lastElementChild.querySelector('.bubble'));
   var userContent = parts;
   chatLog.push({role:"user", content: userContent});
   var bub = addMsg("ai", "");

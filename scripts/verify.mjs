@@ -7376,6 +7376,37 @@ section('21c. 首页滑到底部按钮');
       '§21u Worker 只收 data:image base64（禁 http 外链防 SSRF），限 8 段 / 7MB',
       '放行 http 链接 → Worker 被当图片代理 SSRF；不限体积 → 单请求打爆内存');
   }
+  // ---- 21u-2. 附件在气泡里只显示卡片/缩略图 + 点图新标签页看大图（2026-11-23）----
+  // 站长实测：上传 DOCX 后整段解析正文被回显进用户气泡，刷屏且像在往上游堆文字；
+  // 图片也直接铺满气泡。改为：正文只发给 AI 不回显，文档显示附件卡片、图片固定缩略尺寸，
+  // 点击缩略图才在新标签页看大图；大图缓存只走 sessionStorage，关页面即清。
+  {
+    const la = read('labor-ai.html');
+    check(/function userTextForDisplay\(parts\)\{[\s\S]{0,260}return first \|\| '请分析我上传的附件';/.test(la)
+      && !/parts\.map\(function\(p\)\{ return p\.type === 'text' \? p\.text : '\[图片附件\]'; \}\)\.join/.test(la),
+      '§21u-2 用户气泡只回显提问本身，附件解析正文不再倒进对话框',
+      '正文回显到气泡 → 刷屏，且访客误以为在往上游堆文字');
+    check(/function renderBubbleAttachments/.test(la)
+      && /row\.className = 'a-attach-row'/.test(la)
+      && /\.a-attach-row\{display:flex;flex-wrap:wrap;max-width:100%/.test(la)
+      && /im\.className = 'a-shot'/.test(la)
+      && /chip\.className = 'a-file'/.test(la)
+      && /\.msg\.user \.bubble \.a-shot\{[^}]*width:84px;height:64px;object-fit:cover/.test(la)
+      && /renderBubbleAttachments\(chat\.lastElementChild\.querySelector\('\.bubble'\)\)/.test(la),
+      '§21u-2 文档以附件卡片、图片以固定缩略图挂在气泡上（不再放大铺满）',
+      '正文写回气泡或大图铺满 → 窄屏溢出、上下文观感失控');
+    check(/function openImageZoom/.test(la)
+      && /sessionStorage\.setItem\(ZOOM_CACHE_KEY/.test(la)
+      && /window\.open\(url, '_blank'\)/.test(la)
+      && /window\.addEventListener\('pagehide'/.test(la)
+      && /sessionStorage\.removeItem\(ZOOM_CACHE_KEY/.test(la)
+      && !/localStorage\.setItem\(ZOOM_CACHE_KEY/.test(la),
+      '§21u-2 点缩略图在新标签页看大图，临时缓存只走 sessionStorage 且关页清除',
+      '写 localStorage → 关浏览器仍留图；站内放大 → 违背点击才放大要求');
+    check(/正文不在对话框展开/.test(la) && /点开在新标签页查看/.test(la),
+      '§21u-2 附件说明明示正文不在对话框展开、点图新标签页查看',
+      '说明缺失 → 用户对「正文只发给 AI」不知情');
+  }
   // ---- 旧版挂件彻底删除（2026-11-18 站长：「彻底删干净，不是注释」）----
   // 这些文件/测试/头像曾服务旧版内嵌挂件，新版独立页 + 跳转按钮完全不依赖，
   // 必须物理删除而非注释保留，否则站长再次误入旧版、或被人当死代码复活。
