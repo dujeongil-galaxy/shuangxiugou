@@ -6931,29 +6931,31 @@ section('21c. 首页滑到底部按钮');
       check(/a\.setAttribute\('aria-label', '休休查'\)/.test(read('ai-link.js')),
         '§21h-18 全站跳转按钮 aria-label 改为休休查',
         '按钮辅助文案还是旧名 → 读屏用户与 hover 提示仍是劳动法小助手');
-      // §21h-17（2026-11-22 站长确认）：话题边界不放开，但拒答方式要改。
-      // 旧规则「礼貌说明服务范围」被模型演成「好像不知道」，用户问了句网络梗就像 AI 很笨；
-      // 新规则要明确拒绝 + 禁止编造 + 保留社交寒暄口子，三条线路逐字一致。
-      check(/【话题边界】/.test(la)
+      // §21h-17（2026-11-23 站长改规）：话题范围放开、不再因超范围拒答，但保留「不装懂、
+      // 不编造出处、引用来源优先本站、拒后不追加无关分析、留社交寒暄口子」的纪律，三条线路逐字一致。
+      check(/【话题范围】/.test(la)
+        && /不再因「超出范围」而拒答任何话题/.test(la)
         && /不要装不知道/.test(la)
-        && /说完立刻结束/.test(la)
-        && /不要追加任何对问题本身的分析/.test(la)
         && /编一个出处比不回答更糟/.test(la)
         && /正常社交要接/.test(la)
+        && /不要追加任何对问题本身的分析/.test(la)
+        && /引用来源一律优先用本站/.test(la)
         && !/礼貌说明服务范围/.test(la)
-        && /【话题边界】/.test(workerKv)
+        && /【话题范围】/.test(workerKv)
+        && /不再因「超出范围」而拒答任何话题/.test(workerKv)
         && /不要装不知道/.test(workerKv)
-        && /说完立刻结束/.test(workerKv)
-        && /不要追加任何对问题本身的分析/.test(workerKv)
         && /编一个出处比不回答更糟/.test(workerKv)
         && /正常社交要接/.test(workerKv)
-        && /【话题边界】/.test(aliPrompt)
+        && /不要追加任何对问题本身的分析/.test(workerKv)
+        && /引用来源一律优先用本站/.test(workerKv)
+        && /【话题范围】/.test(aliPrompt)
+        && /不再因「超出范围」而拒答任何话题/.test(aliPrompt)
         && /不要装不知道/.test(aliPrompt)
-        && /说完立刻结束/.test(aliPrompt)
-        && /不要追加任何对问题本身的分析/.test(aliPrompt)
         && /编一个出处比不回答更糟/.test(aliPrompt)
-        && /正常社交要接/.test(aliPrompt),
-        '§21h-17 三条线路话题边界一致：只接劳动法/双休/找工作/简历，超出明拒、不装懂、不编造、拒后不追加分析，且留社交寒暄口子',
+        && /正常社交要接/.test(aliPrompt)
+        && /不要追加任何对问题本身的分析/.test(aliPrompt)
+        && /引用来源一律优先用本站/.test(aliPrompt),
+        '§21h-17 三条线路话题范围一致：不再因超范围拒答，但不装懂、不编造出处、引用来源优先本站、拒后不追加无关分析、留社交寒暄口子',
         '改回「礼貌说明服务范围」软拒 → 用户问句网络梗就像 AI 不知道；删掉「拒后不追加分析」→ 国内 Qwen 实测会补一段「没有官方出处但可能是…」的来源猜测');
       const hmpPublic = stripComments(hmp);
       check((hmpPublic.match(/登录GitHub并Star可获取更多额度/g) || []).length >= 4
@@ -7070,8 +7072,8 @@ section('21c. 首页滑到底部按钮');
       const cf2 = read('ai-worker/src/worker.js');
       const ali2 = read('ai-worker-aliyun/index.mjs');
       const OFFICIAL_URL = 'https://dujeongil-galaxy.github.io/shuangxiugou/';
-      const GUARD_TITLE = '【敏感争议话题·一律不答 + 严禁无脑说好话】';
-      const GUARD_CORE = '都不要展开回答，直接用一句话说明「这不在我的服务范围内，我只管劳动法、双休和找工作」，说完立刻结束，不追加任何分析、表态或延伸解释';
+      const GUARD_TITLE = '【争议与公共话题·中立不站队不拒答】';
+      const GUARD_CORE = '一律正常回应，不再回避、不再拒答，但必须中立、基于证据';
       const NO_FLATTERY = '绝对禁止无脑说好话：不许空泛赞美、歌功颂德、替任何一方背书站台，不许为了显得中立而硬凑好话，更不许先否定用户再说一堆漂亮话';
       const URL_CORE = '不要自行拼造、猜测或改写域名';
       const allThree = [la2, cf2, ali2];
@@ -7081,9 +7083,12 @@ section('21c. 首页滑到底部按钮');
       check(allThree.every((s) => s.includes(GUARD_TITLE) && s.includes(GUARD_CORE) && s.includes(NO_FLATTERY)),
         '§21h-11 三线路敏感话题锁死不答 + 严禁无脑说好话，逐字一致',
         '某条线路漏写或措辞漂移 → 换个节点 AI 就对敏感话题无脑表态/吹捧');
-      check(allThree.every((s) => s.includes('性别歧视') && s.includes('政府') && s.includes('优先级高于其它所有条款')),
-        '§21h-11 敏感话题明确列举政府/性别歧视且标为最高优先级',
-        '没点名或没提优先级 → 模型可能当作普通建议，与话题边界条款打架时打折执行');
+      check(allThree.every((s) => s.includes('性别歧视') && s.includes('政府') && s.includes('不再回避、不再拒答')),
+        '§21h-11 争议话题明确列举政府/性别歧视且标注为一律正常回应、不再拒答',
+        '没点名话题类别或没写「不再拒答」→ 模型可能又把政治/性别话题当普通话题回避');
+      check(allThree.every((s) => s.includes('优先采用海外与独立来源') && s.includes('不引用、不转述中国大陆官方') && s.includes('把可核实事实、各方观点与未经证实的信息分开摆明')),
+        '§21h-11 三线路争议话题都写明来源立场（优先海外独立来源、拉黑大陆官方叙事）且区分事实/观点/未经证实',
+        '缺来源立场 → 政治话题又走境内口径；缺三分 → 模型把未经证实的外媒说法当事实断言');
       check(allThree.every((s) => !s.includes('【立场中立·强制】')),
         '§21h-11 旧「立场中立·强制 / 不得因批评拒答」条款已彻底移除（防回流）',
         '旧条款回流 → 与新锁死规则冲突，模型可能又去中立作答敏感话题');
@@ -7114,7 +7119,7 @@ section('21c. 首页滑到底部按钮');
         '没写全覆盖 → 模型可能当作某一线路的局部建议而打折执行');
       // 三线路敏感话题段落逐字一致：抽出含新标题的那一行字符串直接比对
       function guardLineOf(src) {
-        const m = src.match(/['"]([^'"]*敏感争议话题·一律不答[^'"]*)['"]/);
+        const m = src.match(/['"]([^'"]*争议与公共话题·中立不站队不拒答[^'"]*)['"]/);
         if (!m) return null;
         // labor 是独立数组条目（无编号），CF/阿里云是第 8 条（带 "8. " 前缀）；
         // 只比正文，剥掉可选的 "数字. " 编号前缀。
@@ -7208,7 +7213,7 @@ section('21c. 首页滑到底部按钮');
         '等待期空光标干转 → 用户以为站点坏了');
 
       // 敏感话题锁死/网址/双休快照：流式改动不得碰这些（逐字比对三线路体系仍生效）
-      check(/【敏感争议话题·一律不答/.test(workerS) && /dujeongil-galaxy\.github\.io\/shuangxiugou/.test(workerS)
+      check(/【争议与公共话题·中立不站队/.test(workerS) && /dujeongil-galaxy\.github\.io\/shuangxiugou/.test(workerS)
         && /BRAND_DATA_SNIPPET/.test(workerS),
         '§21h-13 Worker 敏感话题锁死规则/官方网址/190 家快照未被流式改动破坏',
         '改流式顺手动了提示词 → 刚调好的话题边界回退');

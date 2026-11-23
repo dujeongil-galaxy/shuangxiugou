@@ -488,7 +488,7 @@ async function main() {
       senv.calls.length === 1 && senv.calls[0].params.stream === true
       && senv.calls[0].modelId === '@cf/zai-org/glm-4.7-flash', senv.calls);
     check('流式提示词与非流式同源（含敏感话题锁死条款 + 190 家数据 + 官方网址）',
-      /【敏感争议话题·一律不答/.test(senv.calls[0].params.messages[0].content)
+      /【争议与公共话题·中立不站队/.test(senv.calls[0].params.messages[0].content)
       && /BRAND|评级|双休/.test(senv.calls[0].params.messages[0].content)
       && /dujeongil-galaxy\.github\.io\/shuangxiugou/.test(senv.calls[0].params.messages[0].content),
       '提示词不同源 → 两条路径回答风格分歧');
