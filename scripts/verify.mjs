@@ -7514,9 +7514,9 @@ section('21c. 首页滑到底部按钮');
   check(/黑名单 IP → 403/.test(read('scripts/test-ai-worker.cjs'))
     && /黑名单命中不调 AI/.test(read('scripts/test-ai-worker.cjs')),
     '§21g Worker 单测覆盖黑名单命中 403 + 不烧 neurons');
-  // 输出上限：纯文本 2000（推理模型留空间）；带图压到 1200（视觉模型输出单价 1.7 倍，省额度）
-  check(/hasImage \? 1200 : 2000/.test(worker),
-    'max_tokens 分流：纯文本 2000（GLM-4.7-flash reasoning 留空间）/ 带图 1200（视觉模型省 neuron）');
+  // 输出上限：纯文本 3000（GLM-4.7-flash reasoning 在争议话题上易把预算吃光，留足空间给正文）；带图压到 1200（视觉模型输出单价 1.7 倍，省额度）
+  check(/hasImage \? 1200 : 3000/.test(worker),
+    'max_tokens 分流：纯文本 3000（GLM-4.7-flash reasoning 留空间）/ 带图 1200（视觉模型省 neuron）');
   // 模型
   check(/@cf\/zai-org\/glm-4\.7-flash/.test(worker),
     '模型 ID = @cf/zai-org/glm-4.7-flash（Workers AI 免费层）');
