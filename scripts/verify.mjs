@@ -6876,6 +6876,34 @@ section('21c. 首页滑到底部按钮');
         && /EAC 协付渠道即永久失效/.test(aliPrompt),
         '§21h-16a 取消 Star 失效口径在页面可见行与三条线路统一为 EAC 协付渠道',
         '前端可见行还说「额外额度/额外权益永久失效」→ 同一规则两处口径不一致，用户看到旧说法');
+      // §21h-18（2026-11-23 站长定规）：AI 更名为「休休查」，页面 SEO 与主站口径绑定；
+      // 页面内写改名公告（不动首页），并有返回双休购首页的按钮。历史记账文档保留旧名（史实）。
+      const laNoCmt = la.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+      check(/<title>休休查 - 双休购 ShuangxiuGo｜查公司双休评级，避雷单休大小周<\/title>/.test(la)
+        && /<h1>休休查<\/h1>/.test(laNoCmt)
+        && /property="og:title" content="休休查 - 双休购 ShuangxiuGo/.test(la)
+        && /name="twitter:title" content="休休查 - 双休购 ShuangxiuGo/.test(la),
+        '§21h-18 页面 title/h1/og:title/twitter:title 统一为「休休查 - 双休购 ShuangxiuGo｜查公司双休评级，避雷单休大小周」',
+        '标题不绑定主站口径 → 吃不到「双休购/双休评级/避雷单休大小周」已有 SEO 权重，改名也白改');
+      check(/name="keywords" content="[^"]*休休查[^"]*双休购[^"]*ShuangxiuGo/.test(la)
+        && /name="keywords" content="[^"]*查公司双休评级[^"]*避雷单休大小周/.test(la),
+        '§21h-18 keywords 以「休休查」开头并绑定主站既有词（双休购/ShuangxiuGo/双休评级/避雷单休大小周）',
+        'keywords 丢了休休查或没接主站词 → 新品牌词搜不到、旧权重也断');
+      check(/class="rename-note"[^>]*>[^<]*2026-11-23[^<]*休休查/.test(laNoCmt)
+        && /原劳动法小助手/.test(laNoCmt),
+        '§21h-18 页面内写改名公告（2026-11-23 更名休休查、原劳动法小助手）',
+        '公告没写日期或新名 → 老访客不知道劳动法小助手去哪了');
+      check(/class="back-home" href="\.\/"[^>]*>← 双休购首页<\/a>/.test(laNoCmt)
+        && /返回双休购首页/.test(laNoCmt),
+        '§21h-18 页面有返回双休购首页按钮（相对路径 ./，带 aria-label）',
+        '没有回首页入口 → 用户进了 AI 页被困住，回不去主站');
+      check(/你是「休休查」/.test(la) && /你是「休休查」/.test(workerKv) && /你是「休休查」/.test(aliPrompt)
+        && /who\.textContent = role === "user" \? "我" : "休休查"/.test(la),
+        '§21h-18 三条线路提示词自称 + 聊天气泡署名统一为休休查',
+        '某线路还自称劳动法小助手 → 用户问「你叫什么」三个答案三个样');
+      check(/a\.setAttribute\('aria-label', '休休查'\)/.test(read('ai-link.js')),
+        '§21h-18 全站跳转按钮 aria-label 改为休休查',
+        '按钮辅助文案还是旧名 → 读屏用户与 hover 提示仍是劳动法小助手');
       // §21h-17（2026-11-22 站长确认）：话题边界不放开，但拒答方式要改。
       // 旧规则「礼貌说明服务范围」被模型演成「好像不知道」，用户问了句网络梗就像 AI 很笨；
       // 新规则要明确拒绝 + 禁止编造 + 保留社交寒暄口子，三条线路逐字一致。

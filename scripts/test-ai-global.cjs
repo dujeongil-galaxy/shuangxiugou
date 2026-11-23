@@ -79,7 +79,7 @@ check('锁屏态建出 AI 按钮', !!lockBtn);
 check('锁屏态按钮 href 指向 ./labor-ai.html',
   lockBtn && lockBtn.getAttribute('href') === './labor-ai.html', lockBtn && lockBtn.getAttribute('href'));
 check('锁屏态 aria-label 正确',
-  lockBtn && lockBtn.getAttribute('aria-label') === '劳动法小助手');
+  lockBtn && lockBtn.getAttribute('aria-label') === '休休查');
 
 // 品牌目录页：href 应为 ../labor-ai.html
 const brandDom = makeDom('<div>brand</div>', 'http://localhost/shuangxiugou/brand/xiaomi.html');

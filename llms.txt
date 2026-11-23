@@ -13,7 +13,7 @@
 
 ## 工具与专题
 
-- [劳动法小助手](https://dujeongil-galaxy.github.io/shuangxiugou/labor-ai.html): 免费在线查询加班费、双休权益、劳动仲裁流程的 AI 问答页；可上传工资条/合同/聊天记录截图分析。回答仅供参考，不构成法律意见。
+- [休休查（原劳动法小助手）](https://dujeongil-galaxy.github.io/shuangxiugou/labor-ai.html): 双休购 ShuangxiuGo 旗下 AI 问答页（2026-11-23 更名）；查公司双休评级、避雷单休大小周，在线查询加班费、双休权益、劳动仲裁流程；可上传工资条/合同/聊天记录截图分析。回答仅供参考，不构成法律意见。
 - [「QQ 奶奶」张秀丽专题](https://dujeongil-galaxy.github.io/shuangxiugou/qq-nainai.html): 一位退休教师十八年在 QQ 上陪伴青少年的公开报道整理。
 - [成功案例](https://dujeongil-galaxy.github.io/shuangxiugou/success-stories.html): 劳动者与消费者的真实反馈案例。
 - [我为什么支持双休购](https://dujeongil-galaxy.github.io/shuangxiugou/why-shuangxiugou.html): 关于「用钱包投票、把休息权变成公开评价」的站长随笔。

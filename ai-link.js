@@ -59,8 +59,8 @@
     var a = document.createElement('a');
     a.id = BTN_ID;
     a.href = targetHref();
-    a.setAttribute('aria-label', '劳动法小助手');
-    a.title = '劳动法小助手';
+    a.setAttribute('aria-label', '休休查');
+    a.title = '休休查（原劳动法小助手）· 劳动法与双休 AI 查询';
     a.textContent = 'AI';
   /* 跳转由 <a href> 原生完成，无 JS 拦截，稳。 */
     (document.body || document.documentElement).appendChild(a);
