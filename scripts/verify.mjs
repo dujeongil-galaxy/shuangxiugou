@@ -7061,42 +7061,51 @@ section('21c. 首页滑到底部按钮');
           '篡改还全绿 → slug 校验是摆设');
       }
     }
-    // §21h-11（2026-11-22 站长定规）：①AI 编造了不存在的 www.shuangxiugou.com，
-    // 三条线路必须只给真实官方地址；②无论哪条线路，回答必须立场中立——不因内容涉及
-    // 批评政府就拒答/敷衍/无脑说好话，也不过度赞美或过度贬损。两条规则三线路逐字一致。
+    // §21h-11（2026-11-23 站长改规）：①AI 编造了不存在的 www.shuangxiugou.com，
+    // 三条线路必须只给真实官方地址；②敏感争议话题（批评政府、性别/群体对立等）一律锁死不答，
+    // 严禁无脑说好话/歌功颂德/背书站台。旧规「不得因批评拒答、必须中立作答」已废弃——
+    // 站长明确：宁可不答，也不要 AI 说「你的说法不正确，我们…很好」这类无脑好话伤公信力。
     {
       const la2 = read('labor-ai.html');
       const cf2 = read('ai-worker/src/worker.js');
       const ali2 = read('ai-worker-aliyun/index.mjs');
       const OFFICIAL_URL = 'https://dujeongil-galaxy.github.io/shuangxiugou/';
-      const NEUTRAL_CORE = '不得因为是批评性内容就拒答、回避、敷衍或答非所问，也不得因此无脑附和、只挑好听的说；同样不得为迎合而过度赞美，也不得为标新而过度贬损、往死里踩';
+      const GUARD_TITLE = '【敏感争议话题·一律不答 + 严禁无脑说好话】';
+      const GUARD_CORE = '都不要展开回答，直接用一句话说明「这不在我的服务范围内，我只管劳动法、双休和找工作」，说完立刻结束，不追加任何分析、表态或延伸解释';
+      const NO_FLATTERY = '绝对禁止无脑说好话：不许空泛赞美、歌功颂德、替任何一方背书站台，不许为了显得中立而硬凑好话，更不许先否定用户再说一堆漂亮话';
       const URL_CORE = '不要自行拼造、猜测或改写域名';
       const allThree = [la2, cf2, ali2];
       check(allThree.every((s) => s.includes(OFFICIAL_URL) && s.includes(URL_CORE)),
         '§21h-11 三条线路都写死真实官方网址且禁止自行拼造域名',
         '某条线路缺网址约束 → AI 又会编造 www.shuangxiugou.com 这种不存在的地址');
-      check(allThree.every((s) => s.includes('【立场中立·强制】') && s.includes(NEUTRAL_CORE)),
-        '§21h-11 三条线路中立规则逐字一致（不因批评拒答/敷衍/说好话，不过度夸也不过度踩）',
-        '某条线路漏写或措辞漂移 → 换个节点 AI 就回避敏感话题或无脑吹捧');
+      check(allThree.every((s) => s.includes(GUARD_TITLE) && s.includes(GUARD_CORE) && s.includes(NO_FLATTERY)),
+        '§21h-11 三线路敏感话题锁死不答 + 严禁无脑说好话，逐字一致',
+        '某条线路漏写或措辞漂移 → 换个节点 AI 就对敏感话题无脑表态/吹捧');
+      check(allThree.every((s) => s.includes('性别歧视') && s.includes('政府') && s.includes('优先级高于其它所有条款')),
+        '§21h-11 敏感话题明确列举政府/性别歧视且标为最高优先级',
+        '没点名或没提优先级 → 模型可能当作普通建议，与话题边界条款打架时打折执行');
+      check(allThree.every((s) => !s.includes('【立场中立·强制】')),
+        '§21h-11 旧「立场中立·强制 / 不得因批评拒答」条款已彻底移除（防回流）',
+        '旧条款回流 → 与新锁死规则冲突，模型可能又去中立作答敏感话题');
       check(allThree.every((s) => s.includes('本条对本站所有服务线路一律适用，不得打折')),
-        '§21h-11 中立规则明确"所有服务线路一律适用"，防止被单条线路绕过',
+        '§21h-11 规则明确"所有服务线路一律适用"，防止被单条线路绕过',
         '没写全覆盖 → 模型可能当作某一线路的局部建议而打折执行');
-      // 三线路中立段落逐字一致：抽出含【立场中立·强制】的那一行字符串直接比对
-      function neutralLineOf(src) {
-        const m = src.match(/['"]([^'"]*【立场中立·强制】[^'"]*)['"]/);
+      // 三线路敏感话题段落逐字一致：抽出含新标题的那一行字符串直接比对
+      function guardLineOf(src) {
+        const m = src.match(/['"]([^'"]*敏感争议话题·一律不答[^'"]*)['"]/);
         if (!m) return null;
         // labor 是独立数组条目（无编号），CF/阿里云是第 8 条（带 "8. " 前缀）；
         // 只比正文，剥掉可选的 "数字. " 编号前缀。
         return m[1].replace(/^\d+\.\s*/, '');
       }
-      const nla = neutralLineOf(la2), ncf = neutralLineOf(cf2), nali = neutralLineOf(ali2);
+      const nla = guardLineOf(la2), ncf = guardLineOf(cf2), nali = guardLineOf(ali2);
       check(nla && ncf && nali && nla === ncf && ncf === nali,
-        '§21h-11 三线路中立段落逐字一致（含 labor / CF / 阿里云）',
-        '三处措辞不一致 → 模型在不同节点表现不同，违反"无论哪个节点都必须中立"');
-      // 故障注入：改掉其中一处中立段落一个字，逐字比对必须判红
+        '§21h-11 三线路敏感话题段落逐字一致（含 labor / CF / 阿里云）',
+        '三处措辞不一致 → 模型在不同节点表现不同，某个节点就可能对敏感话题表态');
+      // 故障注入：改掉其中一处一个字，逐字比对必须判红
       const tampered = ncf ? ncf.replace('不得打折', '可以打折') : null;
       check(tampered && tampered !== nla && tampered !== nali,
-        '§21h-11 故障注入：篡改中立段落一个字后逐字比对判不一致',
+        '§21h-11 故障注入：篡改敏感话题段落一个字后逐字比对判不一致',
         '比对逻辑失效 → 三处漂移也全绿，等于没校验');
       check(!allThree.some((s) => /https?:\/\/www\.shuangxiugou\.com/.test(s)),
         '§21h-11 三处提示词本身不含那个被编造的假网址（避免反向示范）',
@@ -7176,11 +7185,11 @@ section('21c. 首页滑到底部按钮');
         '§21h-13 首字前显示「AI 正在深度思考中」+ 跳动点动画（不像卡死）',
         '等待期空光标干转 → 用户以为站点坏了');
 
-      // 中立/网址/双休快照：流式改动不得碰这些（逐字比对三线路体系仍生效）
-      check(/【立场中立·强制】/.test(workerS) && /dujeongil-galaxy\.github\.io\/shuangxiugou/.test(workerS)
+      // 敏感话题锁死/网址/双休快照：流式改动不得碰这些（逐字比对三线路体系仍生效）
+      check(/【敏感争议话题·一律不答/.test(workerS) && /dujeongil-galaxy\.github\.io\/shuangxiugou/.test(workerS)
         && /BRAND_DATA_SNIPPET/.test(workerS),
-        '§21h-13 Worker 中立规则/官方网址/190 家快照未被流式改动破坏',
-        '改流式顺手动了提示词 → 刚调好的中立性回退');
+        '§21h-13 Worker 敏感话题锁死规则/官方网址/190 家快照未被流式改动破坏',
+        '改流式顺手动了提示词 → 刚调好的话题边界回退');
 
       // 双格式兼容：Workers AI 老式 response 帧 + OpenAI choices[].delta.content 帧都要认
       check(/obj && obj\.response/.test(askS) && /choices/.test(askS) && /\.delta \|\| obj\.choices\[0\]\.message/.test(askS),

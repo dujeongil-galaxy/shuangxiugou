@@ -487,8 +487,8 @@ async function main() {
     check('AI.run 收到 stream:true 且模型与文本线路一致',
       senv.calls.length === 1 && senv.calls[0].params.stream === true
       && senv.calls[0].modelId === '@cf/zai-org/glm-4.7-flash', senv.calls);
-    check('流式提示词与非流式同源（含中立强制条款 + 190 家数据 + 官方网址）',
-      /【立场中立·强制】/.test(senv.calls[0].params.messages[0].content)
+    check('流式提示词与非流式同源（含敏感话题锁死条款 + 190 家数据 + 官方网址）',
+      /【敏感争议话题·一律不答/.test(senv.calls[0].params.messages[0].content)
       && /BRAND|评级|双休/.test(senv.calls[0].params.messages[0].content)
       && /dujeongil-galaxy\.github\.io\/shuangxiugou/.test(senv.calls[0].params.messages[0].content),
       '提示词不同源 → 两条路径回答风格分歧');
