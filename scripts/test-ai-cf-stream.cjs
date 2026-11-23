@@ -9,7 +9,7 @@
 
    覆盖：
      ① Workers AI 老式帧 {response:"..."} → 逐字回调 + first 标记
-     ② OpenAI 兼容帧 {choices:[{delta:{content}}]} → 逐字回调（gpt-oss-120b 实际格式）
+     ② OpenAI 兼容帧 {choices:[{delta:{content}}]} → 逐字回调（gpt-oss-20b 实际格式）
      ③ reasoning_content 不显示（推理模型的思考链不外泄）
      ④ data: [DONE] 收尾、半行跨帧拼接
      ⑤ 老 Worker 回 JSON（content-type 非 event-stream）→ 自动降级取 answer

@@ -6858,9 +6858,9 @@ section('21c. 首页滑到底部按钮');
       check(/var MODEL_LABEL\s*=\s*\{/.test(la)
         && /model:\s*"Qwen\/Qwen3-VL-8B-Instruct"/.test(la)
         && /Qwen3-VL-8B-Instruct/.test(la)
-        && /GPT-OSS-120B/.test(la)
-        && /@cf\/openai\/gpt-oss-120b/.test(workerKv),
-        '§21h-16 模型显示名与真实模型一致：国内 Qwen3-VL-8B、CF GPT-OSS-120B（worker 回报同名）',
+        && /GPT-OSS-20B/.test(la)
+        && /@cf\/openai\/gpt-oss-20b/.test(workerKv),
+        '§21h-16 模型显示名与真实模型一致：国内 Qwen3-VL-8B、CF GPT-OSS-20B（worker 回报同名）',
         '页面写的模型名与实际调用的不符 → 用户被误导，公开反而变成欺骗');
       check(/当前模型：/.test(routeBody)
         && /一经取消即拉黑/.test(routeBody)
@@ -7518,8 +7518,8 @@ section('21c. 首页滑到底部按钮');
   check(/hasImage \? 1200 : 3000/.test(worker),
     'max_tokens 分流：纯文本 3000 / 带图 1200（视觉模型省 neuron）');
   // 模型
-  check(/@cf\/openai\/gpt-oss-120b/.test(worker),
-    '模型 ID = @cf/openai/gpt-oss-120b（Workers AI 免费层）');
+  check(/@cf\/openai\/gpt-oss-20b/.test(worker),
+    '模型 ID = @cf/openai/gpt-oss-20b（Workers AI 免费层）');
   // 系统提示词的合规口径
   check(/不构成对企业的法律定性/.test(worker) && /12333/.test(worker),
     '系统提示词含站点口径与 12333 转介（合规两件套）');
