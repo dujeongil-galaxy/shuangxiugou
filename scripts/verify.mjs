@@ -8469,7 +8469,7 @@ section('21c. 首页滑到底部按钮');
 // 无一手可核验证据，按「员工自述、待核实」单列登记，不替换西南已核实口径，
 // 也不据此单独改判 C 级。蜜雪是内置卡（bundle 不可改），故独立补丁
 // mixue-region-note.js 在渲染层挂红框；详情页是真相源，证据公示区由生成器同步
-// （ev-mixue 5 条、全站 512 条）。
+// （ev-mixue 5 条、全站 515 条）。
 // 隐私红线：不展示聊天截图，不记录昵称/账号/城市/门店等可识别信息。
 // 三层强制：静态断言 + 故障注入（全判红）+ CHANGELOG / 最近更新 / README 三处记账。
 {
@@ -8498,8 +8498,8 @@ section('21c. 首页滑到底部按钮');
     && /员工自述、待核实/.test(detailT),
     '§21t 详情页写明西南 4 天 / 华北员工自述 2 天且华北标为待核实');
   const evMixueT = idxT.slice(idxT.indexOf('id="ev-mixue"'), idxT.indexOf('id="ev-mixue"') + 240);
-  check(/data-n="5" data-l="3"/.test(evMixueT) && /data-ev-total="512"/.test(idxT),
-    '§21t 公示区由生成器同步：ev-mixue 5 条证据 / 全站 512 条');
+  check(/data-n="5" data-l="3"/.test(evMixueT) && /data-ev-total="515"/.test(idxT),
+    '§21t 公示区由生成器同步：ev-mixue 5 条证据 / 全站 515 条');
   check(/华北地区门店员工自述：两天公休（月休 2 天）（待核实）/.test(detailT)
     && /华北地区门店员工自述：两天公休（月休 2 天）（待核实）/.test(idxT)
     && /华北月休 2 天口径更紧/.test(detailT),
@@ -8532,7 +8532,7 @@ section('21c. 首页滑到底部按钮');
 // 未限定地区，易被读成全国核实结论。本次统一加「西南地区」限定，只加地区，
 // 不动已确证的月休 4 天 / 淡季 8 天数值，也不改 C 级与双休率换算值。
 // 内置卡数据在压缩 bundle 不能改 → 独立 DOM 补丁 tea-region-note.js + 复用
-// luckin-note-patch.js；详情页是真相源，证据公示区由生成器同步（512 条不变）。
+// luckin-note-patch.js；详情页是真相源，证据公示区由生成器同步（515 条不变）。
 {
   const idxU = read('index.html');
   const bundleU = read('assets/index-YthXZ9eP.js');
@@ -8579,9 +8579,9 @@ section('21c. 首页滑到底部按钮');
     '§21u 瑞幸补丁工时政策栏同步加西南地区限定');
 
   // ④ 公示区由生成器同步：证据总数不变，喜茶证据标题带地区
-  check(/data-ev-total="512"/.test(idxU)
+  check(/data-ev-total="515"/.test(idxU)
     && /站长线下核实：西南地区门店月休 4 天/.test(idxU),
-    '§21u 证据公示区已同步：512 条不变且喜茶证据标题带地区');
+    '§21u 证据公示区已同步：515 条不变且喜茶证据标题带地区');
   // ⑤ 铁律：压缩 bundle 里旧文案一字未动（新口径全在渲染层/详情页）
   check(/站长线下核实六休一（月休 4 天）/.test(bundleU)
     && !/西南地区门店线下一手核实：月休 4 天/.test(bundleU),
