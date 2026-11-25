@@ -1340,9 +1340,17 @@ section('2g. 首页证据链完整公示');
       && exists('notes.html'),
       '悬浮导航新增「手气不错」→ notes.html（PC 右下 dock / 手机二级菜单共用同一 ITEMS，双端同名）',
       '入口缺失或写回「站长随笔」→ 弹窗改版丢掉的随笔按钮没补回来，或站长要求的改名没落地');
-    check((html.match(/nav-menu\.js\?v=11/g) || []).length === 2,
-      'index.html 的 nav-menu.js 预加载与脚本两处缓存号同步 bump 到 ?v=11',
+    check((html.match(/nav-menu\.js\?v=12/g) || []).length === 2,
+      'index.html 的 nav-menu.js 预加载与脚本两处缓存号同步 bump 到 ?v=12',
       '只 bump 一处 → 预加载旧脚本，用户拿到没有最新菜单的旧脚本');
+    // 2026-11-25 站长：「挂在 QQ奶奶的下面，导航栏那边也同步更新」——
+    // 反面专题入口进悬浮导航栏，紧跟「成功案例」、排在「手气不错」之前。
+    check(/label: '那一车人', href: '\.\/bystander\.html'/.test(navItems)
+      && navItems.indexOf("'./bystander.html'") > navItems.indexOf("'./success-stories.html'")
+      && navItems.indexOf("'./bystander.html'") < navItems.indexOf("'./notes.html'")
+      && exists('bystander.html'),
+      '悬浮导航含「那一车人」→ bystander.html，紧跟成功案例、在「手气不错」之前',
+      '入口缺失或顺序错 → 导航栏看不到新专题 / 排在随笔之后不符合站长要求');
     // QQ 浏览器专题「不进」导航（2026-11-19 站长纠正）：拦截跳专题页就够了，
     // 普通访客不应有直达入口；专题页也不 backlink 站点其它页，只有搜索引擎来路。
     check(!/label: 'QQ 浏览器专题'/.test(navItems),
@@ -7911,8 +7919,8 @@ section('21c. 首页滑到底部按钮');
 
   // —— 左侧目录树（参考站长随笔自动生成）——
   const tocCount = (ss.match(/data-toc=/g) || []).length;
-  check(tocCount === 7,
-    `成功案例页目录树锚点齐全（7 个 data-toc：致敬前辈/QQ奶奶/#01~#05，实际 ${tocCount}）`,
+  check(tocCount === 8,
+    `成功案例页目录树锚点齐全（8 个 data-toc：致敬前辈/QQ奶奶/反面专题/#01~#05，实际 ${tocCount}）`,
     `data-toc 数量不对（${tocCount}）→ 目录树会漏章节`);
   check(/id="toc-nav"/.test(ss), '成功案例页含目录树容器 #toc-nav', '目录树容器缺失 → 左侧目录树建不出来');
   check(/class="toc"/.test(ss) && /<summary>目录<\/summary>/.test(ss),
@@ -11680,60 +11688,60 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
       && /双休购专题报道/.test(zj)
       && /狗日的华为做过的恶/.test(zj)
       && /《<span class="quoted">狗日的华为做过的恶<\/span>》/.test(zj),
-    '§39a 专题页独立成页、标题按站长指令用《狗日的华为做过的恶》',
+    '§40a 专题页独立成页、标题按站长指令用《狗日的华为做过的恶》',
     '标题缺失或书名号结构被改 → 站长指定标题未落地');
   check(/售价超百万豪车尊界V800被一脚踩断刹车踏板支架/.test(zj)
       && /到底是车子的问题还是测评员的问题/.test(zj)
       && /https:\/\/v\.douyin\.com\/Vc4SsZp8e1U\//.test(zj)
       && /逐字存档|逐字保留/.test(zj),
-    '§39b 原文逐字存档 + 抖音短链在案（防链接下架）',
+    '§40b 原文逐字存档 + 抖音短链在案（防链接下架）',
     '原文或短链缺失 → 视频下架后线索彻底消失，存档页失去意义');
   check(!/未经独立核实|未经本站核实|未经核实|不作事实认定|不构成事实认定|不代表本站立场|本站不下结论|本站不站队|本站照录|非事实认定|待核实|未核实 ·|仅供对照/.test(zj),
-    '§39c 全页无「未经核实 / 不作事实认定 / 不代表本站立场」等免责标注（站长指令撤掉）',
+    '§40c 全页无「未经核实 / 不作事实认定 / 不代表本站立场」等免责标注（站长指令撤掉）',
     '免责字样回流 → 站长明确「没说的不准写」，页面不得再出现这些套话');
   check(/尊界 V800|尊界V800/.test(zj) && /S800/.test(zj)
       && /原文/.test(zj),
-    '§39d 车型原文表述与公开资料对照在案（照录原文、附 S800 对照）',
+    '§40d 车型原文表述与公开资料对照在案（照录原文、附 S800 对照）',
     '车型原文或 S800 对照缺失 → 存档线索不完整');
   check(/WorkBuddy/.test(zj) && /协助完成/.test(zj),
-    '§39e 页脚标注 WorkBuddy 协助完成',
+    '§40e 页脚标注 WorkBuddy 协助完成',
     '站长明确允许的署名缺失');
   check(smZj.includes('/zunjie-report.html</loc>')
       && /ai-link\.js\?v=\d+/.test(zj) && /sxg-legal/.test(zj),
-    '§39f 专题页进 sitemap、挂全站 AI 按钮与法务页脚',
+    '§40f 专题页进 sitemap、挂全站 AI 按钮与法务页脚',
     '缺 sitemap/AI/法务 → 新页游离在全站体系外');
   check(/key: 'huawei-zunjie'/.test(newsZj)
       && /title: \/\^华为终端\//.test(newsZj)
       && /href: '\.\/zunjie-report\.html'/.test(newsZj)
       && /不据此调整 C 级评级/.test(newsZj)
       && /<script defer src="\.\/news-incident-patch\.js\?v=9"><\/script>/.test(idxZj),
-    '§39g 华为卡登记框只链站内专题页、声明不改评级，脚本 ?v=8 破缓存',
+    '§40g 华为卡登记框只链站内专题页、声明不改评级，脚本 ?v=8 破缓存',
     '卡面挂外链或漏 bump 缓存号 → 违反外链白名单口径 / 用户拿旧补丁');
   // 外链白名单仍只有理想那一条：新增卡片不得扩大卡面外链口径
   const newsLinks39 = [...newsZj.matchAll(/https?:\/\/[^'"\s)]+/g)].map((x) => x[0]);
   check(newsLinks39.length === 1 && newsLinks39[0] === 'https://v.douyin.com/nHGcAwzSXOU/',
-    '§39h 新闻登记补丁卡面外链白名单仍只有理想一条（华为线索不放外链）',
+    '§40h 新闻登记补丁卡面外链白名单仍只有理想一条（华为线索不放外链）',
     '外链白名单被扩大 → 卡面变成外链 wagon，违反 §32f 既定口径');
   // 2026-11-20 站长追加：外界批评观点汇编四小节 + 两个来源页面链接
   check(/外界批评观点汇编/.test(zj) && /企业文化与员工管理争议/.test(zj)
       && /市场竞争与商业策略/.test(zj) && /外界争议与舆论/.test(zj)
       && /小结|争议的主要落点/.test(zj)
       && /被外界称为"华为做过的恶"/.test(zj),
-    '§39i 外界批评观点四小节汇编在案（管理/市场/舆论/小结）',
+    '§40i 外界批评观点四小节汇编在案（管理/市场/舆论/小结）',
     '汇编小节缺失 → 站长指定的 AI 整理内容未完整植入专题页');
   check(zj.includes('https://evil-huawei.github.io/evil-huawei/')
       && /zh\.wikipedia\.org\/wiki\/%E5%8D%8E%E4%B8%BA%E7%9B%B8%E5%85%B3%E4%BA%89%E8%AE%AE/.test(zj)
       && (zj.match(/evil-huawei\.github\.io\/evil-huawei\//g) || []).length >= 2,
-    '§39j Evil Huawei 与维基百科两个来源页链接在案且 Evil Huawei 多处可点',
+    '§40j Evil Huawei 与维基百科两个来源页链接在案且 Evil Huawei 多处可点',
     '来源页链接缺失 → 批评观点无出处可回溯，读者无法自行判断');
   check(!/立场说明/.test(zj) && !/非本站立场/.test(zj) && !/不是本站的调查结论/.test(zj),
-    '§39k 汇编章节无「立场说明 / 非本站立场」免责块（站长指令撤掉）',
+    '§40k 汇编章节无「立场说明 / 非本站立场」免责块（站长指令撤掉）',
     '立场声明回流 → 站长明确「没说的不准写」，汇编章节不得再加免责块');
   // 2026-11-20 站长追加：消歧义（备注讲的是华为问界汽车，不是手机终端）+ 问界卡同款备注 + 搜「华为汽车」出问界
   check(/head: '⚑ 站长备注 · 华为问界汽车踏板支架争议线索/.test(newsZj)
       && /这条备注说的是华为问界汽车/.test(newsZj)
       && /不是华为手机／终端业务本身/.test(newsZj),
-    '§39l 华为终端卡备注写明「这条备注说的是华为问界汽车、非手机终端」（消歧义）',
+    '§40l 华为终端卡备注写明「这条备注说的是华为问界汽车、非手机终端」（消歧义）',
     '备注不写清汽车业务归属 → 读者把踏板支架线索当成华为手机的事');
   check(/key: 'huawei-wenjie'/.test(newsZj)
       && /title: \/\^问界（赛力斯）\//.test(newsZj)
@@ -11770,6 +11778,81 @@ section('38. QQ 浏览器 UA 拦截扩围 + 李跳跳微信文章存档');
   check(/<script defer src="\.\/news-incident-patch\.js\?v=9"><\/script>/.test(idxZj),
     '§39q 新闻补丁脚本 ?v bump 到 9（长城卡新登记框破缓存）',
     '?v 没 bump → 浏览器吃旧补丁，长城卡看不到新登记框');
+}
+
+// ---------- 39. 成功案例反面专题：万州公交坠江与「事不关己」的代价（2026-11-25 站长） ----------
+// 站长要求：成功案例「写点不一样的」，从 2018 年万州公交坠江写起，反驳
+// 「事不关己／与你无关／做好你自己」。落点同 §25 QQ奶奶：独立专题页
+// bystander.html，入口挂 success-stories.html，**不占案例 #01~#05 序号**。
+// 纪律同 §21j / §25：AI 明示 + 事实锚点 + 口径厘清 + 来源 + 索引齐全。
+section('39. 成功案例反面专题（万州公交坠江）');
+{
+  const by = exists('bystander.html') ? read('bystander.html') : '';
+  check(by.length > 6000,
+    '§41a bystander.html 存在且是完整长页（非空壳）',
+    '页面缺失或过短 → 反面专题没落地');
+
+  check(/class="ai-badge"[^>]*>\s*内容由 AI 生成/.test(by)
+      && /class="ai-note"/.test(by) && /AI 依据下列公开报道检索/.test(by),
+    '§41b 专题页挂「内容由 AI 生成」徽章 + .ai-note 声明框',
+    '缺徽章或声明框 → 与 §21j 同口径的诚实披露失守');
+
+  const factsBy = [
+    ['2018 年 10 月 28 日', '事故日期'],
+    ['5 分 19 秒', '争执至失控时长'],
+    ['15', '遇难人数'],
+    ['10:08:51', '车辆失控的官方通报时刻'],
+    ['刘某', '闹事乘客'],
+    ['冉某', '驾驶员'],
+    ['刑法', '官方责任认定'],
+    ['长江二桥', '事发地点'],
+    ['安委〔2018〕6 号', '事后制度改进的文件号'],
+    ['JT/T 1240—2019', '驾驶区防护隔离设施行业标准'],
+  ];
+  const missBy = factsBy.filter(([s]) => !by.includes(s)).map(([s, d]) => `${s}（${d}）`);
+  check(missBy.length === 0,
+    `§41c 专题页的 ${factsBy.length} 个关键事实锚点齐全`,
+    missBy.length ? '以下事实锚点丢失，正文可能被改坏：' + missBy.join('； ') : '');
+
+  check(/class="correct"/.test(by)
+      && /法律责任只有两人/.test(by)
+      && /遇难者/.test(by) && /不是被告/.test(by)
+      && /是假设，不是事实/.test(by)
+      && /别骂错人/.test(by),
+    '§41d 纠偏框写明「法律责任只有两人／遇难者不是被告／假设不是事实／别骂错人」',
+    '删掉口径厘清 → 读者会把道德追问读成给遇难者定罪，或继续骂错人');
+
+  check(/事不关己/.test(by) && /与你无关/.test(by) && /做好你自己/.test(by)
+      && /局外人/.test(by),
+    '§41e 正文回应站长的三点反驳对象（事不关己／与你无关／做好你自己）',
+    '反驳对象被删 → 这篇「写点不一样的」立意丢失');
+
+  const srcBy = (by.match(/<li>[\s\S]{0,200}?<a href="https?:\/\//g) || []).length;
+  check(srcBy >= 10,
+    `§41f 专题页附 ${srcBy} 条公开来源（要求 ≥10）`,
+    `只有 ${srcBy} 条 → 事实无出处，与本站证据链纪律冲突`);
+  check(!/<img\b/i.test(by) && !/assets\//.test(by),
+    '§41g 专题页不引用图片或站内素材（文字页，素材不入库）',
+    '挂了图片/素材 → 违反素材规则');
+
+  const ssBy = read('success-stories.html');
+  check(/class="topic-entry"[^>]*href="\.\/bystander\.html"/.test(ssBy),
+    '§41h 成功案例页有指向 bystander.html 的专题入口',
+    '没有入口 → 新页面成为孤岛');
+  const entryBy = (ssBy.match(/<a class="topic-entry"[^>]*href="\.\/bystander\.html"[\s\S]*?<\/a>/) || [''])[0];
+  check(/专题 · 反面教材/.test(entryBy) && !/案例 #0[0-9]/.test(entryBy),
+    '§41i 入口标为「专题 · 反面教材」（不占案例序号）',
+    '专题入口被标成案例序号 → 与站长「不占编号」的要求冲突');
+  check(/bystander\.html/.test(read('sitemap.xml')),
+    '§41j sitemap.xml 收录反面专题页',
+    '漏收录 → 爬虫发现不了这一页');
+  check(/bystander\.html/.test(read('scripts/seo/generate-sitemap.py')),
+    '§41k sitemap 生成脚本同样写入反面专题页（防下次重建时被抹掉）',
+    '只改 sitemap.xml 不改生成器 → 一跑 seo:sitemap 就丢');
+  check(/39\. 成功案例反面专题/.test(read('scripts/verify.mjs'))
+      && /bystander\.html/.test(read('scripts/seo/generate-sitemap.py')),
+    '§41l 校验段与生成器都写死专题页路径（防止本段被整体删空后恒真空转）',
+    '校验段或生成器路径丢失 → 后续重建会静默抹掉这一页');
 }
 
 // ---------- 汇总 ----------

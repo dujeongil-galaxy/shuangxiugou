@@ -47,7 +47,7 @@ const html = read('success-stories.html');
   // 1. 目录树：扫描 [data-toc] 自动生成 7 条导航
   const links = doc.querySelectorAll('#toc-nav a');
   console.log('  目录树链接数：', links.length);
-  check('目录树生成了 7 条导航（致敬前辈/QQ奶奶/#01~#05）', links.length === 7, links.length);
+  check('目录树生成了 8 条导航（致敬前辈/QQ奶奶/反面专题/#01~#05）', links.length === 8, links.length);
   const hrefs = Array.from(links).map((a) => a.getAttribute('href'));
   check('每条目录链接都指向页内锚点（#id）', hrefs.every((h) => /^#/.test(h)), hrefs);
   const targets = hrefs.map((h) => h.slice(1));

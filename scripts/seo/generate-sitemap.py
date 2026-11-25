@@ -60,6 +60,13 @@ parts.append(
     f'    <changefreq>monthly</changefreq>\n'
     f'    <priority>0.7</priority>\n  </url>'
 )
+# 反面专题：万州公交坠江与「事不关己」的代价（2026-11-25 站长要求，不占案例序号）
+parts.append(
+    f'  <url>\n    <loc>{BASE}/bystander.html</loc>\n'
+    f'    <lastmod>2026-11-25</lastmod>\n'
+    f'    <changefreq>monthly</changefreq>\n'
+    f'    <priority>0.7</priority>\n  </url>'
+)
 
 # 比亚迪车主专题报道（2026-11-14 站长要求单独建页，双休购旗下独立 HTML）
 parts.append(
@@ -104,6 +111,18 @@ for b in sorted(idx, key=lambda x: x['tier']):
         f'    <lastmod>{LASTMOD}</lastmod>\n'
         f'    <changefreq>monthly</changefreq>\n'
         f'    <priority>{PRIORITY.get(b["tier"], "0.6")}</priority>\n  </url>'
+    )
+
+# 两个手工维护的品牌页：不在 _brandindex.json 里，历史上靠手改 sitemap 收录。
+# 2026-11-25 重建时发现生成器会漏掉它们（verify「全部品牌页都在 sitemap」判红），
+# 补进生成器，避免每次 seo:sitemap 都要再手补一次。
+for slug, lastmod in [('unicom.html', '2026-11-02'), ('netease-games.html', '2026-11-20'),
+                      ('tea-rest-board.html', '2026-11-21')]:
+    parts.append(
+        f'  <url>\n    <loc>{BASE}/brand/{slug}</loc>\n'
+        f'    <lastmod>{lastmod}</lastmod>\n'
+        f'    <changefreq>monthly</changefreq>\n'
+        f'    <priority>0.7</priority>\n  </url>'
     )
 
 parts.append('</urlset>')
