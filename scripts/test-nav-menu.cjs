@@ -9,12 +9,12 @@
      ③ 手机只露一个主按钮，**点开才加载**其余条目。
 
    覆盖路径：
-     ① 桌面（matchMedia 不命中 640）：条目立即建好、五个出口 href 正确
+     ① 桌面（matchMedia 不命中 640）：条目立即建好、四个出口 href 正确
      ② 手机（matchMedia 命中 640）：panel 初始为空（真·按需创建），点开才出现
      ③ 再点一次收起；条目不复建（不是「隐藏/显示」假按需）
      ④ Esc 收起、点空白处收起
      ⑤ 幂等：重复执行脚本不重复注入节点 / style
-     ⑥ 五个出口可达：四个页面文件真实存在 + #evidence-board 锚点真实存在
+     ⑥ 四个出口可达：三个页面文件真实存在 + #evidence-board 锚点真实存在
      ⑦ img/svg 图标存在，按钮有 aria 属性（无障碍）
 
    ⚠️ jsdom 没有 window.matchMedia，必须自己打桩，否则永远走桌面分支，
@@ -113,8 +113,8 @@ function mkDom(onlyMobile, withVersion) {
   const verD = panelD && panelD.querySelector('.sxg-nav-ver');
   check('★ PC 端版本号文本来自 #site-version（不是占位空壳）',
     verD && verD.textContent === '当前版本号 abc1234', verD && verD.textContent);
-  check('桌面端条目 6 条（5 导航 + 1 版本号）',
-    panelD && panelD.querySelectorAll('.sxg-nav-item').length === 6,
+  check('桌面端条目 5 条（4 导航 + 1 版本号）',
+    panelD && panelD.querySelectorAll('.sxg-nav-item').length === 5,
     panelD && panelD.querySelectorAll('.sxg-nav-item').length);
 
   const itemsD = panelD ? Array.from(panelD.querySelectorAll('.sxg-nav-item')) : [];
@@ -129,16 +129,11 @@ function mkDom(onlyMobile, withVersion) {
     itemsD[2] && [itemsD[2].textContent, itemsD[2].getAttribute('href')]);
   // 2026-11-14 站长：随笔入口从弹窗挪到本导航，按钮文字统一「手气不错」，
   // 链接仍是加密随笔页；notes.html 本体一个字都不改。
-  // 2026-11-25 站长：反面专题入口进导航，紧跟成功案例、在「手气不错」之前
-  check('④ 桌面「那一车人」→ ./bystander.html（紧跟成功案例）',
-    itemsD[3] && itemsD[3].textContent === '那一车人'
-      && itemsD[3].getAttribute('href') === './bystander.html',
-    itemsD[3] && [itemsD[3].textContent, itemsD[3].getAttribute('href')]);
-  check('⑤ 桌面「手气不错」→ ./notes.html（不是「站长随笔」）',
-    itemsD[4] && itemsD[4].textContent === '手气不错'
-      && itemsD[4].getAttribute('href') === './notes.html'
+  check('④ 桌面「手气不错」→ ./notes.html（不是「站长随笔」）',
+    itemsD[3] && itemsD[3].textContent === '手气不错'
+      && itemsD[3].getAttribute('href') === './notes.html'
       && itemsD.every(function (a) { return a.textContent !== '站长随笔'; }),
-    itemsD[4] && [itemsD[4].textContent, itemsD[4].getAttribute('href')]);
+    itemsD[3] && [itemsD[3].textContent, itemsD[3].getAttribute('href')]);
 
   check('桌面端不进入展开态（is-open 不挂）', !rootD.classList.contains('is-open'));
 
@@ -211,10 +206,10 @@ function mkDom(onlyMobile, withVersion) {
 
   // 点开
   fabM.dispatchEvent(new wm.MouseEvent('click', { bubbles: true }));
-  await until(() => panelM.querySelectorAll('.sxg-nav-item').length === 6, 1000);
+  await until(() => panelM.querySelectorAll('.sxg-nav-item').length === 5, 1000);
 
   const itemsM = Array.from(panelM.querySelectorAll('.sxg-nav-item'));
-  check('★ 点开后条目才被创建（5 个导航 + 1 个版本号 = 6 条）', itemsM.length === 6, itemsM.length);
+  check('★ 点开后条目才被创建（4 个导航 + 1 个版本号 = 5 条）', itemsM.length === 5, itemsM.length);
   check('展开态 is-open 挂上', rootM.classList.contains('is-open'));
   check('展开后 aria-expanded=true', fabM.getAttribute('aria-expanded') === 'true');
   check('点开后的第一条是「证据链公示」→ #evidence-board',
@@ -223,15 +218,11 @@ function mkDom(onlyMobile, withVersion) {
     itemsM[1] && itemsM[1].textContent === '同类项目导航' && itemsM[1].getAttribute('href') === './projects.html');
   check('点开后的第三条是「成功案例」→ ./success-stories.html',
     itemsM[2] && itemsM[2].textContent === '成功案例' && itemsM[2].getAttribute('href') === './success-stories.html');
-  check('★ 点开后的第四条是「那一车人」→ ./bystander.html（手机二级菜单与 PC 同名）',
-    itemsM[3] && itemsM[3].textContent === '那一车人'
-      && itemsM[3].getAttribute('href') === './bystander.html',
-    itemsM[3] && [itemsM[3].textContent, itemsM[3].getAttribute('href')]);
-  check('★ 点开后的第五条是「手气不错」→ ./notes.html（手机二级菜单与 PC 同名）',
-    itemsM[4] && itemsM[4].textContent === '手气不错'
-      && itemsM[4].getAttribute('href') === './notes.html'
+  check('★ 点开后的第四条是「手气不错」→ ./notes.html（手机二级菜单与 PC 同名）',
+    itemsM[3] && itemsM[3].textContent === '手气不错'
+      && itemsM[3].getAttribute('href') === './notes.html'
       && itemsM.every(function (a) { return a.textContent !== '站长随笔'; }),
-    itemsM[4] && [itemsM[4].textContent, itemsM[4].getAttribute('href')]);
+    itemsM[3] && [itemsM[3].textContent, itemsM[3].getAttribute('href')]);
   // 版本号项：文本必须来自页面级真相源节点（比对的是桩里写死的 abc1234，
   // 不是「含『当前版本号』」这种子串断言 —— 子串断言在 JS 里另写死一份
   // 同样能过，等于没测到「读 DOM」这个关键行为）
@@ -260,12 +251,12 @@ function mkDom(onlyMobile, withVersion) {
   await wait(20);
   check('再点一次收起（is-open 移除）', !rootM.classList.contains('is-open'));
   check('收起后条目仍在 DOM 里（只切显隐，不销毁重建）',
-    panelM.querySelectorAll('.sxg-nav-item').length === 6);
+    panelM.querySelectorAll('.sxg-nav-item').length === 5);
   check('★ 收起再点开不重复创建（还是同一批节点）',
     (function () {
       fabM.dispatchEvent(new wm.MouseEvent('click', { bubbles: true }));
       const again = Array.from(panelM.querySelectorAll('.sxg-nav-item'));
-      return again.length === 6 && again[0] === firstNode;
+      return again.length === 5 && again[0] === firstNode;
     })());
 
   /* ================= ③ Esc / 点空白 ================= */
@@ -287,7 +278,7 @@ function mkDom(onlyMobile, withVersion) {
   await wait(20);
   check('重复执行不重复注入 #sxg-nav', docM.querySelectorAll('#sxg-nav').length === 1);
   check('重复执行不重复注入 #sxg-nav-style', docM.querySelectorAll('#sxg-nav-style').length === 1);
-  check('重复执行后条目数不变（仍是 6）', panelM.querySelectorAll('.sxg-nav-item').length === 6);
+  check('重复执行后条目数不变（仍是 5）', panelM.querySelectorAll('.sxg-nav-item').length === 5);
 
   /* ================= ⑤ 页面没有版本号节点：不留空壳 ================= */
   console.log('\n⑤ 读不到版本号时不建空壳');
@@ -298,8 +289,8 @@ function mkDom(onlyMobile, withVersion) {
   const fabN2 = docM2.getElementById('sxg-nav-fab');
   fabN2.dispatchEvent(new wm2.MouseEvent('click', { bubbles: true }));
   await wait(30);
-  check('页面没有版本号节点时，菜单只建 5 条导航',
-    panelN2.querySelectorAll('.sxg-nav-item').length === 5,
+  check('页面没有版本号节点时，菜单只建 4 条导航',
+    panelN2.querySelectorAll('.sxg-nav-item').length === 4,
     panelN2.querySelectorAll('.sxg-nav-item').length);
   check('页面没有版本号节点时也不存在 .sxg-nav-ver 空壳节点',
     panelN2.querySelectorAll('.sxg-nav-ver').length === 0,
@@ -309,7 +300,6 @@ function mkDom(onlyMobile, withVersion) {
   console.log('\n⑥ 出口可达');
   check('projects.html 存在', fs.existsSync(path.join(ROOT, 'projects.html')));
   check('success-stories.html 存在', fs.existsSync(path.join(ROOT, 'success-stories.html')));
-  check('bystander.html 存在（「那一车人」不是死链）', fs.existsSync(path.join(ROOT, 'bystander.html')));
   check('notes.html 存在（「手气不错」不是死链）', fs.existsSync(path.join(ROOT, 'notes.html')));
   check('notes.html 标题仍是「站长随笔」（只改导航按钮文字，不动正文页）',
     /<title>站长随笔 · 双休购<\/title>/.test(fs.readFileSync(path.join(ROOT, 'notes.html'), 'utf8')));

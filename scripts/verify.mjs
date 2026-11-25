@@ -1340,17 +1340,21 @@ section('2g. 首页证据链完整公示');
       && exists('notes.html'),
       '悬浮导航新增「手气不错」→ notes.html（PC 右下 dock / 手机二级菜单共用同一 ITEMS，双端同名）',
       '入口缺失或写回「站长随笔」→ 弹窗改版丢掉的随笔按钮没补回来，或站长要求的改名没落地');
-    check((html.match(/nav-menu\.js\?v=12/g) || []).length === 2,
-      'index.html 的 nav-menu.js 预加载与脚本两处缓存号同步 bump 到 ?v=12',
-      '只 bump 一处 → 预加载旧脚本，用户拿到没有最新菜单的旧脚本');
-    // 2026-11-25 站长：「挂在 QQ奶奶的下面，导航栏那边也同步更新」——
-    // 反面专题入口进悬浮导航栏，紧跟「成功案例」、排在「手气不错」之前。
-    check(/label: '那一车人', href: '\.\/bystander\.html'/.test(navItems)
-      && navItems.indexOf("'./bystander.html'") > navItems.indexOf("'./success-stories.html'")
-      && navItems.indexOf("'./bystander.html'") < navItems.indexOf("'./notes.html'")
-      && exists('bystander.html'),
-      '悬浮导航含「那一车人」→ bystander.html，紧跟成功案例、在「手气不错」之前',
-      '入口缺失或顺序错 → 导航栏看不到新专题 / 排在随笔之后不符合站长要求');
+    check((html.match(/nav-menu\.js\?v=11/g) || []).length === 2,
+      'index.html 的 nav-menu.js 预加载与脚本两处缓存号维持 ?v=11（2026-11-25 撤销那一车人后回退）',
+      '只改一处 → 预加载与脚本拿到不同版本；未回退 → 旧脚本缓存着已撤销的那一车人入口');
+    /* 2026-11-25 站长定规：本悬浮菜单的导航项只由站长逐项明确授权，AI 不得自行
+       解释「导航栏」把页面内导航外扩到这里。当天 AI 把「成功案例页里导航栏同步更新」
+       听成「加进首页悬浮菜单」，擅自加了「那一车人」。此处白名单写死为站长确认过的
+       四项，新增任何项（含那一车人）一律判红；要加必须先由站长明说、再改这里的白名单。 */
+    const navLabels = Array.from(navItems.matchAll(/label: '([^']+)'/g), m => m[1]);
+    check(navLabels.length === 4
+      && navLabels.join('|') === '证据链公示|同类项目导航|成功案例|手气不错',
+      '悬浮菜单导航项恰好是站长授权的 4 项白名单（证据链公示/同类项目导航/成功案例/手气不错）',
+      `出现未经授权的导航项（实际：${navLabels.join(' / ')}）→ AI 擅自扩权，违反 2026-11-25 定规`);
+    check(!navItems.includes('bystander.html') && !/label: '那一车人'/.test(navItems),
+      '悬浮菜单不含「那一车人」（2026-11-25 撤销：站长说的导航栏是成功案例页内导航，不是首页悬浮菜单）',
+      '该项回潮 → 又把页面内导航误读成首页悬浮菜单，规则形同虚设');
     // QQ 浏览器专题「不进」导航（2026-11-19 站长纠正）：拦截跳专题页就够了，
     // 普通访客不应有直达入口；专题页也不 backlink 站点其它页，只有搜索引擎来路。
     check(!/label: 'QQ 浏览器专题'/.test(navItems),
@@ -2978,6 +2982,34 @@ SEO_PAGES.forEach((pg) => {
   check(!!title && title.length >= 6, `${pg} 有有效的 <title>（${title?.length ?? 0} 字符）`);
   check(!!desc && desc.length >= 30, `${pg} 有足够长的 description（${desc?.length ?? 0} 字符，建议 ≥ 30）`);
 });
+
+// 1a. 全站 HTML 里只要写了 description 就必须恰好一个（2026-11-25 站长追问「规则没写死吗」后补）
+// 背景：11-17 aa53f8ac 以为首页「此前缺失 description」又加了一行，实际 10-14
+// 已有一条，首页出现两个 description；上面的断言用 .match() 取第一个就满足，
+// 一直全绿。Google 遇多个 meta 时行为不定，这次放弃两个 meta、改抓蜜雪红框的
+// 可见文本当摘要。title 早有唯一性断言，description 不能只查「存在」。
+// 允许 0 个：notes.html（加密）、ua-check.html、_sheet/*、站点验证文件等本来就
+// 不该有 SEO 描述；这里只抓「>1 个」——多写一行比不写危害更大（摘要不可控）。
+const descDupPages = [];
+let descScannedPages = 0;
+let descOwnedPages = 0;
+(function walkDesc(d) {
+  for (const e of readdirSync(join(ROOT, d), { withFileTypes: true })) {
+    if (e.name === 'node_modules' || e.name === '.git' || e.name === 'archive') continue;
+    const rel = join(d, e.name);
+    if (e.isDirectory()) walkDesc(rel);
+    else if (e.name.endsWith('.html')) {
+      descScannedPages++;
+      const n = (read(rel).match(/name=["']description["']/g) || []).length;
+      if (n > 1) descDupPages.push(rel + '(' + n + ')');
+      if (n >= 1) descOwnedPages++;
+    }
+  }
+})('.');
+check(descScannedPages >= 200 && descOwnedPages >= 190 && descDupPages.length === 0,
+  `SEO 写死：全站 ${descScannedPages} 个 HTML 中有 description 的 ${descOwnedPages} 页都恰好一个（重复会让搜索引擎抓错摘要）`,
+  descDupPages.length ? '重复页：' + descDupPages.slice(0, 8).join(', ')
+    : '扫描异常（页面<200 或有描述页<190）');
 
 // 2. title 必须唯一（重复 title 会让搜索引擎困惑）
 const titles = SEO_PAGES.filter(exists).map((pg) => read(pg).match(/<title>([^<]+)<\/title>/)?.[1]?.trim()).filter(Boolean);
@@ -8484,10 +8516,19 @@ section('21c. 首页滑到底部按钮');
   const idxT = read('index.html');
   const patchT = read('mixue-region-note.js');
   const detailT = read('brand/mixue.html');
-  check(/<script defer src="\.\/mixue-region-note\.js\?v=2"><\/script>/.test(idxT)
+  check(/<script defer src="\.\/mixue-region-note\.js\?v=3"><\/script>/.test(idxT)
     && patchT.length > 800,
     '§21t 首页引入蜜雪地区差异补丁且脚本真的存在（双重空集防护）',
     `scriptLen=${patchT.length}`);
+  // 2026-11-25 站长：这段红框文案被 Google 抓成首页搜索摘要，第三次同类坑。
+  // 咬住「append 之前 setAttribute」的时序：只查 data-nosnippet 字样会被头部注释救绿
+  // （注释里就有这个词），必须查 box.textContent 之后、tagRow.parentElement 插入之前的
+  // setAttribute 调用，且缓存号已 bump——否则用户拿旧脚本，标记不会生效。
+  const noteBodyT = patchT.slice(patchT.indexOf('box.textContent = NOTE'), patchT.indexOf('return true;', patchT.indexOf('box.textContent = NOTE')));
+  check(/box\.setAttribute\('data-nosnippet',\s*''\)/.test(noteBodyT)
+    && noteBodyT.indexOf("setAttribute('data-nosnippet'") < noteBodyT.indexOf('insertBefore(box'),
+    '§21t 蜜雪红框首次入 DOM 前带 data-nosnippet（地区差异文案不进搜索摘要/AI 回答）',
+    '标记缺失/只写在注释里/晚于插入 → JS 渲染后「月休 2 天」又被抓成站点简介');
   check(/var NOTE = [^\n]*西南地区大部分门店月休 4 天/.test(patchT)
     && /var NOTE = [^\n]*华北地区门店员工自述（2024-06 聊天记录，脱敏登记）月休 2 天/.test(patchT)
     && /待核实/.test(patchT),
