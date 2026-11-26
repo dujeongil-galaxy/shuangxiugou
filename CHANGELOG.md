@@ -4,6 +4,16 @@
 
 ---
 
+### feat：胖东来广告撤小程序口令改居中弹窗（淘宝+抖音双入口）；手机端 dock 整列垂直居中（2026-11-27 · 提交 `51df31b5`）
+
+- **背景**：站长给淘宝店链接 + 抖音主页链接，先说「不再使用微信小程序，移除相关代码，并直接替换为淘宝链接」，随即改口「算了，还是用之前那个风格弹窗吧，既可以推荐去淘宝购物，也可以引导用户访问他们的抖音」。另要求手机端按钮布局「始终右侧居中」——先数按钮数 N，取中位数那枚压在视口垂直中线，上下 (N-1)/2 枚依次贴着排（N=9 即第 5 枚上 4 下 4）。
+- **改法**：
+  - `black-card-adslot.js`：⑫ 的微信小程序口令整套作废（`PDL_LINK` / `copySync` / `tryClipboardApi` / `copyText` / `showShareToast` / 黑色 toast CSS 全删）；整图与 CTA 改 `href="#"` + `data-sxg-share="pdl"` trigger，点击 `preventDefault` 开**居中弹窗**。弹窗照 `liangpei-ad.js` 2026-11-19 lp-modal 风格（遮罩 + 白卡 + ×/遮罩/Esc 三种关闭 + display:none↔flex 硬切换），独立类名 `sxg-adslot__modal`；弹窗内两条真 `<a>`：`PDL_TAOBAO`（站长原链接一字不改，ali_* 是他的推广码）与 `PDL_DOUYIN`（官方主页），均 `target=_blank rel=noopener`。CTA 文案改「点此查看淘宝店与抖音 →」、aria-label 同步。
+  - `mobile-fixes.css`：`#sxg-fab-dock` 从 `bottom:calc` 贴底改为 `top:50% + translateY(-50%)` 整列垂直居中，水平 `right:8px`、68px 宽条、gap 6px、flex `order` 顺序（顶部 1 / 四项 2-5 / 到底 900 / 版本号 999）全部不变；PC 端不受影响。
+  - `index.html`：`black-card-adslot.js?v=22→23`、`mobile-fixes.css?v=26→27`。
+  - `README.md`：广告口径改为「点击弹窗给淘宝/抖音，零短视频单链，旧口令复制整套撤除不得回潮」。
+- **校验**：`verify.mjs` §29l/§29k/§36c/§36d/§36e 重写为新口径、新增 §40w-1 居中断言、§26k 仅豁免 `PDL_TAOBAO` 推广码一条（其余全站零追踪参数红线不变）；`test-adslot.cjs`（jsdom 真点击 62/0）、`cdp-pdl-adcheck.cjs`（CDP 桌面/手机双端 PASS）同步改口径；全站 verify 2230 项全绿。故障注入：篡改 `PDL_TAOBAO` 域名 / dock 退回贴底 → 断言判红，还原后复验全绿。CDP 真渲染量得 dock 中心 = 视口中心（422 = 422，16 枚上下各 8），弹窗双端截图确认遮罩/白卡/淘宝橙+抖音黑两按钮齐全、手机端不出屏。
+
 ### feat：fifty-yuan 定位「站长故事」并挂 notes 链接；手机端导航拆一级、按顶部/到底/版本号重排（2026-11-27 · 提交 `38909d16`）
 
 - **背景**：站长明确「这个叫站长故事，写的是站长个人故事」；并要求在 fifty-yuan 页面挂 notes.html 超链接——这次不是给「这里」两字加链接，而是**链接本身（URL）做成超链接**，下方一条「更多站长故事请访问这里」提示。另要求手机端右侧 ☰ 折叠导航取消、四项展开成一级按钮，顺序打乱为 ↑顶部最上 / ↓到底最下 / 当前版本号垫在 ↓到底下面，且「打乱前先看 PC 端布局再定移动端」。
