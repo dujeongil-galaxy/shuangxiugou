@@ -1340,9 +1340,9 @@ section('2g. 首页证据链完整公示');
       && exists('notes.html'),
       '悬浮导航新增「手气不错」→ notes.html（PC 右下 dock / 手机二级菜单共用同一 ITEMS，双端同名）',
       '入口缺失或写回「站长随笔」→ 弹窗改版丢掉的随笔按钮没补回来，或站长要求的改名没落地');
-    check((html.match(/nav-menu\.js\?v=11/g) || []).length === 2,
-      'index.html 的 nav-menu.js 预加载与脚本两处缓存号维持 ?v=11（2026-11-25 撤销那一车人后回退）',
-      '只改一处 → 预加载与脚本拿到不同版本；未回退 → 旧脚本缓存着已撤销的那一车人入口');
+    check((html.match(/nav-menu\.js\?v=12/g) || []).length === 2,
+      'index.html 的 nav-menu.js 预加载与脚本两处缓存号维持 ?v=12（2026-11-27 手机端导航项加 id、两端都建条目后 bump）',
+      '只改一处 → 预加载与脚本拿到不同版本；未 bump → 旧脚本缓存着没有 id 的导航项，fab-dock 提升不出来');
     /* 2026-11-25 站长定规：本悬浮菜单的导航项只由站长逐项明确授权，AI 不得自行
        解释「导航栏」把页面内导航外扩到这里。当天 AI 把「成功案例页里导航栏同步更新」
        听成「加进首页悬浮菜单」，擅自加了「那一车人」。此处白名单写死为站长确认过的
@@ -10612,13 +10612,37 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '收编清单缺项 / 折叠层回潮 / 桌面端也被搬走 → 悬浮层又变成两套布局各自为政');
 
   // ④ 挂载顺序：dock 脚本必须排在所有悬浮脚本之后。
-  const mountOk = /<script defer src="\.\/fab-dock\.js\?v=3"><\/script>/.test(idx36q)
-    && idx36q.indexOf('fab-dock.js?v=3') > idx36q.indexOf('nav-menu.js?v=7')
-    && Number((idx36q.match(/mobile-fixes\.css\?v=(\d+)/) || [])[1] || 0) >= 23
+  const mountOk = /<script defer src="\.\/fab-dock\.js\?v=4"><\/script>/.test(idx36q)
+    && idx36q.indexOf('fab-dock.js?v=4') > idx36q.indexOf('nav-menu.js?v=7')
+    && Number((idx36q.match(/mobile-fixes\.css\?v=(\d+)/) || [])[1] || 0) >= 26
     && /header-menu-patch\.js\?v=(1[1-9]|[2-9]\d)/.test(idx36q);
   check(mountOk,
-    '§36q index.html 已挂载 fab-dock.js?v=3 且排在所有悬浮脚本之后，mobile-fixes.css 带 ?v 缓存号 / header-menu-patch.js 缓存号随内容同步 bump',
+    '§36q index.html 已挂载 fab-dock.js?v=4 且排在所有悬浮脚本之后，mobile-fixes.css 带 ?v 缓存号 / header-menu-patch.js 缓存号随内容同步 bump',
     '挂载顺序错了 → dock 执行时按钮还没建好，收编为空；?v 没 bump → 浏览器缓存旧 CSS');
+
+  // 2026-11-27 站长：手机端取消 ☰ 折叠，四项 + 版本号提升为 dock 一级；
+  // 顺序打乱为 ↑顶部最上 / ↓到底最下 / 当前版本号垫在 ↓到底下面。
+  const nmNav = read('nav-menu.js');
+  const mfDock = stripCssComments(read('mobile-fixes.css'));
+  const liftOk = /var\s+NAV_ITEMS\s*=\s*\[[^\]]*sxg-nav-evidence[^\]]*sxg-nav-projects[^\]]*sxg-nav-stories[^\]]*sxg-nav-notes/.test(dock36q)
+    && /function\s+liftNavItems\(\)/.test(dock36q)
+    && /NAV_ALL\.forEach/.test(dock36q)
+    && /panel\.appendChild\(el\)/.test(dock36q)     // disable() 时还原回面板
+    && /var\s+VER_ID\s*=\s*'sxg-nav-ver'/.test(dock36q)
+    && /id:\s*'sxg-nav-evidence'/.test(nmNav)
+    && /id:\s*'sxg-nav-notes'/.test(nmNav)
+    && /box\.id\s*=\s*'sxg-nav-ver'/.test(nmNav)
+    && !/if\s*\(!isMobile\(\)\)\s*ensureItems\(\)/.test(nmNav)  // 两端都建条目（手机端不再等点开）
+    && /^\s*ensureItems\(\);\s*$/m.test(nmNav);
+  const orderOk = /#sxg-fab-dock\s*>\s*#sxg-nav\s*\{\s*display:\s*none\s*!important/.test(mfDock)
+    && /#sxg-fab-dock\s*>\s*#sxg-top-btn\s*\{\s*order:\s*1\s*!important/.test(mfDock)
+    && /#sxg-fab-dock\s*>\s*#sxg-bottom-btn\s*\{\s*order:\s*900\s*!important/.test(mfDock)
+    && /#sxg-fab-dock\s*>\s*#sxg-nav-ver\s*\{\s*order:\s*999\s*!important/.test(mfDock)
+    && /#sxg-fab-dock\s*>\s*#sxg-nav-ver::after\s*\{\s*content:\s*none\s*!important/.test(mfDock)
+    && /#sxg-fab-dock\s*>\s*#sxg-nav-evidence\s*\{\s*order:\s*2\s*!important/.test(mfDock);
+  check(exists('nav-menu.js') && liftOk && orderOk,
+    '§40w 手机端 ☰ 折叠导航取消：四项 + 版本号提升为 dock 一级（桌面还原回面板），顺序 ↑顶部最上 / ↓到底最下 / 版本号垫底',
+    '折叠回潮或顺序错 → 站长指定的手机端首末位置失守，版本号跑回菜单看不见');
 }
 
 // ---------- 36r. 申诉弹窗补规则 + GitHub 访问帮助设备分流 + sponsor 链接规整（2026-11-12 站长） ----------
@@ -10755,9 +10779,9 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
 
   // ⑤ 挂载与 ?v 钉子（§21h 纪律）+ jsdom 行为测试挂进 CI（§21o）。
   check(/<script defer src="\.\/anon-mail\.js\?v=5"><\/script>/.test(idx36s)
-    && idx36s.indexOf('anon-mail.js?v=5') > idx36s.indexOf('fab-dock.js?v=3')
-    && /fab-dock\.js\?v=3/.test(idx36s)
-    && Number((idx36s.match(/mobile-fixes\.css\?v=(\d+)/) || [])[1] || 0) >= 23
+    && idx36s.indexOf('anon-mail.js?v=5') > idx36s.indexOf('fab-dock.js?v=4')
+    && /fab-dock\.js\?v=4/.test(idx36s)
+    && Number((idx36s.match(/mobile-fixes\.css\?v=(\d+)/) || [])[1] || 0) >= 26
     && /header-menu-patch\.js\?v=(1[1-9]|[2-9]\d)/.test(idx36s)
     && exists('scripts/test-anon-mail.cjs')
     && wf36s.indexOf('node scripts/test-anon-mail.cjs') !== -1,
@@ -12195,6 +12219,21 @@ section('40. 成功案例自述专题（50 元罚单 · 站长亲身经历，202
   check(/40\. 成功案例自述专题/.test(read('scripts/verify.mjs')),
     '§43n 专题校验段仍在（防止整段被删空后恒真空转）',
     '校验段丢失 → 专题改坏也无人发现');
+
+  // 站长 2026-11-27：本篇定位是「站长故事·站长个人故事」，不是成功案例专题；
+  // 50 元事实与逐字口径（§43c/o/p/q）一个字不改，这里只咬身份表达 + notes 链接。
+  check((/｜站长故事 · 双休购/.test(fy)
+      && /<span class="topic-tag">站长故事 · 自述<\/span>/.test(fy)
+      && /这是站长自己的故事/.test(fy)
+      && /站长故事收的大多是/.test(fy)
+      && !/成功案例专题/.test(fy)),
+    '§43t 栏目身份统一为「站长故事」（标题/og/twitter/JSON-LD/标签/导语/正文），不留「成功案例专题」旧称',
+    '改回「成功案例专题」或只改标题不改正文 → 身份口径自相矛盾');
+  check((/<a class="story-url" href="https:\/\/dujeongil-galaxy\.github\.io\/shuangxiugou\/notes\.html">https:\/\/dujeongil-galaxy\.github\.io\/shuangxiugou\/notes\.html<\/a>/.test(fy)
+      && /<p class="story-hint">更多站长故事请访问这里<\/p>/.test(fy)
+      && /\.more-stories \.story-url/.test(fy)),
+    '§43u notes 链接本身做成超链接（URL 即链接文字）、下方一条「更多站长故事请访问这里」提示',
+    '给「这里」两字加链接或提示文案写错 → 违背站长「链接本身做成超链接、下方一条提示」的指定形式');
 }
 
 // ---------- 汇总 ----------

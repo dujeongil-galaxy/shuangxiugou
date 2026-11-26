@@ -32,15 +32,26 @@
   var DOCK_ID = 'sxg-fab-dock';
   var MQ      = '(max-width: 640px)';
 
-  /* 从上到下的顺序即 dock 内的排列顺序；全部常显，不再分 PRIMARY / EXTRA。 */
+  /* 从上到下的顺序即 dock 内的排列顺序；全部常显，不再分 PRIMARY / EXTRA。
+     2026-11-27 站长打乱手机端顺序：顶部最上、滑到底部最下、版本号垫在它下面。
+     视觉顺序由 mobile-fixes.css 的 flex order 决定，本数组保持历史顺序不变
+     （PC 端原样还原、既有校验都依赖它），只是新增末尾的版本号节点。 */
   var ORDER  = [
-    'sxg-nav',            // 导航（内含 #sxg-nav-panel）
+    'sxg-nav',            // 导航容器（手机端隐藏，四项已提升为一级）
     'sxg-remind-btn',     // 提醒
     'sxg-video-btn',      // 视频
     'sxg-bottom-btn',     // 滑到底部
     'sxg-ai-fab',         // AI 劳动法小助手
     'sxg-top-btn'         // 回顶部
   ];
+  /* 2026-11-27 站长：手机端取消 ☰ 折叠，导航面板里的项提升为 dock 一级按钮。 */
+  var NAV_ITEMS = [
+    'sxg-nav-evidence',   // 证据链公示
+    'sxg-nav-projects',   // 同类项目导航
+    'sxg-nav-stories',    // 成功案例
+    'sxg-nav-notes'       // 手气不错
+  ];
+  var VER_ID   = 'sxg-nav-ver';  // 版本号节点，从面板提升到 dock 最底
   /* 外部组件挂进 dock 的入口：不归本文件 fill() 管，但退出窄屏时要还给 body。
      2026-11-13 站长口径：手机端顶栏只留 提交数据/Star/赞助/分享本站 四枚，
      Login GitHub 与匿名邮箱一起收进右侧 dock（桌面端六枚顺序不动）。 */
@@ -50,13 +61,18 @@
   /* 撑开的宽条只有 68px，统一用中文短标签；标签是 CSS ::after 的唯一真相源，
      源脚本里的「TOP」/「AI」/ 纯 SVG 一律由 mobile-fixes.css 收起。 */
   var LABELS = {
-    'sxg-nav':          '☰ 导航',
-    'sxg-remind-btn':   '提醒',
-    'sxg-video-btn':    '▶ 视频',
-    'sxg-bottom-btn':   '↓ 到底',
-    'sxg-ai-fab':       'AI 对话',
-    'sxg-top-btn':      '↑ 顶部',
-    'login-github-btn': '登录'
+    'sxg-nav':            '☰ 导航',
+    'sxg-remind-btn':     '提醒',
+    'sxg-video-btn':      '▶ 视频',
+    'sxg-bottom-btn':     '↓ 到底',
+    'sxg-ai-fab':         'AI 对话',
+    'sxg-top-btn':        '↑ 顶部',
+    'sxg-nav-evidence':   '证据链',
+    'sxg-nav-projects':   '同类项目',
+    'sxg-nav-stories':    '成功案例',
+    'sxg-nav-notes':      '手气不错',
+    'sxg-nav-ver':        '当前版本',
+    'login-github-btn':   '登录'
   };
 
   var dock = null;
@@ -75,6 +91,22 @@
     document.documentElement.style.setProperty('--sxg-dock-h', h + 'px');
   }
 
+  /* 2026-11-27 站长：手机端取消 ☰ 折叠，把导航面板里的四项 + 版本号提升到
+     dock 当一级按钮。它们原本是 #sxg-nav-panel 的子节点，这里连同容器一起搬；
+     disable() 时原样还回面板，PC 端布局逐像素不变。 */
+  var NAV_ALL = NAV_ITEMS.concat([VER_ID]);
+
+  function liftNavItems() {
+    if (!dock) return;
+    var panel = document.getElementById('sxg-nav-panel');
+    NAV_ALL.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el || !panel) return;
+      el.setAttribute('data-sxg-dock-label', LABELS[id]);
+      if (el.parentNode !== dock) dock.appendChild(el);
+    });
+  }
+
   /* 把清单里已存在的按钮补进容器；返回仍缺失的个数。
      源脚本有的在 DOMContentLoaded 里同步建、有的点开才建子项，
      所以这里既在挂载时调一次，也由 MutationObserver 反复调。 */
@@ -91,6 +123,8 @@
       labelEl.setAttribute('data-sxg-dock-label', LABELS[ORDER[i]]);
       if (el.parentNode !== dock) dock.appendChild(el);
     }
+    // 手机端：四项 + 版本号提升为 dock 一级（顺序由 CSS flex order 决定）
+    liftNavItems();
     /* 客居入口（匿名邮箱 / Login GitHub）：归属不归本文件，但短标签同样由
        LABELS 补齐；只打标签，不主动搬入（它们自己的脚本会安置进 dock）。 */
     for (i = 0; i < GUESTS.length; i++) {
@@ -158,6 +192,15 @@
       var guest = document.getElementById(GUESTS[j]);
       if (guest && dock.contains(guest)) document.body.appendChild(guest);
     }
+    /* 2026-11-27：提升为一级的四项 + 版本号还原回导航面板，PC 端折叠原样。 */
+    var panel = document.getElementById('sxg-nav-panel');
+    NAV_ALL.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el && panel && dock.contains(el)) {
+        el.removeAttribute('data-sxg-dock-label');
+        panel.appendChild(el);
+      }
+    });
     if (observer) { observer.disconnect(); observer = null; }
     if (ro) { ro.disconnect(); ro = null; }
     dock.remove();

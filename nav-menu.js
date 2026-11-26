@@ -53,12 +53,12 @@
   // 「证据链公示」是页内锚点：公告栏在手机上默认折叠成一行，不想点「展开」
   // 的人也能从这儿一步跳到证据链区块（2026-11-02 站长：折叠后跳转要有去处）。
   var ITEMS = [
-    { label: '证据链公示', href: '#evidence-board' },
-    { label: '同类项目导航', href: './projects.html' },
-    { label: '成功案例', href: './success-stories.html' },
+    { id: 'sxg-nav-evidence', label: '证据链公示', href: '#evidence-board' },
+    { id: 'sxg-nav-projects', label: '同类项目导航', href: './projects.html' },
+    { id: 'sxg-nav-stories', label: '成功案例', href: './success-stories.html' },
     // 站长随笔入口（2026-11-14）：弹窗保持两枚按钮，这里补一个导航出口。
     // 按钮文字叫「手气不错」，链接仍指向加密随笔页 notes.html；双端同源。
-    { label: '手气不错', href: './notes.html' }
+    { id: 'sxg-nav-notes', label: '手气不错', href: './notes.html' }
     // QQ 浏览器专题「不进」导航（2026-11-19 站长纠正）：拦截跳专题页就够了，
     // 普通访客不应有直达入口；专题页也不 backlink 站点其它页，只有搜索引擎来路。
   ];
@@ -164,6 +164,9 @@
     ITEMS.forEach(function (it) {
       var a = document.createElement('a');
       a.className = 'sxg-nav-item';
+      // 2026-11-27 站长：手机端取消折叠导航，四项展开成 dock 一级按钮。
+      // 这里给每项一个稳定 id，供 fab-dock.js 收编时用；PC 端不受影响。
+      if (it.id) a.id = it.id;
       a.href = it.href;
       a.textContent = it.label;
       panel.appendChild(a);
@@ -177,6 +180,8 @@
     if (ver) {
       var box = document.createElement('div');
       box.className = 'sxg-nav-item sxg-nav-ver';
+      // 2026-11-27 站长：版本号从折叠面板里出来，手机端单独垫在 dock 最底。
+      box.id = 'sxg-nav-ver';
       box.textContent = ver;
       panel.appendChild(box);
     }
@@ -273,7 +278,10 @@
       else if (mq.addListener) mq.addListener(onBp);
     }
 
-    if (!isMobile()) ensureItems();
+    // 2026-11-27 站长：手机端取消折叠导航，四项 + 版本号展开成 dock 一级按钮。
+    // 展开由 fab-dock.js 负责，但条目必须先建好（原来手机端要点开才建）。
+    // 两端都建，PC 端行为不变（panel 常显），手机端 fab 由 CSS 隐藏。
+    ensureItems();
   }
 
   if (document.readyState === 'loading') {

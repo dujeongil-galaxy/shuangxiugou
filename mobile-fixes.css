@@ -564,6 +564,35 @@ div[class*="border-t"][class*="bg-slate-50"] > div.flex.items-center.gap-2 {
     overflow-y: auto !important;
   }
 
+  /* ------------------------------------------------------------------------
+     2026-11-27 站长：手机端取消 ☰ 折叠导航 —— 面板里的四项 + 版本号由
+     fab-dock.js 提升为 dock 一级按钮，☰ 容器空壳整个隐藏；顺序打乱为
+     ↑顶部最上、↓到底最下、当前版本号垫在 ↓到底 下面。
+     用 flex order 排视觉顺序（DOM 顺序保持历史值，PC 端逐像素不变）。
+     ------------------------------------------------------------------------ */
+  #sxg-fab-dock > #sxg-nav { display: none !important; }
+  #sxg-fab-dock > * { order: 500 !important; }
+  #sxg-fab-dock > #sxg-top-btn      { order: 1 !important; }
+  #sxg-fab-dock > #sxg-nav-evidence { order: 2 !important; }
+  #sxg-fab-dock > #sxg-nav-projects { order: 3 !important; }
+  #sxg-fab-dock > #sxg-nav-stories  { order: 4 !important; }
+  #sxg-fab-dock > #sxg-nav-notes    { order: 5 !important; }
+  #sxg-fab-dock > #sxg-remind-btn   { order: 10 !important; }
+  #sxg-fab-dock > #sxg-video-btn    { order: 11 !important; }
+  #sxg-fab-dock > #sxg-ai-fab       { order: 12 !important; }
+  #sxg-fab-dock > #sxg-bottom-btn   { order: 900 !important; }
+  /* 版本号：垫在最底，不是按钮、不可点；68px 内允许两行显示完整「当前版本号 xxx」 */
+  #sxg-fab-dock > #sxg-nav-ver {
+    order: 999 !important;
+    height: auto !important;
+    min-height: 36px !important;
+    font-size: 10px !important;
+    line-height: 1.35 !important;
+    white-space: normal !important;
+    pointer-events: none !important;
+  }
+  #sxg-fab-dock > #sxg-nav-ver::after { content: none !important; }
+
   /* AI 面板不进 dock（它是宽面板，仍 fixed 在 body）。
      2026-11-12 站长截图指令：手机端面板要落在「站点 header 正下方」那个位置。
      原来按 bottom 反推（bar-h + dock-h 288 + 24），算式里 dock 那 288px 是「屏幕底部
