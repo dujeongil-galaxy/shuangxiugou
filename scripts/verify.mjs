@@ -6907,15 +6907,21 @@ section('21c. 首页滑到底部按钮');
         && /\}, true\);/.test(la),
         '§21h-19 AI 页静默拦截全部 DevTools 快捷键（F12/Ctrl+Shift+I+J+C+K/Ctrl+U，捕获阶段吞掉）',
         '删掉任一拦截分支或去掉 preventDefault → 对应快捷键又能打开开发者工具看明文 Key');
+      // 2026-11-26 站长补充：右键菜单也要锁（检查元素 / 查看源代码都从右键走）。
+      check(/addEventListener\('contextmenu', function \(e\) \{[\s\S]{0,80}\n\s*e\.preventDefault\(\)[\s\S]{0,80}\n\s*e\.stopImmediatePropagation\(\)[\s\S]{0,80}\n\s*\}, true\);/.test(la),
+        '§21h-19 AI 页静默拦截右键菜单（检查元素/查看源代码走不出去，不弹窗）',
+        '删掉 contextmenu 拦截或去掉 preventDefault → 右键「检查」又能打开开发者工具看明文 Key');
       // 2026-11-26 站长追加：Ctrl+C/V/X/A 这类基础编辑键绝不能锁。
       // 上面是静态代码断言，这里把真实 handler 拿出来跑一遍按键，确认基础键放行、DevTools 键仍吞掉。
       {
         const keyBlock = (la.match(/document\.addEventListener\('keydown', function \(e\) \{[\s\S]*?\}, true\);/) || [''])[0];
+        const ctxBlock = (la.match(/document\.addEventListener\('contextmenu', function \(e\) \{[\s\S]*?\}, true\);/) || [''])[0];
         const handlers = [];
         const savedDocument = globalThis.document;
         globalThis.document = { addEventListener: (type, fn, capture) => handlers.push({ type, fn, capture }) };
-        try { new Function(keyBlock)(); } finally { globalThis.document = savedDocument; }
+        try { new Function(keyBlock + '\n' + ctxBlock)(); } finally { globalThis.document = savedDocument; }
         const h = handlers[0] && handlers[0].fn;
+        const ctxH = handlers[1] && handlers[1].fn;
         const isBlocked = (init) => {
           let hit = false;
           h(Object.assign({ keyCode: 0 }, init, {
@@ -6924,7 +6930,12 @@ section('21c. 首页滑到底部按钮');
           }));
           return hit;
         };
-        check(!!h
+        const ctxBlocked = () => {
+          let hit = false;
+          ctxH({ preventDefault() { hit = true; }, stopImmediatePropagation() {} });
+          return hit;
+        };
+        check(!!h && !!ctxH
           && isBlocked({ key: 'c', code: 'KeyC', ctrlKey: true, keyCode: 67 }) === false
           && isBlocked({ key: 'v', code: 'KeyV', ctrlKey: true, keyCode: 86 }) === false
           && isBlocked({ key: 'x', code: 'KeyX', ctrlKey: true, keyCode: 88 }) === false
@@ -6932,9 +6943,10 @@ section('21c. 首页滑到底部按钮');
           && isBlocked({ key: 'V', code: 'KeyV', ctrlKey: true, shiftKey: true, keyCode: 86 }) === false
           && isBlocked({ key: 'F12', keyCode: 123 }) === true
           && isBlocked({ key: 'I', code: 'KeyI', ctrlKey: true, shiftKey: true, keyCode: 73 }) === true
-          && isBlocked({ key: 'u', code: 'KeyU', ctrlKey: true, keyCode: 85 }) === true,
-          '§21h-19 基础编辑键 Ctrl+C/V/X/A 与 Ctrl+Shift+V 不被拦截，DevTools 快捷键仍被拦截',
-          '把复制/粘贴/剪切/全选也吞掉 → 用户连报错信息都复制不了，违反站长明确要求');
+          && isBlocked({ key: 'u', code: 'KeyU', ctrlKey: true, keyCode: 85 }) === true
+          && ctxBlocked() === true,
+          '§21h-19 基础编辑键 Ctrl+C/V/X/A 与 Ctrl+Shift+V 放行，DevTools 快捷键与右键菜单被拦截',
+          '把复制/粘贴/剪切/全选也吞掉，或漏掉右键菜单 → 违反站长明确要求');
       }
       const routeBody = (stripComments(la).match(/function renderRoute\(\)\{[\s\S]*?\n\}/) || [''])[0];
       // §21h-4（2026-11-26 站长改口径）：三档额度数字不在页面公开，改在 README 公开。

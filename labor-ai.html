@@ -287,10 +287,11 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
 <footer>回答仅供参考，不替代专业法律意见</footer>
 
 <script>
-/* ===== 静默拦截开发者工具快捷键（站长 2026-11-26 要求）=====
+/* ===== 静默拦截开发者工具入口（站长 2026-11-26 要求）=====
    捕获阶段 eat 掉所有开 DevTools / 看源码的键盘组合：
    F12（含 Ctrl/Shift/Alt 任意组合）、Ctrl+Shift+I / J / C / K
    （Mac 的 Meta+Alt 同禁）、Ctrl+U（含 Shift/Alt 组合）。
+   右键菜单（含「检查元素」「查看源代码」）同样吞掉；键盘 Ctrl+C/V 等基础编辑键不受影响。
    不弹窗、不提示、按键无响应；网页拦不住浏览器菜单 / 禁用 JS，防君子。 */
 document.addEventListener('keydown', function (e) {
   var k = (e.key || '').toLowerCase();
@@ -309,6 +310,14 @@ document.addEventListener('keydown', function (e) {
     e.stopImmediatePropagation();
     return false;
   }
+}, true);
+
+/* 右键菜单同样静默吞掉：检查元素 / 查看源代码都走不出去。
+   代价是右键菜单里的复制/粘贴也用不了，但键盘 Ctrl+C/V 仍正常。 */
+document.addEventListener('contextmenu', function (e) {
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  return false;
 }, true);
 
 /* ===== 双线路配置：换模型 / 换地址只改这里 ===== */
