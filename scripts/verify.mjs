@@ -8112,9 +8112,9 @@ section('21c. 首页滑到底部按钮');
 
   // —— 左侧目录树（参考站长随笔自动生成）——
   const tocCount = (ss.match(/data-toc=/g) || []).length;
-  check(tocCount === 8,
-    `成功案例页目录树锚点齐全（8 个 data-toc：致敬前辈/QQ奶奶/反面专题/#01~#05，实际 ${tocCount}；50 元自述本地稿不发布）`,
-    `data-toc 数量不对（${tocCount}）→ 目录树会漏章节或多出本地稿入口`);
+  check(tocCount === 9,
+    `成功案例页目录树锚点齐全（9 个 data-toc：致敬前辈/QQ奶奶/反面专题/50元自述/#01~#05，实际 ${tocCount}）`,
+    `data-toc 数量不对（${tocCount}）→ 目录树会漏章节或多出入口`);
   check(/id="toc-nav"/.test(ss), '成功案例页含目录树容器 #toc-nav', '目录树容器缺失 → 左侧目录树建不出来');
   check(/class="toc"/.test(ss) && /<summary>目录<\/summary>/.test(ss),
     '目录树用可折叠 <details class="toc"> 承载（窄屏回落单栏）', '目录树结构缺失或不可折叠');
@@ -12057,18 +12057,17 @@ section('39. 成功案例反面专题（万州公交坠江）');
     '校验段或生成器路径丢失 → 后续重建会静默抹掉这一页');
 }
 
-section('40. 成功案例自述专题（50 元罚单 · 站长亲身经历，本地草稿不发布）');
+section('40. 成功案例自述专题（50 元罚单 · 站长亲身经历，2026-11-27 起发布）');
 {
-  // 站长明确：本篇只本地成稿，不进线上。校验保留本地稿内容保护；发布状态必须为「无入口」。
-  const hasLocalFy = exists('fifty-yuan.html');
-  const fy = hasLocalFy ? read('fifty-yuan.html') : '';
-  check(!hasLocalFy || fy.length > 6000,
-    '§43a 本地 fifty-yuan.html 存在且是完整长页（非空壳）',
-    '本地稿缺失或过短 → 自述专题草稿没落地');
+  // 站长 2026-11-27：本篇作为专题页发布，位置固定在反面专题（万州）下面，不占案例序号。
+  const fy = read('fifty-yuan.html');
+  check(fy.length > 6000,
+    '§43a fifty-yuan.html 存在且是完整长页（非空壳）',
+    '页面缺失或过短 → 自述专题没上线');
 
-  check(!hasLocalFy || (/class="ai-badge"[^>]*>\s*内容由 AI 生成/.test(fy)
-      && /class="ai-note"/.test(fy) && /AI 依据当事人口述及其所持材料/.test(fy)),
-    '§43b 本地自述专题挂「内容由 AI 生成」徽章 + .ai-note 声明框（口径为当事人口述，非公开报道）',
+  check(/class="ai-badge"[^>]*>\s*内容由 AI 生成/.test(fy)
+      && /class="ai-note"/.test(fy) && /AI 依据当事人口述及其所持材料/.test(fy),
+    '§43b 自述专题挂「内容由 AI 生成」徽章 + .ai-note 声明框（口径为当事人口述，非公开报道）',
     '缺徽章／声明框／口径写错 → 与 §21j 同口径的诚实披露失守');
 
   const factsFy = [
@@ -12090,11 +12089,11 @@ section('40. 成功案例自述专题（50 元罚单 · 站长亲身经历，本
     ['满足你，行了吧', '情感锚点'],
   ];
   const missFy = factsFy.filter(([s]) => !fy.includes(s)).map(([s, d]) => `${s}（${d}）`);
-  check(!hasLocalFy || missFy.length === 0,
+  check(missFy.length === 0,
     `§43c 本地自述专题的 ${factsFy.length} 个关键事实锚点齐全`,
-    (!hasLocalFy || missFy.length === 0) ? '' : '以下事实锚点丢失，正文可能被改坏：' + missFy.join('； '));
+    (missFy.length === 0) ? '' : '以下事实锚点丢失，正文可能被改坏：' + missFy.join('； '));
 
-  check(!hasLocalFy || (/class="correct"/.test(fy)
+  check((/class="correct"/.test(fy)
       && /当事人自述，不是司法文书/.test(fy)
       && /无证据表明存在因果关系/.test(fy)
       && /均无指控意图/.test(fy)
@@ -12102,38 +12101,100 @@ section('40. 成功案例自述专题（50 元罚单 · 站长亲身经历，本
     '§43d 口径厘清框写明「自述非司法文书／无因果断言／无指控意图／已脱敏」',
     '删掉口径厘清 → 读者会把个人自述读成司法定论，或把时间先后读成因果');
 
-  check(!hasLocalFy || (/不是司法文书/.test(fy) && /事实认定以官方文书为准/.test(fy)
+  check((/不是司法文书/.test(fy) && /事实认定以官方文书为准/.test(fy)
       && /不推翻、不否认复议决定的法律效力/.test(fy)),
     '§43e 自述专题承认复议决定的法律效力、不自行翻案',
     '改成替当事人翻案 → 个人自述越过事实边界');
 
-  check(!hasLocalFy || (/材料出处/.test(fy) && /原件未公开/.test(fy)
+  check((/材料出处/.test(fy) && /原件未公开/.test(fy)
       && /行政复议决定书/.test(fy) && /通信详单查询结果/.test(fy)),
     '§43f 列当事人所持材料出处并声明原件未公开（不编造公开新闻链接）',
     '材料出处缺失或伪装成公开报道 → 违反本篇「自述而非报道」的事实边界');
 
-  check(!hasLocalFy || (!/川\s*R/.test(fy) && !/川RF22525/.test(fy)
+  check((!/川\s*R/.test(fy) && !/川RF22525/.test(fy)
       && !/南充/.test(fy) && !/文峰街/.test(fy) && !/\d{17}[\dXx]/.test(fy)),
     '§43g 个人信息已脱敏（牌照简称／城市名／具体街道／身份证号不进正文）',
     '可识别信息泄漏 → 违反 §43d 脱敏承诺与本站隐私立场');
 
-  check(!hasLocalFy || (!/<img\b/i.test(fy) && !/assets\//.test(fy)),
+  check((!/<img\b/i.test(fy) && !/assets\//.test(fy)),
     '§43h 自述专题不引用图片或站内素材（文字页，素材不入库）',
     '挂了图片／素材 → 违反素材规则');
 
-  const publishedRefs = [
-    ['success-stories.html', read('success-stories.html')],
-    ['sitemap.xml', read('sitemap.xml')],
-    ['scripts/seo/generate-sitemap.py', read('scripts/seo/generate-sitemap.py')],
-    ['nav-menu.js', read('nav-menu.js')]
-  ].filter(([, s]) => /fifty-yuan\.html/.test(s)).map(([f]) => f);
-  check(publishedRefs.length === 0,
-    '§43i 50 元自述专题保持本地：成功案例页/站点地图/生成器/首页导航均无入口（避免死链）',
-    publishedRefs.length ? '这些文件还留着未发布页的入口：' + publishedRefs.join('、') : '');
+  // 站长 2026-11-26 反复纠正的三类错误，写成机器断言，不靠 AI 记性：
+  //   ① 把给 AI 的纠错备注原文贴进正文（"不是当天…是送过来之后"这类自我更正口吻）
+  //   ② 改动母亲原话的逐字口径（顿号／语序／括号内容）
+  //   ③ 编造不存在的出结果时间（当天申诉当天回复／秒数／分钟数）
+  check((
+      !/不是当天|送过来之后|还问我/.test(fy)
+      && /她担心的是：我告了交警，往后他们会公报私仇。/.test(fy)
+      && !/她原话是/.test(fy)
+      && /那是一种几乎是本能的、从很久以前的生活里长出来的担心。/.test(fy)
+      && /（我妈是ISTJ，这没什么，但我是INTJ）/.test(fy)
+      && !/当天申诉|当天就(被)?回复|当天就出结果|前后几秒钟|前后几秒/.test(fy)
+    ),
+    '§43o 口径写死：纠错备注不进正文；母亲的态度写为转述、不标「她原话是」、不照搬口述句；ISTJ 括号按站长给定；不编造出结果时间',
+    '任一处被改回 → 又犯了站长反复纠正的错（备注泄漏／改原话／编时间）');
+
+  // 站长 2026-11-26 再纠正：结尾不能把家庭冲突美化成「想让我平平安安／我妈的恐惧」。
+  // 真实口径是对方一言不合就闹、制造噪音，当事人懒得听。写成机器断言防回退。
+  check((
+      /说不上两句就能闹起来，一件事翻来覆去地讲，越讲越响/.test(fy)
+      && /那声音对我就是噪音——我懒得听，也不想再听/.test(fy)
+      && !/想让我平平安安/.test(fy)
+      && !/我妈的恐惧/.test(fy)
+      && !/那一代人的方式/.test(fy)
+      && !/替我担那份怕/.test(fy)
+    ),
+    '§43p 结尾口径：母亲闹、那是噪音、当事人懒得听；不美化成「平平安安／我妈的恐惧／那一代人的方式」',
+    '改回温情化收尾 → 违背当事人自述的真实态度，把冲突粉饰掉');
+
+  // 站长 2026-11-26 再纠正：吼发生在 9 月罚单那次，复议回执送到这次只是明确表态放弃。
+  // 另一个读不通的旧句「免得我今后又拿这件事来说」主语混乱，已重写。
+  check((
+      /罚单下来那天，我就冲我妈发了火/.test(fy)
+      && /继父当场怪我说话不尊重我妈/.test(fy)
+      && /省得我以后又拿这件事翻出来说/.test(fy)
+      && /罚单那次已经为钱吵过一架，这次我没再提那 50 块/.test(fy)
+      && /钱是你给的，我懒得闹了，别再说了/.test(fy)
+      && !/而我当时大概是觉得又委屈又窝火/.test(fy)
+      && !/免得我今后又拿这件事来说/.test(fy)
+    ),
+    '§43q 冲突时间线：吼在 9 月罚单那次、复议这次只表态放弃；继父那句主语通顺',
+    '把吼挪回复议这次或恢复旧句 → 时间线错、句子读不通');
+
+  const ssNow = read('success-stories.html');
+  check(/class="topic-entry"[^>]*href="\.\/fifty-yuan\.html"/.test(ssNow),
+    '§43i 成功案例页有指向 fifty-yuan.html 的专题入口',
+    '没有入口 → 自述专题成为孤岛');
+  // 站长 2026-11-27：位置固定在反面专题（万州）下面、案例 #01 之前。
+  const byIdx = ssNow.indexOf('href="./bystander.html"');
+  const fyIdx = ssNow.indexOf('href="./fifty-yuan.html"');
+  const caseIdx = ssNow.indexOf('id="case-1"');
+  check(byIdx > 0 && fyIdx > byIdx && caseIdx > fyIdx,
+    '§43r 入口位置：万州反面专题 → 50 元自述专题 → 案例 #01（顺序写死）',
+    '入口跑到万州上面或案例区里 → 违反站长指定的位置');
+  const entryFy = (ssNow.match(/<a class="topic-entry"[^>]*href="\.\/fifty-yuan\.html"[\s\S]*?<\/a>/) || [''])[0];
+  check(/专题 · 自述/.test(entryFy) && !/案例 #0[0-9]/.test(entryFy),
+    '§43j 入口标为「专题 · 自述」（不占案例序号）',
+    '专题入口被标成案例序号 → 与站长「专题不占编号」的先例冲突');
+  check(/fifty-yuan\.html/.test(read('sitemap.xml')),
+    '§43k sitemap.xml 收录自述专题页',
+    '漏收录 → 爬虫发现不了这一页');
+  check(/fifty-yuan\.html/.test(read('scripts/seo/generate-sitemap.py')),
+    '§43l sitemap 生成脚本同样写入自述专题页（防下次重建时被抹掉）',
+    '只改 sitemap.xml 不改生成器 → 一跑 seo:sitemap 就丢');
+  check(!/fifty-yuan\.html/.test(read('nav-menu.js')),
+    '§43m 自述专题不进首页悬浮导航（导航项须站长逐项点名，见 README 硬性要求）',
+    '擅自加进导航 → 违反 README「禁止 AI 未经点名新增导航项」规则');
+
+  // 发布后公开描述也要和正文结尾口径一致，不能留温情化的旧表述。
+  check(!/母亲怕他被报复的恐惧|爱你的人的恐惧|替他害怕/.test(fy),
+    '§43s 页面公开描述（含 og/twitter/JSON-LD）无温情化旧口径',
+    '头部描述还写「恐惧/替他害怕」→ 和结尾「闹、噪音、懒得听」自相矛盾');
 
   check(/40\. 成功案例自述专题/.test(read('scripts/verify.mjs')),
-    '§43n 本地草稿校验段仍在（防止整段被删空后恒真空转）',
-    '校验段丢失 → 本地稿改坏也无人发现');
+    '§43n 专题校验段仍在（防止整段被删空后恒真空转）',
+    '校验段丢失 → 专题改坏也无人发现');
 }
 
 // ---------- 汇总 ----------

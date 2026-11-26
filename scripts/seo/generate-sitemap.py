@@ -67,6 +67,13 @@ parts.append(
     f'    <changefreq>monthly</changefreq>\n'
     f'    <priority>0.7</priority>\n  </url>'
 )
+# 自述专题：50 元罚单与一场败诉的复议（站长亲身经历，不占案例序号；2026-11-27 起发布）
+parts.append(
+    f'  <url>\n    <loc>{BASE}/fifty-yuan.html</loc>\n'
+    f'    <lastmod>2026-11-27</lastmod>\n'
+    f'    <changefreq>monthly</changefreq>\n'
+    f'    <priority>0.7</priority>\n  </url>'
+)
 # 比亚迪车主专题报道（2026-11-14 站长要求单独建页，双休购旗下独立 HTML）
 parts.append(
     f'  <url>\n    <loc>{BASE}/byd-report.html</loc>\n'

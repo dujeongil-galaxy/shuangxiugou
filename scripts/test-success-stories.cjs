@@ -1,4 +1,4 @@
-// 成功案例页回归：左侧目录树真的建出来（7 条）、无框小火箭真的在 DOM 里、
+// 成功案例页回归：左侧目录树真的建出来（9 条）、无框小火箭真的在 DOM 里、
 // 案例 #05 真的落地。用 jsdom 真实跑页面内联脚本——这个站的默认静默失效方式
 // 是「源码写得对、渲染出来目录树是空的 / 小火箭没画出来」。
 // 跑法：npm install --no-save jsdom && node scripts/test-success-stories.cjs
@@ -44,10 +44,10 @@ const html = read('success-stories.html');
   // 让内联脚本（DOMContentLoaded 同步执行 + 微任务）跑完
   await new Promise((r) => setTimeout(r, 300));
 
-  // 1. 目录树：扫描 [data-toc] 自动生成 8 条导航（50 元自述本地稿不发布）
+  // 1. 目录树：扫描 [data-toc] 自动生成 9 条导航（含 50 元自述专题）
   const links = doc.querySelectorAll('#toc-nav a');
   console.log('  目录树链接数：', links.length);
-  check('目录树生成了 8 条导航（致敬前辈/QQ奶奶/反面专题/#01~#05）', links.length === 8, links.length);
+  check('目录树生成了 9 条导航（致敬前辈/QQ奶奶/反面专题/50元自述/#01~#05）', links.length === 9, links.length);
   const hrefs = Array.from(links).map((a) => a.getAttribute('href'));
   check('每条目录链接都指向页内锚点（#id）', hrefs.every((h) => /^#/.test(h)), hrefs);
   const targets = hrefs.map((h) => h.slice(1));
