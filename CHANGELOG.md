@@ -4,6 +4,17 @@
 
 ---
 
+### feat：AI 页三档限流 + 模型按 Star 天数分级 + DevTools 快捷键静默拦截（2026-11-26 · 提交 `e200956d`）
+
+- **背景 / 根因**：工单页此前所有访客共用一套限流，取消 Star 后权益仍会恢复，且页面把档位数字直接写出来；模型只有一档，Star 与否没有实际差别。站长重新定规：guest 未登录 5 次/24 小时且附件锁；full 登录且首次 Star 有效 20 次/小时且附件开；revoked 曾 Star 后取消 5 次/小时、附件不锁、权益不恢复。对外页面不公开档位数字，只指向 README 并保留「Star 只认第一次，请勿取消，否则再次 Star 仍触发限流」警告；Star 入口改为 OAuth 才能检测取消。
+- **模型分级**：未 Star / 取消为第 0 档，1 / 3 / 7 / 15 / 30 天逐级解锁；CF Worker 端按 `quotaTier` + `starDays` 双重白名单压档（伪造天数打回第 0 档），国内直连因明文 Key 只能做前端假锁、防君子。页面选择真实传到硅基流动，不再只是摆设。README Star 章节补三档额度表与模型档位表。
+- **DevTools 快捷键**：站长确认 csi（Ctrl+Shift+I）与 F12 都是开开发者工具后，要求把 F12 与 Ctrl+U 的所有变体锁死。捕获阶段 `keydown` 静默吞掉 F12（任意 Ctrl/Shift/Alt 组合）、Ctrl/Cmd + Shift 或 Alt + I/J/C/K、Ctrl/Cmd + U（含 Shift/Alt）；只 `preventDefault` + `stopImmediatePropagation`，不弹窗、不提示、不拦右键。站长追加「Ctrl+C/V 这类基础功能别锁」后，新增可执行断言把真实 handler 取出来跑一遍按键，确认 Ctrl+C/V/X/A 与 Ctrl+Shift+V 放行、DevTools 键仍被吞掉。网页层面拦不住浏览器菜单或禁用 JS，仍是防君子。
+- **50 元自述专题保持本地**：按站长明确要求不发布；`success-stories.html` 入口卡与 `sitemap.xml` / 生成器条目已撤掉，`verify.mjs` §40 改为「本地稿内容继续校验、线上入口必须为零」的条件式断言，避免线上死链。`nav-menu.js` 白名单未动。
+- **改动文件**：`labor-ai.html`、`ai-worker/src/worker.js`、`ai-worker-aliyun/index.mjs`、`README.md`、`scripts/verify.mjs`、`scripts/test-ai-worker.cjs`、`scripts/test-ai-worker-aliyun.cjs`、`scripts/test-success-stories.cjs`、`success-stories.html`（共 9 个；sitemap 与生成器改动已随本地稿入口撤销而回到原状）。
+- **验证**：全站校验全绿；test-verify-self 6/0、test-ai-worker 98/0、test-ai-worker-aliyun 51/0、test-success-stories 14/0。故障注入三次均判红后字节级还原：删 DevTools 拦截分支、把裸 Ctrl+C 改成被拦、把入口写回成功案例页。模拟 12 组按键与 8 组基础编辑键全部符合预期。
+
+---
+
 ### fix：撤销误加的首页悬浮导航项 + 搜索摘要防抓（2026-11-25 · 提交 `0d41d643`）
 
 - **撤销越权入口**：上一批 `4c6ec0dd` 把「导航栏那边也同步更新」误读成给首页右下角悬浮菜单加「那一车人」直达项；站长澄清原意是**成功案例页内部导航 / 目录树**（本就随 `data-toc` 自动生成，无需手改）。本批从 `nav-menu.js` 的 ITEMS 删除该项、注释改写为事故记录，首页两处 `nav-menu.js?v=12`→`?v=11` 防旧脚本缓存；成功案例页专题入口卡、`bystander.html` 专题本体、sitemap 收录全部保留。这是第二次「擅自加导航项」越权（第一次 QQ浏览器专题，见 PITFALLS 第八十五章）。
