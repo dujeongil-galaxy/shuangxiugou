@@ -12,7 +12,7 @@
      ⑥ env.AI.run 收到正确 model ID 与 max_tokens
      ⑦ 回答透传：answer 字段返回
      ⑧ neurons 配额耗尽 → 429 daily-quota-exhausted
-     ⑨ 每 IP 分档限流：登录第 21 次 429、未登录第 11 次 429（缺省按未登录）
+     ⑨ 每 IP 分档限流：full 第 21 次、guest 第 6 次、revoked 第 6 次 429（缺省按 guest）
      ⑩ 线路标识 route：cf/cn 各自追加提示词，非法值忽略，响应回声实际线路
    ========================================================================== */
 'use strict';
@@ -54,10 +54,15 @@ function makeEnv() {
 }
 const env = makeEnv();
 
+let _reqSeq = 0;
 function makeRequest(method, body, origin) {
+  // 每个通用请求用独立 IP：三档限流后缺省 guest 只有 5 次/24h，
+  // 若共用 unknown IP，前面几十个 CORS/输入/route 用例会互相挤爆额度。
+  // 真正测限流的用例走下面的 mkReq（显式指定固定 IP），与此隔离。
+  const testIp = '198.18.' + ((_reqSeq >> 8) & 255) + '.' + (_reqSeq++ & 255);
   return new Request('https://ai.example.workers.dev/', {
     method,
-    headers: { 'Content-Type': 'application/json', 'Origin': origin },
+    headers: { 'Content-Type': 'application/json', 'Origin': origin, 'CF-Connecting-IP': testIp },
     body: body ? JSON.stringify(body) : undefined,
   });
 }
@@ -111,7 +116,7 @@ async function main() {
 
     check('AI 恰好调用一次', env.calls.length === 1);
     const call = env.calls[0];
-    check('model ID = @cf/openai/gpt-oss-20b', call.modelId === '@cf/openai/gpt-oss-20b');
+    check('model ID = 第 0 档 llama-3.2-3b（未带档位声明时按最省档）', call.modelId === '@cf/meta/llama-3.2-3b-instruct');
     check('max_tokens = 3000（纯文本留足正文余量）', call.params.max_tokens === 3000);
 
     const msgs = call.params.messages;
@@ -137,6 +142,36 @@ async function main() {
     const tail = msgs[msgs.length - 1].content;
     check('用户问题在末位（parts 数组形态）',
       Array.isArray(tail) && tail.length === 1 && tail[0].type === 'text' && tail[0].text === '加班费怎么算');
+  }
+
+  console.log('== ②b 模型分级：Star 天数决定可用档位（2026-11-26）==');
+  {
+    const TIERS = [
+      '@cf/meta/llama-3.2-3b-instruct', '@cf/zai-org/glm-4.7-flash',
+      '@cf/google/gemma-4-26b-a4b-it', '@cf/openai/gpt-oss-20b',
+      '@cf/mistralai/mistral-small-3.1-24b-instruct', '@cf/meta/llama-4-scout-17b-16e-instruct',
+    ];
+    const daysList = [0, 1, 3, 7, 15, 30, 999];
+    for (let i = 0; i < daysList.length; i++) {
+      env.calls.length = 0;
+      const r = await worker.fetch(makeRequest('POST', {
+        question: '问', quotaTier: 'full', modelTier: 5, starDays: daysList[i]
+      }, SITE_ORIGIN), env);
+      check(`${daysList[i]} 天档请求第 5 档 → 实际第 ${Math.min(i, 5)} 档`,
+        r.status === 200 && env.calls.length === 1
+        && env.calls[0].modelId === TIERS[Math.min(i, 5)],
+        env.calls[0] && env.calls[0].modelId);
+    }
+    // 非 full（guest / revoked）即便伪造 999 天 + 第 5 档，也压回第 0 档
+    for (const t of ['guest', 'revoked', undefined]) {
+      env.calls.length = 0;
+      const body = { question: '问', modelTier: 5, starDays: 999 };
+      if (t) body.quotaTier = t;
+      const r = await worker.fetch(makeRequest('POST', body, SITE_ORIGIN), env);
+      check(`${t || '缺省'} 档伪造 999 天 → 压回第 0 档`,
+        r.status === 200 && env.calls.length === 1 && env.calls[0].modelId === TIERS[0],
+        env.calls[0] && env.calls[0].modelId);
+    }
   }
 
   console.log('== ⑧ 上游配额耗尽 ==');
@@ -181,7 +216,7 @@ async function main() {
     check('非法 route 不改变默认线路', (await rbad.json()).route === 'cf');
   }
 
-  console.log('== ⑨ 每 IP 分档限流（登录 20 / 未登录 10 次/小时）==');
+  console.log('== ⑨ 每 IP 分档限流（full 20/小时、guest 5/24小时、revoked 5/小时）==');
   {
     // 换个干净 IP 段测（全局 Map 是共享的，用独立 IP 避开上面已消耗的计数）
     const mkReq = (ip, tier) => {
@@ -204,19 +239,29 @@ async function main() {
     for (let i = 0; i < 21; i++) last = await worker.fetch(mkReq('203.0.113.77', 'full'), env);
     check('登录档第 21 次 → 429 rate-limited', last.status === 429 && (await last.json()).error === 'rate-limited');
 
-    // 未登录档：10 次放行，第 11 次 429
+    // guest 访客档：5 次放行，第 6 次 429
     let ok = 0;
-    for (let i = 0; i < 10; i++) {
-      const r = await worker.fetch(mkReq('203.0.113.78', 'half'), env);
+    for (let i = 0; i < 5; i++) {
+      const r = await worker.fetch(mkReq('203.0.113.78', 'guest'), env);
       if (r.status === 200) ok++;
     }
-    check('未登录档前 10 次全部放行', ok === 10, ok);
-    last = await worker.fetch(mkReq('203.0.113.78', 'half'), env);
-    check('未登录档第 11 次 → 429 rate-limited', last.status === 429 && (await last.json()).error === 'rate-limited');
+    check('guest 访客档前 5 次全部放行', ok === 5, ok);
+    last = await worker.fetch(mkReq('203.0.113.78', 'guest'), env);
+    check('guest 访客档第 6 次 → 429 rate-limited', last.status === 429 && (await last.json()).error === 'rate-limited');
 
-    // 老前端不带档位：按未登录档处理（安全默认，不放宽）
-    for (let i = 0; i < 11; i++) last = await worker.fetch(mkReq('203.0.113.79'), env);
-    check('不带档位默认按未登录 10 次限流', last.status === 429 && (await last.json()).error === 'rate-limited');
+    // revoked 撤销档：5 次放行，第 6 次 429（与 guest 同上限，但窗口 1 小时）
+    ok = 0;
+    for (let i = 0; i < 5; i++) {
+      const r = await worker.fetch(mkReq('203.0.113.80', 'revoked'), env);
+      if (r.status === 200) ok++;
+    }
+    check('revoked 撤销档前 5 次全部放行', ok === 5, ok);
+    last = await worker.fetch(mkReq('203.0.113.80', 'revoked'), env);
+    check('revoked 撤销档第 6 次 → 429 rate-limited', last.status === 429 && (await last.json()).error === 'rate-limited');
+
+    // 老前端不带档位：按最严的 guest 档处理（安全默认，不放宽）
+    for (let i = 0; i < 6; i++) last = await worker.fetch(mkReq('203.0.113.79'), env);
+    check('不带档位默认按 guest 5 次限流', last.status === 429 && (await last.json()).error === 'rate-limited');
   }
 
   console.log('== ⑪ 多模态 parts 与能力探测（2026-11-21）==');
@@ -484,9 +529,9 @@ async function main() {
     const sbody = await sr.text();
     check('SSE 逐帧含 response 字段', (sbody.match(/"response"/g) || []).length === 5, sbody);
     check('SSE 以 [DONE] 收尾', /data: \[DONE\]/.test(sbody), sbody.slice(-40));
-    check('AI.run 收到 stream:true 且模型与文本线路一致',
+    check('AI.run 收到 stream:true 且模型与文本线路一致（默认第 0 档 llama-3.2-3b）',
       senv.calls.length === 1 && senv.calls[0].params.stream === true
-      && senv.calls[0].modelId === '@cf/openai/gpt-oss-20b', senv.calls);
+      && senv.calls[0].modelId === '@cf/meta/llama-3.2-3b-instruct', senv.calls);
     check('流式提示词与非流式同源（含敏感话题锁死条款 + 190 家数据 + 官方网址）',
       /【争议与公共话题·中立不站队/.test(senv.calls[0].params.messages[0].content)
       && /BRAND|评级|双休/.test(senv.calls[0].params.messages[0].content)

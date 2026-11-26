@@ -44,7 +44,7 @@ const html = read('success-stories.html');
   // 让内联脚本（DOMContentLoaded 同步执行 + 微任务）跑完
   await new Promise((r) => setTimeout(r, 300));
 
-  // 1. 目录树：扫描 [data-toc] 自动生成 7 条导航
+  // 1. 目录树：扫描 [data-toc] 自动生成 8 条导航（50 元自述本地稿不发布）
   const links = doc.querySelectorAll('#toc-nav a');
   console.log('  目录树链接数：', links.length);
   check('目录树生成了 8 条导航（致敬前辈/QQ奶奶/反面专题/#01~#05）', links.length === 8, links.length);

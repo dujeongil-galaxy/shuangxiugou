@@ -123,6 +123,9 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
 .route-tip a{color:var(--brand);text-decoration:underline}
 .model-line{font-size:11px;line-height:1.55;color:var(--sub);text-align:center;padding:0 16px 5px;flex:0 0 auto}
 .model-line b{color:var(--brand);font-weight:600}
+.model-pick{font-size:11px;color:var(--sub);text-align:center;padding:0 16px 6px;flex:0 0 auto}
+.model-pick select{font-family:inherit;font-size:11px;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:8px;padding:3px 8px;max-width:min(92vw,320px)}
+.model-pick .lock-tip{color:var(--warn-ink)}
 .ip-notice{
   background:#f4f7fc;border-bottom:1px solid var(--line);color:var(--sub);
   font-size:11.5px;line-height:1.6;text-align:center;padding:7px 14px;flex:0 0 auto
@@ -245,6 +248,7 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
 </div>
 <div class="route-tip" id="routeTip"></div>
 <div class="model-line" id="modelLine"></div>
+<div class="model-pick" id="modelPick"></div>
 <div class="ip-notice" id="ipNotice">正在获取你的访问 IP…</div>
 
 <main>
@@ -283,6 +287,30 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
 <footer>回答仅供参考，不替代专业法律意见</footer>
 
 <script>
+/* ===== 静默拦截开发者工具快捷键（站长 2026-11-26 要求）=====
+   捕获阶段 eat 掉所有开 DevTools / 看源码的键盘组合：
+   F12（含 Ctrl/Shift/Alt 任意组合）、Ctrl+Shift+I / J / C / K
+   （Mac 的 Meta+Alt 同禁）、Ctrl+U（含 Shift/Alt 组合）。
+   不弹窗、不提示、按键无响应；网页拦不住浏览器菜单 / 禁用 JS，防君子。 */
+document.addEventListener('keydown', function (e) {
+  var k = (e.key || '').toLowerCase();
+  var code = e.code || '';
+  var key = e.keyCode || 0;
+  var mod = e.ctrlKey || e.metaKey;
+  var devtoolsCombo = mod && (e.shiftKey || e.altKey);
+  var isF12 = k === 'f12' || code === 'F12' || key === 123;
+  var isI = devtoolsCombo && (k === 'i' || code === 'KeyI' || key === 73);
+  var isJ = devtoolsCombo && (k === 'j' || code === 'KeyJ' || key === 74);
+  var isC = devtoolsCombo && (k === 'c' || code === 'KeyC' || key === 67);
+  var isK = devtoolsCombo && (k === 'k' || code === 'KeyK' || key === 75);
+  var isU = mod && (k === 'u' || code === 'KeyU' || key === 85);
+  if (isF12 || isI || isJ || isC || isK || isU) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    return false;
+  }
+}, true);
+
 /* ===== 双线路配置：换模型 / 换地址只改这里 ===== */
 var CFG = {
   // 国内直连（前端直连硅基流动，明文 Key 字符干扰，防君子）
@@ -308,16 +336,48 @@ var MODEL_LABEL = {
   cn: "Qwen3-VL-8B-Instruct（硅基流动）",
   cf: "GPT-OSS-20B（Cloudflare Workers AI）"
 };
+/* 模型分级（2026-11-26 站长定）：点亮越久，能用的模型越贵。未 Star / 取消过 Star 锁在第 0 档。
+   两条线路共用天数档位（0/1/3/7/15/30 天），各线路映射自己的模型 ID。
+   CF 由 Worker 白名单兜底，CN 前端直连明文 Key 只能假锁——都只防君子。 */
+var MODEL_DAYS = [0, 1, 3, 7, 15, 30];
+var MODEL_TIERS = {
+  cf: [
+    { label: "Llama 3.2 3B（Cloudflare Workers AI）",  id: "@cf/meta/llama-3.2-3b-instruct" },
+    { label: "GLM 4.7 Flash（Cloudflare Workers AI）",  id: "@cf/zai-org/glm-4.7-flash" },
+    { label: "Gemma 4 26B（Cloudflare Workers AI）",    id: "@cf/google/gemma-4-26b-a4b-it" },
+    { label: "GPT-OSS-20B（Cloudflare Workers AI）",    id: "@cf/openai/gpt-oss-20b" },
+    { label: "Mistral Small 24B（Cloudflare Workers AI）", id: "@cf/mistralai/mistral-small-3.1-24b-instruct" },
+    { label: "Llama 4 Scout 17B（Cloudflare Workers AI）", id: "@cf/meta/llama-4-scout-17b-16e-instruct" }
+  ],
+  cn: [
+    { label: "Qwen3.5 4B（硅基流动）",   id: "Qwen/Qwen3.5-4B" },
+    { label: "Qwen2.5 7B（硅基流动）",   id: "Qwen/Qwen2.5-7B-Instruct" },
+    { label: "GLM-4 9B（硅基流动）",     id: "THUDM/GLM-4-9B-0414" },
+    { label: "Qwen3 8B（硅基流动）",     id: "Qwen/Qwen3-8B" },
+    { label: "Qwen3 30B（硅基流动）",    id: "Qwen/Qwen3-30B-A3B" },
+    { label: "DeepSeek V3.2（硅基流动）", id: "deepseek-ai/DeepSeek-V3.2" }
+  ]
+};
+var MODEL_VISION = { cf: "@cf/meta/llama-3.2-11b-vision-instruct", cn: "Qwen/Qwen3-VL-8B-Instruct" };
+var MODEL_TIER_KEY = 'sxg_model_tier';
 
-/* 门槛（2026-11-21 站长改版）：文字问答不设 Star 门槛，两条线路都能直接用。
-   额度只看登录状态：未登录 = 无 Star，按 10 次/小时；登录按 20 次/小时。
-   附件上传例外：必须登录且已 Star，两条线路一律锁死，不看 Star 天数。
+/* 门槛（2026-11-26 站长改版）：文字问答不设 Star 门槛，两条线路都能直接用。额度分三档：
+   ① guest  未登录访客（从未 Star）：24 小时内 5 次；附件上传锁死。
+   ② full   已登录且首次 Star 有效：每小时 20 次；附件上传开放。
+   ③ revoked 登录过、Star 过、中途取消（非首次 Star）：每小时 5 次；附件上传仍开放，
+            但 Star 权益永久作废、不再恢复（次数与附件之外的额外权益不回来）。
+   这三档在页面上对访客公开（站长 2026-11-26 授权公开）。
    localStorage 键与 header-menu-patch.js（首页 OAuth 回调）对齐。 */
-var RATE_FULL = 20;               // 已登录：每小时次数（沿用 Cloudflare 现行规则）
-var RATE_HALF = 10;               // 未登录：一律减半，国内外同口径
-var RATE_WINDOW_MS = 3600 * 1000; // 滑窗 1 小时（国内直连本地计数用）
+var RATE_FULL = 20;               // full：每小时 20 次
+var RATE_GUEST = 5;               // guest：24 小时内 5 次
+var RATE_REVOKED = 5;             // revoked：每小时 5 次
+var RATE_WINDOW_MS = 3600 * 1000; // full / revoked 滑窗 1 小时
+var GUEST_WINDOW_MS = 24 * 3600 * 1000; // guest 滑窗 24 小时
 var CN_RATE_KEY = 'sxg_ai_cn_rate'; // 国内直连的本地滑窗计数
 var REPO_URL = "https://github.com/dujeongil-galaxy/shuangxiugou";
+/* OAuth 登录入口（2026-11-26）：Star 链接必须走这里，回调才会签发加密令牌 sxg_star_session。
+   若指向纯仓库页，点 Star 后本页拿不到任何身份，verifyStarSession 直接 return，永远检测不到。 */
+var AUTH_URL = "https://shuangxiugou-ai-worker.ovpj01-hk.workers.dev/auth/github";
 
 /* 附件上限：单图 5MB / 单文档 10MB / 最多 3 个；base64 膨胀约 1.33 倍，防止请求体失控 */
 var ATTACH_LIMIT = { max: 3, imageBytes: 5 * 1024 * 1024, docBytes: 10 * 1024 * 1024 };
@@ -389,31 +449,104 @@ var attachSeq = 0;
 var capsCache = null;   // CF Worker 能力探测结果（是否支持 vision）
 
 /* ===== 登录 / Star 状态判定（读首页 OAuth 回调写入的 localStorage）=====
-   未登录一律视作无 Star；quotaLimit 只看登录状态（10 / 20 次每小时）；
-   attachUnlocked 要求登录 + Star，且按顺序执行（锁死，不看天数、无历史豁免）。 */
+   三档（2026-11-26 站长定规，页面上对访客公开）：
+     guest   = 未登录访客，从未 Star → 24 小时内 5 次，附件锁。
+     full    = 已登录且首次 Star 有效 → 每小时 20 次，附件开。
+     revoked = 登录过、Star 过、中途取消（服务端 check-star 回传 starRevoked=1）→
+               每小时 5 次，附件仍开；额外权益永久作废、不恢复。
+   判定 revoked 靠服务端撤销标志（本地 sxg_star_revoked 由 verifyStarSession 写入），
+   不是靠本地手改 has_star——防君子，真鉴权在 Worker 的 KV 撤销记录。 */
 function starStatus(){
   var logged = localStorage.getItem('sxg_github_logged_in') === '1';
   var hasStar = localStorage.getItem('sxg_github_has_star') === '1';
+  var revoked = logged && localStorage.getItem('sxg_star_revoked') === '1';
   var days = parseInt(localStorage.getItem('sxg_star_days') || '0', 10) || 0;
   var date = localStorage.getItem('sxg_star_date') || '';
+  var tier, quotaLimit, windowMs, attachUnlocked;
+  if (revoked){
+    tier = 'revoked'; quotaLimit = RATE_REVOKED; windowMs = RATE_WINDOW_MS; attachUnlocked = true;
+  } else if (logged && hasStar){
+    tier = 'full'; quotaLimit = RATE_FULL; windowMs = RATE_WINDOW_MS; attachUnlocked = true;
+  } else {
+    tier = 'guest'; quotaLimit = RATE_GUEST; windowMs = GUEST_WINDOW_MS; attachUnlocked = false;
+  }
   return {
-    logged: logged, star: hasStar, days: days, date: date,
-    quotaLimit: logged ? RATE_FULL : RATE_HALF,
-    attachUnlocked: logged && hasStar,
+    logged: logged, star: hasStar, revoked: revoked, days: days, date: date,
+    tier: tier, quotaLimit: quotaLimit, windowMs: windowMs,
+    quotaTier: tier, // 发给 Worker 的档位名（guest / full / revoked）
+    attachUnlocked: attachUnlocked,
   };
+}
+
+/* 模型档位解锁：Star 天数决定能选到第几档，未 Star / 取消过锁死第 0 档。
+   days 是 OAuth 回调时服务端算出的快照（localStorage）；懂技术的人能改，
+   所以 CF 侧 Worker 还会按 quotaTier 再校一遍，CN 侧就是防君子。 */
+function maxModelTier(){
+  var st = starStatus();
+  if (st.tier !== 'full') return 0; // guest / revoked 一律最低档
+  var max = 0;
+  for (var i = 0; i < MODEL_DAYS.length; i++) if (st.days >= MODEL_DAYS[i]) max = i;
+  return max;
+}
+function currentModelTier(){
+  var max = maxModelTier();
+  var saved = 0;
+  try { saved = parseInt(localStorage.getItem(MODEL_TIER_KEY) || '0', 10) || 0; } catch(e){}
+  if (saved < 0) saved = 0;
+  if (saved > max) saved = max; // 天数掉档（撤销 Star）时自动收回
+  return saved;
+}
+function modelIdFor(route, hasImage){
+  if (hasImage) return MODEL_VISION[route]; // 带图固定视觉模型，不参与分级
+  var tier = currentModelTier();
+  return (MODEL_TIERS[route] || MODEL_TIERS.cf)[Math.min(tier, MODEL_TIERS.cf.length - 1)].id;
+}
+function currentModelLabel(){
+  var tiers = MODEL_TIERS[currentRoute] || MODEL_TIERS.cf;
+  return tiers[Math.min(currentModelTier(), tiers.length - 1)].label;
+}
+/* 模型下拉：只列出已解锁档位；未解锁的显示天数门槛，选不了。
+   restore 后若 saved 档位已超过 max，currentModelTier 会自动收回，这里同步写回。 */
+function renderModelPick(){
+  if (!modelPick) return;
+  var max = maxModelTier();
+  var cur = currentModelTier();
+  try { localStorage.setItem(MODEL_TIER_KEY, String(cur)); } catch(e){}
+  var html = '<label for="modelSel">模型档位</label> <select id="modelSel">';
+  for (var i = 0; i < MODEL_DAYS.length; i++){
+    var unlocked = i <= max;
+    var sel = i === cur ? ' selected' : '';
+    var tag = MODEL_TIERS[currentRoute][i].label.replace('（' + (currentRoute === 'cf' ? 'Cloudflare Workers AI' : '硅基流动') + '）', '');
+    html += '<option value="' + i + '"' + sel + (unlocked ? '' : ' disabled')
+      + '>' + tag + (unlocked ? '' : ' · Star ' + MODEL_DAYS[i] + ' 天解锁') + '</option>';
+  }
+  html += '</select>';
+  if (max === 0){
+    html += ' <span class="lock-tip">登录并 Star 仓库，点亮越久解锁越多模型</span>';
+  }
+  modelPick.innerHTML = html;
+  var sel = document.getElementById('modelSel');
+  if (sel) sel.addEventListener('change', function(){
+    var v = parseInt(this.value, 10) || 0;
+    if (v < 0 || v > maxModelTier()) { renderModelPick(); return; }
+    try { localStorage.setItem(MODEL_TIER_KEY, String(v)); } catch(e){}
+    renderRoute();
+  });
 }
 
 /* 国内直连是浏览器直连硅基流动、没有服务端限流，这里用本地滑窗补一份
    与 Cloudflare 同口径的粗限流（防君子；真要挡恶意 IP 走 Worker 黑名单）。 */
 function cnRateOk(){
-  var limit = starStatus().quotaLimit;
+  var st = starStatus();
+  var limit = st.quotaLimit;
+  var windowMs = st.windowMs; // guest 24 小时 / full、revoked 1 小时
   var now = Date.now();
   var hits = [];
   try{
     var raw = JSON.parse(localStorage.getItem(CN_RATE_KEY) || '[]');
     if (Array.isArray(raw)) hits = raw;
   }catch(e){ hits = []; }
-  hits = hits.filter(function(t){ return typeof t === 'number' && now - t < RATE_WINDOW_MS; });
+  hits = hits.filter(function(t){ return typeof t === 'number' && now - t < windowMs; });
   var ok = hits.length < limit;
   if (ok) hits.push(now);
   try{ localStorage.setItem(CN_RATE_KEY, JSON.stringify(hits)); }catch(e){}
@@ -427,6 +560,7 @@ var btnCF     = document.getElementById('btnCF');
 var btnCN     = document.getElementById('btnCN');
 var routeTip  = document.getElementById('routeTip');
 var modelLine = document.getElementById('modelLine');
+var modelPick = document.getElementById('modelPick');
 
 function renderRoute(){
   var st = starStatus();
@@ -434,14 +568,17 @@ function renderRoute(){
   btnCN.classList.toggle('active', currentRoute === 'cn');
   btnCN.classList.remove('locked');
   btnCN.textContent = '国内直连';
-  /* 对外只展示统一的一句话，不公开具体额度档位（站长定规）。 */
-  routeTip.innerHTML = '两条线路均可直接提问；<a href="' + REPO_URL
-    + '" target="_blank" rel="noopener noreferrer">登录GitHub并Star可获取更多额度</a>。';
-  /* 模型公开 + Star 红线告知（2026-11-22 站长要求）：
-     ① 明示当前线路用的模型；② 取消后失效的主体统一写 EAC 协付渠道，不再说「额外额度」。
-     站长授权这里直说「拉黑」；仍避开具体次数、不写「免费」，只讲规则本身。 */
-  modelLine.innerHTML = '当前模型：<b>' + (MODEL_LABEL[currentRoute] || '未知')
-    + '</b> · Star 权益只认第一次，一经取消即拉黑，取消后 EAC 协付渠道即永久失效，再次 Star 也不赠送额外的 Token 使用额度。';
+  /* 2026-11-26 站长改口径：三档额度规则不在页面公开，只提示去 GitHub 仓库 README 阅读。
+     页面保留统一话术「登录GitHub并Star可获取更多额度」（SEO / 弹窗同口径），
+     另留一条必经警告：Star 只认首次，取消后再次点亮仍会触发限流，小额使用也不例外。 */
+  routeTip.innerHTML = '两条线路均可直接提问；<a href="' + AUTH_URL
+    + '" target="_blank" rel="noopener noreferrer">登录GitHub并Star可获取更多额度</a>。'
+    + '<br>具体额度规则请到 GitHub 仓库的 README 中阅读。'
+    + '<br>Star 只认首次点亮，请勿取消。取消后即使重新点亮，仍会触发限流，少量使用也不例外。';
+  /* 模型公开（2026-11-26 去重）：此处显示当前线路当前档位的模型。
+     Star 相关警告统一由上方 routeTip 承担，本行不再复述取消后果。 */
+  modelLine.innerHTML = '当前模型：<b>' + currentModelLabel() + '</b>';
+  renderModelPick();
   btnCF.classList.toggle('active', currentRoute === 'cf');
   btnCN.classList.toggle('active', currentRoute === 'cn');
   renderAttachGate();
@@ -513,8 +650,9 @@ var fileInput  = document.getElementById('fileInput');
 var fileBtn    = document.getElementById('fileBtn');
 var fileHint   = document.getElementById('fileHint');
 
-/* 附件门禁（2026-11-21 站长改版）：登录 + Star 才给传，两条线路一律锁死。
-   不再看 Star 天数，也没有「取消过就永久关闭」的历史豁免规则。 */
+/* 附件门禁（2026-11-26 站长改版）：full（登录+首次Star）与 revoked（曾Star后取消）都可传；
+   只有 guest（未登录访客）锁死。即 revoked 掉的是额度（降到 5 次/小时）与额外权益，附件不锁。
+   判定统一走 starStatus().attachUnlocked，不看 Star 天数。 */
 function renderAttachGate(){
   var st = starStatus();
   var ok = st.attachUnlocked;
@@ -696,12 +834,16 @@ async function verifyStarSession(){
     // 一律不动本地快照，避免把已登录用户误判成未登录。
     if (d.status === 'starred' || d.status === 'not-starred'){
       var nowStar = d.status === 'starred' ? '1' : '0';
-      var changed = (localStorage.getItem('sxg_github_has_star') || '0') !== nowStar;
+      var nowRevoked = d.starRevoked ? '1' : '0';
+      var changed = (localStorage.getItem('sxg_github_has_star') || '0') !== nowStar
+        || (localStorage.getItem('sxg_star_revoked') || '0') !== nowRevoked;
       localStorage.setItem('sxg_github_logged_in', '1');
       localStorage.setItem('sxg_github_has_star', nowStar);
+      // 服务端撤销标志：撤过 Star 的人归 revoked 档（5 次/小时、附件仍开、权益不恢复）。
+      localStorage.setItem('sxg_star_revoked', nowRevoked);
       if (typeof d.starDays === 'number') localStorage.setItem('sxg_star_days', String(d.starDays));
       if (d.starredAtDate) localStorage.setItem('sxg_star_date', d.starredAtDate);
-      if (changed) renderRoute(); // 状态变了才重渲染（附件门禁随之开/关）
+      if (changed) renderRoute(); // 状态变了才重渲染（附件门禁、额度档位随之变化）
     } else if (d.status === 'invalid-session' || d.status === 'session-unavailable'){
       // 令牌过期或服务端没配密钥：清掉失效令牌，避免每次打开都白查一次
       try { localStorage.removeItem('sxg_star_session'); } catch(e){}
@@ -984,11 +1126,15 @@ function textOf(content){
 async function askCN(log, bub, onPiece){
   var key = _restoreKey();
   var msgs = [{role:"system",content:SYSTEM_PROMPT}].concat(log);
+  var hasImage = log.some(function(m){
+    return Array.isArray(m.content) && m.content.some(function(p){ return p && p.type === 'image_url'; });
+  });
+  var chosenModel = modelIdFor('cn', hasImage);
   var res = await fetch(CFG.cn.endpoint, {
     method:"POST",
     headers:{ "Content-Type":"application/json", "Authorization":"Bearer " + key },
     body: JSON.stringify({
-      model: CFG.cn.model,
+      model: chosenModel,
       messages: msgs,
       stream: true, max_tokens: CFG.cn.max_tokens, temperature: CFG.cn.temperature
     })
@@ -1027,11 +1173,13 @@ async function askCN(log, bub, onPiece){
       → 自动走下面的非流式分支，前端无需预先探测，缓存旧页面也能用。 */
 async function askCF(question, history, parts, onPiece){
   var base = CFG.cf.endpoint.replace(/\/$/, '');
+  var hasImage = parts && parts.some(function(p){ return p && p.type === 'image_url'; });
   var payload = {
     question: question, history: history, route: CFG.cf.route, parts: parts,
-    quotaTier: starStatus().logged ? 'full' : 'half'
+    quotaTier: starStatus().quotaTier, // guest / full / revoked 三档
+    modelTier: hasImage ? -1 : currentModelTier(), // -1 = 带图，Worker 用视觉模型
+    starDays: starStatus().days
   };
-  var hasImage = parts && parts.some(function(p){ return p && p.type === 'image_url'; });
   var wantStream = !hasImage && typeof onPiece === 'function';
 
   var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;

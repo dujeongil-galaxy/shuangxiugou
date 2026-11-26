@@ -11,7 +11,7 @@
      ⑤ 缺 DASHSCOPE_API_KEY → 500 missing-api-key
      ⑥ 正常链路：调百炼 → answer 透传 + route 回声
      ⑦ 上游 429/403 → 429 daily-quota-exhausted；上游 500 → 502
-     ⑧ 每 IP 分档限流：登录第 21 次 / 未登录第 11 次 429 rate-limited
+     ⑧ 每 IP 分档限流：full 第 21 次 / guest 第 6 次 / revoked 第 6 次 429 rate-limited
      ⑨ 契约对齐：错误字符串与 Cloudflare 版完全一致（前端一套逻辑吃两条线路）
    ========================================================================== */
 'use strict';
@@ -162,7 +162,7 @@ async function main() {
     check('空回答 → 502 empty-answer', rEmpty.statusCode === 502 && JSON.parse(rEmpty.body).error === 'empty-answer');
   }
 
-  console.log('== ⑧ 每 IP 分档限流（登录 20 / 未登录 10 次/小时）==');
+  console.log('== ⑧ 每 IP 分档限流（full 20/小时、guest 5/24小时、revoked 5/小时）==');
   {
     const respond = () => { nextResponse = { status: 200, body: { choices: [{ message: { content: '答' } }] } }; };
     let last = null;
@@ -175,26 +175,39 @@ async function main() {
     }
     check('登录档第 21 次 → 429 rate-limited', last.statusCode === 429 && JSON.parse(last.body).error === 'rate-limited');
 
-    // 未登录档：前 10 次放行，第 11 次 429
-    const halfIp = '203.0.113.78';
+    // guest 访客档：前 5 次放行，第 6 次 429
+    const guestIp = '203.0.113.78';
     let ok = 0;
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 5; i++) {
       respond();
-      const r = await handler(ev('POST', { question: '问', quotaTier: 'half' }, SITE_ORIGIN, halfIp));
+      const r = await handler(ev('POST', { question: '问', quotaTier: 'guest' }, SITE_ORIGIN, guestIp));
       if (r.statusCode === 200) ok++;
     }
-    check('未登录档前 10 次全部放行', ok === 10, ok);
+    check('guest 访客档前 5 次全部放行', ok === 5, ok);
     respond();
-    last = await handler(ev('POST', { question: '问', quotaTier: 'half' }, SITE_ORIGIN, halfIp));
-    check('未登录档第 11 次 → 429 rate-limited', last.statusCode === 429 && JSON.parse(last.body).error === 'rate-limited');
+    last = await handler(ev('POST', { question: '问', quotaTier: 'guest' }, SITE_ORIGIN, guestIp));
+    check('guest 访客档第 6 次 → 429 rate-limited', last.statusCode === 429 && JSON.parse(last.body).error === 'rate-limited');
 
-    // 老前端不带档位：按未登录档处理
+    // revoked 撤销档：前 5 次放行，第 6 次 429
+    const revokedIp = '203.0.113.80';
+    ok = 0;
+    for (let i = 0; i < 5; i++) {
+      respond();
+      const r = await handler(ev('POST', { question: '问', quotaTier: 'revoked' }, SITE_ORIGIN, revokedIp));
+      if (r.statusCode === 200) ok++;
+    }
+    check('revoked 撤销档前 5 次全部放行', ok === 5, ok);
+    respond();
+    last = await handler(ev('POST', { question: '问', quotaTier: 'revoked' }, SITE_ORIGIN, revokedIp));
+    check('revoked 撤销档第 6 次 → 429 rate-limited', last.statusCode === 429 && JSON.parse(last.body).error === 'rate-limited');
+
+    // 老前端不带档位：按最严的 guest 档处理
     const legacyIp = '203.0.113.79';
-    for (let i = 0; i < 11; i++) {
+    for (let i = 0; i < 6; i++) {
       respond();
       last = await handler(ev('POST', { question: '问' }, SITE_ORIGIN, legacyIp));
     }
-    check('不带档位默认按未登录 10 次限流', last.statusCode === 429 && JSON.parse(last.body).error === 'rate-limited');
+    check('不带档位默认按 guest 5 次限流', last.statusCode === 429 && JSON.parse(last.body).error === 'rate-limited');
   }
 
   console.log('== ⑨ 与 Cloudflare 版契约对齐 ==');

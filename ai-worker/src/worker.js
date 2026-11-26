@@ -22,9 +22,9 @@
    ③ 上下文截断：历史消息最多带 4 轮，单条 200 字，防 prompt 注入拉爆 token
    ④ 系统提示词锁定角色：优先答劳动法/双休/简历，其他话题保持中立并避免无依据判断
    ⑤ max_tokens 限制输出（输出比输入贵 6.6 倍，输出是 neuron 大头）
-   ⑥ 每 IP 内存限流（滑窗：登录 20 次/小时，未登录减半 10 次/小时）——
-      免费层没 KV，够用的粗限流；quotaTier 是前端声明，不是鉴权凭据，
-      伪造最多把额度从 10 抬到 20，恶意刷量仍由⑦的黑名单在边缘挡。
+   ⑥ 每 IP 内存限流（2026-11-26 三档：full 20 次/小时；guest 5 次/24 小时；
+      revoked 5 次/小时）——免费层没 KV，够用的粗限流；quotaTier 是前端声明，
+      不是鉴权凭据，伪造最多抬到 20 次/小时，恶意刷量仍由⑦的黑名单在边缘挡。
    ⑦ IP 黑名单（连接层 IP 精确匹配）——命中即在边缘挡掉，不调 AI、不烧额度
 
    跑法
@@ -43,9 +43,16 @@ const BLOCKED_IPS = [
   // '1.2.3.4', // 示例：取消注释并换成要拦的 IP
 ];
 
-// 每 IP 滑窗上限（2026-11-21 站长改版）：登录 20 次/小时，未登录一律减半 10 次。
+// 每 IP 分档限流（2026-11-26 站长改版）：三档，上限与窗口都按档位走。
+//   full    登录 + 首次 Star 有效 → 20 次 / 1 小时
+//   guest   未登录访客（从未 Star）→ 5 次 / 24 小时
+//   revoked 曾 Star 后取消（非首次）→ 5 次 / 1 小时（附件不锁，额外权益不恢复）
 const RATE_LIMIT_FULL = 20;
-const RATE_LIMIT_HALF = 10;
+const RATE_LIMIT_GUEST = 5;
+const RATE_LIMIT_REVOKED = 5;
+const WINDOW_FULL_MS = 3600 * 1000;      // 1 小时
+const WINDOW_GUEST_MS = 24 * 3600 * 1000; // 24 小时
+const WINDOW_REVOKED_MS = 3600 * 1000;   // 1 小时
 
 /* ---------- Star 权益撤销记录（2026-11-21 站长定规）----------
    规则：靠 Star 领过额外权益的人，一旦撤掉 Star，这份权益永久作废；
@@ -167,7 +174,13 @@ export default {
         vision: true,
         visitorIp: request.headers.get('CF-Connecting-IP')
           || request.headers.get('x-forwarded-for') || '未知',
-        textModel: '@cf/openai/gpt-oss-20b',
+        textModel: '@cf/openai/gpt-oss-20b', // 7 天档默认（历史字段，老前端仍读它）
+        textModels: [
+          '@cf/meta/llama-3.2-3b-instruct', '@cf/zai-org/glm-4.7-flash',
+          '@cf/google/gemma-4-26b-a4b-it', '@cf/openai/gpt-oss-20b',
+          '@cf/mistralai/mistral-small-3.1-24b-instruct', '@cf/meta/llama-4-scout-17b-16e-instruct',
+        ],
+        modelDays: [0, 1, 3, 7, 15, 30],
         visionModel: '@cf/meta/llama-3.2-11b-vision-instruct',
         stream: true, // 2026-11-22：新版支持 /api/stream 逐字输出；老 Worker 无此字段 → 前端降级回非流式
         maxParts: 8,
@@ -206,32 +219,41 @@ export default {
     // 配额、模型选择——伪造它顶多让 AI 说错自己是哪条线路。
     const route = (body.route === 'cf' || body.route === 'cn') ? body.route : '';
 
-    // 额度档位（2026-11-21）：前端按登录状态声明 full / half，服务端据此选上限。
+    // 额度档位（2026-11-26 站长改版）：前端声明 full / guest / revoked 三档，服务端据此选上限与窗口。
     // 这是粗口径的额度提示，不是身份凭据：静态站没有服务端会话，无法验签登录态；
-    // 伪造只能把 10 抬到 20，真正恶意刷量由 IP 黑名单与上游 neurons 日额度兜底。
-    const quotaTier = body.quotaTier === 'full' ? 'full' : 'half';
-    const rateLimit = quotaTier === 'full' ? RATE_LIMIT_FULL : RATE_LIMIT_HALF;
+    // 伪造档位最多抬到 full 的 20 次/小时，真正恶意刷量由 IP 黑名单与上游 neurons 日额度兜底。
+    // 未知档位一律按最严的 guest（5 次/24 小时）处理，不放宽。
+    const rawTier = body.quotaTier;
+    const quotaTier = (rawTier === 'full' || rawTier === 'guest' || rawTier === 'revoked') ? rawTier : 'guest';
+    let rateLimit, rateWindowMs, retryAfter;
+    if (quotaTier === 'full') {
+      rateLimit = RATE_LIMIT_FULL; rateWindowMs = WINDOW_FULL_MS; retryAfter = 3600;
+    } else if (quotaTier === 'revoked') {
+      rateLimit = RATE_LIMIT_REVOKED; rateWindowMs = WINDOW_REVOKED_MS; retryAfter = 3600;
+    } else {
+      rateLimit = RATE_LIMIT_GUEST; rateWindowMs = WINDOW_GUEST_MS; retryAfter = 86400;
+    }
 
-    // ---------- 每 IP 限流（内存滑窗：登录 20 / 未登录 10 次每小时） ----------
+    // ---------- 每 IP 限流（内存滑窗：上限与窗口按档位走） ----------
     // 注意：Worker 实例在边缘节点间不共享内存，这是「够用的粗限流」——
     // 防的是单 IP 脚本刷，不是精确配额。真要精确配额上 KV/Durable Object。
     const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
     const now = Date.now();
     if (!globalThis.__sxgRate) globalThis.__sxgRate = new Map();
     const bucket = globalThis.__sxgRate.get(ip) || [];
-    const recent = bucket.filter((t) => now - t < 3600 * 1000);
+    const recent = bucket.filter((t) => now - t < rateWindowMs);
     if (recent.length >= rateLimit) {
-      // 滥用溯源（2026-11-21）：限流命中写结构化日志，Cloudflare 控制台 Workers Logs 可按 IP 查。
+      // 滥用溯源：限流命中写结构化日志，Cloudflare 控制台 Workers Logs 可按 IP 查。
       // 只记 IP/档位/时间/计数，不记提问正文（避免把用户隐私写进日志）。
-      console.log(JSON.stringify({ event: 'rate_limited', ip, tier: quotaTier, limit: rateLimit, hits: recent.length, ts: new Date().toISOString() }));
-      return json({ error: 'rate-limited', retryAfter: 3600 }, 429, corsHeaders);
+      console.log(JSON.stringify({ event: 'rate_limited', ip, tier: quotaTier, limit: rateLimit, windowMs: rateWindowMs, hits: recent.length, ts: new Date().toISOString() }));
+      return json({ error: 'rate-limited', retryAfter: retryAfter }, 429, corsHeaders);
     }
     recent.push(now);
     globalThis.__sxgRate.set(ip, recent);
-    // 顺手清理过期条目，防 Map 无限膨胀
+    // 顺手清理过期条目，防 Map 无限膨胀（按最长窗口 24 小时清）
     if (globalThis.__sxgRate.size > 5000) {
       for (const [k, v] of globalThis.__sxgRate) {
-        if (!v.some((t) => now - t < 3600 * 1000)) globalThis.__sxgRate.delete(k);
+        if (!v.some((t) => now - t < WINDOW_GUEST_MS)) globalThis.__sxgRate.delete(k);
       }
     }
 
@@ -283,10 +305,27 @@ export default {
     const hasImage = parts.some((p) => p.type === 'image_url');
 
     // ---------- 调 Workers AI（env.AI binding，零 key）----------
-    // 纯文本走 gpt-oss-20b（非过度推理、政治话题中立作答、中文可用）；带图切 llama-3.2-11b-vision-instruct。
-    const MODEL_TEXT = '@cf/openai/gpt-oss-20b';
-    const MODEL_VISION = '@cf/meta/llama-3.2-11b-vision-instruct';
-    const model = hasImage ? MODEL_VISION : MODEL_TEXT;
+    // 模型分级（2026-11-26 站长定）：Star 天数决定能用的模型，点亮越久越贵。
+    // 白名写在服务端——前端传的 modelTier / starDays 可伪造，这里按额度档位再校一遍：
+    // guest / revoked 一律压到第 0 档，full 也只能取到 starDays 允许的档位。
+    const MODEL_TEXT_TIERS = [
+      '@cf/meta/llama-3.2-3b-instruct',               // 0 天：未 Star 默认，最省
+      '@cf/zai-org/glm-4.7-flash',                    // 1 天
+      '@cf/google/gemma-4-26b-a4b-it',                // 3 天
+      '@cf/openai/gpt-oss-20b',                       // 7 天
+      '@cf/mistralai/mistral-small-3.1-24b-instruct', // 15 天
+      '@cf/meta/llama-4-scout-17b-16e-instruct',      // 30 天
+    ];
+    const MODEL_DAYS = [0, 1, 3, 7, 15, 30];
+    const MODEL_VISION = '@cf/meta/llama-3.2-11b-vision-instruct'; // 带图固定视觉模型，不参与分级
+    const reqTier = Number.isInteger(body.modelTier) ? body.modelTier : 0;
+    const reqDays = Number.isInteger(body.starDays) && body.starDays > 0 ? body.starDays : 0;
+    let allowedTier = 0;
+    if (quotaTier === 'full') {
+      for (let i = 0; i < MODEL_DAYS.length; i++) if (reqDays >= MODEL_DAYS[i]) allowedTier = i;
+    }
+    const pickedTier = Math.max(0, Math.min(reqTier, allowedTier, MODEL_TEXT_TIERS.length - 1));
+    const model = hasImage ? MODEL_VISION : MODEL_TEXT_TIERS[pickedTier];
     const userContent = parts.length
       ? parts
       : [{ type: 'text', text: question }];

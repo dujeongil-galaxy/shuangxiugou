@@ -6689,26 +6689,34 @@ section('21c. 首页滑到底部按钮');
   check(/<script[^>]*src="\.\/ai-notice-patch\.js\?v=4"/.test(noticeHtmlNoCmt),
     '首页活跃引用 ai-notice-patch.js?v=4（非注释，文案变更 bump 破缓存）');
 
-  // labor-ai.html 必须：双线路 + 新权限矩阵（登录 20 / 未登录 10；附件登录+Star 才开）+ 两处免责声明
+  // labor-ai.html 必须：双线路 + 三档权限矩阵（2026-11-26 站长改版）
+  //   full 登录+首次Star 20次/小时+附件开；guest 未登录 5次/24小时+附件锁；
+  //   revoked 曾Star后取消 5次/小时+附件仍开（额外权益不恢复）
   {
     const la = read('labor-ai.html');
     const hmp = read('header-menu-patch.js');
     check(/sxg_github_logged_in/.test(la) && /sxg_github_has_star/.test(la)
-      && /RATE_FULL = 20/.test(la) && /RATE_HALF = 10/.test(la)
+      && /RATE_FULL = 20/.test(la) && /RATE_GUEST = 5/.test(la) && /RATE_REVOKED = 5/.test(la)
+      && /GUEST_WINDOW_MS = 24 \* 3600 \* 1000/.test(la)
       && /CN_RATE_KEY = 'sxg_ai_cn_rate'/.test(la),
-      '新页面读取登录/Star 状态；登录 20 次/小时、未登录减半 10 次/小时（国内外同口径）');
+      '页面读取登录/Star/撤销状态；三档 full 20次/小时、guest 5次/24小时、revoked 5次/小时（国内外同口径）');
     check(/askCN/.test(la) && /askCF/.test(la) && /api\.siliconflow\.cn/.test(la) && /workers\.dev/.test(la),
       '新页面双线路齐备（国内硅基流动 + Cloudflare Worker）');
-    check(/currentRoute = 'cf'/.test(la) && /quotaLimit: logged \? RATE_FULL : RATE_HALF/.test(la)
+    check(/currentRoute = 'cf'/.test(la) && /tier = 'full'/.test(la)
+      && /tier = 'guest'/.test(la) && /tier = 'revoked'/.test(la)
+      && /quotaTier: tier/.test(la) && /windowMs = st\.windowMs/.test(la)
       && /function cnRateOk\(\)/.test(la) && /hits\.length < limit/.test(la)
-      && /quotaTier: starStatus\(\)\.logged \? 'full' : 'half'/.test(la) && !/cnUnlocked/.test(la),
-      '默认走 Cloudflare；文字问答两条线路都开放，额度只看登录态（CF 声明档位 + CN 本地滑窗）');
-    check(/attachUnlocked: logged && hasStar,/.test(la) && !/STAR_ATTACH_DAYS/.test(la)
+      && /quotaTier: starStatus\(\)\.quotaTier/.test(la) && !/cnUnlocked/.test(la),
+      '默认走 Cloudflare；文字问答两条线路都开放，额度按三档（CF 声明 tier + CN 本地滑窗按档选窗口）');
+    check(/tier = 'revoked';[^\n]*attachUnlocked = true/.test(la)
+      && /tier = 'guest';[^\n]*attachUnlocked = false/.test(la)
+      && /tier = 'full';[^\n]*attachUnlocked = true/.test(la)
+      && !/STAR_ATTACH_DAYS/.test(la)
       && !/attachUnlocked[^\n]*days\s*>=\s*3/.test(la)
       && /fileInput\.disabled = !ok/.test(la)
       && /if \(attachments\.length && !starStatus\(\)\.attachUnlocked\)/.test(la)
       && /if \(!st\.attachUnlocked\)/.test(la),
-      '附件锁死：登录 + Star 才放行，不看天数；入口禁用、选文件、发送前共三道门');
+      '附件门禁：full 与 revoked 放行、guest 锁死；不看天数；入口禁用、选文件、发送前共三道门');
     check(!/sxg_ai_blacklisted|sxg_ai_ever_starred/.test(la)
       && !/sxg_ai_blacklisted|sxg_ai_ever_starred|拉黑/.test(hmp)
       && !/localStorage\.setItem\('sxg_ai_blacklisted'/.test(hmp),
@@ -6882,19 +6890,122 @@ section('21c. 首页滑到底部按钮');
         && !publicMetas.some(m => /10 次|20 次|减半/.test(m)),
         '§21h-4 搜索摘要只写统一一句话，不公开 10/20 档位',
         '把具体额度写回 description → 搜索引擎与分享卡片直接暴露内部档位');
+      // 2026-11-26 站长要求：AI 页静默拦截全部 DevTools / 看源码快捷键（不弹窗、不提示、按键无响应）。
+      // 含 F12 任意组合、Ctrl+Shift+I/J/C/K、Ctrl+U 任意组合，以及 Mac 的 Meta 组合。
+      check(/addEventListener\('keydown', function \(e\)/.test(la)
+        && /var mod = e\.ctrlKey \|\| e\.metaKey/.test(la)
+        && /var devtoolsCombo = mod && \(e\.shiftKey \|\| e\.altKey\)/.test(la)
+        && /var isF12 = k === 'f12' \|\| code === 'F12' \|\| key === 123/.test(la)
+        && /var isI = devtoolsCombo && \(k === 'i'/.test(la)
+        && /var isJ = devtoolsCombo && \(k === 'j'/.test(la)
+        && /var isC = devtoolsCombo && \(k === 'c'/.test(la)
+        && /var isK = devtoolsCombo && \(k === 'k'/.test(la)
+        && /var isU = mod && \(k === 'u'/.test(la)
+        && /if \(isF12 \|\| isI \|\| isJ \|\| isC \|\| isK \|\| isU\)/.test(la)
+        && /e\.preventDefault\(\)/.test(la)
+        && /e\.stopImmediatePropagation\(\)/.test(la)
+        && /\}, true\);/.test(la),
+        '§21h-19 AI 页静默拦截全部 DevTools 快捷键（F12/Ctrl+Shift+I+J+C+K/Ctrl+U，捕获阶段吞掉）',
+        '删掉任一拦截分支或去掉 preventDefault → 对应快捷键又能打开开发者工具看明文 Key');
+      // 2026-11-26 站长追加：Ctrl+C/V/X/A 这类基础编辑键绝不能锁。
+      // 上面是静态代码断言，这里把真实 handler 拿出来跑一遍按键，确认基础键放行、DevTools 键仍吞掉。
+      {
+        const keyBlock = (la.match(/document\.addEventListener\('keydown', function \(e\) \{[\s\S]*?\}, true\);/) || [''])[0];
+        const handlers = [];
+        const savedDocument = globalThis.document;
+        globalThis.document = { addEventListener: (type, fn, capture) => handlers.push({ type, fn, capture }) };
+        try { new Function(keyBlock)(); } finally { globalThis.document = savedDocument; }
+        const h = handlers[0] && handlers[0].fn;
+        const isBlocked = (init) => {
+          let hit = false;
+          h(Object.assign({ keyCode: 0 }, init, {
+            preventDefault() { hit = true; },
+            stopImmediatePropagation() {}
+          }));
+          return hit;
+        };
+        check(!!h
+          && isBlocked({ key: 'c', code: 'KeyC', ctrlKey: true, keyCode: 67 }) === false
+          && isBlocked({ key: 'v', code: 'KeyV', ctrlKey: true, keyCode: 86 }) === false
+          && isBlocked({ key: 'x', code: 'KeyX', ctrlKey: true, keyCode: 88 }) === false
+          && isBlocked({ key: 'a', code: 'KeyA', ctrlKey: true, keyCode: 65 }) === false
+          && isBlocked({ key: 'V', code: 'KeyV', ctrlKey: true, shiftKey: true, keyCode: 86 }) === false
+          && isBlocked({ key: 'F12', keyCode: 123 }) === true
+          && isBlocked({ key: 'I', code: 'KeyI', ctrlKey: true, shiftKey: true, keyCode: 73 }) === true
+          && isBlocked({ key: 'u', code: 'KeyU', ctrlKey: true, keyCode: 85 }) === true,
+          '§21h-19 基础编辑键 Ctrl+C/V/X/A 与 Ctrl+Shift+V 不被拦截，DevTools 快捷键仍被拦截',
+          '把复制/粘贴/剪切/全选也吞掉 → 用户连报错信息都复制不了，违反站长明确要求');
+      }
       const routeBody = (stripComments(la).match(/function renderRoute\(\)\{[\s\S]*?\n\}/) || [''])[0];
+      // §21h-4（2026-11-26 站长改口径）：三档额度数字不在页面公开，改在 README 公开。
+      // 页面只保留统一话术 PUBLIC_QUOTA_LINE + 指向 README 的提示 + Star 只认首次/取消后限流警告。
       check(routeBody.includes(PUBLIC_QUOTA_LINE)
-        && !/未登录减半|当前额度/.test(routeBody),
-        '§21h-4 线路提示条只展示统一一句话，不再显示登录态额度数字',
-        '把「当前额度 10/20 次」写回 → 具体档位对每位访客可见');
+        && /README/.test(routeBody)
+        && /只认首次/.test(routeBody)
+        && /请勿取消/.test(routeBody)
+        && /仍会触发限流/.test(routeBody)
+        && !/额度规则（公开）|未登录访客 24 小时内 5 次|首次 Star 每小时 20 次|取消每小时 5 次/.test(routeBody),
+        '§21h-4 页面不公开三档数字，只提示读 README 并保留 Star 只认首次/取消后限流警告',
+        '把三档数字写回页面 → 站长「不在页面公开」口径失守；删掉 README 指引或 Star 警告 → 访客看不到规则入口与后果');
+      // §21h-4（2026-11-26）：Star 入口必须走 OAuth 登录，回调才签发 sxg_star_session 令牌；
+      // 指向纯仓库页时点 Star 无任何回调，本页 verifyStarSession 无令牌直接 return，刷新也检测不到。
+      check(/var AUTH_URL = "https:\/\/shuangxiugou-ai-worker\.ovpj01-hk\.workers\.dev\/auth\/github"/.test(la)
+        && /href="' \+ AUTH_URL/.test(routeBody)
+        && !/href="' \+ REPO_URL/.test(routeBody),
+        '§21h-4 Star 入口指向 OAuth 登录（回调签发令牌，刷新可验签），不指向纯仓库页',
+        '链接改回纯仓库页 → 点 Star 无回调无令牌，verifyStarSession 直接 return，刷新永远检测不到');
+      // 三档规则必须落在仓库 README：页面指向那里，那边就得读得到，不能是空指针。
+      {
+        const rdmQuota = read('README.md');
+        check(/未登录访客[\s\S]{0,80}5 次 \/ 24 小时/.test(rdmQuota)
+          && /首次 Star 有效[\s\S]{0,40}20 次 \/ 小时/.test(rdmQuota)
+          && /曾 Star 后取消[\s\S]{0,60}5 次 \/ 小时/.test(rdmQuota)
+          && /附件上传/.test(rdmQuota)
+          && /只认第一次点亮/.test(rdmQuota),
+          '§21h-4 README 公开三档额度规则（页面不公开，规则落在仓库）',
+          'README 没写全三档 → 页面指向 README 后用户读不到规则，等于没公开');
+        // §21h-17：模型档位规则也落在 README（页面同样不公开档位数字）
+        const rdmModel = read('README.md');
+        check(/模型档位：点亮越久，可用模型越强/.test(rdmModel)
+          && /未 Star \/ 取消过[\s\S]{0,120}Llama 3\.2 3B[\s\S]{0,60}Qwen3\.5 4B/.test(rdmModel)
+          && /30 天[\s\S]{0,80}Llama 4 Scout 17B[\s\S]{0,60}DeepSeek V3\.2/.test(rdmModel)
+          && /服务端按 Star 天数核验/.test(rdmModel),
+          '§21h-17 README 公开模型档位表（0/1/3/7/15/30 天，两条线路）',
+          'README 删掉模型档位表 → 页面只说读 README 却读不到分级规则');
+      }
       // §21h-16（2026-11-22 站长要求）：公开当前线路用的模型，让用户看得见自己走哪条模型；
       // 同时常驻告知「取消 Star 后 EAC 协付渠道即永久失效、再次 Star 不再赠送额度」这条红线。
       // 模型名三处对齐：国内前端 CFG.cn.model、CF worker capabilities 回报、页面 MODEL_LABEL。
       check(/id="modelLine"/.test(la)
         && /var modelLine\s*=\s*document\.getElementById\('modelLine'\)/.test(la)
         && /modelLine\.innerHTML\s*=/.test(la)
-        && /MODEL_LABEL\[currentRoute\]/.test(la),
-        '§21h-16 页面有独立模型行，随当前线路渲染模型名（不藏、用户可见）');
+        && /currentModelLabel\(\)/.test(la),
+        '§21h-16 页面有独立模型行，随当前线路与所选档位渲染模型名（不藏、用户可见）');
+      // §21h-17（2026-11-26 站长定规）：按 Star 天数分六档解锁模型，点亮越久越贵。
+      // 未 Star / 取消锁第 0 档；CF Worker 白名单兜底，CN 前端假锁（防君子）。
+      check(/var MODEL_DAYS = \[0, 1, 3, 7, 15, 30\]/.test(la)
+        && /function maxModelTier\(\)/.test(la)
+        && /if \(st\.tier !== 'full'\) return 0/.test(la)
+        && /function currentModelTier\(\)/.test(la)
+        && /function modelIdFor\(route, hasImage\)/.test(la)
+        && /if \(hasImage\) return MODEL_VISION\[route\]/.test(la),
+        '§21h-17 六档解锁逻辑：天数 0/1/3/7/15/30，未 Star 与撤销锁第 0 档，带图固定视觉模型',
+        '删掉档位判定或让 guest 也能选高价模型 → Star 分级作废，白嫖贵模型');
+      check((/@cf\/meta\/llama-3\.2-3b-instruct/.test(la) && /@cf\/zai-org\/glm-4\.7-flash/.test(la)
+          && /@cf\/google\/gemma-4-26b-a4b-it/.test(la) && /@cf\/mistralai\/mistral-small-3\.1-24b-instruct/.test(la)
+          && /@cf\/meta\/llama-4-scout-17b-16e-instruct/.test(la))
+        && (/Qwen\/Qwen3\.5-4B/.test(la) && /Qwen\/Qwen3-8B/.test(la)
+          && /Qwen\/Qwen3-30B-A3B/.test(la) && /deepseek-ai\/DeepSeek-V3\.2/.test(la))
+        && /id="modelPick"/.test(la) && /function renderModelPick\(\)/.test(la)
+        && /Star ' \+ MODEL_DAYS\[i\] \+ ' 天解锁/.test(la),
+        '§21h-17 六档模型 ID 齐全（CF + CN 两套）、页面有档位下拉并标注未解锁天数',
+        '缺档位或没写解锁提示 → 用户看不到分级、不知道怎样解锁更贵的模型');
+      check(/const MODEL_TEXT_TIERS = \[/.test(workerKv)
+        && /if \(quotaTier === 'full'\) \{\s*for \(let i = 0; i < MODEL_DAYS\.length; i\+\+\) if \(reqDays >= MODEL_DAYS\[i\]\) allowedTier = i;\s*\}/.test(workerKv)
+        && /Math\.max\(0, Math\.min\(reqTier, allowedTier/.test(workerKv)
+        && /hasImage \? MODEL_VISION : MODEL_TEXT_TIERS\[pickedTier\]/.test(workerKv),
+        '§21h-17 CF Worker 白名单兜底：非 full 压第 0 档，full 不超 starDays 允许档，带图走视觉模型',
+        '服务端不校档位 → 改 localStorage 的 days 就能白嫖 30 天档，分级形同虚设');
       check(/var MODEL_LABEL\s*=\s*\{/.test(la)
         && /model:\s*"Qwen\/Qwen3-VL-8B-Instruct"/.test(la)
         && /Qwen3-VL-8B-Instruct/.test(la)
@@ -6903,19 +7014,18 @@ section('21c. 首页滑到底部按钮');
         '§21h-16 模型显示名与真实模型一致：国内 Qwen3-VL-8B、CF GPT-OSS-20B（worker 回报同名）',
         '页面写的模型名与实际调用的不符 → 用户被误导，公开反而变成欺骗');
       check(/当前模型：/.test(routeBody)
-        && /一经取消即拉黑/.test(routeBody)
-        && /再次 Star 也不赠送额外的 Token 使用额度/.test(routeBody)
-        && !/10 次|20 次|减半|免费额度/.test(routeBody),
-        '§21h-16 常驻告知用站长原话「一经取消即拉黑、再次 Star 不赠送额度」，不写具体档位/免费',
-        '正文告知改回措辞或写回次数/免费 → 站长原话丢失或撞 §21h-9 对外口径红线（注释里写不算，必须查 renderRoute 正文）');
-      // §21h-16a：失效主体必须是「EAC 协付渠道」，页面可见行与三条线路提示词同一口径。
-      check(/取消后 EAC 协付渠道即永久失效/.test(routeBody)
-        && !/取消后额外额度即永久失效|额外权益即永久失效/.test(routeBody)
+        && !/一经取消即拉黑|再次 Star 也不赠送|取消后 EAC 协付渠道即永久失效/.test(routeBody)
+        && !/减半|免费额度/.test(routeBody)
+        && /只认第一次；一旦取消 Star/.test(la),
+        '§21h-16 模型行只显示模型名，取消后果由 routeTip 单独承担（不复读）；提示词仍讲权益规则',
+        '模型行又写回取消后果 → 同一句在页面出现两次，用户看到复读机；提示词删掉权益规则 → AI 答不出来');
+      // §21h-16a：失效主体必须是「EAC 协付渠道」——只约束三条线路提示词，页面可见行不再复述。
+      check(!/取消后额外额度即永久失效|额外权益即永久失效/.test(la)
         && /EAC 协付渠道即永久失效/.test(la)
         && /EAC 协付渠道即永久失效/.test(workerKv)
         && /EAC 协付渠道即永久失效/.test(aliPrompt),
-        '§21h-16a 取消 Star 失效口径在页面可见行与三条线路统一为 EAC 协付渠道',
-        '前端可见行还说「额外额度/额外权益永久失效」→ 同一规则两处口径不一致，用户看到旧说法');
+        '§21h-16a 取消 Star 失效口径在三条线路统一为 EAC 协付渠道（页面不重复讲）',
+        '提示词说「额外额度/额外权益永久失效」→ 三线路口径不一致，AI 答出旧说法');
       // §21h-18（2026-11-23 站长定规）：AI 更名为「休休查」，页面 SEO 与主站口径绑定；
       // 页面内写改名公告（不动首页），并有返回双休购首页的按钮。历史记账文档保留旧名（史实）。
       const laNoCmt = la.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
@@ -7362,27 +7472,35 @@ section('21c. 首页滑到底部按钮');
         '§21h-15 Boss直聘 动态单测存在且标本机专用（命中变体/不误伤/可点链接）',
         '无动态测试 → isBossHit 正则写错只能等用户发现漏拦截');
     }
-    // §21h-3（2026-11-21 站长改版）：登录 20 次/小时、未登录一律减半 10 次/小时；
-    // Star 只管附件，不再决定文字问答。两个后端 + 前端必须同一套口径。
+    // §21h-3（2026-11-26 站长改版）：三档额度 full 20次/小时、guest 5次/24小时、revoked 5次/小时；
+    // 两个后端 + 前端必须同一套口径，未知档位一律按最严的 guest，不放宽。
     {
       const workerSrc = read('ai-worker/src/worker.js');
       const aliSrc = read('ai-worker-aliyun/index.mjs');
-      check(/const RATE_LIMIT_FULL = 20/.test(workerSrc) && /const RATE_LIMIT_HALF = 10/.test(workerSrc)
-        && /quotaTier === 'full' \? RATE_LIMIT_FULL : RATE_LIMIT_HALF/.test(workerSrc)
-        && /recent\.length >= rateLimit/.test(workerSrc) && /tier: quotaTier/.test(workerSrc),
-        '§21h-3 CF Worker 按 quotaTier 选上限：登录 20 / 未登录 10，日志带档位',
-        '删掉 half 档 → 未登录仍按 20 次跑，减半口径落空');
-      check(/const RATE_LIMIT_FULL = 20/.test(aliSrc) && /const RATE_LIMIT_HALF = 10/.test(aliSrc)
-        && /quotaTier === 'full' \? RATE_LIMIT_FULL : RATE_LIMIT_HALF/.test(aliSrc)
-        && /function checkRate\(ip, limit\)/.test(aliSrc) && /checkRate\(clientIp\(ev\), rateLimit\)/.test(aliSrc)
+      check(/const RATE_LIMIT_FULL = 20/.test(workerSrc) && /const RATE_LIMIT_GUEST = 5/.test(workerSrc)
+        && /const RATE_LIMIT_REVOKED = 5/.test(workerSrc)
+        && /WINDOW_GUEST_MS = 24 \* 3600 \* 1000/.test(workerSrc)
+        && /'full' \|\| rawTier === 'guest' \|\| rawTier === 'revoked'/.test(workerSrc)
+        && /quotaTier === 'revoked'/.test(workerSrc)
+        && /recent\.length >= rateLimit/.test(workerSrc) && /tier: quotaTier/.test(workerSrc)
+        && /retryAfter: retryAfter/.test(workerSrc),
+        '§21h-3 CF Worker 按 quotaTier 选三档上限与窗口（full 20/h、guest 5/24h、revoked 5/h），日志带档位',
+        '删掉 guest/revoked 档 → 未登录或撤销用户仍按 20 次跑，三档口径落空');
+      check(/const RATE_LIMIT_FULL = 20/.test(aliSrc) && /const RATE_LIMIT_GUEST = 5/.test(aliSrc)
+        && /const RATE_LIMIT_REVOKED = 5/.test(aliSrc)
+        && /WINDOW_GUEST_MS = 24 \* 3600 \* 1000/.test(aliSrc)
+        && /'full' \|\| rawTier === 'guest' \|\| rawTier === 'revoked'/.test(aliSrc)
+        && /function checkRate\(ip, limit, windowMs\)/.test(aliSrc) && /checkRate\(clientIp\(ev\), rateLimit, rateWindowMs\)/.test(aliSrc)
         && /recent\.length >= limit/.test(aliSrc),
-        '§21h-3 阿里云线路同口径：登录 20 / 未登录 10（checkRate 接收档位上限）',
-        '国内后端仍写死 20 → 国内外限流不一致，与站长「一律减半」冲突');
-      check(/quotaTier/.test(read('scripts/test-ai-worker.cjs'))
-        && /'half'/.test(read('scripts/test-ai-worker.cjs'))
-        && /quotaTier: 'half'/.test(read('scripts/test-ai-worker-aliyun.cjs')),
-        '§21h-3 两端单测都覆盖未登录 10 次上限（第 11 次判红）',
-        '只测 20 次老口径 → 减半逻辑回归无人发现');
+        '§21h-3 阿里云线路同三档口径（checkRate 接收档位上限与窗口）',
+        '国内后端仍写死两档 → 国内外限流不一致，三档口径落空');
+      const cfTest = read('scripts/test-ai-worker.cjs');
+      const aliTest = read('scripts/test-ai-worker-aliyun.cjs');
+      check(/'guest'/.test(cfTest) && /'revoked'/.test(cfTest)
+        && /'guest'/.test(aliTest) && /'revoked'/.test(aliTest)
+        && /第 6 次/.test(cfTest) && /第 6 次/.test(aliTest),
+        '§21h-3 两端单测都覆盖 guest 与 revoked 各 5 次上限（第 6 次判红）',
+        '只测 full 老口径 → 三档限流回归无人发现');
     }
     check(/IPIP_ENDPOINT = 'https:\/\/myip\.ipip\.net\/json'/.test(la)
       && /IPIFY_ENDPOINT = 'https:\/\/api\.ipify\.org\?format=json'/.test(la)
@@ -7534,10 +7652,11 @@ section('21c. 首页滑到底部按钮');
   // 输入校验
   check(/question\.length > 500/.test(worker),
     'question 超 500 字拒绝（400）');
-  // 限流
+  // 限流（2026-11-26 三档）
   check(/recent\.length >= rateLimit/.test(worker)
-    && /RATE_LIMIT_FULL = 20/.test(worker) && /RATE_LIMIT_HALF = 10/.test(worker),
-  '每 IP 滑窗限流（登录 20 / 未登录 10 次每小时，429）');
+    && /RATE_LIMIT_FULL = 20/.test(worker) && /RATE_LIMIT_GUEST = 5/.test(worker)
+    && /RATE_LIMIT_REVOKED = 5/.test(worker) && /WINDOW_GUEST_MS = 24 \* 3600 \* 1000/.test(worker),
+  '每 IP 分档滑窗限流（full 20/h、guest 5/24h、revoked 5/h，429）');
   // IP 黑名单（2026-11-21）：静态数组 + secret 双来源，最前置拦截，命中不调 AI
   check(/const BLOCKED_IPS = \[/.test(worker)
     && /function isBlockedIp\(ip, env\)/.test(worker)
@@ -7952,8 +8071,8 @@ section('21c. 首页滑到底部按钮');
   // —— 左侧目录树（参考站长随笔自动生成）——
   const tocCount = (ss.match(/data-toc=/g) || []).length;
   check(tocCount === 8,
-    `成功案例页目录树锚点齐全（8 个 data-toc：致敬前辈/QQ奶奶/反面专题/#01~#05，实际 ${tocCount}）`,
-    `data-toc 数量不对（${tocCount}）→ 目录树会漏章节`);
+    `成功案例页目录树锚点齐全（8 个 data-toc：致敬前辈/QQ奶奶/反面专题/#01~#05，实际 ${tocCount}；50 元自述本地稿不发布）`,
+    `data-toc 数量不对（${tocCount}）→ 目录树会漏章节或多出本地稿入口`);
   check(/id="toc-nav"/.test(ss), '成功案例页含目录树容器 #toc-nav', '目录树容器缺失 → 左侧目录树建不出来');
   check(/class="toc"/.test(ss) && /<summary>目录<\/summary>/.test(ss),
     '目录树用可折叠 <details class="toc"> 承载（窄屏回落单栏）', '目录树结构缺失或不可折叠');
@@ -11894,6 +12013,85 @@ section('39. 成功案例反面专题（万州公交坠江）');
       && /bystander\.html/.test(read('scripts/seo/generate-sitemap.py')),
     '§41l 校验段与生成器都写死专题页路径（防止本段被整体删空后恒真空转）',
     '校验段或生成器路径丢失 → 后续重建会静默抹掉这一页');
+}
+
+section('40. 成功案例自述专题（50 元罚单 · 站长亲身经历，本地草稿不发布）');
+{
+  // 站长明确：本篇只本地成稿，不进线上。校验保留本地稿内容保护；发布状态必须为「无入口」。
+  const hasLocalFy = exists('fifty-yuan.html');
+  const fy = hasLocalFy ? read('fifty-yuan.html') : '';
+  check(!hasLocalFy || fy.length > 6000,
+    '§43a 本地 fifty-yuan.html 存在且是完整长页（非空壳）',
+    '本地稿缺失或过短 → 自述专题草稿没落地');
+
+  check(!hasLocalFy || (/class="ai-badge"[^>]*>\s*内容由 AI 生成/.test(fy)
+      && /class="ai-note"/.test(fy) && /AI 依据当事人口述及其所持材料/.test(fy)),
+    '§43b 本地自述专题挂「内容由 AI 生成」徽章 + .ai-note 声明框（口径为当事人口述，非公开报道）',
+    '缺徽章／声明框／口径写错 → 与 §21j 同口径的诚实披露失守');
+
+  const factsFy = [
+    ['50 元', '罚款金额'],
+    ['10392', '违法代码'],
+    ['驾驶人在现场拒绝立即驶离', '违法事由'],
+    ['12123', '提示 App'],
+    ['详单', '通信详单核查'],
+    ['行政复议', '走完的程序'],
+    ['已告知', '决定的核心认定'],
+    ['升降板', '后续全城拆除的设施'],
+    ['占两个车位', '停车经过'],
+    ['轮胎压在升降板上面', '停车经过'],
+    ['没收到', '短信与 App 提示'],
+    ['一个多小时', '原地等待时长'],
+    ['公报私仇', '家庭线的核心冲突'],
+    ['我妈', '家庭线的核心人物'],
+    ['继父', '家庭线的另一人物'],
+    ['满足你，行了吧', '情感锚点'],
+  ];
+  const missFy = factsFy.filter(([s]) => !fy.includes(s)).map(([s, d]) => `${s}（${d}）`);
+  check(!hasLocalFy || missFy.length === 0,
+    `§43c 本地自述专题的 ${factsFy.length} 个关键事实锚点齐全`,
+    (!hasLocalFy || missFy.length === 0) ? '' : '以下事实锚点丢失，正文可能被改坏：' + missFy.join('； '));
+
+  check(!hasLocalFy || (/class="correct"/.test(fy)
+      && /当事人自述，不是司法文书/.test(fy)
+      && /无证据表明存在因果关系/.test(fy)
+      && /均无指控意图/.test(fy)
+      && /个人信息已脱敏/.test(fy)),
+    '§43d 口径厘清框写明「自述非司法文书／无因果断言／无指控意图／已脱敏」',
+    '删掉口径厘清 → 读者会把个人自述读成司法定论，或把时间先后读成因果');
+
+  check(!hasLocalFy || (/不是司法文书/.test(fy) && /事实认定以官方文书为准/.test(fy)
+      && /不推翻、不否认复议决定的法律效力/.test(fy)),
+    '§43e 自述专题承认复议决定的法律效力、不自行翻案',
+    '改成替当事人翻案 → 个人自述越过事实边界');
+
+  check(!hasLocalFy || (/材料出处/.test(fy) && /原件未公开/.test(fy)
+      && /行政复议决定书/.test(fy) && /通信详单查询结果/.test(fy)),
+    '§43f 列当事人所持材料出处并声明原件未公开（不编造公开新闻链接）',
+    '材料出处缺失或伪装成公开报道 → 违反本篇「自述而非报道」的事实边界');
+
+  check(!hasLocalFy || (!/川\s*R/.test(fy) && !/川RF22525/.test(fy)
+      && !/南充/.test(fy) && !/文峰街/.test(fy) && !/\d{17}[\dXx]/.test(fy)),
+    '§43g 个人信息已脱敏（牌照简称／城市名／具体街道／身份证号不进正文）',
+    '可识别信息泄漏 → 违反 §43d 脱敏承诺与本站隐私立场');
+
+  check(!hasLocalFy || (!/<img\b/i.test(fy) && !/assets\//.test(fy)),
+    '§43h 自述专题不引用图片或站内素材（文字页，素材不入库）',
+    '挂了图片／素材 → 违反素材规则');
+
+  const publishedRefs = [
+    ['success-stories.html', read('success-stories.html')],
+    ['sitemap.xml', read('sitemap.xml')],
+    ['scripts/seo/generate-sitemap.py', read('scripts/seo/generate-sitemap.py')],
+    ['nav-menu.js', read('nav-menu.js')]
+  ].filter(([, s]) => /fifty-yuan\.html/.test(s)).map(([f]) => f);
+  check(publishedRefs.length === 0,
+    '§43i 50 元自述专题保持本地：成功案例页/站点地图/生成器/首页导航均无入口（避免死链）',
+    publishedRefs.length ? '这些文件还留着未发布页的入口：' + publishedRefs.join('、') : '');
+
+  check(/40\. 成功案例自述专题/.test(read('scripts/verify.mjs')),
+    '§43n 本地草稿校验段仍在（防止整段被删空后恒真空转）',
+    '校验段丢失 → 本地稿改坏也无人发现');
 }
 
 // ---------- 汇总 ----------
