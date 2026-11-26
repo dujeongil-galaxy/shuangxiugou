@@ -7018,6 +7018,36 @@ section('21c. 首页滑到底部按钮');
         && /hasImage \? MODEL_VISION : MODEL_TEXT_TIERS\[pickedTier\]/.test(workerKv),
         '§21h-17 CF Worker 白名单兜底：非 full 压第 0 档，full 不超 starDays 允许档，带图走视觉模型',
         '服务端不校档位 → 改 localStorage 的 days 就能白嫖 30 天档，分级形同虚设');
+      // §21h-17a（2026-11-26 站长报障）：Star 天数不能用 OAuth 回调写下的一次性快照，
+      // 登录令牌 30 天过期后前端不再复核，快照会冻结——10-12 点的 Star 到 11-26 仍锁 30 天档。
+      // 改为按 Star 日期（客观事实）每次现算；这里把真实函数抠出来跑，确认旧快照不再压档。
+      check(/function starDaysFromDate\(dateStr\)/.test(la)
+        && /var live = starDaysFromDate\(date\)/.test(la)
+        && /var days = live >= 0 \? live : snap/.test(la),
+        '§21h-17a 天数按 Star 日期实时计算（旧快照只作无日期时的降级），不再冻结档位',
+        '改回只读 sxg_star_days 快照 → 令牌过期后天数永远不增长，30 天档永久锁死');
+      {
+        const segDays = (la.split('function starDaysFromDate')[1] || '').split('/* 模型档位解锁')[0];
+        const segMax = (la.split('function maxModelTier()')[1] || '').split('function currentModelTier()')[0];
+        const src = [
+          'var RATE_FULL=20,RATE_GUEST=5,RATE_REVOKED=5,RATE_WINDOW_MS=3600000,GUEST_WINDOW_MS=86400000;',
+          'var MODEL_DAYS=[0,1,3,7,15,30];',
+          'function starDaysFromDate' + segDays,
+          'function maxModelTier()' + segMax,
+          'return { days: starStatus().days, tier: maxModelTier() };'
+        ].join('\n');
+        // sxg_star_days=3 是 10 月中旬点 Star 时写下的冻结快照；sxg_star_date 才是真日期。
+        const snap = {
+          sxg_github_logged_in: '1', sxg_github_has_star: '1', sxg_star_revoked: '0',
+          sxg_star_date: '2026-10-12', sxg_star_days: '3'
+        };
+        const ls = { getItem: (k) => (k in snap ? snap[k] : null) };
+        let out = null;
+        try { out = new Function('localStorage', src)(ls); } catch (e) { out = { err: String(e) }; }
+        check(!!out && out.days >= 30 && out.tier === 5,
+          '§21h-17a 可执行测试：Star 日期 2026-10-12 且旧快照冻结在 3 天 → 现算天数≥30、解锁第 5 档',
+          '实时计算失效 → 10-12 的 Star 到 11-26 仍锁 30 天档（实际 ' + JSON.stringify(out) + '）');
+      }
       check(/var MODEL_LABEL\s*=\s*\{/.test(la)
         && /model:\s*"Qwen\/Qwen3-VL-8B-Instruct"/.test(la)
         && /Qwen3-VL-8B-Instruct/.test(la)

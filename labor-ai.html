@@ -465,12 +465,24 @@ var capsCache = null;   // CF Worker 能力探测结果（是否支持 vision）
                每小时 5 次，附件仍开；额外权益永久作废、不恢复。
    判定 revoked 靠服务端撤销标志（本地 sxg_star_revoked 由 verifyStarSession 写入），
    不是靠本地手改 has_star——防君子，真鉴权在 Worker 的 KV 撤销记录。 */
+/* Star 天数按「今天 - Star 日期」实时算，不用 OAuth 回调写下的一次性快照：
+   快照会冻结——登录令牌 30 天到期后不再复核，10-12 点的 Star 会永远停在登录那天的天数。
+   Star 日期是客观事实，随时可现算，45 天就是 45 天。无有效日期才退回旧快照（兼容老访客）。 */
+function starDaysFromDate(dateStr){
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr || '')) return -1;
+  var t = Date.parse(dateStr + 'T00:00:00Z');
+  if (!isFinite(t)) return -1;
+  var d = Math.floor((Date.now() - t) / 86400000);
+  return d > 0 ? d : 0;
+}
 function starStatus(){
   var logged = localStorage.getItem('sxg_github_logged_in') === '1';
   var hasStar = localStorage.getItem('sxg_github_has_star') === '1';
   var revoked = logged && localStorage.getItem('sxg_star_revoked') === '1';
-  var days = parseInt(localStorage.getItem('sxg_star_days') || '0', 10) || 0;
   var date = localStorage.getItem('sxg_star_date') || '';
+  var snap = parseInt(localStorage.getItem('sxg_star_days') || '0', 10) || 0;
+  var live = starDaysFromDate(date);
+  var days = live >= 0 ? live : snap;
   var tier, quotaLimit, windowMs, attachUnlocked;
   if (revoked){
     tier = 'revoked'; quotaLimit = RATE_REVOKED; windowMs = RATE_WINDOW_MS; attachUnlocked = true;
@@ -488,8 +500,8 @@ function starStatus(){
 }
 
 /* 模型档位解锁：Star 天数决定能选到第几档，未 Star / 取消过锁死第 0 档。
-   days 是 OAuth 回调时服务端算出的快照（localStorage）；懂技术的人能改，
-   所以 CF 侧 Worker 还会按 quotaTier 再校一遍，CN 侧就是防君子。 */
+   days 由 Star 日期（localStorage 的 sxg_star_date）配合当前时间实时算出，不用会冻结的快照；
+   懂技术的人能改 localStorage，所以 CF 侧 Worker 还会按 quotaTier 再校一遍，CN 侧就是防君子。 */
 function maxModelTier(){
   var st = starStatus();
   if (st.tier !== 'full') return 0; // guest / revoked 一律最低档
