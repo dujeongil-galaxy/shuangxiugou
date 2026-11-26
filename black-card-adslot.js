@@ -114,6 +114,20 @@
         点击一律 preventDefault，绝不把 #fragment 写进地址栏。
       - **可见文案同步改口**：CTA「复制小程序口令」、aria-label、toast 标题与
         操作步骤里所有「链接」字样换成「口令/小程序卡片」，不许只换常量留旧标签。
+   ⑬ 站长 2026-11-27（原话两段，后段覆盖前段）：
+      「首页，胖东来广告，不再使用微信小程序，移除相关代码，并直接替换为淘宝链接」
+      「算了，还是用之前那个风格弹窗吧，这样的话，既可以推荐去淘宝购物，
+       也可以引导用户访问他们的抖音」
+      - ⑫ 的微信小程序口令整体作废：口令常量、execCommand/clipboard 复制链路、
+        黑色 toast、复制步骤文案全部删除，组件与 README 零「小程序/口令/微信」。
+      - 点击整图/CTA → preventDefault → 弹出**居中弹窗**，照 liangpei-ad.js
+        2026-11-19 那套 lp-modal 风格（遮罩 + 白卡 + × / 遮罩 / Esc 关闭），
+        但独立类名 sxg-adslot__modal，不复用良配 DOM。
+      - 弹窗里两个真 <a>：① 站长给的淘宝店（推荐去淘宝购物）；
+        ② 站长给的抖音主页（引导访问他们的抖音）。两个链接都是完整原链接，
+        一个字不改（淘宝链接里的 ali_* 参数是站长自己的推广码，不许删）。
+      - 可见文案同步改口：CTA「点此查看淘宝店与抖音 →」、aria-label 同步，
+        不许只换 href 留着「复制口令 / 去微信」旧标签。
    ========================================================================== */
 (function () {
   'use strict';
@@ -124,12 +138,10 @@
   var IMG = './assets/luxiyi.jpg';
   var PDL_DETAIL = './brand/pdl.html';
   var PDL_IMG = './assets/pdl.png';
-  /* 站长 2026-11-11 01:48「链接不对，替换这个 #小程序://胖东来/zxlej7hK8bNv5Sj」：
-     要复制的不是 URL，而是微信小程序口令——只有粘贴到微信聊天窗口并发送后
-     才会渲染成小程序卡片。口令不是可点地址，所以整图/CTA 的 href 只把它当
-     可点载体，点击一律 preventDefault 后复制并弹窗，绝不把 #fragment 写进
-     地址栏，也不再对微信内置浏览器放行跳转。零参数、零追踪（§26k）。 */
-  var PDL_LINK = '#小程序://胖东来/zxlej7hK8bNv5Sj';
+  /* 站长 2026-11-27 给的两条完整原链接（淘宝带 ali_* 是他自己的推广码，
+     不许自作主张删参数；抖音是官方主页，不是短视频单链）。单一真相源。 */
+  var PDL_TAOBAO = 'https://n3sf0tqhvhbw60ae2xdq4nodo2g4kxl.taobao.com/?ali_refid=a3_430582_1006:2782662030:H:PA1p2kB2NhSvWw4yBlIlUg%3D%3D:ca4592dc60d1f31f10fc80d2dca8211d&ali_trackid=318_ca4592dc60d1f31f10fc80d2dca8211d&spm=0.0.hoverItem.1&topIds=1094015031473&shopSearchKeyword=?????&mm_sceneid=0_0_6496235283_0_0';
+  var PDL_DOUYIN = 'https://www.douyin.com/user/MS4wLjABAAAANjHa0B-e7JAX89HjRiCnSLRbFYYG3b0wrt7397e7IBA';
   /* 三张广告设计图。?v 必须与 index.html 里的 <link rel=preload as=image> 完全一致，
      否则浏览器会把它当两个资源（预热的白预了）。改了图就同步升这里和 index.html。 */
   var ART = './assets/ad-luxiyi.svg?v=2';
@@ -144,86 +156,50 @@
   var ART_RECRUIT_MOBILE = './assets/ad-recruit-mobile.svg?v=1';
   var AUTOPLAY_MS = 5000;
 
-  /* ⑪ 点击复制 + 去微信提示（参考 liangpei-ad.js 的成熟做法，独立实现、独立类名）。
-     两个实测坑一并继承：① execCommand('copy') 的返回值不可信，必须接管 copy
-     事件用 setData 显式写入；② 用户手势只在点击回调的同步执行栈内有效，
-     同步复制必须直接调用，不能塞进 Promise.then 里。 */
-  /* ⑫ 不再按 UA 放行跳转：口令在微信内置浏览器里也打不开，必须复制后
-     粘贴到聊天窗口发送才会变成小程序卡片。任何浏览器一律复制 + 弹窗。 */
-  function copySync(text) {
-    try {
-      var onCopy = function (e) {
-        if (!e.clipboardData) return;
-        e.clipboardData.setData('text/plain', text);
-        e.preventDefault();
-      };
-      document.addEventListener('copy', onCopy);
-      var ok = document.execCommand('copy');
-      document.removeEventListener('copy', onCopy);
-      return !!ok;
-    } catch (err) {
-      return false;
-    }
+  /* ⑬ 居中弹窗（照 liangpei-ad.js 2026-11-19 lp-modal 那套风格：
+     遮罩 + 白卡 + × / 点遮罩 / Esc 三种关闭；display:none↔flex 硬切换，
+     不碰 opacity/visibility 过渡，避免 2026-11-18 卡帧老坑）。
+     弹窗里两条真 <a>：淘宝购物 + 抖音主页，target=_blank + rel=noopener。
+     本站不判定「哪个是真的胖东来」，只把站长给的两个入口如实摆出来。 */
+  var modalEl = null;
+
+  function ensureModal() {
+    if (modalEl) return modalEl;
+    modalEl = document.createElement('div');
+    modalEl.className = 'sxg-adslot__modal';
+    modalEl.setAttribute('role', 'dialog');
+    modalEl.setAttribute('aria-modal', 'true');
+    modalEl.setAttribute('aria-label', '胖东来 · 淘宝购物与抖音主页');
+    modalEl.setAttribute('data-sxg-pdl-modal', '1');
+    modalEl.innerHTML =
+      '<div class="sxg-adslot__modal-mask"></div>' +
+      '<div class="sxg-adslot__modal-card">' +
+        '<button type="button" class="sxg-adslot__modal-close" aria-label="关闭弹窗">&times;</button>' +
+        '<div class="sxg-adslot__modal-title">胖东来 · 善待劳动者</div>' +
+        '<div class="sxg-adslot__modal-steps">' +
+          '<p>货车司机送货，也能体会到尊重——这是它登上公益广告位的原因。</p>' +
+          '<p>想逛线上店、或看看他们的抖音，下面两个入口自己选。</p>' +
+        '</div>' +
+        '<a class="sxg-adslot__modal-link sxg-adslot__modal-taobao" href="' + PDL_TAOBAO + '" target="_blank" rel="noopener">去淘宝店逛逛 →</a>' +
+        '<a class="sxg-adslot__modal-link sxg-adslot__modal-douyin" href="' + PDL_DOUYIN + '" target="_blank" rel="noopener">看他们的抖音 →</a>' +
+        '<div class="sxg-adslot__modal-note">链接由站长提供 · 淘宝链接含站长推广码</div>' +
+      '</div>';
+    document.body.appendChild(modalEl);
+
+    function close() { modalEl.classList.remove('is-show'); }
+    modalEl.querySelector('.sxg-adslot__modal-close').addEventListener('click', close);
+    modalEl.querySelector('.sxg-adslot__modal-mask').addEventListener('click', close);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modalEl.classList.contains('is-show')) close();
+    });
+    return modalEl;
   }
 
-  function tryClipboardApi(text) {
-    if (!navigator.clipboard || !navigator.clipboard.writeText) {
-      return Promise.reject(new Error('clipboard api unavailable'));
-    }
-    return navigator.clipboard.writeText(text);
-  }
-
-  function copyText(text) {
-    var syncOk = copySync(text); // 必须留在点击回调的同步栈里
-    return tryClipboardApi(text)
-      .then(function () { return true; })
-      .catch(function () { return syncOk; });
-  }
-
-  var toastEl = null;
-  var toastTimer = null;
-
-  function showShareToast(ok) {
-    if (!toastEl) {
-      toastEl = document.createElement('div');
-      toastEl.className = 'sxg-adslot__toast';
-      toastEl.setAttribute('role', 'status');
-      toastEl.setAttribute('aria-live', 'polite');
-      toastEl.setAttribute('data-sxg-share-toast', '1');
-      document.body.appendChild(toastEl);
-    }
-    toastEl.innerHTML =
-      '<button type="button" class="sxg-adslot__toast-close" aria-label="关闭提示">&times;</button>' +
-      '<div class="sxg-adslot__toast-title">' +
-        (ok ? '已复制小程序口令，请打开微信粘贴后打开' : '请复制下方口令，再去微信打开') +
-      '</div>' +
-      '<code class="sxg-adslot__toast-code">' + PDL_LINK + '</code>' +
-      '<span class="sxg-adslot__toast-steps">打开微信 → 粘贴到任意聊天窗口或文件传输助手并发送 → 点开刚发的小程序卡片进入胖东来线上商城</span>';
-    void toastEl.offsetWidth;
-    toastEl.classList.add('is-show');
-    clearTimeout(toastTimer);
-    // 15 秒：切到微信、找聊天窗口、粘贴都要时间，别一闪就没
-    toastTimer = setTimeout(function () {
-      if (toastEl) toastEl.classList.remove('is-show');
-    }, 15000);
-
-    var close = toastEl.querySelector('.sxg-adslot__toast-close');
-    if (close) {
-      close.addEventListener('click', function () {
-        toastEl.classList.remove('is-show');
-      });
-    }
-    // 自动复制被浏览器静默拒绝时的最后一条路：点链接本体再复制一次
-    var code = toastEl.querySelector('.sxg-adslot__toast-code');
-    if (code) {
-      code.addEventListener('click', function () {
-        copyText(PDL_LINK);
-        code.textContent = PDL_LINK + ' ✓';
-        setTimeout(function () {
-          if (code.isConnected) code.textContent = PDL_LINK;
-        }, 1400);
-      });
-    }
+  function openModal() {
+    var el = ensureModal();
+    el.classList.add('is-show');
+    var closeBtn = el.querySelector('.sxg-adslot__modal-close');
+    if (closeBtn && typeof closeBtn.focus === 'function') closeBtn.focus();
   }
 
   function bindShare(root) {
@@ -231,10 +207,8 @@
     for (var i = 0; i < links.length; i++) {
       (function (a) {
         a.addEventListener('click', function (e) {
-          e.preventDefault(); // 口令不是 URL，任何浏览器都只复制、不跳转
-          var copied;
-          try { copied = copyText(PDL_LINK); } catch (err) { copied = Promise.resolve(false); }
-          copied.then(function (ok) { showShareToast(ok); });
+          e.preventDefault(); // 不在这里直接跳转，统一走居中弹窗让用户选淘宝/抖音
+          openModal();
         });
       })(links[i]);
     }
@@ -321,25 +295,41 @@
       '.sxg-adslot__cta{font-size:12px}.sxg-adslot__meta{gap:5px 8px}' +
       '.sxg-adslot__disclaimer{font-size:10.5px;padding:9px 14px 12px}' +
       'html.sxg-adslot-near [data-sxg-adslot-avoid]{visibility:hidden!important;pointer-events:none!important}}' +
-      /* ⑪ 点击胖东来广告后的「复制 + 去微信」提示：形态照良配 toast，独立实现、
-         独立类名。默认 display:none 不占几何，z=100010 高于提醒弹窗也不被
-         keepClear() 当成要避让的悬浮圆钮（它只管 1000~9994）。 */
-      '.sxg-adslot__toast{display:none;position:fixed;left:50%;bottom:28px;' +
-      'transform:translateX(-50%);box-sizing:border-box;width:min(92vw,440px);' +
-      'padding:16px 20px 15px;border-radius:14px;background:#2b1a17;color:#f7efe0;' +
-      'box-shadow:0 14px 42px rgba(0,0,0,.38);z-index:100010;' +
-      'font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;' +
-      'font-size:14px;line-height:1.6;text-align:center}' +
-      '.sxg-adslot__toast.is-show{display:block}' +
-      '.sxg-adslot__toast-title{font-weight:700;font-size:15px;margin:0 22px 6px}' +
-      '.sxg-adslot__toast-close{position:absolute;top:6px;right:10px;width:26px;height:26px;' +
-      'border:none;background:transparent;color:#f7efe0;font-size:20px;line-height:1;cursor:pointer}' +
-      '.sxg-adslot__toast-code{display:block;margin:8px 0 6px;padding:8px 10px;' +
-      'border-radius:8px;background:rgba(247,239,224,.14);font-family:ui-monospace,Menlo,Consolas,monospace;' +
-      'font-size:12px;line-height:1.45;word-break:break-all;cursor:pointer;user-select:all}' +
-      '.sxg-adslot__toast-steps{display:block;font-size:12px;opacity:.82;line-height:1.6}' +
-      '@media (max-width:480px){.sxg-adslot__toast{bottom:18px;padding:14px 16px 13px;font-size:13px}' +
-      '.sxg-adslot__toast-code{font-size:11px}}';
+      /* ⑬ 居中弹窗：照 liangpei-ad.js lp-modal 的结构与观感，独立类名。
+         display:none↔flex 硬切换（不碰 opacity/visibility 过渡，避开 2026-11-18
+         卡帧老坑）；z=100010 高于提醒弹窗，也不被 keepClear() 当成要避让的悬浮圆钮
+         （它只管 1000~9994）。 */
+      '.sxg-adslot__modal{display:none;position:fixed;inset:0;z-index:100010;' +
+      'align-items:center;justify-content:center;padding:20px;' +
+      'font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}' +
+      '.sxg-adslot__modal.is-show{display:flex}' +
+      '.sxg-adslot__modal-mask{position:absolute;inset:0;background:rgba(20,17,13,.55)}' +
+      '.sxg-adslot__modal-card{position:relative;box-sizing:border-box;width:min(92vw,380px);' +
+      'max-height:calc(100vh - 40px);overflow:auto;padding:26px 22px 18px;border-radius:16px;' +
+      'background:#fff;color:#2a2620;text-align:center;box-shadow:0 18px 60px rgba(0,0,0,.28);' +
+      'animation:sxg-adslot-modal-in .24s ease}' +
+      '@keyframes sxg-adslot-modal-in{from{opacity:0;transform:translateY(14px) scale(.97)}' +
+      'to{opacity:1;transform:translateY(0) scale(1)}}' +
+      '.sxg-adslot__modal-close{position:absolute;top:8px;right:8px;width:28px;height:28px;' +
+      'padding:0;border:0;border-radius:999px;background:transparent;color:#9b8f80;' +
+      'font-size:19px;line-height:1;cursor:pointer}' +
+      '.sxg-adslot__modal-close:hover{background:rgba(42,38,32,.06);color:#2a2620}' +
+      '.sxg-adslot__modal-title{margin-bottom:12px;font-size:17px;font-weight:800;color:#2a2620}' +
+      '.sxg-adslot__modal-steps{margin-bottom:14px;padding:12px 14px;border-radius:12px;' +
+      'background:#f6f4ef;text-align:left}' +
+      '.sxg-adslot__modal-steps p{margin:0;font-size:13px;line-height:1.7;color:#5c554a}' +
+      '.sxg-adslot__modal-steps p+p{margin-top:6px}' +
+      '.sxg-adslot__modal-link{display:block;margin-bottom:10px;padding:12px 15px;border-radius:10px;' +
+      'color:#fff;font-size:15px;font-weight:700;text-decoration:none;transition:filter .15s ease,transform .15s ease}' +
+      '.sxg-adslot__modal-link:hover{filter:brightness(1.06)}' +
+      '.sxg-adslot__modal-link:active{transform:scale(.97)}' +
+      '.sxg-adslot__modal-taobao{background:linear-gradient(135deg,#f97316,#ea580c);' +
+      'box-shadow:0 4px 12px rgba(249,115,22,.3)}' +
+      '.sxg-adslot__modal-douyin{background:linear-gradient(135deg,#111827,#000);' +
+      'box-shadow:0 4px 12px rgba(0,0,0,.28)}' +
+      '.sxg-adslot__modal-note{margin-top:10px;font-size:11.5px;color:#9b8f80}' +
+      '@media (max-width:374px){.sxg-adslot__modal{padding:12px}' +
+      '.sxg-adslot__modal-card{padding:22px 16px 14px}}';
     var st = document.createElement('style');
     st.id = 'sxg-adslot-style';
     st.textContent = css;
@@ -387,13 +377,13 @@
                 '点此进入天猫旗舰店，支持真实双休企业 →</a>' +
             '</div>' +
           '</div>' +
-          /* 胖东来卡（⑫ 2026-11-11 01:48 修订）：劳动者态度与挂广告位的原因都在图里；
-             整图 + CTA 共用 PDL_LINK（小程序口令），点击一律不跳转而是复制口令 +
-             弹窗提醒去微信粘贴，品牌名与头像只链站内详情页。
-             data-sxg-share 是复制交互的唯一接线点。 */
+          /* 胖东来卡（⑬ 2026-11-27 修订）：劳动者态度与挂广告位的原因都在图里；
+             整图 + CTA 点击一律 preventDefault 打开居中弹窗，弹窗里给淘宝店与
+             抖音主页两个真链接；品牌名与头像只链站内详情页。
+             data-sxg-share 是弹窗交互的唯一接线点。 */
           '<div class="sxg-adslot__card sxg-adslot__card--pdl">' +
-            '<a class="sxg-adslot__banner" data-sxg-share="pdl" href="' + PDL_LINK + '" target="_blank" rel="noopener" ' +
-              'aria-label="复制胖东来小程序口令，打开微信查看">' +
+            '<a class="sxg-adslot__banner" data-sxg-share="pdl" href="#" ' +
+              'aria-label="打开胖东来淘宝店与抖音主页入口">' +
               '<div class="sxg-adslot__art-wrap" data-art-error-text="胖东来 · 善待劳动者">' +
                 '<picture>' +
                   '<source media="(max-width:480px)" srcset="' + ART_PDL_MOBILE + '">' +
@@ -407,8 +397,8 @@
               '<a class="sxg-adslot__name" href="' + PDL_DETAIL + '" rel="noopener">胖东来</a>' +
               '<span class="sxg-adslot__mark">公益展示</span>' +
               '<span class="sxg-adslot__tag">善待劳动者 · 货车司机送货也能体会到尊重</span>' +
-              '<a class="sxg-adslot__cta" data-sxg-share="pdl" href="' + PDL_LINK + '" target="_blank" rel="noopener">' +
-                '点此复制小程序口令 · 去微信打开 →</a>' +
+              '<a class="sxg-adslot__cta" data-sxg-share="pdl" href="#">' +
+                '点此查看淘宝店与抖音 →</a>' +
             '</div>' +
           '</div>' +
           '<div class="sxg-adslot__card sxg-adslot__card--recruit">' +
@@ -433,7 +423,7 @@
       '</div>' +
       '<div class="sxg-adslot__disclaimer">公益广告位图片由 AI 绘制；企业信息全部由站长人工核实——线上自营、线下门店，只要有一条产线做不到双休，就上不了这一栏。核实结论来自站长亲自查证，不是联网搜一句「是否双休」得出的。想让自家企业上首页，请到 <a class="sxg-adslot__issue" href="https://github.com/dujeongil-galaxy/shuangxiugou/issues/new" target="_blank" rel="noopener">issue</a> 递交实证材料。<span class="sxg-adslot__scope">适用范围只到中国大陆的品牌与门店：这一栏盯的是自家门口的用工状况，先把身边的事改好，比给远方打分要紧。</span><span class="sxg-adslot__date">本政策自 2026 年 11 月起实行。</span></div>';
     initCarousel(root);
-    // ⑪ 胖东来整图 + CTA 的「点击复制 + 去微信」交互，只绑带 data-sxg-share 的两个 <a>
+    // ⑬ 胖东来整图 + CTA 的「点击开居中弹窗」交互，只绑带 data-sxg-share 的两个 <a>
     bindShare(root);
     /* 图片缺失兜底（站长 2026-11-10「还不是纯文字吗」）：
        旧写法在 <img> 出错时直接 display:none，于是卡片只剩标题栏 + 一行字，

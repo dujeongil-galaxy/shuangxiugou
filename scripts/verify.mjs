@@ -8192,8 +8192,8 @@ section('21c. 首页滑到底部按钮');
     '§33a2 广告位三张设计图首屏预热，且每张的 ?v 与 black-card-adslot.js 里的常量完全一致',
     '预热 URL 与脚本里的实际 URL 不一致 → 白预热，广告位照样「卡片先出来、图还是空的」');
 
-  check(/<script async src="\.\/black-card-adslot\.js\?v=22"><\/script>/.test(idx)
-    && idx.indexOf('black-card-adslot.js?v=22') < idx.indexOf('</head>')
+  check(/<script async src="\.\/black-card-adslot\.js\?v=23"><\/script>/.test(idx)
+    && idx.indexOf('black-card-adslot.js?v=23') < idx.indexOf('</head>')
     && !/script defer src="\.\/black-card-adslot\.js/.test(idx),
     '§33b 广告位补丁在 head 里 async 加载（不再排在第 40 个 defer，也不必等 692KB body 解析完）',
     '广告位补丁退回 defer 队列尾部 → 慢网又要 15 秒才冒出广告位');
@@ -9266,9 +9266,18 @@ section('24. 白屏兜底与加载态（防用户误退出）');
     'README.md', '最近更新.md', 'CHANGELOG.md', 'data/imported-brands.json'])];
   const dirty26 = [];
   const tmallRefs26 = [];
+  /* 2026-11-27 站长给胖东来淘宝推广链接，里面带 spm= / topIds= 等 ali_* 参数
+     （他自己的推广码，明确不许删）。这是 §26k「站内零追踪参数」的唯一白名单：
+     只豁免 black-card-adslot.js 里 PDL_TAOBAO 这一条常量，其余文件照旧判红。
+     用字符串拼接取常量值，避免本脚本自身被扫描命中。 */
+  const pdlFile26 = exists('black-card-adslot.js') ? read('black-card-adslot.js') : '';
+  const pdlTaobao26 = (pdlFile26.match(/var PDL_TAOBAO = '([^']+)'/) || [])[1] || '';
   for (const f of pub26) {
     if (!exists(f)) continue;
-    const s = read(f);
+    let s = read(f);
+    if (f === 'black-card-adslot.js' && pdlTaobao26) {
+      s = s.split(pdlTaobao26).join(''); // 白名单：只摘掉这一条原链接
+    }
     const hit = scan26(s);
     if (hit.length) dirty26.push(f + ':' + hit.join(','));
     for (const m of s.matchAll(/https?:\/\/luxiyi\.tmall\.com[^"'`\s<>)]*/g)) {
@@ -9277,7 +9286,7 @@ section('24. 白屏兜底与加载态（防用户误退出）');
   }
   check(pub26.length > 150, '§26j 参数红线扫描覆盖到全站发布文件（非空集防护）',
     `扫描 ${pub26.length} 个文件`);
-  check(dirty26.length === 0, '§26k 全站无账号 / 来源追踪 / 类目参数残留', dirty26.join(' | '));
+  check(dirty26.length === 0, '§26k 全站无账号 / 来源追踪 / 类目参数残留（仅豁免站长指定的胖东来淘宝推广码这一条）', dirty26.join(' | '));
   check(tmallRefs26.length >= 7 && tmallRefs26.every((x) => x.endsWith(CLEAN26)),
     '§26l 站内所有天猫链接都是零参数店铺首页（无 category.htm / 无问号）', tmallRefs26);
   check(!/category\.htm/.test(idx26 + patch26 + tea26.map((s) => read('brand/' + s + '.html')).join('')),
@@ -9703,7 +9712,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
 
   check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
-    && /black-card-adslot\.js\?v=22/.test(idx29),
+    && /black-card-adslot\.js\?v=23/.test(idx29),
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 
   // —— 站长 2026-11-10 晚：胖东来广告卡（首页推荐位） ——
@@ -9726,13 +9735,16 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29j 胖东来海报去掉「备注」两字，仍把劳动者态度（货车司机送货也能体会到尊重）与挂上公益广告位的原因写进图里；三条基线严格递增不叠字（风格互异由 §36a 管）',
     `图里主线文案基线 ${JSON.stringify(pdlMain29)} 不递增、出现「备注」两字或态度/原因要素缺失`);
 
-  // 视频链接检查必须按**源码原文**扫（含注释）：① 站长口径就是「注释里也不许
-  // 拼写该域名」；② 剥注释的 `\/\/[^\n]*` 会把 `https://` 当行注释吃掉整个 URL 尾巴，
-  // 故障注入实测 URL 从 code 视图里消失、断言静默放行（已踩过）。域名模式用
-  // douyin.com（带点），避免误伤 douyin-prompt.css 这类合法文件名。
-  const videoRe29 = /douyin\.com|b23\.tv/i;
+  // 2026-11-27 站长明确要挂抖音主页（弹窗里的第二枚链接），所以「零视频链接」
+  // 收窄为「零短视频单链」：v.douyin.com / b23.tv 仍全脚本禁止；www.douyin.com/user/
+  // 主页链接只允许作为 PDL_DOUYIN 常量出现一次、且只在弹窗里，不进卡片/海报。
+  // 按源码原文扫（含注释），剥注释的 // 正则会吃掉 https:// 尾巴（§34 老坑）。
+  const videoRe29 = /v\.douyin\.com|b23\.tv/i;
+  const douyinHits29 = (ad29.match(/douyin\.com/g) || []).length;
   check(!videoRe29.test(ad29)
+    && douyinHits29 <= 2   // 常量一处 + ⑬ 沿革注释里的一处说明
     && !videoRe29.test(pdl29.replace(/xmlns(?::[a-zA-Z]+)?="[^"]*"/g, ''))
+    && !/douyin\.com/i.test(pdl29)
     && !videoRe29.test(read('assets/ad-luxiyi.svg'))
     && !videoRe29.test(read('assets/ad-recruit.svg'))
     && /PDL_IMG = '\.\/assets\/pdl\.png'/.test(code29)
@@ -9741,33 +9753,36 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29k 广告位零视频链接（脚本/海报侧）、胖东来品牌名与头像只链站内，「备注劳动者态度 + 不得挂视频链接」口径写进 README',
     '视频链接进了广告位，或备注/零链接口径没进 README → 站长两条指令失守');
 
-  // —— 站长 2026-11-11 01:48「链接不对，替换这个 #小程序://胖东来/zxlej7hK8bNv5Sj」 ——
-  // 00:46 那版介绍文章 URL 整体撤下：要复制的是**微信小程序口令**，不是 URL。
-  // 口令以 # 开头、只有粘贴到微信聊天窗口发送后才渲染成小程序卡片，所以 href
-  // 只是可点载体，点击一律 preventDefault + 复制（§36c）。机器钉死「口令单一
-  // 真相源 + 零参数 + 整图/CTA 共用 + 可见文案改口『口令』 + 组件与 README 零旧
-  // 文章链接」。拼接写法避免本文件的 URL 尾巴被剥注释正则吃掉（§34 老坑）。
-  const PDL_TOKEN29 = '#小程序:' + '//' + '胖东来/zxlej7hK8bNv5Sj';
-  const pdlLink29 = (ad29.match(/var PDL_LINK = '([^']+)'/) || [])[1];
+  // —— 站长 2026-11-27「不再使用微信小程序，移除相关代码」+「还是用之前那个
+  // 风格弹窗吧，既可以推荐去淘宝购物，也可以引导用户访问他们的抖音」——
+  // ⑫ 的小程序口令整套作废：口令常量、复制链路、toast 全删。整图与 CTA 的
+  // href="#" 只做 trigger；两条真链接写在居中弹窗里（PDL_TAOBAO / PDL_DOUYIN），
+  // 原链接一字不改（淘宝 ali_* 是站长推广码，不许删）。拼接写法避免本文件的
+  // URL 尾巴被剥注释正则吃掉（§34 老坑）。
+  const TAOBAO29 = 'https://n3sf0tqhvhbw60ae2xdq4nodo2g4kxl.taobao.com/?ali_refid='
+    + 'a3_430582_1006:2782662030:H:PA1p2kB2NhSvWw4yBlIlUg%3D%3D:ca4592dc60d1f31f10fc80d2dca8211d'
+    + '&ali_trackid=318_ca4592dc60d1f31f10fc80d2dca8211d&spm=0.0.hoverItem.1'
+    + '&topIds=1094015031473&shopSearchKeyword=?????&mm_sceneid=0_0_6496235283_0_0';
+  const DOUYIN29 = 'https://www.douyin.com/user/' + 'MS4wLjABAAAANjHa0B-e7JAX89HjRiCnSLRbFYYG3b0wrt7397e7IBA';
+  const tb29 = (ad29.match(/var PDL_TAOBAO = '([^']+)'/) || [])[1] || '';
+  const dy29 = (ad29.match(/var PDL_DOUYIN = '([^']+)'/) || [])[1] || '';
   const pdlCardStart29 = ad29.indexOf('sxg-adslot__card--pdl');
   const pdlCardEnd29 = ad29.indexOf('sxg-adslot__card--recruit');
   const pdlCard29 = pdlCardStart29 !== -1 && pdlCardEnd29 > pdlCardStart29
     ? ad29.slice(pdlCardStart29, pdlCardEnd29) : '';
-  check(!!pdlLink29
-    && pdlLink29 === PDL_TOKEN29
-    && pdlLink29.indexOf('?') === -1 && pdlLink29.indexOf('&') === -1
-    && pdlLink29.charAt(0) === '#'
-    && (pdlCard29.match(/href="'\s*\+\s*PDL_LINK/g) || []).length >= 2
-    && (pdlCard29.match(/target="_blank" rel="noopener"/g) || []).length >= 2
+  const adCode29 = ad29.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  check(tb29 === TAOBAO29 && dy29 === DOUYIN29
+    && (pdlCard29.match(/href="#"/g) || []).length >= 2
     && (pdlCard29.match(/data-sxg-share="pdl"/g) || []).length >= 2
-    && /点此复制小程序口令/.test(pdlCard29) && /去微信打开/.test(pdlCard29)
-    && /aria-label="复制胖东来小程序口令/.test(pdlCard29)
-    && !/tmall|taobao|天猫|淘宝|京东|jd\.com|bendibao/i.test(pdlCard29)
-    && !/var PDL_SHOP/.test(ad29)
+    && /点此查看淘宝店与抖音/.test(pdlCard29)
+    && /aria-label="打开胖东来淘宝店与抖音主页入口"/.test(pdlCard29)
+    && !/tmall|京东|jd\.com|bendibao/i.test(pdlCard29)
+    && !/var PDL_LINK/.test(adCode29)
+    && !/小程序:\/\/|copySync\(|execCommand\('copy'\)|showShareToast|toast-code/.test(adCode29)
     && !/bendibao/.test(ad29) && !/bendibao/.test(rd29)
-    && /小程序口令/.test(rd29) && /复制/.test(rd29) && /微信/.test(rd29),
-    '§29l 胖东来入口换成站长指定的小程序口令（# 开头、零参数），整图与 CTA 共用 PDL_LINK、可见文案同步改口「口令」、组件与 README 零旧文章链接',
-    '只换常量留着「链接」字样 / 链回介绍文章 / README 没写新口径 → 站长 01:48 指令失守');
+    && /弹窗/.test(rd29) && /淘宝/.test(rd29) && /抖音/.test(rd29),
+    '§29l 胖东来撤小程序口令改居中弹窗：整图与 CTA 的 href="#" 只做 trigger，PDL_TAOBAO/PDL_DOUYIN 两条原链接一字不改，可见文案改「点此查看淘宝店与抖音」，功能代码零旧复制链路',
+    '只换常量留着「口令」字样 / 淘宝链接被删参数 / README 没写新口径 → 站长 11-27 指令失守');
 }
 
 // ---------- 30. 比亚迪卡片曝光登记 + 视频下架如实登记 ----------
@@ -9950,8 +9965,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check((code32.match(/公益广告位/g) || []).length >= 4
     && !/广告位招商中|品牌展示|>广告位</.test(code32)
     && /data-adslot-kind', 'public-welfare'/.test(code32)
-    && /black-card-adslot\.js\?v=22/.test(idx32),
-    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 22');
+    && /black-card-adslot\.js\?v=23/.test(idx32),
+    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 23');
 
   // 站长 2026-11-10 二次纠正「广告图叫你重构，不是让你改成纯文字 / 文字明显重叠」：
   // 文案已全部画进 ad-recruit.svg 的 <text>（与图同坐标系同缩放，结构上不可能叠字），
@@ -10175,8 +10190,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
 
   const preload35 = mob35.every(([f, , ver]) =>
     idx35.indexOf('<link rel="preload" as="image" href="./' + f + '?v=' + ver + '" media="(max-width:480px)" />') !== -1);
-  check(preload35 && /black-card-adslot\.js\?v=22/.test(idx35),
-    '§35c 手机三图带 media 预热、?v 与脚本 *_MOBILE 常量一致，首页脚本已升 21（2026-11-12 政策文案改写后再 bump）',
+  check(preload35 && /black-card-adslot\.js\?v=23/.test(idx35),
+    '§35c 手机三图带 media 预热、?v 与脚本 *_MOBILE 常量一致，首页脚本已升 23（2026-11-27 胖东来弹窗改造后再 bump）',
     '预热漏 media 或 ?v 不一致 → 慢网首帧先出桌面稿再跳手机稿');
 
   check(/function keepClear\(/.test(code35) && /keepClear\(slot\);/.test(code35)
@@ -10239,41 +10254,44 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '桌面改了风格、手机稿还是老一套 → 手机上第 1/2 张照样撞脸');
 
   const code36 = ad36.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
-  check(/function copySync\(/.test(code36) && /document\.execCommand\('copy'\)/.test(code36)
-    && /function tryClipboardApi\(/.test(code36) && /navigator\.clipboard\.writeText/.test(code36)
-    && /function copyText\(/.test(code36) && /var syncOk = copySync\(text\)/.test(code36)
-    && /function showShareToast\(/.test(code36) && /data-sxg-share-toast/.test(code36)
-    && /已复制小程序口令，请打开微信粘贴后打开/.test(code36)
-    && /打开微信 → 粘贴到任意聊天窗口/.test(code36)
-    && /点开刚发的小程序卡片/.test(code36)
-    && /sxg-adslot__toast-code/.test(code36) && /copyText\(PDL_LINK\)/.test(code36)
-    && /15000/.test(code36) && /function bindShare\(/.test(code36)
-    && /bindShare\(root\);/.test(code36) && /e\.preventDefault\(\)/.test(code36)
+  check(/function ensureModal\(/.test(code36) && /function openModal\(/.test(code36)
+    && /function bindShare\(/.test(code36) && /bindShare\(root\);/.test(code36)
+    && /e\.preventDefault\(\)/.test(code36) && /openModal\(\)/.test(code36)
     && /data-sxg-share="pdl"/.test(code36)
-    // ⑫ 口令不是 URL：微信内置浏览器里也打不开，一律复制。放行跳转会让
-    // 「点了就自动复制」在微信里静默失效，所以反向钉死不得回潮。
-    && !/isWeChat/.test(ad36) && !/放行默认跳转直接打开/.test(ad36)
+    && /data-sxg-pdl-modal/.test(code36) && /aria-modal', 'true'/.test(code36)
+    && /sxg-adslot__modal-mask/.test(code36) && /sxg-adslot__modal-close/.test(code36)
+    && /e\.key === 'Escape'/.test(code36)
+    && /sxg-adslot__modal-taobao/.test(code36) && /sxg-adslot__modal-douyin/.test(code36)
+    && /href="' \+ PDL_TAOBAO \+ '" target="_blank" rel="noopener"/.test(code36)
+    && /href="' \+ PDL_DOUYIN \+ '" target="_blank" rel="noopener"/.test(code36)
+    // ⑬ 小程序口令链路整体撤除：旧函数/常量/toast 都不许回潮
+    && !/function copySync\(/.test(code36) && !/execCommand\('copy'\)/.test(code36)
+    && !/function showShareToast\(/.test(code36) && !/PDL_LINK/.test(code36)
+    && !/sxg-adslot__toast/.test(code36)
     && !/bendibao/.test(ad36)
-    && /\.sxg-adslot__toast\{display:none/.test(ad36),
-    '§36c 点击复制链路：同步 execCommand 趁手势写入 + clipboard API 兜底 + toast 提示去微信粘贴小程序卡片 + 口令可点再复制 + 15 秒不闪退；bindShare 真被调用，且不再按 UA 放行跳转（口令在微信内也必须复制）',
-    '复制被挪进 Promise.then / 去掉 preventDefault / 又按 UA 放行跳转 / 提示里不写微信 → 站长「点了就自动复制，弹窗提醒用户自己去微信」失守');
+    && /\.sxg-adslot__modal\{display:none/.test(ad36),
+    '§36c 点击开居中弹窗：preventDefault + bindShare 真调用 + 遮罩/×/Esc 三种关闭 + 淘宝/抖音两条真 <a> target=_blank rel=noopener；小程序口令/复制/toast 链路全撤',
+    '弹窗缺关闭方式 / 两条链接没挂真 href / 旧口令链路回潮 → 站长 11-27「用之前那个风格弹窗」失守');
 
   const t36 = exists('scripts/test-adslot.cjs') ? read('scripts/test-adslot.cjs') : '';
   const cdp36 = exists('scripts/cdp-pdl-adcheck.cjs') ? read('scripts/cdp-pdl-adcheck.cjs') : '';
   check(!!t36 && !!cdp36 && /test-adslot\.cjs/.test(wf36)
-    && /#小程序:\/\/胖东来/.test(t36) && /sxg-adslot__toast/.test(t36)
-    && /execCommand/.test(t36) && /defaultPrevented/.test(t36)
-    && /#小程序:\/\/胖东来/.test(cdp36) && /toast/.test(cdp36)
+    && /PDL_TAOBAO/.test(t36) && /PDL_DOUYIN/.test(t36)
+    && /sxg-adslot__modal-taobao/.test(t36) && /sxg-adslot__modal-douyin/.test(t36)
+    && /defaultPrevented/.test(t36) && /taobao\.com/.test(t36)
+    && /PDL_TAOBAO/.test(cdp36) && /PDL_DOUYIN/.test(cdp36)
+    && /modalShown/.test(cdp36) && /taobaoHref/.test(cdp36)
+    && !/PDL_LINK = '#小程序/.test(t36) && !/PDL_LINK = '#小程序/.test(cdp36)
     && /CHECK '/.test(cdp36),
-    '§36d 复制交互有挂 CI 的 jsdom 真点击测试（验复制调用 / 阻止跳转 / toast）+ 本机 CDP 真点击验收，两处都认站长新给的小程序口令',
+    '§36d 弹窗交互有挂 CI 的 jsdom 真点击测试（验阻止跳转 / 弹窗可见 / 两条真链接 href）+ 本机 CDP 真点击验收，两处都认站长新给的淘宝/抖音链接',
     '只写静态断言、没有真点击 → 又是一次「结构 PASS、实际点了没反应」');
 
   check(/不要用同一种风格/.test(rd36) && /两两互异/.test(rd36)
     && /第一张/.test(rd36) && /第二张/.test(rd36)
-    && /小程序口令/.test(rd36) && /复制/.test(rd36) && /微信/.test(rd36)
-    && !/bendibao/.test(rd36),
-    '§36e README 写死「三张海报两两互异 / 第一张不与第二张同风格」与「小程序口令点击复制 + 去微信」口径，且零旧文章链接',
-    '规则只挂口头 → 下次又拿两张同风格稿或静默跳转糊弄过去');
+    && /弹窗/.test(rd36) && /淘宝/.test(rd36) && /抖音/.test(rd36)
+    && !/小程序口令/.test(rd36) && !/bendibao/.test(rd36),
+    '§36e README 写死「三张海报两两互异 / 第一张不与第二张同风格」与「胖东来点击开弹窗给淘宝/抖音」口径，零旧小程序口令口径',
+    '规则只挂口头 → 下次又拿两张同风格稿或退回口令糊弄过去');
 }
 
 // ---------- 36f. 公益广告位标注「排名不分先后」+ 友链新增 JEV 双休筛选插件（2026-11-11 站长） ----------
@@ -10314,7 +10332,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     'JEV 条目写成互惠/互挂 → 与「不要求互挂」矛盾');
 
   // ④ 脚本在 index.html 的 ?v 随内容变更 bump，否则浏览器缓存旧脚本（撤链看不到）
-  check(/black-card-adslot\.js\?v=22/.test(idx36f)
+  check(/black-card-adslot\.js\?v=23/.test(idx36f)
     && /friend-links-footer\.js\?v=18/.test(idx36f),
     '§36f friend-links-footer.js 在 index.html 的 ?v 已随撤链 bump 到 18',
     '?v 没 bump → 浏览器缓存旧脚本，已撤的两条友链仍显示给访客');
@@ -10358,8 +10376,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/n\.id\s*===\s*['"]sxg-flash-mask['"]/.test(ad36h),
     '§36h keepClear 按 id 排除闪屏遮罩 #sxg-flash-mask（不被当悬浮钮隐藏、整页磨砂不破洞）',
     'keepClear 漏排除闪屏遮罩 → 广告位相交时遮罩被隐藏、磨砂破洞、广告位穿模');
-  check(/black-card-adslot\.js\?v=22/.test(idx36h),
-    '§36h black-card-adslot.js 的 ?v 已 bump 到 21（浏览器缓存旧脚本会吃掉本次修复）',
+  check(/black-card-adslot\.js\?v=23/.test(idx36h),
+    '§36h black-card-adslot.js 的 ?v 已 bump 到 23（浏览器缓存旧脚本会吃掉本次修复）',
     '?v 没 bump → 旧脚本仍带 z-index:9995，修复不生效');
 }
 
@@ -10372,8 +10390,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(!/@media \(max-width:480px\)\{\.sxg-adslot__nav\{display:none\}/.test(ad36k),
     '§36k 手机端（≤480px）不再隐藏公益广告位左右翻页箭头（放出 prev/next 按钮）',
     '移动端媒体查询又把 .sxg-adslot__nav 设 display:none → 手机上看不到左右翻页箭头');
-  check(/black-card-adslot\.js\?v=22/.test(idx36k),
-    '§36k black-card-adslot.js 的 ?v 已 bump 到 21（浏览器缓存旧脚本会吃掉本次改动）',
+  check(/black-card-adslot\.js\?v=23/.test(idx36k),
+    '§36k black-card-adslot.js 的 ?v 已 bump 到 23（浏览器缓存旧脚本会吃掉本次改动）',
     '?v 没 bump → 旧脚本仍隐藏手机端箭头，改动不生效');
 }
 
@@ -10526,8 +10544,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     /中国大陆/.test(ad36n),
     '§36n 脚注已声明适用范围仅限中国大陆品牌与门店（本站意在改进国内用工状况，不评价境外）',
     '缺「仅限中国大陆」限定 → 读者会以为榜单对境外品牌也作同等评判');
-  check(/black-card-adslot\.js\?v=22/.test(idx36n),
-    '§36n black-card-adslot.js 的 ?v 已 bump 到 21（浏览器缓存旧脚本会吃掉本次脚注）',
+  check(/black-card-adslot\.js\?v=23/.test(idx36n),
+    '§36n black-card-adslot.js 的 ?v 已 bump 到 23（浏览器缓存旧脚本会吃掉本次脚注）',
     '?v 没 bump → 旧脚本无脚注、本次改动不生效');
 }
 
@@ -10643,6 +10661,20 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(exists('nav-menu.js') && liftOk && orderOk,
     '§40w 手机端 ☰ 折叠导航取消：四项 + 版本号提升为 dock 一级（桌面还原回面板），顺序 ↑顶部最上 / ↓到底最下 / 版本号垫底',
     '折叠回潮或顺序错 → 站长指定的手机端首末位置失守，版本号跑回菜单看不见');
+
+  /* 2026-11-27 站长：dock 始终右侧垂直居中——先数按钮 N，中位数那枚压在视口
+     垂直中线，上下 (N-1)/2 枚依次贴着排（N=9 就是第 5 枚上 4 下 4）。
+     CSS 实现：top:50% + translateY(-50%)，bottom 让位（不再贴底）。机器断言
+     钉死这三件套 + 水平 right 不变 + 子项 order 顺序不受影响。 */
+  const dockBox36q = (mfDock.match(/#sxg-fab-dock\s*\{[^}]*\}/) || [''])[0];
+  const centerOk = /top:\s*50%/.test(dockBox36q)
+    && /transform:\s*translateY\(-50%\)/.test(dockBox36q)
+    && !/bottom:\s*calc\(/.test(dockBox36q)
+    && /right:\s*8px/.test(dockBox36q)
+    && /flex-direction:\s*column/.test(dockBox36q);
+  check(centerOk,
+    '§40w-1 手机端 dock 整列垂直居中：top:50% + translateY(-50%)（中位数按钮压视口中线、上下均分），水平仍 right:8px，不再贴底',
+    '退回 bottom:calc 贴底或漏 translateY → 按钮堆又沉到屏幕底部，站长要的居中布局失守');
 }
 
 // ---------- 36r. 申诉弹窗补规则 + GitHub 访问帮助设备分流 + sponsor 链接规整（2026-11-12 站长） ----------

@@ -486,11 +486,19 @@ div[class*="border-t"][class*="bg-slate-50"] > div.flex.items-center.gap-2 {
    桌面 >640px 完全不启用 dock，六枚仍按源脚本定位。
    -------------------------------------------------------------------------- */
 @media (max-width: 640px) {
+  /* 2026-11-27 站长：dock 始终「右侧垂直居中」——不是贴底。
+     算法按站长口径：先数按钮 N，取中位数那枚落在视口垂直中线，上下 (N-1)/2
+     枚依次贴着排。CSS 一行 top:50% + translateY(-50%) 就是这个效果——flex 列
+     整体包围盒的中心对齐视口中线，N 为奇数时中位数按钮正好压在中线上（N=9
+     就是第 5 枚上 4 下 4），N 为偶数时中间两枚分居中线两侧，同样上下均分。
+     水平仍 right:8px、68px 宽条、gap 6px、flex order 顺序全部不变。 */
   #sxg-fab-dock {
     position: fixed;
     right: 8px;
     width: 68px;
-    bottom: calc(var(--sxg-bar-h, 0px) + 14px + env(safe-area-inset-bottom, 0px));
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
     z-index: 9000;
     display: flex;
     flex-direction: column;

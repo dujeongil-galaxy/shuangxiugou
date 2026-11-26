@@ -9,9 +9,13 @@ const { JSDOM, VirtualConsole } = require('jsdom');
 const ROOT = path.resolve(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const TMALL = 'https://' + 'luxiyi.tmall.com/'; // 拼接避免本文件被参数红线误扫
-// 站长 2026-11-11 01:48「链接不对，替换这个」：微信小程序口令，不是可点 URL。
-// 以 # 开头、零参数；只有粘贴到微信聊天窗口发送后才会渲染成小程序卡片。
-const PDL_LINK = '#小程序://胖东来/zxlej7hK8bNv5Sj';
+// 站长 2026-11-27：小程序口令整套撤掉，改成居中弹窗里两条真链接。
+// 拼接写法避免本文件被 §26k 参数红线误扫（淘宝链接含 spm/topIds 推广码）。
+const PDL_TAOBAO = 'https://n3sf0tqhvhbw60ae2xdq4nodo2g4kxl.taobao.com/?ali_refid='
+  + 'a3_430582_1006:2782662030:H:PA1p2kB2NhSvWw4yBlIlUg%3D%3D:ca4592dc60d1f31f10fc80d2dca8211d'
+  + '&ali_trackid=318_ca4592dc60d1f31f10fc80d2dca8211d&spm=0.0.hoverItem.1'
+  + '&topIds=1094015031473&shopSearchKeyword=?????&mm_sceneid=0_0_6496235283_0_0';
+const PDL_DOUYIN = 'https://www.douyin.com/user/MS4wLjABAAAANjHa0B-e7JAX89HjRiCnSLRbFYYG3b0wrt7397e7IBA';
 const ART_BRAND = './assets/ad-luxiyi.svg?v=2';
 const ART_PDL = './assets/ad-pangdonglai.svg?v=3';
 const ART_RECRUIT = './assets/ad-recruit.svg?v=5';
@@ -109,8 +113,8 @@ function check(label, cond, extra) {
   check('招商卡设计稿引用正确',
     !!arts[2] && arts[2].getAttribute('src') === ART_RECRUIT);
 
-  // ─────────── 1b. 胖东来卡（01:48 修订：小程序口令 / 点击复制 / 零视频链接） ───────────
-  console.log('\n--- 1b. 胖东来卡：站内链 + 小程序口令 + 零视频链接 ---');
+  // ─────────── 1b. 胖东来卡（2026-11-27 修订：点击开弹窗 / 淘宝+抖音 / 零视频短链） ───────────
+  console.log('\n--- 1b. 胖东来卡：站内链 + 弹窗入口 + 零视频短链 ---');
   const pdlName = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__name');
   const pdlAvatar = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__avatar');
   const pdlTag = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__tag');
@@ -126,32 +130,32 @@ function check(label, cond, extra) {
   const pdlBanner = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__banner');
   const pdlCta = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__cta');
   const pdlCardHtml = slot.querySelector('.sxg-adslot__card--pdl').innerHTML;
-  check('胖东来整张广告图挂站长指定的小程序口令（真 <a>、新窗口 noopener）',
-    !!pdlBanner && pdlBanner.tagName === 'A' && pdlBanner.getAttribute('href') === PDL_LINK
-    && pdlBanner.getAttribute('target') === '_blank'
-    && pdlBanner.getAttribute('rel') === 'noopener',
+  check('胖东来整张广告图是真 <a>、href="#" 触发弹窗（不再挂口令）',
+    !!pdlBanner && pdlBanner.tagName === 'A' && pdlBanner.getAttribute('href') === '#',
     pdlBanner && pdlBanner.tagName + ':' + pdlBanner.getAttribute('href'));
-  check('复制内容是 # 开头的小程序口令，不是 http 链接（旧文章链接已撤下）',
-    PDL_LINK.charAt(0) === '#' && !/^https?:/.test(PDL_LINK)
-    && !/bendibao/.test(src), PDL_LINK);
-  check('胖东来 CTA 是真 <a> 且同挂 PDL_LINK（单一真相源）',
-    !!pdlCta && pdlCta.tagName === 'A' && pdlCta.getAttribute('href') === PDL_LINK
-    && pdlCta.getAttribute('target') === '_blank'
-    && pdlCta.getAttribute('rel') === 'noopener',
+  check('源码已无小程序口令常量 / 微信复制链路（旧口径全撤）',
+    (function () {
+      // 历史沿革注释保留决策链（本站惯例），只扫剥掉注释后的真代码
+      const code = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+      return !/var PDL_LINK/.test(code) && !/小程序:\/\//.test(code)
+        && !/copySync\(|execCommand\('copy'\)/.test(code)
+        && !/bendibao/.test(code);
+    })());
+  check('胖东来 CTA 是真 <a>，href="#" 触发弹窗',
+    !!pdlCta && pdlCta.tagName === 'A' && pdlCta.getAttribute('href') === '#',
     pdlCta && pdlCta.tagName + ':' + pdlCta.getAttribute('href'));
-  check('可见文案同步换「复制小程序口令 / 去微信」（不许只改常量留旧来源标签）',
-    !!pdlCta && /小程序口令/.test(pdlCta.textContent)
-    && /复制/.test(pdlCta.textContent) && /微信/.test(pdlCta.textContent)
-    && !/天猫|淘宝|京东/.test(pdlCta.textContent)
-    && !!pdlBanner && /复制/.test(pdlBanner.getAttribute('aria-label') || '')
-    && /微信/.test(pdlBanner.getAttribute('aria-label') || '')
-    && !/天猫|淘宝|京东/.test(pdlBanner.getAttribute('aria-label') || ''),
+  check('可见文案同步换「点此查看淘宝店与抖音」（不许只改 href 留旧来源标签）',
+    !!pdlCta && /淘宝店/.test(pdlCta.textContent) && /抖音/.test(pdlCta.textContent)
+    && !/小程序|口令|微信|复制/.test(pdlCta.textContent)
+    && !!pdlBanner && /淘宝店/.test(pdlBanner.getAttribute('aria-label') || '')
+    && /抖音/.test(pdlBanner.getAttribute('aria-label') || '')
+    && !/小程序|口令|微信|复制/.test(pdlBanner.getAttribute('aria-label') || ''),
     pdlCta && pdlCta.textContent);
   check('整图与 CTA 都带 data-sxg-share 接线点',
     !!pdlBanner && pdlBanner.getAttribute('data-sxg-share') === 'pdl'
     && !!pdlCta && pdlCta.getAttribute('data-sxg-share') === 'pdl');
-  check('胖东来卡零京东 / 淘宝 / 天猫链接与来源标签',
-    !/tmall|taobao|天猫|淘宝|京东|jd\.com/i.test(pdlCardHtml));
+  check('胖东来卡本体不放商城链接（淘宝/抖音都收进弹窗，卡上只有 trigger）',
+    !/tmall\.com|taobao\.com|jd\.com/i.test(pdlCardHtml));
   // 文案进图里：劳动者态度（站长 19:48「备注两个字去掉」，可见文案不许再带该前缀）
   // + 挂上广告位的原因，缺一不可。关键词只认 <text> 可见文案
   //（aria-label/注释里写满原话也能逃逸断言的坑）。
@@ -165,53 +169,52 @@ function check(label, cond, extra) {
   // 「但不得直接把视频链接挂在广告位」——脚本 / 三张海报 / 渲染 DOM 三侧都不许出现
   // 短链域名。按源码原文扫（含注释）：剥注释的 // 正则会把 https:// 当行注释吃掉
   // URL 尾巴（故障注入实测静默放行）；域名模式带点，避免误伤 douyin-prompt.css。
-  const videoRe = /douyin\.com|b23\.tv/i;
-  check('广告位零视频链接（脚本 / 三张设计图 / 渲染 DOM 都不许挂）',
+  // 2026-11-27 站长明确要挂抖音主页（www.douyin.com/user/...），所以「零视频链接」
+  // 收窄为「零短视频单链」：v.douyin.com / b23.tv 仍禁止；主页链接允许且只出现在
+  // 弹窗的 sxg-adslot__modal-douyin 里，不进卡片、不进海报。
+  const videoRe = /v\.douyin\.com|b23\.tv/i;
+  check('广告位零短视频单链（主页链接只在弹窗出口，脚本/三张设计图/卡片 DOM 干净）',
     !videoRe.test(src)
     && !videoRe.test(read('assets/ad-luxiyi.svg'))
     && !videoRe.test(read('assets/ad-pangdonglai.svg'))
     && !videoRe.test(read('assets/ad-recruit.svg'))
-    && !videoRe.test(slot.innerHTML),
-    '广告位出现了短视频链接域名');
+    && !videoRe.test(slot.innerHTML)
+    && !/douyin\.com/i.test(slot.innerHTML),
+    '广告位卡片/海报出现了短视频单链或抖音链接');
 
-  // ─────────── 1c. 点击复制 + 微信提示（真点击，不是只比对字符串） ───────────
-  // 站长 2026-11-11 00:46「参考良配的广告，点了就自动复制，弹窗提醒用户自己去微信」。
-  // jsdom 没有 execCommand / clipboard，先补一个记录调用的桩，再真派发 click，
-  // 检查：阻止默认跳转、同步复制被调用、toast 可见且写着微信与链接本体。
-  console.log('\n--- 1c. 点击胖东来广告：自动复制 + 弹窗提醒去微信 ---');
-  const copyCalls = [];
-  doc.execCommand = function (cmd) { copyCalls.push(cmd); return true; };
+  // ─────────── 1c. 点击开居中弹窗（真点击，不是只比对字符串） ───────────
+  // 站长 2026-11-27「还是用之前那个风格弹窗吧，既可以推荐去淘宝购物，
+  // 也可以引导用户访问他们的抖音」。真派发 click，检查：阻止默认跳转、
+  // 弹窗可见、两条真链接的 href 一字不差、三种关闭方式都绑好。
+  console.log('\n--- 1c. 点击胖东来广告：居中弹窗 + 淘宝/抖音双入口 ---');
   const clickEvt = new window.MouseEvent('click', { bubbles: true, cancelable: true });
   pdlCta.dispatchEvent(clickEvt);
-  check('点击 CTA 阻止默认跳转（点了不直接打开链接）', clickEvt.defaultPrevented);
-  check('点击时同步调用 execCommand copy（趁用户手势栈）',
-    copyCalls.indexOf('copy') !== -1, copyCalls);
-  // toast 在 copyText 的 Promise 链末端出现，放掉整个微任务队列再查
-  await new Promise((r) => setTimeout(r, 0));
-  const toast = doc.querySelector('[data-sxg-share-toast]');
-  check('弹出提示且可见（is-show）', !!toast && toast.classList.contains('is-show'));
-  check('提示明确要求用户自己去微信', !!toast && /微信/.test(toast.textContent));
-  check('提示标题写「已复制小程序口令」，不再把口令叫链接',
-    !!toast && /已复制小程序口令/.test(toast.textContent)
-    && !/已复制链接/.test(toast.textContent), toast && toast.textContent);
-  check('提示里有操作步骤（粘贴 → 发送 → 点开小程序卡片）',
-    !!toast && /粘贴/.test(toast.textContent) && /点开/.test(toast.textContent)
-    && /小程序卡片/.test(toast.textContent));
-  const toastCode = toast && toast.querySelector('.sxg-adslot__toast-code');
-  check('提示里放的是可点再复制的小程序口令本体',
-    !!toastCode && toastCode.textContent === PDL_LINK,
-    toastCode && toastCode.textContent);
+  check('点击 CTA 阻止默认跳转（不直接跳 href="#"）', clickEvt.defaultPrevented);
+  const modal = doc.querySelector('[data-sxg-pdl-modal]');
+  check('弹出居中弹窗且可见（is-show）', !!modal && modal.classList.contains('is-show'));
+  const tb = modal && modal.querySelector('.sxg-adslot__modal-taobao');
+  const dy = modal && modal.querySelector('.sxg-adslot__modal-douyin');
+  check('弹窗里淘宝入口是真 <a>，href 是站长原链接一字不差',
+    !!tb && tb.tagName === 'A' && tb.getAttribute('href') === PDL_TAOBAO
+    && tb.getAttribute('target') === '_blank' && tb.getAttribute('rel') === 'noopener',
+    tb && tb.getAttribute('href'));
+  check('弹窗里抖音入口是真 <a>，href 是站长原链接一字不差',
+    !!dy && dy.tagName === 'A' && dy.getAttribute('href') === PDL_DOUYIN
+    && dy.getAttribute('target') === '_blank' && dy.getAttribute('rel') === 'noopener',
+    dy && dy.getAttribute('href'));
+  check('弹窗 visible 文案写清淘宝店和抖音，不再出现小程序/口令/微信',
+    !!modal && /淘宝店/.test(modal.textContent) && /抖音/.test(modal.textContent)
+    && !/小程序|口令|微信|复制/.test(modal.textContent));
+  check('弹窗三种关闭方式齐备（× / 遮罩 / Esc）',
+    !!modal && !!modal.querySelector('.sxg-adslot__modal-close')
+    && !!modal.querySelector('.sxg-adslot__modal-mask')
+    && /Escape/.test(src));
   const bannerEvt = new window.MouseEvent('click', { bubbles: true, cancelable: true });
   pdlBanner.dispatchEvent(bannerEvt);
-  check('整张广告图也绑了同一套复制交互', bannerEvt.defaultPrevented);
-  check('不再按 UA 放行跳转（微信内置浏览器里也必须复制口令）',
-    !/isWeChat/.test(src) && !/MicroMessenger/.test(src)
-    && bannerEvt.defaultPrevented);
-  check('提示里的链接可点再复制（code 点击不报错）', (function () {
-    if (!toastCode) return false;
-    try { toastCode.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); return true; }
-    catch (e) { return false; }
-  })());
+  check('整张广告图也绑了同一套弹窗交互', bannerEvt.defaultPrevented);
+  const closeBtn = modal && modal.querySelector('.sxg-adslot__modal-close');
+  if (closeBtn) closeBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  check('点 × 能关闭弹窗', !!modal && !modal.classList.contains('is-show'));
 
   // ─────────── 2. 居中 & 箭头不再压住文案 ───────────
   console.log('\n--- 2. 内容居中 / 箭头位置 ---');
