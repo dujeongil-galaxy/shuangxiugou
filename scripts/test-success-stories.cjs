@@ -47,7 +47,7 @@ const html = read('success-stories.html');
   // 1. 目录树：扫描 [data-toc] 自动生成 9 条导航（含 50 元自述专题）
   const links = doc.querySelectorAll('#toc-nav a');
   console.log('  目录树链接数：', links.length);
-  check('目录树生成了 9 条导航（致敬前辈/QQ奶奶/反面专题/50元自述/#01~#05）', links.length === 9, links.length);
+  check('目录树生成了 10 条导航（致敬前辈/QQ奶奶/反面专题/50元自述/找茬判据/#01~#05）', links.length === 10, links.length);
   const hrefs = Array.from(links).map((a) => a.getAttribute('href'));
   check('每条目录链接都指向页内锚点（#id）', hrefs.every((h) => /^#/.test(h)), hrefs);
   const targets = hrefs.map((h) => h.slice(1));
@@ -63,6 +63,22 @@ const html = read('success-stories.html');
   check('「站长故事」标签用紫色背景（#7c3aed）',
     !!storyTag && /background:\s*#7c3aed/.test(html)
       && /\.topic-entry \.topic-tag\.story-kind\s*\{[^}]*background:\s*#7c3aed/.test(html));
+
+  // 1c. 「找茬」判据专题入口（2026-11-27 新增）：位置固定在 50 元自述专题之后、
+  // 案例 #01 之前；与另外三个专题同例：不占案例序号。
+  const ccEntry = doc.getElementById('topic-chaocha');
+  check('「找茬」专题入口存在且链接指向 chaocha-report.html',
+    !!ccEntry && ccEntry.getAttribute('href') === './chaocha-report.html');
+  check('「找茬」专题入口不占案例序号（正文无「案例 #0x」字样）',
+    !!ccEntry && !/案例 #0[0-9]/.test(ccEntry.textContent));
+  const tocNodes = Array.prototype.slice.call(doc.querySelectorAll('[data-toc]'));
+  const orderIds = ['topic-qq', 'topic-bystander', 'topic-fifty', 'topic-chaocha', 'case-1'];
+  const posOrder = orderIds.map((id) => {
+    const el = doc.getElementById(id);
+    return el ? tocNodes.indexOf(el) : -1;
+  });
+  check('专题入口顺序：QQ奶奶 → 万州 → 50 元自述 → 找茬判据 → 案例 #01',
+    posOrder.every((v, i) => v >= 0 && (i === 0 || v > posOrder[i - 1])), posOrder);
 
   // 2. 无框小火箭（不是旧圆形箭头）
   const rocket = doc.querySelector('.to-top svg .rk-body');

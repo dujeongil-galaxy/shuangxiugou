@@ -82,6 +82,14 @@ parts.append(
     f'    <priority>0.7</priority>\n  </url>'
 )
 
+# 消费争议判据专题：「找茬」怎么用才算数（2026-11-27 发布，不占案例序号）
+parts.append(
+    f'  <url>\n    <loc>{BASE}/chaocha-report.html</loc>\n'
+    f'    <lastmod>2026-11-27</lastmod>\n'
+    f'    <changefreq>monthly</changefreq>\n'
+    f'    <priority>0.7</priority>\n  </url>'
+)
+
 # QQ 浏览器专题报道（2026-11-19：两篇微信文章的存档备份专题页）
 parts.append(
     f'  <url>\n    <loc>{BASE}/qq-browser-report.html</loc>\n'

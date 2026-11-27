@@ -99,6 +99,18 @@ setTimeout(async () => {
   check('前置：浏览态公告框存在于星巴克卡内',
     noteInSbux(), { hasNote: !!note(), sbuxCard: !!sbuxCard() });
 
+  // ── 公告框内容：南充事件登记 + 边界声明 + 专题页入口（站内相对链接）──
+  // 2026-11-27 新增：公告框里登记 2026-09-15 南充「仁和春天」锁椅视频，
+  // 并挂判据专题页入口（相对链接，不挂外链）。
+  const noteText = note() ? note().textContent : '';
+  check('公告框登记了南充「仁和春天」锁椅视频与登记补记日期',
+    /登记补记（2026-11-27）/.test(noteText) && /仁和春天/.test(noteText), noteText.slice(0, 80));
+  check('公告框写明「不涉及用工与双休认定、不据此改判评级」的边界声明',
+    /不涉及用工与双休认定/.test(noteText) && /不据此改判本页评级/.test(noteText));
+  const ccLink = note() ? note().querySelector('a[href="./chaocha-report.html"]') : null;
+  check('公告框挂了判据专题页入口（站内相对链接，非外链）',
+    !!ccLink && /打开专题报道/.test(ccLink.textContent));
+
   // ── bug ④ 修复点：搜索命中星巴克卡 → 公告框必须保留 ──
   const syncHit = reactSearch('星巴克', true);
   check('前置：搜索「星巴克」后星巴克卡仍在结果列表', !!sbuxCard());

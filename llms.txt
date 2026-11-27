@@ -18,6 +18,7 @@
 - [成功案例](https://dujeongil-galaxy.github.io/shuangxiugou/success-stories.html): 劳动者与消费者的真实反馈案例。
 - [我为什么支持双休购](https://dujeongil-galaxy.github.io/shuangxiugou/why-shuangxiugou.html): 关于「用钱包投票、把休息权变成公开评价」的站长随笔。
 - [比亚迪车主手记](https://dujeongil-galaxy.github.io/shuangxiugou/byd-report.html): 车主视角的三件小事与车型澄清。
+- [「找茬」怎么用才算数](https://dujeongil-galaxy.github.io/shuangxiugou/chaocha-report.html): 把「找茬」拆成 4 层（正常维权／手段越界／职业索赔／有组织的舆论打击），给出可逐条核对的判据、司法口径与公开来源。
 - [QQ 浏览器专题](https://dujeongil-galaxy.github.io/shuangxiugou/qq-browser-report.html): 广告屏蔽争议的律师函与回应双篇存档。
 
 ## 品牌详情页

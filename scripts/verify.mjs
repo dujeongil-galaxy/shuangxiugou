@@ -8144,8 +8144,8 @@ section('21c. 首页滑到底部按钮');
 
   // —— 左侧目录树（参考站长随笔自动生成）——
   const tocCount = (ss.match(/data-toc=/g) || []).length;
-  check(tocCount === 9,
-    `成功案例页目录树锚点齐全（9 个 data-toc：致敬前辈/QQ奶奶/反面专题/50元自述/#01~#05，实际 ${tocCount}）`,
+  check(tocCount === 10,
+    `成功案例页目录树锚点齐全（10 个 data-toc：致敬前辈/QQ奶奶/反面专题/50元自述/找茬判据/#01~#05，实际 ${tocCount}）`,
     `data-toc 数量不对（${tocCount}）→ 目录树会漏章节或多出入口`);
   check(/id="toc-nav"/.test(ss), '成功案例页含目录树容器 #toc-nav', '目录树容器缺失 → 左侧目录树建不出来');
   check(/class="toc"/.test(ss) && /<summary>目录<\/summary>/.test(ss),
@@ -12329,6 +12329,125 @@ section('40. 成功案例自述专题（50 元罚单 · 站长亲身经历，202
       && /\.more-stories \.story-url/.test(fy)),
     '§43u notes 链接本身做成超链接（URL 即链接文字）、下方一条「更多站长故事请访问这里」提示',
     '给「这里」两字加链接或提示文案写错 → 违背站长「链接本身做成超链接、下方一条提示」的指定形式');
+}
+
+// ---------- 41. 消费争议判据专题：「找茬」怎么用才算数（2026-11-27 站长） ----------
+// 站长要求：以 2026-09-15 南充「仁和春天」星巴克门口锁椅视频为引子，专门谈
+// 「找茬」这件事。落点同 §25 QQ奶奶 / §39 万州 / §40 自述：独立专题页
+// chaocha-report.html，入口挂 success-stories.html，**不占案例 #01~#05 序号**。
+// 纪律同前：AI 明示 + 事实锚点 + 口径厘清 + 来源可点 + 索引齐全；
+// 同时把「星巴克卡备注栏」的登记与专题页入口钉住（首页卡面 + 详情页两处）。
+section('41. 消费争议判据专题（「找茬」怎么用才算数）');
+{
+  const cc = exists('chaocha-report.html') ? read('chaocha-report.html') : '';
+  check(cc.length > 6000,
+    '§44a chaocha-report.html 存在且是完整长页（非空壳）',
+    '页面缺失或过短 → 专题没落地');
+
+  check(/class="ai-badge"[^>]*>\s*内容由 AI 生成/.test(cc)
+      && /class="ai-note"/.test(cc) && /AI 依据下列公开报道检索/.test(cc),
+    '§44b 专题页挂「内容由 AI 生成」徽章 + .ai-note 声明框',
+    '缺徽章或声明框 → 与 §21j 同口径的诚实披露失守');
+
+  const factsCc = [
+    ['2026 年 9 月 15 日', '事发日期'],
+    ['仁和春天', '事发门店'],
+    ['第三空间', '10-21 倡议名'],
+    ['10 月 22 日', '全国执行日'],
+    ['30 秒', '门店当场处理耗时'],
+    ['37 天', '舆论到新规的周期'],
+    ['15 块', '门店提示牌数量'],
+    ['敲诈勒索罪', '司法口径'],
+    ['12315', '正规维权渠道'],
+    ['消费入座', '新规口号'],
+  ];
+  const missCc = factsCc.filter(([s]) => !cc.includes(s)).map(([s, d]) => `${s}（${d}）`);
+  check(missCc.length === 0,
+    `§44c 专题页的 ${factsCc.length} 个关键事实锚点齐全`,
+    missCc.length ? '以下事实锚点丢失，正文可能被改坏：' + missCc.join('； ') : '');
+
+  check(/class="correct"/.test(cc)
+      && /不作事实认定/.test(cc)
+      && /性别、年龄、地域、职业/.test(cc)
+      && /本页不参与任何品牌评级/.test(cc),
+    '§44d 口径厘清框写明「不作事实认定／性别年龄地域职业不作判断变量／不参与品牌评级」',
+    '删掉口径厘清 → 读者会把描述读成定性，或把个案推广成群体结论');
+
+  check(/甲 · 正常投诉与维权/.test(cc)
+      && /乙 · /.test(cc) && /丙 · /.test(cc) && /丁 · /.test(cc)
+      && /5 问/.test(cc) && /谁得了好处/.test(cc),
+    '§44e 四层分类与 5 问判据结构齐全',
+    '判据结构被改坏 → 这页退化成一篇情绪评论，失去工具价值');
+
+  const srcCc = (cc.match(/<li>[\s\S]{0,200}?<a href="https?:\/\//g) || []).length;
+  check(srcCc >= 10,
+    `§44f 专题页附 ${srcCc} 条公开来源（要求 ≥10）`,
+    `只有 ${srcCc} 条 → 事实无出处，与本站证据链纪律冲突`);
+
+  check(!/<img\b/i.test(cc) && !/assets\//.test(cc),
+    '§44g 专题页不引用图片或站内素材（文字页，素材不入库）',
+    '混入素材 → 版权与体积双风险');
+
+  check((cc.match(/name="description"/g) || []).length === 1
+      && /rel="canonical"/.test(cc) && /property="og:title"/.test(cc)
+      && /application\/ld\+json/.test(cc)
+      && /ai-link\.js\?v=4/.test(cc)
+      && /community-rules\.html/.test(cc),
+    '§44q 头部元信息与页脚法务链接齐全（唯一 description / canonical / og / ld+json / AI 按钮 / 留言准则）',
+    '缺任一项 → SEO 或法务入口失守');
+
+  const ssCc = read('success-stories.html');
+  check(/class="topic-entry"[^>]*href="\.\/chaocha-report\.html"/.test(ssCc),
+    '§44h 成功案例页有指向 chaocha-report.html 的专题入口',
+    '没有入口 → 专题成为孤岛，爬虫与读者都走不到');
+  const fyCc = ssCc.indexOf('href="./fifty-yuan.html"');
+  const ccIdx = ssCc.indexOf('href="./chaocha-report.html"');
+  const caseCc = ssCc.indexOf('id="case-1"');
+  check(fyCc > 0 && ccIdx > fyCc && caseCc > ccIdx,
+    '§44i 入口位置：50 元自述专题 → 找茬专题 → 案例 #01（顺序写死）',
+    '入口跑位 → 与站长指定的位置冲突');
+  const entryCc = (ssCc.match(/<a class="topic-entry"[^>]*href="\.\/chaocha-report\.html"[\s\S]*?<\/a>/) || [''])[0];
+  check(/专题 · /.test(entryCc) && !/案例 #0[0-9]/.test(entryCc),
+    '§44j 入口标为「专题 · …」（不占案例序号）',
+    '专题入口被标成案例序号 → 与「专题不占编号」的先例冲突');
+
+  check(/chaocha-report\.html/.test(read('sitemap.xml')),
+    '§44k sitemap.xml 收录判据专题页',
+    '漏收录 → 爬虫发现不了这一页');
+  check(/chaocha-report\.html/.test(read('scripts/seo/generate-sitemap.py')),
+    '§44l sitemap 生成脚本同样写入判据专题页（防下次重建时被抹掉）',
+    '只改 sitemap.xml 不改生成器 → 一跑 seo:sitemap 就丢');
+  check(/chaocha-report\.html/.test(read('llms.txt')),
+    '§44m llms.txt 收录判据专题页（给 AI 的入口）',
+    'llms.txt 漏了 → AI 抓取时看不到这一页');
+  check(!/chaocha-report\.html/.test(read('nav-menu.js')),
+    '§44n 判据专题不进首页悬浮导航（导航项须站长逐项点名）',
+    '擅自加进导航 → 违反 README「禁止 AI 未经点名新增导航项」规则');
+
+  // 星巴克卡备注栏：首页卡面 + 详情页两处都要登记事件、边界声明与专题页入口
+  // ⚠️ 断言只认**星巴克备注框自己那一段构造代码**，不认整页：
+  //    「不涉及用工与双休认定」在首页公示区（比亚迪那条证据）里也出现过，
+  //    整页匹配会被别处的同句蒙混过关。
+  const idxCc = read('index.html');
+  const sbuxNoteBlock = (idxCc.match(/note\.id = 'starbucks-note'[\s\S]{0,4000}?insertBefore\(note, tagsRow\.nextSibling\)/) || [''])[0];
+  check(sbuxNoteBlock.length > 0
+      && /登记补记（2026-11-27）/.test(sbuxNoteBlock)
+      && /南充「仁和春天」/.test(sbuxNoteBlock)
+      && /不涉及用工与双休认定/.test(sbuxNoteBlock)
+      && /<a href="\.\/chaocha-report\.html"[^>]*>打开专题报道/.test(sbuxNoteBlock),
+    '§44o 首页星巴克卡备注栏登记南充事件 + 边界声明 + 专题页入口（站内相对链接）',
+    '备注栏缺登记或缺入口 → 卡面读者看不到事件与专题页');
+  const sbuxCc = read('brand/starbucks.html');
+  const sbuxNotices = (sbuxCc.match(/<div class="notice"[\s\S]*?<\/div>/g) || []).join('\n');
+  check(/登记补记（2026-11-27）/.test(sbuxNotices)
+      && /不涉及用工与双休认定/.test(sbuxNotices)
+      && /<a href="\.\.\/chaocha-report\.html"[^>]*>打开专题报道/.test(sbuxNotices),
+    '§44r 星巴克详情页备注区同步登记事件与专题页入口',
+    '首页卡有、详情页没有 → 两处口径不一致，读者以为漏登');
+
+  check(/41\. 消费争议判据专题/.test(read('scripts/verify.mjs')),
+    '§44s 专题校验段仍在（防止整段被删空后恒真空转）',
+    '校验段丢失 → 专题改坏也无人发现');
 }
 
 // ---------- 汇总 ----------
