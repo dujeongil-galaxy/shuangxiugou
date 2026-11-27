@@ -9913,7 +9913,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '§31a README 写死本批五条口径（两类弹窗一视同仁 / 完整定位 / 单一真相源 / 无条目如实降级 / 机器强制）',
     '规则只挂口头 → 又会出现「按钮有、跳过去却停在公示区顶部」的静默失效');
 
-  check(p31.length > 0 && /<script defer src="\.\/evidence-jump-patch\.js\?v=3"><\/script>/.test(idx31)
+  check(p31.length > 0 && /<script defer src="\.\/evidence-jump-patch\.js\?v=4"><\/script>/.test(idx31)
     && /不能改 bundle|不能改\s*bundle/.test(p31)
     && !/https?:\/\//.test(p31)
     && !/ev-patagonia|ev-icbc|ev-zhaoyiming|ev-byd/.test(p31),
@@ -12463,11 +12463,14 @@ section('41. 消费争议判据专题（「找茬」怎么用才算数）');
 }
 
 // ---------- 42. 有专题页的品牌：卡片底部加一枚「专题报道」按钮（2026-11-27 站长） ----------
-// 站长点名三家：比亚迪 / 华为 / 星巴克。要的是**卡片底部、最左侧**那一枚按钮
-// （不是详情弹窗底排——弹窗底排维持统一三键，不动）。做法沿用站内「单一真相源」纪律：
+// 站长点名三家：比亚迪 / 华为 / 星巴克。要的是**卡片详情弹窗底排最左侧**那一枚
+// 「专题报道」按钮（站长截图标注的位置：跳转按钮左边那块空位）。
+// 做法沿用站内「单一真相源」纪律：
 //   brand/<slug>.html 的 <meta name="sxg-topic-page">  →  gen-evidence-board.py
-//   搬进公示区 <details data-topic="./xxx-report.html">  →  topic-page-button.js
+//   搬进公示区 <details data-topic="./xxx-report.html">  →  evidence-jump-patch.js
 //   运行时读该属性插按钮。**补丁里不许出现品牌清单**，以后加专题页只改详情页一行标记。
+// 底排查找、两类弹窗的定位口径都复用 evidence-jump-patch.js 已有的 machinery
+// （同一套弹窗定位逻辑写两遍必然漂移，见该脚本文件头）。
 section('42. 品牌卡「专题报道」按钮');
 {
   const TOPIC_BRANDS = [
@@ -12485,49 +12488,49 @@ section('42. 品牌卡「专题报道」按钮');
     if (!exists(page)) missTopic.push(`${label}：专题页 ${page} 不存在`);
   }
   check(missTopic.length === 0,
-    '§45a 三个品牌详情页带 sxg-topic-page 标记，且专题页文件真实存在',
+    '§42a 三个品牌详情页带 sxg-topic-page 标记，且专题页文件真实存在',
     missTopic.join('； '));
 
-  const gen45 = read('scripts/gen-evidence-board.py');
-  check(/sxg-topic-page/.test(gen45) && /data-topic=/.test(gen45) && /'topic':\s*topic/.test(gen45),
-    '§45b 生成器读详情页标记并把 data-topic 写进公示区条目（真相源在 brand/*.html）',
+  const gen42 = read('scripts/gen-evidence-board.py');
+  check(/sxg-topic-page/.test(gen42) && /data-topic=/.test(gen42) && /'topic':\s*topic/.test(gen42),
+    '§42b 生成器读详情页标记并把 data-topic 写进公示区条目（真相源在 brand/*.html）',
     '生成器不搬标记 → 公示区没有 data-topic，按钮无从判断');
 
-  const idx45 = read('index.html');
-  const topicAttrs = [...idx45.matchAll(/<details id="ev-([a-z0-9-]+)"[^>]*data-topic="([^"]+)"/g)]
+  const idx42 = read('index.html');
+  const topicAttrs = [...idx42.matchAll(/<details id="ev-([a-z0-9-]+)"[^>]*data-topic="([^"]+)"/g)]
     .map((m) => ({ slug: m[1], href: m[2] }));
   const wantSlugs = TOPIC_BRANDS.map(([s]) => s);
   check(topicAttrs.length === 3
       && wantSlugs.every((s) => topicAttrs.some((t) => t.slug === s))
       && topicAttrs.every((t) => t.href.startsWith('./')),
-    `§45c 公示区恰好 ${wantSlugs.length} 个条目带 data-topic（根相对路径）`,
+    `§42c 公示区恰好 ${wantSlugs.length} 个条目带 data-topic（根相对路径）`,
     `实际 ${topicAttrs.length} 个：${topicAttrs.map((t) => t.slug + '→' + t.href).join(', ')}`);
 
-  const p45 = exists('topic-page-button.js') ? read('topic-page-button.js') : '';
-  // 只看代码区：注释里写「比亚迪 / 华为 / 星巴克」是给人看的说明，不是写死清单
-  const code45 = p45.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-  check(!/byd-report|zunjie-report|chaocha-report|ev-byd|ev-huawei|ev-starbucks|比亚迪|华为|星巴克/.test(code45)
-      && /getAttribute\('data-topic'\)/.test(code45),
-    '§45d 补丁运行时读 DOM 的 data-topic，不写死品牌清单（与 §31b 同一条纪律）',
+  const p42 = read('evidence-jump-patch.js');
+  // 只剥掉文件头那段说明（这个脚本的正文里有正则字面量，通用「剥注释」正则会误吞代码），
+  // 剩下的代码与行内注释都不许出现品牌清单。
+  const code42 = p42.replace(/^\/\*[\s\S]*?\*\//, '');
+  check(!/byd-report|zunjie-report|chaocha-report|ev-byd|ev-huawei|ev-starbucks|比亚迪|华为|星巴克/.test(code42)
+      && /getAttribute\(TOPIC_ATTR\)/.test(code42),
+    '§42d 补丁运行时读 DOM 的 data-topic，不写死品牌清单（与 §31b 同一条纪律）',
     '补丁里写死了品牌 → 以后加专题页要改代码，公示区改了按钮也不跟');
 
-  check(/var BTN_TEXT = '专题报道'/.test(p45)
-      && /data-sxg-topic-btn/.test(p45)
-      && /setAttribute\('target', '_blank'\)/.test(p45)
-      && /rel', 'noopener noreferrer'/.test(p45),
-    '§45e 按钮形态：文案「专题报道」+ 幂等标记 + 新窗口打开 + noopener',
-    '按钮形态不对 → 卡片上点不开，或开了不安全的新窗口');
+  check(/var TOPIC_BTN_TEXT = '专题报道'/.test(p42)
+      && /data-sxg-topic-btn/.test(p42)
+      && /setAttribute\('target', '_blank'\)/.test(p42)
+      && /rel', 'noopener noreferrer'/.test(p42),
+    '§42e 按钮形态：文案「专题报道」+ 幂等标记 + 新窗口打开 + noopener',
+    '按钮形态不对 → 弹窗里点不开，或开了不安全的新窗口');
 
-  check(/div\[class\*="px-5 py-3"\]/.test(p45)
-      && /left\.insertBefore\(makeButton\(href\), left\.firstChild\)/.test(p45),
-    '§45f 落位口径：卡片底栏（px-5 py-3）左侧组的**最前面**——即站长说的「底部、最左侧」',
-    '落位变了 → 按钮不在卡片底部，或不在最左侧');
+  check(/foot\.insertBefore\(makeTopicButton\(href42\), jump42 \|\| btns\[i\]\)/.test(p42),
+    '§42f 落位口径：插在弹窗底排**最左侧**（跳转按钮之前——站长截图标注的位置）',
+    '落位变了 → 按钮不在底排最左侧');
 
-check(/<script defer src="\.\/topic-page-button\.js\?v=1"><\/script>/.test(idx45)
-      && exists('scripts/test-topic-page-button.cjs')
-      && /本机专用/.test(read('scripts/test-topic-page-button.cjs').slice(0, 800)),
-    '§42g 补丁挂进首页（?v=1），真 DOM 测试存在（PAT 无 workflow scope，标本机专用不挂 CI）',
-    '没挂进首页 → 按钮不上线；测试缺失 → 改坏了没人拦');
+  check(/<script defer src="\.\/evidence-jump-patch\.js\?v=4"><\/script>/.test(idx42)
+      && exists('scripts/test-evidence-jump.cjs')
+      && read('.github/workflows/verify.yml').includes('test-evidence-jump.cjs'),
+    '§42g 补丁挂进首页（?v=4），真 DOM 测试（含专题按钮用例）已在 CI',
+    '没挂进首页 → 按钮不上线；测试没进 CI → 改坏了没人拦');
 
   let topicPages = 0;
   const topicHrefs = [];
@@ -12536,11 +12539,11 @@ check(/<script defer src="\.\/topic-page-button\.js\?v=1"><\/script>/.test(idx45
     if (/name="sxg-topic-page"/.test(t)) { topicPages++; topicHrefs.push(f); }
   }
   check(topicPages === 3,
-    `§45h 全站只有 3 个品牌详情页带专题页标记（${topicHrefs.join('、')}）`,
+    `§42h 全站只有 3 个品牌详情页带专题页标记（${topicHrefs.join('、')}）`,
     `实际 ${topicPages} 个：${topicHrefs.join('、')} → 别的地方误加了标记`);
 
   check(/42\. 品牌卡「专题报道」按钮/.test(read('scripts/verify.mjs')),
-    '§45i 本节校验段仍在（防止整段被删空后恒真空转）',
+    '§42i 本节校验段仍在（防止整段被删空后恒真空转）',
     '校验段丢失 → 专题按钮改坏也无人发现');
 }
 

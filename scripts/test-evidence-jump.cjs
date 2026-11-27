@@ -41,6 +41,7 @@ const PAGE = `<!doctype html><html><head></head><body>
       <details id="ev-yidiandian" data-b="yidiandian"><summary><span class="bn">一点点 (1点点)</span><span class="co">生根餐饮</span></summary><div class="ev-body">3 条证据</div></details>
       <details id="ev-customx" data-b="customx"><summary><span class="bn">完全不同的公示名</span><span class="co">某公司</span></summary><div class="ev-body">1 条证据</div></details>
       <details id="ev-luxiyi" data-b="luxiyi"><summary><span class="bn">陆喜依</span><span class="co">陆喜依</span></summary><div class="ev-body">5 条证据</div></details>
+      <details id="ev-starbucks" data-b="starbucks" data-topic="./chaocha-report.html"><summary><span class="bn">Starbucks (星巴克中国)</span><span class="co">星巴克企业管理（中国）有限公司</span></summary><div class="ev-body">1 条证据</div></details>
     </div>
   </div>
 </section>
@@ -48,6 +49,14 @@ const PAGE = `<!doctype html><html><head></head><body>
   <div class="bg-white rounded-2xl">
     <button class="close-x">✕</button>
     <h2>Patagonia (巴塔哥尼亚)</h2>
+    <div class="pt-2 flex justify-end gap-2">
+      <button class="ticket-btn">生成我的投票小票</button>
+    </div>
+  </div>
+</div>
+<div id="sbux-layer" class="fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl">
+    <h2>Starbucks (星巴克中国)</h2>
     <div class="pt-2 flex justify-end gap-2">
       <button class="ticket-btn">生成我的投票小票</button>
     </div>
@@ -127,8 +136,8 @@ function makeDom(hash) {
   const wf = read('.github/workflows/verify.yml');
   const rd = read('README.md');
   check('跳转补丁文件存在', exists('evidence-jump-patch.js'));
-  check('首页挂了跳转补丁（?v=3 防缓存）',
-    /<script defer src="\.\/evidence-jump-patch\.js\?v=3"><\/script>/.test(html));
+  check('首页挂了跳转补丁（?v=4 防缓存）',
+    /<script defer src="\.\/evidence-jump-patch\.js\?v=4"><\/script>/.test(html));
   check('真 DOM 测试挂进 CI 的 pinyin job', /test-evidence-jump\.cjs/.test(wf));
   check('README 写死两类弹窗一视同仁 + 完整定位口径',
     /详情弹窗证据链公示跳转/.test(rd) && /完整定位/.test(rd) && /内置.*自定义/.test(rd));
@@ -142,7 +151,7 @@ function makeDom(hash) {
   const { dom, w, d, errors } = makeDom();
   await tick(120);
   const btns = [...d.querySelectorAll('button[data-sxg-ev-jump]')];
-  check('内置 React 弹窗 + 自定义卡弹窗各一个按钮（共 2 个）', btns.length === 2, btns.length);
+  check('内置 React 弹窗 + 自定义卡弹窗 + 星巴克弹窗各一个按钮（共 3 个）', btns.length === 3, btns.length);
   const bBuiltin = d.querySelector('#builtin-layer button[data-sxg-ev-jump]');
   const bCustom = d.querySelector('#custom-layer button[data-sxg-ev-jump]');
   check('内置弹窗按钮挂在 pt-2 flex justify-end 那一排',
@@ -155,7 +164,14 @@ function makeDom(hash) {
   check('按钮是 type=button 且有 aria-label / title',
     btns.every((b) => b.type === 'button' && b.getAttribute('aria-label') && b.getAttribute('title')));
   check('按钮插在「生成我的投票小票」之前（截图红框位置）',
-    btns.every((b) => b.nextElementSibling && /生成我的投票小票/.test(b.nextElementSibling.textContent)));
+    btns.every((b) => {
+      // 2026-11-27 起有专题页的弹窗会在跳转与小票之间插一枚「专题报道」，
+      // 因此只要求「排在前面」，不要求紧挨着。
+      const kids = [...b.parentElement.children];
+      const iBtn = kids.indexOf(b);
+      const iTicket = kids.findIndex((x) => /生成我的投票小票/.test(x.textContent));
+      return iBtn >= 0 && iTicket >= 0 && iBtn < iTicket;
+    }));
   check('容器打了幂等标记 data-sxg-ev-jump-root',
     btns.every((b) => b.parentElement.hasAttribute('data-sxg-ev-jump-root')));
   check('按钮排允许换行，不挤压原有按钮', /flex-wrap:wrap/.test(d.getElementById('sxg-ev-jump-style').textContent));
@@ -175,13 +191,34 @@ function makeDom(hash) {
     !d.querySelector('#custom-layer button[data-sxg-ev-close]'));
   check('小票层不误挂关闭', !d.querySelector('#ticket-layer button[data-sxg-ev-close]'));
 
+  // —— 2026-11-27：有专题页的品牌，弹窗底排最左侧多一枚「专题报道」——
+  const tBtns = [...d.querySelectorAll('a[data-sxg-topic-btn]')];
+  check('只有带 data-topic 的品牌才有专题按钮（星巴克一枚，其余 0 枚）',
+    tBtns.length === 1, tBtns.length);
+  const tBtn = d.querySelector('#sbux-layer a[data-sxg-topic-btn]');
+  check('专题按钮文案「专题报道」，href 取自公示区 data-topic（站内相对路径）',
+    !!tBtn && tBtn.textContent.trim() === '专题报道'
+    && tBtn.getAttribute('href') === './chaocha-report.html');
+  check('专题按钮新窗口打开且带 rel=noopener',
+    !!tBtn && tBtn.getAttribute('target') === '_blank'
+    && /noopener/.test(tBtn.getAttribute('rel') || ''));
+  check('专题按钮在底排**最左侧**（跳转按钮之前，站长截图标注的位置）',
+    !!tBtn && !!tBtn.nextElementSibling
+    && tBtn.nextElementSibling.hasAttribute('data-sxg-ev-jump')
+    && tBtn.parentElement.firstElementChild === tBtn);
+  check('没有专题页的卡片不出现这枚按钮（Patagonia / 工商银行）',
+    !d.querySelector('#builtin-layer a[data-sxg-topic-btn]')
+    && !d.querySelector('#custom-layer a[data-sxg-topic-btn]'));
+
   // 幂等 + React/自定义弹窗重渲染自愈
   d.body.appendChild(d.createElement('span'));
   await tick(120);
   check('重复触发 DOM 变动不会重复插按钮（幂等）',
-    d.querySelectorAll('button[data-sxg-ev-jump]').length === 2);
+    d.querySelectorAll('button[data-sxg-ev-jump]').length === 3);
   check('重复触发不会重复插「关闭」（幂等）',
-    d.querySelectorAll('button[data-sxg-ev-close]').length === 1);
+    d.querySelectorAll('button[data-sxg-ev-close]').length === 2);
+  check('重复触发不会重复插「专题报道」（幂等）',
+    d.querySelectorAll('a[data-sxg-topic-btn]').length === 1);
   const oldFoot = bBuiltin ? bBuiltin.parentElement : null;
   if (oldFoot) {
     const rebuilt = d.createElement('div');

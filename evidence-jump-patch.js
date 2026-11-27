@@ -38,6 +38,16 @@
 
    幂等与重渲染：按钮带 data-sxg-ev-jump，容器带 data-sxg-ev-jump-root；
    MutationObserver + requestAnimationFrame 在 React / 自定义弹窗重渲染后补挂。
+
+   2026-11-27 站长追加：比亚迪 / 华为 / 星巴克三家有独立专题页，卡片详情弹窗
+   的底排要**在最左侧多一枚「专题报道」按钮**（跳转证据链公示按钮的左边，
+   站长截图标注的位置）。原来统一三键：跳转证据链公示 / 生成我的投票小票 / 关闭；
+   有专题页的卡片变成四件。
+   专题页的真相源同样只有一处：brand/<slug>.html 里的
+   <meta name="sxg-topic-page" content="../xxx-report.html">，
+   由 gen-evidence-board.py 搬进公示区 <details data-topic="./xxx-report.html">，
+   本脚本运行时读这个属性——**不写死品牌清单**，以后哪个品牌要加专题页，
+   只在它的详情页加一行标记，公示区与按钮自动跟上。
    ========================================================================== */
 (function () {
   'use strict';
@@ -51,6 +61,11 @@
   var STYLE_ID = 'sxg-ev-jump-style';
   var ANCHOR_TEXT = '生成我的投票小票';
   var FOCUS_MS = 4200;
+
+  /* 专题页按钮（2026-11-27）：属性写在公示区 <details> 上，来源见文件头 */
+  var TOPIC_ATTR = 'data-topic';
+  var TOPIC_BTN_ATTR = 'data-sxg-topic-btn';
+  var TOPIC_BTN_TEXT = '专题报道';
 
   var focusTimer = null;
   var noticeTimer = null;
@@ -93,6 +108,13 @@
         'padding:10px 14px;transition:background .18s ease,border-color .18s ease}' +
       '.sxg-ev-close-btn:hover{background:#e2e8f0;border-color:#cbd5e1}' +
       '.sxg-ev-close-btn:focus-visible{outline:2px solid #64748b;outline-offset:2px}' +
+      '.sxg-ev-topic-btn{display:inline-flex;align-items:center;justify-content:center;' +
+        'gap:6px;flex:0 0 auto;white-space:nowrap;cursor:pointer;text-decoration:none;' +
+        'background:#fffbeb;color:#92400e;border:1px solid #fcd34d;' +
+        'border-radius:12px;font-size:12px;font-weight:700;line-height:1.2;' +
+        'padding:10px 14px;transition:background .18s ease,border-color .18s ease}' +
+      '.sxg-ev-topic-btn:hover{background:#fef3c7;border-color:#fbbf24}' +
+      '.sxg-ev-topic-btn:focus-visible{outline:2px solid #b45309;outline-offset:2px}' +
       '[' + ROOT_ATTR + ']{flex-wrap:wrap}' +
       '#evidence-board details[' + FOCUS_ATTR + ']{outline:3px solid #0d9488;' +
         'outline-offset:-3px;background:#f0fdfa;' +
@@ -322,6 +344,22 @@
     return b;
   }
 
+  /* 专题页按钮（2026-11-27）：href 来自公示区 <details data-topic>，
+     站内相对路径、新窗口打开；没有 data-topic 的品牌就没有这枚按钮。
+     插在底排最左侧（跳转按钮之前）——站长截图标注的位置。 */
+  function makeTopicButton(href) {
+    var a = document.createElement('a');
+    a.className = 'sxg-ev-topic-btn';
+    a.setAttribute(TOPIC_BTN_ATTR, '1');
+    a.setAttribute('href', href);
+    a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer');
+    a.setAttribute('title', '打开该品牌的独立专题报道（新窗口）');
+    a.setAttribute('aria-label', TOPIC_BTN_TEXT + '：打开该品牌的独立专题报道');
+    a.textContent = TOPIC_BTN_TEXT;
+    return a;
+  }
+
   /* 两类弹窗共用的定位口径：找到「生成我的投票小票」按钮所在的底部按钮排。
      内置 React 弹窗：div.pt-2.flex.justify-end.gap-2
      自定义卡弹窗：div.sxg-actions.right
@@ -353,6 +391,18 @@
       // 2026-11-13 站长统一口径：内置弹窗底排只有两枚，补一枚「关闭」对齐三键
       if (isBuiltinFoot && !foot.querySelector('[' + CLOSE_ATTR + ']')) {
         foot.appendChild(makeCloseButton());
+      }
+      // 2026-11-27：三家有专题页的品牌，底排最左侧再多一枚「专题报道」。
+      // 有没有这枚按钮，只看公示区条目上有没有 data-topic（真相源在 brand/*.html）。
+      if (!foot.querySelector('[' + TOPIC_BTN_ATTR + ']')) {
+        var modal42 = modalRoot(foot);
+        var title42 = modalTitle(modal42);
+        var target42 = resolveTarget(title42, cfgIdByName(title42));
+        var href42 = target42 ? (target42.getAttribute(TOPIC_ATTR) || '') : '';
+        if (href42) {
+          var jump42 = foot.querySelector('[' + BTN_ATTR + ']');
+          foot.insertBefore(makeTopicButton(href42), jump42 || btns[i]);
+        }
       }
     }
   }
