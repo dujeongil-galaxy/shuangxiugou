@@ -4,6 +4,13 @@
 
 ---
 
+### feat：有专题页的品牌，卡片底部最左侧加一枚「专题报道」按钮（2026-11-27 · 提交 `8d8fd115`）
+
+- **背景**：站长点名比亚迪 / 华为 / 星巴克三家有独立专题页，要求品牌卡**底部**（最左侧）多一枚按钮点进专题；详情弹窗底排维持统一三键，不动。
+- **改法**：沿用站内「单一真相源」纪律，不写死品牌清单——`brand/<slug>.html` 加一行 `<meta name="sxg-topic-page" content="../xxx-report.html">`，`gen-evidence-board.py` 把它搬进公示区 `<details data-topic="./xxx-report.html">`，新增 `topic-page-button.js` 在渲染后的卡片 DOM 上读该属性，把「专题报道」按钮插进卡片底栏（`px-5 py-3` 那一排）左侧组的**最前面**（新窗口打开 + `rel="noopener noreferrer"`）。补丁同时做了幂等与自愈：按钮跑到别的卡上、位置不对或 href 被改坏，下一轮自动摘掉重挂。
+- **配套**：`index.html` 挂 `topic-page-button.js?v=1`；`gen-evidence-board.py` 输出 `data-topic`；`verify.mjs` 新增 §42 一节（§42a–§42i 共 9 条断言：三个详情页的标记、生成器搬运、公示区恰好 3 条 `data-topic`、补丁不写死品牌清单、按钮形态、落位口径、挂载与 CI、全站只有 3 个品牌带标记、校验段防删空）；新增真 DOM 测试 `test-topic-page-button.cjs`（33 项；本机 PAT 无 workflow scope，改不了 `.github/workflows/`，按 §21o 标记为「本机专用」，待换带 workflow scope 的 token 后补挂 CI）。
+- **验证**：全站 verify 2262 项全绿；62 组 `test-*.cjs` 中除既有的 `test-ai-cf-stream.cjs`（基线同样失败，与本次无关）外全部通过；7 次故障注入（删标记、删 `data-topic`、补丁写死品牌、改文案、改落位、不挂脚本、误扩散到第四个品牌）均判红后还原，还原后复验全绿。
+
 ### feat：新增「找茬」判据专题页；星巴克卡备注登记南充锁椅事件（2026-11-27 · 提交 `ee0b9a4f`）
 
 - **背景**：站长要求以 2026-09-15 南充「仁和春天」一家星巴克门口锁椅视频为引子，专门谈「找茬」这件事；落点与 QQ奶奶、万州坠江、50 元自述三篇一致——独立成页、入口挂成功案例页、不占案例序号。
