@@ -1348,25 +1348,28 @@ section('2g. 首页证据链完整公示');
        4c6ec0dd 把专题直达项挂进悬浮菜单时用的是 v12，0d41d643 撤销时退回 v11，
        38909d16 手机端导航改造又 bump 回 v12 —— 同一个 ?v 指向过两份内容，
        老访客缓存里的 v12 仍是带专题按钮的脚本，于是「撤销」在用户端失效。
-       判据从 git 历史里取所有改过 nav-menu.js 版本号的提交（排除 HEAD），
-       当前号必须严格大于历史最大值；CI checkout 是 fetch-depth:0，可用。 */
+       判据从 git 历史里取所有改过 nav-menu.js 版本号的提交，当前号必须严格大于历史最大值；
+       最新一次「把当前号写进去」的提交自己要排除，否则 bump 完成后它反而成了上限。
+       CI checkout 是 fetch-depth:0，可用。 */
     let maxHistNav = 0;
     let histNavOk = false;
     try {
-      const headHash = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
       const navHist = execFileSync('git', ['log', '-G', 'nav-menu\\.js\\?v=[0-9]+', '--format=%H', '--', 'index.html'],
         { cwd: ROOT, encoding: 'utf8' }).trim().split('\n').filter(Boolean);
       histNavOk = navHist.length > 0;
-      for (const h of navHist) {
-        if (h === headHash) continue;
-        let oldHtml = '';
+      const verOf = (h) => {
         try {
-          oldHtml = execFileSync('git', ['show', h + ':index.html'],
+          const oldHtml = execFileSync('git', ['show', h + ':index.html'],
             { cwd: ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
-        } catch { continue; }
-        for (const m of oldHtml.matchAll(/nav-menu\.js\?v=(\d+)/g)) {
-          maxHistNav = Math.max(maxHistNav, Number(m[1]));
-        }
+          return Array.from(oldHtml.matchAll(/nav-menu\.js\?v=(\d+)/g), m => Number(m[1]));
+        } catch { return []; }
+      };
+      if (navHist.length) {
+        const newestVers = verOf(navHist[0]);
+        if (newestVers.length && newestVers.every(n => navVerNow.includes(n))) navHist.shift();
+      }
+      for (const h of navHist) {
+        for (const n of verOf(h)) maxHistNav = Math.max(maxHistNav, n);
       }
     } catch { histNavOk = false; }
     check(histNavOk && navVerNow.length === 2 && navVerNow[0] > maxHistNav && maxHistNav >= 12,
