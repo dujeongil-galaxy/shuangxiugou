@@ -8214,18 +8214,18 @@ section('21c. 首页滑到底部按钮');
     '§33a preload 的 credentials 模式与 module / stylesheet 标签一致（都带 crossorigin），主包与 CSS 不再各下两遍',
     'preload 少了 crossorigin → 浏览器当成两个不同资源，434KB 主包 + 53KB CSS 全下两遍');
 
-  // 手机专用三张由 §35c 单独管（带 media 的预热）；这里只数桌面三张原稿，
-  // 否则新增 *_MOBILE 常量会把「三张」撑成 6 张，旧断言误红。
+  // 手机专用四张由 §35c 单独管（带 media 的预热）；这里只数桌面四张原稿，
+  // 否则新增 *_MOBILE 常量会把「四张」撑成 8 张，旧断言误红。
   const artUrls33 = [...read('black-card-adslot.js')
     .matchAll(/var ART[_A-Z]* = '(\.\/assets\/[^']+)'/g)].map((m) => m[1])
     .filter((u) => u.indexOf('-mobile.svg') === -1);
-  check(artUrls33.length === 3
+  check(artUrls33.length === 4
     && artUrls33.every((u) => idx.includes('<link rel="preload" as="image" href="' + u + '"')),
-    '§33a2 广告位三张设计图首屏预热，且每张的 ?v 与 black-card-adslot.js 里的常量完全一致',
+    '§33a2 广告位四张设计图首屏预热，且每张的 ?v 与 black-card-adslot.js 里的常量完全一致',
     '预热 URL 与脚本里的实际 URL 不一致 → 白预热，广告位照样「卡片先出来、图还是空的」');
 
-  check(/<script async src="\.\/black-card-adslot\.js\?v=25"><\/script>/.test(idx)
-    && idx.indexOf('black-card-adslot.js?v=24') < idx.indexOf('</head>')
+  check(/<script async src="\.\/black-card-adslot\.js\?v=26"><\/script>/.test(idx)
+    && idx.indexOf('black-card-adslot.js?v=26') < idx.indexOf('</head>')
     && !/script defer src="\.\/black-card-adslot\.js/.test(idx),
     '§33b 广告位补丁在 head 里 async 加载（不再排在第 40 个 defer，也不必等 692KB body 解析完）',
     '广告位补丁退回 defer 队列尾部 → 慢网又要 15 秒才冒出广告位');
@@ -9715,15 +9715,17 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29d 每个启动无头 Edge 的脚本都引入了统一缓存根助手（非空集防护）',
     missingImport29.join(', '));
 
-  const arts29 = ['assets/ad-luxiyi.svg', 'assets/ad-recruit.svg', 'assets/ad-pangdonglai.svg'];
+  const arts29 = ['assets/ad-luxiyi.svg', 'assets/ad-recruit.svg', 'assets/ad-pangdonglai.svg',
+    'assets/ad-starbucks.svg'];
   check(arts29.every((f) => exists(f)
       && /<svg[\s\S]*?viewBox="0 0 \d+ \d+"/.test(read(f))
       && !/https?:\/\//.test(read(f).replace(/xmlns(?::[a-zA-Z]+)?="[^"]*"/g, ''))
       && !/<image\b/i.test(read(f)))
-    && ad29.indexOf("var ART = './assets/ad-luxiyi.svg?v=3'") !== -1
-    && ad29.indexOf("var ART_RECRUIT = './assets/ad-recruit.svg?v=6'") !== -1
-    && ad29.indexOf("var ART_PDL = './assets/ad-pangdonglai.svg?v=3'") !== -1,
-    '§29e 三张站点自绘矢量设计稿存在、有效、无外链，且被广告位引用（?v 与预热一致）');
+    && ad29.indexOf("var ART = './assets/ad-luxiyi.svg?v=4'") !== -1
+    && ad29.indexOf("var ART_RECRUIT = './assets/ad-recruit.svg?v=7'") !== -1
+    && ad29.indexOf("var ART_PDL = './assets/ad-pangdonglai.svg?v=4'") !== -1
+    && ad29.indexOf("var ART_SBX = './assets/ad-starbucks.svg?v=1'") !== -1,
+    '§29e 四张站点自绘矢量设计稿存在、有效、无外链，且被广告位引用（?v 与预热一致）');
 
   check(!/<div class="sxg-adslot__cta"/.test(ad29)
     && /sxg-adslot__cta" href="'\s*\+\s*TMALL/.test(ad29)
@@ -9746,7 +9748,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
 
   check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
-    && /black-card-adslot\.js\?v=25/.test(idx29),
+    && /black-card-adslot\.js\?v=26/.test(idx29),
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 
   // —— 站长 2026-11-10 晚：胖东来广告卡（首页推荐位） ——
@@ -9997,7 +9999,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check((code32.match(/公益广告位/g) || []).length >= 4
     && !/广告位招商中|品牌展示|>广告位</.test(code32)
     && /data-adslot-kind', 'public-welfare'/.test(code32)
-    && /black-card-adslot\.js\?v=25/.test(idx32),
+    && /black-card-adslot\.js\?v=26/.test(idx32),
     '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 24');
 
   // 站长 2026-11-10 二次纠正「广告图叫你重构，不是让你改成纯文字 / 文字明显重叠」：
@@ -10187,10 +10189,13 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   // 早先这里写死 '?v=1'，一改其中一张就会被「版本不一致」误红。
   // 2026-11-27 胖东来广告暂时下架：陆喜依与招商两张稿的水印改了（01/03→01/02、
   // 03/03→02/02），两张图 ?v 随之升版（胖东来那张没改，?v 保持不变）。
+  // 2026-11-28 恢复胖东来 + 新增星巴克：轮播 4 张，水印统一 01/04~04/04，
+  // 四张稿的 ?v 全部重新升版（星巴克两张是新稿，?v=1）。
   const mob35 = [
-    ['assets/ad-luxiyi-mobile.svg', 'ART_MOBILE', 2],
-    ['assets/ad-pangdonglai-mobile.svg', 'ART_PDL_MOBILE', 2],
-    ['assets/ad-recruit-mobile.svg', 'ART_RECRUIT_MOBILE', 2]
+    ['assets/ad-luxiyi-mobile.svg', 'ART_MOBILE', 3],
+    ['assets/ad-pangdonglai-mobile.svg', 'ART_PDL_MOBILE', 3],
+    ['assets/ad-starbucks-mobile.svg', 'ART_SBX_MOBILE', 1],
+    ['assets/ad-recruit-mobile.svg', 'ART_RECRUIT_MOBILE', 3]
   ];
   const svgOk35 = mob35.every(([f]) => {
     if (!exists(f)) return false;
@@ -10205,7 +10210,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
       && main35[0].size >= 38 && Math.min(...main35.map((t) => t.size)) >= 14;
   });
   check(svgOk35,
-    '§35a 三张手机专用海报（400×240）存在、零外链、三条主文案基线严格递增且字号 ≥14（桌面稿压到 356px 只剩 5px 小字）',
+    '§35a 四张手机专用海报（400×240）存在、零外链、三条主文案基线严格递增且字号 ≥14（桌面稿压到 356px 只剩 5px 小字）',
     '手机稿缺一 / 字号退回桌面比例 → 手机端又是一片糊字');
 
   // 数节点必须看剥注释后的纯代码：注释里也写着「用 <picture> 切换」，
@@ -10216,15 +10221,15 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     return ad35.indexOf("var " + name + " = '" + src35 + "'") !== -1
       && (code35.match(new RegExp('\\b' + name + '\\b', 'g')) || []).length >= 2;
   });
-  check(constOk35 && (code35.match(/<source media="\(max-width:480px\)"/g) || []).length === 3
-    && (code35.match(/<picture>/g) || []).length === 3
+  check(constOk35 && (code35.match(/<source media="\(max-width:480px\)"/g) || []).length === 4
+    && (code35.match(/<picture>/g) || []).length === 4
     && /\.sxg-adslot__art-wrap picture\{display:block/.test(ad35),
-    '§35b 三张卡都用 <picture> 在窄屏切手机稿，桌面三张原稿与 ?v 一字不动',
+    '§35b 四张卡都用 <picture> 在窄屏切手机稿，桌面四张原稿与 ?v 一字不动',
     '只写了手机图没接 <source> → 手机上仍加载桌面稿，断言白写');
 
   const preload35 = mob35.every(([f, , ver]) =>
     idx35.indexOf('<link rel="preload" as="image" href="./' + f + '?v=' + ver + '" media="(max-width:480px)" />') !== -1);
-  check(preload35 && /black-card-adslot\.js\?v=25/.test(idx35),
+  check(preload35 && /black-card-adslot\.js\?v=26/.test(idx35),
     '§35c 手机三图带 media 预热、?v 与脚本 *_MOBILE 常量一致，首页脚本已升 24（2026-11-27 淘宝入口去推广参数后再 bump）',
     '预热漏 media 或 ?v 不一致 → 慢网首帧先出桌面稿再跳手机稿');
 
@@ -10262,30 +10267,43 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   const strip36 = (s) => s.replace(/<!--[\s\S]*?-->/g, '');
   const lx36 = strip36(read('assets/ad-luxiyi.svg'));
   const pdl36 = strip36(read('assets/ad-pangdonglai.svg'));
+  const sbx36 = strip36(read('assets/ad-starbucks.svg'));
   const rec36 = strip36(read('assets/ad-recruit.svg'));
   const lxm36 = strip36(read('assets/ad-luxiyi-mobile.svg'));
   const pdlm36 = strip36(read('assets/ad-pangdonglai-mobile.svg'));
+  const sbxm36 = strip36(read('assets/ad-starbucks-mobile.svg'));
   const recm36 = strip36(read('assets/ad-recruit-mobile.svg'));
-  // 三套风格特征：品牌稿（深蓝渐变+金）/ 招商稿（暖白网格+虚线+方章）/
-  // 号外稿（砖红纯色+米白运单条+橙装订边）。任一稿混入另两套特征即判红。
+  // 四套风格特征：品牌稿（深蓝渐变+金）/ 号外稿（砖红纯色+米白运单条+橙装订边）/
+  // 星巴克稿（绿纯色+白手机轮廓+下载箭头）/ 招商稿（暖白网格+虚线+方章）。
+  // 任一稿混入另一套特征即判红。
   const brandMark36 = /linearGradient|radialGradient|lx-gold|lx-glow|pdl-gold|pdl-plate|#f9df8b|#e5a336|#0a1b47|#1d3f9e/;
   // stroke-dasharray 不能当招商稿专属：陆喜依桌面稿的金色圆徽章也有
   // stroke-dasharray="3 11"（本批实测把 §36a 判红）。只认招商稿的精确值 14 10。
   const recruitMark36 = /rw-grid|rw-hatch|rwm-grid|rwm-hatch|stroke-dasharray="14 10"|VACANCY|#fbf7ee/;
   const dispatchMark36 = /nd-ink|#8f3325|#f7efe0|#e9a45c/;
+  // ⑭ 星巴克稿专属特征：星巴克绿两档 + 薄荷白三个色值（另三稿都不含）。
+  const sbxMark36 = /#0a3d2c|#0f4a36|#eaf3ee|#cfe8dc|#9dc9b4/;
   check(dispatchMark36.test(pdl36)
-    && !brandMark36.test(pdl36) && !recruitMark36.test(pdl36)
+    && !brandMark36.test(pdl36) && !recruitMark36.test(pdl36) && !sbxMark36.test(pdl36)
     && brandMark36.test(lx36) && !dispatchMark36.test(lx36) && !recruitMark36.test(lx36)
-    && recruitMark36.test(rec36) && !brandMark36.test(rec36) && !dispatchMark36.test(rec36),
-    '§36a 三张桌面海报两两互异：陆喜依深蓝金字 / 胖东来砖红号外运单 / 招商暖白网格虚线框；第一张不再与第二张同风格',
-    '胖东来稿退回深蓝金字或暖白网格 → 站长 00:46「第一张也不要和第二张广告使用同一种风格」失守');
+    && !sbxMark36.test(lx36)
+    && recruitMark36.test(rec36) && !brandMark36.test(rec36) && !dispatchMark36.test(rec36)
+    && !sbxMark36.test(rec36)
+    && sbxMark36.test(sbx36) && !brandMark36.test(sbx36) && !dispatchMark36.test(sbx36)
+    && !recruitMark36.test(sbx36),
+    '§36a 四张桌面海报两两互异：陆喜依深蓝金字 / 胖东来砖红号外运单 / 星巴克绿手机下载 / 招商暖白网格虚线框',
+    '某张稿退回别的稿的配色语言 → 站长「不要用同一种风格」失守');
 
   check(dispatchMark36.test(pdlm36)
-    && !brandMark36.test(pdlm36) && !recruitMark36.test(pdlm36)
+    && !brandMark36.test(pdlm36) && !recruitMark36.test(pdlm36) && !sbxMark36.test(pdlm36)
     && brandMark36.test(lxm36) && !dispatchMark36.test(lxm36) && !recruitMark36.test(lxm36)
-    && recruitMark36.test(recm36) && !brandMark36.test(recm36) && !dispatchMark36.test(recm36),
-    '§36b 三张手机专用海报同样两两互异（手机端不能只改桌面稿就交差）',
-    '桌面改了风格、手机稿还是老一套 → 手机上第 1/2 张照样撞脸');
+    && !sbxMark36.test(lxm36)
+    && recruitMark36.test(recm36) && !brandMark36.test(recm36) && !dispatchMark36.test(recm36)
+    && !sbxMark36.test(recm36)
+    && sbxMark36.test(sbxm36) && !brandMark36.test(sbxm36) && !dispatchMark36.test(sbxm36)
+    && !recruitMark36.test(sbxm36),
+    '§36b 四张手机专用海报同样两两互异（手机端不能只改桌面稿就交差）',
+    '桌面改了风格、手机稿还是老一套 → 手机上照样撞脸');
 
   const code36 = ad36.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
   check(/function ensureModal\(/.test(code36) && /function openModal\(/.test(code36)
@@ -10315,20 +10333,19 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     && /modalShown/.test(cdp36) && /taobaoHref/.test(cdp36)
     && !/PDL_LINK = '#小程序/.test(t36) && !/PDL_LINK = '#小程序/.test(cdp36)
     && /CHECK '/.test(cdp36)
-    // 2026-11-27 胖东来广告暂时下架：卡面没有那张卡可点，jsdom 侧改成断言
-    // 「不渲染 + 代码留着」；真点击验收脚本（cdp-pdl-adcheck.cjs）原样保留，
-    // 恢复上架时再跑（§45a–§45g 管下架状态本身）。
-    && /下架后卡面不再渲染胖东来卡/.test(t36)
-    && /下架后弹窗 DOM 根本不会被创建/.test(t36)
+    // 2026-11-28 胖东来恢复上架（§45a 那一组）：jsdom 侧回到「卡面渲染这张卡 +
+    // 点击开弹窗」的真点击断言；真渲染验收脚本同步按 4 张卡断言。
+    && /胖东来卡恢复渲染/.test(t36)
+    && /点击 CTA 弹出居中弹窗/.test(t36)
     && /sxg-adslot__modal-taobao/.test(t36) && /sxg-adslot__modal-douyin/.test(t36),
-    '§36d 胖东来下架后 jsdom 测试改为「卡面不渲染、弹窗不出现、代码留着」断言；真点击验收脚本保留待恢复',
-    '下架状态还要求真点击 → 断言与现实脱节；把验收脚本删掉 → 恢复上架没法验');
+    '§36d 胖东来恢复上架后 jsdom 测试回到「卡面渲染 + 真点击弹窗」断言；真渲染验收脚本同步按 4 张卡',
+    '恢复上架却还断言「不渲染」→ 断言与现实脱节；真点击验收删掉 → 没法验');
 
   check(/不要用同一种风格/.test(rd36) && /两两互异/.test(rd36)
     && /第一张/.test(rd36) && /第二张/.test(rd36)
     && /弹窗/.test(rd36) && /淘宝/.test(rd36) && /抖音/.test(rd36)
     && !/小程序口令/.test(rd36) && !/bendibao/.test(rd36),
-    '§36e README 写死「三张海报两两互异 / 第一张不与第二张同风格」与「胖东来点击开弹窗给淘宝/抖音」口径，零旧小程序口令口径',
+    '§36e README 写死「海报两两互异 / 第一张不与第二张同风格」与「胖东来点击开弹窗给淘宝/抖音」口径，零旧小程序口令口径',
     '规则只挂口头 → 下次又拿两张同风格稿或退回口令糊弄过去');
 }
 
@@ -10370,7 +10387,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     'JEV 条目写成互惠/互挂 → 与「不要求互挂」矛盾');
 
   // ④ 脚本在 index.html 的 ?v 随内容变更 bump，否则浏览器缓存旧脚本（撤链看不到）
-  check(/black-card-adslot\.js\?v=25/.test(idx36f)
+  check(/black-card-adslot\.js\?v=26/.test(idx36f)
     && /friend-links-footer\.js\?v=18/.test(idx36f),
     '§36f friend-links-footer.js 在 index.html 的 ?v 已随撤链 bump 到 18',
     '?v 没 bump → 浏览器缓存旧脚本，已撤的两条友链仍显示给访客');
@@ -10414,7 +10431,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/n\.id\s*===\s*['"]sxg-flash-mask['"]/.test(ad36h),
     '§36h keepClear 按 id 排除闪屏遮罩 #sxg-flash-mask（不被当悬浮钮隐藏、整页磨砂不破洞）',
     'keepClear 漏排除闪屏遮罩 → 广告位相交时遮罩被隐藏、磨砂破洞、广告位穿模');
-  check(/black-card-adslot\.js\?v=25/.test(idx36h),
+  check(/black-card-adslot\.js\?v=26/.test(idx36h),
     '§36h black-card-adslot.js 的 ?v 已 bump 到 24（浏览器缓存旧脚本会吃掉本次修复）',
     '?v 没 bump → 旧脚本仍带 z-index:9995，修复不生效');
 }
@@ -10428,7 +10445,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(!/@media \(max-width:480px\)\{\.sxg-adslot__nav\{display:none\}/.test(ad36k),
     '§36k 手机端（≤480px）不再隐藏公益广告位左右翻页箭头（放出 prev/next 按钮）',
     '移动端媒体查询又把 .sxg-adslot__nav 设 display:none → 手机上看不到左右翻页箭头');
-  check(/black-card-adslot\.js\?v=25/.test(idx36k),
+  check(/black-card-adslot\.js\?v=26/.test(idx36k),
     '§36k black-card-adslot.js 的 ?v 已 bump 到 24（浏览器缓存旧脚本会吃掉本次改动）',
     '?v 没 bump → 旧脚本仍隐藏手机端箭头，改动不生效');
 }
@@ -10582,7 +10599,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     /中国大陆/.test(ad36n),
     '§36n 脚注已声明适用范围仅限中国大陆品牌与门店（本站意在改进国内用工状况，不评价境外）',
     '缺「仅限中国大陆」限定 → 读者会以为榜单对境外品牌也作同等评判');
-  check(/black-card-adslot\.js\?v=25/.test(idx36n),
+  check(/black-card-adslot\.js\?v=26/.test(idx36n),
     '§36n black-card-adslot.js 的 ?v 已 bump 到 24（浏览器缓存旧脚本会吃掉本次脚注）',
     '?v 没 bump → 旧脚本无脚注、本次改动不生效');
 }
@@ -12558,57 +12575,108 @@ section('42. 品牌卡「专题报道」按钮');
 //   轮播只剩陆喜依与招商两张 → 水印编号随之改：陆喜依 01 / 02、招商 02 / 02。
 // 下架用开关实现（PDL_ON = false），卡片 HTML、居中弹窗与两张设计图全部留着，
 // 恢复上架只要把开关改回 true 并把水印改回 03 体系。
-section('43. 公益广告位胖东来暂时下架');
+section('43. 公益广告位恢复胖东来 + 新增星巴克 App 卡');
 {
   const ad43 = read('black-card-adslot.js');
   const idx43 = read('index.html');
-  const code43 = ad43.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  // §34 老坑：剥 // 注释的正则会把 https:// 的尾巴当注释吃掉。断言里凡是涉及
+  // URL 的地方，先把 URL 遮蔽成 URL 再剥注释；URL 真值另外从原文正则提取比对。
+  const maskUrl43 = (s) => s.replace(/https?:\/\/[^\s'"<>)]+/g, 'URL');
+  const code43 = maskUrl43(ad43).replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
 
-  check(/var PDL_ON = false;/.test(code43) && /\(PDL_ON \? \(/.test(code43) && /\) : ''\) \+/.test(code43),
-    '§45a 胖东来卡由开关控制且当前为 false（恢复上架只改这一处）',
-    '开关丢失或被改成 true → 胖东来广告又上架了，或卡片永久下架无法恢复');
+  check(/var PDL_ON = true;/.test(code43) && /\(PDL_ON \? \(/.test(code43) && /\) : ''\) \+/.test(code43),
+    '§45a 胖东来卡由开关控制且当前为 true（站长 11-28「算了，恢复吧」）',
+    '开关丢失或被改成 false → 胖东来广告又下架了，或卡片永久无法上下架');
 
   check(/sxg-adslot__card--pdl/.test(ad43) && /data-sxg-share="pdl"/.test(ad43)
       && /function ensureModal\(/.test(code43) && /function bindShare\(/.test(code43),
-    '§45b 卡片 HTML 与居中弹窗代码都留着（暂时下架 ≠ 删掉实现）',
-    '代码被删干净 → 恢复上架要重写一遍');
+    '§45b 卡片 HTML 与居中弹窗代码都留着（上下架靠开关，不靠删实现）',
+    '代码被删干净 → 想再下架要重写一遍');
 
-  // 水印编号：在展示的两张稿必须是 01/02 与 02/02；下架那张保持 02/03 不动
+  // 水印编号：4 张卡 = 01/04、02/04、03/04、04/04（桌面与手机稿一一对应）
   const wm43 = (f) => {
     const s = read('assets/' + f);
     const m = [...s.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map((x) => x[1]).join(' ');
-    const hit = m.match(/0[123]\s*\/\s*0[123]/);
+    const hit = m.match(/0[1234]\s*\/\s*0[1234]/);
     return hit ? hit[0] : '';
   };
-  check(wm43('ad-luxiyi.svg') === '01 / 02' && wm43('ad-luxiyi-mobile.svg') === '01 / 02'
-      && wm43('ad-recruit.svg') === '02 / 02' && wm43('ad-recruit-mobile.svg') === '02 / 02',
-    '§45c 在展示的两张稿水印是 01 / 02 与 02 / 02（03 已改成 02）',
-    `实际：陆喜依 ${wm43('ad-luxiyi.svg')} / 招商 ${wm43('ad-recruit.svg')} → 编号与在展示的张数对不上`);
-  check(wm43('ad-pangdonglai.svg') === '02 / 03' && wm43('ad-pangdonglai-mobile.svg') === '02 / 03',
-    '§45d 下架的胖东来那张稿水印保持 02 / 03（恢复上架时不用再改它）',
-    '下架的稿被顺手改成 02/02 → 恢复上架时编号会跟别的稿撞');
+  check(wm43('ad-luxiyi.svg') === '01 / 04' && wm43('ad-luxiyi-mobile.svg') === '01 / 04'
+      && wm43('ad-pangdonglai.svg') === '02 / 04' && wm43('ad-pangdonglai-mobile.svg') === '02 / 04'
+      && wm43('ad-starbucks.svg') === '03 / 04' && wm43('ad-starbucks-mobile.svg') === '03 / 04'
+      && wm43('ad-recruit.svg') === '04 / 04' && wm43('ad-recruit-mobile.svg') === '04 / 04',
+    '§45c 四张稿水印编号是 01/04 ~ 04/04（桌面与手机稿逐张对得上）',
+    `实际：陆喜依 ${wm43('ad-luxiyi.svg')} / 胖东来 ${wm43('ad-pangdonglai.svg')} / 星巴克 ${wm43('ad-starbucks.svg')} / 招商 ${wm43('ad-recruit.svg')} → 编号与在展示的张数对不上`);
 
   // 改过图就必须升 ?v，且脚本常量与首页预热两处一致（否则白预热）
   const art43 = [...ad43.matchAll(/var ART[_A-Z]* = '(\.\/assets\/[^']+)'/g)].map((m) => m[1]);
   const pre43 = art43.filter((u) => u.indexOf('-mobile.svg') === -1);
-  check(pre43.length === 3 && pre43.every((u) => idx43.includes('<link rel="preload" as="image" href="' + u + '"')),
+  check(pre43.length === 4 && pre43.every((u) => idx43.includes('<link rel="preload" as="image" href="' + u + '"')),
     '§45e 广告位设计图首屏预热 URL 与脚本常量逐字一致（改图后 ?v 已升版）',
     '预热与实际 URL 不一致 → 白预热，首屏还是空图');
-  check(/var ART = '\.\/assets\/ad-luxiyi\.svg\?v=3'/.test(code43)
-      && /var ART_RECRUIT = '\.\/assets\/ad-recruit\.svg\?v=6'/.test(code43)
-      && idx43.includes('./assets/ad-luxiyi.svg?v=3')
-      && idx43.includes('./assets/ad-recruit.svg?v=6'),
-    '§45f 改过水印的两张稿 ?v 已升版（浏览器缓存旧图会继续显示 03 编号）',
+  check(/var ART = '\.\/assets\/ad-luxiyi\.svg\?v=4'/.test(code43)
+      && /var ART_PDL = '\.\/assets\/ad-pangdonglai\.svg\?v=4'/.test(code43)
+      && /var ART_SBX = '\.\/assets\/ad-starbucks\.svg\?v=1'/.test(code43)
+      && /var ART_RECRUIT = '\.\/assets\/ad-recruit\.svg\?v=7'/.test(code43)
+      && idx43.includes('./assets/ad-luxiyi.svg?v=4')
+      && idx43.includes('./assets/ad-recruit.svg?v=7'),
+    '§45f 改过水印的四张稿 ?v 已升版（浏览器缓存旧图会继续显示旧编号）',
     '图改了但 ?v 没升 → 老访客看到的还是旧水印');
 
-  // 行为测试要在 CI 里，且认下架后的张数
+  // 行为测试要在 CI 里，且认恢复后的张数
   check(exists('scripts/test-adslot.cjs') && exists('scripts/test-adslot-mobile.cjs')
       && read('.github/workflows/verify.yml').includes('test-adslot.cjs')
       && read('.github/workflows/verify.yml').includes('test-adslot-mobile.cjs')
-      && /共 2 张广告卡/.test(read('scripts/test-adslot.cjs'))
-      && /下架后卡面不再渲染胖东来卡/.test(read('scripts/test-adslot.cjs')),
-    '§45g 广告位两个行为测试在 CI，且按「下架后 2 张卡」断言',
-    '测试没跟着改 → 下架后轮播张数对不上，或下架状态没人守');
+      && /共 4 张广告卡/.test(read('scripts/test-adslot.cjs'))
+      && /胖东来卡恢复渲染/.test(read('scripts/test-adslot.cjs')),
+    '§45g 广告位两个行为测试在 CI，且按「恢复上架后 4 张卡」断言',
+    '测试没跟着改 → 恢复上架后轮播张数对不上');
+
+  // —— ⑭ 星巴克卡（站长 2026-11-28：「新增一个星巴克的，挂一下腾讯应用宝的
+  //     星巴克 App 下载页面。学 AD1 陆喜依，需要明确告知用户，点击会跳转到哪里，
+  //     不要做那种一声不吭的」）——
+  const SBX_APP43 = 'https://sj.qq.com/appdetail/com.starbucks.cn';
+  const sbxApp43 = (ad43.match(/var SBX_APP = '([^']+)'/) || [])[1] || '';
+  check(sbxApp43 === SBX_APP43
+      && /var SBX_APP = 'URL';/.test(code43)
+      && /var SBX_DETAIL = '\.\/brand\/starbucks\.html';/.test(code43)
+      && /var SBX_IMG = '\.\/assets\/starbucks\.svg';/.test(code43),
+    '§47a 星巴克卡落地页指向腾讯应用宝的星巴克 App 官方下载页（零参数），品牌名与头像只链站内',
+    '落地页写错 / 品牌名链到外站 → 站长「挂腾讯应用宝的星巴克 App 下载页」失守');
+
+  // 学 AD1 陆喜依：整图 + CTA 都是真 <a>，直接跳目标页（新标签），不做弹窗二次确认。
+  const sbxCard43 = (() => {
+    const a = ad43.indexOf('sxg-adslot__card--sbx');
+    const b = ad43.indexOf('sxg-adslot__card--recruit');
+    return a !== -1 && b > a ? ad43.slice(a, b) : '';
+  })();
+  check(sbxCard43 !== ''
+      && /sxg-adslot__banner" href="'\s*\+\s*SBX_APP/.test(sbxCard43)
+      && /sxg-adslot__cta" href="'\s*\+\s*SBX_APP/.test(sbxCard43)
+      && (sbxCard43.match(/target="_blank" rel="noopener"/g) || []).length >= 2
+      && !/data-sxg-share/.test(sbxCard43),
+    '§47b 星巴克卡学 AD1 陆喜依：整图与 CTA 都是真 <a> 直跳应用宝（新标签 + noopener），不走弹窗二次确认',
+    '整图/CTA 不是真链接或又套了弹窗 → 站长「学 AD1 陆喜依」失守');
+
+  // 「明确告知点击会跳到哪里」必须写在**可见文案**里，不能只塞 aria-label。
+  check(/sxg-adslot__jump/.test(sbxCard43)
+      && /点击整张广告图或上面这个按钮/.test(sbxCard43)
+      && /腾讯应用宝 · 星巴克 App 官方下载页/.test(sbxCard43)
+      && /sj\.qq\.com/.test(sbxCard43)
+      && /点此前往腾讯应用宝下载星巴克 App（新标签页打开）/.test(sbxCard43)
+      && /aria-label="前往腾讯应用宝，打开星巴克 App 官方下载页（新标签页打开）"/.test(sbxCard43)
+      // 海报里也要写明去向（图才是第一眼看到的地方）
+      && /点击将在新标签页打开腾讯应用宝下载页/.test(read('assets/ad-starbucks.svg'))
+      && /点击将在新标签页打开腾讯应用宝下载页/.test(read('assets/ad-starbucks-mobile.svg')),
+    '§47c 星巴克卡把「点击会跳到哪里」写在可见文案里（卡面跳转说明行 + CTA 文案 + 海报内白字 + aria-label）',
+    '只在 aria-label / title 里说 → 读者看不见，等于一声不吭');
+
+  // 卡面下方新增的「排名不分先后」备注行
+  check(/sxg-adslot__ranknote/.test(ad43)
+      && /备注：以上广告位排名不分先后/.test(ad43)
+      && /上架顺序与本站给出的双休评级高低无关/.test(ad43)
+      && /\.sxg-adslot__ranknote\{/.test(ad43),
+    '§47d 广告页下方新增「排名不分先后」备注行（并说明顺序与评级高低无关）',
+    '备注行缺失 → 站长 11-28「广告页下方也新增一行备注，排名不分先后」失守');
 }
 
 // ---------- §46 车企品牌卡的「车外费用」备注（etc-fee-note-patch）----------

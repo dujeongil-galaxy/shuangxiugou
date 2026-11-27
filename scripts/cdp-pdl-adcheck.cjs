@@ -1,11 +1,12 @@
-// 【本机专用 · 不挂 CI】胖东来广告卡真渲染验收（站长 2026-11-10 晚批次）
-// 本地起静态服务 + 无头 Edge CDP，桌面 / 手机双视口各把三张卡截一遍：
+// 【本机专用 · 不挂 CI】公益广告位真渲染验收（站长 2026-11-10 晚批次）
+// 本地起静态服务 + 无头 Edge CDP，桌面 / 手机双视口各把四张卡截一遍：
 //   node scripts/cdp-pdl-adcheck.cjs
 // 产物统一落 D:/WorkBuddy-Cache/shots/（见 _cache-dir.cjs）。
-// 顺带机器可读断言：3 卡 3 圆点、胖东来 meta 备注在、品牌名链站内、
+// 顺带机器可读断言：4 卡 4 圆点、胖东来 meta 备注在、品牌名链站内、
 // 整图与 CTA 点击都触发弹窗、可见文案写「淘宝店 / 抖音」、
 // 真点击后阻止跳转 + 弹出居中弹窗（含淘宝/抖音两条真链接）、
-// 卡片/海报内零短视频单链。⑬ 2026-11-27 批次同步。
+// 星巴克卡整图/CTA 直跳应用宝且卡面写明去向、
+// 卡片/海报内零短视频单链。⑬ 2026-11-27 批次同步；⑭ 2026-11-28 恢复胖东来 + 新增星巴克。
 // 注：CDP Runtime.evaluate 返回值真实路径是 result.result.value；WebSocket 用全局
 //     + addEventListener + ev.data（require('ws') 的回调拿到 Buffer 会解析失败挂起）。
 const { cacheRoot, cacheDir } = require('./_cache-dir.cjs');
@@ -22,6 +23,8 @@ const URL = `http://127.0.0.1:${HTTP_PORT}/`;
 // 站长 2026-11-27 指定：弹窗里两条真链接；淘宝只留裸店址、零参数
 const PDL_TAOBAO = 'https://n3sf0tqhvhbw60ae2xdq4nodo2g4kxl.taobao.com/';
 const PDL_DOUYIN = 'https://www.douyin.com/user/MS4wLjABAAAANjHa0B-e7JAX89HjRiCnSLRbFYYG3b0wrt7397e7IBA';
+// ⑭ 2026-11-28：星巴克卡落地腾讯应用宝的星巴克 App 官方下载页
+const SBX_APP = 'https://sj.qq.com/appdetail/com.starbucks.cn';
 
 const MIME = { '.html':'text/html', '.js':'application/javascript', '.css':'text/css',
   '.json':'application/json', '.png':'image/png', '.svg':'image/svg+xml', '.ico':'image/x-icon' };
@@ -118,6 +121,11 @@ async function runViewport(ws, label, width, height) {
     var pdlBanner=slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__banner');
     var pdlCard=slot.querySelector('.sxg-adslot__card--pdl');
     var pdlCta=pdlCard.querySelector('.sxg-adslot__cta');
+    var sbxCard=slot.querySelector('.sxg-adslot__card--sbx');
+    var sbxBanner=sbxCard&&sbxCard.querySelector('.sxg-adslot__banner');
+    var sbxCta=sbxCard&&sbxCard.querySelector('.sxg-adslot__cta');
+    var sbxJump=sbxCard&&sbxCard.querySelector('.sxg-adslot__jump');
+    var rankNote=slot.querySelector('.sxg-adslot__ranknote');
     var arts=[].map.call(slot.querySelectorAll('img.sxg-adslot__art'),function(x){return x.getAttribute('src');});
     return {
       slot:true, cards:cards.length, dots:dots.length,
@@ -128,6 +136,13 @@ async function runViewport(ws, label, width, height) {
       pdlCtaText:pdlCta?pdlCta.textContent:null,
       pdlCardMall:/tmall\.com|taobao\.com|jd\.com/i.test(pdlCard.innerHTML),
       pdlTag:pdlTag?pdlTag.textContent:null,
+      // ⑭ 星巴克卡：整图/CTA 直跳应用宝（不走弹窗），卡面写明去向
+      sbxPresent:!!sbxCard,
+      sbxBannerHref:sbxBanner?sbxBanner.getAttribute('href'):null,
+      sbxCtaHref:sbxCta?sbxCta.getAttribute('href'):null,
+      sbxJumpText:sbxJump?sbxJump.textContent:null,
+      sbxHasShare:!!(sbxCard&&sbxCard.querySelector('[data-sxg-share]')),
+      rankNoteText:rankNote?rankNote.textContent:null,
       arts:arts,
       // 2026-11-27：抖音主页是站长明确要的弹窗出口，不算视频单链。
       // 红线收窄为 v.douyin.com / b23.tv；且卡片 DOM 里不该有任何抖音链接
@@ -140,18 +155,18 @@ async function runViewport(ws, label, width, height) {
   console.log(label + '_DIAG=' + JSON.stringify(diag));
 
   // 先锁帧再截：借「悬停暂停」停掉 5s 自动轮播（否则截到卡间过渡帧——已踩过），
-  // 再用圆点精确跳到第 1/2/3 张，每张等 900ms 让 .45s 过渡落地。
+  // 再用圆点精确跳到第 1/2/3/4 张，每张等 900ms 让 .45s 过渡落地。
   await evalVal(ws, `document.querySelector('.sxg-adslot__viewport')
     .dispatchEvent(new MouseEvent('mouseenter',{bubbles:true}));`);
-  const cardTags = ['1-luxiyi', '2-pangdonglai', '3-recruit'];
-  for (let i = 0; i < 3; i++) {
+  const cardTags = ['1-luxiyi', '2-pangdonglai', '3-starbucks', '4-recruit'];
+  for (let i = 0; i < 4; i++) {
     await evalVal(ws, `document.querySelectorAll('.sxg-adslot__dot')[${i}].click();`);
     await new Promise(r => setTimeout(r, 900));
     await shotSlot(ws, cacheDir('shots/sxg-pdl-' + label + '-' + cardTags[i] + '.png'));
   }
 
   // ⑬ 真点击验收：点胖东来 CTA 应拦住跳转、弹出居中弹窗（含淘宝/抖音两条真链接）。
-  // 放在三张截图之后，避免弹窗盖住海报。
+  // 放在四张截图之后，避免弹窗盖住海报。
   await evalVal(ws, `(function(){
     var cta=document.querySelector('.sxg-adslot__card--pdl .sxg-adslot__cta');
     if(!cta) return false;
@@ -223,7 +238,7 @@ async function runViewport(ws, label, width, height) {
   let fail = 0;
   for (const [label, g] of [['desktop', d], ['mobile', m]]) {
     const s = g && g.share;
-    const ok = g && g.slot && g.cards === 3 && g.dots === 3
+    const ok = g && g.slot && g.cards === 4 && g.dots === 4
       && g.pdlHref === './brand/pdl.html'
       && g.pdlBannerHref === '#' && g.pdlCtaHref === '#'
       && /淘宝店/.test(g.pdlCtaText || '') && /抖音/.test(g.pdlCtaText || '')
@@ -231,7 +246,16 @@ async function runViewport(ws, label, width, height) {
       && g.pdlCardMall === false
       && /劳动者/.test(g.pdlTag || '') && /尊重/.test(g.pdlTag || '')
       && g.videoLink === false
-      && Array.isArray(g.arts) && g.arts.length === 3
+      && Array.isArray(g.arts) && g.arts.length === 4
+      // ⑭ 星巴克卡：整图与 CTA 都直跳应用宝（真链接，不进弹窗），卡面写明去向
+      && g.sbxPresent === true
+      && g.sbxBannerHref === SBX_APP && g.sbxCtaHref === SBX_APP
+      && g.sbxHasShare === false
+      && /腾讯应用宝/.test(g.sbxJumpText || '')
+      && /星巴克 App 官方下载页/.test(g.sbxJumpText || '')
+      && /sj\.qq\.com/.test(g.sbxJumpText || '')
+      // ⑭ 卡面下方「排名不分先后」备注行
+      && /排名不分先后/.test(g.rankNoteText || '')
       && !!s && s.prevented === true
       && s.modalShown === true
       && /淘宝店/.test(s.modalText || '') && /抖音/.test(s.modalText || '')

@@ -128,7 +128,23 @@
         一个字不改（淘宝链接里的 ali_* 参数是站长自己的推广码，不许删）。
       - 可见文案同步改口：CTA「点此查看淘宝店与抖音 →」、aria-label 同步，
         不许只换 href 留着「复制口令 / 去微信」旧标签。
-   ========================================================================== */
+   ⑭ 站长 2026-11-28（两段）：
+       「算了，恢复吧」——胖东来卡恢复上架（PDL_ON 改回 true），编号体系随之从
+         02 张（01/02、02/02）改回 4 张：陆喜依 01/04、胖东来 02/04、
+         星巴克 03/04、招商 04/04。三张旧稿水印同步改、?v 各 bump。
+       「但新增一个星巴克的，挂一下腾讯应用宝的星巴克 App 下载页面。
+         学 AD1 陆喜依，需要明确告知用户，点击会跳转到哪里，不要做那种一声不吭的」
+       - 新增第 3 张「星巴克」卡（assets/ad-starbucks.svg + -mobile.svg）：
+         落地页是腾讯应用宝的星巴克 App 官方下载页（sj.qq.com/appdetail/com.starbucks.cn，
+         开发者为星巴克企业管理（中国）有限公司），零参数。
+       - **学 AD1 陆喜依**：跟第 1 张同一路数——整张广告图 + CTA 都是真 <a>，
+         点了直接跳目标页（新标签），不玩弹窗二次确认（那是胖东来那套）。
+       - **明确告知去向**：星巴克这一张额外要求「点之前就说清楚会跳到哪」。
+         做法是在**可见文案**里写明落地页（海报 CTA 下方一行 + 卡片 meta 里的
+         说明行 + aria-label），不是只塞在 title 里让人看不见。
+       - 视觉与另三张两两互异（verify §36a/§36b 反向断言）：星巴克绿纯色 +
+         白色手机轮廓 + 下载箭头，不含渐变/金色/深蓝/砖红/暖白/网格/虚线框。
+    ========================================================================== */
 (function () {
   'use strict';
 
@@ -143,26 +159,31 @@
      不是短视频单链。单一真相源，两条店铺链接都不带查询串。 */
   var PDL_TAOBAO = 'https://n3sf0tqhvhbw60ae2xdq4nodo2g4kxl.taobao.com/';
   var PDL_DOUYIN = 'https://www.douyin.com/user/MS4wLjABAAAANjHa0B-e7JAX89HjRiCnSLRbFYYG3b0wrt7397e7IBA';
+  /* ⑭ 星巴克卡（2026-11-28 站长指令）：落地腾讯应用宝的星巴克 App 官方下载页。
+     包名 com.starbucks.cn，开发者为星巴克企业管理（中国）有限公司；零参数裸链接。 */
+  var SBX_APP = 'https://sj.qq.com/appdetail/com.starbucks.cn';
+  var SBX_DETAIL = './brand/starbucks.html';
+  var SBX_IMG = './assets/starbucks.svg';
   /* 三张广告设计图。?v 必须与 index.html 里的 <link rel=preload as=image> 完全一致，
      否则浏览器会把它当两个资源（预热的白预了）。改了图就同步升这里和 index.html。 */
-  var ART = './assets/ad-luxiyi.svg?v=3';
-  var ART_PDL = './assets/ad-pangdonglai.svg?v=3';
-  var ART_RECRUIT = './assets/ad-recruit.svg?v=6';
+  var ART = './assets/ad-luxiyi.svg?v=4';
+  var ART_PDL = './assets/ad-pangdonglai.svg?v=4';
+  var ART_SBX = './assets/ad-starbucks.svg?v=1';
+  var ART_RECRUIT = './assets/ad-recruit.svg?v=7';
   /* ⑩ 站长 2026-11-10 23:40「手机端你检查了吗？新建的公益广告位，都穿模了」：
      桌面稿 1200×300 等比压到 356px 宽后，14~26px 的小字只剩 4~8px，糊成一团。
      窄屏改用 400×240 的手机专用稿（字号放大 2 倍以上、三条基线重新排开），
      用 <picture> 的 media 切换。⑪ 胖东来两稿换风格，?v 同时升 3 / 2。 */
-  var ART_MOBILE = './assets/ad-luxiyi-mobile.svg?v=2';
-  var ART_PDL_MOBILE = './assets/ad-pangdonglai-mobile.svg?v=2';
-  var ART_RECRUIT_MOBILE = './assets/ad-recruit-mobile.svg?v=2';
+  var ART_MOBILE = './assets/ad-luxiyi-mobile.svg?v=3';
+  var ART_PDL_MOBILE = './assets/ad-pangdonglai-mobile.svg?v=3';
+  var ART_SBX_MOBILE = './assets/ad-starbucks-mobile.svg?v=1';
+  var ART_RECRUIT_MOBILE = './assets/ad-recruit-mobile.svg?v=3';
   var AUTOPLAY_MS = 5000;
 
-  /* ⑫ 胖东来卡暂时下架（2026-11-27 站长要求）：
-     轮播里只剩陆喜依与招商两张，广告位水印编号随之改成 01/02 与 02/02。
-     卡片 HTML、居中弹窗与两张设计图全部留着——恢复上架只要把 PDL_ON 改回
-     true，并把三张海报的水印改回 03 体系（陆喜依 01/03、胖东来 02/03、
-     招商 03/03）。改这里的时候记得同步 index.html 的预热 ?v 与 §45 断言。 */
-  var PDL_ON = false;
+  /* ⑭ 胖东来卡恢复上架（2026-11-28 站长「算了，恢复吧」）：
+     轮播回到 4 张：陆喜依 01/04、胖东来 02/04、星巴克 03/04、招商 04/04。
+     开关仍留着（改回 false 即可再下架），但当前为 true。 */
+  var PDL_ON = true;
 
   /* ⑬ 居中弹窗（照 liangpei-ad.js 2026-11-19 lp-modal 那套风格：
      遮罩 + 白卡 + × / 点遮罩 / Esc 三种关闭；display:none↔flex 硬切换，
@@ -266,6 +287,16 @@
       'text-decoration:none;cursor:pointer}' +
       '.sxg-adslot__cta:hover{text-decoration:underline}' +
       '.sxg-adslot__hint{font-size:12px;color:#94a3b8;line-height:1.5}' +
+      /* ⑭ 星巴克卡：把「点击会跳到哪里」写成一整行放在卡面下方（不是塞进
+         title/aria-label 里让人看不见）。链接本身是真 <a>，可点可读。 */
+      '.sxg-adslot__jump{box-sizing:border-box;width:100%;padding:0 16px 10px;' +
+      'text-align:center;font-size:12px;line-height:1.7;color:#64748b}' +
+      '.sxg-adslot__jump a{color:#2563eb;font-weight:700;text-decoration:none}' +
+      '.sxg-adslot__jump a:hover{text-decoration:underline}' +
+      /* ⑭ 卡面下方新增的备注行（排名不分先后），与免责脚注分层。 */
+      '.sxg-adslot__ranknote{box-sizing:border-box;width:100%;padding:9px 16px;' +
+      'border-top:1px solid #f1f5f9;font-size:11.5px;line-height:1.7;color:#94a3b8;' +
+      'text-align:left;letter-spacing:.01em}' +
       /* 站长 2026-11-11 新增：整块公益广告位的免责脚注（AI 生成图 + 站长人工核实 +
          申请上刊方式）。作为 .sxg-adslot 的最后一个子元素，紧贴 foot 下方，做成
          占满整卡宽度的小字浅灰脚注；不进任何一张海报 SVG（那是 §32 锁死的「文案只在图里」）。
@@ -385,12 +416,10 @@
                 '点此进入天猫旗舰店，支持真实双休企业 →</a>' +
             '</div>' +
           '</div>' +
-          /* 胖东来卡（⑬ 2026-11-27 修订）：劳动者态度与挂广告位的原因都在图里；
-             整图 + CTA 点击一律 preventDefault 打开居中弹窗，弹窗里给淘宝店与
-             抖音主页两个真链接；品牌名与头像只链站内详情页。
-             data-sxg-share 是弹窗交互的唯一接线点。
-             ⑫ 2026-11-27 暂时下架：卡片 HTML 留着，按开关决定渲不渲染——
-             下架时轮播只剩陆喜依与招商两张，水印编号改成 01/02 与 02/02。 */
+          /* 胖东来卡（⑬ 2026-11-27 修订，⑭ 2026-11-28 恢复上架）：
+             劳动者态度与挂广告位的原因都在图里；整图 + CTA 点击一律 preventDefault
+             打开居中弹窗，弹窗里给淘宝店与抖音主页两个真链接；品牌名与头像只链站内
+             详情页。data-sxg-share 是弹窗交互的唯一接线点。 */
           (PDL_ON ? (
             '<div class="sxg-adslot__card sxg-adslot__card--pdl">' +
               '<a class="sxg-adslot__banner" data-sxg-share="pdl" href="#" ' +
@@ -413,6 +442,39 @@
               '</div>' +
             '</div>'
           ) : '') +
+          /* 星巴克卡（⑭ 2026-11-28 站长：「新增一个星巴克的，挂一下腾讯应用宝的
+             星巴克 App 下载页面。学 AD1 陆喜依，需要明确告知用户，点击会跳转到哪里，
+             不要做那种一声不吭的」）：
+             - 学 AD1：整图 + CTA 都是真 <a href>，点了直接跳目标页（新标签），
+               不做弹窗二次确认（那是胖东来那套）。
+             - 明确告知去向：可见文案三处写明落地页——海报 CTA 下方一行、
+               卡片 meta 的说明行、aria-label；不只藏在 title 里。
+             - 品牌名与头像只链站内 brand/starbucks.html。 */
+          '<div class="sxg-adslot__card sxg-adslot__card--sbx">' +
+            '<a class="sxg-adslot__banner" href="' + SBX_APP + '" target="_blank" rel="noopener" ' +
+              'aria-label="前往腾讯应用宝，打开星巴克 App 官方下载页（新标签页打开）">' +
+              '<div class="sxg-adslot__art-wrap" data-art-error-text="星巴克 · 官方 App 下载">' +
+                '<picture>' +
+                  '<source media="(max-width:480px)" srcset="' + ART_SBX_MOBILE + '">' +
+                  '<img class="sxg-adslot__art" src="' + ART_SBX + '" ' +
+                    'alt="星巴克 · 官方 App 下载 · 点击前往腾讯应用宝">' +
+                '</picture>' +
+              '</div>' +
+            '</a>' +
+            '<div class="sxg-adslot__meta">' +
+              '<img class="sxg-adslot__avatar" src="' + SBX_IMG + '" alt="星巴克">' +
+              '<a class="sxg-adslot__name" href="' + SBX_DETAIL + '" rel="noopener">星巴克</a>' +
+              '<span class="sxg-adslot__mark">公益展示</span>' +
+              '<span class="sxg-adslot__tag">A 级 · 真实双休率 98% · 官方 App</span>' +
+              '<a class="sxg-adslot__cta" href="' + SBX_APP + '" target="_blank" rel="noopener">' +
+                '点此前往腾讯应用宝下载星巴克 App（新标签页打开）→</a>' +
+            '</div>' +
+            /* 「点击会跳到哪里」独立成行、放在卡面显眼处：站长 2026-11-28
+               「不要做那种一声不吭的」——落点写明白，不让人猜。 */
+            '<div class="sxg-adslot__jump">点击整张广告图或上面这个按钮，将在新标签页打开' +
+              '<a href="' + SBX_APP + '" target="_blank" rel="noopener">腾讯应用宝 · 星巴克 App 官方下载页</a>' +
+              '（sj.qq.com）。</div>' +
+          '</div>' +
           '<div class="sxg-adslot__card sxg-adslot__card--recruit">' +
             '<div class="sxg-adslot__art-wrap" data-art-error-text="公益广告位 · 虚位以待">' +
               '<picture>' +
@@ -433,6 +495,11 @@
         '<div class="sxg-adslot__dots"></div>' +
         '<button type="button" class="sxg-adslot__nav sxg-adslot__next" aria-label="下一张">›</button>' +
       '</div>' +
+      /* ⑭ 2026-11-28 站长：「同时广告页下方，也新增一行备注，排名不分先后」。
+         标题栏已有一句「排名不分先后」，这里在卡面下方再加一条独立备注行——
+         轮播有 4 张卡（上架先后不同），把「顺序不代表评级高低」写明，免得读者
+         以为排在前面就等于本站推荐它。 */
+      '<div class="sxg-adslot__ranknote">备注：以上广告位排名不分先后，上架顺序与本站给出的双休评级高低无关。</div>' +
       '<div class="sxg-adslot__disclaimer">公益广告位图片由 AI 绘制；企业信息全部由站长人工核实——线上自营、线下门店，只要有一条产线做不到双休，就上不了这一栏。核实结论来自站长亲自查证，不是联网搜一句「是否双休」得出的。想让自家企业上首页，请到 <a class="sxg-adslot__issue" href="https://github.com/dujeongil-galaxy/shuangxiugou/issues/new" target="_blank" rel="noopener">issue</a> 递交实证材料。<span class="sxg-adslot__scope">适用范围只到中国大陆的品牌与门店：这一栏盯的是自家门口的用工状况，先把身边的事改好，比给远方打分要紧。</span><span class="sxg-adslot__date">本政策自 2026 年 11 月起实行。</span></div>';
     initCarousel(root);
     // ⑬ 胖东来整图 + CTA 的「点击开居中弹窗」交互，只绑带 data-sxg-share 的两个 <a>

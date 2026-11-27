@@ -64,6 +64,6 @@
 <text x="600" y="230" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="18" fill="#7a5248" letter-spacing="1">善待劳动者，正是它登上公益广告位的原因</text>
 
 <!-- 刊头（y=42）与页脚（y=268）都避开主线基线区间 -->
-<text x="1120" y="42" text-anchor="end" font-family="Arial,sans-serif" font-size="15" fill="#f7efe0" letter-spacing="4">PUBLIC WELFARE AD · 02 / 03</text>
+<text x="1120" y="42" text-anchor="end" font-family="Arial,sans-serif" font-size="15" fill="#f7efe0" letter-spacing="4">PUBLIC WELFARE AD · 02 / 04</text>
 <text x="1120" y="268" text-anchor="end" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="15" fill="#f7efe0" letter-spacing="2">公益广告位 · 善待劳动者</text>
 </svg>

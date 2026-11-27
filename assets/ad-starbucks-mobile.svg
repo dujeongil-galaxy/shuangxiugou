@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="240" viewBox="0 0 400 240" role="img" aria-label="星巴克 官方App下载 点击前往腾讯应用宝 公益广告位">
+<!--
+  公益广告位第 3 张「星巴克」**手机专用设计稿**（站点自绘矢量）。
+  2026-11-28 站长：「新增一个星巴克的，挂一下腾讯应用宝的星巴克 App 下载页面。
+  学 AD1 陆喜依，需要明确告知用户，点击会跳转到哪里，不要做那种一声不吭的。」
+
+  手机端四稿同样两两互异——
+    第 1 张 陆喜依手机稿 = 深蓝底 + 白挂牌 + 金色圆印章
+    第 2 张 胖东来手机稿 = 砖红纯色底 + 米白运单条 + 橙装订边
+    第 3 张 本稿         = 星巴克绿纯色底 + 白色手机轮廓 + 下载箭头
+    第 4 张 招商手机稿   = 暖白纸面 + 虚线空位框 + 描边大字
+  刻意不用：渐变、金色、深蓝、砖红、米白、暖白、网格、虚线框、方章、圆印章、
+  同心弧、聚光、菱形织带。defs 一律 sbx- 前缀。
+
+  400×240 / 主标题 40 / 副句 18 / 说明 15，基线 110 → 156 → 194 严格递增；
+  刊头 y=28、页脚 y=226 都避开主线基线区间（100~220），不混进基线断言。
+  「点击会跳到哪里」也写进图里。零外链（xmlns 是命名空间）、文案全在 <text> 里。
+-->
+<rect width="400" height="240" fill="#0a3d2c"/>
+
+<!-- 上下细白线 -->
+<rect x="0" y="8" width="400" height="2" fill="#ffffff" opacity="0.20"/>
+<rect x="0" y="230" width="400" height="2" fill="#ffffff" opacity="0.20"/>
+
+<!-- 左侧白色手机轮廓 + 下载箭头 -->
+<g transform="translate(52,116)">
+  <rect x="-24" y="-40" width="48" height="80" rx="8" fill="none" stroke="#eaf3ee" stroke-width="3"/>
+  <path d="M0 -22 V8" fill="none" stroke="#eaf3ee" stroke-width="4" stroke-linecap="round"/>
+  <path d="M-9 -1 L0 9 L9 -1" fill="none" stroke="#eaf3ee" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="-14" y="22" width="28" height="4" rx="2" fill="#eaf3ee"/>
+</g>
+
+<!-- 三条主文案：基线递增、字号按手机放大 -->
+<text x="214" y="110" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="40" font-weight="700" fill="#ffffff" letter-spacing="4">星巴克</text>
+<text x="214" y="156" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="18" fill="#cfe8dc" letter-spacing="0.5">星巴克中国 · 官方 App</text>
+<text x="214" y="194" text-anchor="middle" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif" font-size="15" fill="#9dc9b4" letter-spacing="0">点击将在新标签页打开腾讯应用宝下载页</text>
+
+<!-- 刊头 / 页脚 -->
+<text x="388" y="28" text-anchor="end" font-family="Arial,sans-serif" font-size="10" letter-spacing="1.5" fill="#cfe8dc">PUBLIC WELFARE AD · 03 / 04</text>
+<text x="388" y="226" text-anchor="end" font-family="'Microsoft YaHei','PingFang SC',sans-serif" font-size="11" fill="#9dc9b4">公益广告位 · 星巴克 App 下载</text>
+</svg>

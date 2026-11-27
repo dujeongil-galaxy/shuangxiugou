@@ -76,8 +76,8 @@ const GEOM = `(function(){
   var sr=box(slot);
   var out={vw:vw,slot:sr,activeIdx:activeIdx,issues:[],overlays:[]};
   if(sr.right>vw+1||sr.x<-1) out.issues.push('广告位横向溢出视口');
-  if(cards.length!==2) out.issues.push('卡片数不是 2（胖东来暂时下架）');
-  if(slot.querySelectorAll('.sxg-adslot__dot').length!==2) out.issues.push('圆点数不是 2（胖东来暂时下架）');
+  if(cards.length!==4) out.issues.push('卡片数不是 4（陆喜依/胖东来/星巴克/招商）');
+  if(slot.querySelectorAll('.sxg-adslot__dot').length!==4) out.issues.push('圆点数不是 4（与卡片数对不上）');
 
   // <picture> 是否真的切到手机稿 + 海报实际高度（400×240 在窄屏应有 ~190~250px）
   var imgs=[].slice.call(slot.querySelectorAll('img.sxg-adslot__art'));
@@ -169,7 +169,7 @@ const GEOM = `(function(){
     await evalVal(ws, `(function(){var x=document.querySelector('.dyp__x');if(x)x.click();
       var s=document.querySelector('[data-adslot-reserved]');if(s)s.scrollIntoView({block:'center'});})()`);
     await sleep(700);
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 4; i++) {
       await evalVal(ws, `(function(){var v=document.querySelector('.sxg-adslot__viewport');
         if(v)v.dispatchEvent(new MouseEvent('mouseenter',{bubbles:true}));
         var d=document.querySelectorAll('.sxg-adslot__dot');if(d[${i}])d[${i}].click();})()`);

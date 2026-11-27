@@ -13,9 +13,12 @@ const TMALL = 'https://' + 'luxiyi.tmall.com/'; // 拼接避免本文件被参�
 // 同日后续口径：淘宝只留裸店址、零参数，陆喜依天猫店同理。
 const PDL_TAOBAO = 'https://n3sf0tqhvhbw60ae2xdq4nodo2g4kxl.taobao.com/';
 const PDL_DOUYIN = 'https://www.douyin.com/user/MS4wLjABAAAANjHa0B-e7JAX89HjRiCnSLRbFYYG3b0wrt7397e7IBA';
-const ART_BRAND = './assets/ad-luxiyi.svg?v=3';
-const ART_PDL = './assets/ad-pangdonglai.svg?v=3';
-const ART_RECRUIT = './assets/ad-recruit.svg?v=6';
+// 2026-11-28 站长新增星巴克卡：落地腾讯应用宝的星巴克 App 官方下载页
+const SBX_APP = 'https://sj.qq.com/appdetail/com.starbucks.cn';
+const ART_BRAND = './assets/ad-luxiyi.svg?v=4';
+const ART_PDL = './assets/ad-pangdonglai.svg?v=4';
+const ART_SBX = './assets/ad-starbucks.svg?v=1';
+const ART_RECRUIT = './assets/ad-recruit.svg?v=7';
 const PDL_DETAIL = './brand/pdl.html';
 
 let pass = 0, fail = 0;
@@ -32,10 +35,11 @@ function check(label, cond, extra) {
   console.log('=== 滚动广告位：可点 / 居中 / 设计图 ===\n');
   const src = read('black-card-adslot.js');
 
-  // ─────────── 0. 三张站点自绘设计稿 ───────────
+  // ─────────── 0. 四张站点自绘设计稿 ───────────
   console.log('--- 0. 广告位专用设计图 ---');
   for (const [f, label] of [['assets/ad-luxiyi.svg', '品牌广告设计稿'],
                             ['assets/ad-pangdonglai.svg', '胖东来广告设计稿'],
+                            ['assets/ad-starbucks.svg', '星巴克广告设计稿'],
                             ['assets/ad-recruit.svg', '招商卡设计稿']]) {
     const okFile = fs.existsSync(path.join(ROOT, f));
     check(label + '真实存在', okFile, f);
@@ -50,9 +54,10 @@ function check(label, cond, extra) {
         && !/\b(?:xlink:)?href\s*=\s*['"]https?:/i.test(svgNoNs));
     }
   }
-  check('组件引用了三张设计稿（单一真相源）',
+  check('组件引用了四张设计稿（单一真相源）',
     src.indexOf("var ART = '" + ART_BRAND + "'") !== -1
     && src.indexOf("var ART_PDL = '" + ART_PDL + "'") !== -1
+    && src.indexOf("var ART_SBX = '" + ART_SBX + "'") !== -1
     && src.indexOf("var ART_RECRUIT = '" + ART_RECRUIT + "'") !== -1);
   check('品牌 mascot 仍复用 luxiyi.jpg（不重复入库明文素材）',
     src.indexOf("var IMG = './assets/luxiyi.jpg'") !== -1);
@@ -103,30 +108,30 @@ function check(label, cond, extra) {
   check('品牌卡小头像仍用 mascot 单一真相源',
     !!avatar && avatar.getAttribute('src') === './assets/luxiyi.jpg',
     avatar && avatar.getAttribute('src'));
-  check('当前在展示 2 张卡（胖东来暂时下架），各挂一张设计图', arts.length === 2,
+  check('当前在展示 4 张卡（胖东来恢复上架 + 新增星巴克），各挂一张设计图', arts.length === 4,
     [...arts].map((x) => x.getAttribute('src')));
-  check('下架后不挂胖东来设计稿',
-    ![...arts].some((x) => /pangdonglai/.test(x.getAttribute('src') || '')));
+  check('胖东来设计稿引用正确',
+    !!arts[1] && arts[1].getAttribute('src') === ART_PDL);
+  check('星巴克设计稿引用正确',
+    !!arts[2] && arts[2].getAttribute('src') === ART_SBX);
   check('招商卡设计稿引用正确',
-    !!arts[1] && arts[1].getAttribute('src') === ART_RECRUIT);
+    !!arts[3] && arts[3].getAttribute('src') === ART_RECRUIT);
 
-  // ─────────── 1b. 胖东来卡暂时下架（2026-11-27 站长「删一下胖东来广告，暂时下架」） ───────────
-  console.log('\n--- 1b. 胖东来卡：暂时下架，设计图与代码留着待恢复 ---');
+  // ─────────── 1b. 胖东来卡：恢复上架 + 真点击弹窗 ───────────
+  console.log('\n--- 1b. 胖东来卡：恢复渲染，点击开居中弹窗 ---');
   const pdlName = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__name');
   const pdlAvatar = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__avatar');
   const pdlTag = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__tag');
   const pdlBanner = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__banner');
   const pdlCta = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__cta');
-  check('下架后卡面不再渲染胖东来卡（品牌名/头像/标签/整图/CTA 全没有）',
-    !pdlName && !pdlAvatar && !pdlTag && !pdlBanner && !pdlCta
-    && !slot.querySelector('.sxg-adslot__card--pdl'));
-  check('下架开关在源码里且为 false（恢复上架只改这一处）',
-    /var PDL_ON = false;/.test(src) && /\(PDL_ON \? \(/.test(src) && /\) : ''\) \+/.test(src));
-  check('胖东来卡片 HTML 与设计图仍留在源码/素材里（随时可恢复）',
-    /sxg-adslot__card--pdl/.test(src) && /data-sxg-share="pdl"/.test(src)
-    && fs.existsSync(path.join(ROOT, 'assets/ad-pangdonglai.svg'))
-    && fs.existsSync(path.join(ROOT, 'assets/ad-pangdonglai-mobile.svg'))
-    && src.indexOf("var ART_PDL = '" + ART_PDL + "'") !== -1);
+  check('胖东来卡恢复渲染（品牌名/头像/标签/整图/CTA 全在）',
+    !!pdlName && !!pdlAvatar && !!pdlTag && !!pdlBanner && !!pdlCta
+    && !!slot.querySelector('.sxg-adslot__card--pdl'));
+  check('下架开关仍在且当前为 true（上下架只改这一处）',
+    /var PDL_ON = true;/.test(src) && /\(PDL_ON \? \(/.test(src) && /\) : ''\) \+/.test(src));
+  check('胖东来品牌名与头像只链站内详情页',
+    !!pdlName && pdlName.getAttribute('href') === PDL_DETAIL
+    && !!pdlAvatar && /pdl\.png$/.test(pdlAvatar.getAttribute('src')));
   check('源码已无小程序口令常量 / 微信复制链路（旧口径全撤）',
     (function () {
       // 历史沿革注释保留决策链（本站惯例），只扫剥掉注释后的真代码
@@ -152,10 +157,11 @@ function check(label, cond, extra) {
   // 收窄为「零短视频单链」：v.douyin.com / b23.tv 仍禁止；主页链接允许且只出现在
   // 弹窗的 sxg-adslot__modal-douyin 里，不进卡片、不进海报。
   const videoRe = /v\.douyin\.com|b23\.tv/i;
-  check('广告位零短视频单链（主页链接只在弹窗出口，脚本/三张设计图/卡片 DOM 干净）',
+  check('广告位零短视频单链（主页链接只在弹窗出口，脚本/四张设计图/卡片 DOM 干净）',
     !videoRe.test(src)
     && !videoRe.test(read('assets/ad-luxiyi.svg'))
     && !videoRe.test(read('assets/ad-pangdonglai.svg'))
+    && !videoRe.test(read('assets/ad-starbucks.svg'))
     && !videoRe.test(read('assets/ad-recruit.svg'))
     && !videoRe.test(slot.innerHTML)
     && !/douyin\.com/i.test(slot.innerHTML),
@@ -163,12 +169,25 @@ function check(label, cond, extra) {
 
   // ─────────── 1c. 点击开居中弹窗（真点击，不是只比对字符串） ───────────
   // 站长 2026-11-27「还是用之前那个风格弹窗吧，既可以推荐去淘宝购物，
-  // 也可以引导用户访问他们的抖音」。当日晚些时候改为「胖东来广告暂时下架」：
-  // 卡面不再渲染这张卡，弹窗（连同它的两条真链接）也就不会被触发；
-  // 弹窗代码本身留着，恢复上架即可用。
-  console.log('\n--- 1c. 下架后弹窗不会被触发（代码留着待恢复） ---');
-  check('下架后弹窗 DOM 根本不会被创建', !doc.querySelector('[data-sxg-pdl-modal]'));
-  check('弹窗代码仍在源码里（恢复上架即可用）',
+  // 也可以引导用户访问他们的抖音」；2026-11-28 胖东来恢复上架，这条链路重新生效。
+  console.log('\n--- 1c. 点击 CTA 弹出居中弹窗（真点击） ---');
+  const pdlCtaEvt = new window.MouseEvent('click', { bubbles: true, cancelable: true });
+  pdlCta.dispatchEvent(pdlCtaEvt);
+  check('点击 CTA 弹出居中弹窗（不是静默跳走）',
+    !!doc.querySelector('[data-sxg-pdl-modal]')
+    && !!doc.querySelector('[data-sxg-pdl-modal].is-show'));
+  check('点击被 preventDefault（不会自己跳走，等用户在弹窗里选）', pdlCtaEvt.defaultPrevented);
+  const pdlModal = doc.querySelector('[data-sxg-pdl-modal]');
+  const pdlTb = pdlModal && pdlModal.querySelector('.sxg-adslot__modal-taobao');
+  const pdlDy = pdlModal && pdlModal.querySelector('.sxg-adslot__modal-douyin');
+  check('弹窗里淘宝与抖音是两条真 <a>（零参数裸店址 / 官方主页）',
+    !!pdlTb && pdlTb.getAttribute('href') === PDL_TAOBAO
+    && !!pdlDy && pdlDy.getAttribute('href') === PDL_DOUYIN
+    && pdlTb.getAttribute('target') === '_blank' && pdlTb.getAttribute('rel') === 'noopener');
+  check('弹窗有遮罩与 × 两种关闭入口',
+    !!pdlModal.querySelector('.sxg-adslot__modal-mask')
+    && !!pdlModal.querySelector('.sxg-adslot__modal-close'));
+  check('弹窗代码仍在源码里',
     /function ensureModal\(/.test(src) && /function openModal\(/.test(src)
     && /function bindShare\(/.test(src)
     && /sxg-adslot__modal-taobao/.test(src) && /sxg-adslot__modal-douyin/.test(src)
@@ -178,6 +197,56 @@ function check(label, cond, extra) {
   check('弹窗文案仍写淘宝店与抖音，且不再出现小程序/口令/微信',
     !/小程序|口令|微信|复制/.test(codeAd)
     && /淘宝店/.test(codeAd) && /抖音/.test(codeAd));
+
+  // ─────────── 1d. 星巴克卡（2026-11-28 站长：挂腾讯应用宝 App 下载页） ───────────
+  console.log('\n--- 1d. 星巴克卡：真链接直跳 + 明确告知去向 ---');
+  const sbxCard = slot.querySelector('.sxg-adslot__card--sbx');
+  const sbxBanner = sbxCard && sbxCard.querySelector('.sxg-adslot__banner');
+  const sbxCta = sbxCard && sbxCard.querySelector('.sxg-adslot__cta');
+  const sbxName = sbxCard && sbxCard.querySelector('.sxg-adslot__name');
+  const sbxJump = sbxCard && sbxCard.querySelector('.sxg-adslot__jump');
+  check('星巴克卡在位', !!sbxCard);
+  check('整图是真 <a>，href 指向腾讯应用宝星巴克 App 官方下载页',
+    !!sbxBanner && sbxBanner.tagName === 'A'
+    && sbxBanner.getAttribute('href') === SBX_APP
+    && sbxBanner.getAttribute('target') === '_blank'
+    && sbxBanner.getAttribute('rel') === 'noopener');
+  check('CTA 也是真 <a>，同样指向应用宝下载页',
+    !!sbxCta && sbxCta.tagName === 'A'
+    && sbxCta.getAttribute('href') === SBX_APP
+    && sbxCta.getAttribute('target') === '_blank'
+    && sbxCta.getAttribute('rel') === 'noopener');
+  check('星巴克卡不走弹窗二次确认（学 AD1 陆喜依的路数）',
+    !sbxCard.querySelector('[data-sxg-share]')
+    && !/data-sxg-share/.test(sbxCard.innerHTML));
+  check('品牌名只链站内星巴克详情页',
+    !!sbxName && sbxName.getAttribute('href') === './brand/starbucks.html');
+  check('「点击会跳到哪里」写在可见文案里（卡面跳转说明行 + 域名）',
+    !!sbxJump && /腾讯应用宝/.test(sbxJump.textContent)
+    && /星巴克 App 官方下载页/.test(sbxJump.textContent)
+    && /sj\.qq\.com/.test(sbxJump.textContent)
+    && !!sbxJump.querySelector('a[href="' + SBX_APP + '"]'));
+  check('CTA 文案也写明落地页与新标签页',
+    !!sbxCta && /腾讯应用宝/.test(sbxCta.textContent)
+    && /新标签页打开/.test(sbxCta.textContent));
+  check('aria-label 同样写明去向',
+    !!sbxBanner && /腾讯应用宝/.test(sbxBanner.getAttribute('aria-label'))
+    && /新标签页/.test(sbxBanner.getAttribute('aria-label')));
+  check('海报里也写明「点击将在新标签页打开腾讯应用宝下载页」',
+    /点击将在新标签页打开腾讯应用宝下载页/.test(read('assets/ad-starbucks.svg'))
+    && /点击将在新标签页打开腾讯应用宝下载页/.test(read('assets/ad-starbucks-mobile.svg')));
+
+  // ─────────── 1e. 卡面下方新增「排名不分先后」备注行 ───────────
+  console.log('\n--- 1e. 广告页下方备注行 ---');
+  const rankNote = slot.querySelector('.sxg-adslot__ranknote');
+  check('广告位下方有「排名不分先后」备注行',
+    !!rankNote && /排名不分先后/.test(rankNote.textContent)
+    && /上架顺序/.test(rankNote.textContent));
+  check('备注行在导航条之后、免责脚注之前（分层清楚）',
+    !!rankNote && !!slot.querySelector('.sxg-adslot__foot')
+    && !!slot.querySelector('.sxg-adslot__disclaimer')
+    && slot.querySelector('.sxg-adslot__foot').compareDocumentPosition(rankNote) & 4
+    && rankNote.compareDocumentPosition(slot.querySelector('.sxg-adslot__disclaimer')) & 4);
 
   // ─────────── 2. 居中 & 箭头不再压住文案 ───────────
   console.log('\n--- 2. 内容居中 / 箭头位置 ---');
@@ -219,23 +288,33 @@ function check(label, cond, extra) {
   // ─────────── 3. 轮播交互没被改坏 ───────────
   console.log('\n--- 3. 手动切换 / 自动轮播 ---');
   const track = slot.querySelector('.sxg-adslot__track');
-  check('共 2 张广告卡（胖东来暂时下架）', slot.querySelectorAll('.sxg-adslot__card').length === 2);
-  check('2 个圆点且首张高亮',
-    slot.querySelectorAll('.sxg-adslot__dot').length === 2
+  check('共 4 张广告卡（陆喜依 / 胖东来 / 星巴克 / 招商）',
+    slot.querySelectorAll('.sxg-adslot__card').length === 4);
+  check('4 个圆点且首张高亮',
+    slot.querySelectorAll('.sxg-adslot__dot').length === 4
     && slot.querySelector('.sxg-adslot__dot').className.indexOf('is-active') !== -1);
   check('初始 transform 为 translateX(0%)', /translateX\(0%\)/.test(track.style.transform),
     track.style.transform);
   next.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  check('点「下一张」后滚动到第 2 张（虚位以待）', /translateX\(-100%\)/.test(track.style.transform),
+  check('点「下一张」后滚动到第 2 张（胖东来）', /translateX\(-100%\)/.test(track.style.transform),
     track.style.transform);
   const dots = slot.querySelectorAll('.sxg-adslot__dot');
   check('圆点高亮同步到第 2 个', dots[1].className.indexOf('is-active') !== -1);
-  prev.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  check('点「上一张」回到第 1 张', /translateX\(0%\)/.test(track.style.transform),
+  next.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  check('再点「下一张」到第 3 张（星巴克）', /translateX\(-200%\)/.test(track.style.transform),
     track.style.transform);
   next.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  check('再点「下一张」又回到第 2 张（只有两张，不再有第 3 张）',
-    /translateX\(-100%\)/.test(track.style.transform), track.style.transform);
+  check('再点「下一张」到第 4 张（虚位以待）', /translateX\(-300%\)/.test(track.style.transform),
+    track.style.transform);
+  prev.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  check('点「上一张」回到第 3 张', /translateX\(-200%\)/.test(track.style.transform),
+    track.style.transform);
+  prev.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  check('再点「上一张」回到第 2 张', /translateX\(-100%\)/.test(track.style.transform),
+    track.style.transform);
+  prev.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  check('再点「上一张」回到第 1 张', /translateX\(0%\)/.test(track.style.transform),
+    track.style.transform);
   check('自动轮播间隔仍是 5 秒', /var AUTOPLAY_MS = 5000/.test(src));
 
   check('渲染期无 JS 异常', errors.length === 0, errors.slice(0, 3));
