@@ -11,9 +11,9 @@ const ROOT = path.resolve(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 // 第三列是各自 ?v：⑪ 只重画了胖东来手机稿（升 2），其余仍是 1。
 const MOBILE = [
-  ['assets/ad-luxiyi-mobile.svg', 'ART_MOBILE', 1],
+  ['assets/ad-luxiyi-mobile.svg', 'ART_MOBILE', 2],
   ['assets/ad-pangdonglai-mobile.svg', 'ART_PDL_MOBILE', 2],
-  ['assets/ad-recruit-mobile.svg', 'ART_RECRUIT_MOBILE', 1]
+  ['assets/ad-recruit-mobile.svg', 'ART_RECRUIT_MOBILE', 2]
 ];
 
 let pass = 0, fail = 0;
@@ -90,18 +90,18 @@ function check(label, cond, extra) {
   const pics = slot.querySelectorAll('picture');
   const sources = slot.querySelectorAll('source[media="(max-width:480px)"]');
   const arts = slot.querySelectorAll('img.sxg-adslot__art');
-  check('三张卡各有一个 <picture>', pics.length === 3, pics.length);
-  check('三张卡各有窄屏 <source>', sources.length === 3, sources.length);
-  check('三张桌面原稿仍然挂在 <img src> 上（桌面不受影响）',
-    arts.length === 3
-    && arts[0].getAttribute('src') === './assets/ad-luxiyi.svg?v=2'
-    && arts[1].getAttribute('src') === './assets/ad-pangdonglai.svg?v=3'
-    && arts[2].getAttribute('src') === './assets/ad-recruit.svg?v=5',
+  check('当前在展示的 2 张卡各有一个 <picture>', pics.length === 2, pics.length);
+  check('当前在展示的 2 张卡各有窄屏 <source>', sources.length === 2, sources.length);
+  check('两张桌面原稿仍然挂在 <img src> 上（桌面不受影响）',
+    arts.length === 2
+    && arts[0].getAttribute('src') === './assets/ad-luxiyi.svg?v=3'
+    && arts[1].getAttribute('src') === './assets/ad-recruit.svg?v=6',
     [...arts].map((x) => x.getAttribute('src')));
-  check('三个 <source> 分别指向对应手机稿',
-    sources[0] && sources[0].getAttribute('srcset') === './assets/ad-luxiyi-mobile.svg?v=1'
-    && sources[1] && sources[1].getAttribute('srcset') === './assets/ad-pangdonglai-mobile.svg?v=2'
-    && sources[2] && sources[2].getAttribute('srcset') === './assets/ad-recruit-mobile.svg?v=1',
+  check('下架后不挂胖东来手机稿',
+    ![...sources].some((x) => /pangdonglai/.test(x.getAttribute('srcset') || '')));
+  check('两个 <source> 分别指向对应手机稿',
+    sources[0] && sources[0].getAttribute('srcset') === './assets/ad-luxiyi-mobile.svg?v=2'
+    && sources[1] && sources[1].getAttribute('srcset') === './assets/ad-recruit-mobile.svg?v=2',
     [...sources].map((x) => x.getAttribute('srcset')));
   check('海报 <img> 的父节点是 <picture>（结构没退化）',
     [...arts].every((x) => x.parentNode && x.parentNode.tagName === 'PICTURE'));

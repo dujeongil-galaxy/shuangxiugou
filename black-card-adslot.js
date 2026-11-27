@@ -145,17 +145,24 @@
   var PDL_DOUYIN = 'https://www.douyin.com/user/MS4wLjABAAAANjHa0B-e7JAX89HjRiCnSLRbFYYG3b0wrt7397e7IBA';
   /* 三张广告设计图。?v 必须与 index.html 里的 <link rel=preload as=image> 完全一致，
      否则浏览器会把它当两个资源（预热的白预了）。改了图就同步升这里和 index.html。 */
-  var ART = './assets/ad-luxiyi.svg?v=2';
+  var ART = './assets/ad-luxiyi.svg?v=3';
   var ART_PDL = './assets/ad-pangdonglai.svg?v=3';
-  var ART_RECRUIT = './assets/ad-recruit.svg?v=5';
+  var ART_RECRUIT = './assets/ad-recruit.svg?v=6';
   /* ⑩ 站长 2026-11-10 23:40「手机端你检查了吗？新建的公益广告位，都穿模了」：
      桌面稿 1200×300 等比压到 356px 宽后，14~26px 的小字只剩 4~8px，糊成一团。
      窄屏改用 400×240 的手机专用稿（字号放大 2 倍以上、三条基线重新排开），
      用 <picture> 的 media 切换。⑪ 胖东来两稿换风格，?v 同时升 3 / 2。 */
-  var ART_MOBILE = './assets/ad-luxiyi-mobile.svg?v=1';
+  var ART_MOBILE = './assets/ad-luxiyi-mobile.svg?v=2';
   var ART_PDL_MOBILE = './assets/ad-pangdonglai-mobile.svg?v=2';
-  var ART_RECRUIT_MOBILE = './assets/ad-recruit-mobile.svg?v=1';
+  var ART_RECRUIT_MOBILE = './assets/ad-recruit-mobile.svg?v=2';
   var AUTOPLAY_MS = 5000;
+
+  /* ⑫ 胖东来卡暂时下架（2026-11-27 站长要求）：
+     轮播里只剩陆喜依与招商两张，广告位水印编号随之改成 01/02 与 02/02。
+     卡片 HTML、居中弹窗与两张设计图全部留着——恢复上架只要把 PDL_ON 改回
+     true，并把三张海报的水印改回 03 体系（陆喜依 01/03、胖东来 02/03、
+     招商 03/03）。改这里的时候记得同步 index.html 的预热 ?v 与 §45 断言。 */
+  var PDL_ON = false;
 
   /* ⑬ 居中弹窗（照 liangpei-ad.js 2026-11-19 lp-modal 那套风格：
      遮罩 + 白卡 + × / 点遮罩 / Esc 三种关闭；display:none↔flex 硬切换，
@@ -381,27 +388,31 @@
           /* 胖东来卡（⑬ 2026-11-27 修订）：劳动者态度与挂广告位的原因都在图里；
              整图 + CTA 点击一律 preventDefault 打开居中弹窗，弹窗里给淘宝店与
              抖音主页两个真链接；品牌名与头像只链站内详情页。
-             data-sxg-share 是弹窗交互的唯一接线点。 */
-          '<div class="sxg-adslot__card sxg-adslot__card--pdl">' +
-            '<a class="sxg-adslot__banner" data-sxg-share="pdl" href="#" ' +
-              'aria-label="打开胖东来淘宝店与抖音主页入口">' +
-              '<div class="sxg-adslot__art-wrap" data-art-error-text="胖东来 · 善待劳动者">' +
-                '<picture>' +
-                  '<source media="(max-width:480px)" srcset="' + ART_PDL_MOBILE + '">' +
-                  '<img class="sxg-adslot__art" src="' + ART_PDL + '" ' +
-                    'alt="胖东来 · 善待劳动者 · 货车司机送货也能体会到尊重">' +
-                '</picture>' +
+             data-sxg-share 是弹窗交互的唯一接线点。
+             ⑫ 2026-11-27 暂时下架：卡片 HTML 留着，按开关决定渲不渲染——
+             下架时轮播只剩陆喜依与招商两张，水印编号改成 01/02 与 02/02。 */
+          (PDL_ON ? (
+            '<div class="sxg-adslot__card sxg-adslot__card--pdl">' +
+              '<a class="sxg-adslot__banner" data-sxg-share="pdl" href="#" ' +
+                'aria-label="打开胖东来淘宝店与抖音主页入口">' +
+                '<div class="sxg-adslot__art-wrap" data-art-error-text="胖东来 · 善待劳动者">' +
+                  '<picture>' +
+                    '<source media="(max-width:480px)" srcset="' + ART_PDL_MOBILE + '">' +
+                    '<img class="sxg-adslot__art" src="' + ART_PDL + '" ' +
+                      'alt="胖东来 · 善待劳动者 · 货车司机送货也能体会到尊重">' +
+                  '</picture>' +
+                '</div>' +
+              '</a>' +
+              '<div class="sxg-adslot__meta">' +
+                '<img class="sxg-adslot__avatar" src="' + PDL_IMG + '" alt="胖东来">' +
+                '<a class="sxg-adslot__name" href="' + PDL_DETAIL + '" rel="noopener">胖东来</a>' +
+                '<span class="sxg-adslot__mark">公益展示</span>' +
+                '<span class="sxg-adslot__tag">善待劳动者 · 货车司机送货也能体会到尊重</span>' +
+                '<a class="sxg-adslot__cta" data-sxg-share="pdl" href="#">' +
+                  '点此查看淘宝店与抖音 →</a>' +
               '</div>' +
-            '</a>' +
-            '<div class="sxg-adslot__meta">' +
-              '<img class="sxg-adslot__avatar" src="' + PDL_IMG + '" alt="胖东来">' +
-              '<a class="sxg-adslot__name" href="' + PDL_DETAIL + '" rel="noopener">胖东来</a>' +
-              '<span class="sxg-adslot__mark">公益展示</span>' +
-              '<span class="sxg-adslot__tag">善待劳动者 · 货车司机送货也能体会到尊重</span>' +
-              '<a class="sxg-adslot__cta" data-sxg-share="pdl" href="#">' +
-                '点此查看淘宝店与抖音 →</a>' +
-            '</div>' +
-          '</div>' +
+            '</div>'
+          ) : '') +
           '<div class="sxg-adslot__card sxg-adslot__card--recruit">' +
             '<div class="sxg-adslot__art-wrap" data-art-error-text="公益广告位 · 虚位以待">' +
               '<picture>' +

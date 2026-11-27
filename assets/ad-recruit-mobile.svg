@@ -24,7 +24,7 @@
 <rect x="18" y="18" width="364" height="204" rx="5" fill="none" stroke="#1f4d42" stroke-width="2" stroke-dasharray="9 7" opacity="0.58"/>
 
 <!-- 左上刊头两行；方章在右上，与刊头水平不相交 -->
-<text x="32" y="44" text-anchor="start" font-family="Arial,sans-serif" font-size="11" letter-spacing="2" fill="#4f7a68">PUBLIC WELFARE AD · 03 / 03</text>
+<text x="32" y="44" text-anchor="start" font-family="Arial,sans-serif" font-size="11" letter-spacing="2" fill="#4f7a68">PUBLIC WELFARE AD · 02 / 02</text>
 <text x="32" y="64" text-anchor="start" font-family="'Microsoft YaHei','PingFang SC',sans-serif" font-size="13" letter-spacing="1" fill="#8b9a8d">公益广告位 · 真实双休品牌招募</text>
 <g>
   <rect x="310" y="30" width="62" height="26" rx="3" fill="none" stroke="#1f4d42" stroke-width="1.5"/>

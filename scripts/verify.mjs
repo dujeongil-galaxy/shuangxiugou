@@ -8224,7 +8224,7 @@ section('21c. 首页滑到底部按钮');
     '§33a2 广告位三张设计图首屏预热，且每张的 ?v 与 black-card-adslot.js 里的常量完全一致',
     '预热 URL 与脚本里的实际 URL 不一致 → 白预热，广告位照样「卡片先出来、图还是空的」');
 
-  check(/<script async src="\.\/black-card-adslot\.js\?v=24"><\/script>/.test(idx)
+  check(/<script async src="\.\/black-card-adslot\.js\?v=25"><\/script>/.test(idx)
     && idx.indexOf('black-card-adslot.js?v=24') < idx.indexOf('</head>')
     && !/script defer src="\.\/black-card-adslot\.js/.test(idx),
     '§33b 广告位补丁在 head 里 async 加载（不再排在第 40 个 defer，也不必等 692KB body 解析完）',
@@ -9720,8 +9720,8 @@ section('25. 成功案例专题页（QQ奶奶）');
       && /<svg[\s\S]*?viewBox="0 0 \d+ \d+"/.test(read(f))
       && !/https?:\/\//.test(read(f).replace(/xmlns(?::[a-zA-Z]+)?="[^"]*"/g, ''))
       && !/<image\b/i.test(read(f)))
-    && ad29.indexOf("var ART = './assets/ad-luxiyi.svg?v=2'") !== -1
-    && ad29.indexOf("var ART_RECRUIT = './assets/ad-recruit.svg?v=5'") !== -1
+    && ad29.indexOf("var ART = './assets/ad-luxiyi.svg?v=3'") !== -1
+    && ad29.indexOf("var ART_RECRUIT = './assets/ad-recruit.svg?v=6'") !== -1
     && ad29.indexOf("var ART_PDL = './assets/ad-pangdonglai.svg?v=3'") !== -1,
     '§29e 三张站点自绘矢量设计稿存在、有效、无外链，且被广告位引用（?v 与预热一致）');
 
@@ -9746,7 +9746,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
 
   check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
-    && /black-card-adslot\.js\?v=24/.test(idx29),
+    && /black-card-adslot\.js\?v=25/.test(idx29),
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 
   // —— 站长 2026-11-10 晚：胖东来广告卡（首页推荐位） ——
@@ -9997,7 +9997,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check((code32.match(/公益广告位/g) || []).length >= 4
     && !/广告位招商中|品牌展示|>广告位</.test(code32)
     && /data-adslot-kind', 'public-welfare'/.test(code32)
-    && /black-card-adslot\.js\?v=24/.test(idx32),
+    && /black-card-adslot\.js\?v=25/.test(idx32),
     '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 24');
 
   // 站长 2026-11-10 二次纠正「广告图叫你重构，不是让你改成纯文字 / 文字明显重叠」：
@@ -10185,10 +10185,12 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   const wf35 = read('.github/workflows/verify.yml');
   // 第三列是各自 ?v：⑪ 只改了胖东来手机稿（升 2），其余仍是 1。
   // 早先这里写死 '?v=1'，一改其中一张就会被「版本不一致」误红。
+  // 2026-11-27 胖东来广告暂时下架：陆喜依与招商两张稿的水印改了（01/03→01/02、
+  // 03/03→02/02），两张图 ?v 随之升版（胖东来那张没改，?v 保持不变）。
   const mob35 = [
-    ['assets/ad-luxiyi-mobile.svg', 'ART_MOBILE', 1],
+    ['assets/ad-luxiyi-mobile.svg', 'ART_MOBILE', 2],
     ['assets/ad-pangdonglai-mobile.svg', 'ART_PDL_MOBILE', 2],
-    ['assets/ad-recruit-mobile.svg', 'ART_RECRUIT_MOBILE', 1]
+    ['assets/ad-recruit-mobile.svg', 'ART_RECRUIT_MOBILE', 2]
   ];
   const svgOk35 = mob35.every(([f]) => {
     if (!exists(f)) return false;
@@ -10222,7 +10224,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
 
   const preload35 = mob35.every(([f, , ver]) =>
     idx35.indexOf('<link rel="preload" as="image" href="./' + f + '?v=' + ver + '" media="(max-width:480px)" />') !== -1);
-  check(preload35 && /black-card-adslot\.js\?v=24/.test(idx35),
+  check(preload35 && /black-card-adslot\.js\?v=25/.test(idx35),
     '§35c 手机三图带 media 预热、?v 与脚本 *_MOBILE 常量一致，首页脚本已升 24（2026-11-27 淘宝入口去推广参数后再 bump）',
     '预热漏 media 或 ?v 不一致 → 慢网首帧先出桌面稿再跳手机稿');
 
@@ -10309,14 +10311,18 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   const cdp36 = exists('scripts/cdp-pdl-adcheck.cjs') ? read('scripts/cdp-pdl-adcheck.cjs') : '';
   check(!!t36 && !!cdp36 && /test-adslot\.cjs/.test(wf36)
     && /PDL_TAOBAO/.test(t36) && /PDL_DOUYIN/.test(t36)
-    && /sxg-adslot__modal-taobao/.test(t36) && /sxg-adslot__modal-douyin/.test(t36)
-    && /defaultPrevented/.test(t36) && /taobao\.com/.test(t36)
     && /PDL_TAOBAO/.test(cdp36) && /PDL_DOUYIN/.test(cdp36)
     && /modalShown/.test(cdp36) && /taobaoHref/.test(cdp36)
     && !/PDL_LINK = '#小程序/.test(t36) && !/PDL_LINK = '#小程序/.test(cdp36)
-    && /CHECK '/.test(cdp36),
-    '§36d 弹窗交互有挂 CI 的 jsdom 真点击测试（验阻止跳转 / 弹窗可见 / 两条真链接 href）+ 本机 CDP 真点击验收，两处都认站长新给的淘宝/抖音链接',
-    '只写静态断言、没有真点击 → 又是一次「结构 PASS、实际点了没反应」');
+    && /CHECK '/.test(cdp36)
+    // 2026-11-27 胖东来广告暂时下架：卡面没有那张卡可点，jsdom 侧改成断言
+    // 「不渲染 + 代码留着」；真点击验收脚本（cdp-pdl-adcheck.cjs）原样保留，
+    // 恢复上架时再跑（§45a–§45g 管下架状态本身）。
+    && /下架后卡面不再渲染胖东来卡/.test(t36)
+    && /下架后弹窗 DOM 根本不会被创建/.test(t36)
+    && /sxg-adslot__modal-taobao/.test(t36) && /sxg-adslot__modal-douyin/.test(t36),
+    '§36d 胖东来下架后 jsdom 测试改为「卡面不渲染、弹窗不出现、代码留着」断言；真点击验收脚本保留待恢复',
+    '下架状态还要求真点击 → 断言与现实脱节；把验收脚本删掉 → 恢复上架没法验');
 
   check(/不要用同一种风格/.test(rd36) && /两两互异/.test(rd36)
     && /第一张/.test(rd36) && /第二张/.test(rd36)
@@ -10364,7 +10370,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     'JEV 条目写成互惠/互挂 → 与「不要求互挂」矛盾');
 
   // ④ 脚本在 index.html 的 ?v 随内容变更 bump，否则浏览器缓存旧脚本（撤链看不到）
-  check(/black-card-adslot\.js\?v=24/.test(idx36f)
+  check(/black-card-adslot\.js\?v=25/.test(idx36f)
     && /friend-links-footer\.js\?v=18/.test(idx36f),
     '§36f friend-links-footer.js 在 index.html 的 ?v 已随撤链 bump 到 18',
     '?v 没 bump → 浏览器缓存旧脚本，已撤的两条友链仍显示给访客');
@@ -10408,7 +10414,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/n\.id\s*===\s*['"]sxg-flash-mask['"]/.test(ad36h),
     '§36h keepClear 按 id 排除闪屏遮罩 #sxg-flash-mask（不被当悬浮钮隐藏、整页磨砂不破洞）',
     'keepClear 漏排除闪屏遮罩 → 广告位相交时遮罩被隐藏、磨砂破洞、广告位穿模');
-  check(/black-card-adslot\.js\?v=24/.test(idx36h),
+  check(/black-card-adslot\.js\?v=25/.test(idx36h),
     '§36h black-card-adslot.js 的 ?v 已 bump 到 24（浏览器缓存旧脚本会吃掉本次修复）',
     '?v 没 bump → 旧脚本仍带 z-index:9995，修复不生效');
 }
@@ -10422,7 +10428,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(!/@media \(max-width:480px\)\{\.sxg-adslot__nav\{display:none\}/.test(ad36k),
     '§36k 手机端（≤480px）不再隐藏公益广告位左右翻页箭头（放出 prev/next 按钮）',
     '移动端媒体查询又把 .sxg-adslot__nav 设 display:none → 手机上看不到左右翻页箭头');
-  check(/black-card-adslot\.js\?v=24/.test(idx36k),
+  check(/black-card-adslot\.js\?v=25/.test(idx36k),
     '§36k black-card-adslot.js 的 ?v 已 bump 到 24（浏览器缓存旧脚本会吃掉本次改动）',
     '?v 没 bump → 旧脚本仍隐藏手机端箭头，改动不生效');
 }
@@ -10576,7 +10582,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     /中国大陆/.test(ad36n),
     '§36n 脚注已声明适用范围仅限中国大陆品牌与门店（本站意在改进国内用工状况，不评价境外）',
     '缺「仅限中国大陆」限定 → 读者会以为榜单对境外品牌也作同等评判');
-  check(/black-card-adslot\.js\?v=24/.test(idx36n),
+  check(/black-card-adslot\.js\?v=25/.test(idx36n),
     '§36n black-card-adslot.js 的 ?v 已 bump 到 24（浏览器缓存旧脚本会吃掉本次脚注）',
     '?v 没 bump → 旧脚本无脚注、本次改动不生效');
 }
@@ -12545,6 +12551,64 @@ section('42. 品牌卡「专题报道」按钮');
   check(/42\. 品牌卡「专题报道」按钮/.test(read('scripts/verify.mjs')),
     '§42i 本节校验段仍在（防止整段被删空后恒真空转）',
     '校验段丢失 → 专题按钮改坏也无人发现');
+}
+
+// ---------- 43. 公益广告位：胖东来暂时下架 + 水印编号改 02（2026-11-27 站长） ----------
+// 站长「删一下胖东来广告，暂时下架，注意广告位水印 03 需要改 02」：
+//   轮播只剩陆喜依与招商两张 → 水印编号随之改：陆喜依 01 / 02、招商 02 / 02。
+// 下架用开关实现（PDL_ON = false），卡片 HTML、居中弹窗与两张设计图全部留着，
+// 恢复上架只要把开关改回 true 并把水印改回 03 体系。
+section('43. 公益广告位胖东来暂时下架');
+{
+  const ad43 = read('black-card-adslot.js');
+  const idx43 = read('index.html');
+  const code43 = ad43.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+
+  check(/var PDL_ON = false;/.test(code43) && /\(PDL_ON \? \(/.test(code43) && /\) : ''\) \+/.test(code43),
+    '§45a 胖东来卡由开关控制且当前为 false（恢复上架只改这一处）',
+    '开关丢失或被改成 true → 胖东来广告又上架了，或卡片永久下架无法恢复');
+
+  check(/sxg-adslot__card--pdl/.test(ad43) && /data-sxg-share="pdl"/.test(ad43)
+      && /function ensureModal\(/.test(code43) && /function bindShare\(/.test(code43),
+    '§45b 卡片 HTML 与居中弹窗代码都留着（暂时下架 ≠ 删掉实现）',
+    '代码被删干净 → 恢复上架要重写一遍');
+
+  // 水印编号：在展示的两张稿必须是 01/02 与 02/02；下架那张保持 02/03 不动
+  const wm43 = (f) => {
+    const s = read('assets/' + f);
+    const m = [...s.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map((x) => x[1]).join(' ');
+    const hit = m.match(/0[123]\s*\/\s*0[123]/);
+    return hit ? hit[0] : '';
+  };
+  check(wm43('ad-luxiyi.svg') === '01 / 02' && wm43('ad-luxiyi-mobile.svg') === '01 / 02'
+      && wm43('ad-recruit.svg') === '02 / 02' && wm43('ad-recruit-mobile.svg') === '02 / 02',
+    '§45c 在展示的两张稿水印是 01 / 02 与 02 / 02（03 已改成 02）',
+    `实际：陆喜依 ${wm43('ad-luxiyi.svg')} / 招商 ${wm43('ad-recruit.svg')} → 编号与在展示的张数对不上`);
+  check(wm43('ad-pangdonglai.svg') === '02 / 03' && wm43('ad-pangdonglai-mobile.svg') === '02 / 03',
+    '§45d 下架的胖东来那张稿水印保持 02 / 03（恢复上架时不用再改它）',
+    '下架的稿被顺手改成 02/02 → 恢复上架时编号会跟别的稿撞');
+
+  // 改过图就必须升 ?v，且脚本常量与首页预热两处一致（否则白预热）
+  const art43 = [...ad43.matchAll(/var ART[_A-Z]* = '(\.\/assets\/[^']+)'/g)].map((m) => m[1]);
+  const pre43 = art43.filter((u) => u.indexOf('-mobile.svg') === -1);
+  check(pre43.length === 3 && pre43.every((u) => idx43.includes('<link rel="preload" as="image" href="' + u + '"')),
+    '§45e 广告位设计图首屏预热 URL 与脚本常量逐字一致（改图后 ?v 已升版）',
+    '预热与实际 URL 不一致 → 白预热，首屏还是空图');
+  check(/var ART = '\.\/assets\/ad-luxiyi\.svg\?v=3'/.test(code43)
+      && /var ART_RECRUIT = '\.\/assets\/ad-recruit\.svg\?v=6'/.test(code43)
+      && idx43.includes('./assets/ad-luxiyi.svg?v=3')
+      && idx43.includes('./assets/ad-recruit.svg?v=6'),
+    '§45f 改过水印的两张稿 ?v 已升版（浏览器缓存旧图会继续显示 03 编号）',
+    '图改了但 ?v 没升 → 老访客看到的还是旧水印');
+
+  // 行为测试要在 CI 里，且认下架后的张数
+  check(exists('scripts/test-adslot.cjs') && exists('scripts/test-adslot-mobile.cjs')
+      && read('.github/workflows/verify.yml').includes('test-adslot.cjs')
+      && read('.github/workflows/verify.yml').includes('test-adslot-mobile.cjs')
+      && /共 2 张广告卡/.test(read('scripts/test-adslot.cjs'))
+      && /下架后卡面不再渲染胖东来卡/.test(read('scripts/test-adslot.cjs')),
+    '§45g 广告位两个行为测试在 CI，且按「下架后 2 张卡」断言',
+    '测试没跟着改 → 下架后轮播张数对不上，或下架状态没人守');
 }
 
 // ---------- 汇总 ----------

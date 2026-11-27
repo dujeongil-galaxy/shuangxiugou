@@ -13,9 +13,9 @@ const TMALL = 'https://' + 'luxiyi.tmall.com/'; // 拼接避免本文件被参�
 // 同日后续口径：淘宝只留裸店址、零参数，陆喜依天猫店同理。
 const PDL_TAOBAO = 'https://n3sf0tqhvhbw60ae2xdq4nodo2g4kxl.taobao.com/';
 const PDL_DOUYIN = 'https://www.douyin.com/user/MS4wLjABAAAANjHa0B-e7JAX89HjRiCnSLRbFYYG3b0wrt7397e7IBA';
-const ART_BRAND = './assets/ad-luxiyi.svg?v=2';
+const ART_BRAND = './assets/ad-luxiyi.svg?v=3';
 const ART_PDL = './assets/ad-pangdonglai.svg?v=3';
-const ART_RECRUIT = './assets/ad-recruit.svg?v=5';
+const ART_RECRUIT = './assets/ad-recruit.svg?v=6';
 const PDL_DETAIL = './brand/pdl.html';
 
 let pass = 0, fail = 0;
@@ -103,33 +103,30 @@ function check(label, cond, extra) {
   check('品牌卡小头像仍用 mascot 单一真相源',
     !!avatar && avatar.getAttribute('src') === './assets/luxiyi.jpg',
     avatar && avatar.getAttribute('src'));
-  check('三张卡各挂一张设计图', arts.length === 3,
+  check('当前在展示 2 张卡（胖东来暂时下架），各挂一张设计图', arts.length === 2,
     [...arts].map((x) => x.getAttribute('src')));
-  check('胖东来卡设计稿引用正确',
-    !!arts[1] && arts[1].getAttribute('src') === ART_PDL);
+  check('下架后不挂胖东来设计稿',
+    ![...arts].some((x) => /pangdonglai/.test(x.getAttribute('src') || '')));
   check('招商卡设计稿引用正确',
-    !!arts[2] && arts[2].getAttribute('src') === ART_RECRUIT);
+    !!arts[1] && arts[1].getAttribute('src') === ART_RECRUIT);
 
-  // ─────────── 1b. 胖东来卡（2026-11-27 修订：点击开弹窗 / 淘宝+抖音 / 零视频短链） ───────────
-  console.log('\n--- 1b. 胖东来卡：站内链 + 弹窗入口 + 零视频短链 ---');
+  // ─────────── 1b. 胖东来卡暂时下架（2026-11-27 站长「删一下胖东来广告，暂时下架」） ───────────
+  console.log('\n--- 1b. 胖东来卡：暂时下架，设计图与代码留着待恢复 ---');
   const pdlName = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__name');
   const pdlAvatar = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__avatar');
   const pdlTag = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__tag');
-  check('胖东来品牌名链站内详情页',
-    !!pdlName && pdlName.getAttribute('href') === PDL_DETAIL,
-    pdlName && pdlName.getAttribute('href'));
-  check('胖东来头像用站内 pdl.png',
-    !!pdlAvatar && pdlAvatar.getAttribute('src') === './assets/pdl.png',
-    pdlAvatar && pdlAvatar.getAttribute('src'));
-  check('胖东来信息行带劳动者态度备注',
-    !!pdlTag && /劳动者/.test(pdlTag.textContent) && /尊重/.test(pdlTag.textContent),
-    pdlTag && pdlTag.textContent);
   const pdlBanner = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__banner');
   const pdlCta = slot.querySelector('.sxg-adslot__card--pdl .sxg-adslot__cta');
-  const pdlCardHtml = slot.querySelector('.sxg-adslot__card--pdl').innerHTML;
-  check('胖东来整张广告图是真 <a>、href="#" 触发弹窗（不再挂口令）',
-    !!pdlBanner && pdlBanner.tagName === 'A' && pdlBanner.getAttribute('href') === '#',
-    pdlBanner && pdlBanner.tagName + ':' + pdlBanner.getAttribute('href'));
+  check('下架后卡面不再渲染胖东来卡（品牌名/头像/标签/整图/CTA 全没有）',
+    !pdlName && !pdlAvatar && !pdlTag && !pdlBanner && !pdlCta
+    && !slot.querySelector('.sxg-adslot__card--pdl'));
+  check('下架开关在源码里且为 false（恢复上架只改这一处）',
+    /var PDL_ON = false;/.test(src) && /\(PDL_ON \? \(/.test(src) && /\) : ''\) \+/.test(src));
+  check('胖东来卡片 HTML 与设计图仍留在源码/素材里（随时可恢复）',
+    /sxg-adslot__card--pdl/.test(src) && /data-sxg-share="pdl"/.test(src)
+    && fs.existsSync(path.join(ROOT, 'assets/ad-pangdonglai.svg'))
+    && fs.existsSync(path.join(ROOT, 'assets/ad-pangdonglai-mobile.svg'))
+    && src.indexOf("var ART_PDL = '" + ART_PDL + "'") !== -1);
   check('源码已无小程序口令常量 / 微信复制链路（旧口径全撤）',
     (function () {
       // 历史沿革注释保留决策链（本站惯例），只扫剥掉注释后的真代码
@@ -138,21 +135,6 @@ function check(label, cond, extra) {
         && !/copySync\(|execCommand\('copy'\)/.test(code)
         && !/bendibao/.test(code);
     })());
-  check('胖东来 CTA 是真 <a>，href="#" 触发弹窗',
-    !!pdlCta && pdlCta.tagName === 'A' && pdlCta.getAttribute('href') === '#',
-    pdlCta && pdlCta.tagName + ':' + pdlCta.getAttribute('href'));
-  check('可见文案同步换「点此查看淘宝店与抖音」（不许只改 href 留旧来源标签）',
-    !!pdlCta && /淘宝店/.test(pdlCta.textContent) && /抖音/.test(pdlCta.textContent)
-    && !/小程序|口令|微信|复制/.test(pdlCta.textContent)
-    && !!pdlBanner && /淘宝店/.test(pdlBanner.getAttribute('aria-label') || '')
-    && /抖音/.test(pdlBanner.getAttribute('aria-label') || '')
-    && !/小程序|口令|微信|复制/.test(pdlBanner.getAttribute('aria-label') || ''),
-    pdlCta && pdlCta.textContent);
-  check('整图与 CTA 都带 data-sxg-share 接线点',
-    !!pdlBanner && pdlBanner.getAttribute('data-sxg-share') === 'pdl'
-    && !!pdlCta && pdlCta.getAttribute('data-sxg-share') === 'pdl');
-  check('胖东来卡本体不放商城链接（淘宝/抖音都收进弹窗，卡上只有 trigger）',
-    !/tmall\.com|taobao\.com|jd\.com/i.test(pdlCardHtml));
   // 文案进图里：劳动者态度（站长 19:48「备注两个字去掉」，可见文案不许再带该前缀）
   // + 挂上广告位的原因，缺一不可。关键词只认 <text> 可见文案
   //（aria-label/注释里写满原话也能逃逸断言的坑）。
@@ -181,38 +163,21 @@ function check(label, cond, extra) {
 
   // ─────────── 1c. 点击开居中弹窗（真点击，不是只比对字符串） ───────────
   // 站长 2026-11-27「还是用之前那个风格弹窗吧，既可以推荐去淘宝购物，
-  // 也可以引导用户访问他们的抖音」。真派发 click，检查：阻止默认跳转、
-  // 弹窗可见、两条真链接的 href 一字不差、三种关闭方式都绑好。
-  console.log('\n--- 1c. 点击胖东来广告：居中弹窗 + 淘宝/抖音双入口 ---');
-  const clickEvt = new window.MouseEvent('click', { bubbles: true, cancelable: true });
-  pdlCta.dispatchEvent(clickEvt);
-  check('点击 CTA 阻止默认跳转（不直接跳 href="#"）', clickEvt.defaultPrevented);
-  const modal = doc.querySelector('[data-sxg-pdl-modal]');
-  check('弹出居中弹窗且可见（is-show）', !!modal && modal.classList.contains('is-show'));
-  const tb = modal && modal.querySelector('.sxg-adslot__modal-taobao');
-  const dy = modal && modal.querySelector('.sxg-adslot__modal-douyin');
-  check('弹窗里淘宝入口是真 <a>，href 是零参数裸店址（能打开店铺即可）',
-    !!tb && tb.tagName === 'A' && tb.getAttribute('href') === PDL_TAOBAO
-    && PDL_TAOBAO.indexOf('?') === -1
-    && tb.getAttribute('target') === '_blank' && tb.getAttribute('rel') === 'noopener',
-    tb && tb.getAttribute('href'));
-  check('弹窗里抖音入口是真 <a>，href 是站长原链接一字不差',
-    !!dy && dy.tagName === 'A' && dy.getAttribute('href') === PDL_DOUYIN
-    && dy.getAttribute('target') === '_blank' && dy.getAttribute('rel') === 'noopener',
-    dy && dy.getAttribute('href'));
-  check('弹窗 visible 文案写清淘宝店和抖音，不再出现小程序/口令/微信',
-    !!modal && /淘宝店/.test(modal.textContent) && /抖音/.test(modal.textContent)
-    && !/小程序|口令|微信|复制/.test(modal.textContent));
-  check('弹窗三种关闭方式齐备（× / 遮罩 / Esc）',
-    !!modal && !!modal.querySelector('.sxg-adslot__modal-close')
-    && !!modal.querySelector('.sxg-adslot__modal-mask')
-    && /Escape/.test(src));
-  const bannerEvt = new window.MouseEvent('click', { bubbles: true, cancelable: true });
-  pdlBanner.dispatchEvent(bannerEvt);
-  check('整张广告图也绑了同一套弹窗交互', bannerEvt.defaultPrevented);
-  const closeBtn = modal && modal.querySelector('.sxg-adslot__modal-close');
-  if (closeBtn) closeBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  check('点 × 能关闭弹窗', !!modal && !modal.classList.contains('is-show'));
+  // 也可以引导用户访问他们的抖音」。当日晚些时候改为「胖东来广告暂时下架」：
+  // 卡面不再渲染这张卡，弹窗（连同它的两条真链接）也就不会被触发；
+  // 弹窗代码本身留着，恢复上架即可用。
+  console.log('\n--- 1c. 下架后弹窗不会被触发（代码留着待恢复） ---');
+  check('下架后弹窗 DOM 根本不会被创建', !doc.querySelector('[data-sxg-pdl-modal]'));
+  check('弹窗代码仍在源码里（恢复上架即可用）',
+    /function ensureModal\(/.test(src) && /function openModal\(/.test(src)
+    && /function bindShare\(/.test(src)
+    && /sxg-adslot__modal-taobao/.test(src) && /sxg-adslot__modal-douyin/.test(src)
+    && /href="' \+ PDL_TAOBAO \+ '" target="_blank" rel="noopener"/.test(src)
+    && /href="' \+ PDL_DOUYIN \+ '" target="_blank" rel="noopener"/.test(src));
+  const codeAd = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  check('弹窗文案仍写淘宝店与抖音，且不再出现小程序/口令/微信',
+    !/小程序|口令|微信|复制/.test(codeAd)
+    && /淘宝店/.test(codeAd) && /抖音/.test(codeAd));
 
   // ─────────── 2. 居中 & 箭头不再压住文案 ───────────
   console.log('\n--- 2. 内容居中 / 箭头位置 ---');
@@ -254,27 +219,23 @@ function check(label, cond, extra) {
   // ─────────── 3. 轮播交互没被改坏 ───────────
   console.log('\n--- 3. 手动切换 / 自动轮播 ---');
   const track = slot.querySelector('.sxg-adslot__track');
-  check('共 3 张广告卡', slot.querySelectorAll('.sxg-adslot__card').length === 3);
-  check('3 个圆点且首张高亮',
-    slot.querySelectorAll('.sxg-adslot__dot').length === 3
+  check('共 2 张广告卡（胖东来暂时下架）', slot.querySelectorAll('.sxg-adslot__card').length === 2);
+  check('2 个圆点且首张高亮',
+    slot.querySelectorAll('.sxg-adslot__dot').length === 2
     && slot.querySelector('.sxg-adslot__dot').className.indexOf('is-active') !== -1);
   check('初始 transform 为 translateX(0%)', /translateX\(0%\)/.test(track.style.transform),
     track.style.transform);
   next.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  check('点「下一张」后滚动到第 2 张（胖东来）', /translateX\(-100%\)/.test(track.style.transform),
+  check('点「下一张」后滚动到第 2 张（虚位以待）', /translateX\(-100%\)/.test(track.style.transform),
     track.style.transform);
   const dots = slot.querySelectorAll('.sxg-adslot__dot');
   check('圆点高亮同步到第 2 个', dots[1].className.indexOf('is-active') !== -1);
-  next.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  check('再点「下一张」滚动到第 3 张（虚位以待）', /translateX\(-200%\)/.test(track.style.transform),
-    track.style.transform);
-  check('圆点高亮同步到第 3 个', dots[2].className.indexOf('is-active') !== -1);
-  prev.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  check('点「上一张」回到第 2 张', /translateX\(-100%\)/.test(track.style.transform),
-    track.style.transform);
   prev.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   check('点「上一张」回到第 1 张', /translateX\(0%\)/.test(track.style.transform),
     track.style.transform);
+  next.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  check('再点「下一张」又回到第 2 张（只有两张，不再有第 3 张）',
+    /translateX\(-100%\)/.test(track.style.transform), track.style.transform);
   check('自动轮播间隔仍是 5 秒', /var AUTOPLAY_MS = 5000/.test(src));
 
   check('渲染期无 JS 异常', errors.length === 0, errors.slice(0, 3));
