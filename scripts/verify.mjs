@@ -10630,12 +10630,12 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     '收编清单缺项 / 折叠层回潮 / 桌面端也被搬走 → 悬浮层又变成两套布局各自为政');
 
   // ④ 挂载顺序：dock 脚本必须排在所有悬浮脚本之后。
-  const mountOk = /<script defer src="\.\/fab-dock\.js\?v=4"><\/script>/.test(idx36q)
-    && idx36q.indexOf('fab-dock.js?v=4') > idx36q.indexOf('nav-menu.js?v=7')
+  const mountOk = /<script defer src="\.\/fab-dock\.js\?v=5"><\/script>/.test(idx36q)
+    && idx36q.indexOf('fab-dock.js?v=5') > idx36q.indexOf('nav-menu.js?v=7')
     && Number((idx36q.match(/mobile-fixes\.css\?v=(\d+)/) || [])[1] || 0) >= 26
     && /header-menu-patch\.js\?v=(1[1-9]|[2-9]\d)/.test(idx36q);
   check(mountOk,
-    '§36q index.html 已挂载 fab-dock.js?v=4 且排在所有悬浮脚本之后，mobile-fixes.css 带 ?v 缓存号 / header-menu-patch.js 缓存号随内容同步 bump',
+    '§36q index.html 已挂载 fab-dock.js?v=5 且排在所有悬浮脚本之后，mobile-fixes.css 带 ?v 缓存号 / header-menu-patch.js 缓存号随内容同步 bump',
     '挂载顺序错了 → dock 执行时按钮还没建好，收编为空；?v 没 bump → 浏览器缓存旧 CSS');
 
   // 2026-11-27 站长：手机端取消 ☰ 折叠，四项 + 版本号提升为 dock 一级；
@@ -10667,14 +10667,39 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
      CSS 实现：top:50% + translateY(-50%)，bottom 让位（不再贴底）。机器断言
      钉死这三件套 + 水平 right 不变 + 子项 order 顺序不受影响。 */
   const dockBox36q = (mfDock.match(/#sxg-fab-dock\s*\{[^}]*\}/) || [''])[0];
-  const centerOk = /top:\s*50%/.test(dockBox36q)
+  /* 2026-11-27 滚动错位修复：top 从写死 50% 改为 var(--sxg-dock-top, 50%)，
+     默认值仍是 50%（JS 未跑时的回退），fab-dock.js 按 visualViewport 实时覆盖为
+     像素值。断言接受「50% 或带 50% 回退的变量」，两种都满足居中基线。 */
+  const centerOk = /(top:\s*50%|top:\s*var\(--sxg-dock-top,\s*50%\))/.test(dockBox36q)
     && /transform:\s*translateY\(-50%\)/.test(dockBox36q)
     && !/bottom:\s*calc\(/.test(dockBox36q)
     && /right:\s*8px/.test(dockBox36q)
     && /flex-direction:\s*column/.test(dockBox36q);
   check(centerOk,
-    '§40w-1 手机端 dock 整列垂直居中：top:50% + translateY(-50%)（中位数按钮压视口中线、上下均分），水平仍 right:8px，不再贴底',
+    '§40w-1 手机端 dock 整列垂直居中：top:50%（或 var(--sxg-dock-top,50%)）+ translateY(-50%)（中位数按钮压视口中线、上下均分），水平仍 right:8px，不再贴底',
     '退回 bottom:calc 贴底或漏 translateY → 按钮堆又沉到屏幕底部，站长要的居中布局失守');
+
+  /* 2026-11-27 站长连报多次的真机 bug：下滑后再上滑，dock 上移并锁死不再跟随。
+     根因是 CSS top:50% 参照 layout viewport（innerHeight 在地址栏收放时不变），
+     与用户看到的 visualViewport 脱节；且 17 枚×36+gap 整列 666px 在地址栏展开
+     时（可视高常 ~600px）放不下，首屏溢出。这里把 JS 修复钉死：
+     ① 监听 visualViewport 的 scroll/resize；② --sxg-dock-top 用 offsetTop+height/2；
+     ③ --sxg-dock-btn-h 按可视高自适应压缩并限幅 [26,36]；④ CSS 两个变量都带回退值。 */
+  const dockJs = exists('fab-dock.js') ? read('fab-dock.js') : '';
+  const vpFixOk = /function\s+syncViewport\(\)/.test(dockJs)
+    && /function\s+onViewportChange\(\)/.test(dockJs)
+    && /window\.visualViewport/.test(dockJs)
+    && /vv\.addEventListener\('scroll',\s*onViewportChange/.test(dockJs)
+    && /vv\.addEventListener\('resize',\s*onViewportChange/.test(dockJs)
+    && /window\.addEventListener\('scroll',\s*onViewportChange/.test(dockJs)
+    && /--sxg-dock-top/.test(dockJs) && /vtop\s*\+\s*vh\s*\/\s*2/.test(dockJs)
+    && /--sxg-dock-btn-h/.test(dockJs)
+    && /Math\.max\(26,\s*Math\.min\(36/.test(dockJs)
+    && /--sxg-dock-top,\s*50%/.test(mfDock)
+    && /--sxg-dock-btn-h,\s*36px/.test(mfDock);
+  check(vpFixOk,
+    '§40w-2 dock 真机滚动错位修复：监听 visualViewport scroll/resize，--sxg-dock-top 用 offsetTop+height/2 实时定位，--sxg-dock-btn-h 按可视高自适应限幅 [26,36]，CSS 两变量都带回退值',
+    '只靠 CSS top:50% → 地址栏收放时 visualViewport 与 innerHeight 脱节，dock 错位并锁死；整列不压缩 → 小屏首屏溢出');
 }
 
 // ---------- 36r. 申诉弹窗补规则 + GitHub 访问帮助设备分流 + sponsor 链接规整（2026-11-12 站长） ----------
@@ -10793,7 +10818,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     && /HEADER_CLASS/.test(am36s)
     && !/menu\.appendChild\(btn\)/.test(am36s);
   const stretchOk = /#sxg-fab-dock\s*\{[^}]*width:\s*68px[^}]*align-items:\s*stretch/.test(mf36s)
-    && /#sxg-fab-dock\s*>\s*\*[^}]*width:\s*68px\s*!important[^}]*height:\s*36px\s*!important/.test(mf36s)
+    && /#sxg-fab-dock\s*>\s*\*[^}]*width:\s*68px\s*!important[^}]*height:\s*var\(--sxg-dock-btn-h,\s*36px\)\s*!important/.test(mf36s)
     && /content:\s*attr\(data-sxg-dock-label\)/.test(mf36s)
     && !/is-expanded|sxg-fab-dock__more-btn|sxg-fab-dock__extra/.test(mf36s)
     && !/is-expanded|sxg-fab-more/.test(dock36s);
@@ -10811,8 +10836,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
 
   // ⑤ 挂载与 ?v 钉子（§21h 纪律）+ jsdom 行为测试挂进 CI（§21o）。
   check(/<script defer src="\.\/anon-mail\.js\?v=5"><\/script>/.test(idx36s)
-    && idx36s.indexOf('anon-mail.js?v=5') > idx36s.indexOf('fab-dock.js?v=4')
-    && /fab-dock\.js\?v=4/.test(idx36s)
+    && idx36s.indexOf('anon-mail.js?v=5') > idx36s.indexOf('fab-dock.js?v=5')
+    && /fab-dock\.js\?v=5/.test(idx36s)
     && Number((idx36s.match(/mobile-fixes\.css\?v=(\d+)/) || [])[1] || 0) >= 26
     && /header-menu-patch\.js\?v=(1[1-9]|[2-9]\d)/.test(idx36s)
     && exists('scripts/test-anon-mail.cjs')

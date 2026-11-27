@@ -91,6 +91,54 @@
     document.documentElement.style.setProperty('--sxg-dock-h', h + 'px');
   }
 
+  /* 2026-11-27 滚动错位修复（站长连报多次，真机复现）：
+     现象——首屏打开 dock 整列溢出屏幕（要先下滑才看得全）；下滑后再上滑，
+     dock 整体上移并「锁死」，再下滑也不跟随。
+     根因——① 17 枚按钮×36px + 16×6px gap = 666px，真机地址栏展开时可视高
+     常只有 ~600px，整列放不下；② CSS 的 top:50% 参照 layout viewport（innerHeight
+     在地址栏收放时不变），而用户看到的是 visualViewport（会随地址栏收放变化），
+     两者脱节导致 fixed 的 dock 相对可视区错位、且上滑后不再跟随。
+     修法——用 visualViewport 的 offsetTop + height/2 实时算可视区中线写进
+     --sxg-dock-top（CSS top 从 50% 切到这个变量；translateY(-50%) 不变）；
+     再按可视高度压缩 --sxg-dock-btn-h，保证整列 + 上下留白永远装得下。
+     监听 visualViewport 的 scroll/resize + window scroll/resize，rAF 节流。 */
+  var vpTicking = false;
+  function syncViewport() {
+    if (!dock || !isMobile()) return;
+    var vv = window.visualViewport;
+    var vh = vv ? vv.height : window.innerHeight;
+    var vtop = vv ? vv.offsetTop : 0;
+    if (!vh || vh <= 0) return;
+    var root = document.documentElement;
+    /* 中线：可视区顶部偏移 + 一半高度（像素），覆盖 CSS 的 50% 回退值 */
+    root.style.setProperty('--sxg-dock-top', Math.round(vtop + vh / 2) + 'px');
+
+    /* 自适应按钮高度：整列要装进可视高，上下各留 12px。
+       N 枚 × h + (N-1) × 6px gap <= vh - 24 → h = floor((vh-24-(N-1)*6)/N)
+       限制在 [26,36]：低于 26 单行 12px 文字会挤，高于 36 保持原设计。 */
+    /* 数真正显示的一级按钮：#sxg-nav 容器 display:none 不占 flex 空间也不占 gap，
+       必须从计数里排除，否则 h 会偏小、留白过多。 */
+    var n = 0;
+    for (var ci = 0; ci < dock.children.length; ci++) {
+      var child = dock.children[ci];
+      if (child.id !== 'sxg-nav' && window.getComputedStyle(child).display !== 'none') n++;
+    }
+    if (!n) n = 16; // 空集兜底（防空集恒真）
+    var gap = 6, margin = 12;
+    var h = Math.floor((vh - 2 * margin - (n - 1) * gap) / n);
+    h = Math.max(26, Math.min(36, h));
+    root.style.setProperty('--sxg-dock-btn-h', h + 'px');
+  }
+  function onViewportChange() {
+    if (vpTicking) return;
+    vpTicking = true;
+    window.requestAnimationFrame(function () {
+      vpTicking = false;
+      syncViewport();
+      syncHeight();
+    });
+  }
+
   /* 2026-11-27 站长：手机端取消 ☰ 折叠，把导航面板里的四项 + 版本号提升到
      dock 当一级按钮。它们原本是 #sxg-nav-panel 的子节点，这里连同容器一起搬；
      disable() 时原样还回面板，PC 端布局逐像素不变。 */
@@ -134,6 +182,7 @@
       }
     }
     syncHeight();
+    syncViewport();
     return missing;
   }
 
@@ -149,7 +198,15 @@
   function bindGlobal() {
     if (listening) return;
     listening = true;
-    window.addEventListener('resize', syncHeight);
+    window.addEventListener('resize', onViewportChange);
+    /* 真机「下滑→上滑锁死」核心：地址栏收放只改 visualViewport，不触发 innerHeight
+       resize，必须单独监听 visualViewport 的 scroll / resize 才能纠正位置。 */
+    window.addEventListener('scroll', onViewportChange, { passive: true });
+    var vv = window.visualViewport;
+    if (vv) {
+      vv.addEventListener('scroll', onViewportChange, { passive: true });
+      vv.addEventListener('resize', onViewportChange, { passive: true });
+    }
     var m = window.matchMedia ? window.matchMedia(MQ) : null;
     if (m) {
       var onBp = function () { if (isMobile()) enable(); else disable(); };
@@ -168,7 +225,7 @@
     if (missing) watch();
 
     if (window.ResizeObserver) {
-      ro = new ResizeObserver(syncHeight);
+      ro = new ResizeObserver(onViewportChange);
       ro.observe(dock);
     }
     bindGlobal();
@@ -206,6 +263,8 @@
     dock.remove();
     dock = null;
     document.documentElement.style.removeProperty('--sxg-dock-h');
+    document.documentElement.style.removeProperty('--sxg-dock-top');
+    document.documentElement.style.removeProperty('--sxg-dock-btn-h');
   }
 
   function boot() {

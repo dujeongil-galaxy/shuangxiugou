@@ -496,7 +496,12 @@ div[class*="border-t"][class*="bg-slate-50"] > div.flex.items-center.gap-2 {
     position: fixed;
     right: 8px;
     width: 68px;
-    top: 50%;
+    /* 2026-11-27 滚动错位修复：默认值仍是 50% + translateY(-50%)（居中），
+       fab-dock.js 按 visualViewport 实时覆盖 --sxg-dock-top 为像素值。
+       真机地址栏收放时 innerHeight 不变、visualViewport.height 会变，若只靠
+       top:50% 参照布局视口，dock 会错位并「锁死」；实测上滑后不再跟随滚动。
+       用 visualViewport 的 offsetTop + height/2 定位才能跟着可视区走。 */
+    top: var(--sxg-dock-top, 50%);
     bottom: auto;
     transform: translateY(-50%);
     z-index: 9000;
@@ -518,8 +523,10 @@ div[class*="border-t"][class*="bg-slate-50"] > div.flex.items-center.gap-2 {
     width: 68px !important;
     min-width: 68px !important;
     max-width: 68px !important;
-    height: 36px !important;
-    min-height: 36px !important;
+    /* 默认 36px；fab-dock.js 在可视高度装不下整列时下调 --sxg-dock-btn-h，
+       避免首屏溢出屏幕（真机地址栏展开时可视高常只有 ~600px，17 枚×36+gap=666px 放不下）。 */
+    height: var(--sxg-dock-btn-h, 36px) !important;
+    min-height: var(--sxg-dock-btn-h, 36px) !important;
     padding: 0 3px !important;
     margin: 0 !important;
     border: 1.5px solid #0F766E !important;
@@ -593,7 +600,7 @@ div[class*="border-t"][class*="bg-slate-50"] > div.flex.items-center.gap-2 {
   #sxg-fab-dock > #sxg-nav-ver {
     order: 999 !important;
     height: auto !important;
-    min-height: 36px !important;
+    min-height: var(--sxg-dock-btn-h, 36px) !important;
     font-size: 10px !important;
     line-height: 1.35 !important;
     white-space: normal !important;
