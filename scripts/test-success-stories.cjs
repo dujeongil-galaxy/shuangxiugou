@@ -53,6 +53,17 @@ const html = read('success-stories.html');
   const targets = hrefs.map((h) => h.slice(1));
   check('每个锚点目标在文档里真实存在', targets.every((id) => doc.getElementById(id)), targets);
 
+  // 1b. 50 元自述入口：在「专题 · 自述」后紧跟紫色「站长故事」标签
+  // （2026-11-27 站长点名补的卡片身份标签，不是新增导航按钮）。
+  const fyEntry = doc.getElementById('topic-fifty');
+  const fyTags = fyEntry ? Array.from(fyEntry.querySelectorAll('.topic-tag')).map((s) => s.textContent) : [];
+  check('50 元入口两枚标签按序为「专题 · 自述 / 站长故事」',
+    fyTags.join(' / ') === '专题 · 自述 / 站长故事', fyTags);
+  const storyTag = fyEntry && fyEntry.querySelector('.topic-tag.story-kind');
+  check('「站长故事」标签用紫色背景（#7c3aed）',
+    !!storyTag && /background:\s*#7c3aed/.test(html)
+      && /\.topic-entry \.topic-tag\.story-kind\s*\{[^}]*background:\s*#7c3aed/.test(html));
+
   // 2. 无框小火箭（不是旧圆形箭头）
   const rocket = doc.querySelector('.to-top svg .rk-body');
   check('回到顶部按钮是无框小火箭（含 rk-body 箭体路径）', !!rocket);

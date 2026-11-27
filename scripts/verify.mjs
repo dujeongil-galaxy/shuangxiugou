@@ -12290,6 +12290,12 @@ section('40. 成功案例自述专题（50 元罚单 · 站长亲身经历，202
   check(/专题 · 自述/.test(entryFy) && !/案例 #0[0-9]/.test(entryFy),
     '§43j 入口标为「专题 · 自述」（不占案例序号）',
     '专题入口被标成案例序号 → 与站长「专题不占编号」的先例冲突');
+  // 站长 2026-11-27：在「专题 · 自述」这枚标签后面再挂一枚紫色「站长故事」
+  // 标签。这是入口卡片上的身份标签，不是新导航按钮（§9c 白名单不动）。
+  check(/<span class="topic-tag">专题 · 自述<\/span>\s*<span class="topic-tag story-kind">站长故事<\/span>/.test(entryFy)
+    && /\.topic-entry \.topic-tag\.story-kind\s*\{[^}]*background:\s*#7c3aed[^}]*\}/.test(ssNow),
+    '§43j-1 自述入口在「专题 · 自述」后紧跟紫色「站长故事」标签（不是新导航按钮）',
+    '标签缺失 / 换色 / 换顺序 → 站长指定的卡片身份表达没落地');
   check(/fifty-yuan\.html/.test(read('sitemap.xml')),
     '§43k sitemap.xml 收录自述专题页',
     '漏收录 → 爬虫发现不了这一页');
