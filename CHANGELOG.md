@@ -4,6 +4,14 @@
 
 ---
 
+### fix：手机端 dock 滚动后错位锁死 & 首屏溢出（2026-11-27 · 提交 `9c507640`）
+
+- **现象**：站长连报多次——手机端打开网页要先下滑才看得全右侧导航列；下滑后再上滑，Navigation 列整体上移并「锁死」，再下滑也不跟随。
+- **根因**：① 17 枚按钮×36px + 16×6px gap = 666px，真机地址栏展开时可视高常只有 ~600px，整列放不下 → 首屏溢出；② CSS `top:50%` 参照 layout viewport（`innerHeight` 在地址栏收放时不变），而用户看到的是 `visualViewport`（随地址栏收放变化），两者脱节 → fixed 的 dock 相对可视区错位并锁死。
+- **修法**：`fab-dock.js` 新增 `syncViewport()`，用 `visualViewport.offsetTop + height/2` 算可视区中线写入 `--sxg-dock-top`，CSS `top` 从写死 50% 改为 `var(--sxg-dock-top, 50%)`（回退值仍是 50%）；同时按可视高自适应压缩 `--sxg-dock-btn-h`，公式 `floor((vh-24-(N-1)×6)/N)` 限幅 [26,36]，保证整列 + 上下留白永远装得下。监听 `visualViewport` 的 scroll/resize + window scroll/resize，rAF 节流；`translateY(-50%)` 与 right:8px 不变，桌面端不启用、退出窄屏清理变量。
+- **校验**：`verify.mjs` §40w-1 接受变量形式（保留 50% 回退）、新增 §40w-2 钉死 vv 监听 + 中线公式 + 高度限幅 + CSS 回退值；§36s 高度断言改认变量形式。缓存号 fab-dock 4→5、mobile-fixes 27→28。
+- **验证**：全站 verify 2233 项全绿；故障注入（去掉 vv 监听 / CSS 退回写死 50%）两次判红后还原；CDP 真渲染量得 844px 视口 rectTop=89/rectBottom=755（居中、btnH=36），600px 视口自动压到 btnH=30、rectTop=15/rectBottom=585（完整装进、上下各留 15px），切回 844px 自动恢复。双端截图肉眼确认 16 枚 + 版本号完整可读、不出屏。
+
 ### fix：胖东来淘宝入口与陆喜依天猫店统一零参数裸店址，撤销推广码白名单（2026-11-27 · 提交 `ecf67ae3`）
 
 - **现象**：上一批按站长给的推广链接原样挂了推广/追踪参数，站长随后要求店铺入口不挂连接属性、能打开店铺即可，陆喜依天猫店同理——参数属推广追踪，不该留在公开店铺入口。

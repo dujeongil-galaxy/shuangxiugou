@@ -9,6 +9,14 @@
 
 ---
 
+### 近期 bug 根因（fix）：手机端 dock 滚动后错位锁死 & 首屏溢出（2026-11-27 · 提交 `9c507640`）
+
+- **现象**：站长连报多次——手机端打开网页要先下滑才看得全右侧导航列；下滑后再上滑，导航列整体上移并锁死，再下滑也不跟随。
+- **根因**：两个独立问题叠加。① 几何放不下：dock 17 个子节点（16 枚按钮 + 版本号），每枚 36px + gap 6px = 666px，真机地址栏展开时可视高常只有 ~600px，整列超出屏幕 → 首屏要下滑才看得全。② 定位基准错位：CSS `top:50%` 参照 layout viewport，`innerHeight` 在地址栏收放时不变；但用户实际看到的是 `visualViewport`（随地址栏收放变化），两者脱节 → fixed 的 dock 相对可视区错位，上滑后不再跟随，看起来「锁死」。
+- **修法**：`fab-dock.js` 新增 `syncViewport()`——用 `visualViewport.offsetTop + height/2` 算可视区中线写进 `--sxg-dock-top`，CSS `top` 从写死 50% 改为 `var(--sxg-dock-top, 50%)`（回退值仍是 50%，JS 未跑时行为不变）；按可视高自适应压缩 `--sxg-dock-btn-h`，公式 `floor((vh-24-(N-1)×6)/N)` 限幅 [26,36]，保证整列 + 上下留白永远装得下。监听 `visualViewport` 的 scroll/resize + window scroll/resize + ResizeObserver，rAF 节流；`translateY(-50%)`/right:8px/order 顺序不变，桌面端不启用、退出窄屏清理变量。
+- **验证**：verify 2233 项全绿；§40w-1 改认变量形式、新增 §40w-2 钉死 vv 监听 + 中线公式 + 高度限幅 + CSS 回退值。故障注入（去掉 vv 监听 / CSS 退回写死 50%）两次判红后还原。CDP 真渲染量得 844px 视口 rectTop=89/rectBottom=755（btnH=36 居中）、600px 视口 btnH=30/rectTop=15/rectBottom=585（完整装进、上下留 15px）、切回 844px 自动恢复；双端截图肉眼确认 16 枚 + 版本号完整可读。
+- **教训**：移动端 fixed 元素的「居中」不能只靠 `top:50%`——地址栏收放时 layout viewport 与 visual viewport 会脱节，必须监听 `visualViewport` 的 scroll/resize 并按其 `offsetTop + height/2` 定位；同时任何「常显一整列」的布局都要按最小可视高自适应压缩，否则小屏必然溢出。
+
 ### 近期 bug 根因（fix）：店铺入口推广追踪参数未撤（2026-11-27 · 提交 `ecf67ae3`）
 
 - **现象**：上一批按站长给的推广链接原样挂进胖东来弹窗，URL 带了 `ali_refid` / `ali_trackid` / `spm` / `topIds` 等参数；站长随后明确店铺入口不挂连接属性，能打开店铺即可，陆喜依天猫店同理。
