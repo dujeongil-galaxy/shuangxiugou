@@ -21,6 +21,7 @@ LASTMOD = '2026-10-10'
 # 首页单独维护 lastmod：首页几乎每次改动都会变，而 Bing 明确把 sitemap 的
 # lastmod 当作「优先重抓」信号（changefreq / priority 则被忽略）。2026-11-14
 # 修必应摘要时首页 lastmod 还停在 10-10，旧索引快照一直没被刷新。
+# ⚠️ 这一天由 verify §36y 写死断言，别单方面改；要改就两条一起改并同步断言。
 LASTMOD_HOME = '2026-11-14'
 BASE = 'https://dujeongil-galaxy.github.io/shuangxiugou'
 
@@ -47,10 +48,13 @@ parts.append(
 )
 
 # 成功案例合集 + QQ奶奶专题页（2026-11-09 站长要求：专题单独一页，不占案例序号）
+# 2026-11-27：成功案例页新增「找茬」判据专题入口，lastmod 单独推进；
+# QQ奶奶专题页本次没动，仍留在 2026-11-09（两者原本共用一个常量，现拆开）。
 LASTMOD_CASES = '2026-11-09'
+LASTMOD_STORIES = '2026-11-27'
 parts.append(
     f'  <url>\n    <loc>{BASE}/success-stories.html</loc>\n'
-    f'    <lastmod>{LASTMOD_CASES}</lastmod>\n'
+    f'    <lastmod>{LASTMOD_STORIES}</lastmod>\n'
     f'    <changefreq>monthly</changefreq>\n'
     f'    <priority>0.7</priority>\n  </url>'
 )

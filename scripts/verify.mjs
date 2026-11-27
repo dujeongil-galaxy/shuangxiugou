@@ -12448,6 +12448,18 @@ section('41. 消费争议判据专题（「找茬」怎么用才算数）');
   check(/41\. 消费争议判据专题/.test(read('scripts/verify.mjs')),
     '§44s 专题校验段仍在（防止整段被删空后恒真空转）',
     '校验段丢失 → 专题改坏也无人发现');
+
+  // sitemap.xml 与生成器的 lastmod 必须成对推进：这次首页与成功案例页都改了，
+  // 只改一边的话，下一次跑 seo:sitemap 就会动线上文件（且没人知道改了哪条）。
+  const smCc = read('sitemap.xml');
+  const genCc = read('scripts/seo/generate-sitemap.py');
+  const smStories = (smCc.match(/success-stories\.html<\/loc>\s*<lastmod>([\d-]+)<\/lastmod>/) || ['', ''])[1];
+  const genStories = (genCc.match(/LASTMOD_STORIES = '([\d-]+)'/) || ['', ''])[1];
+  const smHome = (smCc.match(/shuangxiugou\/<\/loc>\s*<lastmod>([\d-]+)<\/lastmod>/) || ['', ''])[1];
+  const genHome = (genCc.match(/LASTMOD_HOME = '([\d-]+)'/) || ['', ''])[1];
+  check(smStories && smStories === genStories && smHome && smHome === genHome,
+    '§44t sitemap.xml 与生成器的 lastmod 逐条对得上（首页 / 成功案例页）',
+    '两处不一致 → 下次重建 sitemap 会静默改动线上文件');
 }
 
 // ---------- 汇总 ----------
