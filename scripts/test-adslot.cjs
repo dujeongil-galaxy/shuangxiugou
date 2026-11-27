@@ -9,12 +9,9 @@ const { JSDOM, VirtualConsole } = require('jsdom');
 const ROOT = path.resolve(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const TMALL = 'https://' + 'luxiyi.tmall.com/'; // 拼接避免本文件被参数红线误扫
-// 站长 2026-11-27：小程序口令整套撤掉，改成居中弹窗里两条真链接。
-// 拼接写法避免本文件被 §26k 参数红线误扫（淘宝链接含 spm/topIds 推广码）。
-const PDL_TAOBAO = 'https://n3sf0tqhvhbw60ae2xdq4nodo2g4kxl.taobao.com/?ali_refid='
-  + 'a3_430582_1006:2782662030:H:PA1p2kB2NhSvWw4yBlIlUg%3D%3D:ca4592dc60d1f31f10fc80d2dca8211d'
-  + '&ali_trackid=318_ca4592dc60d1f31f10fc80d2dca8211d&spm=0.0.hoverItem.1'
-  + '&topIds=1094015031473&shopSearchKeyword=?????&mm_sceneid=0_0_6496235283_0_0';
+// 站长 2026-11-27：小程序口令整套撤掉，改成居中弹窗里两条真链接；
+// 同日后续口径：淘宝只留裸店址、零参数，陆喜依天猫店同理。
+const PDL_TAOBAO = 'https://n3sf0tqhvhbw60ae2xdq4nodo2g4kxl.taobao.com/';
 const PDL_DOUYIN = 'https://www.douyin.com/user/MS4wLjABAAAANjHa0B-e7JAX89HjRiCnSLRbFYYG3b0wrt7397e7IBA';
 const ART_BRAND = './assets/ad-luxiyi.svg?v=2';
 const ART_PDL = './assets/ad-pangdonglai.svg?v=3';
@@ -194,8 +191,9 @@ function check(label, cond, extra) {
   check('弹出居中弹窗且可见（is-show）', !!modal && modal.classList.contains('is-show'));
   const tb = modal && modal.querySelector('.sxg-adslot__modal-taobao');
   const dy = modal && modal.querySelector('.sxg-adslot__modal-douyin');
-  check('弹窗里淘宝入口是真 <a>，href 是站长原链接一字不差',
+  check('弹窗里淘宝入口是真 <a>，href 是零参数裸店址（能打开店铺即可）',
     !!tb && tb.tagName === 'A' && tb.getAttribute('href') === PDL_TAOBAO
+    && PDL_TAOBAO.indexOf('?') === -1
     && tb.getAttribute('target') === '_blank' && tb.getAttribute('rel') === 'noopener',
     tb && tb.getAttribute('href'));
   check('弹窗里抖音入口是真 <a>，href 是站长原链接一字不差',

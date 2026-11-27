@@ -8192,8 +8192,8 @@ section('21c. 首页滑到底部按钮');
     '§33a2 广告位三张设计图首屏预热，且每张的 ?v 与 black-card-adslot.js 里的常量完全一致',
     '预热 URL 与脚本里的实际 URL 不一致 → 白预热，广告位照样「卡片先出来、图还是空的」');
 
-  check(/<script async src="\.\/black-card-adslot\.js\?v=23"><\/script>/.test(idx)
-    && idx.indexOf('black-card-adslot.js?v=23') < idx.indexOf('</head>')
+  check(/<script async src="\.\/black-card-adslot\.js\?v=24"><\/script>/.test(idx)
+    && idx.indexOf('black-card-adslot.js?v=24') < idx.indexOf('</head>')
     && !/script defer src="\.\/black-card-adslot\.js/.test(idx),
     '§33b 广告位补丁在 head 里 async 加载（不再排在第 40 个 defer，也不必等 692KB body 解析完）',
     '广告位补丁退回 defer 队列尾部 → 慢网又要 15 秒才冒出广告位');
@@ -9266,18 +9266,12 @@ section('24. 白屏兜底与加载态（防用户误退出）');
     'README.md', '最近更新.md', 'CHANGELOG.md', 'data/imported-brands.json'])];
   const dirty26 = [];
   const tmallRefs26 = [];
-  /* 2026-11-27 站长给胖东来淘宝推广链接，里面带 spm= / topIds= 等 ali_* 参数
-     （他自己的推广码，明确不许删）。这是 §26k「站内零追踪参数」的唯一白名单：
-     只豁免 black-card-adslot.js 里 PDL_TAOBAO 这一条常量，其余文件照旧判红。
-     用字符串拼接取常量值，避免本脚本自身被扫描命中。 */
-  const pdlFile26 = exists('black-card-adslot.js') ? read('black-card-adslot.js') : '';
-  const pdlTaobao26 = (pdlFile26.match(/var PDL_TAOBAO = '([^']+)'/) || [])[1] || '';
+  /* 2026-11-27 站长后续口径：淘宝入口不挂任何推广/追踪参数，裸店址能打开店铺
+     即可；陆喜依天猫店同理。上一条推广码白名单整体撤销——全站零参数红线一律
+     生效，没有任何豁免。 */
   for (const f of pub26) {
     if (!exists(f)) continue;
-    let s = read(f);
-    if (f === 'black-card-adslot.js' && pdlTaobao26) {
-      s = s.split(pdlTaobao26).join(''); // 白名单：只摘掉这一条原链接
-    }
+    const s = read(f);
     const hit = scan26(s);
     if (hit.length) dirty26.push(f + ':' + hit.join(','));
     for (const m of s.matchAll(/https?:\/\/luxiyi\.tmall\.com[^"'`\s<>)]*/g)) {
@@ -9286,7 +9280,15 @@ section('24. 白屏兜底与加载态（防用户误退出）');
   }
   check(pub26.length > 150, '§26j 参数红线扫描覆盖到全站发布文件（非空集防护）',
     `扫描 ${pub26.length} 个文件`);
-  check(dirty26.length === 0, '§26k 全站无账号 / 来源追踪 / 类目参数残留（仅豁免站长指定的胖东来淘宝推广码这一条）', dirty26.join(' | '));
+  check(dirty26.length === 0, '§26k 全站无账号 / 来源追踪 / 类目参数残留（零豁免，含胖东来淘宝入口）', dirty26.join(' | '));
+  const adLink26 = exists('black-card-adslot.js') ? read('black-card-adslot.js') : '';
+  const tbShop26 = (adLink26.match(/var PDL_TAOBAO = '([^']+)'/) || [])[1] || '';
+  const lmShop26 = (adLink26.match(/var TMALL = '([^']+)'/) || [])[1] || '';
+  check(/^https:\/\/[a-z0-9-]+\.taobao\.com\/$/i.test(tbShop26)
+    && /^https:\/\/[a-z0-9-]+\.tmall\.com\/$/i.test(lmShop26)
+    && tbShop26.indexOf('?') === -1 && lmShop26.indexOf('?') === -1,
+    '§26k-1 胖东来淘宝与陆喜依天猫入口都是零参数裸店址（能打开店铺即可，不挂推广/追踪参数）',
+    '任一店铺链接带查询串 → 站长「不挂连接属性、能打开店铺即可」失守');
   check(tmallRefs26.length >= 7 && tmallRefs26.every((x) => x.endsWith(CLEAN26)),
     '§26l 站内所有天猫链接都是零参数店铺首页（无 category.htm / 无问号）', tmallRefs26);
   check(!/category\.htm/.test(idx26 + patch26 + tea26.map((s) => read('brand/' + s + '.html')).join('')),
@@ -9712,7 +9714,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     '§29h 广告位天猫链接仍是零参数店铺首页，mascot 仍与品牌卡共用单一真相源');
 
   check(exists('scripts/test-adslot.cjs') && /test-adslot\.cjs/.test(wf29)
-    && /black-card-adslot\.js\?v=23/.test(idx29),
+    && /black-card-adslot\.js\?v=24/.test(idx29),
     '§29i 广告位真 DOM 测试存在且挂进 CI，首页脚本已升版防缓存');
 
   // —— 站长 2026-11-10 晚：胖东来广告卡（首页推荐位） ——
@@ -9757,12 +9759,9 @@ section('25. 成功案例专题页（QQ奶奶）');
   // 风格弹窗吧，既可以推荐去淘宝购物，也可以引导用户访问他们的抖音」——
   // ⑫ 的小程序口令整套作废：口令常量、复制链路、toast 全删。整图与 CTA 的
   // href="#" 只做 trigger；两条真链接写在居中弹窗里（PDL_TAOBAO / PDL_DOUYIN），
-  // 原链接一字不改（淘宝 ali_* 是站长推广码，不许删）。拼接写法避免本文件的
-  // URL 尾巴被剥注释正则吃掉（§34 老坑）。
-  const TAOBAO29 = 'https://n3sf0tqhvhbw60ae2xdq4nodo2g4kxl.taobao.com/?ali_refid='
-    + 'a3_430582_1006:2782662030:H:PA1p2kB2NhSvWw4yBlIlUg%3D%3D:ca4592dc60d1f31f10fc80d2dca8211d'
-    + '&ali_trackid=318_ca4592dc60d1f31f10fc80d2dca8211d&spm=0.0.hoverItem.1'
-    + '&topIds=1094015031473&shopSearchKeyword=?????&mm_sceneid=0_0_6496235283_0_0';
+  // 淘宝按站长后续口径只留裸店址、零参数（能打开店铺即可），陆喜依天猫店同理；
+  // 抖音主页仍是官方主页。拼接写法避免本文件的 URL 尾巴被剥注释正则吃掉（§34 老坑）。
+  const TAOBAO29 = 'https://n3sf0tqhvhbw60ae2xdq4nodo2g4kxl.taobao.com/';
   const DOUYIN29 = 'https://www.douyin.com/user/' + 'MS4wLjABAAAANjHa0B-e7JAX89HjRiCnSLRbFYYG3b0wrt7397e7IBA';
   const tb29 = (ad29.match(/var PDL_TAOBAO = '([^']+)'/) || [])[1] || '';
   const dy29 = (ad29.match(/var PDL_DOUYIN = '([^']+)'/) || [])[1] || '';
@@ -9772,6 +9771,7 @@ section('25. 成功案例专题页（QQ奶奶）');
     ? ad29.slice(pdlCardStart29, pdlCardEnd29) : '';
   const adCode29 = ad29.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
   check(tb29 === TAOBAO29 && dy29 === DOUYIN29
+    && tb29.indexOf('?') === -1
     && (pdlCard29.match(/href="#"/g) || []).length >= 2
     && (pdlCard29.match(/data-sxg-share="pdl"/g) || []).length >= 2
     && /点此查看淘宝店与抖音/.test(pdlCard29)
@@ -9781,8 +9781,8 @@ section('25. 成功案例专题页（QQ奶奶）');
     && !/小程序:\/\/|copySync\(|execCommand\('copy'\)|showShareToast|toast-code/.test(adCode29)
     && !/bendibao/.test(ad29) && !/bendibao/.test(rd29)
     && /弹窗/.test(rd29) && /淘宝/.test(rd29) && /抖音/.test(rd29),
-    '§29l 胖东来撤小程序口令改居中弹窗：整图与 CTA 的 href="#" 只做 trigger，PDL_TAOBAO/PDL_DOUYIN 两条原链接一字不改，可见文案改「点此查看淘宝店与抖音」，功能代码零旧复制链路',
-    '只换常量留着「口令」字样 / 淘宝链接被删参数 / README 没写新口径 → 站长 11-27 指令失守');
+    '§29l 胖东来撤小程序口令改居中弹窗：整图与 CTA 的 href="#" 只做 trigger，弹窗内淘宝是零参数裸店址、抖音是官方主页，可见文案改「点此查看淘宝店与抖音」，功能代码零旧复制链路',
+    '只换常量留着「口令」字样 / 淘宝链接又挂上追踪参数 / README 没写新口径 → 站长 11-27 指令失守');
 }
 
 // ---------- 30. 比亚迪卡片曝光登记 + 视频下架如实登记 ----------
@@ -9965,8 +9965,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check((code32.match(/公益广告位/g) || []).length >= 4
     && !/广告位招商中|品牌展示|>广告位</.test(code32)
     && /data-adslot-kind', 'public-welfare'/.test(code32)
-    && /black-card-adslot\.js\?v=23/.test(idx32),
-    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 23');
+    && /black-card-adslot\.js\?v=24/.test(idx32),
+    '§32b 广告位所有可见文案统一「公益广告位」，旧「广告位招商中」/「品牌展示」清零，?v 升 24');
 
   // 站长 2026-11-10 二次纠正「广告图叫你重构，不是让你改成纯文字 / 文字明显重叠」：
   // 文案已全部画进 ad-recruit.svg 的 <text>（与图同坐标系同缩放，结构上不可能叠字），
@@ -10190,8 +10190,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
 
   const preload35 = mob35.every(([f, , ver]) =>
     idx35.indexOf('<link rel="preload" as="image" href="./' + f + '?v=' + ver + '" media="(max-width:480px)" />') !== -1);
-  check(preload35 && /black-card-adslot\.js\?v=23/.test(idx35),
-    '§35c 手机三图带 media 预热、?v 与脚本 *_MOBILE 常量一致，首页脚本已升 23（2026-11-27 胖东来弹窗改造后再 bump）',
+  check(preload35 && /black-card-adslot\.js\?v=24/.test(idx35),
+    '§35c 手机三图带 media 预热、?v 与脚本 *_MOBILE 常量一致，首页脚本已升 24（2026-11-27 淘宝入口去推广参数后再 bump）',
     '预热漏 media 或 ?v 不一致 → 慢网首帧先出桌面稿再跳手机稿');
 
   check(/function keepClear\(/.test(code35) && /keepClear\(slot\);/.test(code35)
@@ -10332,7 +10332,7 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     'JEV 条目写成互惠/互挂 → 与「不要求互挂」矛盾');
 
   // ④ 脚本在 index.html 的 ?v 随内容变更 bump，否则浏览器缓存旧脚本（撤链看不到）
-  check(/black-card-adslot\.js\?v=23/.test(idx36f)
+  check(/black-card-adslot\.js\?v=24/.test(idx36f)
     && /friend-links-footer\.js\?v=18/.test(idx36f),
     '§36f friend-links-footer.js 在 index.html 的 ?v 已随撤链 bump 到 18',
     '?v 没 bump → 浏览器缓存旧脚本，已撤的两条友链仍显示给访客');
@@ -10376,8 +10376,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(/n\.id\s*===\s*['"]sxg-flash-mask['"]/.test(ad36h),
     '§36h keepClear 按 id 排除闪屏遮罩 #sxg-flash-mask（不被当悬浮钮隐藏、整页磨砂不破洞）',
     'keepClear 漏排除闪屏遮罩 → 广告位相交时遮罩被隐藏、磨砂破洞、广告位穿模');
-  check(/black-card-adslot\.js\?v=23/.test(idx36h),
-    '§36h black-card-adslot.js 的 ?v 已 bump 到 23（浏览器缓存旧脚本会吃掉本次修复）',
+  check(/black-card-adslot\.js\?v=24/.test(idx36h),
+    '§36h black-card-adslot.js 的 ?v 已 bump 到 24（浏览器缓存旧脚本会吃掉本次修复）',
     '?v 没 bump → 旧脚本仍带 z-index:9995，修复不生效');
 }
 
@@ -10390,8 +10390,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
   check(!/@media \(max-width:480px\)\{\.sxg-adslot__nav\{display:none\}/.test(ad36k),
     '§36k 手机端（≤480px）不再隐藏公益广告位左右翻页箭头（放出 prev/next 按钮）',
     '移动端媒体查询又把 .sxg-adslot__nav 设 display:none → 手机上看不到左右翻页箭头');
-  check(/black-card-adslot\.js\?v=23/.test(idx36k),
-    '§36k black-card-adslot.js 的 ?v 已 bump 到 23（浏览器缓存旧脚本会吃掉本次改动）',
+  check(/black-card-adslot\.js\?v=24/.test(idx36k),
+    '§36k black-card-adslot.js 的 ?v 已 bump 到 24（浏览器缓存旧脚本会吃掉本次改动）',
     '?v 没 bump → 旧脚本仍隐藏手机端箭头，改动不生效');
 }
 
@@ -10544,8 +10544,8 @@ check(exists('scripts/test-byd-expose.cjs') && /test-byd-expose\.cjs/.test(wf30)
     /中国大陆/.test(ad36n),
     '§36n 脚注已声明适用范围仅限中国大陆品牌与门店（本站意在改进国内用工状况，不评价境外）',
     '缺「仅限中国大陆」限定 → 读者会以为榜单对境外品牌也作同等评判');
-  check(/black-card-adslot\.js\?v=23/.test(idx36n),
-    '§36n black-card-adslot.js 的 ?v 已 bump 到 23（浏览器缓存旧脚本会吃掉本次脚注）',
+  check(/black-card-adslot\.js\?v=24/.test(idx36n),
+    '§36n black-card-adslot.js 的 ?v 已 bump 到 24（浏览器缓存旧脚本会吃掉本次脚注）',
     '?v 没 bump → 旧脚本无脚注、本次改动不生效');
 }
 

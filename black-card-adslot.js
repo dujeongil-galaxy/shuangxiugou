@@ -138,9 +138,10 @@
   var IMG = './assets/luxiyi.jpg';
   var PDL_DETAIL = './brand/pdl.html';
   var PDL_IMG = './assets/pdl.png';
-  /* 站长 2026-11-27 给的两条完整原链接（淘宝带 ali_* 是他自己的推广码，
-     不许自作主张删参数；抖音是官方主页，不是短视频单链）。单一真相源。 */
-  var PDL_TAOBAO = 'https://n3sf0tqhvhbw60ae2xdq4nodo2g4kxl.taobao.com/?ali_refid=a3_430582_1006:2782662030:H:PA1p2kB2NhSvWw4yBlIlUg%3D%3D:ca4592dc60d1f31f10fc80d2dca8211d&ali_trackid=318_ca4592dc60d1f31f10fc80d2dca8211d&spm=0.0.hoverItem.1&topIds=1094015031473&shopSearchKeyword=?????&mm_sceneid=0_0_6496235283_0_0';
+  /* 站长 2026-11-27 后续口径：淘宝入口不挂任何推广/追踪参数，裸店址能打开
+     店铺即可；陆喜依天猫店同理（TMALL 本就是零参数）。抖音是官方主页，
+     不是短视频单链。单一真相源，两条店铺链接都不带查询串。 */
+  var PDL_TAOBAO = 'https://n3sf0tqhvhbw60ae2xdq4nodo2g4kxl.taobao.com/';
   var PDL_DOUYIN = 'https://www.douyin.com/user/MS4wLjABAAAANjHa0B-e7JAX89HjRiCnSLRbFYYG3b0wrt7397e7IBA';
   /* 三张广告设计图。?v 必须与 index.html 里的 <link rel=preload as=image> 完全一致，
      否则浏览器会把它当两个资源（预热的白预了）。改了图就同步升这里和 index.html。 */
@@ -182,7 +183,7 @@
         '</div>' +
         '<a class="sxg-adslot__modal-link sxg-adslot__modal-taobao" href="' + PDL_TAOBAO + '" target="_blank" rel="noopener">去淘宝店逛逛 →</a>' +
         '<a class="sxg-adslot__modal-link sxg-adslot__modal-douyin" href="' + PDL_DOUYIN + '" target="_blank" rel="noopener">看他们的抖音 →</a>' +
-        '<div class="sxg-adslot__modal-note">链接由站长提供 · 淘宝链接含站长推广码</div>' +
+        '<div class="sxg-adslot__modal-note">链接由站长提供 · 直达店铺主页</div>' +
       '</div>';
     document.body.appendChild(modalEl);
 

@@ -19,11 +19,8 @@ const HTTP_PORT = 8801;
 const DBG_PORT = 9294;
 const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const URL = `http://127.0.0.1:${HTTP_PORT}/`;
-// 站长 2026-11-27 指定：弹窗里两条真链接（拼接避免本文件被参数红线误扫）
-const PDL_TAOBAO = 'https://n3sf0tqhvhbw60ae2xdq4nodo2g4kxl.taobao.com/?ali_refid='
-  + 'a3_430582_1006:2782662030:H:PA1p2kB2NhSvWw4yBlIlUg%3D%3D:ca4592dc60d1f31f10fc80d2dca8211d'
-  + '&ali_trackid=318_ca4592dc60d1f31f10fc80d2dca8211d&spm=0.0.hoverItem.1'
-  + '&topIds=1094015031473&shopSearchKeyword=?????&mm_sceneid=0_0_6496235283_0_0';
+// 站长 2026-11-27 指定：弹窗里两条真链接；淘宝只留裸店址、零参数
+const PDL_TAOBAO = 'https://n3sf0tqhvhbw60ae2xdq4nodo2g4kxl.taobao.com/';
 const PDL_DOUYIN = 'https://www.douyin.com/user/MS4wLjABAAAANjHa0B-e7JAX89HjRiCnSLRbFYYG3b0wrt7397e7IBA';
 
 const MIME = { '.html':'text/html', '.js':'application/javascript', '.css':'text/css',
