@@ -12611,6 +12611,47 @@ section('43. 公益广告位胖东来暂时下架');
     '测试没跟着改 → 下架后轮播张数对不上，或下架状态没人守');
 }
 
+// ---------- §46 车企品牌卡的「车外费用」备注（etc-fee-note-patch）----------
+// 2026-11-28：给站内 8 个新能源车品牌卡统一挂一条备注，指向站长的
+// 「各车企 ETC / 城市 NOA / 附加费用对比」站——买车的人除了看双休与工时，
+// 还要看车外要掏的钱（ETC 开通费、城市 NOA 是买断还是订阅、座椅加热等附加费用）。
+// 首页走 DOM 补丁（内置卡数据打包在 bundle 里，仓库铁律是不改 bundle），
+// 品牌详情页走 scripts/seo/inject-etc-fee-note.mjs 定点注入，不碰生成脚本。
+// 为什么用机器强制：这条备注被误删后站内就少了一处引流位，而既有断言全都发现不了
+// ——所以把「脚本在位 + 首页挂了 + 8 个品牌页都有链接」钉死。
+{
+  const ETC_URL = 'https://dujeongil-galaxy.github.io/etc-fee-comparison/';
+  const ETC_PAGES = ['xiaomi-auto', 'wenjie', 'jike', 'byd', 'lixiang', 'nio', 'xiaopeng', 'leapmotor'];
+  const ETC_CARDS = ['小米汽车', '问界', '极氪', 'BYD', '理想汽车', '蔚来', '小鹏汽车', '零跑汽车'];
+  const patchSrc = exists('etc-fee-note-patch.js') ? read('etc-fee-note-patch.js') : '';
+  const homeSrc = read('index.html');
+
+  check(patchSrc.includes(ETC_URL) && /etc-fee-note-patch\.js\?v=\d+/.test(homeSrc),
+    '§46a 首页挂了车外费用备注补丁，且指向费用对比站',
+    '首页没挂 etc-fee-note-patch.js，或补丁里的站点地址不对');
+
+  const missingCards = ETC_CARDS.filter((k) => !patchSrc.includes(k));
+  check(missingCards.length === 0,
+    '§46b 备注补丁覆盖 8 个车企品牌卡',
+    '补丁里少了这些目标卡：' + missingCards.join('、'));
+
+  const missingPages = ETC_PAGES.filter((slug) => {
+    const f = 'brand/' + slug + '.html';
+    if (!exists(f)) return true;
+    const p = read(f);
+    return !p.includes('data-sxg-etc-fee-note') || !p.includes(ETC_URL);
+  });
+  check(missingPages.length === 0,
+    '§46c 8 个品牌详情页都带车外费用备注与站点链接',
+    '这些页缺备注或缺链接：' + missingPages.join('、'));
+
+  check(exists('scripts/seo/inject-etc-fee-note.mjs')
+      && exists('scripts/test-etc-fee-note.cjs')
+      && read('.github/workflows/verify.yml').includes('test-etc-fee-note.cjs'),
+    '§46d 详情页注入脚本与回归测试在位，且测试已挂 CI',
+    '注入脚本/测试缺失，或测试没挂进 CI（未挂 CI 的测试须显式标「本机专用」）');
+}
+
 // ---------- 汇总 ----------
 console.log('\n' + '='.repeat(60));
 if (QUIET === false) {
