@@ -4,12 +4,12 @@
 
 ---
 
-### feat：有专题页的品牌，卡片底部最左侧加一枚「专题报道」按钮（2026-11-27 · 提交 `8d8fd115`）
+### fix：专题报道按钮挂到卡片详情弹窗底排最左侧（2026-11-27 · 提交 `220914e1`）
 
-- **背景**：站长点名比亚迪 / 华为 / 星巴克三家有独立专题页，要求品牌卡**底部**（最左侧）多一枚按钮点进专题；详情弹窗底排维持统一三键，不动。
-- **改法**：沿用站内「单一真相源」纪律，不写死品牌清单——`brand/<slug>.html` 加一行 `<meta name="sxg-topic-page" content="../xxx-report.html">`，`gen-evidence-board.py` 把它搬进公示区 `<details data-topic="./xxx-report.html">`，新增 `topic-page-button.js` 在渲染后的卡片 DOM 上读该属性，把「专题报道」按钮插进卡片底栏（`px-5 py-3` 那一排）左侧组的**最前面**（新窗口打开 + `rel="noopener noreferrer"`）。补丁同时做了幂等与自愈：按钮跑到别的卡上、位置不对或 href 被改坏，下一轮自动摘掉重挂。
-- **配套**：`index.html` 挂 `topic-page-button.js?v=1`；`gen-evidence-board.py` 输出 `data-topic`；`verify.mjs` 新增 §42 一节（§42a–§42i 共 9 条断言：三个详情页的标记、生成器搬运、公示区恰好 3 条 `data-topic`、补丁不写死品牌清单、按钮形态、落位口径、挂载与 CI、全站只有 3 个品牌带标记、校验段防删空）；新增真 DOM 测试 `test-topic-page-button.cjs`（33 项；本机 PAT 无 workflow scope，改不了 `.github/workflows/`，按 §21o 标记为「本机专用」，待换带 workflow scope 的 token 后补挂 CI）。
-- **验证**：全站 verify 2262 项全绿；62 组 `test-*.cjs` 中除既有的 `test-ai-cf-stream.cjs`（基线同样失败，与本次无关）外全部通过；7 次故障注入（删标记、删 `data-topic`、补丁写死品牌、改文案、改落位、不挂脚本、误扩散到第四个品牌）均判红后还原，还原后复验全绿。
+- **背景**：站长点名比亚迪 / 华为 / 星巴克三家有独立专题页，并截图标注按钮位置：**卡片详情弹窗的底排最左侧**（跳转证据链公示按钮左边那块空位），文案「专题报道」。
+- **改法**：沿用站内「单一真相源」纪律，不写死品牌清单——`brand/<slug>.html` 加一行 `<meta name="sxg-topic-page" content="../xxx-report.html">`，`gen-evidence-board.py` 把它搬进公示区 `<details data-topic="./xxx-report.html">`，`evidence-jump-patch.js` 运行时读该属性，在**弹窗底排最左侧**（跳转按钮之前）插一枚「专题报道」（新窗口打开 + `rel="noopener noreferrer"`）。底排查找与两类弹窗的定位口径复用该脚本已有 machinery，不另起一套（同一套弹窗定位逻辑写两遍必然漂移）。
+- **配套**：`gen-evidence-board.py` 输出 `data-topic`；`index.html` 缓存号 `evidence-jump-patch.js?v=4`；`verify.mjs` 新增 §42 一节（§42a–§42i 共 9 条断言：三个详情页的标记、生成器搬运、公示区恰好 3 条 `data-topic`、补丁不写死品牌清单、按钮形态、落位口径、挂载与 CI、全站只有 3 个品牌带标记、校验段防删空）；真 DOM 用例并入已在 CI 的 `test-evidence-jump.cjs`（新增星巴克弹窗：断言按钮在底排最左侧、href 取自 `data-topic`、文案「专题报道」、无专题页的卡片不出现该按钮、幂等）。
+- **验证**：全站 verify 2263 项全绿；61 组 `test-*.cjs` 中除既有的 `test-ai-cf-stream.cjs`（基线同样失败，与本次无关）外全部通过；7 次故障注入（删标记、删 `data-topic`、补丁写死品牌、改文案、改落位、退回缓存号、误扩散到第四个品牌）均判红后还原，还原后复验全绿。
 
 ### feat：新增「找茬」判据专题页；星巴克卡备注登记南充锁椅事件（2026-11-27 · 提交 `ee0b9a4f`）
 
