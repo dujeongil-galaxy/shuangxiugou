@@ -2389,7 +2389,7 @@
         <div class="ev-more"><a href="./brand/sony.html">查看 Sony (索尼中国) 完整详情页 →</a></div>
       </div>
     </details>
-    <details id="ev-starbucks" data-b="starbucks" data-g="A" data-n="1" data-l="0">
+    <details id="ev-starbucks" data-b="starbucks" data-g="A" data-n="1" data-l="0" data-topic="./chaocha-report.html">
       <summary><span class="g" style="background:#0f766e">A</span><span class="bn">Starbucks (星巴克中国)</span><span class="co">星巴克企业管理（中国）有限公司</span><span class="ct">1 条证据</span></summary>
       <div class="ev-body">
         <ol class="ev-items">
@@ -3875,7 +3875,7 @@
         <div class="ev-more"><a href="./brand/heytea.html">查看 喜茶 (HEYTEA) 完整详情页 →</a></div>
       </div>
     </details>
-    <details id="ev-byd" data-b="byd" data-g="C" data-n="5" data-l="3">
+    <details id="ev-byd" data-b="byd" data-g="C" data-n="5" data-l="3" data-topic="./byd-report.html">
       <summary><span class="g" style="background:#be123c">C</span><span class="bn">BYD (比亚迪)</span><span class="co">比亚迪股份有限公司</span><span class="ct">5 条证据</span></summary>
       <div class="ev-body">
         <ol class="ev-items">
@@ -4481,7 +4481,7 @@
         <div class="ev-more"><a href="./brand/jdb.html">查看 加多宝 完整详情页 →</a></div>
       </div>
     </details>
-    <details id="ev-huawei" data-b="huawei" data-g="C" data-n="1" data-l="0">
+    <details id="ev-huawei" data-b="huawei" data-g="C" data-n="1" data-l="0" data-topic="./zunjie-report.html">
       <summary><span class="g" style="background:#be123c">C</span><span class="bn">华为终端 (Huawei)</span><span class="co">华为技术有限公司 / 华为终端有限公司</span><span class="ct">1 条证据</span></summary>
       <div class="ev-body">
         <ol class="ev-items">
@@ -10250,6 +10250,10 @@
   <script defer src="./byd-expose-patch.js?v=8"></script>
   <!-- 2026-11-10 新闻事件登记：罗技授权店铺侮辱消费者广告 / 星宇股份后续进展，内置卡渲染后 DOM 补丁 -->
   <script defer src="./news-incident-patch.js?v=9"></script>
+  <!-- 2026-11-27：有独立专题页的品牌（比亚迪 / 华为 / 星巴克），卡片底部最左侧加一枚
+       「专题报道」按钮。真相源是 brand/*.html 的 sxg-topic-page 标记 → 生成器带进公示区
+       data-topic，脚本运行时读 DOM 取，不硬编码品牌清单。 -->
+  <script defer src="./topic-page-button.js?v=1"></script>
   <!-- 每张卡详情弹窗底部「跳转到证据公示」：内置 React 弹窗与自定义卡弹窗
        一视同仁，完整定位到 #evidence-board 里该品牌的 <details> 条目。
        真相源是生成器产出的公示区 DOM，补丁不硬编码品牌清单。 -->

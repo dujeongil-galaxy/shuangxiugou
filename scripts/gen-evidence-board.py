@@ -189,6 +189,16 @@ def parse_brand(path):
                 if t:
                     weak.append(t)
 
+    # 专题页标记（2026-11-27 站长点名比亚迪/华为/星巴克）：详情页在 brand/ 下，
+    # 公示区在站点根，路径改写成根相对（../x.html → ./x.html）。
+    topic = ''
+    m = re.search(r'<meta\s+name="sxg-topic-page"\s+content="([^"]+)"', text)
+    if m:
+        t = m.group(1).strip()
+        if t.startswith('../'):
+            t = './' + t[3:]
+        topic = t
+
     return {
         'slug': os.path.basename(path)[:-5],
         'brand': name,
@@ -196,6 +206,7 @@ def parse_brand(path):
         'grade': grade,
         'items': items,
         'weak': weak,
+        'topic': topic,
     }
 
 
@@ -415,8 +426,14 @@ def render_board(rows, generated_note):
         nl = sum(1 for i in r['items'] if i['href'])
         # data-b/data-g/data-n/data-l：verify.mjs 逐家对账用的契约
         # （品牌 slug / 档位 / 证据条数 / 带链接条数）
-        w('    <details id="ev-%s" data-b="%s" data-g="%s" data-n="%d" data-l="%d">'
-          % (esc(r['slug']), esc(r['slug']), esc(r['grade']), n, nl))
+        # data-topic：该品牌有没有独立专题页（2026-11-27 站长点名比亚迪/华为/星巴克）。
+        # 真相源在 brand/*.html 的 <meta name="sxg-topic-page">，这里只搬运：
+        # 补丁脚本运行时读公示区 DOM 取这个属性，不写死品牌清单（§31b 同一条纪律）。
+        topic_attr = ''
+        if r.get('topic'):
+            topic_attr = ' data-topic="%s"' % esc(r['topic'])
+        w('    <details id="ev-%s" data-b="%s" data-g="%s" data-n="%d" data-l="%d"%s>'
+          % (esc(r['slug']), esc(r['slug']), esc(r['grade']), n, nl, topic_attr))
         w('      <summary><span class="g" style="background:%s">%s</span>'
           '<span class="bn">%s</span><span class="co">%s</span>'
           '<span class="ct%s">%s</span></summary>'
