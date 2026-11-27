@@ -10,8 +10,8 @@
 
    覆盖路径：
      ① 桌面（matchMedia 不命中 640）：条目立即建好、四个出口 href 正确
-     ② 手机（matchMedia 命中 640）：panel 初始为空（真·按需创建），点开才出现
-     ③ 再点一次收起；条目不复建（不是「隐藏/显示」假按需）
+     ② 手机（matchMedia 命中 640）：条目初始化即建好（供 fab-dock 提升），面板仍按开合显示
+     ③ 再点一次收起；条目不重复建（2026-11-27 起两端初始化即建好，供 fab-dock 提升）
      ④ Esc 收起、点空白处收起
      ⑤ 幂等：重复执行脚本不重复注入节点 / style
      ⑥ 四个出口可达：三个页面文件真实存在 + #evidence-board 锚点真实存在
@@ -184,8 +184,8 @@ function mkDom(onlyMobile, withVersion) {
     /@media \(min-width:1440px\)\{#sxg-nav\{bottom:12px\}\}/.test(css),
     { found: /@media \(min-width:1440px\)/.test(css) });
 
-  /* ================= ② 手机：点开才加载 ================= */
-  console.log('\n② 手机（≤640px）按需创建');
+  /* ================= ② 手机：两端初始化即建条目 ================= */
+  console.log('\n② 手机（≤640px）条目已建好，供 fab-dock 提升');
   const wm = mkDom(true, true);
   const docM = wm.document;
   await until(() => docM.getElementById('sxg-nav'), 2000);
@@ -195,8 +195,8 @@ function mkDom(onlyMobile, withVersion) {
   const fabM = docM.getElementById('sxg-nav-fab');
 
   check('手机端容器就位', !!rootM);
-  check('★ 未点开时面板里一个条目都没有（真·按需创建）',
-    panelM && panelM.querySelectorAll('.sxg-nav-item').length === 0,
+  check('★ 未点开时条目已建好（4 导航 + 1 版本号，供 fab-dock 提升）',
+    panelM && panelM.querySelectorAll('.sxg-nav-item').length === 5,
     panelM && panelM.querySelectorAll('.sxg-nav-item').length);
   check('未点开时 aria-expanded=false',
     fabM && fabM.getAttribute('aria-expanded') === 'false');
@@ -209,7 +209,7 @@ function mkDom(onlyMobile, withVersion) {
   await until(() => panelM.querySelectorAll('.sxg-nav-item').length === 5, 1000);
 
   const itemsM = Array.from(panelM.querySelectorAll('.sxg-nav-item'));
-  check('★ 点开后条目才被创建（4 个导航 + 1 个版本号 = 5 条）', itemsM.length === 5, itemsM.length);
+  check('★ 点开后面板仍是 5 条（4 个导航 + 1 个版本号，不重复建）', itemsM.length === 5, itemsM.length);
   check('展开态 is-open 挂上', rootM.classList.contains('is-open'));
   check('展开后 aria-expanded=true', fabM.getAttribute('aria-expanded') === 'true');
   check('点开后的第一条是「证据链公示」→ #evidence-board',
@@ -307,6 +307,14 @@ function mkDom(onlyMobile, withVersion) {
   const idxHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   check('index.html 里真有 id="evidence-board"（页内跳转不是死链）',
     /id="evidence-board"/.test(idxHtml));
+  // 2026-11-27 回潮复盘：缓存号 v12 曾被带专题直达项的旧脚本占用，后来又被
+  // 新代码复用，老访客命中旧缓存就又看到那个按钮。号只增不复用。
+  const navVer = Array.from(idxHtml.matchAll(/nav-menu\.js\?v=(\d+)/g), m => Number(m[1]));
+  check('nav-menu.js 两处缓存号一致且 ≥13（回用旧号会让已撤销的入口从缓存复活）',
+    navVer.length === 2 && navVer.every(n => n >= 13), navVer);
+  const itemsSrc = (SRC.match(/var ITEMS = \[([\s\S]*?)\];/) || [, ''])[1];
+  check('源码 ITEMS 白名单无专题直达项（未经站长逐项点名不得新增按钮）',
+    !/bystander\.html/.test(itemsSrc) && !/那一车人/.test(itemsSrc));
 
   console.log('\n' + '='.repeat(60));
   console.log('通过 ' + passed + ' 项，失败 ' + failed + ' 项');

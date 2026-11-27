@@ -1340,9 +1340,38 @@ section('2g. 首页证据链完整公示');
       && exists('notes.html'),
       '悬浮导航新增「手气不错」→ notes.html（PC 右下 dock / 手机二级菜单共用同一 ITEMS，双端同名）',
       '入口缺失或写回「站长随笔」→ 弹窗改版丢掉的随笔按钮没补回来，或站长要求的改名没落地');
-    check((html.match(/nav-menu\.js\?v=12/g) || []).length === 2,
-      'index.html 的 nav-menu.js 预加载与脚本两处缓存号维持 ?v=12（2026-11-27 手机端导航项加 id、两端都建条目后 bump）',
-      '只改一处 → 预加载与脚本拿到不同版本；未 bump → 旧脚本缓存着没有 id 的导航项，fab-dock 提升不出来');
+    const navVerNow = Array.from(html.matchAll(/nav-menu\.js\?v=(\d+)/g), m => Number(m[1]));
+    check(navVerNow.length === 2 && navVerNow.every(n => n === 13),
+      'index.html 的 nav-menu.js 预加载与脚本两处缓存号同为 ?v=13（v12 曾被带专题直达项的旧脚本占用，禁止回用）',
+      '只改一处 → 预加载与脚本拿到不同版本；回用 v12 → 浏览器/CDN 里那份已撤销入口的旧脚本原地复活');
+    /* §9c-1（2026-11-27 站长指出「那一车人」又出现）：缓存号只增不复用。
+       4c6ec0dd 把专题直达项挂进悬浮菜单时用的是 v12，0d41d643 撤销时退回 v11，
+       38909d16 手机端导航改造又 bump 回 v12 —— 同一个 ?v 指向过两份内容，
+       老访客缓存里的 v12 仍是带专题按钮的脚本，于是「撤销」在用户端失效。
+       判据从 git 历史里取所有改过 nav-menu.js 版本号的提交（排除 HEAD），
+       当前号必须严格大于历史最大值；CI checkout 是 fetch-depth:0，可用。 */
+    let maxHistNav = 0;
+    let histNavOk = false;
+    try {
+      const headHash = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+      const navHist = execFileSync('git', ['log', '-G', 'nav-menu\\.js\\?v=[0-9]+', '--format=%H', '--', 'index.html'],
+        { cwd: ROOT, encoding: 'utf8' }).trim().split('\n').filter(Boolean);
+      histNavOk = navHist.length > 0;
+      for (const h of navHist) {
+        if (h === headHash) continue;
+        let oldHtml = '';
+        try {
+          oldHtml = execFileSync('git', ['show', h + ':index.html'],
+            { cwd: ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
+        } catch { continue; }
+        for (const m of oldHtml.matchAll(/nav-menu\.js\?v=(\d+)/g)) {
+          maxHistNav = Math.max(maxHistNav, Number(m[1]));
+        }
+      }
+    } catch { histNavOk = false; }
+    check(histNavOk && navVerNow.length === 2 && navVerNow[0] > maxHistNav && maxHistNav >= 12,
+      '§9c-1 导航缓存号严格大于历史最大值（曾把 v12 用在带专题按钮的旧脚本上，回用旧号会让旧缓存复活）',
+      `当前 ${navVerNow[0]} / 历史最大 ${maxHistNav} / 历史可读 ${histNavOk} → 回用旧号等于撤销只对没缓存的人生效`);
     /* 2026-11-25 站长定规：本悬浮菜单的导航项只由站长逐项明确授权，AI 不得自行
        解释「导航栏」把页面内导航外扩到这里。当天 AI 把「成功案例页里导航栏同步更新」
        听成「加进首页悬浮菜单」，擅自加了「那一车人」。此处白名单写死为站长确认过的
