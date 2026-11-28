@@ -69,6 +69,10 @@ scripts/.edge-adcheck/
 scripts/sxg-adcheck.png
 scripts/.edge-luxiyi/
 
+# 真渲染/测试脚本的本机截图（test-filter-flash、test-search-clear-render 等
+# 每跑一次就重写一张）：明文 png，不入库，避免污染 git status 与 §22c 素材红线。
+scripts/shot-*.png
+
 # ===== 品牌 LOGO：仓库里只有 assets/logos.enc 密文，明文只留本机 =====
 # （scripts/build-logos.mjs 产 _logo-norm/，scripts/encrypt-logos.mjs 加密）
 _logo-fetch/

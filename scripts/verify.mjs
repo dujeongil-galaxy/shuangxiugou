@@ -8879,7 +8879,7 @@ section('22. 素材链接规则（blob 格式 / 素材不得明文入库）');
     'crypto-qr/gt.png', 'crypto-qr/mbx-aptos.png', 'crypto-qr/mbx-multi.png',
     'crypto-qr/sol.png', 'crypto-qr/usdc-polygon.png', 'crypto-qr/usdt-trc20.png',
     'crypto-qr/wemix.png', 'crypto-qr/xpla.png',
-    'og-share.png', 'scripts/shot-local-note.png', 'sponsor-support.jpg',
+    'og-share.png', 'sponsor-support.jpg',
     // 2026-11-16 站长定稿：随笔第11章两处 GIF 已撤，改 12 张静态帧以 data: URI
     // 内联在加密正文里；ch11/ 下两个 .gif 已 git rm，白名单同步移除（不留悬空登记）。
     // 2026-11-19 微信文章存档：第三方公众号正文长图，不是站长提供的口述素材，
