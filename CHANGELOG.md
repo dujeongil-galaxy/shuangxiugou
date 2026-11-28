@@ -7,7 +7,7 @@
 ### docs：清理历史记账与源码注释里的直连线路机制披露（2026-11-28 · 提交 `28b842cc`）
 
 - **背景**：接 `87e87dbd`（README 撤下直连线路校验机制的内幕描述）之后，站长要求把历史条目与 BUG 专文里的同性质描述一并清掉——公开仓库里不再出现「明文 Key / 假锁 / 防君子 / 清 localStorage 可绕过」这类自述校验强度与绕过路径的措辞。
-- **改法**（措辞中性化，机制事实不动，不留待回填）：CHANGELOG 6 处、BUG-ROOT-CAUSES.md 1 处、`最近更新.md` 1 处、`labor-ai.html` 注释 7 处、`scripts/verify.mjs` 断言文案与注释 3 处。verify §21h-17 断言口径「CN 前端档位锁定」同步更新；§21h-19 失败文案去掉「看明文 Key」尾缀。§7840「密钥只从环境变量读」为正面安全口径，保留。
+- **改法**（措辞中性化，机制事实原样保留）：CHANGELOG 6 处、BUG-ROOT-CAUSES.md 1 处、`最近更新.md` 1 处、`labor-ai.html` 注释 7 处、`scripts/verify.mjs` 断言文案与注释 3 处。verify §21h-17 断言口径「CN 前端档位锁定」同步更新；§21h-19 失败文案去掉「看明文 Key」尾缀。§7840「密钥只从环境变量读」为正面安全口径，保留。
 - **验证**：全站 verify 2277 项全绿；AI 回归 6 组（anchor 12 / attach-display 14 / boss 23 / global 12 / md 14 / worker 98）全过。`labor-ai.html` 仅注释改动、无行为变化，缓存号不动。
 
 ### docs：README 撤下国内直连线路校验机制的内幕描述（2026-11-28 · 提交 `87e87dbd`）
