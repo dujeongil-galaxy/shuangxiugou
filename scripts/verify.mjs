@@ -8168,8 +8168,8 @@ section('21c. 首页滑到底部按钮');
 
   // —— 左侧目录树（参考站长随笔自动生成）——
   const tocCount = (ss.match(/data-toc=/g) || []).length;
-  check(tocCount === 10,
-    `成功案例页目录树锚点齐全（10 个 data-toc：致敬前辈/QQ奶奶/反面专题/50元自述/找茬判据/#01~#05，实际 ${tocCount}）`,
+  check(tocCount === 9,
+    `成功案例页目录树锚点齐全（9 个 data-toc：致敬前辈/QQ奶奶/反面专题/50元自述/#01~#05，实际 ${tocCount}）`,
     `data-toc 数量不对（${tocCount}）→ 目录树会漏章节或多出入口`);
   check(/id="toc-nav"/.test(ss), '成功案例页含目录树容器 #toc-nav', '目录树容器缺失 → 左侧目录树建不出来');
   check(/class="toc"/.test(ss) && /<summary>目录<\/summary>/.test(ss),
@@ -12444,18 +12444,23 @@ section('41. 消费争议判据专题（「找茬」怎么用才算数）');
     '缺任一项 → SEO 或法务入口失守');
 
   const ssCc = read('success-stories.html');
-  check(/class="topic-entry"[^>]*href="\.\/chaocha-report\.html"/.test(ssCc),
-    '§44h 成功案例页有指向 chaocha-report.html 的专题入口',
-    '没有入口 → 专题成为孤岛，爬虫与读者都走不到');
+  // 2026-11-28 站长撤办：判据专题（找茬）不再挂成功案例页。专题页本身保留
+  // （品牌卡详情弹窗的「专题报道」按钮仍指向它），但成功案例页与它无关——
+  // 成功案例页只放案例与站长点名的专题入口，不因为专题存在就自动挂上去。
+  check(!/class="topic-entry"[^>]*href="\.\/chaocha-report\.html"/.test(ssCc),
+    '§44h 成功案例页不挂判据专题入口（2026-11-28 站长撤办）',
+    '又挂回去了 → 成功案例页与专题页的关系没有边界，站内任何专题都能被塞进来');
+  check(!/id="topic-chaocha"/.test(ssCc) && !/chaocha-report\.html/.test(ssCc),
+    '§44i 成功案例页零判据专题残留（入口卡 / 目录锚点 / 链接全无）',
+    '成功案例页里还留有 chaocha-report.html 的痕迹 → 撤办不彻底');
   const fyCc = ssCc.indexOf('href="./fifty-yuan.html"');
-  const ccIdx = ssCc.indexOf('href="./chaocha-report.html"');
   const caseCc = ssCc.indexOf('id="case-1"');
-  check(fyCc > 0 && ccIdx > fyCc && caseCc > ccIdx,
-    '§44i 入口位置：50 元自述专题 → 找茬专题 → 案例 #01（顺序写死）',
+  check(fyCc > 0 && caseCc > fyCc,
+    '§44j 入口位置：50 元自述专题 → 案例 #01（顺序写死）',
     '入口跑位 → 与站长指定的位置冲突');
-  const entryCc = (ssCc.match(/<a class="topic-entry"[^>]*href="\.\/chaocha-report\.html"[\s\S]*?<\/a>/) || [''])[0];
-  check(/专题 · /.test(entryCc) && !/案例 #0[0-9]/.test(entryCc),
-    '§44j 入口标为「专题 · …」（不占案例序号）',
+  const entryFifty = (ssCc.match(/<a class="topic-entry"[^>]*href="\.\/fifty-yuan\.html"[\s\S]*?<\/a>/) || [''])[0];
+  check(/专题 · /.test(entryFifty) && !/案例 #0[0-9]/.test(entryFifty),
+    '§44k 入口标为「专题 · …」（不占案例序号）',
     '专题入口被标成案例序号 → 与「专题不占编号」的先例冲突');
 
   check(/chaocha-report\.html/.test(read('sitemap.xml')),
