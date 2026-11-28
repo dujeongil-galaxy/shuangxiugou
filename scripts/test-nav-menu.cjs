@@ -316,6 +316,33 @@ function mkDom(onlyMobile, withVersion) {
   check('源码 ITEMS 白名单无专题直达项（未经站长逐项点名不得新增按钮）',
     !/bystander\.html/.test(itemsSrc) && !/那一车人/.test(itemsSrc));
 
+  /* ================= ⑦ 成功案例的授权范围 + 品牌卡边界（verify §9c-2） ================= */
+  console.log('\n⑦ 成功案例授权范围与品牌卡边界');
+  // ① 首页四个按钮脚本不得出现专题页 / 品牌详情页链接。
+  //    品牌卡详情弹窗里的「专题报道」按钮走 evidence-jump-patch.js（逐项点名授权），
+  //    不在这四个脚本里，所以这条断言不会误伤它。
+  const btnFiles = ['nav-menu.js', 'fab-dock.js', 'header-menu-patch.js', 'top-button.js'];
+  const topicLinkRe = /(?:href|src)\s*[:=]\s*['"][^'"]*(?:qq-nainai|[a-z0-9-]+-report\.html|fifty-yuan|bystander\.html|brand\/)[^'"]*['"]/i;
+  const dirtyBtns = btnFiles.filter(function (f) {
+    const p = path.join(ROOT, f);
+    return fs.existsSync(p) && topicLinkRe.test(fs.readFileSync(p, 'utf8'));
+  });
+  check('首页四个按钮脚本都不含专题页 / 品牌详情页链接',
+    dirtyBtns.length === 0, dirtyBtns);
+  // ② 品牌卡默认不进成功案例页：案例页里不得有指向 brand/ 详情页的链接。
+  const ssHtml = fs.readFileSync(path.join(ROOT, 'success-stories.html'), 'utf8');
+  check('成功案例页不含指向 brand/ 详情页的链接（品牌卡默认不进成功案例）',
+    !/href\s*=\s*['"]\.\/brand\//.test(ssHtml),
+    (ssHtml.match(/href\s*=\s*['"]\.\/brand\/[^'"]*['"]/g) || []).slice(0, 5));
+  // ③ 规则必须同时留在 README 摘要与细则里，删条款即判红（两份都要有）。
+  const hasRule = function (f) {
+    return fs.readFileSync(path.join(ROOT, f), 'utf8').split(/\r?\n/)
+      .some(function (l) { return l.includes('成功案例') && l.includes('品牌卡'); });
+  };
+  check('规则写在 README.md 与 README-细则.md 里（两份都要有同一条）',
+    hasRule('README.md') && hasRule('README-细则.md'),
+    { readme: hasRule('README.md'), fine: hasRule('README-细则.md') });
+
   console.log('\n' + '='.repeat(60));
   console.log('通过 ' + passed + ' 项，失败 ' + failed + ' 项');
   if (failed) { console.log('失败项需逐条确认，不许直接放行'); process.exit(1); }

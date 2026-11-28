@@ -1392,6 +1392,30 @@ section('2g. 首页证据链完整公示');
     check(!/label: 'QQ 浏览器专题'/.test(navItems),
       '悬浮导航不再含「QQ 浏览器专题」入口（专题页只对 QQ 浏览器访客可见）',
       '擅自给专题页加访客入口 → 违背站长「拦截跳专题、但不主动推给普通访客」的口径');
+    /* §9c-2（2026-11-28 定规）：成功案例的授权范围 + 品牌卡的边界。
+       ① 把某个专题 / 事件写进成功案例页，只授权「在 success-stories.html 里出现这一条」，
+          **不构成**在首页新增按钮 / 导航项 / 直达入口的授权 → 首页四个按钮脚本里出现
+          专题页或品牌详情页链接即判红。品牌卡详情弹窗里的「专题报道」按钮是逐项点名
+          授权的，走 evidence-jump-patch.js / custom-card-actions.js，不在本条禁止范围内。
+       ② 品牌卡默认不进成功案例页 → 成功案例页不得出现指向 brand/ 详情页的链接。
+       ③ 规则本身必须写在 README 摘要与细则里，删掉条款即判红。
+       判据一律用通用正则，不枚举具体文案（AGENTS.md 的老规矩）。 */
+    const btnScripts9c2 = ['nav-menu.js', 'fab-dock.js', 'header-menu-patch.js', 'top-button.js'];
+    const topicLink9c2 = /(?:href|src)\s*[:=]\s*['"][^'"]*(?:qq-nainai|[a-z0-9-]+-report\.html|fifty-yuan|bystander\.html|brand\/)[^'"]*['"]/i;
+    const badBtn9c2 = btnScripts9c2.filter((f) => exists(f) && topicLink9c2.test(read(f)));
+    check(badBtn9c2.length === 0,
+      '§9c-2 首页按钮脚本不含专题页 / 品牌详情页链接（写进成功案例不构成在首页加按钮的授权）',
+      `出现专题直达链接：${badBtn9c2.join('、')} → 成功案例的授权范围只在 success-stories.html 那一页`);
+    const ss9c2 = exists('success-stories.html') ? read('success-stories.html') : '';
+    check(!!ss9c2 && !/href\s*=\s*['"]\.\/brand\//.test(ss9c2),
+      '§9c-2 成功案例页不含品牌详情页链接（品牌卡默认不进成功案例，除非站长逐项点名）',
+      '出现 ./brand/ 链接 → 把评级卡写进了案例页；评级结论与案例叙述不混编');
+    const ruleLine9c2 = (txt) => txt.split(/\r?\n/).some((l) => l.includes('成功案例') && l.includes('品牌卡'));
+    const rd9c2 = exists('README.md') ? read('README.md') : '';
+    const rx9c2 = exists('README-细则.md') ? read('README-细则.md') : '';
+    check(ruleLine9c2(rd9c2) && ruleLine9c2(rx9c2),
+      '§9c-2 规则写在 README 摘要与细则里（成功案例授权范围 / 品牌卡不进成功案例）',
+      '两份文档里没有同一条含「成功案例」与「品牌卡」的条款 → 规则被删，下一轮又会按旧解读加按钮');
     const dpNav = read('douyin-prompt.js');
     check(!/手气不错/.test(dpNav)
       && (dpNav.match(/class="dyp__(?:video|share)"/g) || []).length === 2,
