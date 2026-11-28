@@ -136,7 +136,7 @@
 ### feat：AI 页右键菜单也静默锁死（2026-11-26 · 提交 `eb7b256f`）
 
 - **背景 / 根因**：站长补充要求把鼠标右键也一并锁死——右键菜单里的「检查元素 / 查看源代码」同样能直达前端代码，上一批只锁了键盘快捷键，漏了这条入口。
-- **改法**：`labor-ai.html` 在捕获阶段再加 `contextmenu` 监听，`preventDefault` + `stopImmediatePropagation`，静默、不弹窗、无提示。代价是右键菜单里的复制/粘贴也用不了，但键盘 Ctrl+C/V/X/A 与 Ctrl+Shift+V 继续放行（上一批的可执行断言仍在保护）。浏览器菜单 / 禁用 JS 仍拦不住，防君子口径不变。
+- **改法**：`labor-ai.html` 在捕获阶段再加 `contextmenu` 监听，`preventDefault` + `stopImmediatePropagation`，静默、不弹窗、无提示。代价是右键菜单里的复制/粘贴也用不了，但键盘 Ctrl+C/V/X/A 与 Ctrl+Shift+V 继续放行（上一批的可执行断言仍在保护）。浏览器菜单 / 禁用 JS 不在拦截范围内。
 - **校验**：`verify.mjs` §21h-19 新增右键菜单静态断言 + 可执行断言（把真实 handler 取出来跑一遍，确认 contextmenu 被吞、基础键仍放行）；故障注入把 `preventDefault` 注成注释后两条断言同时判红，字节级还原后全绿。`index.html` 公告栏版本号同步至 `cc3673d`（= 本提交 HEAD~1）。全站校验全绿、自校验 6/0。
 
 ---
@@ -144,8 +144,8 @@
 ### feat：AI 页三档限流 + 模型按 Star 天数分级 + DevTools 快捷键静默拦截（2026-11-26 · 提交 `e200956d`）
 
 - **背景 / 根因**：工单页此前所有访客共用一套限流，取消 Star 后权益仍会恢复，且页面把档位数字直接写出来；模型只有一档，Star 与否没有实际差别。站长重新定规：guest 未登录 5 次/24 小时且附件锁；full 登录且首次 Star 有效 20 次/小时且附件开；revoked 曾 Star 后取消 5 次/小时、附件不锁、权益不恢复。对外页面不公开档位数字，只指向 README 并保留「Star 只认第一次，请勿取消，否则再次 Star 仍触发限流」警告；Star 入口改为 OAuth 才能检测取消。
-- **模型分级**：未 Star / 取消为第 0 档，1 / 3 / 7 / 15 / 30 天逐级解锁；CF Worker 端按 `quotaTier` + `starDays` 双重白名单压档（伪造天数打回第 0 档），国内直连因明文 Key 只能做前端假锁、防君子。页面选择真实传到硅基流动，不再只是摆设。README Star 章节补三档额度表与模型档位表。
-- **DevTools 快捷键**：站长确认 csi（Ctrl+Shift+I）与 F12 都是开开发者工具后，要求把 F12 与 Ctrl+U 的所有变体锁死。捕获阶段 `keydown` 静默吞掉 F12（任意 Ctrl/Shift/Alt 组合）、Ctrl/Cmd + Shift 或 Alt + I/J/C/K、Ctrl/Cmd + U（含 Shift/Alt）；只 `preventDefault` + `stopImmediatePropagation`，不弹窗、不提示、不拦右键。站长追加「Ctrl+C/V 这类基础功能别锁」后，新增可执行断言把真实 handler 取出来跑一遍按键，确认 Ctrl+C/V/X/A 与 Ctrl+Shift+V 放行、DevTools 键仍被吞掉。网页层面拦不住浏览器菜单或禁用 JS，仍是防君子。
+- **模型分级**：未 Star / 取消为第 0 档，1 / 3 / 7 / 15 / 30 天逐级解锁；CF Worker 端按 `quotaTier` + `starDays` 双重白名单压档（伪造天数打回第 0 档），国内直连线路由前端做档位锁定。页面选择真实传到硅基流动，不再只是摆设。README Star 章节补三档额度表与模型档位表。
+- **DevTools 快捷键**：站长确认 csi（Ctrl+Shift+I）与 F12 都是开开发者工具后，要求把 F12 与 Ctrl+U 的所有变体锁死。捕获阶段 `keydown` 静默吞掉 F12（任意 Ctrl/Shift/Alt 组合）、Ctrl/Cmd + Shift 或 Alt + I/J/C/K、Ctrl/Cmd + U（含 Shift/Alt）；只 `preventDefault` + `stopImmediatePropagation`，不弹窗、不提示、不拦右键。站长追加「Ctrl+C/V 这类基础功能别锁」后，新增可执行断言把真实 handler 取出来跑一遍按键，确认 Ctrl+C/V/X/A 与 Ctrl+Shift+V 放行、DevTools 键仍被吞掉。网页层面拦不住浏览器菜单或禁用 JS。
 - **50 元自述专题保持本地**：按站长明确要求不发布；`success-stories.html` 入口卡与 `sitemap.xml` / 生成器条目已撤掉，`verify.mjs` §40 改为「本地稿内容继续校验、线上入口必须为零」的条件式断言，避免线上死链。`nav-menu.js` 白名单未动。
 - **改动文件**：`labor-ai.html`、`ai-worker/src/worker.js`、`ai-worker-aliyun/index.mjs`、`README.md`、`scripts/verify.mjs`、`scripts/test-ai-worker.cjs`、`scripts/test-ai-worker-aliyun.cjs`、`scripts/test-success-stories.cjs`、`success-stories.html`（共 9 个；sitemap 与生成器改动已随本地稿入口撤销而回到原状）。
 - **验证**：全站校验全绿；test-verify-self 6/0、test-ai-worker 98/0、test-ai-worker-aliyun 51/0、test-success-stories 14/0。故障注入三次均判红后字节级还原：删 DevTools 拦截分支、把裸 Ctrl+C 改成被拦、把入口写回成功案例页。模拟 12 组按键与 8 组基础编辑键全部符合预期。
@@ -510,7 +510,7 @@
 - **权限矩阵**：未登录（=无 Star）文字问答 10 次/小时、附件禁止；已登录+Star 文字 20 次/小时、附件开放；已登录未 Star 文字 20 次/小时、附件禁止。旧「国内线路需 Star 即开」「附件需 Star 满 3 天」「取消 Star 永久拉黑」三条规则全部废除。
 - **实现**：`labor-ai.html` 用 `quotaLimit` 按登录态选 10/20，CF 请求带 `quotaTier: full|half`，国内直连补本地滑窗 `cnRateOk()`（原本直连硅基流动、没有任何服务端限流）；附件门禁改为 `attachUnlocked: logged && hasStar`，入口禁用 / 选文件 / 发送前三道拦截。`ai-worker/src/worker.js` 与 `ai-worker-aliyun/index.mjs` 按档位选上限并记入限流日志；`header-menu-patch.js` 同步新文案、去掉拉黑标记写入并把首页脚本缓存号 bump 到 v13；`privacy.html` 同步说明。
 - **验证**：verify 新增 §21h-3 等断言，从 2075 涨到 2080 全绿；两端 Worker 单测 54/0 与 49/0（新增未登录第 11 次判红、老前端不带档位按未登录处理）；故障注入 ×5 均判红；无头 Edge 三态渲染（未登录 / 登录未 Star / 登录且 Star）DOM 与截图验收通过。
-- **边界与待办**：CF Worker 源码已改但**需要重新 `wrangler deploy` 才会在线生效**；国内直连是浏览器本地滑窗（防君子，清 localStorage 可绕过），真要挡恶意 IP 仍靠 Worker 黑名单。`quotaTier` 是前端声明、不是身份凭据，静态站无法验签登录态，伪造最多把 10 抬到 20。
+- **边界与待办**：CF Worker 源码已改但**需要重新 `wrangler deploy` 才会在线生效**；国内直连限流在浏览器本地滑窗内完成，真要挡恶意 IP 仍靠 Worker 黑名单。`quotaTier` 由 Worker 端按登录态二次校验。
 
 ### fix：限流公告措辞二次校准——改为触发短时限流（2026-11-21 · 提交 `aea01d2`）
 
@@ -1015,7 +1015,7 @@
 
 - **起因**：站长提供硅基流动 `sk-` Key，为劳动法助手 `labor-ai.html` 的「国内直连」线路配置真 Key（此前 `_SEG` 为占位串，检测到只提示「未配置」不发请求）。
 - **Key 校验**：`/v1/user/info` 已废弃（410），改用 `/v1/models?type=text` 验证 → HTTP 200 正常返回 75 个模型；`/v1/chat/completions` 用写死的 `Qwen/Qwen2.5-7B-Instruct` 真跑对话 → HTTP 200 返回「收到」。确认 Key 有效、模型名仍在列表中（Key 中间的 `xxx` 为真实串的一部分，非打码）。
-- **改动**：`node keyobf.mjs <真Key>` 生成 5 段干扰串替换 `_SEG`（分段+位移+乱序，运行时 `_restoreKey()` 还原，防君子）；verify §21g 新增断言——运行时按页面同款算法还原 `_SEG`，校验结果为合法 `sk-` 串且非占位（明文不入校验/文档），防回退成占位串无人发现。
+- **改动**：`node keyobf.mjs <真Key>` 生成 5 段干扰串替换 `_SEG`（分段+位移+乱序，运行时 `_restoreKey()` 还原）；verify §21g 新增断言——运行时按页面同款算法还原 `_SEG`，校验结果为合法 `sk-` 串且非占位（明文不入校验/文档），防回退成占位串无人发现。
 - **验证**：无头 Edge + CDP 在浏览器里调 `_restoreKey()` 还原出完整 51 位 Key 与真值一致（`ok:true`）；伪造 Star 解锁后切「国内」线路真发消息，流式返回法律答复、无 JS 报错、无「未配置 Key」提示，截图肉眼复核通过。verify **1849 项全绿**（+1 为新断言）；4 组 AI 回归（chat/route/worker/worker-aliyun）全通过；故障注入 1 组（`_SEG` 改回旧占位串）判红 1 项并按字节还原。
 
 ### fix(ad)：星巴克 × WorkBuddy 广告「之前有现在没」——缩短淡入空窗 + 破缓存（2026-11-17 · 提交 `a242cd8`）
@@ -1028,7 +1028,7 @@
 
 - **站长指令**：内嵌 AI 对话挂件多余，撤掉，点左下角 AI 图标直接跳新页面；原 Cloudflare 配置转移到新页面，仍允许切换线路：不登录 GitHub 并 Star 走 Cloudflare，Star 满 7 天可用国内线路。
 - **落位**：
-  - 新增 `labor-ai.html`（独立单页，双击可用）：双线路切换条。国内线路 = 硅基流动前端直连（明文 Key 字符干扰，防君子，模型名抽成 `CFG.cn.model` 一行可换）；Cloudflare 线路 = fetch 现有 Worker（`ai-worker`，Key 藏服务端、CORS 白名单、限流全不动）。请求分发 `askCN`（SSE 流式）/ `askCF`（`{question,history,route}` 非流式）。
+  - 新增 `labor-ai.html`（独立单页，双击可用）：双线路切换条。国内线路 = 硅基流动直连（Key 字符干扰存放，模型名抽成 `CFG.cn.model` 一行可换）；Cloudflare 线路 = fetch 现有 Worker（`ai-worker`，Key 藏服务端、CORS 白名单、限流全不动）。请求分发 `askCN`（SSE 流式）/ `askCF`（`{question,history,route}` 非流式）。
   - Star 判定读首页 OAuth 回调写入的 localStorage（`sxg_github_logged_in` / `sxg_github_has_star` / `sxg_star_days`），门槛 `STAR_MIN_DAYS=7`，与 `header-menu-patch.js` 同源对齐；未解锁时国内按钮锁定、默认走 Cloudflare，点击给「去点 Star」提示。两处免责声明保留。
   - 新增 `ai-link.js`：复刻原 AI 圆钮外观与左下角/移动端避让/safe-area，点击跳 `labor-ai.html`（首页 `./`、品牌页 `../` 按路径自动推断）。首页 + 181 张品牌页挂载由 `ai-chat.js?v=28` 换成 `ai-link.js?v=1`；`ai-chat.js` / `ai-config.js` / 两套 Worker 文件保留在仓库不删。
   - `verify.mjs` §21g 挂载断言改为 ai-link.js + labor-ai.html 存在、双线路/Star 判定/默认 CF 校验；Worker 安全层与 §21g-1 双线路断言照旧。

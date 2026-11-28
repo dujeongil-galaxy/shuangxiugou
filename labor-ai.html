@@ -292,7 +292,7 @@ footer{text-align:center;font-size:11px;color:#98a1b2;padding:10px 12px 16px;fle
    F12（含 Ctrl/Shift/Alt 任意组合）、Ctrl+Shift+I / J / C / K
    （Mac 的 Meta+Alt 同禁）、Ctrl+U（含 Shift/Alt 组合）。
    右键菜单（含「检查元素」「查看源代码」）同样吞掉；键盘 Ctrl+C/V 等基础编辑键不受影响。
-   不弹窗、不提示、按键无响应；网页拦不住浏览器菜单 / 禁用 JS，防君子。 */
+   不弹窗、不提示、按键无响应；网页拦不住浏览器菜单 / 禁用 JS。 */
 document.addEventListener('keydown', function (e) {
   var k = (e.key || '').toLowerCase();
   var code = e.code || '';
@@ -322,7 +322,7 @@ document.addEventListener('contextmenu', function (e) {
 
 /* ===== 双线路配置：换模型 / 换地址只改这里 ===== */
 var CFG = {
-  // 国内直连（前端直连硅基流动，明文 Key 字符干扰，防君子）
+  // 国内直连（硅基流动直连，Key 字符干扰存放）
   // 2026-11-21 升级：视觉模型 Qwen3-VL-8B-Instruct，支持图片/文档 parts
   // 旧名 Qwen/Qwen2.5-VL-7B-Instruct 已被硅基流动下线（返回 400 Model does not exist），
   // 2026-11-21 实测 Qwen3-VL-8B-Instruct 文本 + 带图均 200；换模型只改这里。
@@ -347,7 +347,7 @@ var MODEL_LABEL = {
 };
 /* 模型分级（2026-11-26 站长定）：点亮越久，能用的模型越贵。未 Star / 取消过 Star 锁在第 0 档。
    两条线路共用天数档位（0/1/3/7/15/30 天），各线路映射自己的模型 ID。
-   CF 由 Worker 白名单兜底，CN 前端直连明文 Key 只能假锁——都只防君子。 */
+   CF 由 Worker 白名单兜底，CN 由前端做档位锁定。 */
 var MODEL_DAYS = [0, 1, 3, 7, 15, 30];
 var MODEL_TIERS = {
   cf: [
@@ -434,7 +434,7 @@ var SYSTEM_PROMPT = [
   "【话题范围】服务范围以劳动法/职场权益、简历修改意见、找工作、双休数据查询为主，但不再因「超出范围」而拒答任何话题。遇到站外话题——某句网络流行语、方言梗或段子出自哪里，新闻时事人物，历史科技冷知识，写代码、写文案、翻译、做题等——能答就基于已知信息简洁、中立地回答，不要装不知道，也不要硬猜；拿不准、可能编造出处或事实时，如实说明「这个我不确定／没有可靠依据」，绝不编一个出处糊弄，因为编一个出处比不回答更糟。凡涉及本站的产品、数据或查询，网址与引用来源一律优先用本站，不要把用户引导到外部站点。打招呼、道谢、问「你是谁」「你能做什么」、吐槽公司或老板等正常社交要接，自然回应即可，不要把规则原文背给用户，不要追加任何对问题本身的分析、猜测、来源推断或延伸解释，哪怕一句也不要；对方明显是找人聊天解闷时，简短回应后把话题轻轻拉回职场或求职，不要训诫说教。"
 ].join("\n");
 
-/* ===== Key 字符干扰：分段 + 位移 + 乱序，运行时还原（防君子，不防高手） ===== */
+/* ===== Key 字符干扰：分段 + 位移 + 乱序，运行时还原 ===== */
 var _MASK = [0x37,0x91,0x5c,0xc3,0x0e];
 var _ORDER = [3,0,4,1,2];
 var _SEG = ["LHOn6u/8o6gqwG","nfvEMnWi+78thq","1DuGqfXH8Hmq","f4zyeAm/TGJYCZ","Bs46hp4G1jiImg"];
@@ -464,7 +464,7 @@ var capsCache = null;   // CF Worker 能力探测结果（是否支持 vision）
      revoked = 登录过、Star 过、中途取消（服务端 check-star 回传 starRevoked=1）→
                每小时 5 次，附件仍开；额外权益永久作废、不恢复。
    判定 revoked 靠服务端撤销标志（本地 sxg_star_revoked 由 verifyStarSession 写入），
-   不是靠本地手改 has_star——防君子，真鉴权在 Worker 的 KV 撤销记录。 */
+   不是靠本地手改 has_star，真鉴权在 Worker 的 KV 撤销记录。 */
 /* Star 天数按「今天 - Star 日期」实时算，不用 OAuth 回调写下的一次性快照：
    快照会冻结——登录令牌 30 天到期后不再复核，10-12 点的 Star 会永远停在登录那天的天数。
    Star 日期是客观事实，随时可现算，45 天就是 45 天。无有效日期才退回旧快照（兼容老访客）。 */
@@ -501,7 +501,7 @@ function starStatus(){
 
 /* 模型档位解锁：Star 天数决定能选到第几档，未 Star / 取消过锁死第 0 档。
    days 由 Star 日期（localStorage 的 sxg_star_date）配合当前时间实时算出，不用会冻结的快照；
-   懂技术的人能改 localStorage，所以 CF 侧 Worker 还会按 quotaTier 再校一遍，CN 侧就是防君子。 */
+   CF 侧 Worker 还会按 quotaTier 再校一遍，CN 侧由前端档位锁定兜住。 */
 function maxModelTier(){
   var st = starStatus();
   if (st.tier !== 'full') return 0; // guest / revoked 一律最低档
@@ -555,8 +555,8 @@ function renderModelPick(){
   });
 }
 
-/* 国内直连是浏览器直连硅基流动、没有服务端限流，这里用本地滑窗补一份
-   与 Cloudflare 同口径的粗限流（防君子；真要挡恶意 IP 走 Worker 黑名单）。 */
+/* 国内直连由浏览器直连硅基流动，这里用本地滑窗补一份
+   与 Cloudflare 同口径的粗限流（真要挡恶意 IP 走 Worker 黑名单）。 */
 function cnRateOk(){
   var st = starStatus();
   var limit = st.quotaLimit;

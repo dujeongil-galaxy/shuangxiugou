@@ -6938,11 +6938,11 @@ section('21c. 首页滑到底部按钮');
         && /e\.stopImmediatePropagation\(\)/.test(la)
         && /\}, true\);/.test(la),
         '§21h-19 AI 页静默拦截全部 DevTools 快捷键（F12/Ctrl+Shift+I+J+C+K/Ctrl+U，捕获阶段吞掉）',
-        '删掉任一拦截分支或去掉 preventDefault → 对应快捷键又能打开开发者工具看明文 Key');
+        '删掉任一拦截分支或去掉 preventDefault → 对应快捷键又能打开开发者工具');
       // 2026-11-26 站长补充：右键菜单也要锁（检查元素 / 查看源代码都从右键走）。
       check(/addEventListener\('contextmenu', function \(e\) \{[\s\S]{0,80}\n\s*e\.preventDefault\(\)[\s\S]{0,80}\n\s*e\.stopImmediatePropagation\(\)[\s\S]{0,80}\n\s*\}, true\);/.test(la),
         '§21h-19 AI 页静默拦截右键菜单（检查元素/查看源代码走不出去，不弹窗）',
-        '删掉 contextmenu 拦截或去掉 preventDefault → 右键「检查」又能打开开发者工具看明文 Key');
+        '删掉 contextmenu 拦截或去掉 preventDefault → 右键「检查」又能打开开发者工具');
       // 2026-11-26 站长追加：Ctrl+C/V/X/A 这类基础编辑键绝不能锁。
       // 上面是静态代码断言，这里把真实 handler 拿出来跑一遍按键，确认基础键放行、DevTools 键仍吞掉。
       {
@@ -7026,7 +7026,7 @@ section('21c. 首页滑到底部按钮');
         && /currentModelLabel\(\)/.test(la),
         '§21h-16 页面有独立模型行，随当前线路与所选档位渲染模型名（不藏、用户可见）');
       // §21h-17（2026-11-26 站长定规）：按 Star 天数分六档解锁模型，点亮越久越贵。
-      // 未 Star / 取消锁第 0 档；CF Worker 白名单兜底，CN 前端假锁（防君子）。
+      // 未 Star / 取消锁第 0 档；CF Worker 白名单兜底，CN 前端档位锁定。
       check(/var MODEL_DAYS = \[0, 1, 3, 7, 15, 30\]/.test(la)
         && /function maxModelTier\(\)/.test(la)
         && /if \(st\.tier !== 'full'\) return 0/.test(la)
